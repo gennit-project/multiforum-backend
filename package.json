@@ -20,7 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/storage": "^7.7.0",
-    "@graphql-tools/delegate": "10.0.0",
+    "@graphql-tools/delegate": "10.2.23",
     "@graphql-tools/schema": "^10.0.2",
     "@neo4j/graphql": "^5.10.0",
     "@neo4j/graphql-ogm": "^5.9.1",
@@ -44,10 +44,10 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",
-    "@graphql-codegen/typescript": "4.0.1",
-    "@graphql-codegen/typescript-resolvers": "4.0.1",
+    "@graphql-codegen/typescript": "4.1.6",
+    "@graphql-codegen/typescript-resolvers": "4.5.1",
     "@types/jsonwebtoken": "^9.0.5",
-    "@types/luxon": "3.4.1",
+    "@types/luxon": "3.7.1",
     "@types/node": "^20.19.11",
     "@types/nodemailer": "^6.4.19",
     "concurrently": "^8.2.2",
