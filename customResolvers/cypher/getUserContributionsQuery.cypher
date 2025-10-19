@@ -45,7 +45,8 @@ WITH u, startDate, endDate, comments, collect({
   id: discussion.id,
   title: COALESCE(discussion.title, ""),
   createdAt: toString(discussion.createdAt),
-  Author: CASE WHEN discussionAuthor IS NOT NULL THEN { 
+  hasDownload: discussion.hasDownload,
+  Author: CASE WHEN discussionAuthor IS NOT NULL THEN {
     username: discussionAuthor.username,
     profilePicURL: COALESCE(discussionAuthor.profilePicURL, null)
   } ELSE NULL END,
@@ -82,7 +83,7 @@ WITH (comments + discussions + events) AS allActivities
 UNWIND allActivities AS activity
 WITH date(datetime(activity.createdAt)) AS activityDate, collect(activity) AS activities
 
-RETURN 
+RETURN
   toString(activityDate) AS date,
   size(activities) AS count,
   [{
@@ -90,7 +91,8 @@ RETURN
     type: 'activity',
     description: 'Activity on ' + toString(activityDate),
     Comments: [a IN activities WHERE a.text IS NOT NULL | a],
-    Discussions: [a IN activities WHERE a.title IS NOT NULL AND a.DiscussionChannels IS NOT NULL | a],
+    Discussions: [a IN activities WHERE a.title IS NOT NULL AND a.DiscussionChannels IS NOT NULL AND (a.hasDownload = false OR a.hasDownload IS NULL) | a],
+    Downloads: [a IN activities WHERE a.title IS NOT NULL AND a.DiscussionChannels IS NOT NULL AND a.hasDownload = true | a],
     Events: [a IN activities WHERE a.title IS NOT NULL AND a.EventChannels IS NOT NULL | a]
   }] AS activities
 ORDER BY activityDate ASC

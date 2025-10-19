@@ -1258,6 +1258,7 @@ const typeDefinitions = gql`
     description: String!
     Comments: [CommentInfo!]!
     Discussions: [DiscussionInfo!]!
+    Downloads: [DiscussionInfo!]!
     Events: [EventInfo!]!
   }
 
