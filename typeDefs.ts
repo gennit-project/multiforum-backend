@@ -395,6 +395,10 @@ const typeDefinitions = gql`
     channelBannerURL: String
     rules: JSON
 
+    # Pinned content
+    PinnedDiscussionChannels: [DiscussionChannel!]! @relationship(type: "PINNED_IN_CHANNEL", direction: OUT)
+    PinnedWikiPages: [WikiPage!]! @relationship(type: "PINNED_IN_CHANNEL", direction: OUT)
+
     # Collection support
     InCollections: [Collection!]! @relationship(type: "CONTAINS_CHANNEL", direction: IN)
 
