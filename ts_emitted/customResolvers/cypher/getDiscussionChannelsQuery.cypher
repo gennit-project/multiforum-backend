@@ -26,8 +26,7 @@ WHERE
         SIZE($labelFilters) = 0 OR 
         ALL(labelFilter IN $labelFilters WHERE 
             EXISTS {
-                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)
-                MATCH (fo)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
+                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
                 WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
             }
         )
@@ -63,8 +62,7 @@ WHERE
         SIZE($labelFilters) = 0 OR 
         ALL(labelFilter IN $labelFilters WHERE 
             EXISTS {
-                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)
-                MATCH (fo)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
+                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
                 WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
             }
         )

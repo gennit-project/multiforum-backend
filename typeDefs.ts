@@ -146,7 +146,7 @@ const typeDefinitions = gql`
     Channels: [Channel!]! @relationship(type: "CONTAINS_CHANNEL", direction: OUT)
 
     # Ordered list of item IDs for maintaining custom order
-    itemOrder: [String!]!
+    itemOrder: [ID!]!
 
     # Discussions that share this collection (reverse relationship)
     SharedInDiscussions: [Discussion!]! @relationship(type: "SHARES_COLLECTION", direction: IN)
@@ -173,7 +173,7 @@ const typeDefinitions = gql`
     id: ID! @id
     Owner: User @relationship(type: "HAS_ALBUM", direction: IN)
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
-    imageOrder: [String]
+    imageOrder: [ID]
     Discussions: [Discussion!]! @relationship(type: "HAS_ALBUM", direction: IN)
   }
 
@@ -248,6 +248,8 @@ const typeDefinitions = gql`
     # roles & perms
     ChannelRoles: [ChannelRole!]! @relationship(type: "HAS_CHANNEL_ROLE", direction: OUT)
     ServerRoles:  [ServerRole!]!  @relationship(type: "HAS_SERVER_ROLE", direction: OUT)
+    ModChannelRoles: [ModChannelRole!]! @relationship(type: "HAS_MOD_ROLE", direction: OUT)
+    ModServerRoles:  [ModServerRole!]!  @relationship(type: "HAS_MOD_ROLE", direction: OUT)
 
     # pending invites
     PendingModInvites:    [Channel!]! @relationship(type: "HAS_PENDING_MOD_INVITE", direction: IN)
