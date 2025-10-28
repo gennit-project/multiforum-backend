@@ -60,11 +60,13 @@ import unsubscribeFromIssue from './customResolvers/mutations/unsubscribeFromIss
 import sendBugReport from './customResolvers/mutations/sendBugReport.js';
 import refreshPlugins from './customResolvers/mutations/refreshPlugins.js';
 import installPluginVersion from './customResolvers/mutations/installPluginVersion.js';
+import triggerDownloadableFilePluginRuns from './customResolvers/mutations/triggerDownloadableFilePluginRuns.js';
 import enableServerPlugin from './customResolvers/mutations/enableServerPlugin.js';
 import setServerPluginSecret from './customResolvers/mutations/setServerPluginSecret.js';
 import validateServerPluginSecret from './customResolvers/mutations/validateServerPluginSecret.js';
 import getServerPluginSecrets from './customResolvers/queries/getServerPluginSecrets.js';
 import getInstalledPlugins from './customResolvers/queries/getInstalledPlugins.js';
+import getPluginRunsForDownloadableFile from './customResolvers/queries/getPluginRunsForDownloadableFile.js';
 const { OGM } = pkg;
 export default function (driver) {
     const ogm = new OGM({
@@ -89,6 +91,8 @@ export default function (driver) {
     const Suspension = ogm.model("Suspension");
     const Plugin = ogm.model("Plugin");
     const PluginVersion = ogm.model("PluginVersion");
+    const PluginRun = ogm.model("PluginRun");
+    const DownloadableFile = ogm.model("DownloadableFile");
     const ServerSecret = ogm.model("ServerSecret");
     const resolvers = {
         JSON: GraphQLJSON,
@@ -151,6 +155,9 @@ export default function (driver) {
             }),
             getInstalledPlugins: getInstalledPlugins({
                 ServerConfig
+            }),
+            getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
+                PluginRun
             })
         },
         Mutation: {
@@ -362,6 +369,14 @@ export default function (driver) {
                 Plugin,
                 PluginVersion,
                 ServerConfig
+            }),
+            triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({
+                DownloadableFile,
+                Plugin,
+                PluginVersion,
+                PluginRun,
+                ServerConfig,
+                ServerSecret
             }),
             enableServerPlugin: enableServerPlugin({
                 Plugin,

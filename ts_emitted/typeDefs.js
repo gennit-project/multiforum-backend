@@ -145,7 +145,7 @@ const typeDefinitions = gql `
     Channels: [Channel!]! @relationship(type: "CONTAINS_CHANNEL", direction: OUT)
 
     # Ordered list of item IDs for maintaining custom order
-    itemOrder: [String!]!
+    itemOrder: [ID!]!
 
     # Discussions that share this collection (reverse relationship)
     SharedInDiscussions: [Discussion!]! @relationship(type: "SHARES_COLLECTION", direction: IN)
@@ -172,7 +172,7 @@ const typeDefinitions = gql `
     id: ID! @id
     Owner: User @relationship(type: "HAS_ALBUM", direction: IN)
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
-    imageOrder: [String]
+    imageOrder: [ID]
     Discussions: [Discussion!]! @relationship(type: "HAS_ALBUM", direction: IN)
   }
 
@@ -247,6 +247,8 @@ const typeDefinitions = gql `
     # roles & perms
     ChannelRoles: [ChannelRole!]! @relationship(type: "HAS_CHANNEL_ROLE", direction: OUT)
     ServerRoles:  [ServerRole!]!  @relationship(type: "HAS_SERVER_ROLE", direction: OUT)
+    ModChannelRoles: [ModChannelRole!]! @relationship(type: "HAS_MOD_ROLE", direction: OUT)
+    ModServerRoles:  [ModServerRole!]!  @relationship(type: "HAS_MOD_ROLE", direction: OUT)
 
     # pending invites
     PendingModInvites:    [Channel!]! @relationship(type: "HAS_PENDING_MOD_INVITE", direction: IN)
@@ -954,6 +956,10 @@ const typeDefinitions = gql `
       pluginId: String!
       version: String!
     ): InstalledPlugin!
+    triggerDownloadableFilePluginRuns(
+      downloadableFileId: ID!
+      event: String!
+    ): [PluginRun!]!
     enableServerPlugin(
       pluginId: String!
       version: String!
@@ -1086,6 +1092,14 @@ const typeDefinitions = gql `
   type Plugin {
     id: ID! @id
     name: String!
+    displayName: String
+    description: String
+    authorName: String
+    authorUrl: String
+    homepage: String
+    license: String
+    tags: [String!]
+    metadata: JSON
     Versions: [PluginVersion!]! @relationship(type: "HAS_VERSION", direction: OUT)
   }
 
@@ -1096,6 +1110,11 @@ const typeDefinitions = gql `
     tarballGsUri: String
     integritySha256: String
     entryPath: String!
+    manifest: JSON
+    settingsDefaults: JSON
+    uiSchema: JSON
+    documentationPath: String
+    readmeMarkdown: String
     Plugin: Plugin! @relationship(type: "HAS_VERSION", direction: IN)
   }
 
@@ -1131,7 +1150,11 @@ const typeDefinitions = gql `
     status: String!
     message: String
     durationMs: Int
+    targetId: String
+    targetType: String
+    payload: JSON
     createdAt: DateTime! @timestamp(operations: [CREATE])
+    updatedAt: DateTime! @timestamp(operations: [UPDATE])
   }
 
   type ServerConfig {
@@ -1174,6 +1197,11 @@ const typeDefinitions = gql `
     scope: String!
     enabled: Boolean!
     settingsJson: JSON
+    manifest: JSON
+    settingsDefaults: JSON
+    uiSchema: JSON
+    documentationPath: String
+    readmeMarkdown: String
   }
 
   enum SecretValidationStatus {
@@ -1348,6 +1376,7 @@ const typeDefinitions = gql `
       pluginId: String!
     ): [PluginSecretStatus!]!
     getInstalledPlugins: [InstalledPlugin!]!
+    getPluginRunsForDownloadableFile(downloadableFileId: ID!): [PluginRun!]!
   }
 `;
 export default typeDefinitions;

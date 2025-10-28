@@ -1,12 +1,11 @@
 import crypto from 'crypto'
 import { Storage } from '@google-cloud/storage'
-import tar from 'tar-stream'
-import zlib from 'zlib'
 import type {
   PluginModel,
   PluginVersionModel,
   ServerConfigModel
 } from '../../ogm_types.js'
+import { parseManifestFromTarball } from './shared/pluginManifest.js'
 
 type RegistryPlugin = {
   id: string
@@ -82,25 +81,30 @@ const getResolver = (input: Input) => {
         throw new Error(`Failed to fetch plugin registry: ${(error as any).message}`)
       }
 
-      // First, get the plugin name from database (since pluginId might be a UUID)
-      let pluginName = pluginId
-      const existingPlugins = await Plugin.find({
-        where: { id: pluginId },
-        selectionSet: `{ id name }`
+      // First, resolve the plugin node using either the Neo4j ID or the plugin slug
+      const pluginCandidates = await Plugin.find({
+        where: {
+          OR: [
+            { id: pluginId },
+            { name: pluginId }
+          ]
+        },
+        selectionSet: `{
+          id
+          name
+          displayName
+        }`
       })
-      
-      if (existingPlugins.length > 0) {
-        // If found by ID, use the name for registry lookup
-        pluginName = existingPlugins[0].name
-      }
 
-      // First check if this version already exists in the database
-      // (refreshPlugins creates versions using manifest versions, not registry versions)
+      let pluginRecord = pluginCandidates[0] || null
+      let pluginSlug = pluginRecord?.name || pluginId
+
+      // Check if this version already exists in the database
       const existingDbVersions = await PluginVersion.find({
         where: {
           AND: [
             { version: version },
-            { Plugin: { name: pluginName } }
+            { Plugin: { name: pluginSlug } }
           ]
         },
         selectionSet: `{
@@ -120,30 +124,25 @@ const getResolver = (input: Input) => {
       let registryVersion: any
 
       if (existingDbVersions.length > 0) {
-        // Version exists in database, use its data instead of registry lookup
         const dbVersion = existingDbVersions[0]
-        console.log(`Found existing version in database: ${pluginName}@${version}`)
-        
-        // Create a registry-like object from database data for compatibility with downstream code
+        console.log(`Found existing version in database: ${pluginSlug}@${version}`)
         registryVersion = {
           version: dbVersion.version,
           tarballUrl: dbVersion.repoUrl,
           integritySha256: dbVersion.integritySha256 || ''
         }
       } else {
-        // Version doesn't exist in database, look it up in registry
-        const registryPlugin = registryData.plugins.find(p => p.id === pluginName)
+        const registryPlugin = registryData.plugins.find(p => p.id === pluginSlug)
         if (!registryPlugin) {
-          throw new Error(`Plugin ${pluginName} not found in registry`)
+          throw new Error(`Plugin ${pluginSlug} not found in registry`)
         }
 
         registryVersion = registryPlugin.versions.find(v => v.version === version)
         if (!registryVersion) {
-          throw new Error(`Plugin ${pluginName} version ${version} not found in registry`)
+          throw new Error(`Plugin ${pluginSlug} version ${version} not found in registry`)
         }
       }
 
-      // Debug logging to see what we're using
       console.log('Using version data:', JSON.stringify(registryVersion, null, 2))
 
       // 3. Download and verify tarball integrity
@@ -175,122 +174,122 @@ const getResolver = (input: Input) => {
         throw new Error('Tarball integrity verification failed: SHA-256 mismatch')
       }
 
-      // 5. Quick validate tarball contents
-      await new Promise<void>((resolve, reject) => {
-        const extract = tar.extract()
-        const gunzip = zlib.createGunzip()
-        
-        let hasPluginJson = false
-        let manifestData: any = null
+      const artifacts = await parseManifestFromTarball(tarballBytes)
 
-        extract.on('entry', (header, stream, next) => {
-          if (header.name.endsWith('plugin.json') || header.name === 'plugin.json') {
-            hasPluginJson = true
-            let data = ''
-            stream.on('data', chunk => data += chunk)
-            stream.on('end', () => {
-              try {
-                manifestData = JSON.parse(data)
-                
-                // Now that refreshPlugins uses manifest versions, these should match
-                console.log(`Plugin manifest version: ${manifestData.version}, Requested version: ${version}`)
-                
-                if (manifestData.version !== version) {
-                  return reject(new Error(`Manifest version ${manifestData.version} doesn't match requested version ${version}`))
-                }
-                if (manifestData.id !== pluginName) {
-                  return reject(new Error(`Manifest ID ${manifestData.id} doesn't match requested plugin name ${pluginName}`))
-                }
-              } catch (e) {
-                return reject(new Error(`Invalid plugin.json: ${(e as any).message}`))
-              }
-              next()
-            })
-          } else {
-            stream.on('end', next)
-          }
-          stream.resume()
-        })
-
-        extract.on('finish', () => {
-          if (!hasPluginJson) {
-            return reject(new Error('Tarball missing plugin.json'))
-          }
-          if (!manifestData?.entry) {
-            return reject(new Error('plugin.json missing entry field'))
-          }
-          resolve()
-        })
-
-        extract.on('error', reject)
-        gunzip.on('error', reject)
-
-        gunzip.pipe(extract)
-        gunzip.write(tarballBytes)
-        gunzip.end()
-      })
-
-      // 6. Find or create Plugin record
-      let plugin = existingPlugins[0] || (existingDbVersions.length > 0 ? existingDbVersions[0].Plugin : null)
-      
-      if (!plugin) {
-        // Try to find by name if not found by ID
-        const pluginsByName = await Plugin.find({
-          where: { name: pluginName }
-        })
-        plugin = pluginsByName[0]
-
-        if (!plugin) {
-          console.log(`Creating new plugin: ${pluginName}`)
-          const createResult = await Plugin.create({
-            input: [
-              {
-                name: pluginName
-              }
-            ]
-          })
-          plugin = createResult.plugins[0]
-        }
+      if (artifacts.version !== version) {
+        throw new Error(`Manifest version ${artifacts.version} doesn't match requested version ${version}`)
       }
 
-      // 7. Use existing PluginVersion if we found one in database, otherwise create it
-      let pluginVersion = existingDbVersions[0]
-      
+      if (artifacts.id !== pluginSlug) {
+        throw new Error(`Manifest ID ${artifacts.id} doesn't match requested plugin ${pluginSlug}`)
+      }
+
+      const manifest = artifacts.manifest || {}
+      const metadata = manifest.metadata || {}
+      const author = metadata.author || {}
+      const tags = Array.isArray(metadata.tags) ? metadata.tags.filter((tag: any) => typeof tag === 'string') : []
+
+      const pluginUpdatePayload = {
+        displayName: manifest.name || pluginSlug,
+        description: manifest.description || null,
+        authorName: author.name || null,
+        authorUrl: author.url || null,
+        homepage: metadata.homepage || manifest.homepage || null,
+        license: metadata.license || manifest.license || null,
+        tags,
+        metadata
+      }
+
+      if (!pluginRecord) {
+        console.log(`Creating new plugin record for ${artifacts.id}`)
+        const createResult = await Plugin.create({
+          input: [
+            ({
+              name: artifacts.id,
+              displayName: pluginUpdatePayload.displayName,
+              description: pluginUpdatePayload.description,
+              authorName: pluginUpdatePayload.authorName,
+              authorUrl: pluginUpdatePayload.authorUrl,
+              homepage: pluginUpdatePayload.homepage,
+              license: pluginUpdatePayload.license,
+              tags: pluginUpdatePayload.tags,
+              metadata: pluginUpdatePayload.metadata
+            } as any)
+          ]
+        })
+        pluginRecord = createResult.plugins[0]
+      } else {
+        await Plugin.update({
+          where: { id: pluginRecord.id },
+          update: ({
+            displayName: pluginUpdatePayload.displayName,
+            description: pluginUpdatePayload.description,
+            authorName: pluginUpdatePayload.authorName,
+            authorUrl: pluginUpdatePayload.authorUrl,
+            homepage: pluginUpdatePayload.homepage,
+            license: pluginUpdatePayload.license,
+            tags: pluginUpdatePayload.tags,
+            metadata: pluginUpdatePayload.metadata
+          } as any)
+        })
+      }
+
+      pluginSlug = artifacts.id
+
+      let pluginVersion = existingDbVersions[0] || null
+      const settingsDefaults = manifest.settingsDefaults ?? manifest.settings ?? null
+      const uiSchema = manifest.ui ?? null
+      const documentationPath = artifacts.readmePath ?? manifest.documentation?.readmePath ?? null
+      const readmeMarkdown = artifacts.readmeMarkdown ?? null
+
       if (!pluginVersion) {
-        // Create new plugin version
-        console.log(`Creating new plugin version: ${pluginName}@${version}`)
-        
-        // Ensure all fields are proper strings
-        const repoUrl = String(registryVersion.tarballUrl)
-        const tarballGsUri = String(registryVersion.tarballUrl)
-        const integritySha256 = String(registryVersion.integritySha256)
-        
+        console.log(`Creating new plugin version: ${pluginSlug}@${version}`)
         const createResult = await PluginVersion.create({
           input: [
-            {
+            ({
               version,
-              repoUrl,
-              tarballGsUri,
-              integritySha256,
-              entryPath: 'dist/index.js', // Default entry path
+              repoUrl: String(registryVersion.tarballUrl),
+              tarballGsUri: String(registryVersion.tarballUrl),
+              integritySha256: String(registryVersion.integritySha256),
+              entryPath: artifacts.entryPath || 'index.js',
+              manifest: artifacts.manifest,
+              settingsDefaults,
+              uiSchema,
+              documentationPath,
+              readmeMarkdown,
               Plugin: {
                 connect: {
-                  where: { node: { id: plugin.id } }
+                  where: { node: { id: pluginRecord!.id } }
                 }
               }
-            }
+            } as any)
           ]
         })
         pluginVersion = createResult.pluginVersions[0]
       } else {
-        // Plugin version already exists, skip update for now to avoid Map error
-        console.log('Plugin version already exists, skipping update to avoid Map error')
+        await PluginVersion.update({
+          where: { id: pluginVersion.id },
+          update: ({
+            repoUrl: String(registryVersion.tarballUrl),
+            tarballGsUri: String(registryVersion.tarballUrl),
+            integritySha256: String(registryVersion.integritySha256),
+            entryPath: artifacts.entryPath || pluginVersion.entryPath || 'index.js',
+            manifest: artifacts.manifest,
+            settingsDefaults,
+            uiSchema,
+            documentationPath,
+            readmeMarkdown
+          } as any),
+          connect: {
+            Plugin: {
+              where: { node: { id: pluginRecord!.id } }
+            }
+          }
+        })
       }
 
-      // 8. Register installation relationship (idempotent)
       const serverConfig = serverConfigs[0]
-      
-      // Check if already installed
+
       const installedVersions = await ServerConfig.find({
         where: { serverName: serverConfig.serverName },
         selectionSet: `{
@@ -309,7 +308,7 @@ const getResolver = (input: Input) => {
 
       if (!isAlreadyInstalled) {
         console.log('Installing plugin version, serverName:', serverConfig.serverName, 'pluginVersion.id:', pluginVersion.id)
-        
+
         await ServerConfig.update({
           where: { serverName: String(serverConfig.serverName) },
           connect: {
@@ -317,7 +316,7 @@ const getResolver = (input: Input) => {
               where: { node: { id: String(pluginVersion.id) } },
               edge: {
                 enabled: false,
-                settingsJson: null  // Use null instead of empty object
+                settingsJson: null
               }
             }]
           }
@@ -326,8 +325,16 @@ const getResolver = (input: Input) => {
 
       return {
         plugin: {
-          id: String(plugin.id),
-          name: String(plugin.name)
+          id: String(pluginRecord!.id),
+          name: String(pluginRecord!.name),
+          displayName: pluginUpdatePayload.displayName,
+          description: pluginUpdatePayload.description,
+          authorName: pluginUpdatePayload.authorName,
+          authorUrl: pluginUpdatePayload.authorUrl,
+          homepage: pluginUpdatePayload.homepage,
+          license: pluginUpdatePayload.license,
+          tags: pluginUpdatePayload.tags,
+          metadata: pluginUpdatePayload.metadata
         },
         version: String(version),
         scope: 'SERVER',

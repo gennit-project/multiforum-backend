@@ -17,9 +17,26 @@ const getResolver = (input: Input) => {
           InstalledVersions {
             id
             version
+            repoUrl
+            tarballGsUri
+            integritySha256
+            entryPath
+            manifest
+            settingsDefaults
+            uiSchema
+            documentationPath
+            readmeMarkdown
             Plugin {
               id
               name
+              displayName
+              description
+              authorName
+              authorUrl
+              homepage
+              license
+              tags
+              metadata
             }
           }
         }`
@@ -35,6 +52,8 @@ const getResolver = (input: Input) => {
       const installedPlugins = []
       
       for (const installedVersion of serverConfig.InstalledVersions) {
+        const pluginData = (installedVersion.Plugin || {}) as any
+        const versionData = installedVersion as any
         // Query the relationship properties
         const result = await ServerConfig.find({
           where: { serverName: serverConfig.serverName },
@@ -56,13 +75,26 @@ const getResolver = (input: Input) => {
 
         installedPlugins.push({
           plugin: {
-            id: installedVersion.Plugin.id,
-            name: installedVersion.Plugin.name
+            id: pluginData.id,
+            name: pluginData.name,
+            displayName: pluginData.displayName,
+            description: pluginData.description,
+            authorName: pluginData.authorName,
+            authorUrl: pluginData.authorUrl,
+            homepage: pluginData.homepage,
+            license: pluginData.license,
+            tags: pluginData.tags || [],
+            metadata: pluginData.metadata || null
           },
           version: installedVersion.version,
           scope: 'SERVER',
           enabled: false, // Default - would need custom query to get actual value
-          settingsJson: {}
+          settingsJson: {},
+          manifest: versionData.manifest || null,
+          settingsDefaults: versionData.settingsDefaults || null,
+          uiSchema: versionData.uiSchema || null,
+          documentationPath: versionData.documentationPath || null,
+          readmeMarkdown: versionData.readmeMarkdown || null
         })
       }
 

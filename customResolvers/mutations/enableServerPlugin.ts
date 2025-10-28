@@ -32,9 +32,22 @@ const getResolver = (input: Input) => {
         selectionSet: `{
           id
           name
+          displayName
+          description
+          authorName
+          authorUrl
+          homepage
+          license
+          tags
+          metadata
           Versions(where: { version: "${version}" }) {
             id
             version
+            manifest
+            settingsDefaults
+            uiSchema
+            documentationPath
+            readmeMarkdown
           }
         }`
       })
@@ -49,6 +62,12 @@ const getResolver = (input: Input) => {
       if (!pluginVersion) {
         throw new Error(`Plugin ${pluginId} version ${version} not found`)
       }
+
+      const pluginData = plugin as any
+      const pluginVersionData = pluginVersion as any
+      const manifest = pluginVersionData.manifest || {}
+      const manifestSecrets = Array.isArray(manifest.secrets) ? manifest.secrets : []
+      const requiredServerSecrets = manifestSecrets.filter((secret: any) => secret && secret.scope === 'server' && secret.required !== false)
 
       // 2. Get server config
       const serverConfigs = await ServerConfig.find({
@@ -72,36 +91,41 @@ const getResolver = (input: Input) => {
         throw new Error(`Plugin ${pluginId} version ${version} is not installed. Please install it first.`)
       }
 
-      // 3. If enabling, check that all required secrets are present
+      // 3. If enabling, validate required secrets from the manifest
       if (enabled) {
-        // For now, we'll implement a basic check. In a real implementation,
-        // you would need to parse the plugin manifest to get required secrets
-        // This is a placeholder for the secret validation logic
-        
-        // Check if there are any secrets for this plugin that are marked as invalid
         const secrets = await ServerSecret.find({
           where: { pluginId },
           selectionSet: `{
             key
             isValid
             validationError
+            lastValidatedAt
           }`
         })
 
-        const invalidSecrets = secrets.filter(secret => secret.isValid === false && secret.validationError)
-        if (invalidSecrets.length > 0) {
-          throw new Error(`Cannot enable plugin: invalid secrets found for keys: ${invalidSecrets.map(s => s.key).join(', ')}`)
+        const secretMap = new Map(secrets.map(secret => [secret.key, secret]))
+        const requiredKeys = requiredServerSecrets.map((secret: any) => secret.key as string)
+
+        const missingKeys = requiredKeys.filter((key: string) => !secretMap.has(key))
+        if (missingKeys.length > 0) {
+          throw new Error(`Missing required secrets: ${missingKeys.join(', ')}`)
         }
 
-        // TODO: Add logic to check against plugin manifest for required secrets
-        // const manifest = await getPluginManifest(pluginId, version)
-        // const requiredSecrets = manifest.secrets?.filter(s => s.scope === 'server') || []
-        // const missingSecrets = requiredSecrets.filter(req => 
-        //   !secrets.find(secret => secret.key === req.key)
-        // )
-        // if (missingSecrets.length > 0) {
-        //   throw new Error(`Missing required secrets: ${missingSecrets.map(s => s.key).join(', ')}`)
-        // }
+        const invalidKeys = requiredKeys.filter((key: string) => {
+          const record: any = secretMap.get(key)
+          if (!record) return false
+          if (record.lastValidatedAt && record.isValid === false) {
+            return true
+          }
+          if (record.validationError) {
+            return true
+          }
+          return false
+        })
+
+        if (invalidKeys.length > 0) {
+          throw new Error(`Cannot enable plugin: invalid or failing validation for secrets: ${invalidKeys.join(', ')}`)
+        }
       }
 
       // 4. Update the installation relationship
@@ -122,13 +146,26 @@ const getResolver = (input: Input) => {
 
       return {
         plugin: {
-          id: plugin.id,
-          name: plugin.name
+          id: pluginData.id,
+          name: pluginData.name,
+          displayName: pluginData.displayName,
+          description: pluginData.description,
+          authorName: pluginData.authorName,
+          authorUrl: pluginData.authorUrl,
+          homepage: pluginData.homepage,
+          license: pluginData.license,
+          tags: pluginData.tags || [],
+          metadata: pluginData.metadata || null
         },
         version,
         scope: 'SERVER',
         enabled,
-        settingsJson
+        settingsJson,
+        manifest: manifest || null,
+        settingsDefaults: pluginVersionData.settingsDefaults || null,
+        uiSchema: pluginVersionData.uiSchema || null,
+        documentationPath: pluginVersionData.documentationPath || null,
+        readmeMarkdown: pluginVersionData.readmeMarkdown || null
       }
 
     } catch (error) {

@@ -73,6 +73,18 @@ The `secrets` array defines all secrets your plugin needs:
 }
 ```
 
+### Optional Metadata & UI fields
+
+To provide a richer admin experience, plugins may define the following additional manifest keys:
+
+- `metadata.author.name` / `metadata.author.url` — displayed alongside the plugin title.
+- `metadata.tags` — short descriptors rendered as badges.
+- `documentation.readmePath` — relative path to a Markdown README bundled with the plugin. The admin UI renders the README with MarkdownRenderer.
+- `settingsDefaults` — default JSON values for server- or channel-scoped settings that are merged with administrator overrides.
+- `ui.forms.server` / `ui.forms.channel` — describes sections and fields (secret inputs, toggles, numeric/text inputs) that the admin UI renders automatically.
+
+These fields are optional but recommended so administrators can configure plugins without manual frontend work.
+
 ## Plugin Code Requirements
 
 ### Constructor Pattern
