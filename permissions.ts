@@ -35,6 +35,7 @@ const {
   isAuthenticatedAndVerified,
   isAuthenticated,
   canBecomeForumAdmin,
+  isCollectionOwner,
 } = rules;
 
 const permissionList = shield({
@@ -208,6 +209,8 @@ const permissionList = shield({
       deleteFilterOptions: allow,
 
       // Collection mutations - authenticated users only
+      createCollections: and(isAuthenticated, allow),
+      updateCollections: and(isAuthenticated, isCollectionOwner),
       addToCollection: and(isAuthenticated, allow),
       removeFromCollection: and(isAuthenticated, allow),
       reorderCollectionItem: and(isAuthenticated, allow),

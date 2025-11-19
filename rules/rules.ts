@@ -9,6 +9,7 @@ import {
   isDiscussionChannelOwner,
   isEventOwner,
   isCommentAuthor,
+  isCollectionOwner,
 } from "./permission/isOwner.js";
 import {
   hasChannelPermission,
@@ -523,6 +524,7 @@ const ruleList = {
   canReport,
   canSuspendAndUnsuspendUser,
   canBecomeForumAdmin,
+  isCollectionOwner,
 };
 
 export default ruleList;

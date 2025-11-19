@@ -40,6 +40,10 @@ export const ERROR_MESSAGES = {
   user: {
     noUsername: "You must provide a username.",
     notOwner: "You must be the owner of this account to do that.",
+  },
+  collection: {
+    noId: "You must provide a collection id.",
+    notFound: "Collection not found.",
+    notOwner: "You must be the owner of this collection to do that.",
   }
 };
-
