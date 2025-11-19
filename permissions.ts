@@ -211,12 +211,12 @@ const permissionList = shield({
       // Collection mutations - authenticated users only
       createCollections: and(isAuthenticated, allow),
       updateCollections: and(isAuthenticated, isCollectionOwner),
-      addToCollection: and(isAuthenticated, allow),
-      removeFromCollection: and(isAuthenticated, allow),
-      reorderCollectionItem: and(isAuthenticated, allow),
+      addToCollection: and(isAuthenticated, isCollectionOwner),
+      removeFromCollection: and(isAuthenticated, isCollectionOwner),
+      reorderCollectionItem: and(isAuthenticated, isCollectionOwner),
       toggleBookmark: and(isAuthenticated, allow),
       addToFavorites: and(isAuthenticated, allow),
-      shareCollectionAsDiscussion: and(isAuthenticated, allow),
+      shareCollectionAsDiscussion: and(isAuthenticated, isCollectionOwner),
       addToOwnedDownloads: and(isAuthenticated, allow),
       initializeUserFavorites: and(isAuthenticated, allow),
 

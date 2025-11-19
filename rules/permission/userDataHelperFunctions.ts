@@ -356,6 +356,17 @@ export const setUserDataOnContext = async (
 
 export const isAuthenticatedAndVerified = rule({ cache: "contextual" })(
   async (parent: any, args: any, context: any, info: any) => {
+    // Determine whether the current operation is a mutation (fallback to GraphQL info)
+    const operationType = info?.operation?.operation;
+    const isMutation =
+      context.req?.isMutation === true || operationType === "mutation";
+
+    // Ensure downstream helpers rely on a consistent flag even if the context
+    // middleware could not infer it (e.g. persisted queries without a query string)
+    if (context.req) {
+      context.req.isMutation = isMutation;
+    }
+
     try {
       // Set user data on context - this may throw for mutations with JWT errors
       context.user = await setUserDataOnContext({
@@ -366,9 +377,6 @@ export const isAuthenticatedAndVerified = rule({ cache: "contextual" })(
       // JWT errors for mutations are thrown from setUserDataOnContext
       throw error;
     }
-    
-    // Check if this is a mutation or a query
-    const isMutation = context.req?.isMutation === true;
     
     // For queries, check if there was a JWT error
     if (context.jwtError && !isMutation) {
@@ -402,6 +410,15 @@ export const isAuthenticatedAndVerified = rule({ cache: "contextual" })(
 // Rule that only checks for authentication but not email verification
 export const isAuthenticated = rule({ cache: "contextual" })(
   async (parent: any, args: any, context: any, info: any) => {
+    // Determine the operation type (falling back to GraphQL info when necessary)
+    const operationType = info?.operation?.operation;
+    const isMutation =
+      context.req?.isMutation === true || operationType === "mutation";
+
+    if (context.req) {
+      context.req.isMutation = isMutation;
+    }
+
     console.log("🔐 isAuthenticated rule called for:", context.req?.body?.operationName);
     try {
       // Set user data on context - this may throw for mutations with JWT errors
@@ -415,9 +432,6 @@ export const isAuthenticated = rule({ cache: "contextual" })(
       console.log("🚨 isAuthenticated rule caught error from setUserDataOnContext:", (error as Error).message);
       throw error;
     }
-    
-    // Check if this is a mutation or a query
-    const isMutation = context.req?.isMutation === true;
     console.log("🔍 isAuthenticated debug:", {
       isMutation,
       hasUsername: !!context.user?.username,

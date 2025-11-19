@@ -128,7 +128,7 @@ const typeDefinitions = gql`
   }
 
 
-  type Collection @authentication {
+  type Collection {
     id: ID! @id
     name: String!
     description: String
