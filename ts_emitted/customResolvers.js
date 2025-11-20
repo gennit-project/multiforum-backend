@@ -67,6 +67,7 @@ import validateServerPluginSecret from './customResolvers/mutations/validateServ
 import getServerPluginSecrets from './customResolvers/queries/getServerPluginSecrets.js';
 import getInstalledPlugins from './customResolvers/queries/getInstalledPlugins.js';
 import getPluginRunsForDownloadableFile from './customResolvers/queries/getPluginRunsForDownloadableFile.js';
+import userCollections from './customResolvers/fields/userCollections.js';
 const { OGM } = pkg;
 export default function (driver) {
     const ogm = new OGM({
@@ -107,6 +108,9 @@ export default function (driver) {
                 }
                 return "User";
             },
+        },
+        User: {
+            Collections: userCollections({ ogm }),
         },
         Query: {
             getSiteWideDiscussionList: getSiteWideDiscussionList({

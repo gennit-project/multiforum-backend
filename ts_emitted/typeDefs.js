@@ -127,7 +127,7 @@ const typeDefinitions = gql `
   }
 
 
-  type Collection @authentication {
+  type Collection {
     id: ID! @id
     name: String!
     description: String
@@ -160,12 +160,6 @@ const typeDefinitions = gql `
       MATCH (this)<-[:SHARES_COLLECTION]-()
       RETURN count(*) as shareCount
     """, columnName: "shareCount")
-
-    # For permission checks
-    isOwner: Boolean! @cypher(statement: """
-      MATCH (this)-[:CREATED_BY]->(creator:User)
-      RETURN creator.id = $auth.jwt.id AS isOwner
-    """, columnName: "isOwner")
   }
 
   type Album {

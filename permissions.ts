@@ -57,8 +57,8 @@ const permissionList = shield({
       defaultEmojiSkinTone: allow,
       preferredTimeZone: allow,
 
-      // Collection fields - private, only user can access their own
-      Collections: isAccountOwner,
+      // Collection fields - custom resolver filters by visibility and ownership
+      Collections: allow,
       FavoriteDiscussions: isAccountOwner,
       FavoriteComments: isAccountOwner,
       FavoriteDownloads: isAccountOwner,

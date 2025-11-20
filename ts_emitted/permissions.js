@@ -1,6 +1,6 @@
 import { and, shield, allow, deny, or } from "graphql-shield";
 import rules from "./rules/rules.js";
-const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, } = rules;
+const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, isCollectionOwner, } = rules;
 const permissionList = shield({
     Query: {
         "*": allow,
@@ -19,8 +19,8 @@ const permissionList = shield({
         discussionKarma: allow,
         defaultEmojiSkinTone: allow,
         preferredTimeZone: allow,
-        // Collection fields - private, only user can access their own
-        Collections: isAccountOwner,
+        // Collection fields - custom resolver filters by visibility and ownership
+        Collections: allow,
         FavoriteDiscussions: isAccountOwner,
         FavoriteComments: isAccountOwner,
         FavoriteDownloads: isAccountOwner,
@@ -146,12 +146,14 @@ const permissionList = shield({
         deleteFilterGroups: allow,
         deleteFilterOptions: allow,
         // Collection mutations - authenticated users only
-        addToCollection: and(isAuthenticated, allow),
-        removeFromCollection: and(isAuthenticated, allow),
-        reorderCollectionItem: and(isAuthenticated, allow),
+        createCollections: and(isAuthenticated, allow),
+        updateCollections: and(isAuthenticated, isCollectionOwner),
+        addToCollection: and(isAuthenticated, isCollectionOwner),
+        removeFromCollection: and(isAuthenticated, isCollectionOwner),
+        reorderCollectionItem: and(isAuthenticated, isCollectionOwner),
         toggleBookmark: and(isAuthenticated, allow),
         addToFavorites: and(isAuthenticated, allow),
-        shareCollectionAsDiscussion: and(isAuthenticated, allow),
+        shareCollectionAsDiscussion: and(isAuthenticated, isCollectionOwner),
         addToOwnedDownloads: and(isAuthenticated, allow),
         initializeUserFavorites: and(isAuthenticated, allow),
         refreshPlugins: and(isAuthenticated, isAdmin),
