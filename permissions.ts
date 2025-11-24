@@ -212,6 +212,7 @@ const permissionList = shield({
       createCollections: and(isAuthenticated, allow),
       updateCollections: and(isAuthenticated, isCollectionOwner),
       addToCollection: and(isAuthenticated, isCollectionOwner),
+      deleteCollections: and(isAuthenticated, isCollectionOwner),
       removeFromCollection: and(isAuthenticated, isCollectionOwner),
       reorderCollectionItem: and(isAuthenticated, isCollectionOwner),
       toggleBookmark: and(isAuthenticated, allow),
