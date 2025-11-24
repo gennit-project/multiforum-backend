@@ -16,11 +16,14 @@ WHERE
     )
    // If archived=false, exclude archived. If archived=true, include archived.
     AND ($showArchived OR coalesce(dc.archived, false) = false)
-    // Filter by hasDownload if specified
-    AND ($hasDownload IS NULL OR EXISTS { 
-        MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
-        WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
-    })
+    // Filter by hasDownload only when provided
+    AND CASE 
+        WHEN $hasDownload IS NULL THEN true
+        ELSE EXISTS { 
+            MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
+            WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
+        }
+    END
     // Filter by label options if specified
     AND (
         SIZE($labelFilters) = 0 OR 
@@ -52,11 +55,14 @@ WHERE
     )
     // If archived=false, exclude archived. If archived=true, include archived.
     AND ($showArchived OR coalesce(dc.archived, false) = false)
-    // Filter by hasDownload if specified
-    AND ($hasDownload IS NULL OR EXISTS { 
-        MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
-        WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
-    })
+    // Filter by hasDownload only when provided
+    AND CASE 
+        WHEN $hasDownload IS NULL THEN true
+        ELSE EXISTS { 
+            MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
+            WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
+        }
+    END
     // Filter by label options if specified
     AND (
         SIZE($labelFilters) = 0 OR 

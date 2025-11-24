@@ -20,15 +20,17 @@ const getResolver = (input) => {
             getPermissionInfo: false
         });
         const loggedInUsername = ((_a = context.user) === null || _a === void 0 ? void 0 : _a.username) || null;
+        const hasDownloadFilter = typeof hasDownload === "boolean" ? hasDownload : null;
+        const searchValue = searchInput !== null && searchInput !== void 0 ? searchInput : "";
         const session = driver.session();
-        let titleRegex = `(?i).*${searchInput}.*`;
-        let bodyRegex = `(?i).*${searchInput}.*`;
+        let titleRegex = `(?i).*${searchValue}.*`;
+        let bodyRegex = `(?i).*${searchValue}.*`;
         try {
             let aggregateCount = 0;
             const queryParams = {
-                searchInput,
+                searchInput: searchValue,
                 showArchived,
-                hasDownload,
+                hasDownload: hasDownloadFilter,
                 titleRegex,
                 bodyRegex,
                 selectedTags: selectedTags || [],

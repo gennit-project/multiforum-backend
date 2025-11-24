@@ -30,7 +30,7 @@ type Args = {
   selectedTags: string[];
   searchInput: string;
   showArchived: boolean;
-  hasDownload: boolean;
+  hasDownload?: boolean | null;
   labelFilters: LabelFilter[];
 };
 
@@ -46,17 +46,19 @@ const getResolver = (input: Input) => {
     });
   
     const loggedInUsername = context.user?.username || null;
+    const hasDownloadFilter = typeof hasDownload === "boolean" ? hasDownload : null;
+    const searchValue = searchInput ?? "";
 
     const session = driver.session();
-    let titleRegex = `(?i).*${searchInput}.*`;
-    let bodyRegex = `(?i).*${searchInput}.*`;
+    let titleRegex = `(?i).*${searchValue}.*`;
+    let bodyRegex = `(?i).*${searchValue}.*`;
 
     try {
       let aggregateCount = 0;
       const queryParams = {
-        searchInput,
+        searchInput: searchValue,
         showArchived,
-        hasDownload,
+        hasDownload: hasDownloadFilter,
         titleRegex,
         bodyRegex,
         selectedTags: selectedTags || [],
