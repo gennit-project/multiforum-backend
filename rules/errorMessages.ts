@@ -45,5 +45,11 @@ export const ERROR_MESSAGES = {
     noId: "You must provide a collection id.",
     notFound: "Collection not found.",
     notOwner: "You must be the owner of this collection to do that.",
+  },
+  image: {
+    noId: "You must provide an image id.",
+    notFound: "Image not found.",
+    noUploader: "Could not find the original uploader of this image.",
+    notOwner: "You must be the original uploader of this image to do that.",
   }
 };

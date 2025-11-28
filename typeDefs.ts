@@ -86,11 +86,6 @@ const typeDefinitions = gql`
 
     # Collection support
     InCollections: [Collection!]! @relationship(type: "CONTAINS_IMAGE", direction: IN)
-
-    # Preserve original attribution when added to collections
-    OriginalUploader: User! @relationship(type: "ORIGINALLY_UPLOADED_BY", direction: OUT)
-    originalCaption: String
-    originalContext: String  # URL or reference to original location
   }
 
   """SPDX or custom content licence"""

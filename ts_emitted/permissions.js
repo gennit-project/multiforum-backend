@@ -1,6 +1,6 @@
 import { and, shield, allow, deny, or } from "graphql-shield";
 import rules from "./rules/rules.js";
-const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, isCollectionOwner, } = rules;
+const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, isCollectionOwner, isImageUploader, } = rules;
 const permissionList = shield({
     Query: {
         "*": allow,
@@ -116,7 +116,7 @@ const permissionList = shield({
         createNotifications: deny,
         deleteNotifications: deny,
         updateNotifications: deny,
-        updateImages: and(isAuthenticated, allow),
+        updateImages: and(isAuthenticated, isImageUploader),
         createImages: and(isAuthenticated, allow),
         createDownloadableFiles: and(isAuthenticated, createDownloadableFileInputIsValid, canUploadFile),
         updateDownloadableFiles: and(isAuthenticated, updateDownloadableFileInputIsValid, canUploadFile),
@@ -149,6 +149,7 @@ const permissionList = shield({
         createCollections: and(isAuthenticated, allow),
         updateCollections: and(isAuthenticated, isCollectionOwner),
         addToCollection: and(isAuthenticated, isCollectionOwner),
+        deleteCollections: and(isAuthenticated, isCollectionOwner),
         removeFromCollection: and(isAuthenticated, isCollectionOwner),
         reorderCollectionItem: and(isAuthenticated, isCollectionOwner),
         toggleBookmark: and(isAuthenticated, allow),

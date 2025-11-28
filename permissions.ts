@@ -36,6 +36,7 @@ const {
   isAuthenticated,
   canBecomeForumAdmin,
   isCollectionOwner,
+  isImageUploader,
 } = rules;
 
 const permissionList = shield({
@@ -174,7 +175,7 @@ const permissionList = shield({
       deleteNotifications: deny,
       updateNotifications: deny,
 
-      updateImages: and(isAuthenticated, allow),
+      updateImages: and(isAuthenticated, isImageUploader),
       createImages: and(isAuthenticated, allow),
 
       createDownloadableFiles: and(isAuthenticated, createDownloadableFileInputIsValid, canUploadFile),
