@@ -1305,6 +1305,7 @@ const typeDefinitions = gql `
       searchInput: String
       selectedTags: [String]
       showArchived: Boolean
+      showUnanswered: Boolean
       hasDownload: Boolean
       labelFilters: [LabelFilterInput!]
       options: DiscussionListOptions

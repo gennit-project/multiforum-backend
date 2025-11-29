@@ -30,6 +30,7 @@ type Args = {
   selectedTags: string[];
   searchInput: string;
   showArchived: boolean;
+  showUnanswered?: boolean;
   hasDownload?: boolean | null;
   labelFilters: LabelFilter[];
 };
@@ -37,7 +38,7 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver } = input;
   return async (parent: any, args: Args, context: any, info: any) => {
-    const { channelUniqueName, options, selectedTags, searchInput, showArchived, hasDownload, labelFilters } = args;
+    const { channelUniqueName, options, selectedTags, searchInput, showArchived, showUnanswered, hasDownload, labelFilters } = args;
     const { offset, limit, sort, timeFrame } = options || {};
     // Set loggedInUsername to null explicitly if not present
     context.user = await setUserDataOnContext({
@@ -58,6 +59,7 @@ const getResolver = (input: Input) => {
       const queryParams = {
         searchInput: searchValue,
         showArchived,
+        showUnanswered: showUnanswered ?? false,
         hasDownload: hasDownloadFilter,
         titleRegex,
         bodyRegex,

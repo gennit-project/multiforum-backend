@@ -16,25 +16,27 @@ WHERE
     )
    // If archived=false, exclude archived. If archived=true, include archived.
     AND ($showArchived OR coalesce(dc.archived, false) = false)
+    // If showUnanswered=true, only show unanswered discussions.
+    AND (NOT $showUnanswered OR coalesce(dc.answered, false) = false)
     // Filter by hasDownload only when provided
-    AND CASE 
+    AND CASE
         WHEN $hasDownload IS NULL THEN true
-        ELSE EXISTS { 
-            MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
+        ELSE EXISTS {
+            MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion)
             WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
         }
     END
     // Filter by label options if specified
     AND (
-        SIZE($labelFilters) = 0 OR 
-        ALL(labelFilter IN $labelFilters WHERE 
+        SIZE($labelFilters) = 0 OR
+        ALL(labelFilter IN $labelFilters WHERE
             EXISTS {
                 MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
                 WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
             }
         )
     )
-    
+
 
 WITH COUNT(dc) AS totalCount
 
@@ -55,18 +57,20 @@ WHERE
     )
     // If archived=false, exclude archived. If archived=true, include archived.
     AND ($showArchived OR coalesce(dc.archived, false) = false)
+    // If showUnanswered=true, only show unanswered discussions.
+    AND (NOT $showUnanswered OR coalesce(dc.answered, false) = false)
     // Filter by hasDownload only when provided
-    AND CASE 
+    AND CASE
         WHEN $hasDownload IS NULL THEN true
-        ELSE EXISTS { 
-            MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
+        ELSE EXISTS {
+            MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion)
             WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
         }
     END
     // Filter by label options if specified
     AND (
-        SIZE($labelFilters) = 0 OR 
-        ALL(labelFilter IN $labelFilters WHERE 
+        SIZE($labelFilters) = 0 OR
+        ALL(labelFilter IN $labelFilters WHERE
             EXISTS {
                 MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
                 WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
