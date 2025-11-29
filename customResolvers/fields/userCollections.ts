@@ -56,6 +56,7 @@ export default function ({ ogm }: UserCollectionsArgs) {
     }
 
     // Get collections with the merged filter
+    // Include all relationship fields that clients might request
     const collections = await Collection.find({
       where: filter,
       selectionSet: `{
@@ -65,8 +66,30 @@ export default function ({ ogm }: UserCollectionsArgs) {
         visibility
         collectionType
         itemCount
+        itemOrder
         createdAt
         updatedAt
+        Channels {
+          uniqueName
+          displayName
+          channelIconURL
+        }
+        Discussions {
+          id
+          title
+        }
+        Comments {
+          id
+          text
+        }
+        Downloads {
+          id
+          title
+        }
+        Images {
+          id
+          url
+        }
       }`,
       options
     });
