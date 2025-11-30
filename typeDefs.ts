@@ -490,6 +490,7 @@ const typeDefinitions = gql`
     FeedbackComments: [Comment!]!
       @relationship(type: "HAS_FEEDBACK_COMMENT", direction: IN)
     Album: Album @relationship(type: "HAS_ALBUM", direction: OUT)
+    CrosspostedDiscussion: Discussion @relationship(type: "CROSSPOSTED_DISCUSSION", direction: OUT)
     DownloadableFiles: [DownloadableFile!]!
       @relationship(type: "HAS_DOWNLOADABLE_FILE", direction: OUT)
 
