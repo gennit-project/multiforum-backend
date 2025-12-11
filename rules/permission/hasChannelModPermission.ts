@@ -1,5 +1,8 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
+import { getActiveSuspension } from "./getActiveSuspension.js";
+import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
+import { createSuspensionNotification } from "./suspensionNotification.js";
 
 // Define the moderator permissions as an enum for type safety
 export enum ModChannelPermission {
@@ -25,7 +28,7 @@ export const hasChannelModPermission: (
   const { permission, channelName, context } = input;
 
   const Channel = context.ogm.model("Channel");
-  const Suspension = context.ogm.model("Suspension");
+  const User = context.ogm.model("User");
 
   // 1. Check for mod roles on the user object
   context.user = await setUserDataOnContext({
@@ -138,19 +141,25 @@ export const hasChannelModPermission: (
     }`,
   });
 
-  // First check if the user is suspended
-  // Fetch Suspensions with channelUniqueName and modProfileName
-  const activeSuspensionsResult = await Channel.find({
-    where: {
-      uniqueName: channelName,
-      SuspendedMods_SOME: {
-        modProfileName: modProfileName,
-      }
-    }
+  const suspensionInfo = await getActiveSuspension({
+    ogm: context.ogm,
+    channelUniqueName: channelName,
+    modProfileName,
   });
-  
-  const isSuspended = activeSuspensionsResult && activeSuspensionsResult.length > 0;
-  if (isSuspended) {
+
+  // Clean up any expired suspensions (fire-and-forget, don't block on result)
+  if (suspensionInfo.expiredUserSuspensions.length > 0 || suspensionInfo.expiredModSuspensions.length > 0) {
+    disconnectExpiredSuspensions({
+      ogm: context.ogm,
+      channelUniqueName: channelName,
+      expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
+      expiredModSuspensions: suspensionInfo.expiredModSuspensions,
+    }).catch((error) => {
+      console.error("Failed to disconnect expired suspensions", error);
+    });
+  }
+
+  if (suspensionInfo.isSuspended) {
     roleToUse = channelData.SuspendedModRole;
     // if the channel doesn't have a suspended mod role,
     // use the one from the server config.
@@ -192,6 +201,21 @@ export const hasChannelModPermission: (
   }
 
   console.log(`Permission check failed: ${permission} is ${roleToUse[permission]} for role:`, roleToUse);
+  // If blocked due to suspension, create a notification for transparency.
+  if (suspensionInfo.isSuspended && modProfileName && context.user?.username) {
+    try {
+      await createSuspensionNotification({
+        UserModel: User,
+        username: context.user.username,
+        channelName,
+        permission,
+        relatedIssueId: suspensionInfo.relatedIssueId,
+        actorType: "mod",
+      });
+    } catch (error) {
+      console.error("Failed to create suspension notification for mod", error);
+    }
+  }
   return false;
 };
 

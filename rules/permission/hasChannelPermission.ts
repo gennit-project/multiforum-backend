@@ -1,6 +1,9 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { ChannelRole } from "../../ogm_types.js";
+import { getActiveSuspension } from "./getActiveSuspension.js";
+import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
+import { createSuspensionNotification } from "./suspensionNotification.js";
 
 type HasChannelPermissionInput = {
   permission: keyof ChannelRole;
@@ -14,7 +17,7 @@ export const hasChannelPermission: (
   const { permission, channelName, context } = input;
 
   const Channel = context.ogm.model("Channel");
-  const Suspension = context.ogm.model("Suspension");
+  const User = context.ogm.model("User");
 
   // Set user data on context
   context.user = await setUserDataOnContext({
@@ -72,18 +75,25 @@ export const hasChannelPermission: (
     return true;
   }
 
-  // Check if user is suspended by querying the Channel's SuspendedUsers relationship
-  const activeSuspensionsResult = await Channel.find({
-    where: {
-      uniqueName: channelName,
-      SuspendedUsers_SOME: {
-        username
-      }
-    }
+  // Check for an active suspension
+  const suspensionInfo = await getActiveSuspension({
+    ogm: context.ogm,
+    channelUniqueName: channelName,
+    username,
   });
-  
-  const isSuspended = activeSuspensionsResult && activeSuspensionsResult.length > 0;
-  
+
+  // Clean up any expired suspensions (fire-and-forget, don't block on result)
+  if (suspensionInfo.expiredUserSuspensions.length > 0 || suspensionInfo.expiredModSuspensions.length > 0) {
+    disconnectExpiredSuspensions({
+      ogm: context.ogm,
+      channelUniqueName: channelName,
+      expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
+      expiredModSuspensions: suspensionInfo.expiredModSuspensions,
+    }).catch((error) => {
+      console.error("Failed to disconnect expired suspensions", error);
+    });
+  }
+
   // Determine which role to use
   let roleToUse = null;
 
@@ -113,7 +123,7 @@ export const hasChannelPermission: (
     }`,
   });
 
-  if (isSuspended) {
+  if (suspensionInfo.isSuspended) {
     // Use suspended role
     roleToUse = channelData.SuspendedRole;
     // Use server default suspended role as fallback
@@ -139,6 +149,22 @@ export const hasChannelPermission: (
 
   if (roleToUse[permission] === true) {
     return true;
+  }
+
+  // If blocked due to suspension, create a notification for transparency.
+  if (suspensionInfo.isSuspended && username) {
+    try {
+      await createSuspensionNotification({
+        UserModel: User,
+        username,
+        channelName,
+        permission,
+        relatedIssueId: suspensionInfo.relatedIssueId,
+        actorType: "user",
+      });
+    } catch (error) {
+      console.error("Failed to create suspension notification", error);
+    }
   }
 
   return new Error(`The user does not have the required permission (${permission}) in channel ${channelName}.`);

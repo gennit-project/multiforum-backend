@@ -79,6 +79,63 @@ The permission system follows a hierarchical flow:
 - **Feedback Comments** require moderator permissions (`canGiveFeedback`) rather than standard comment permissions
 - **Suspended Users** have limited permissions based on the Suspended roles
 
+### Suspension System
+
+The suspension system enforces restrictions on users and moderators at both channel and server levels.
+
+#### Suspension Data Model
+
+Suspensions are stored as `Suspension` nodes in the database with the following key properties:
+- `suspendedUntil` - Date/time when the suspension expires (nullable)
+- `suspendedIndefinitely` - Boolean flag for permanent suspensions
+- `RelatedIssue` - Link to the moderation issue that triggered the suspension
+
+Channels maintain relationships to active suspensions:
+- `Channel.SuspendedUsers` - User suspensions for that channel
+- `Channel.SuspendedMods` - Moderator suspensions for that channel
+
+#### Suspension Detection
+
+The `getActiveSuspension` function (`rules/permission/getActiveSuspension.ts`) determines if a user or moderator has an active suspension:
+
+1. **Active suspension criteria**: A suspension is considered active if:
+   - `suspendedIndefinitely` is true, OR
+   - `suspendedUntil` is in the future
+
+2. **Expired suspension handling**: Expired suspensions are identified and returned to the caller for cleanup. The `disconnectExpiredSuspensions` function handles removing expired suspensions from channel relationships while preserving the `Suspension` nodes for historical records.
+
+3. **Return value**: The function returns:
+   - `isSuspended` - Whether the user/mod has an active suspension
+   - `activeSuspension` - The suspension details (if any)
+   - `relatedIssueId` - For linking to the moderation issue
+   - `expiredUserSuspensions` / `expiredModSuspensions` - Lists of expired suspensions for cleanup
+   - `suspendedEntity` - Whether it's a "user" or "mod" suspension
+
+#### Channel-Level Suspension Enforcement
+
+Channel permissions (`hasChannelPermission.ts`, `hasChannelModPermission.ts`) enforce suspensions:
+
+1. Check for active suspension using `getActiveSuspension`
+2. If suspended, use the `SuspendedRole` (or `DefaultSuspendedRole` fallback) instead of normal roles
+3. Check the requested permission against the suspended role
+4. If blocked, create a notification explaining why (via `createSuspensionNotification`)
+5. Clean up any expired suspensions in the background
+
+#### Server-Level Suspension Enforcement
+
+Server permissions (`hasServerPermission.ts`) also check for suspensions:
+
+1. Query for any active suspensions (indefinite or unexpired) across all channels
+2. If any active suspension exists, use `DefaultSuspendedRole` for server-level actions
+3. This blocks suspended users from creating new channels/forums
+
+#### User Notifications
+
+When a suspended user attempts a blocked action, `createSuspensionNotification` (`rules/permission/suspensionNotification.ts`):
+- Creates an in-app notification explaining the block
+- Includes the channel name, blocked permission, and related issue reference
+- De-duplicates notifications to avoid spam (checks for existing unread notification with same text)
+
 ### Current Implementation Notes
 
 - The ability to create customized channel roles (changing what is allowed for standard users or moderators in a given channel) is a planned feature but is not currently available
