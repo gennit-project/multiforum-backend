@@ -165,7 +165,8 @@ export default function (driver) {
                 PluginRun
             }),
             publicCollectionsContaining: publicCollectionsContaining({
-                driver
+                driver,
+                ogm
             })
         },
         Mutation: {

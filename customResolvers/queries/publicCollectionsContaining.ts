@@ -1,95 +1,107 @@
 type Input = {
   driver: any;
+  ogm: any;
 };
 
-type RelationshipConfig = {
-  relationshipType: string;
-  nodeLabel: string;
-  extraWhere?: string;
+const itemTypeWhereMap: Record<string, any> = {
+  DISCUSSION: { Discussions_SOME: { id: undefined } },
+  COMMENT: { Comments_SOME: { id: undefined } },
+  DOWNLOAD: { Downloads_SOME: { id: undefined, hasDownload: true } },
+  IMAGE: { Images_SOME: { id: undefined } },
+  CHANNEL: { Channels_SOME: { uniqueName: undefined } },
 };
 
-const relationshipConfig: Record<string, RelationshipConfig> = {
-  DISCUSSION: {
-    relationshipType: "CONTAINS_DISCUSSION",
-    nodeLabel: "Discussion"
-  },
-  COMMENT: {
-    relationshipType: "CONTAINS_COMMENT",
-    nodeLabel: "Comment"
-  },
-  DOWNLOAD: {
-    relationshipType: "CONTAINS_DOWNLOAD",
-    nodeLabel: "Discussion",
-    extraWhere: "AND coalesce(item.hasDownload, false) = true"
-  },
-  IMAGE: {
-    relationshipType: "CONTAINS_IMAGE",
-    nodeLabel: "Image"
-  },
-  CHANNEL: {
-    relationshipType: "CONTAINS_CHANNEL",
-    nodeLabel: "Channel"
+const selectionSet = `
+{
+  id
+  name
+  description
+  visibility
+  collectionType
+  itemCount
+  shareCount
+  createdAt
+  updatedAt
+  itemOrder
+  CreatedBy {
+    username
+    displayName
+    profilePicURL
   }
-};
+  Downloads(options: { limit: 5 }) {
+    id
+    title
+    createdAt
+    hasSensitiveContent
+    Album {
+      id
+      imageOrder
+      Images {
+        id
+        url
+        caption
+      }
+    }
+    DiscussionChannels {
+      id
+      channelUniqueName
+      CommentsAggregate {
+        count
+      }
+      Channel {
+        uniqueName
+        displayName
+      }
+    }
+    Tags {
+      text
+    }
+    Author {
+      username
+      displayName
+      profilePicURL
+      commentKarma
+      discussionKarma
+      createdAt
+      ServerRoles {
+        showAdminTag
+      }
+    }
+  }
+}
+`;
 
-const publicCollectionsContaining = ({ driver }: Input) => {
+const publicCollectionsContaining = ({ ogm }: Input) => {
   return async (_parent: any, args: any) => {
     const { itemId, itemType } = args;
-    const config = relationshipConfig[itemType];
+    const whereTemplate = itemTypeWhereMap[itemType];
 
-    if (!config) {
+    if (!whereTemplate) {
       throw new Error(`Unsupported itemType: ${itemType}`);
     }
 
-    const session = driver.session();
+    const where = JSON.parse(JSON.stringify(whereTemplate));
+
+    if (itemType === "CHANNEL") {
+      where.Channels_SOME.uniqueName = itemId;
+    } else {
+      const key = Object.keys(where)[0];
+      where[key].id = itemId;
+    }
+
+    const Collection = ogm.model("Collection");
 
     try {
-      const result = await session.run(
-        `
-        MATCH (c:Collection {visibility: 'PUBLIC'})-[:${config.relationshipType}]->(item:${config.nodeLabel})
-        WHERE item.id = $itemId ${config.extraWhere ? config.extraWhere : ""}
+      const collections = await Collection.find({
+        where: {
+          visibility: "PUBLIC",
+          ...where,
+        },
+        options: { sort: [{ createdAt: "DESC" }] },
+        selectionSet,
+      });
 
-        CALL {
-          WITH c
-          OPTIONAL MATCH (c)-[:CONTAINS_DISCUSSION|CONTAINS_COMMENT|CONTAINS_DOWNLOAD|CONTAINS_IMAGE|CONTAINS_CHANNEL]->(collectionItem)
-          RETURN count(DISTINCT collectionItem) AS itemCount
-        }
-
-        CALL {
-          WITH c
-          OPTIONAL MATCH (c)<-[:SHARES_COLLECTION]-(sharingDiscussion:Discussion)
-          RETURN count(DISTINCT sharingDiscussion) AS shareCount
-        }
-
-        OPTIONAL MATCH (c)-[:CREATED_BY]->(creator:User)
-
-        RETURN {
-          id: c.id,
-          name: c.name,
-          description: c.description,
-          visibility: c.visibility,
-          collectionType: c.collectionType,
-          createdAt: c.createdAt,
-          updatedAt: c.updatedAt,
-          itemOrder: c.itemOrder,
-          itemCount: itemCount,
-          shareCount: shareCount,
-          CreatedBy: CASE
-            WHEN creator IS NULL THEN NULL
-            ELSE {
-              id: creator.id,
-              username: creator.username,
-              displayName: creator.displayName,
-              profilePicURL: creator.profilePicURL
-            }
-          END
-        } AS collection
-        ORDER BY c.createdAt DESC
-        `,
-        { itemId }
-      );
-
-      return result.records.map((record: any) => record.get("collection"));
+      return collections;
     } catch (error) {
       console.error("Error fetching public collections containing item:", {
         itemId,
@@ -97,8 +109,6 @@ const publicCollectionsContaining = ({ driver }: Input) => {
         error,
       });
       throw new Error("Failed to fetch public collections containing item");
-    } finally {
-      await session.close();
     }
   };
 };
