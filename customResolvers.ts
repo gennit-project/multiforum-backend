@@ -83,6 +83,7 @@ import getInstalledPlugins from './customResolvers/queries/getInstalledPlugins.j
 import getPluginRunsForDownloadableFile from './customResolvers/queries/getPluginRunsForDownloadableFile.js';
 
 import userCollections from './customResolvers/fields/userCollections.js';
+import publicCollectionsContaining from './customResolvers/queries/publicCollectionsContaining.js';
 
 const { OGM } = pkg;
 
@@ -181,6 +182,9 @@ export default function (driver: any) {
       }),
       getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
         PluginRun
+      }),
+      publicCollectionsContaining: publicCollectionsContaining({
+        driver
       })
     },
     Mutation: {

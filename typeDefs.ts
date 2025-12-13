@@ -1300,6 +1300,9 @@ const typeDefinitions = gql`
 
   type Query {
     # Discovery
+    """
+    Return public collections that include the specified item (e.g. downloads are Discussions with hasDownload=true).
+    """
     publicCollectionsContaining(itemId: ID!, itemType: CollectionItemType!): [Collection!]!
 
     getDiscussionsInChannel(
