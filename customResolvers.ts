@@ -56,6 +56,7 @@ import archiveDiscussion from './customResolvers/mutations/archiveDiscussion.js'
 import unarchiveDiscussion from './customResolvers/mutations/unarchiveDiscussion.js';
 import archiveEvent from './customResolvers/mutations/archiveEvent.js';
 import unarchiveEvent from './customResolvers/mutations/unarchiveEvent.js';
+import createIssue from './customResolvers/mutations/createIssue.js';
 
 import suspendUser from './customResolvers/mutations/suspendUser.js';
 import suspendMod from './customResolvers/mutations/suspendMod.js';
@@ -194,6 +195,10 @@ export default function (driver: any) {
           Discussion,
           driver,
         }),
+      createIssue: createIssue({
+        Issue,
+        driver
+      }),
       updateDiscussionWithChannelConnections:
         updateDiscussionWithChannelConnections({
           Discussion,
@@ -293,15 +298,18 @@ export default function (driver: any) {
       }),
       reportComment: reportComment({
         Issue,
-        Comment
+        Comment,
+        driver
       }),
       reportDiscussion: reportDiscussion({
         Issue,
-        Discussion
+        Discussion,
+        driver
       }),
       reportEvent: reportEvent({
         Issue,
-        Event
+        Event,
+        driver
       }),
       suspendUser: suspendUser({
         Issue,
@@ -334,16 +342,19 @@ export default function (driver: any) {
       archiveComment: archiveComment({
         Issue,
         Comment,
+        driver,
       }),
       archiveDiscussion: archiveDiscussion({
         Issue,
         Discussion,
-        DiscussionChannel
+        DiscussionChannel,
+        driver,
       }),
       archiveEvent: archiveEvent({
         Issue,
         Event,
-        EventChannel
+        EventChannel,
+        driver,
       }),
       unarchiveComment: unarchiveComment({
         Issue,

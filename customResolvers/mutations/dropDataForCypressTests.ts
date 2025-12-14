@@ -28,6 +28,7 @@ const dropDataForCypressTestsResolver = (input: Input) => {
           "MATCH (sc:ServerConfig) DETACH DELETE sc",
           "MATCH (mp:ModerationProfile) DETACH DELETE mp",
           "MATCH (i:Issue) DETACH DELETE i",
+          "MATCH (counter:ChannelIssueCounter) DETACH DELETE counter",
           "MATCH (w:WikiPage) DETACH DELETE w",
           "MATCH (tx:TextVersion) DETACH DELETE tx",
         ];

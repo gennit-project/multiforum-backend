@@ -672,6 +672,7 @@ const typeDefinitions = gql`
 
   type Issue {
     id: ID! @id
+    issueNumber: Int!
     channelUniqueName: String
     Channel: Channel @relationship(type: "HAS_ISSUE", direction: IN)
     authorName: String
@@ -751,6 +752,7 @@ const typeDefinitions = gql`
   }
 
   type Mutation {
+    createIssue(input: IssueCreateInput!): Issue
     # Collection custom mutations
     addToCollection(input: AddToCollectionInput!): Boolean!
     removeFromCollection(collectionId: ID!, itemId: ID!, itemType: CollectionItemType!): Boolean!

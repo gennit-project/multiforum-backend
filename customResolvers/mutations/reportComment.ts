@@ -10,6 +10,7 @@ import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunct
 import { GraphQLError } from 'graphql'
 import { getFinalCommentText } from './reportDiscussion.js'
 import { DateTime } from 'luxon'
+import getNextIssueNumber from './utils/getNextIssueNumber.js'
 
 type Args = {
   commentId: string
@@ -22,6 +23,7 @@ type Args = {
 type Input = {
   Issue: IssueModel
   Comment: CommentModel
+  driver: any
 }
 
 type ModActionInput = {
@@ -132,11 +134,12 @@ type InputIssueCreate = {
   relatedCommentId?: string
   relatedDiscussionId?: string
   relatedEventId?: string
+  issueNumber?: number
 }
 
 export const getIssueCreateInput = (
   input: InputIssueCreate
-): IssueCreateInput => {
+): IssueCreateInput & { issueNumber?: number } => {
   const {
     contextText,
     selectedServerRules,
@@ -145,7 +148,8 @@ export const getIssueCreateInput = (
     reportedContentType,
     relatedCommentId,
     relatedDiscussionId,
-    relatedEventId
+    relatedEventId,
+    issueNumber
   } = input
 
   if (reportedContentType === 'comment' && !relatedCommentId) {
@@ -159,7 +163,7 @@ export const getIssueCreateInput = (
   }
 
   const truncatedContextText = contextText?.substring(0, 50) || ''
-  const output: IssueCreateInput = {
+  const output: IssueCreateInput & { issueNumber?: number } = {
     title: `[Reported ${reportedContentType}] "${truncatedContextText}${
       contextText.length > 50 ? '...' : ''
     }"`,
@@ -167,6 +171,7 @@ export const getIssueCreateInput = (
     authorName: loggedInModName,
     flaggedServerRuleViolation: selectedServerRules.length > 0,
     channelUniqueName: channelUniqueName,
+    issueNumber,
     Author: {
       ModerationProfile: {
         connect: {
@@ -203,7 +208,7 @@ export const getIssueCreateInput = (
 }
 
 const getResolver = (input: Input) => {
-  const { Issue, Comment } = input
+  const { Issue, Comment, driver } = input
   return async (parent: any, args: Args, context: any, resolveInfo: any) => {
     const {
       commentId,
@@ -284,6 +289,7 @@ const getResolver = (input: Input) => {
       })
       const commentText = commentData[0]?.text || ''
 
+      const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
       const issueCreateInput: IssueCreateInput = getIssueCreateInput({
         contextText: commentText,
         selectedForumRules,
@@ -291,7 +297,8 @@ const getResolver = (input: Input) => {
         loggedInModName,
         channelUniqueName,
         reportedContentType: 'comment',
-        relatedCommentId: commentId
+        relatedCommentId: commentId,
+        issueNumber
       })
       try {
         const issueData = await Issue.create({

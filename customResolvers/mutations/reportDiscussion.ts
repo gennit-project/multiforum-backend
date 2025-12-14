@@ -12,6 +12,7 @@ import {
   getModerationActionCreateInput,
   getIssueCreateInput,
 } from "./reportComment.js";
+import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 
 type Args = {
   discussionId: string;
@@ -24,6 +25,7 @@ type Args = {
 type Input = {
   Issue: IssueModel;
   Discussion: DiscussionModel;
+  driver: any;
 };
 
 type FinalCommentTextInput = {
@@ -69,7 +71,7 @@ ${reportText}
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Discussion } = input;
+  const { Issue, Discussion, driver } = input;
   return async (parent: any, args: Args, context: any, resolveInfo: any) => {
     const {
       discussionId,
@@ -151,6 +153,7 @@ const getResolver = (input: Input) => {
       });
       const contextText = discussionData[0]?.title || "";
 
+      const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
       const issueCreateInput: IssueCreateInput = getIssueCreateInput({
         contextText,
         selectedForumRules,
@@ -159,6 +162,7 @@ const getResolver = (input: Input) => {
         channelUniqueName,
         reportedContentType: "discussion",
         relatedDiscussionId: discussionId,
+        issueNumber,
       });
       try {
         const issueData = await Issue.create({

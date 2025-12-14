@@ -153,6 +153,7 @@ const permissionList = shield({
       // Any user who can upvote a discussion can undo their upvote. The undo upvote resolver
       // checks if the user has upvoted the discussion and if so, removes the upvote.
       
+      createIssue: and(isAuthenticated, issueIsValid),
       createIssues: and(isAuthenticated, issueIsValid),
       deleteIssues: and(isAuthenticated, allow), // canDeleteIssues,
       updateIssues: and(isAuthenticated, allow), // canUpdateIssues,

@@ -109,6 +109,10 @@ const ensureUniqueEventChannelRelationship = `
 CREATE CONSTRAINT event_channel_unique IF NOT EXISTS FOR (ec:EventChannel)
 REQUIRE (ec.eventId, ec.channelUniqueName) IS NODE KEY
 `;
+const ensureUniqueIssueNumberPerChannel = `
+CREATE CONSTRAINT issue_channel_issueNumber_unique IF NOT EXISTS FOR (i:Issue)
+REQUIRE (i.channelUniqueName, i.issueNumber) IS NODE KEY
+`;
 async function initializeServer() {
     try {
         console.log("🚀 Initializing server...");
@@ -124,6 +128,7 @@ async function initializeServer() {
             // a local instance of neo4j community edition.
             await driver.session().run(ensureUniqueDiscussionChannelRelationship);
             await driver.session().run(ensureUniqueEventChannelRelationship);
+            await driver.session().run(ensureUniqueIssueNumberPerChannel);
         }
         if (process.env.GENERATE_OGM_TYPES === "true") {
             const outFile = path.join(__dirname, "ogm-types.ts");
