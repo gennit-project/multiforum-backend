@@ -281,6 +281,7 @@ const typeDefinitions = gql `
   type TextVersion {
     id: ID! @id
     body: String
+    editReason: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     Author: User @relationship(type: "AUTHORED_VERSION", direction: IN)
@@ -472,6 +473,7 @@ const typeDefinitions = gql `
     id: ID! @id
     Author: User @relationship(type: "POSTED_DISCUSSION", direction: IN)
     body: String
+    editReason: String
     title: String!
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
@@ -551,6 +553,7 @@ const typeDefinitions = gql `
     id: ID! @id
     title: String!
     description: String
+    editReason: String
     startTime: DateTime!
     startTimeDayOfWeek: String # only used for filtering events by day of week
     startTimeHourOfDay: Int # only used for filtering events by hour of day
@@ -595,6 +598,7 @@ const typeDefinitions = gql `
     Channel: Channel @relationship(type: "HAS_COMMENT", direction: IN)
     ParentComment: Comment @relationship(type: "IS_REPLY_TO", direction: OUT)
     text: String
+    editReason: String
     isRootComment: Boolean!
     isFeedbackComment: Boolean
     ChildComments: [Comment!]! @relationship(type: "IS_REPLY_TO", direction: IN)
@@ -1060,6 +1064,9 @@ const typeDefinitions = gql `
     canHideComment: Boolean
     canHideEvent: Boolean
     canHideDiscussion: Boolean
+    canEditComments: Boolean
+    canEditDiscussions: Boolean
+    canEditEvents: Boolean
     canGiveFeedback: Boolean
     canOpenSupportTickets: Boolean
     canCloseSupportTickets: Boolean
@@ -1074,6 +1081,9 @@ const typeDefinitions = gql `
     canHideComment: Boolean
     canHideEvent: Boolean
     canHideDiscussion: Boolean
+    canEditComments: Boolean
+    canEditDiscussions: Boolean
+    canEditEvents: Boolean
     canGiveFeedback: Boolean
     canOpenSupportTickets: Boolean
     canCloseSupportTickets: Boolean

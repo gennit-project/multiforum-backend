@@ -1082,6 +1082,9 @@ const typeDefinitions = gql`
     canHideComment: Boolean
     canHideEvent: Boolean
     canHideDiscussion: Boolean
+    canEditComments: Boolean
+    canEditDiscussions: Boolean
+    canEditEvents: Boolean
     canGiveFeedback: Boolean
     canOpenSupportTickets: Boolean
     canCloseSupportTickets: Boolean
