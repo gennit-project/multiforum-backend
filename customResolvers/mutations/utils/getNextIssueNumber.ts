@@ -1,4 +1,4 @@
-import type { Driver } from "neo4j-driver";
+import neo4j, { Driver } from "neo4j-driver";
 
 /**
  * Atomically increments and returns the next issueNumber for a channel.
@@ -27,7 +27,11 @@ const getNextIssueNumber = async (
       )
     );
 
-    const issueNumber = result.records[0]?.get("issueNumber") as number | null;
+    const rawIssueNumber = result.records[0]?.get("issueNumber");
+    const issueNumber = neo4j.isInt(rawIssueNumber)
+      ? rawIssueNumber.toNumber()
+      : (rawIssueNumber as number | null);
+
     if (typeof issueNumber !== "number" || Number.isNaN(issueNumber)) {
       throw new Error("Failed to generate an issue number");
     }

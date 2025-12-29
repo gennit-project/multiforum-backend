@@ -669,6 +669,8 @@ const typeDefinitions = gql`
       @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
     User: User @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
     Comment: Comment @relationship(type: "MODERATED_COMMENT", direction: OUT)
+    Revision: TextVersion
+      @relationship(type: "HAS_REVISION", direction: OUT)
     createdAt: DateTime! @timestamp(operations: [CREATE])
     actionType: String
     actionDescription: String
@@ -999,9 +1001,19 @@ const typeDefinitions = gql`
     timeFrame: TimeFrame
   }
 
+  input WikiListOptions {
+    offset: Int
+    limit: Int
+  }
+
   type SiteWideDiscussionListFormat {
     aggregateDiscussionCount: Int!
     discussions: [Discussion!]!
+  }
+
+  type SiteWideWikiListFormat {
+    aggregateWikiPageCount: Int!
+    wikiPages: [WikiPage!]!
   }
 
   type DiscussionChannelListFormat {
@@ -1335,6 +1347,11 @@ const typeDefinitions = gql`
       hasDownload: Boolean
       options: DiscussionListOptions
     ): SiteWideDiscussionListFormat
+    getSiteWideWikiList(
+      searchInput: String
+      selectedChannels: [String]
+      options: WikiListOptions
+    ): SiteWideWikiListFormat
     getCommentSection(
       channelUniqueName: String!
       discussionId: ID!

@@ -1,3 +1,9 @@
+import {
+  createIssueActivityFeedItems,
+  getAttributionFromContext,
+  getIssueIdsForRelated,
+} from './issueActivityFeedHelpers.js';
+
 /**
  * Hook to track comment version history when a comment is updated
  * This will capture the old text before the update is applied
@@ -32,6 +38,7 @@ export const commentVersionHistoryHandler = async ({ context, params }: any) => 
     const CommentModel = ogm.model('Comment');
     const TextVersionModel = ogm.model('TextVersion');
     const UserModel = ogm.model('User');
+    const IssueModel = ogm.model('Issue');
     
     // Fetch the current comment to get current values before update
     const comments = await CommentModel.find({
@@ -88,6 +95,22 @@ export const commentVersionHistoryHandler = async ({ context, params }: any) => 
         TextVersionModel,
         UserModel
       );
+
+      const issueIds = await getIssueIdsForRelated(IssueModel, {
+        commentId,
+      });
+      if (!issueIds.length) {
+        return;
+      }
+
+      const attribution = getAttributionFromContext(context);
+      await createIssueActivityFeedItems({
+        IssueModel,
+        issueIds,
+        actionDescription: 'edited the comment',
+        actionType: 'edit',
+        attribution,
+      });
     } else {
       console.log('No text changes to track or current text is empty');
     }

@@ -1,4 +1,10 @@
 
+import {
+  createIssueActivityFeedItems,
+  getAttributionFromContext,
+  getIssueIdsForRelated,
+} from './issueActivityFeedHelpers.js';
+
 /**
  * Hook to track discussion version history when a discussion is updated
  * This will capture the old title and body before the update is applied
@@ -34,6 +40,7 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
     const DiscussionModel = ogm.model('Discussion');
     const TextVersionModel = ogm.model('TextVersion');
     const UserModel = ogm.model('User');
+    const IssueModel = ogm.model('Issue');
     
     // Fetch the current discussion to get current values before update
     const discussions = await DiscussionModel.find({
@@ -64,16 +71,18 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
     }
 
     const discussion = discussions[0];
-    const username = discussion.Author?.username;
+    const username = context?.user?.username || discussion.Author?.username;
     
     if (!username) {
       console.log('Author username not found');
       return;
     }
     
+    const createdRevisionIds: string[] = [];
+
     // Track title version history if title is being updated
     if (isTitleUpdated && update.title !== discussion.title) {
-      await trackTitleVersionHistory(
+      const titleRevisionId = await trackTitleVersionHistory(
         discussionId,
         discussion.title,
         username,
@@ -81,11 +90,14 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
         TextVersionModel,
         UserModel
       );
+      if (titleRevisionId) {
+        createdRevisionIds.push(titleRevisionId);
+      }
     }
     
     // Track body version history if body is being updated
     if (isBodyUpdated && update.body !== discussion.body) {
-      await trackBodyVersionHistory(
+      const bodyRevisionId = await trackBodyVersionHistory(
         discussionId,
         discussion.body,
         username,
@@ -93,6 +105,32 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
         TextVersionModel,
         UserModel
       );
+      if (bodyRevisionId) {
+        createdRevisionIds.push(bodyRevisionId);
+      }
+    }
+
+    if (!createdRevisionIds.length) {
+      return;
+    }
+
+    const issueIds = await getIssueIdsForRelated(IssueModel, {
+      discussionId,
+    });
+    if (!issueIds.length) {
+      return;
+    }
+
+    const attribution = getAttributionFromContext(context);
+    for (const revisionId of createdRevisionIds) {
+      await createIssueActivityFeedItems({
+        IssueModel,
+        issueIds,
+        actionDescription: 'edited the discussion',
+        actionType: 'edit',
+        attribution,
+        revisionId,
+      });
     }
   } catch (error) {
     console.error('Error in discussion version history hook:', error);
@@ -110,7 +148,7 @@ async function trackTitleVersionHistory(
   DiscussionModel: any,
   TextVersionModel: any,
   UserModel: any
-) {
+): Promise<string | null> {
   console.log(`Tracking title version history for discussion ${discussionId}`);
   console.log(`Previous title: "${previousTitle}"`);
 
@@ -123,7 +161,7 @@ async function trackTitleVersionHistory(
 
     if (!users.length) {
       console.log('User not found');
-      return;
+      return null;
     }
 
     // Create new TextVersion for previous title
@@ -139,7 +177,7 @@ async function trackTitleVersionHistory(
 
     if (!textVersionResult.textVersions.length) {
       console.log('Failed to create TextVersion');
-      return;
+      return null;
     }
 
     const textVersionId = textVersionResult.textVersions[0].id;
@@ -154,7 +192,7 @@ async function trackTitleVersionHistory(
 
     if (!discussions.length) {
       console.log('Discussion not found when updating version order');
-      return;
+      return null;
     }
     
     // Update discussion to connect the new TextVersion
@@ -172,8 +210,10 @@ async function trackTitleVersionHistory(
     });
 
     console.log(`Successfully added title version history for discussion ${discussionId}`);
+    return textVersionId;
   } catch (error) {
     console.error('Error tracking title version history:', error);
+    return null;
   }
 }
 
@@ -187,14 +227,14 @@ async function trackBodyVersionHistory(
   DiscussionModel: any,
   TextVersionModel: any,
   UserModel: any
-) {
+): Promise<string | null> {
   console.log(`Tracking body version history for discussion ${discussionId}`);
 
   try {
     // Skip tracking if previous body is null or empty
     if (!previousBody) {
       console.log('Previous body is empty, skipping version history');
-      return;
+      return null;
     }
 
     // Get user by username
@@ -205,7 +245,7 @@ async function trackBodyVersionHistory(
 
     if (!users.length) {
       console.log('User not found');
-      return;
+      return null;
     }
 
     // Create new TextVersion for previous body
@@ -221,7 +261,7 @@ async function trackBodyVersionHistory(
 
     if (!textVersionResult.textVersions.length) {
       console.log('Failed to create TextVersion');
-      return;
+      return null;
     }
 
     const textVersionId = textVersionResult.textVersions[0].id;
@@ -236,7 +276,7 @@ async function trackBodyVersionHistory(
 
     if (!discussions.length) {
       console.log('Discussion not found when updating version order');
-      return;
+      return null;
     }
 
     // Update discussion to connect the new TextVersion
@@ -254,7 +294,9 @@ async function trackBodyVersionHistory(
     });
 
     console.log(`Successfully added body version history for discussion ${discussionId}`);
+    return textVersionId;
   } catch (error) {
     console.error('Error tracking body version history:', error);
+    return null;
   }
 }

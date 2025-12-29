@@ -8,6 +8,7 @@ import createEventWithChannelConnections from "./customResolvers/mutations/creat
 import updateEventWithChannelConnections from "./customResolvers/mutations/updateEventWithChannelConnections.js";
 
 import getSiteWideDiscussionList from "./customResolvers/queries/getSiteWideDiscussionList.js";
+import getSiteWideWikiList from "./customResolvers/queries/getSiteWideWikiList.js";
 import getCommentSection from "./customResolvers/queries/getCommentSection.js";
 import getEventComments from "./customResolvers/queries/getEventComments.js";
 import getCommentReplies from "./customResolvers/queries/getCommentReplies.js";
@@ -136,6 +137,9 @@ export default function (driver: any) {
     Query: {
       getSiteWideDiscussionList: getSiteWideDiscussionList({
         Discussion,
+        driver,
+      }),
+      getSiteWideWikiList: getSiteWideWikiList({
         driver,
       }),
       getDiscussionsInChannel: getDiscussionsInChannel({

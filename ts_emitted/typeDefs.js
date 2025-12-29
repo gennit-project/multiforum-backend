@@ -998,9 +998,19 @@ const typeDefinitions = gql `
     timeFrame: TimeFrame
   }
 
+  input WikiListOptions {
+    offset: Int
+    limit: Int
+  }
+
   type SiteWideDiscussionListFormat {
     aggregateDiscussionCount: Int!
     discussions: [Discussion!]!
+  }
+
+  type SiteWideWikiListFormat {
+    aggregateWikiPageCount: Int!
+    wikiPages: [WikiPage!]!
   }
 
   type DiscussionChannelListFormat {
@@ -1334,6 +1344,11 @@ const typeDefinitions = gql `
       hasDownload: Boolean
       options: DiscussionListOptions
     ): SiteWideDiscussionListFormat
+    getSiteWideWikiList(
+      searchInput: String
+      selectedChannels: [String]
+      options: WikiListOptions
+    ): SiteWideWikiListFormat
     getCommentSection(
       channelUniqueName: String!
       discussionId: ID!
