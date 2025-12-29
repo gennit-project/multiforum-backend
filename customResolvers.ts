@@ -15,6 +15,7 @@ import getCommentReplies from "./customResolvers/queries/getCommentReplies.js";
 import getDiscussionsInChannel from "./customResolvers/queries/getDiscussionsInChannel.js";
 import getUserContributions from "./customResolvers/queries/getUserContributions.js";
 import getChannelContributions from "./customResolvers/queries/getChannelContributions.js";
+import getModContributions from "./customResolvers/queries/getModContributions.js";
 
 import addEmojiToComment from "./customResolvers/mutations/addEmojiToComment.js";
 import removeEmojiFromComment from "./customResolvers/mutations/removeEmojiFromComment.js";
@@ -101,6 +102,7 @@ export default function (driver: any) {
   const EventChannel = ogm.model("EventChannel");
   const Comment = ogm.model("Comment");
   const User = ogm.model("User");
+  const ModerationProfile = ogm.model("ModerationProfile");
   const Email = ogm.model("Email");
   const Channel = ogm.model("Channel");
   const Tag = ogm.model("Tag");
@@ -169,6 +171,10 @@ export default function (driver: any) {
       }),
       getChannelContributions: getChannelContributions({
         Channel,
+        driver,
+      }),
+      getModContributions: getModContributions({
+        ModerationProfile,
         driver,
       }),
       isOriginalPosterSuspended: isOriginalPosterSuspended({

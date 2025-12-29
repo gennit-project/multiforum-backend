@@ -1314,6 +1314,35 @@ const typeDefinitions = gql`
     activities: [Activity!]!
   }
 
+  type IssueInfo {
+    id: ID
+    issueNumber: Int
+    channelUniqueName: String
+    relatedDiscussionId: ID
+    relatedEventId: ID
+    relatedCommentId: ID
+    title: String
+    isOpen: Boolean
+  }
+
+  type ModActivity {
+    id: String!
+    actionType: String
+    actionDescription: String
+    createdAt: DateTime
+    Issue: IssueInfo
+    Comment: CommentInfo
+    RelatedDiscussion: DiscussionInfo
+    RelatedEvent: EventInfo
+    RelatedComment: CommentInfo
+  }
+
+  type ModDayData {
+    date: String!
+    count: Int!
+    activities: [ModActivity!]!
+  }
+
   type UserContributionData {
     username: String!
     displayName: String
@@ -1394,6 +1423,12 @@ const typeDefinitions = gql`
       year: Int
       limit: Int
     ): [UserContributionData!]!
+    getModContributions(
+      displayName: String!
+      startDate: String
+      endDate: String
+      year: Int
+    ): [ModDayData!]!
     isOriginalPosterSuspended(issueId: String!): Boolean
     safetyCheck: SafetyCheckResponse
     getServerPluginSecrets(

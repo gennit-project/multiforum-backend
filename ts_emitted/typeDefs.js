@@ -668,6 +668,8 @@ const typeDefinitions = gql `
       @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
     User: User @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
     Comment: Comment @relationship(type: "MODERATED_COMMENT", direction: OUT)
+    Revision: TextVersion
+      @relationship(type: "HAS_REVISION", direction: OUT)
     createdAt: DateTime! @timestamp(operations: [CREATE])
     actionType: String
     actionDescription: String
@@ -1311,6 +1313,35 @@ const typeDefinitions = gql `
     activities: [Activity!]!
   }
 
+  type IssueInfo {
+    id: ID
+    issueNumber: Int
+    channelUniqueName: String
+    relatedDiscussionId: ID
+    relatedEventId: ID
+    relatedCommentId: ID
+    title: String
+    isOpen: Boolean
+  }
+
+  type ModActivity {
+    id: String!
+    actionType: String
+    actionDescription: String
+    createdAt: DateTime
+    Issue: IssueInfo
+    Comment: CommentInfo
+    RelatedDiscussion: DiscussionInfo
+    RelatedEvent: EventInfo
+    RelatedComment: CommentInfo
+  }
+
+  type ModDayData {
+    date: String!
+    count: Int!
+    activities: [ModActivity!]!
+  }
+
   type UserContributionData {
     username: String!
     displayName: String
@@ -1391,6 +1422,12 @@ const typeDefinitions = gql `
       year: Int
       limit: Int
     ): [UserContributionData!]!
+    getModContributions(
+      displayName: String!
+      startDate: String
+      endDate: String
+      year: Int
+    ): [ModDayData!]!
     isOriginalPosterSuspended(issueId: String!): Boolean
     safetyCheck: SafetyCheckResponse
     getServerPluginSecrets(
