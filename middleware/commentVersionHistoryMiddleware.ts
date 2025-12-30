@@ -41,7 +41,7 @@ const commentVersionHistoryMiddleware = {
       const { where, update } = args;
       
       // Check if text is being updated
-      if (update.text) {
+      if (update.text !== undefined) {
         // Run the version history handler before the update
         await commentVersionHistoryHandler({ 
           context, 

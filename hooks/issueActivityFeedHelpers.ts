@@ -18,6 +18,7 @@ type IssueActivityInput = {
   actionType?: string;
   attribution: ActivityAttribution;
   revisionId?: string;
+  commentId?: string | null;
 };
 
 export const getAttributionFromContext = (context: any): ActivityAttribution => {
@@ -71,6 +72,7 @@ export const createIssueActivityFeedItems = async (
     actionType,
     attribution,
     revisionId,
+    commentId,
   } = input;
 
   if (!issueIds.length) {
@@ -112,6 +114,18 @@ export const createIssueActivityFeedItems = async (
         where: {
           node: {
             id: revisionId,
+          },
+        },
+      },
+    };
+  }
+
+  if (commentId) {
+    activityNode.Comment = {
+      connect: {
+        where: {
+          node: {
+            id: commentId,
           },
         },
       },

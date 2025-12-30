@@ -78,7 +78,7 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
       return;
     }
     
-    const createdRevisionIds: string[] = [];
+    const createdRevisionIds: Array<{ id: string; type: 'title' | 'body' }> = [];
 
     // Track title version history if title is being updated
     if (isTitleUpdated && update.title !== discussion.title) {
@@ -91,7 +91,7 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
         UserModel
       );
       if (titleRevisionId) {
-        createdRevisionIds.push(titleRevisionId);
+        createdRevisionIds.push({ id: titleRevisionId, type: 'title' });
       }
     }
     
@@ -106,7 +106,7 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
         UserModel
       );
       if (bodyRevisionId) {
-        createdRevisionIds.push(bodyRevisionId);
+        createdRevisionIds.push({ id: bodyRevisionId, type: 'body' });
       }
     }
 
@@ -122,14 +122,17 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
     }
 
     const attribution = getAttributionFromContext(context);
-    for (const revisionId of createdRevisionIds) {
+    for (const revision of createdRevisionIds) {
       await createIssueActivityFeedItems({
         IssueModel,
         issueIds,
-        actionDescription: 'edited the discussion',
+        actionDescription:
+          revision.type === 'title'
+            ? 'edited the discussion title'
+            : 'edited the discussion body',
         actionType: 'edit',
         attribution,
-        revisionId,
+        revisionId: revision.id,
       });
     }
   } catch (error) {

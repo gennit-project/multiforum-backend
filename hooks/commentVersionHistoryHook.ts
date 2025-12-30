@@ -75,21 +75,15 @@ export const commentVersionHistoryHandler = async ({ context, params }: any) => 
       console.log('Comment author information not found');
       return;
     }
-    
-    const username = commentAuthor.username || commentAuthor.displayName;
-    
-    if (!username) {
-      console.log('Author username or displayName not found');
-      console.log('CommentAuthor data:', JSON.stringify(commentAuthor));
-      return;
-    }
-    
+
+    const username = context?.user?.username || commentAuthor.username || null;
+
     // Track text version history if text is being updated
     // Save the NEW text (post-edit) with the current user attribution
     if (isTextUpdated && update.text !== comment.text) {
       await trackTextVersionHistory(
         commentId,
-        update.text,
+        comment.text,
         username,
         CommentModel,
         TextVersionModel,
@@ -110,6 +104,7 @@ export const commentVersionHistoryHandler = async ({ context, params }: any) => 
         actionDescription: 'edited the comment',
         actionType: 'edit',
         attribution,
+        commentId,
       });
     } else {
       console.log('No text changes to track or current text is empty');
@@ -126,12 +121,14 @@ export const commentVersionHistoryHandler = async ({ context, params }: any) => 
 async function trackTextVersionHistory(
   commentId: string,
   newText: string,
-  username: string,
+  username: string | null,
   CommentModel: any,
   TextVersionModel: any,
   UserModel: any
 ) {
-  console.log(`Tracking text version history for comment ${commentId} by user ${username}`);
+  console.log(
+    `Tracking text version history for comment ${commentId} by user ${username ?? '[unknown]'}`
+  );
 
   try {
     // Skip tracking if new text is null or empty
@@ -140,26 +137,27 @@ async function trackTextVersionHistory(
       return;
     }
 
-    // Get user by username
-    const users = await UserModel.find({
-      where: { username },
-      selectionSet: `{ username }`
-    });
+    const textVersionInput: Record<string, any> = {
+      body: newText,
+    };
 
-    if (!users.length) {
-      console.log('User not found');
-      return;
+    if (username) {
+      const users = await UserModel.find({
+        where: { username },
+        selectionSet: `{ username }`,
+      });
+
+      if (users.length) {
+        textVersionInput.Author = {
+          connect: { where: { node: { username } } },
+        };
+      }
     }
 
-    // Create new TextVersion for the new text
+    // Create new TextVersion for the old text
     // The createdAt timestamp will be automatically set by @timestamp directive
     const textVersionResult = await TextVersionModel.create({
-      input: [{
-        body: newText,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      }]
+      input: [textVersionInput],
     });
 
     if (!textVersionResult.textVersions.length) {
