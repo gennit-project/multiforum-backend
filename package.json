@@ -8,7 +8,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --loader ts-node/esm --test",
     "codegen": "graphql-codegen --config codegen.ts",
     "tsc": "tsc",
     "logSchema": "node build_scripts/logSchema.js",
