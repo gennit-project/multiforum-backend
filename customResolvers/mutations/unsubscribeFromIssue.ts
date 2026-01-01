@@ -37,6 +37,7 @@ const getResolver = (input: Input) => {
         where: { id: issueId },
         selectionSet: `{
           id
+          issueNumber
           reportText
           createdAt
           SubscribedToNotifications {

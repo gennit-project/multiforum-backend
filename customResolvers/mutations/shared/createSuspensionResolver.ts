@@ -209,6 +209,7 @@ export function createSuspensionResolver ({
         selectionSet: `{
           issues {
             id
+            issueNumber
             ActivityFeed {
               id
               actionType

@@ -30,6 +30,13 @@ const getResolver = (input: Input) => {
     try {
       const issueData = await Issue.create({
         input: [issueCreateInput],
+        selectionSet: `{
+          issues {
+            id
+            issueNumber
+            flaggedServerRuleViolation
+          }
+        }`,
       });
       const issue = issueData.issues?.[0];
       if (!issue?.id) {

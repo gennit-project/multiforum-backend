@@ -197,6 +197,7 @@ export function createUnsuspendResolver ({
         selectionSet: `{
           issues {
             id
+            issueNumber
             ActivityFeed {
               id
               actionType
