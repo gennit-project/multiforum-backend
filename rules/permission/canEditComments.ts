@@ -45,36 +45,14 @@ export const canEditComments = rule({ cache: "contextual" })(
       return new Error("Could not find the comment or its associated channel.");
     }
 
-    const channelConnections = new Set<string>();
+    const channelConnections = collectCommentChannelConnections(comments);
 
-    for (const comment of comments) {
-      if (comment?.Channel?.uniqueName) {
-        channelConnections.add(comment.Channel.uniqueName);
-      }
-
-      if (comment?.DiscussionChannel?.channelUniqueName) {
-        channelConnections.add(comment.DiscussionChannel.channelUniqueName);
-      }
-
-      if (comment?.Event?.EventChannels?.length) {
-        for (const eventChannel of comment.Event.EventChannels) {
-          if (eventChannel?.channelUniqueName) {
-            channelConnections.add(eventChannel.channelUniqueName);
-          }
-        }
-      }
-
-      if (comment?.Issue?.channelUniqueName) {
-        channelConnections.add(comment.Issue.channelUniqueName);
-      }
-    }
-
-    if (channelConnections.size === 0) {
+    if (channelConnections.length === 0) {
       return new Error("No channel specified for this operation.");
     }
 
     const permissionResult = await checkChannelModPermissions({
-      channelConnections: Array.from(channelConnections),
+      channelConnections,
       context,
       permissionCheck: ModChannelPermission.canEditComments,
     });
@@ -86,3 +64,31 @@ export const canEditComments = rule({ cache: "contextual" })(
     return true;
   }
 );
+
+export const collectCommentChannelConnections = (comments: Array<any>) => {
+  const channelConnections = new Set<string>();
+
+  for (const comment of comments) {
+    if (comment?.Channel?.uniqueName) {
+      channelConnections.add(comment.Channel.uniqueName);
+    }
+
+    if (comment?.DiscussionChannel?.channelUniqueName) {
+      channelConnections.add(comment.DiscussionChannel.channelUniqueName);
+    }
+
+    if (comment?.Event?.EventChannels?.length) {
+      for (const eventChannel of comment.Event.EventChannels) {
+        if (eventChannel?.channelUniqueName) {
+          channelConnections.add(eventChannel.channelUniqueName);
+        }
+      }
+    }
+
+    if (comment?.Issue?.channelUniqueName) {
+      channelConnections.add(comment.Issue.channelUniqueName);
+    }
+  }
+
+  return Array.from(channelConnections);
+};

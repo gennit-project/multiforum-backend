@@ -42,23 +42,14 @@ export const canEditDiscussions = rule({ cache: "contextual" })(
       return new Error("Could not find the discussion or its associated channel.");
     }
 
-    const channelConnections = new Set<string>();
+    const channelConnections = collectDiscussionChannelConnections(discussions);
 
-    for (const discussion of discussions) {
-      const channels = discussion?.DiscussionChannels || [];
-      for (const channel of channels) {
-        if (channel?.channelUniqueName) {
-          channelConnections.add(channel.channelUniqueName);
-        }
-      }
-    }
-
-    if (channelConnections.size === 0) {
+    if (channelConnections.length === 0) {
       return new Error("No channel specified for this operation.");
     }
 
     const permissionResult = await checkChannelModPermissions({
-      channelConnections: Array.from(channelConnections),
+      channelConnections,
       context,
       permissionCheck: ModChannelPermission.canEditDiscussions,
     });
@@ -70,3 +61,18 @@ export const canEditDiscussions = rule({ cache: "contextual" })(
     return true;
   }
 );
+
+export const collectDiscussionChannelConnections = (discussions: Array<any>) => {
+  const channelConnections = new Set<string>();
+
+  for (const discussion of discussions) {
+    const channels = discussion?.DiscussionChannels || [];
+    for (const channel of channels) {
+      if (channel?.channelUniqueName) {
+        channelConnections.add(channel.channelUniqueName);
+      }
+    }
+  }
+
+  return Array.from(channelConnections);
+};
