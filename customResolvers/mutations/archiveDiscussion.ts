@@ -98,6 +98,7 @@ const getResolver = (input: Input) => {
       },
       selectionSet: `{
             id
+            issueNumber
             flaggedServerRuleViolation
         }`,
     });
@@ -126,6 +127,13 @@ const getResolver = (input: Input) => {
       try {
         const issueData = await Issue.create({
           input: [issueCreateInput],
+          selectionSet: `{
+            issues {
+              id
+              issueNumber
+              flaggedServerRuleViolation
+            }
+          }`,
         });
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {

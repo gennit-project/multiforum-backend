@@ -17,6 +17,10 @@ import {
   getIssueCreateInput,
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
+import {
+  checkChannelModPermissions,
+  ModChannelPermission,
+} from "../../rules/permission/hasChannelModPermission.js";
 
 type Args = {
   eventId: string;
@@ -76,7 +80,17 @@ const getResolver = (input: Input) => {
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`);
     }
 
+    const permissionResult = await checkChannelModPermissions({
+      channelConnections: [channelUniqueName],
+      context,
+      permissionCheck: ModChannelPermission.canHideEvent,
+    });
+    if (permissionResult instanceof Error) {
+      throw new GraphQLError(permissionResult.message);
+    }
+
     let existingIssueId = "";
+    let existingIssue: { id?: string; issueNumber?: number } | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
     const eventData = await Event.find({
       where: {
@@ -96,12 +110,14 @@ const getResolver = (input: Input) => {
       },
       selectionSet: `{
             id
+            issueNumber
             flaggedServerRuleViolation
         }`,
     });
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
+      existingIssue = issueData[0] || null;
       existingIssueFlaggedServerRuleViolation =
         issueData[0]?.flaggedServerRuleViolation || false;
     } else {
@@ -123,12 +139,20 @@ const getResolver = (input: Input) => {
       try {
         const issueData = await Issue.create({
           input: [issueCreateInput],
+          selectionSet: `{
+            issues {
+              id
+              issueNumber
+              flaggedServerRuleViolation
+            }
+          }`,
         });
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
         }
         existingIssueId = issueId;
+        existingIssue = issueData.issues[0];
       } catch (error) {
         throw new GraphQLError("Error creating issue");
       }
@@ -173,11 +197,19 @@ const getResolver = (input: Input) => {
       const issueData = await Issue.update({
         where: issueUpdateWhere,
         update: issueUpdateInput,
+        selectionSet: `{
+          issues {
+            id
+            issueNumber
+            flaggedServerRuleViolation
+          }
+        }`,
       });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
       }
+      existingIssue = issueData.issues[0];
     } catch (error) {
       throw new GraphQLError("Error updating issue");
     }
@@ -232,7 +264,7 @@ const getResolver = (input: Input) => {
       if (!eventChannelUpdateId) {
         throw new GraphQLError("Error updating eventChannel");
       }
-      return issueData[0];
+      return existingIssue;
     } catch (error) {
       console.log("Error creating issue", error);
       return false;
