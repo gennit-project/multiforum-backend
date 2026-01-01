@@ -8,7 +8,11 @@ import {
  * Hook to track comment version history when a comment is updated
  * This will capture the old text before the update is applied
  */
-export const commentVersionHistoryHandler = async ({ context, params }: any) => {
+export const commentVersionHistoryHandler = async ({
+  context,
+  params,
+  commentSnapshot,
+}: any) => {
   try {
     console.log('Comment version history hook running...');
     
@@ -40,34 +44,38 @@ export const commentVersionHistoryHandler = async ({ context, params }: any) => 
     const UserModel = ogm.model('User');
     const IssueModel = ogm.model('Issue');
     
-    // Fetch the current comment to get current values before update
-    const comments = await CommentModel.find({
-      where: { id: commentId },
-      selectionSet: `{
-        id
-        text
-        CommentAuthor {
-          ... on User {
-            username
-          }
-          ... on ModerationProfile {
-            displayName
-          }
-        }
-        PastVersions {
+    let comment = commentSnapshot;
+
+    if (!comment) {
+      // Fetch the current comment to get current values before update
+      const comments = await CommentModel.find({
+        where: { id: commentId },
+        selectionSet: `{
           id
-          body
-          createdAt
-        }
-      }`
-    });
+          text
+          CommentAuthor {
+            ... on User {
+              username
+            }
+            ... on ModerationProfile {
+              displayName
+            }
+          }
+          PastVersions {
+            id
+            body
+            createdAt
+          }
+        }`
+      });
 
-    if (!comments.length) {
-      console.log('Comment not found');
-      return;
+      if (!comments.length) {
+        console.log('Comment not found');
+        return;
+      }
+
+      comment = comments[0];
     }
-
-    const comment = comments[0];
     
     // Get the username from CommentAuthor which can be either User or ModerationProfile
     const commentAuthor = comment.CommentAuthor;

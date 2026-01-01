@@ -109,7 +109,7 @@ export default function getResolver (input: Input) {
       originalPoster = comment.CommentAuthor
     }
     if (!originalPoster) {
-      throw new Error('Original poster not found')
+      return false
     }
     // Check for suspension with the original author username
     // and the given channel

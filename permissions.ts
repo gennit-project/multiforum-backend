@@ -32,6 +32,9 @@ const {
   canArchiveAndUnarchiveComment,
   canArchiveAndUnarchiveDiscussion,
   canArchiveAndUnarchiveEvent,
+  canEditComments,
+  canEditDiscussions,
+  canEditEvents,
   isAuthenticatedAndVerified,
   isAuthenticated,
   canBecomeForumAdmin,
@@ -118,9 +121,9 @@ const permissionList = shield({
       deleteUsers: and(isAuthenticated, or(isAdmin, isAccountOwner)),
     
       createDiscussionWithChannelConnections: and(isAuthenticated, createDiscussionInputIsValid, or(canCreateDiscussion, isAdmin)),
-      updateDiscussionWithChannelConnections: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, isAdmin)),
+      updateDiscussionWithChannelConnections: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, isAdmin, canEditDiscussions)),
       deleteDiscussions: and(isAuthenticated, or(isAdmin, isDiscussionOwner)),
-      updateDiscussions: and(isAuthenticated, or(isAdmin, isDiscussionOwner)),
+      updateDiscussions: and(isAuthenticated, or(isAdmin, isDiscussionOwner, canEditDiscussions)),
       deleteDiscussionChannels: and(isAuthenticated, isAdmin),
       updateDiscussionChannels: and(isAuthenticated, or(isAdmin, isDiscussionChannelOwner)),
 
@@ -129,13 +132,13 @@ const permissionList = shield({
       updateWikiPages: and(isAuthenticated, allow),
       
       createEventWithChannelConnections: and(isAuthenticated, createEventInputIsValid, canCreateEvent),
-      updateEventWithChannelConnections: and(isAuthenticated, updateEventInputIsValid, or(isEventOwner, isAdmin)),
-      updateEvents: and(isAuthenticated, or(isAdmin, isEventOwner)),
+      updateEventWithChannelConnections: and(isAuthenticated, updateEventInputIsValid, or(isEventOwner, isAdmin, canEditEvents)),
+      updateEvents: and(isAuthenticated, or(isAdmin, isEventOwner, canEditEvents)),
       deleteEvents: and(isAuthenticated, or(isAdmin, isEventOwner)),
       deleteEventChannels: and(isAuthenticated, isAdmin),
 
       createComments: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
-      updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, isAdmin)),
+      updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, isAdmin, canEditComments)),
       deleteComments: and(isAuthenticated, or(isAdmin, isCommentAuthor)),
       
       createSignedStorageURL: and(isAuthenticated, canUploadFile),

@@ -39,18 +39,51 @@ const commentVersionHistoryMiddleware = {
     ) => {
       // Extract the parameters that we need for version history tracking
       const { where, update } = args;
+      let commentSnapshot = null;
       
       // Check if text is being updated
       if (update.text !== undefined) {
-        // Run the version history handler before the update
-        await commentVersionHistoryHandler({ 
-          context, 
-          params: { where, update } 
+        const commentId = where?.id;
+
+        if (commentId) {
+          const CommentModel = context.ogm.model("Comment");
+          const comments = await CommentModel.find({
+            where: { id: commentId },
+            selectionSet: `{
+              id
+              text
+              CommentAuthor {
+                ... on User {
+                  username
+                }
+                ... on ModerationProfile {
+                  displayName
+                }
+              }
+              PastVersions {
+                id
+                body
+                createdAt
+              }
+            }`,
+          });
+          commentSnapshot = comments[0] ?? null;
+        }
+      }
+
+      // Continue with the standard resolver (auth failures should stop here)
+      const result = await resolve(parent, args, context, info);
+
+      // Run the version history handler only after a successful update
+      if (update.text !== undefined) {
+        await commentVersionHistoryHandler({
+          context,
+          params: { where, update },
+          commentSnapshot,
         });
       }
-      
-      // Continue with the standard resolver
-      return resolve(parent, args, context, info);
+
+      return result;
     }
   }
 };

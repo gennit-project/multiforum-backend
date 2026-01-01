@@ -9,6 +9,9 @@ export enum ModChannelPermission {
   canHideComment = "canHideComment",
   canHideEvent = "canHideEvent",
   canHideDiscussion = "canHideDiscussion",
+  canEditComments = "canEditComments",
+  canEditDiscussions = "canEditDiscussions",
+  canEditEvents = "canEditEvents",
   canGiveFeedback = "canGiveFeedback",
   canOpenSupportTickets = "canOpenSupportTickets",
   canCloseSupportTickets = "canCloseSupportTickets",
@@ -53,6 +56,9 @@ export const hasChannelModPermission: (
         canHideComment
         canHideEvent
         canHideDiscussion
+        canEditComments
+        canEditDiscussions
+        canEditEvents
         canGiveFeedback
         canOpenSupportTickets
         canCloseSupportTickets
@@ -63,6 +69,9 @@ export const hasChannelModPermission: (
         canHideComment
         canHideEvent
         canHideDiscussion
+        canEditComments
+        canEditDiscussions
+        canEditEvents
         canGiveFeedback
         canOpenSupportTickets
         canCloseSupportTickets
@@ -73,6 +82,9 @@ export const hasChannelModPermission: (
         canHideComment
         canHideEvent
         canHideDiscussion
+        canEditComments
+        canEditDiscussions
+        canEditEvents
         canGiveFeedback
         canOpenSupportTickets
         canCloseSupportTickets
@@ -110,6 +122,9 @@ export const hasChannelModPermission: (
         canHideComment
         canHideDiscussion
         canHideEvent
+        canEditComments
+        canEditDiscussions
+        canEditEvents
         canGiveFeedback
         canReport
         canSuspendUser
@@ -122,6 +137,9 @@ export const hasChannelModPermission: (
         canHideComment
         canHideDiscussion
         canHideEvent
+        canEditComments
+        canEditDiscussions
+        canEditEvents
         canGiveFeedback
         canReport
         canSuspendUser
@@ -134,6 +152,9 @@ export const hasChannelModPermission: (
         canHideComment
         canHideDiscussion
         canHideEvent
+        canEditComments
+        canEditDiscussions
+        canEditEvents
         canGiveFeedback
         canReport
         canSuspendUser

@@ -20,6 +20,9 @@ import { checkChannelModPermissions, ModChannelPermission } from "./permission/h
 import { canArchiveAndUnarchiveDiscussion } from "./permission/canArchiveAndUnarchiveDiscussion.js";
 import { canArchiveAndUnarchiveEvent } from "./permission/canArchiveAndUnarchiveEvent.js";
 import { canArchiveAndUnarchiveComment } from "./permission/canArchiveAndUnarchiveComment.js";
+import { canEditComments } from "./permission/canEditComments.js";
+import { canEditDiscussions } from "./permission/canEditDiscussions.js";
+import { canEditEvents } from "./permission/canEditEvents.js";
 import { canReport } from "./permission/canReport.js";
 import { canSuspendAndUnsuspendUser } from "./permission/canSuspendAndUnsuspendUser.js";
 import { canBecomeForumAdmin } from "./permission/canBecomeForumAdmin.js";
@@ -522,6 +525,9 @@ const ruleList = {
   canArchiveAndUnarchiveDiscussion,
   canArchiveAndUnarchiveEvent,
   canArchiveAndUnarchiveComment,
+  canEditComments,
+  canEditDiscussions,
+  canEditEvents,
   canReport,
   canSuspendAndUnsuspendUser,
   canBecomeForumAdmin,

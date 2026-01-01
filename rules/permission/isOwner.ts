@@ -254,7 +254,7 @@ export const isEventOwner = rule({ cache: "contextual" })(
 
     // Check if the user is in the list of channel owners.
     if (eventOwner !== username) {
-      throw new Error(ERROR_MESSAGES.event.notOwner);
+      return false;  // Permission check - return false to allow OR to work
     }
     return true;
   }
@@ -335,10 +335,10 @@ export const isCommentAuthor = rule({ cache: "contextual" })(
 
     // Check if the user is the comment author.
     if (authorUsername && authorUsername !== username) {
-      throw new Error(ERROR_MESSAGES.comment.notOwner);
+      return false;  // Permission check - return false to allow OR to work
     }
     if (authorModProfileName && authorModProfileName !== modName) {
-      throw new Error(ERROR_MESSAGES.comment.notOwner);
+      return false;  // Permission check - return false to allow OR to work
     }
     return true;
   }
