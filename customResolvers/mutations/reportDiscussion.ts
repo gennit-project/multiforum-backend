@@ -61,8 +61,6 @@ ${selectedServerRules.map((rule) => `- ${rule}`).join("\n")}
 ${
   reportText
     ? `
-Notes:
-
 ${reportText}
 `
     : ""
