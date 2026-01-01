@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "node --loader ts-node/esm --test",
+    "prepare": "husky install",
     "codegen": "graphql-codegen --config codegen.ts",
     "tsc": "tsc",
     "logSchema": "node build_scripts/logSchema.js",
@@ -52,6 +53,7 @@
     "@types/luxon": "3.4.1",
     "@types/node": "^20.19.11",
     "@types/nodemailer": "^6.4.19",
+    "husky": "^9.1.7",
     "concurrently": "^8.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
