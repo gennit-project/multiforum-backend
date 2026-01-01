@@ -78,9 +78,37 @@ const getResolver = (input: Input) => {
             Channel {
               uniqueName
             }
+            DiscussionChannel {
+              channelUniqueName
+            }
+            Event {
+              EventChannels {
+                channelUniqueName
+              }
+            }
+            ParentComment {
+              Channel {
+                uniqueName
+              }
+              DiscussionChannel {
+                channelUniqueName
+              }
+              Event {
+                EventChannels {
+                  channelUniqueName
+                }
+              }
+            }
         }`,
     });
-    const channelUniqueName = commentData[0]?.Channel?.uniqueName || "";
+    const channelUniqueName =
+      commentData[0]?.Channel?.uniqueName ||
+      commentData[0]?.DiscussionChannel?.channelUniqueName ||
+      commentData[0]?.Event?.EventChannels?.[0]?.channelUniqueName ||
+      commentData[0]?.ParentComment?.Channel?.uniqueName ||
+      commentData[0]?.ParentComment?.DiscussionChannel?.channelUniqueName ||
+      commentData[0]?.ParentComment?.Event?.EventChannels?.[0]?.channelUniqueName ||
+      "";
     if (!channelUniqueName) {
       throw new GraphQLError(
         "Could not find the forum name attached to the comment."
@@ -95,6 +123,7 @@ const getResolver = (input: Input) => {
       },
       selectionSet: `{
             id
+            issueNumber
             flaggedServerRuleViolation
         }`,
     });
@@ -112,33 +141,42 @@ const getResolver = (input: Input) => {
       selectedServerRules,
     });
 
-    // If an issue does NOT already exist, create a new issue.
-    try {
-      const commentText = commentData[0]?.text || "";
+    if (!existingIssueId) {
+      // If an issue does NOT already exist, create a new issue.
+      try {
+        const commentText = commentData[0]?.text || "";
 
-      const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
-      const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-        contextText: commentText,
-        selectedForumRules,
-        selectedServerRules,
-        loggedInModName,
-        channelUniqueName,
-        reportedContentType: "comment",
-        relatedCommentId: commentId,
-        issueNumber,
-      });
-      const issueData = await Issue.create({
-        input: [issueCreateInput],
-      });
-      const issueId = issueData.issues[0]?.id || null;
-      if (!issueId) {
-        throw new GraphQLError("Error creating issue");
+        const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
+        const issueCreateInput: IssueCreateInput = getIssueCreateInput({
+          contextText: commentText,
+          selectedForumRules,
+          selectedServerRules,
+          loggedInModName,
+          channelUniqueName,
+          reportedContentType: "comment",
+          relatedCommentId: commentId,
+          issueNumber,
+        });
+        const issueData = await Issue.create({
+          input: [issueCreateInput],
+          selectionSet: `{
+            issues {
+              id
+              issueNumber
+              flaggedServerRuleViolation
+            }
+          }`,
+        });
+        const issueId = issueData.issues[0]?.id || null;
+        if (!issueId) {
+          throw new GraphQLError("Error creating issue");
+        }
+        existingIssueId = issueId;
+        existingIssue = issueData.issues[0];
+      } catch (error) {
+        console.log("Error creating issue", error);
+        return false;
       }
-      existingIssueId = issueId;
-      existingIssue = issueData.issues[0];
-    } catch (error) {
-      console.log("Error creating issue", error);
-      return false;
     }
     
     const archiveCommentModActionCreateInput: ModerationActionCreateInput =
@@ -202,15 +240,30 @@ const getResolver = (input: Input) => {
       await Issue.update({
         where: issueUpdateWhere,
         update: archiveCommentUpdateIssueInput,
+        selectionSet: `{
+          issues {
+            id
+            issueNumber
+            flaggedServerRuleViolation
+          }
+        }`,
       });
       const issueData = await Issue.update({
         where: issueUpdateWhere,
         update: closeIssueUpdateIssueInput,
+        selectionSet: `{
+          issues {
+            id
+            issueNumber
+            flaggedServerRuleViolation
+          }
+        }`,
       });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
       }
+      existingIssue = issueData.issues[0];
       
     } catch (error) {
       throw new GraphQLError("Error updating issue");

@@ -26,6 +26,28 @@ const validateCommentInput = (input: CommentTextValidationInput): true | string 
   return true;
 };
 
+export const validateCreateCommentInput = (
+  createCommentInput: CommentCreateInput
+): true | string => {
+  const hasChannelConnection =
+    !!createCommentInput.Channel ||
+    !!createCommentInput.DiscussionChannel ||
+    !!createCommentInput.Event;
+  if (!hasChannelConnection) {
+    return "Comment must be attached to a channel.";
+  }
+  return validateCommentInput({
+    text: createCommentInput.text || "",
+    modProfileName:
+      createCommentInput?.CommentAuthor?.ModerationProfile?.connect?.where?.node
+        ?.displayName || "",
+    username:
+      createCommentInput?.CommentAuthor?.User?.connect?.where?.node?.username ||
+      "",
+    editMode: false,
+  });
+};
+
 type CreateCommentInput = { input: CommentCreateInput[] };
 
 export const createCommentInputIsValid = rule({ cache: "contextual" })(
@@ -41,12 +63,7 @@ export const createCommentInputIsValid = rule({ cache: "contextual" })(
       username: createCommentInput?.CommentAuthor?.User?.connect?.where?.node?.username || "",
       editMode: false
     })
-    return validateCommentInput({
-      text: createCommentInput.text || "",
-      modProfileName: createCommentInput?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
-      username: createCommentInput?.CommentAuthor?.User?.connect?.where?.node?.username || "",
-      editMode: false
-    });
+    return validateCreateCommentInput(createCommentInput);
   }
 );
 

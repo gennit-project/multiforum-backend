@@ -59,9 +59,37 @@ const getResolver = (input: Input) => {
               Channel {
                 uniqueName
               }
+              DiscussionChannel {
+                channelUniqueName
+              }
+              Event {
+                EventChannels {
+                  channelUniqueName
+                }
+              }
+              ParentComment {
+                Channel {
+                  uniqueName
+                }
+                DiscussionChannel {
+                  channelUniqueName
+                }
+                Event {
+                  EventChannels {
+                    channelUniqueName
+                  }
+                }
+              }
           }`
     })
-    const channelUniqueName = commentData[0]?.Channel?.uniqueName || ''
+    const channelUniqueName =
+      commentData[0]?.Channel?.uniqueName ||
+      commentData[0]?.DiscussionChannel?.channelUniqueName ||
+      commentData[0]?.Event?.EventChannels?.[0]?.channelUniqueName ||
+      commentData[0]?.ParentComment?.Channel?.uniqueName ||
+      commentData[0]?.ParentComment?.DiscussionChannel?.channelUniqueName ||
+      commentData[0]?.ParentComment?.Event?.EventChannels?.[0]?.channelUniqueName ||
+      ''
     if (!channelUniqueName) {
       throw new GraphQLError(
         'Could not find the forum name attached to the comment.'
@@ -76,6 +104,7 @@ const getResolver = (input: Input) => {
       },
       selectionSet: `{
               id
+              issueNumber
               flaggedServerRuleViolation
           }`
     })
@@ -145,17 +174,32 @@ const getResolver = (input: Input) => {
     try {
       await Issue.update({
         where: issueUpdateWhere,
-        update: unarchiveCreateInput
+        update: unarchiveCreateInput,
+        selectionSet: `{
+          issues {
+            id
+            issueNumber
+            flaggedServerRuleViolation
+          }
+        }`
       })
       const issueData = await Issue.update({
         where: issueUpdateWhere,
-        update: issueCloseCreateInput
+        update: issueCloseCreateInput,
+        selectionSet: `{
+          issues {
+            id
+            issueNumber
+            flaggedServerRuleViolation
+          }
+        }`
       })
       console.log('issueData', JSON.stringify(issueData))
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
         throw new GraphQLError('Error updating issue')
       }
+      existingIssue = issueData.issues[0]
     } catch (error) {
       throw new GraphQLError('Error updating issue')
     }
