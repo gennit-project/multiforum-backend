@@ -114,23 +114,28 @@ const getResolver = (input: Input) => {
     let existingIssueId = "";
     let existingIssueFlaggedServerRuleViolation = false;
 
-    // Check if an issue already exists for the discussion ID and channel unique name.
+    // Check if an issue already exists for the discussion ID.
     const issueData = await Issue.find({
       where: {
-        channelUniqueName: channelUniqueName,
         relatedDiscussionId: discussionId,
       },
       selectionSet: `{
             id
             issueNumber
             flaggedServerRuleViolation
+            channelUniqueName
         }`,
     });
 
     if (issueData.length > 0) {
-      existingIssueId = issueData[0]?.id || "";
-      existingIssueFlaggedServerRuleViolation =
-        issueData[0]?.flaggedServerRuleViolation || false;
+      const matchingIssue = issueData.find(
+        (issue) => issue.channelUniqueName === channelUniqueName
+      );
+      if (matchingIssue) {
+        existingIssueId = matchingIssue.id || "";
+        existingIssueFlaggedServerRuleViolation =
+          matchingIssue.flaggedServerRuleViolation || false;
+      }
     }
 
     const finalCommentText = getFinalCommentText({
@@ -163,6 +168,18 @@ const getResolver = (input: Input) => {
         relatedDiscussionId: discussionId,
         issueNumber,
       });
+      const ChannelModel = context?.ogm?.model("Channel");
+      if (ChannelModel) {
+        const channels = await ChannelModel.find({
+          where: { uniqueName: channelUniqueName },
+          selectionSet: `{
+            uniqueName
+          }`,
+        });
+        if (!channels.length) {
+          delete (issueCreateInput as Record<string, any>).Channel;
+        }
+      }
       try {
         const issueData = await Issue.create({
           input: [issueCreateInput],
@@ -180,6 +197,7 @@ const getResolver = (input: Input) => {
         }
         existingIssueId = issueId;
       } catch (error) {
+        console.error("Error creating issue:", error);
         throw new GraphQLError("Error creating issue");
       }
     }
