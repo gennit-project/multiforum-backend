@@ -58,6 +58,24 @@ const commentVersionHistoryMiddleware = {
                 }
                 ... on ModerationProfile {
                   displayName
+                  User {
+                    username
+                  }
+                }
+              }
+              DiscussionChannel {
+                discussionId
+                channelUniqueName
+                Discussion {
+                  id
+                  title
+                }
+              }
+              Event {
+                id
+                title
+                EventChannels {
+                  channelUniqueName
                 }
               }
               PastVersions {

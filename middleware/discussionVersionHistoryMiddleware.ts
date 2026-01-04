@@ -5,7 +5,10 @@
  */
 
 // Import the handler function that contains the version history logic
-import { discussionVersionHistoryHandler } from "../hooks/discussionVersionHistoryHook.js";
+import {
+  discussionEditNotificationHandler,
+  discussionVersionHistoryHandler,
+} from "../hooks/discussionVersionHistoryHook.js";
 import { GraphQLResolveInfo } from 'graphql';
 
 // Define types for the middleware
@@ -40,18 +43,62 @@ const discussionVersionHistoryMiddleware = {
     ) => {
       // Extract the parameters that we need for version history tracking
       const { where, update } = args;
+      const discussionId = where?.id;
+      let discussionSnapshot = null;
       
       // Check if title or body is being updated
-      if (update.title || update.body) {
-        // Run the version history handler before the update
-        await discussionVersionHistoryHandler({ 
-          context, 
-          params: { where, update } 
-        });
+      if (update.title !== undefined || update.body !== undefined) {
+        if (discussionId) {
+          const DiscussionModel = context.ogm.model("Discussion");
+          const discussions = await DiscussionModel.find({
+            where: { id: discussionId },
+            selectionSet: `{
+              id
+              title
+              body
+              Author {
+                username
+              }
+              DiscussionChannels {
+                channelUniqueName
+              }
+              PastTitleVersions {
+                id
+                body
+                createdAt
+              }
+              PastBodyVersions {
+                id
+                body
+                createdAt
+              }
+            }`,
+          });
+          discussionSnapshot = discussions[0] ?? null;
+        }
+
+        if (discussionSnapshot) {
+          // Run the version history handler before the update
+          await discussionVersionHistoryHandler({
+            context,
+            params: { where, update },
+            discussionSnapshot,
+          });
+        }
       }
       
       // Continue with the standard resolver
-      return resolve(parent, args, context, info);
+      const result = await resolve(parent, args, context, info);
+
+      if (discussionSnapshot) {
+        await discussionEditNotificationHandler({
+          context,
+          params: { where, update },
+          discussionSnapshot,
+        });
+      }
+
+      return result;
     }
   }
 };

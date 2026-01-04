@@ -4,12 +4,17 @@ import {
   getAttributionFromContext,
   getIssueIdsForRelated,
 } from './issueActivityFeedHelpers.js';
+import { createInAppNotification } from './notificationHelpers.js';
 
 /**
  * Hook to track discussion version history when a discussion is updated
  * This will capture the old title and body before the update is applied
  */
-export const discussionVersionHistoryHandler = async ({ context, params }: any) => {
+export const discussionVersionHistoryHandler = async ({
+  context,
+  params,
+  discussionSnapshot,
+}: any) => {
   try {
     console.log('Discussion version history hook running...');
     
@@ -24,8 +29,10 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
     }
     
     // Check if title or body is being updated
-    const isTitleUpdated = update.title !== undefined;
-    const isBodyUpdated = update.body !== undefined;
+    const isTitleUpdated =
+      update.title !== undefined && update.title !== discussionSnapshot?.title;
+    const isBodyUpdated =
+      update.body !== undefined && update.body !== discussionSnapshot?.body;
     
     // If neither title nor body is being updated, skip version tracking
     if (!isTitleUpdated && !isBodyUpdated) {
@@ -43,34 +50,41 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
     const IssueModel = ogm.model('Issue');
     
     // Fetch the current discussion to get current values before update
-    const discussions = await DiscussionModel.find({
-      where: { id: discussionId },
-      selectionSet: `{
-        id
-        title
-        body
-        Author {
-          username
-        }
-        PastTitleVersions {
-          id
-          body
-          createdAt
-        }
-        PastBodyVersions {
-          id
-          body
-          createdAt
-        }
-      }`
-    });
+    let discussion = discussionSnapshot;
 
-    if (!discussions.length) {
-      console.log('Discussion not found');
-      return;
+    if (!discussion) {
+      const discussions = await DiscussionModel.find({
+        where: { id: discussionId },
+        selectionSet: `{
+          id
+          title
+          body
+          Author {
+            username
+          }
+          DiscussionChannels {
+            channelUniqueName
+          }
+          PastTitleVersions {
+            id
+            body
+            createdAt
+          }
+          PastBodyVersions {
+            id
+            body
+            createdAt
+          }
+        }`
+      });
+
+      if (!discussions.length) {
+        console.log('Discussion not found');
+        return;
+      }
+
+      discussion = discussions[0];
     }
-
-    const discussion = discussions[0];
     const username = context?.user?.username || discussion.Author?.username;
     
     if (!username) {
@@ -138,6 +152,59 @@ export const discussionVersionHistoryHandler = async ({ context, params }: any) 
   } catch (error) {
     console.error('Error in discussion version history hook:', error);
     // Don't re-throw the error, so we don't affect the mutation
+  }
+};
+
+export const discussionEditNotificationHandler = async ({
+  context,
+  params,
+  discussionSnapshot,
+}: any) => {
+  try {
+    const { where, update } = params;
+    const discussionId = where?.id;
+
+    if (!discussionId || !update || !discussionSnapshot) {
+      return;
+    }
+
+    const isTitleUpdated = update.title !== undefined;
+    const isBodyUpdated = update.body !== undefined;
+
+    if (!isTitleUpdated && !isBodyUpdated) {
+      return;
+    }
+
+    const editorUsername = context?.user?.username || null;
+    const editorLabel =
+      context?.user?.data?.ModerationProfile?.displayName ||
+      editorUsername ||
+      'A moderator';
+    const authorUsername = discussionSnapshot?.Author?.username || null;
+
+    if (!authorUsername || !editorUsername || authorUsername === editorUsername) {
+      return;
+    }
+
+    const channelName =
+      discussionSnapshot?.DiscussionChannels?.[0]?.channelUniqueName || null;
+
+    if (!channelName) {
+      return;
+    }
+
+    const notificationUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussionId}`;
+    const discussionTitle = discussionSnapshot?.title || 'discussion';
+    const notificationText = `${editorLabel} edited your discussion [${discussionTitle}](${notificationUrl})`;
+
+    const UserModel = context.ogm.model('User');
+    await createInAppNotification({
+      UserModel,
+      username: authorUsername,
+      text: notificationText,
+    });
+  } catch (error) {
+    console.error('Error in discussion edit notification hook:', error);
   }
 };
 

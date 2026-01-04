@@ -622,7 +622,7 @@ const typeDefinitions = gql `
     Issue: Issue @relationship(type: "ACTIVITY_ON_ISSUE", direction: OUT)
     FeedbackComments: [Comment!]!
       @relationship(type: "HAS_FEEDBACK_COMMENT", direction: IN)
-    ModerationAction: ModerationAction
+    ModerationAction: [ModerationAction!]!
       @relationship(type: "MODERATED_COMMENT", direction: IN)
     RelatedIssues: [Issue!]! @relationship(type: "CITED_ISSUE", direction: IN)
     SubscribedToNotifications: [User!]!

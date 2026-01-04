@@ -3,6 +3,7 @@ import {
   getAttributionFromContext,
   getIssueIdsForRelated,
 } from './issueActivityFeedHelpers.js';
+import { createInAppNotification } from './notificationHelpers.js';
 
 /**
  * Hook to track comment version history when a comment is updated
@@ -59,6 +60,24 @@ export const commentVersionHistoryHandler = async ({
             }
             ... on ModerationProfile {
               displayName
+              User {
+                username
+              }
+            }
+          }
+          DiscussionChannel {
+            discussionId
+            channelUniqueName
+            Discussion {
+              id
+              title
+            }
+          }
+          Event {
+            id
+            title
+            EventChannels {
+              channelUniqueName
             }
           }
           PastVersions {
@@ -85,6 +104,12 @@ export const commentVersionHistoryHandler = async ({
     }
 
     const username = context?.user?.username || commentAuthor.username || null;
+    const editorLabel =
+      context?.user?.data?.ModerationProfile?.displayName ||
+      context?.user?.username ||
+      'A moderator';
+    const authorUsername =
+      commentAuthor?.username || commentAuthor?.User?.username || null;
 
     // Track text version history if text is being updated
     // Save the NEW text (post-edit) with the current user attribution
@@ -97,6 +122,36 @@ export const commentVersionHistoryHandler = async ({
         TextVersionModel,
         UserModel
       );
+
+      if (authorUsername && username && authorUsername !== username) {
+        const { DiscussionChannel, Event } = comment;
+        let notificationUrl = '';
+        let notificationContext = '';
+
+        if (
+          DiscussionChannel?.channelUniqueName &&
+          DiscussionChannel?.discussionId
+        ) {
+          notificationUrl = `${process.env.FRONTEND_URL}/forums/${DiscussionChannel.channelUniqueName}/discussions/${DiscussionChannel.discussionId}/comments/${commentId}`;
+          notificationContext =
+            DiscussionChannel.Discussion?.title || 'discussion';
+        } else if (Event?.id && Event?.EventChannels?.length) {
+          const eventChannelName = Event.EventChannels[0]?.channelUniqueName;
+          if (eventChannelName) {
+            notificationUrl = `${process.env.FRONTEND_URL}/forums/${eventChannelName}/events/${Event.id}/comments/${commentId}`;
+            notificationContext = Event.title || 'event';
+          }
+        }
+
+        if (notificationUrl && notificationContext) {
+          const notificationText = `${editorLabel} edited your comment on [${notificationContext}](${notificationUrl})`;
+          await createInAppNotification({
+            UserModel,
+            username: authorUsername,
+            text: notificationText,
+          });
+        }
+      }
 
       const issueIds = await getIssueIdsForRelated(IssueModel, {
         commentId,
