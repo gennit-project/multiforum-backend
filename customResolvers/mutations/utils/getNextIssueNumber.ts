@@ -20,6 +20,13 @@ const getNextIssueNumber = async (
         `
         MERGE (counter:ChannelIssueCounter {channelUniqueName: $channelUniqueName})
         ON CREATE SET counter.current = 0
+        WITH counter
+        MATCH (i:Issue {channelUniqueName: $channelUniqueName})
+        WITH counter, coalesce(max(i.issueNumber), 0) AS maxIssueNumber
+        SET counter.current = CASE
+          WHEN counter.current < maxIssueNumber THEN maxIssueNumber
+          ELSE counter.current
+        END
         SET counter.current = counter.current + 1
         RETURN counter.current AS issueNumber
       `,

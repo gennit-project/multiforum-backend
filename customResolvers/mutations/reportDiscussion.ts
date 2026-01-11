@@ -114,28 +114,23 @@ const getResolver = (input: Input) => {
     let existingIssueId = "";
     let existingIssueFlaggedServerRuleViolation = false;
 
-    // Check if an issue already exists for the discussion ID.
+    // Check if an issue already exists for the discussion ID and channel unique name.
     const issueData = await Issue.find({
       where: {
         relatedDiscussionId: discussionId,
+        channelUniqueName: channelUniqueName,
       },
       selectionSet: `{
             id
             issueNumber
             flaggedServerRuleViolation
-            channelUniqueName
         }`,
     });
 
     if (issueData.length > 0) {
-      const matchingIssue = issueData.find(
-        (issue) => issue.channelUniqueName === channelUniqueName
-      );
-      if (matchingIssue) {
-        existingIssueId = matchingIssue.id || "";
-        existingIssueFlaggedServerRuleViolation =
-          matchingIssue.flaggedServerRuleViolation || false;
-      }
+      existingIssueId = issueData[0]?.id || "";
+      existingIssueFlaggedServerRuleViolation =
+        issueData[0]?.flaggedServerRuleViolation || false;
     }
 
     const finalCommentText = getFinalCommentText({
@@ -197,8 +192,13 @@ const getResolver = (input: Input) => {
         }
         existingIssueId = issueId;
       } catch (error) {
-        console.error("Error creating issue:", error);
-        throw new GraphQLError("Error creating issue");
+        console.error("Error creating issue:", {
+          error,
+          issueCreateInput,
+        });
+        throw new GraphQLError(
+          `Error creating issue: ${(error as Error)?.message || "unknown error"}`
+        );
       }
     }
 

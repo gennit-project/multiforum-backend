@@ -129,6 +129,21 @@ CREATE CONSTRAINT issue_channel_issueNumber_unique IF NOT EXISTS FOR (i:Issue)
 REQUIRE (i.channelUniqueName, i.issueNumber) IS NODE KEY
 `;
 
+const ensureUniqueIssueDiscussionPerChannel = `
+CREATE CONSTRAINT issue_channel_discussion_unique IF NOT EXISTS FOR (i:Issue)
+REQUIRE (i.channelUniqueName, i.relatedDiscussionId) IS UNIQUE
+`;
+
+const ensureUniqueIssueEventPerChannel = `
+CREATE CONSTRAINT issue_channel_event_unique IF NOT EXISTS FOR (i:Issue)
+REQUIRE (i.channelUniqueName, i.relatedEventId) IS UNIQUE
+`;
+
+const ensureUniqueIssueCommentPerChannel = `
+CREATE CONSTRAINT issue_channel_comment_unique IF NOT EXISTS FOR (i:Issue)
+REQUIRE (i.channelUniqueName, i.relatedCommentId) IS UNIQUE
+`;
+
 async function initializeServer() {
   try {
     console.log("🚀 Initializing server...");
@@ -148,6 +163,9 @@ async function initializeServer() {
       await driver.session().run(ensureUniqueDiscussionChannelRelationship);
       await driver.session().run(ensureUniqueEventChannelRelationship);
       await driver.session().run(ensureUniqueIssueNumberPerChannel);
+      await driver.session().run(ensureUniqueIssueDiscussionPerChannel);
+      await driver.session().run(ensureUniqueIssueEventPerChannel);
+      await driver.session().run(ensureUniqueIssueCommentPerChannel);
     }
 
     if (process.env.GENERATE_OGM_TYPES === "true") {
