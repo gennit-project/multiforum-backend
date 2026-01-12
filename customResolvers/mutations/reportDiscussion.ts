@@ -39,29 +39,19 @@ export const getFinalCommentText = (input: FinalCommentTextInput) => {
   return `
 ${
   selectedForumRules.length > 0
-    ? `
-Server rule violations:
-
-${selectedForumRules.map((rule) => `- ${rule}`).join("\n")}
+    ? `Server rule violations: ${selectedForumRules.join(", ")}
 `
     : ""
 }
-
 ${
   selectedServerRules.length > 0
-    ? `
-  
-Forum rule violations:
-
-${selectedServerRules.map((rule) => `- ${rule}`).join("\n")}
+    ? `Forum rule violations: ${selectedServerRules.join(", ")}
 `
     : ""
 }
-
 ${
   reportText
-    ? `
-${reportText}
+    ? `${reportText}
 `
     : ""
 }
