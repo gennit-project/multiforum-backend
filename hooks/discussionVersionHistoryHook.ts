@@ -301,11 +301,10 @@ async function trackBodyVersionHistory(
   console.log(`Tracking body version history for discussion ${discussionId}`);
 
   try {
-    // Skip tracking if previous body is null or empty
-    if (!previousBody) {
-      console.log('Previous body is empty, skipping version history');
-      return null;
-    }
+    // Normalize null/undefined to empty string - we want to track edits
+    // even when the previous body was empty, so the mod edit is properly
+    // attributed in the revision history and activity feed
+    const bodyToTrack = previousBody ?? '';
 
     // Get user by username
     const users = await UserModel.find({
@@ -322,7 +321,7 @@ async function trackBodyVersionHistory(
     // The createdAt timestamp will be automatically set by @timestamp directive
     const textVersionResult = await TextVersionModel.create({
       input: [{
-        body: previousBody,
+        body: bodyToTrack,
         Author: {
           connect: { where: { node: { username } } }
         }
