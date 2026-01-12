@@ -59,6 +59,9 @@ const discussionVersionHistoryMiddleware = {
               Author {
                 username
               }
+              BodyLastEditedBy {
+                username
+              }
               DiscussionChannels {
                 channelUniqueName
               }

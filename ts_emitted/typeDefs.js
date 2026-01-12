@@ -486,6 +486,7 @@ const typeDefinitions = gql `
       @relationship(type: "HAS_TITLE_VERSION", direction: OUT)
     PastBodyVersions: [TextVersion!]!
       @relationship(type: "HAS_BODY_VERSION", direction: OUT)
+    BodyLastEditedBy: User @relationship(type: "BODY_LAST_EDITED_BY", direction: OUT)
     DiscussionChannels: [DiscussionChannel!]!
       @relationship(type: "POSTED_IN_CHANNEL", direction: IN)
     FeedbackComments: [Comment!]!

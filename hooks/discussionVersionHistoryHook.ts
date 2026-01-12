@@ -62,6 +62,9 @@ export const discussionVersionHistoryHandler = async ({
           Author {
             username
           }
+          BodyLastEditedBy {
+            username
+          }
           DiscussionChannels {
             channelUniqueName
           }
@@ -85,13 +88,22 @@ export const discussionVersionHistoryHandler = async ({
 
       discussion = discussions[0];
     }
-    const username = context?.user?.username || discussion.Author?.username;
-    
-    if (!username) {
+
+    // The editor making this change (for updating BodyLastEditedBy after)
+    const editorUsername = context?.user?.username;
+
+    // The author of the current body content (who we attribute the TextVersion to)
+    // Use BodyLastEditedBy if set, otherwise fall back to the original Author (OP)
+    const bodyContentAuthor = discussion.BodyLastEditedBy?.username || discussion.Author?.username;
+
+    // For title, we still use the editor's username (existing behavior)
+    const titleEditor = editorUsername || discussion.Author?.username;
+
+    if (!titleEditor) {
       console.log('Author username not found');
       return;
     }
-    
+
     const createdRevisionIds: Array<{ id: string; type: 'title' | 'body' }> = [];
 
     // Track title version history if title is being updated
@@ -99,7 +111,7 @@ export const discussionVersionHistoryHandler = async ({
       const titleRevisionId = await trackTitleVersionHistory(
         discussionId,
         discussion.title,
-        username,
+        titleEditor,
         DiscussionModel,
         TextVersionModel,
         UserModel
@@ -108,19 +120,33 @@ export const discussionVersionHistoryHandler = async ({
         createdRevisionIds.push({ id: titleRevisionId, type: 'title' });
       }
     }
-    
+
     // Track body version history if body is being updated
     if (isBodyUpdated && update.body !== discussion.body) {
+      // Use the content author (who wrote the body being replaced) for TextVersion.Author
       const bodyRevisionId = await trackBodyVersionHistory(
         discussionId,
         discussion.body,
-        username,
+        bodyContentAuthor || '[Unknown]',
         DiscussionModel,
         TextVersionModel,
         UserModel
       );
       if (bodyRevisionId) {
         createdRevisionIds.push({ id: bodyRevisionId, type: 'body' });
+      }
+
+      // Update BodyLastEditedBy to the current editor
+      if (editorUsername) {
+        await DiscussionModel.update({
+          where: { id: discussionId },
+          update: {
+            BodyLastEditedBy: {
+              disconnect: {},
+              connect: { where: { node: { username: editorUsername } } }
+            }
+          }
+        });
       }
     }
 
