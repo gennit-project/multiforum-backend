@@ -660,6 +660,19 @@ export const triggerChannelPluginPipeline = async ({
       Tags {
         text
       }
+      FilterGroups(options: { sort: [{ order: ASC }] }) {
+        id
+        key
+        displayName
+        mode
+        order
+        options(options: { sort: [{ order: ASC }] }) {
+          id
+          value
+          displayName
+          order
+        }
+      }
     }`
   })
 
@@ -914,7 +927,20 @@ export const triggerChannelPluginPipeline = async ({
       const channelContext = {
         uniqueName: channel.uniqueName,
         displayName: channel.displayName,
-        tags: (channel.Tags || []).map((t: any) => t.text)
+        tags: (channel.Tags || []).map((t: any) => t.text),
+        filterGroups: (channel.FilterGroups || []).map((fg: any) => ({
+          id: fg.id,
+          key: fg.key,
+          displayName: fg.displayName,
+          mode: fg.mode,
+          order: fg.order,
+          options: (fg.options || []).map((opt: any) => ({
+            id: opt.id,
+            value: opt.value,
+            displayName: opt.displayName,
+            order: opt.order
+          }))
+        }))
       }
 
       const context = {
