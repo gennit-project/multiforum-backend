@@ -43,6 +43,12 @@ export var FilterMode;
     FilterMode["Exclude"] = "EXCLUDE";
     FilterMode["Include"] = "INCLUDE";
 })(FilterMode || (FilterMode = {}));
+export var PipelineCondition;
+(function (PipelineCondition) {
+    PipelineCondition["Always"] = "ALWAYS";
+    PipelineCondition["PreviousFailed"] = "PREVIOUS_FAILED";
+    PipelineCondition["PreviousSucceeded"] = "PREVIOUS_SUCCEEDED";
+})(PipelineCondition || (PipelineCondition = {}));
 export var PriceModel;
 (function (PriceModel) {
     PriceModel["Fixed"] = "FIXED";

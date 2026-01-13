@@ -1,5 +1,6 @@
 import { createDiscussionChannelQuery } from "../cypher/cypherQueries.js";
 import { DiscussionCreateInput } from "../../src/generated/graphql";
+import { triggerChannelPluginPipeline } from "../../services/pluginRunner.js";
 
 type DiscussionCreateInputWithChannels = {
   discussionCreateInput: DiscussionCreateInput;
@@ -13,6 +14,12 @@ type Args = {
 type Input = {
   Discussion: any;
   driver: any;
+  // Additional models for plugin pipeline support
+  Channel?: any;
+  DownloadableFile?: any;
+  PluginRun?: any;
+  ServerConfig?: any;
+  ServerSecret?: any;
 };
 
 // The reason why we cannot use the auto-generated resolver
@@ -74,7 +81,14 @@ const selectionSet = `
 export const createDiscussionsFromInput = async (
   Discussion: any,
   driver: any,
-  input: DiscussionCreateInputWithChannels[]
+  input: DiscussionCreateInputWithChannels[],
+  pluginModels?: {
+    Channel: any;
+    DownloadableFile: any;
+    PluginRun: any;
+    ServerConfig: any;
+    ServerSecret: any;
+  }
 ): Promise<any[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
@@ -97,6 +111,9 @@ export const createDiscussionsFromInput = async (
       const newDiscussion = response.discussions[0];
       const newDiscussionId = newDiscussion.id;
 
+      // Check if this discussion has a download attached
+      const hasDownload = discussionCreateInput.hasDownload === true;
+
       // Link the discussion to channels
       for (const channelUniqueName of channelConnections) {
         try {
@@ -105,6 +122,31 @@ export const createDiscussionsFromInput = async (
             channelUniqueName,
             upvotedBy: newDiscussion.Author.username,
           });
+
+          // Trigger channel plugin pipeline if discussion has a download
+          // and plugin models are available
+          if (hasDownload && pluginModels) {
+            try {
+              await triggerChannelPluginPipeline({
+                discussionId: newDiscussionId,
+                channelUniqueName,
+                event: 'discussionChannel.created',
+                models: {
+                  Channel: pluginModels.Channel,
+                  Discussion,
+                  DownloadableFile: pluginModels.DownloadableFile,
+                  Plugin: null as any, // Not used in channel pipeline
+                  PluginVersion: null as any, // Not used directly
+                  PluginRun: pluginModels.PluginRun,
+                  ServerConfig: pluginModels.ServerConfig,
+                  ServerSecret: pluginModels.ServerSecret,
+                }
+              });
+            } catch (pipelineError: any) {
+              // Log pipeline errors but don't fail the discussion creation
+              console.error(`Channel pipeline error for ${channelUniqueName}:`, pipelineError.message);
+            }
+          }
         } catch (error: any) {
           if (error.message.includes("Constraint validation failed")) {
             console.warn(`Skipping duplicate DiscussionChannel: ${channelUniqueName}`);
@@ -139,14 +181,19 @@ export const createDiscussionsFromInput = async (
  * Main resolver that uses createDiscussionsFromInput
  */
 const getResolver = (input: Input) => {
-  const { Discussion, driver } = input;
+  const { Discussion, driver, Channel, DownloadableFile, PluginRun, ServerConfig, ServerSecret } = input;
+
+  // Build plugin models object if all required models are provided
+  const pluginModels = Channel && DownloadableFile && PluginRun && ServerConfig && ServerSecret
+    ? { Channel, DownloadableFile, PluginRun, ServerConfig, ServerSecret }
+    : undefined;
 
   return async (parent: any, args: Args, context: any, info: any) => {
     const { input } = args;
 
     try {
       // Use the extracted function to create discussions
-      const discussions = await createDiscussionsFromInput(Discussion, driver, input);
+      const discussions = await createDiscussionsFromInput(Discussion, driver, input, pluginModels);
       return discussions;
     } catch (error: any) {
       console.error(error);

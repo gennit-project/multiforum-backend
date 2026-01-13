@@ -442,6 +442,7 @@ const typeDefinitions = gql`
 
     # plugins
     EnabledPlugins: [PluginVersion!]! @relationship(type: "ENABLED", direction: OUT, properties: "ChannelPluginProperties")
+    pluginPipelines: JSON  # Channel-scoped pipeline configuration for events like discussionChannel.created
   }
 
   type DiscussionChannel {
@@ -974,6 +975,10 @@ const typeDefinitions = gql`
       key: String!
     ): ValidationResult!
     updatePluginPipelines(
+      pipelines: [EventPipelineInput!]!
+    ): JSON!
+    updateChannelPluginPipelines(
+      channelUniqueName: String!
       pipelines: [EventPipelineInput!]!
     ): JSON!
   }

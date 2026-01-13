@@ -147,7 +147,9 @@ async function initializeServer() {
             await driver.session().run(ensureUniqueIssueCommentPerChannel);
         }
         if (process.env.GENERATE_OGM_TYPES === "true") {
-            const outFile = path.join(__dirname, "ogm-types.ts");
+            // Generate to the source directory (not ts_emitted) with correct filename
+            const sourceDir = path.resolve(__dirname, "..");
+            const outFile = path.join(sourceDir, "ogm_types.ts");
             await generate({
                 ogm,
                 outFile,

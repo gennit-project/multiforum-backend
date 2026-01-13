@@ -53,8 +53,6 @@ const typeDefinitions = gql `
     CHANNEL
   }
 
-  extend schema @subscription
-
   scalar JSON
 
   union IssueCommentAuthor = User | ModerationProfile
@@ -443,6 +441,7 @@ const typeDefinitions = gql `
 
     # plugins
     EnabledPlugins: [PluginVersion!]! @relationship(type: "ENABLED", direction: OUT, properties: "ChannelPluginProperties")
+    pluginPipelines: JSON  # Channel-scoped pipeline configuration for events like discussionChannel.created
   }
 
   type DiscussionChannel {
@@ -974,6 +973,13 @@ const typeDefinitions = gql `
       pluginId: String!
       key: String!
     ): ValidationResult!
+    updatePluginPipelines(
+      pipelines: [EventPipelineInput!]!
+    ): JSON!
+    updateChannelPluginPipelines(
+      channelUniqueName: String!
+      pipelines: [EventPipelineInput!]!
+    ): JSON!
   }
 
   input SiteWideDiscussionSortOrder {
@@ -1138,6 +1144,30 @@ const typeDefinitions = gql `
     settingsJson: JSON
   }
 
+  enum PipelineCondition {
+    ALWAYS
+    PREVIOUS_SUCCEEDED
+    PREVIOUS_FAILED
+  }
+
+  type PipelineStep {
+    pluginId: String!
+    continueOnError: Boolean
+    condition: PipelineCondition
+  }
+
+  input PipelineStepInput {
+    pluginId: String!
+    continueOnError: Boolean
+    condition: PipelineCondition
+  }
+
+  input EventPipelineInput {
+    event: String!
+    steps: [PipelineStepInput!]!
+    stopOnFirstFailure: Boolean
+  }
+
   type ChannelPluginProperties @relationshipProperties {
     enabled: Boolean!
     settingsJson: JSON
@@ -1155,9 +1185,18 @@ const typeDefinitions = gql `
     createdAt: DateTime! @timestamp(operations: [CREATE])
   }
 
+  enum PluginRunStatus {
+    PENDING
+    RUNNING
+    SUCCEEDED
+    FAILED
+    SKIPPED
+  }
+
   type PluginRun {
     id: ID! @id
     pluginId: String!
+    pluginName: String
     version: String!
     scope: String!
     channelId: String
@@ -1168,6 +1207,9 @@ const typeDefinitions = gql `
     targetId: String
     targetType: String
     payload: JSON
+    pipelineId: String
+    executionOrder: Int
+    skippedReason: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime! @timestamp(operations: [UPDATE])
   }
@@ -1193,6 +1235,7 @@ const typeDefinitions = gql `
 
     # plugins
     pluginRegistries: [String]
+    pluginPipelines: JSON
     AllowedPlugins: [Plugin!]! @relationship(type: "ALLOWS", direction: OUT)
     InstalledVersions: [PluginVersion!]! @relationship(type: "INSTALLED", direction: OUT, properties: "InstallationProperties")
   }
@@ -1251,12 +1294,16 @@ const typeDefinitions = gql `
   }
 
   type EventChannelInfo {
-    id: ID!
+    id: ID
+    eventId: String
+    channelUniqueName: String
     Channel: ChannelInfo
   }
 
   type DiscussionChannelInfo {
-    id: ID!
+    id: ID
+    discussionId: String
+    channelUniqueName: String
     Channel: ChannelInfo
   }
 
@@ -1268,18 +1315,6 @@ const typeDefinitions = gql `
     CommentAuthor: User
     DiscussionChannel: DiscussionChannelInfo
     Event: EventInfo
-  }
-
-  type EventChannelInfo {
-    id: ID
-    eventId: String
-    channelUniqueName: String
-  }
-
-  type DiscussionChannelInfo {
-    id: ID
-    discussionId: String
-    channelUniqueName: String
   }
 
   type EventInfo {
@@ -1436,6 +1471,7 @@ const typeDefinitions = gql `
     ): [PluginSecretStatus!]!
     getInstalledPlugins: [InstalledPlugin!]!
     getPluginRunsForDownloadableFile(downloadableFileId: ID!): [PluginRun!]!
+    getPipelineRuns(targetId: ID!, targetType: String!): [PluginRun!]!
   }
 `;
 export default typeDefinitions;

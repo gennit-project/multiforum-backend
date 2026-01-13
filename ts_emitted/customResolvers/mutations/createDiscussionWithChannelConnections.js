@@ -1,4 +1,5 @@
 import { createDiscussionChannelQuery } from "../cypher/cypherQueries.js";
+import { triggerChannelPluginPipeline } from "../../services/pluginRunner.js";
 // The reason why we cannot use the auto-generated resolver
 // to create a Discussion with DiscussionChannels already linked
 // is because the creation of the DiscussionChannel nodes
@@ -51,7 +52,7 @@ const selectionSet = `
 /**
  * Function to create discussions from an input array.
  */
-export const createDiscussionsFromInput = async (Discussion, driver, input) => {
+export const createDiscussionsFromInput = async (Discussion, driver, input, pluginModels) => {
     if (!input || input.length === 0) {
         throw new Error("Input cannot be empty");
     }
@@ -68,6 +69,8 @@ export const createDiscussionsFromInput = async (Discussion, driver, input) => {
             });
             const newDiscussion = response.discussions[0];
             const newDiscussionId = newDiscussion.id;
+            // Check if this discussion has a download attached
+            const hasDownload = discussionCreateInput.hasDownload === true;
             // Link the discussion to channels
             for (const channelUniqueName of channelConnections) {
                 try {
@@ -76,6 +79,31 @@ export const createDiscussionsFromInput = async (Discussion, driver, input) => {
                         channelUniqueName,
                         upvotedBy: newDiscussion.Author.username,
                     });
+                    // Trigger channel plugin pipeline if discussion has a download
+                    // and plugin models are available
+                    if (hasDownload && pluginModels) {
+                        try {
+                            await triggerChannelPluginPipeline({
+                                discussionId: newDiscussionId,
+                                channelUniqueName,
+                                event: 'discussionChannel.created',
+                                models: {
+                                    Channel: pluginModels.Channel,
+                                    Discussion,
+                                    DownloadableFile: pluginModels.DownloadableFile,
+                                    Plugin: null, // Not used in channel pipeline
+                                    PluginVersion: null, // Not used directly
+                                    PluginRun: pluginModels.PluginRun,
+                                    ServerConfig: pluginModels.ServerConfig,
+                                    ServerSecret: pluginModels.ServerSecret,
+                                }
+                            });
+                        }
+                        catch (pipelineError) {
+                            // Log pipeline errors but don't fail the discussion creation
+                            console.error(`Channel pipeline error for ${channelUniqueName}:`, pipelineError.message);
+                        }
+                    }
                 }
                 catch (error) {
                     if (error.message.includes("Constraint validation failed")) {
@@ -110,12 +138,16 @@ export const createDiscussionsFromInput = async (Discussion, driver, input) => {
  * Main resolver that uses createDiscussionsFromInput
  */
 const getResolver = (input) => {
-    const { Discussion, driver } = input;
+    const { Discussion, driver, Channel, DownloadableFile, PluginRun, ServerConfig, ServerSecret } = input;
+    // Build plugin models object if all required models are provided
+    const pluginModels = Channel && DownloadableFile && PluginRun && ServerConfig && ServerSecret
+        ? { Channel, DownloadableFile, PluginRun, ServerConfig, ServerSecret }
+        : undefined;
     return async (parent, args, context, info) => {
         const { input } = args;
         try {
             // Use the extracted function to create discussions
-            const discussions = await createDiscussionsFromInput(Discussion, driver, input);
+            const discussions = await createDiscussionsFromInput(Discussion, driver, input, pluginModels);
             return discussions;
         }
         catch (error) {
