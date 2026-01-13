@@ -11,69 +11,64 @@ const getResolver = (input: Input) => {
 
   return async (_parent: any, _args: any, _context: any, _resolveInfo: any) => {
     try {
-      // Get server config with installed plugins
+      // Get server config with installed plugins using Connection pattern
+      // This gives us access to relationship properties (enabled, settingsJson)
       const serverConfigs = await ServerConfig.find({
         selectionSet: `{
-          InstalledVersions {
-            id
-            version
-            repoUrl
-            tarballGsUri
-            integritySha256
-            entryPath
-            manifest
-            settingsDefaults
-            uiSchema
-            documentationPath
-            readmeMarkdown
-            Plugin {
-              id
-              name
-              displayName
-              description
-              authorName
-              authorUrl
-              homepage
-              license
-              tags
-              metadata
+          serverName
+          InstalledVersionsConnection {
+            edges {
+              edge {
+                enabled
+                settingsJson
+              }
+              node {
+                id
+                version
+                repoUrl
+                tarballGsUri
+                integritySha256
+                entryPath
+                manifest
+                settingsDefaults
+                uiSchema
+                documentationPath
+                readmeMarkdown
+                Plugin {
+                  id
+                  name
+                  displayName
+                  description
+                  authorName
+                  authorUrl
+                  homepage
+                  license
+                  tags
+                  metadata
+                }
+              }
             }
           }
         }`
       })
 
-      if (!serverConfigs.length || !serverConfigs[0].InstalledVersions) {
+      if (!serverConfigs.length) {
         return []
       }
 
-      const serverConfig = serverConfigs[0]
-      
-      // Get the installation properties for each installed version
-      const installedPlugins = []
-      
-      for (const installedVersion of serverConfig.InstalledVersions) {
-        const pluginData = (installedVersion.Plugin || {}) as any
-        const versionData = installedVersion as any
-        // Query the relationship properties
-        const result = await ServerConfig.find({
-          where: { serverName: serverConfig.serverName },
-          selectionSet: `{
-            InstalledVersions(where: { id: "${installedVersion.id}" }) {
-              id
-              version
-              Plugin {
-                id
-                name
-              }
-            }
-          }`
-        })
+      const serverConfig = serverConfigs[0] as any
+      const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
-        // Get the relationship properties separately using a Cypher query
-        // This is a workaround since Neo4j GraphQL OGM doesn't easily expose relationship properties
-        // In a real implementation, you might use a custom Cypher query here
+      if (!edges.length) {
+        return []
+      }
 
-        installedPlugins.push({
+      const installedPlugins = edges.map((edgeData: any) => {
+        const edgeProps = edgeData.edge || {}
+        const node = edgeData.node || {}
+        const pluginData = node.Plugin || {}
+
+        return {
           plugin: {
             id: pluginData.id,
             name: pluginData.name,
@@ -86,17 +81,17 @@ const getResolver = (input: Input) => {
             tags: pluginData.tags || [],
             metadata: pluginData.metadata || null
           },
-          version: installedVersion.version,
+          version: node.version,
           scope: 'SERVER',
-          enabled: false, // Default - would need custom query to get actual value
-          settingsJson: {},
-          manifest: versionData.manifest || null,
-          settingsDefaults: versionData.settingsDefaults || null,
-          uiSchema: versionData.uiSchema || null,
-          documentationPath: versionData.documentationPath || null,
-          readmeMarkdown: versionData.readmeMarkdown || null
-        })
-      }
+          enabled: edgeProps.enabled ?? false,
+          settingsJson: edgeProps.settingsJson || {},
+          manifest: node.manifest || null,
+          settingsDefaults: node.settingsDefaults || null,
+          uiSchema: node.uiSchema || null,
+          documentationPath: node.documentationPath || null,
+          readmeMarkdown: node.readmeMarkdown || null
+        }
+      })
 
       return installedPlugins
 

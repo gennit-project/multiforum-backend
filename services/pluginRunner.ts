@@ -170,6 +170,67 @@ const getAttachmentUrls = (downloadableFile: any): string[] => {
   return urls
 }
 
+type PipelineStep = {
+  pluginId: string
+  continueOnError?: boolean
+  condition?: 'ALWAYS' | 'PREVIOUS_SUCCEEDED' | 'PREVIOUS_FAILED'
+}
+
+type EventPipeline = {
+  event: string
+  steps: PipelineStep[]
+  stopOnFirstFailure?: boolean
+}
+
+type PluginEdgeData = {
+  edge: {
+    enabled: boolean
+    settingsJson: any
+  }
+  node: {
+    id: string
+    version: string
+    repoUrl: string
+    tarballGsUri: string
+    entryPath: string
+    manifest: any
+    settingsDefaults: any
+    uiSchema: any
+    Plugin: {
+      id: string
+      name: string
+      displayName: string
+      description: string
+      metadata: any
+    }
+  }
+}
+
+const generatePipelineId = (): string => {
+  return `pipeline-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`
+}
+
+const shouldRunStep = (
+  step: PipelineStep,
+  previousStatus: 'SUCCEEDED' | 'FAILED' | null
+): boolean => {
+  const condition = step.condition || 'ALWAYS'
+
+  if (condition === 'ALWAYS') {
+    return true
+  }
+
+  if (condition === 'PREVIOUS_SUCCEEDED') {
+    return previousStatus === 'SUCCEEDED'
+  }
+
+  if (condition === 'PREVIOUS_FAILED') {
+    return previousStatus === 'FAILED'
+  }
+
+  return true
+}
+
 export const triggerPluginRunsForDownloadableFile = async ({
   downloadableFileId,
   event,
@@ -209,6 +270,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
   const serverConfigs = await ServerConfig.find({
     selectionSet: `{
       serverName
+      pluginPipelines
       InstalledVersionsConnection {
         edges {
           edge {
@@ -237,41 +299,96 @@ export const triggerPluginRunsForDownloadableFile = async ({
     }`
   })
 
-  const serverConfig = serverConfigs[0]
+  const serverConfig = serverConfigs[0] as any
   if (!serverConfig) {
     return []
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
-  const runnableEdges = edges.filter((edge: any) => edge?.edge?.enabled)
+  const enabledPluginsMap = new Map<string, PluginEdgeData>()
 
-  const runs = []
-
-  for (const edge of runnableEdges) {
-    const edgeData = edge as any
-    const pluginVersionNode = edgeData.node
-    const pluginVersionData = pluginVersionNode as any
-    const pluginNode = pluginVersionData.Plugin
-    if (!pluginNode) continue
-
-    const manifest = pluginVersionData.manifest || {}
-    const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
-    if (!manifestEvents.includes(event)) {
-      continue
+  // Build a map of enabled plugins by pluginId (name)
+  for (const edge of edges) {
+    const edgeData = edge as PluginEdgeData
+    if (edgeData.edge?.enabled && edgeData.node?.Plugin?.name) {
+      enabledPluginsMap.set(edgeData.node.Plugin.name, edgeData)
     }
+  }
 
-    const pluginSlug = pluginNode.name
+  // Check if there's a pipeline defined for this event
+  const pipelines: EventPipeline[] = serverConfig.pluginPipelines || []
+  const eventPipeline = pipelines.find(p => p.event === event)
+
+  // Generate unique pipeline ID
+  const pipelineId = generatePipelineId()
+
+  // Determine which plugins to run and in what order
+  let pluginsToRun: { pluginId: string; edgeData: PluginEdgeData; step: PipelineStep; order: number }[] = []
+
+  if (eventPipeline && eventPipeline.steps.length > 0) {
+    // Use pipeline order - only run plugins that are both in the pipeline AND enabled
+    eventPipeline.steps.forEach((step, index) => {
+      const edgeData = enabledPluginsMap.get(step.pluginId)
+      if (edgeData) {
+        // Also verify the plugin handles this event type
+        const manifest = edgeData.node.manifest || {}
+        const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
+        if (manifestEvents.includes(event)) {
+          pluginsToRun.push({
+            pluginId: step.pluginId,
+            edgeData,
+            step,
+            order: index
+          })
+        }
+      }
+    })
+  } else {
+    // No pipeline defined - fall back to running all enabled plugins that handle this event
+    let order = 0
+    for (const [pluginId, edgeData] of enabledPluginsMap) {
+      const manifest = edgeData.node.manifest || {}
+      const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
+      if (manifestEvents.includes(event)) {
+        pluginsToRun.push({
+          pluginId,
+          edgeData,
+          step: { pluginId, condition: 'ALWAYS', continueOnError: false },
+          order: order++
+        })
+      }
+    }
+  }
+
+  if (pluginsToRun.length === 0) {
+    return []
+  }
+
+  const runs: any[] = []
+  const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
+  let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
+  let pipelineStopped = false
+
+  // Create PENDING records for all plugins first (for UI visibility)
+  const pendingRuns: { id: string; pluginId: string; order: number }[] = []
+  for (const { pluginId, edgeData, order } of pluginsToRun) {
+    const pluginNode = edgeData.node.Plugin
+    const pluginVersionData = edgeData.node
+
     const runCreateResult = await PluginRun.create({
       input: [
         ({
-          pluginId: pluginSlug,
+          pluginId,
+          pluginName: pluginNode.displayName || pluginNode.name,
           version: pluginVersionData.version,
           scope: 'SERVER',
           channelId,
           eventType: event,
-          status: 'RUNNING',
+          status: 'PENDING',
           targetId: downloadableFile.id,
           targetType: 'DownloadableFile',
+          pipelineId,
+          executionOrder: order,
           payload: {
             fileName: fileData.fileName,
             url: fileData.url,
@@ -281,7 +398,79 @@ export const triggerPluginRunsForDownloadableFile = async ({
       ]
     })
 
-    const pluginRun = runCreateResult.pluginRuns[0]
+    pendingRuns.push({
+      id: runCreateResult.pluginRuns[0].id,
+      pluginId,
+      order
+    })
+  }
+
+  // Now execute each plugin in order
+  for (let i = 0; i < pluginsToRun.length; i++) {
+    const { pluginId, edgeData, step, order } = pluginsToRun[i]
+    const pendingRun = pendingRuns.find(r => r.pluginId === pluginId && r.order === order)
+    if (!pendingRun) continue
+
+    const pluginRunId = pendingRun.id
+    const pluginVersionData = edgeData.node
+    const pluginNode = pluginVersionData.Plugin
+
+    // Check if pipeline was stopped
+    if (pipelineStopped) {
+      await PluginRun.update({
+        where: { id: pluginRunId },
+        update: ({
+          status: 'SKIPPED',
+          skippedReason: 'Pipeline stopped due to previous failure',
+          message: 'Skipped: pipeline stopped'
+        } as any)
+      })
+
+      const skipped = await PluginRun.find({
+        where: { id: pluginRunId },
+        selectionSet: `{
+          id pluginId pluginName version scope channelId eventType status message
+          durationMs targetId targetType payload pipelineId executionOrder skippedReason
+          createdAt updatedAt
+        }`
+      })
+      if (skipped[0]) runs.push(skipped[0])
+      continue
+    }
+
+    // Check step condition
+    if (!shouldRunStep(step, previousStatus)) {
+      const reason = step.condition === 'PREVIOUS_SUCCEEDED'
+        ? 'Condition not met: previous step did not succeed'
+        : 'Condition not met: previous step did not fail'
+
+      await PluginRun.update({
+        where: { id: pluginRunId },
+        update: ({
+          status: 'SKIPPED',
+          skippedReason: reason,
+          message: `Skipped: ${reason}`
+        } as any)
+      })
+
+      const skipped = await PluginRun.find({
+        where: { id: pluginRunId },
+        selectionSet: `{
+          id pluginId pluginName version scope channelId eventType status message
+          durationMs targetId targetType payload pipelineId executionOrder skippedReason
+          createdAt updatedAt
+        }`
+      })
+      if (skipped[0]) runs.push(skipped[0])
+      continue
+    }
+
+    // Update status to RUNNING
+    await PluginRun.update({
+      where: { id: pluginRunId },
+      update: ({ status: 'RUNNING' } as any)
+    })
+
     const runStart = performance.now()
     const logs: string[] = []
     const flags: any[] = []
@@ -291,7 +480,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
       const PluginClass = await loadPluginImplementation(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
 
       const serverSecrets = await ServerSecret.find({
-        where: { pluginId: pluginSlug },
+        where: { pluginId },
         selectionSet: `{
           key
           ciphertext
@@ -322,7 +511,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
         log: (...args: any[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
-          console.log(`[Plugin:${pluginSlug}]`, message)
+          console.log(`[Plugin:${pluginId}]`, message)
         },
         storeFlag: async (flag: any) => {
           flags.push(flag)
@@ -343,11 +532,16 @@ export const triggerPluginRunsForDownloadableFile = async ({
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
 
+      const succeeded = result?.success !== false
+      previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
+
       await PluginRun.update({
-        where: { id: pluginRun.id },
+        where: { id: pluginRunId },
         update: ({
-          status: result?.success === false ? 'FAILED' : 'SUCCEEDED',
-          message: result?.success === false ? result?.error || 'Plugin reported failure' : result?.result?.message || 'Plugin run completed',
+          status: succeeded ? 'SUCCEEDED' : 'FAILED',
+          message: succeeded
+            ? (result?.result?.message || 'Plugin run completed')
+            : (result?.error || 'Plugin reported failure'),
           durationMs,
           payload: {
             event,
@@ -359,23 +553,17 @@ export const triggerPluginRunsForDownloadableFile = async ({
         } as any)
       })
 
+      // Check if we should stop the pipeline
+      if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
+        pipelineStopped = true
+      }
+
       const updated = await PluginRun.find({
-        where: { id: pluginRun.id },
+        where: { id: pluginRunId },
         selectionSet: `{
-          id
-          pluginId
-          version
-          scope
-          channelId
-          eventType
-          status
-          message
-          durationMs
-          targetId
-          targetType
-          payload
-          createdAt
-          updatedAt
+          id pluginId pluginName version scope channelId eventType status message
+          durationMs targetId targetType payload pipelineId executionOrder skippedReason
+          createdAt updatedAt
         }`
       })
 
@@ -387,8 +575,10 @@ export const triggerPluginRunsForDownloadableFile = async ({
       const durationMs = Math.round(runEnd - runStart)
       const message = (error as any).message || 'Plugin execution failed'
 
+      previousStatus = 'FAILED'
+
       await PluginRun.update({
-        where: { id: pluginRun.id },
+        where: { id: pluginRunId },
         update: ({
           status: 'FAILED',
           message,
@@ -402,23 +592,17 @@ export const triggerPluginRunsForDownloadableFile = async ({
         } as any)
       })
 
+      // Check if we should stop the pipeline
+      if (stopOnFirstFailure && !step.continueOnError) {
+        pipelineStopped = true
+      }
+
       const updated = await PluginRun.find({
-        where: { id: pluginRun.id },
+        where: { id: pluginRunId },
         selectionSet: `{
-          id
-          pluginId
-          version
-          scope
-          channelId
-          eventType
-          status
-          message
-          durationMs
-          targetId
-          targetType
-          payload
-          createdAt
-          updatedAt
+          id pluginId pluginName version scope channelId eventType status message
+          durationMs targetId targetType payload pipelineId executionOrder skippedReason
+          createdAt updatedAt
         }`
       })
 

@@ -84,6 +84,8 @@ import validateServerPluginSecret from './customResolvers/mutations/validateServ
 import getServerPluginSecrets from './customResolvers/queries/getServerPluginSecrets.js';
 import getInstalledPlugins from './customResolvers/queries/getInstalledPlugins.js';
 import getPluginRunsForDownloadableFile from './customResolvers/queries/getPluginRunsForDownloadableFile.js';
+import getPipelineRuns from './customResolvers/queries/getPipelineRuns.js';
+import updatePluginPipelines from './customResolvers/mutations/updatePluginPipelines.js';
 
 import userCollections from './customResolvers/fields/userCollections.js';
 import publicCollectionsContaining from './customResolvers/queries/publicCollectionsContaining.js';
@@ -192,6 +194,9 @@ export default function (driver: any) {
         ServerConfig
       }),
       getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
+        PluginRun
+      }),
+      getPipelineRuns: getPipelineRuns({
         PluginRun
       }),
       publicCollectionsContaining: publicCollectionsContaining({
@@ -440,6 +445,9 @@ export default function (driver: any) {
       }),
       validateServerPluginSecret: validateServerPluginSecret({
         ServerSecret
+      }),
+      updatePluginPipelines: updatePluginPipelines({
+        ServerConfig
       }),
     },
   };

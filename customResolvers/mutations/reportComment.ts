@@ -139,7 +139,7 @@ type InputIssueCreate = {
 
 export const getIssueCreateInput = (
   input: InputIssueCreate
-): IssueCreateInput & { issueNumber?: number } => {
+): IssueCreateInput => {
   const {
     contextText,
     selectedServerRules,
@@ -163,7 +163,7 @@ export const getIssueCreateInput = (
   }
 
   const truncatedContextText = contextText?.substring(0, 50) || ''
-  const output: IssueCreateInput & { issueNumber?: number } = {
+  const output: IssueCreateInput = {
     title: `[Reported ${reportedContentType}] "${truncatedContextText}${
       contextText.length > 50 ? '...' : ''
     }"`,
@@ -171,7 +171,7 @@ export const getIssueCreateInput = (
     authorName: loggedInModName,
     flaggedServerRuleViolation: selectedServerRules.length > 0,
     channelUniqueName: channelUniqueName,
-    issueNumber,
+    issueNumber: issueNumber ?? 0,
     Author: {
       ModerationProfile: {
         connect: {
