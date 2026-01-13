@@ -1,9 +1,62 @@
+import { Storage } from '@google-cloud/storage'
 import type {
   ServerConfigModel
 } from '../../ogm_types.js'
 
 type Input = {
   ServerConfig: ServerConfigModel
+}
+
+type RegistryPlugin = {
+  id: string
+  versions: {
+    version: string
+    tarballUrl: string
+    integritySha256: string
+  }[]
+}
+
+type PluginRegistry = {
+  updatedAt: string
+  plugins: RegistryPlugin[]
+}
+
+/**
+ * Compare two semver-style version strings.
+ * Returns: negative if a < b, positive if a > b, 0 if equal
+ */
+function compareVersions(a: string, b: string): number {
+  const parseVersion = (v: string) => {
+    // Remove 'v' prefix if present
+    const clean = v.replace(/^v/, '')
+    const parts = clean.split('.').map(p => {
+      const num = parseInt(p, 10)
+      return isNaN(num) ? 0 : num
+    })
+    // Pad to 3 parts (major.minor.patch)
+    while (parts.length < 3) parts.push(0)
+    return parts
+  }
+
+  const aParts = parseVersion(a)
+  const bParts = parseVersion(b)
+
+  for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+    const aVal = aParts[i] || 0
+    const bVal = bParts[i] || 0
+    if (aVal !== bVal) return aVal - bVal
+  }
+  return 0
+}
+
+/**
+ * Find the latest version from an array of version strings
+ */
+function findLatestVersion(versions: string[]): string | null {
+  if (!versions.length) return null
+  return versions.reduce((latest, current) =>
+    compareVersions(current, latest) > 0 ? current : latest
+  )
 }
 
 const getResolver = (input: Input) => {
@@ -16,6 +69,7 @@ const getResolver = (input: Input) => {
       const serverConfigs = await ServerConfig.find({
         selectionSet: `{
           serverName
+          pluginRegistries
           InstalledVersionsConnection {
             edges {
               edge {
@@ -63,10 +117,57 @@ const getResolver = (input: Input) => {
         return []
       }
 
+      // Try to fetch registry for version comparison
+      let registryData: PluginRegistry | null = null
+      const registryUrl = serverConfig.pluginRegistries?.[0]
+
+      if (registryUrl) {
+        try {
+          if (registryUrl.startsWith('gs://')) {
+            const storage = new Storage()
+            const gsPath = registryUrl.replace('gs://', '')
+            const [bucketName, ...pathParts] = gsPath.split('/')
+            const filePath = pathParts.join('/')
+
+            const bucket = storage.bucket(bucketName)
+            const file = bucket.file(filePath)
+
+            const [contents] = await file.download()
+            registryData = JSON.parse(contents.toString())
+          } else {
+            const response = await fetch(registryUrl)
+            if (response.ok) {
+              registryData = await response.json()
+            }
+          }
+        } catch (error) {
+          // Registry fetch failed - continue without version comparison
+          console.warn('Failed to fetch plugin registry for version comparison:', (error as any).message)
+        }
+      }
+
+      // Build a map of plugin ID -> available versions from registry
+      const registryVersionsMap = new Map<string, string[]>()
+      if (registryData?.plugins) {
+        for (const plugin of registryData.plugins) {
+          const versions = plugin.versions.map(v => v.version)
+          registryVersionsMap.set(plugin.id, versions)
+        }
+      }
+
       const installedPlugins = edges.map((edgeData: any) => {
         const edgeProps = edgeData.edge || {}
         const node = edgeData.node || {}
         const pluginData = node.Plugin || {}
+        const pluginName = pluginData.name
+        const installedVersion = node.version
+
+        // Get version info from registry
+        const availableVersions = registryVersionsMap.get(pluginName) || []
+        const latestVersion = findLatestVersion(availableVersions)
+        const hasUpdate = latestVersion
+          ? compareVersions(latestVersion, installedVersion) > 0
+          : false
 
         return {
           plugin: {
@@ -81,7 +182,7 @@ const getResolver = (input: Input) => {
             tags: pluginData.tags || [],
             metadata: pluginData.metadata || null
           },
-          version: node.version,
+          version: installedVersion,
           scope: 'SERVER',
           enabled: edgeProps.enabled ?? false,
           settingsJson: edgeProps.settingsJson || {},
@@ -89,7 +190,10 @@ const getResolver = (input: Input) => {
           settingsDefaults: node.settingsDefaults || null,
           uiSchema: node.uiSchema || null,
           documentationPath: node.documentationPath || null,
-          readmeMarkdown: node.readmeMarkdown || null
+          readmeMarkdown: node.readmeMarkdown || null,
+          hasUpdate,
+          latestVersion,
+          availableVersions: availableVersions.sort((a, b) => compareVersions(b, a)) // sorted newest first
         }
       })
 
