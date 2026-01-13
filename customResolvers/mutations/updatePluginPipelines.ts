@@ -4,13 +4,13 @@ type Input = {
   ServerConfig: ServerConfigModel
 }
 
-type PipelineStepInput = {
+export type PipelineStepInput = {
   pluginId: string
   continueOnError?: boolean
   condition?: 'ALWAYS' | 'PREVIOUS_SUCCEEDED' | 'PREVIOUS_FAILED'
 }
 
-type EventPipelineInput = {
+export type EventPipelineInput = {
   event: string
   steps: PipelineStepInput[]
   stopOnFirstFailure?: boolean
@@ -20,6 +20,31 @@ type Args = {
   pipelines: EventPipelineInput[]
 }
 
+/**
+ * Validates pipeline configuration structure.
+ * Returns null if valid, or an error message string if invalid.
+ */
+export const validatePipelines = (pipelines: EventPipelineInput[]): string | null => {
+  for (const pipeline of pipelines) {
+    if (!pipeline.event) {
+      return 'Invalid pipeline: each pipeline must have an event'
+    }
+    if (!pipeline.steps || pipeline.steps.length === 0) {
+      return 'Invalid pipeline: each pipeline must have at least one step'
+    }
+    for (const step of pipeline.steps) {
+      if (!step.pluginId) {
+        return 'Invalid step: each step must have a pluginId'
+      }
+      // Validate condition if provided
+      if (step.condition && !['ALWAYS', 'PREVIOUS_SUCCEEDED', 'PREVIOUS_FAILED'].includes(step.condition)) {
+        return `Invalid step condition: ${step.condition}. Must be ALWAYS, PREVIOUS_SUCCEEDED, or PREVIOUS_FAILED`
+      }
+    }
+  }
+  return null
+}
+
 const getResolver = (input: Input) => {
   const { ServerConfig } = input
 
@@ -27,15 +52,9 @@ const getResolver = (input: Input) => {
     const { pipelines } = args
 
     // Validate pipelines structure
-    for (const pipeline of pipelines) {
-      if (!pipeline.event || !pipeline.steps || pipeline.steps.length === 0) {
-        throw new Error(`Invalid pipeline: each pipeline must have an event and at least one step`)
-      }
-      for (const step of pipeline.steps) {
-        if (!step.pluginId) {
-          throw new Error(`Invalid step: each step must have a pluginId`)
-        }
-      }
+    const validationError = validatePipelines(pipelines)
+    if (validationError) {
+      throw new Error(validationError)
     }
 
     // Get server config

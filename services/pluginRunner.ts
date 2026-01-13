@@ -170,13 +170,13 @@ const getAttachmentUrls = (downloadableFile: any): string[] => {
   return urls
 }
 
-type PipelineStep = {
+export type PipelineStep = {
   pluginId: string
   continueOnError?: boolean
   condition?: 'ALWAYS' | 'PREVIOUS_SUCCEEDED' | 'PREVIOUS_FAILED'
 }
 
-type EventPipeline = {
+export type EventPipeline = {
   event: string
   steps: PipelineStep[]
   stopOnFirstFailure?: boolean
@@ -206,11 +206,11 @@ type PluginEdgeData = {
   }
 }
 
-const generatePipelineId = (): string => {
+export const generatePipelineId = (): string => {
   return `pipeline-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`
 }
 
-const shouldRunStep = (
+export const shouldRunStep = (
   step: PipelineStep,
   previousStatus: 'SUCCEEDED' | 'FAILED' | null
 ): boolean => {
