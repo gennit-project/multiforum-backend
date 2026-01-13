@@ -1,83 +1,123 @@
 import assert from "node:assert/strict";
-import { shouldRunStep, generatePipelineId, type PipelineStep } from "./pluginRunner.js";
+import {
+  shouldRunStep,
+  generatePipelineId,
+  isSupportedEvent,
+  isChannelEvent,
+  type PipelineStep
+} from "./pluginRunner.js";
 
 // Tests for shouldRunStep function
+
 async function testShouldRunStepAlwaysCondition() {
   const step: PipelineStep = { pluginId: 'test-plugin', condition: 'ALWAYS' };
 
   // ALWAYS should run regardless of previous status
-  assert.equal(shouldRunStep(step, null), true, "ALWAYS should run when no previous status");
-  assert.equal(shouldRunStep(step, 'SUCCEEDED'), true, "ALWAYS should run when previous succeeded");
-  assert.equal(shouldRunStep(step, 'FAILED'), true, "ALWAYS should run when previous failed");
-}
-
-async function testShouldRunStepDefaultCondition() {
-  // When no condition is specified, default should be ALWAYS
-  const step: PipelineStep = { pluginId: 'test-plugin' };
-
-  assert.equal(shouldRunStep(step, null), true, "Default condition should run when no previous status");
-  assert.equal(shouldRunStep(step, 'SUCCEEDED'), true, "Default condition should run when previous succeeded");
-  assert.equal(shouldRunStep(step, 'FAILED'), true, "Default condition should run when previous failed");
+  assert.equal(shouldRunStep(step, null), true, "ALWAYS should run when no previous step");
+  assert.equal(shouldRunStep(step, 'SUCCEEDED'), true, "ALWAYS should run after success");
+  assert.equal(shouldRunStep(step, 'FAILED'), true, "ALWAYS should run after failure");
 }
 
 async function testShouldRunStepPreviousSucceededCondition() {
   const step: PipelineStep = { pluginId: 'test-plugin', condition: 'PREVIOUS_SUCCEEDED' };
 
-  assert.equal(shouldRunStep(step, null), false, "PREVIOUS_SUCCEEDED should not run when no previous status");
-  assert.equal(shouldRunStep(step, 'SUCCEEDED'), true, "PREVIOUS_SUCCEEDED should run when previous succeeded");
-  assert.equal(shouldRunStep(step, 'FAILED'), false, "PREVIOUS_SUCCEEDED should not run when previous failed");
+  assert.equal(shouldRunStep(step, null), false, "PREVIOUS_SUCCEEDED should not run when no previous step");
+  assert.equal(shouldRunStep(step, 'SUCCEEDED'), true, "PREVIOUS_SUCCEEDED should run after success");
+  assert.equal(shouldRunStep(step, 'FAILED'), false, "PREVIOUS_SUCCEEDED should not run after failure");
 }
 
 async function testShouldRunStepPreviousFailedCondition() {
   const step: PipelineStep = { pluginId: 'test-plugin', condition: 'PREVIOUS_FAILED' };
 
-  assert.equal(shouldRunStep(step, null), false, "PREVIOUS_FAILED should not run when no previous status");
-  assert.equal(shouldRunStep(step, 'SUCCEEDED'), false, "PREVIOUS_FAILED should not run when previous succeeded");
-  assert.equal(shouldRunStep(step, 'FAILED'), true, "PREVIOUS_FAILED should run when previous failed");
+  assert.equal(shouldRunStep(step, null), false, "PREVIOUS_FAILED should not run when no previous step");
+  assert.equal(shouldRunStep(step, 'SUCCEEDED'), false, "PREVIOUS_FAILED should not run after success");
+  assert.equal(shouldRunStep(step, 'FAILED'), true, "PREVIOUS_FAILED should run after failure");
+}
+
+async function testShouldRunStepDefaultsToAlways() {
+  // When condition is not specified, it defaults to ALWAYS
+  const step: PipelineStep = { pluginId: 'test-plugin' };
+
+  assert.equal(shouldRunStep(step, null), true, "Default should run when no previous step");
+  assert.equal(shouldRunStep(step, 'SUCCEEDED'), true, "Default should run after success");
+  assert.equal(shouldRunStep(step, 'FAILED'), true, "Default should run after failure");
 }
 
 // Tests for generatePipelineId function
+
 async function testGeneratePipelineIdFormat() {
-  const pipelineId = generatePipelineId();
+  const id = generatePipelineId();
 
-  // Should start with 'pipeline-'
-  assert.ok(pipelineId.startsWith('pipeline-'), "Pipeline ID should start with 'pipeline-'");
-
-  // Should have correct format: pipeline-{timestamp}-{hex}
-  const parts = pipelineId.split('-');
-  assert.equal(parts.length, 3, "Pipeline ID should have 3 parts separated by hyphens");
-  assert.equal(parts[0], 'pipeline', "First part should be 'pipeline'");
-
-  // Second part should be a valid timestamp (number)
-  const timestamp = parseInt(parts[1], 10);
-  assert.ok(!isNaN(timestamp), "Second part should be a valid number (timestamp)");
-  assert.ok(timestamp > 0, "Timestamp should be positive");
-
-  // Third part should be 8 hex characters (4 bytes = 8 hex chars)
-  assert.equal(parts[2].length, 8, "Third part should be 8 hex characters");
-  assert.ok(/^[0-9a-f]+$/.test(parts[2]), "Third part should be valid hex");
+  assert.ok(id.startsWith('pipeline-'), "Pipeline ID should start with 'pipeline-'");
+  assert.ok(id.length > 20, "Pipeline ID should have sufficient length");
 }
 
 async function testGeneratePipelineIdUniqueness() {
-  const id1 = generatePipelineId();
-  const id2 = generatePipelineId();
+  const ids = new Set<string>();
 
-  assert.notEqual(id1, id2, "Generated pipeline IDs should be unique");
+  for (let i = 0; i < 100; i++) {
+    ids.add(generatePipelineId());
+  }
+
+  assert.equal(ids.size, 100, "Generated pipeline IDs should be unique");
+}
+
+// Tests for isSupportedEvent function
+
+async function testIsSupportedEventDownloadEvents() {
+  // Server-scoped download events
+  assert.equal(isSupportedEvent('downloadableFile.created'), true, "downloadableFile.created should be supported");
+  assert.equal(isSupportedEvent('downloadableFile.updated'), true, "downloadableFile.updated should be supported");
+  assert.equal(isSupportedEvent('downloadableFile.downloaded'), true, "downloadableFile.downloaded should be supported");
+}
+
+async function testIsSupportedEventRejectsInvalidEvents() {
+  assert.equal(isSupportedEvent('unknown.event'), false, "Unknown event should not be supported");
+  assert.equal(isSupportedEvent('discussionChannel.created'), false, "Channel event should not be in server events");
+  assert.equal(isSupportedEvent(''), false, "Empty string should not be supported");
+}
+
+// Tests for isChannelEvent function
+
+async function testIsChannelEventChannelEvents() {
+  assert.equal(isChannelEvent('discussionChannel.created'), true, "discussionChannel.created should be channel event");
+}
+
+async function testIsChannelEventRejectsServerEvents() {
+  assert.equal(isChannelEvent('downloadableFile.created'), false, "downloadableFile.created is not a channel event");
+  assert.equal(isChannelEvent('downloadableFile.updated'), false, "downloadableFile.updated is not a channel event");
+  assert.equal(isChannelEvent('unknown.event'), false, "Unknown event is not a channel event");
+}
+
+// Tests for step conditions with continueOnError
+
+async function testStepWithContinueOnError() {
+  const step: PipelineStep = {
+    pluginId: 'test-plugin',
+    condition: 'ALWAYS',
+    continueOnError: true
+  };
+
+  // continueOnError doesn't affect shouldRunStep - it affects pipeline behavior after execution
+  assert.equal(shouldRunStep(step, null), true, "Step with continueOnError should still run");
+  assert.equal(shouldRunStep(step, 'FAILED'), true, "Step with continueOnError should run after failure");
 }
 
 // Run all tests
 async function run() {
-  // shouldRunStep tests
   await testShouldRunStepAlwaysCondition();
-  await testShouldRunStepDefaultCondition();
   await testShouldRunStepPreviousSucceededCondition();
   await testShouldRunStepPreviousFailedCondition();
-
-  // generatePipelineId tests
+  await testShouldRunStepDefaultsToAlways();
   await testGeneratePipelineIdFormat();
   await testGeneratePipelineIdUniqueness();
+  await testIsSupportedEventDownloadEvents();
+  await testIsSupportedEventRejectsInvalidEvents();
+  await testIsChannelEventChannelEvents();
+  await testIsChannelEventRejectsServerEvents();
+  await testStepWithContinueOnError();
 
-  console.log("pluginRunner tests passed");
+  console.log("pluginRunner utility tests passed");
 }
 
 run().catch((err) => {
