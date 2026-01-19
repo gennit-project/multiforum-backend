@@ -55,6 +55,7 @@ const getResolver = (input: Input) => {
       if (!registryUrl) {
         throw new Error('No plugin registry URL configured')
       }
+      console.log('Using plugin registry URL:', registryUrl)
 
       // 2. Fetch and find plugin version in registry
       let registryData: PluginRegistry
@@ -123,24 +124,28 @@ const getResolver = (input: Input) => {
 
       let registryVersion: any
 
+      // Always get the version data from the registry for integrity verification
+      const registryPlugin = registryData.plugins.find(p => p.id === pluginSlug)
+      if (!registryPlugin) {
+        throw new Error(`Plugin ${pluginSlug} not found in registry`)
+      }
+
+      const registryVersionData = registryPlugin.versions.find(v => v.version === version)
+      if (!registryVersionData) {
+        throw new Error(`Plugin ${pluginSlug} version ${version} not found in registry`)
+      }
+
       if (existingDbVersions.length > 0) {
         const dbVersion = existingDbVersions[0]
         console.log(`Found existing version in database: ${pluginSlug}@${version}`)
+        // Use database URL but always use registry hash for verification
         registryVersion = {
           version: dbVersion.version,
-          tarballUrl: dbVersion.repoUrl,
-          integritySha256: dbVersion.integritySha256 || ''
+          tarballUrl: dbVersion.repoUrl || registryVersionData.tarballUrl,
+          integritySha256: registryVersionData.integritySha256 // Always use registry hash
         }
       } else {
-        const registryPlugin = registryData.plugins.find(p => p.id === pluginSlug)
-        if (!registryPlugin) {
-          throw new Error(`Plugin ${pluginSlug} not found in registry`)
-        }
-
-        registryVersion = registryPlugin.versions.find(v => v.version === version)
-        if (!registryVersion) {
-          throw new Error(`Plugin ${pluginSlug} version ${version} not found in registry`)
-        }
+        registryVersion = registryVersionData
       }
 
       console.log('Using version data:', JSON.stringify(registryVersion, null, 2))
@@ -170,8 +175,12 @@ const getResolver = (input: Input) => {
 
       // 4. Verify integrity
       const actualSha256 = crypto.createHash('sha256').update(tarballBytes).digest('hex')
+      console.log('Tarball integrity check:')
+      console.log('  Expected SHA-256:', registryVersion.integritySha256)
+      console.log('  Actual SHA-256:  ', actualSha256)
+      console.log('  Tarball size:    ', tarballBytes.length, 'bytes')
       if (actualSha256 !== registryVersion.integritySha256) {
-        throw new Error('Tarball integrity verification failed: SHA-256 mismatch')
+        throw new Error(`Tarball integrity verification failed: SHA-256 mismatch. Expected: ${registryVersion.integritySha256}, Got: ${actualSha256}`)
       }
 
       const artifacts = await parseManifestFromTarball(tarballBytes)
