@@ -72,7 +72,7 @@ const getResolver = (input: Input) => {
           pluginRegistries
           InstalledVersionsConnection {
             edges {
-              edge {
+              properties {
                 enabled
                 settingsJson
               }
@@ -156,7 +156,7 @@ const getResolver = (input: Input) => {
       }
 
       const installedPlugins = edges.map((edgeData: any) => {
-        const edgeProps = edgeData.edge || {}
+        const edgeProps = edgeData.properties || {}
         const node = edgeData.node || {}
         const pluginData = node.Plugin || {}
         const pluginName = pluginData.name
@@ -186,9 +186,10 @@ const getResolver = (input: Input) => {
           scope: 'SERVER',
           enabled: edgeProps.enabled ?? false,
           settingsJson: edgeProps.settingsJson || {},
-          manifest: node.manifest || null,
-          settingsDefaults: node.settingsDefaults || null,
-          uiSchema: node.uiSchema || null,
+          // Parse JSON strings back to objects (these are stored as strings in Neo4j)
+          manifest: node.manifest ? (typeof node.manifest === 'string' ? JSON.parse(node.manifest) : node.manifest) : null,
+          settingsDefaults: node.settingsDefaults ? (typeof node.settingsDefaults === 'string' ? JSON.parse(node.settingsDefaults) : node.settingsDefaults) : null,
+          uiSchema: node.uiSchema ? (typeof node.uiSchema === 'string' ? JSON.parse(node.uiSchema) : node.uiSchema) : null,
           documentationPath: node.documentationPath || null,
           readmeMarkdown: node.readmeMarkdown || null,
           hasUpdate,

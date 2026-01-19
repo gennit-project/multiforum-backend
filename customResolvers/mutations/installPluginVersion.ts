@@ -197,7 +197,7 @@ const getResolver = (input: Input) => {
         homepage: metadata.homepage || manifest.homepage || null,
         license: metadata.license || manifest.license || null,
         tags,
-        metadata
+        metadata: metadata && Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null
       }
 
       if (!pluginRecord) {
@@ -237,8 +237,12 @@ const getResolver = (input: Input) => {
       pluginSlug = artifacts.id
 
       let pluginVersion = existingDbVersions[0] || null
-      const settingsDefaults = manifest.settingsDefaults ?? manifest.settings ?? null
-      const uiSchema = manifest.ui ?? null
+      // Neo4j only accepts primitive types, so stringify nested objects
+      const settingsDefaultsRaw = manifest.settingsDefaults ?? manifest.settings ?? null
+      const uiSchemaRaw = manifest.ui ?? null
+      const settingsDefaults = settingsDefaultsRaw ? JSON.stringify(settingsDefaultsRaw) : null
+      const uiSchema = uiSchemaRaw ? JSON.stringify(uiSchemaRaw) : null
+      const manifestJson = artifacts.manifest ? JSON.stringify(artifacts.manifest) : null
       const documentationPath = artifacts.readmePath ?? manifest.documentation?.readmePath ?? null
       const readmeMarkdown = artifacts.readmeMarkdown ?? null
 
@@ -252,7 +256,7 @@ const getResolver = (input: Input) => {
               tarballGsUri: String(registryVersion.tarballUrl),
               integritySha256: String(registryVersion.integritySha256),
               entryPath: artifacts.entryPath || 'index.js',
-              manifest: artifacts.manifest,
+              manifest: manifestJson,
               settingsDefaults,
               uiSchema,
               documentationPath,
@@ -274,7 +278,7 @@ const getResolver = (input: Input) => {
             tarballGsUri: String(registryVersion.tarballUrl),
             integritySha256: String(registryVersion.integritySha256),
             entryPath: artifacts.entryPath || pluginVersion.entryPath || 'index.js',
-            manifest: artifacts.manifest,
+            manifest: manifestJson,
             settingsDefaults,
             uiSchema,
             documentationPath,
