@@ -7,7 +7,7 @@ type SuspensionStub = {
   modProfileName?: string | null;
   suspendedUntil?: string | null;
   suspendedIndefinitely?: boolean | null;
-  RelatedIssue?: { id: string } | null;
+  RelatedIssue?: { id: string; issueNumber?: number | null } | null;
   SuspendedUser?: { username: string } | null;
   SuspendedMod?: { displayName: string } | null;
 };
@@ -50,7 +50,7 @@ async function testActiveSuspensionReturnsLatest() {
         username: "alice",
         suspendedUntil: futureDate(),
         suspendedIndefinitely: false,
-        RelatedIssue: { id: "issue-123" },
+        RelatedIssue: { id: "issue-123", issueNumber: 123 },
       },
     ],
   });
@@ -64,6 +64,7 @@ async function testActiveSuspensionReturnsLatest() {
   assert.equal(result.isSuspended, true);
   assert.equal(result.activeSuspension?.id, "1");
   assert.equal(result.relatedIssueId, "issue-123");
+  assert.equal(result.relatedIssueNumber, 123);
   assert.equal(result.expiredUserSuspensions.length, 0);
   assert.equal(result.expiredModSuspensions.length, 0);
   assert.equal(result.suspendedEntity, "user");
@@ -105,7 +106,7 @@ async function testModSuspension() {
         id: "mod-1",
         modProfileName: "ModA",
         suspendedIndefinitely: true,
-        RelatedIssue: { id: "issue-999" },
+        RelatedIssue: { id: "issue-999", issueNumber: 999 },
       },
     ],
   });
@@ -119,6 +120,7 @@ async function testModSuspension() {
   assert.equal(result.isSuspended, true);
   assert.equal(result.suspendedEntity, "mod");
   assert.equal(result.relatedIssueId, "issue-999");
+  assert.equal(result.relatedIssueNumber, 999);
 }
 
 async function testIndefiniteSuspensionNeverExpires() {

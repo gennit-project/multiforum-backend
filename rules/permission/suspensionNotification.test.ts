@@ -32,25 +32,30 @@ class UserModelStub {
 
 async function testCreatesNotificationWhenMissing() {
   const userModel = new UserModelStub();
+  const suspendUntil = "2030-01-15T00:00:00.000Z";
 
   await createSuspensionNotification({
     UserModel: userModel,
     username: "alice",
     channelName: "forum-1",
     permission: "canCreateDiscussion",
-    relatedIssueId: "123",
+    relatedIssueId: "issue-123",
+    relatedIssueNumber: 123,
+    suspendedUntil: suspendUntil,
+    suspendedIndefinitely: false,
     actorType: "user",
   });
 
   assert.equal(userModel.updates.length, 1, "Should create a notification");
   const text = userModel.updates[0].update.Notifications[0].create[0].node.text as string;
   assert.ok(text.includes("forum-1"));
-  assert.ok(text.includes("Issue 123"));
+  assert.ok(text.includes("Issue #123"));
+  assert.ok(text.includes("Suspension expires on 2030-01-15."));
 }
 
 async function testDoesNotDuplicateNotification() {
   const existingText =
-    "You are suspended in forum-1 and cannot canCreateDiscussion. See Issue 123 for details.";
+    "You are suspended in forum-1 and cannot canCreateDiscussion. See [Issue #123](/forums/forum-1/issues/123) for details. Suspension expires on 2030-01-15.";
   const userModel = new UserModelStub({ alice: [existingText] });
 
   await createSuspensionNotification({
@@ -58,16 +63,40 @@ async function testDoesNotDuplicateNotification() {
     username: "alice",
     channelName: "forum-1",
     permission: "canCreateDiscussion",
-    relatedIssueId: "123",
+    relatedIssueId: "issue-123",
+    relatedIssueNumber: 123,
+    suspendedUntil: "2030-01-15T00:00:00.000Z",
+    suspendedIndefinitely: false,
     actorType: "user",
   });
 
   assert.equal(userModel.updates.length, 0, "Should not duplicate notification");
 }
 
+async function testIndefiniteSuspensionMessage() {
+  const userModel = new UserModelStub();
+
+  await createSuspensionNotification({
+    UserModel: userModel,
+    username: "mod-user",
+    channelName: "forum-2",
+    permission: "canHideDiscussion",
+    relatedIssueNumber: 77,
+    suspendedIndefinitely: true,
+    actorType: "mod",
+  });
+
+  assert.equal(userModel.updates.length, 1, "Should create a notification");
+  const text = userModel.updates[0].update.Notifications[0].create[0].node.text as string;
+  assert.ok(text.includes("Your moderator account is suspended in forum-2"));
+  assert.ok(text.includes("Issue #77"));
+  assert.ok(text.includes("Suspension is indefinite."));
+}
+
 async function run() {
   await testCreatesNotificationWhenMissing();
   await testDoesNotDuplicateNotification();
+  await testIndefiniteSuspensionMessage();
   console.log("suspensionNotification tests passed");
 }
 
