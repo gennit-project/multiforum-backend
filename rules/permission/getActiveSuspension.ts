@@ -16,6 +16,7 @@ type ActiveSuspensionResult = {
   activeSuspension: Suspension | null;
   isSuspended: boolean;
   relatedIssueId: string | null;
+  relatedIssueNumber: number | null;
   expiredUserSuspensions: Suspension[];
   expiredModSuspensions: Suspension[];
   suspendedEntity: "user" | "mod" | null;
@@ -45,7 +46,7 @@ export async function getActiveSuspension(
       username
       suspendedUntil
       suspendedIndefinitely
-      RelatedIssue { id }
+      RelatedIssue { id issueNumber }
       SuspendedUser { username }
     }
     SuspendedMods {
@@ -53,7 +54,7 @@ export async function getActiveSuspension(
       modProfileName
       suspendedUntil
       suspendedIndefinitely
-      RelatedIssue { id }
+      RelatedIssue { id issueNumber }
       SuspendedMod { displayName }
     }
   }`;
@@ -69,6 +70,7 @@ export async function getActiveSuspension(
       activeSuspension: null,
       isSuspended: false,
       relatedIssueId: null,
+      relatedIssueNumber: null,
       expiredUserSuspensions: [],
       expiredModSuspensions: [],
       suspendedEntity: null,
@@ -126,6 +128,8 @@ export async function getActiveSuspension(
     isSuspended: !!activeSuspension,
     relatedIssueId:
       (activeSuspension as any)?.RelatedIssue?.id || null,
+    relatedIssueNumber:
+      (activeSuspension as any)?.RelatedIssue?.issueNumber || null,
     expiredUserSuspensions,
     expiredModSuspensions,
     suspendedEntity,

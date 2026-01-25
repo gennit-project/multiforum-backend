@@ -160,6 +160,10 @@ export const hasChannelPermission: (
         channelName,
         permission,
         relatedIssueId: suspensionInfo.relatedIssueId,
+        relatedIssueNumber: suspensionInfo.relatedIssueNumber,
+        suspendedUntil: suspensionInfo.activeSuspension?.suspendedUntil || null,
+        suspendedIndefinitely:
+          suspensionInfo.activeSuspension?.suspendedIndefinitely || null,
         actorType: "user",
       });
     } catch (error) {

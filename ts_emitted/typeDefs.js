@@ -1260,6 +1260,9 @@ const typeDefinitions = gql `
     uiSchema: JSON
     documentationPath: String
     readmeMarkdown: String
+    hasUpdate: Boolean
+    latestVersion: String
+    availableVersions: [String!]
   }
 
   enum SecretValidationStatus {
