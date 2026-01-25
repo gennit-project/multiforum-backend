@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import test from "node:test";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 
 type SuspensionStub = {
@@ -42,7 +43,7 @@ const buildOgm = (channelResult: ChannelFindResult) => {
 const futureDate = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
 const pastDate = () => new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-async function testActiveSuspensionReturnsLatest() {
+test("returns active user suspension and issue metadata", async () => {
   const ogm = buildOgm({
     SuspendedUsers: [
       {
@@ -68,9 +69,9 @@ async function testActiveSuspensionReturnsLatest() {
   assert.equal(result.expiredUserSuspensions.length, 0);
   assert.equal(result.expiredModSuspensions.length, 0);
   assert.equal(result.suspendedEntity, "user");
-}
+});
 
-async function testExpiredSuspensionReturnsExpiredList() {
+test("returns expired suspensions for cleanup", async () => {
   const ogm = buildOgm({
     SuspendedUsers: [
       {
@@ -97,9 +98,9 @@ async function testExpiredSuspensionReturnsExpiredList() {
   assert.equal(result.expiredUserSuspensions.length, 1);
   assert.equal(result.expiredUserSuspensions[0].id, "old");
   assert.equal(result.expiredModSuspensions.length, 0);
-}
+});
 
-async function testModSuspension() {
+test("returns active mod suspension and issue metadata", async () => {
   const ogm = buildOgm({
     SuspendedMods: [
       {
@@ -121,9 +122,9 @@ async function testModSuspension() {
   assert.equal(result.suspendedEntity, "mod");
   assert.equal(result.relatedIssueId, "issue-999");
   assert.equal(result.relatedIssueNumber, 999);
-}
+});
 
-async function testIndefiniteSuspensionNeverExpires() {
+test("keeps indefinite suspensions active", async () => {
   const ogm = buildOgm({
     SuspendedUsers: [
       {
@@ -145,17 +146,4 @@ async function testIndefiniteSuspensionNeverExpires() {
   assert.equal(result.isSuspended, true);
   assert.equal(result.activeSuspension?.id, "indefinite");
   assert.equal(result.expiredUserSuspensions.length, 0);
-}
-
-async function run() {
-  await testActiveSuspensionReturnsLatest();
-  await testExpiredSuspensionReturnsExpiredList();
-  await testModSuspension();
-  await testIndefiniteSuspensionNeverExpires();
-  console.log("getActiveSuspension tests passed");
-}
-
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
 });
