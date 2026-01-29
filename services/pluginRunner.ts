@@ -690,6 +690,9 @@ export const triggerPluginRunsForComment = async ({
           channelUniqueName
         }
       }
+      Issue {
+        id
+      }
       ParentComment {
         id
       }
@@ -702,6 +705,16 @@ export const triggerPluginRunsForComment = async ({
 
   const comment = comments[0] as any
   const discussionChannel = comment.DiscussionChannel || null
+  const isDiscussionComment =
+    Boolean(discussionChannel?.id) &&
+    !comment.isFeedbackComment &&
+    !comment.Event?.id &&
+    !comment.Issue?.id
+
+  if (!isDiscussionComment) {
+    return []
+  }
+
   const channelUniqueName =
     discussionChannel?.channelUniqueName ||
     comment.Channel?.uniqueName ||
