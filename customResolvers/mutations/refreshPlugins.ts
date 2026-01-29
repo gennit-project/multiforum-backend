@@ -197,6 +197,10 @@ for (const registryPlugin of registryData.plugins) {
       const metadata = manifest.metadata || {}
       const author = metadata.author || {}
       const tags = Array.isArray(metadata.tags) ? metadata.tags : []
+      const metadataValue =
+        metadata && Object.keys(metadata).length > 0
+          ? JSON.stringify(metadata)
+          : null
 
       const pluginUpdatePayload = {
         displayName: manifest.name || registryPlugin.id,
@@ -206,7 +210,7 @@ for (const registryPlugin of registryData.plugins) {
         homepage: metadata.homepage || manifest.homepage || null,
         license: metadata.license || manifest.license || null,
         tags,
-        metadata
+        metadata: metadataValue
       }
 
       if (!pluginRecord) {
