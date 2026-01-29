@@ -201,6 +201,10 @@ const typeDefinitions = gql`
     bio: String
     profilePicURL: String
     enableSensitiveContentByDefault: Boolean
+    isBot: Boolean @default(value: false)
+    botProfileId: String
+    isDeprecated: Boolean @default(value: false)
+    deprecatedReason: String
 
     # karma
     commentKarma: Int
@@ -416,6 +420,7 @@ const typeDefinitions = gql`
     Moderators: [ModerationProfile!]! @relationship(type: "MODERATOR_OF_CHANNEL", direction: IN)
     PendingOwnerInvites: [User!]! @relationship(type: "HAS_PENDING_INVITE", direction: OUT)
     PendingModInvites:   [User!]! @relationship(type: "HAS_PENDING_MOD_INVITE", direction: OUT)
+    Bots: [User!]! @relationship(type: "BOT", direction: OUT)
 
     RelatedChannels: [Channel!]! @relationship(type: "RELATED_CHANNEL", direction: OUT)
 

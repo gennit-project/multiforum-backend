@@ -23,6 +23,9 @@ export const createUsersWithEmails = async (
   if (!emailAddress || !username) {
     throw new Error("Both emailAddress and username are required");
   }
+  if (username.toLowerCase().startsWith("bot-")) {
+    throw new Error("Usernames starting with \"bot-\" are reserved");
+  }
 
   // Check if the user already exists
   const existingUser = await User.find({
