@@ -465,6 +465,7 @@ const typeDefinitions = gql`
     Comments: [Comment!]!
       @relationship(type: "CONTAINS_COMMENT", direction: OUT)
     emoji: JSON
+    botMentions: JSON
     archived: Boolean
     RelatedIssues: [Issue!]! @relationship(type: "CITED_ISSUE", direction: IN)
     answered: Boolean

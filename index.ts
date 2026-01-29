@@ -5,6 +5,8 @@ import typesDefinitions from "./typeDefs.js";
 import permissions from "./permissions.js";
 import discussionVersionHistoryMiddleware from "./middleware/discussionVersionHistoryMiddleware.js";
 import commentVersionHistoryMiddleware from "./middleware/commentVersionHistoryMiddleware.js";
+import commentMentionsMiddleware from "./middleware/commentMentionsMiddleware.js";
+import commentPluginPipelineMiddleware from "./middleware/commentPluginPipelineMiddleware.js";
 import wikiPageVersionHistoryMiddleware from "./middleware/wikiPageVersionHistoryMiddleware.js";
 import issueActivityFeedMiddleware from "./middleware/issueActivityFeedMiddleware.js";
 import path from "path";
@@ -188,6 +190,8 @@ async function initializeServer() {
       permissions,
       discussionVersionHistoryMiddleware,
       commentVersionHistoryMiddleware,
+      commentMentionsMiddleware,
+      commentPluginPipelineMiddleware,
       wikiPageVersionHistoryMiddleware,
       issueActivityFeedMiddleware
     );

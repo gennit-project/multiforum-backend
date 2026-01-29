@@ -457,7 +457,9 @@ export default function (driver: any) {
         ServerConfig
       }),
       updateChannelPluginPipelines: updateChannelPluginPipelines({
-        Channel
+        Channel,
+        ServerConfig,
+        User
       }),
     },
   };

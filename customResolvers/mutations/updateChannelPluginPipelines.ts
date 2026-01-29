@@ -1,8 +1,16 @@
-import type { ChannelModel } from '../../ogm_types.js'
+import type { ChannelModel, ServerConfigModel, UserModel } from '../../ogm_types.js'
+import {
+  ensureBotUsersForChannelProfiles,
+  getProfilesFromSettings
+} from '../../services/botUserService.js'
 import { validatePipelines, type EventPipelineInput } from './updatePluginPipelines.js'
 
 type Input = {
   Channel: ChannelModel
+  ServerConfig: ServerConfigModel
+  User: UserModel
+  ensureBotsForChannel?: typeof ensureBotUsersForChannelProfiles
+  getProfiles?: typeof getProfilesFromSettings
 }
 
 type Args = {
@@ -29,7 +37,9 @@ const validateChannelEvents = (pipelines: EventPipelineInput[]): string | null =
 }
 
 const getResolver = (input: Input) => {
-  const { Channel } = input
+  const { Channel, ServerConfig, User } = input
+  const ensureBotsForChannel = input.ensureBotsForChannel || ensureBotUsersForChannelProfiles
+  const getProfiles = input.getProfiles || getProfilesFromSettings
 
   return async (_parent: unknown, args: Args, _context: unknown, _resolveInfo: unknown) => {
     const { channelUniqueName, pipelines } = args
@@ -67,6 +77,48 @@ const getResolver = (input: Input) => {
         pluginPipelines: pipelines
       }
     })
+
+    try {
+      const serverConfigs = await ServerConfig.find({
+        selectionSet: `{
+          serverName
+          InstalledVersionsConnection {
+            edges {
+              edge {
+                enabled
+                settingsJson
+              }
+              node {
+                version
+                Plugin {
+                  name
+                }
+              }
+            }
+          }
+        }`
+      })
+
+      const serverConfig = serverConfigs[0]
+      const edges = serverConfig?.InstalledVersionsConnection?.edges || []
+      const betaBotEdge = edges.find((edge: any) => edge?.node?.Plugin?.name === 'beta-bot' && edge?.edge?.enabled)
+
+      if (betaBotEdge) {
+        const profiles = getProfiles(betaBotEdge.edge?.settingsJson || {})
+        await ensureBotsForChannel({
+          User,
+          Channel,
+          channelUniqueName,
+          botName: 'betabot',
+          profiles
+        })
+      }
+    } catch (error) {
+      console.warn(
+        `Failed to ensure bot users for channel ${channelUniqueName}:`,
+        (error as any)?.message || error
+      )
+    }
 
     return pipelines
   }
