@@ -976,10 +976,6 @@ const typeDefinitions = gql`
       key: String!
       value: String!
     ): Boolean!
-    validateServerPluginSecret(
-      pluginId: String!
-      key: String!
-    ): ValidationResult!
     updatePluginPipelines(
       pipelines: [EventPipelineInput!]!
     ): JSON!
@@ -1284,11 +1280,6 @@ const typeDefinitions = gql`
     status: SecretValidationStatus!
     lastValidatedAt: DateTime
     validationError: String
-  }
-
-  type ValidationResult {
-    isValid: Boolean!
-    error: String
   }
 
   type GetSortedChannelsResponse {

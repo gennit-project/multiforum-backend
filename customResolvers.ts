@@ -80,7 +80,6 @@ import installPluginVersion from './customResolvers/mutations/installPluginVersi
 import triggerDownloadableFilePluginRuns from './customResolvers/mutations/triggerDownloadableFilePluginRuns.js';
 import enableServerPlugin from './customResolvers/mutations/enableServerPlugin.js';
 import setServerPluginSecret from './customResolvers/mutations/setServerPluginSecret.js';
-import validateServerPluginSecret from './customResolvers/mutations/validateServerPluginSecret.js';
 import getServerPluginSecrets from './customResolvers/queries/getServerPluginSecrets.js';
 import getInstalledPlugins from './customResolvers/queries/getInstalledPlugins.js';
 import getPluginRunsForDownloadableFile from './customResolvers/queries/getPluginRunsForDownloadableFile.js';
@@ -448,9 +447,6 @@ export default function (driver: any) {
         ServerSecret
       }),
       setServerPluginSecret: setServerPluginSecret({
-        ServerSecret
-      }),
-      validateServerPluginSecret: validateServerPluginSecret({
         ServerSecret
       }),
       updatePluginPipelines: updatePluginPipelines({

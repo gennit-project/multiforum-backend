@@ -129,6 +129,11 @@ const getResolver = (input: Input) => {
       }
 
       // 4. Update the installation relationship
+      const settingsJsonValue =
+        settingsJson && Object.keys(settingsJson).length > 0
+          ? JSON.stringify(settingsJson)
+          : null
+
       await ServerConfig.update({
         where: { serverName: serverConfig.serverName },
         update: {
@@ -137,7 +142,7 @@ const getResolver = (input: Input) => {
             update: {
               edge: {
                 enabled,
-                settingsJson
+                settingsJson: settingsJsonValue
               }
             }
           }]

@@ -185,7 +185,11 @@ const getResolver = (input: Input) => {
           version: installedVersion,
           scope: 'SERVER',
           enabled: edgeProps.enabled ?? false,
-          settingsJson: edgeProps.settingsJson || {},
+          settingsJson: edgeProps.settingsJson
+            ? (typeof edgeProps.settingsJson === 'string'
+              ? JSON.parse(edgeProps.settingsJson)
+              : edgeProps.settingsJson)
+            : {},
           // Parse JSON strings back to objects (these are stored as strings in Neo4j)
           manifest: node.manifest ? (typeof node.manifest === 'string' ? JSON.parse(node.manifest) : node.manifest) : null,
           settingsDefaults: node.settingsDefaults ? (typeof node.settingsDefaults === 'string' ? JSON.parse(node.settingsDefaults) : node.settingsDefaults) : null,

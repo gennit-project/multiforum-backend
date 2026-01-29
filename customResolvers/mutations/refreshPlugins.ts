@@ -262,8 +262,12 @@ for (const registryPlugin of registryData.plugins) {
         }`
       })
 
-      const settingsDefaults = manifest.settingsDefaults ?? manifest.settings ?? null
-      const uiSchema = manifest.ui ?? null
+      // Neo4j only accepts primitive types, so stringify nested objects
+      const settingsDefaultsRaw = manifest.settingsDefaults ?? manifest.settings ?? null
+      const uiSchemaRaw = manifest.ui ?? null
+      const settingsDefaults = settingsDefaultsRaw ? JSON.stringify(settingsDefaultsRaw) : null
+      const uiSchema = uiSchemaRaw ? JSON.stringify(uiSchemaRaw) : null
+      const manifestJson = artifacts.manifest ? JSON.stringify(artifacts.manifest) : null
 
       if (existingVersions.length === 0) {
         console.log(
@@ -277,7 +281,7 @@ for (const registryPlugin of registryData.plugins) {
               tarballGsUri: registryVersion.tarballUrl,
               integritySha256: registryVersion.integritySha256,
               entryPath: artifacts.entryPath || 'index.js',
-              manifest: artifacts.manifest,
+              manifest: manifestJson,
               settingsDefaults,
               uiSchema,
               documentationPath: artifacts.readmePath ?? null,
@@ -302,7 +306,7 @@ for (const registryPlugin of registryData.plugins) {
             tarballGsUri: registryVersion.tarballUrl,
             integritySha256: registryVersion.integritySha256,
             entryPath: artifacts.entryPath || 'index.js',
-            manifest: artifacts.manifest,
+            manifest: manifestJson,
             settingsDefaults,
             uiSchema,
             documentationPath: artifacts.readmePath ?? null,

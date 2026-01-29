@@ -1,4 +1,4 @@
-import type { ChannelModel, CommentModel, UserModel } from '../ogm_types.js'
+import type { ChannelModel, CommentCreateInput, CommentModel, UserModel } from '../ogm_types.js'
 
 type BotProfile = {
   id: string
@@ -55,7 +55,6 @@ export const ensureBotUserForChannel = async (input: {
   const existingUsers = await User.find({
     where: { username },
     selectionSet: `{
-      id
       username
       isBot
       botProfileId
@@ -85,7 +84,7 @@ export const ensureBotUserForChannel = async (input: {
     user = created.users[0]
   } else if (!user.isBot || user.botProfileId !== (profileId || null)) {
     await User.update({
-      where: { id: user.id },
+      where: { username: user.username },
       update: {
         isBot: true,
         botProfileId: profileId || null,
@@ -207,7 +206,7 @@ export const createBotComment = async (input: {
     profileLabel
   })
 
-  const commentInput: Record<string, any> = {
+  const commentInput: CommentCreateInput = {
     text,
     isRootComment: false,
     isFeedbackComment: false,

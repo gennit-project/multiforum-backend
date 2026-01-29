@@ -84,7 +84,7 @@ const getResolver = (input: Input) => {
           serverName
           InstalledVersionsConnection {
             edges {
-              edge {
+              properties {
                 enabled
                 settingsJson
               }
@@ -101,10 +101,10 @@ const getResolver = (input: Input) => {
 
       const serverConfig = serverConfigs[0]
       const edges = serverConfig?.InstalledVersionsConnection?.edges || []
-      const betaBotEdge = edges.find((edge: any) => edge?.node?.Plugin?.name === 'beta-bot' && edge?.edge?.enabled)
+      const betaBotEdge = edges.find((edge: any) => edge?.node?.Plugin?.name === 'beta-bot' && edge?.properties?.enabled)
 
       if (betaBotEdge) {
-        const profiles = getProfiles(betaBotEdge.edge?.settingsJson || {})
+        const profiles = getProfiles(betaBotEdge.properties?.settingsJson || {})
         await ensureBotsForChannel({
           User,
           Channel,

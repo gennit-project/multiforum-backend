@@ -15,7 +15,7 @@ async function testProvisioningRunsForEnabledBetaBot() {
           InstalledVersionsConnection: {
             edges: [
               {
-                edge: { enabled: true, settingsJson: { profiles: [{ id: "fantasy", label: "Fantasy Fan" }] } },
+                properties: { enabled: true, settingsJson: { profiles: [{ id: "fantasy", label: "Fantasy Fan" }] } },
                 node: { Plugin: { name: "beta-bot" } }
               }
             ]
@@ -59,7 +59,7 @@ async function testProvisioningSkipsWhenBetaBotDisabled() {
           InstalledVersionsConnection: {
             edges: [
               {
-                edge: { enabled: false, settingsJson: { profiles: [{ id: "fantasy" }] } },
+                properties: { enabled: false, settingsJson: { profiles: [{ id: "fantasy" }] } },
                 node: { Plugin: { name: "beta-bot" } }
               }
             ]
