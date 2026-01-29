@@ -28,6 +28,13 @@ Your `plugin.json` manifest must include these fields:
 }
 ```
 
+### Versioning & Registry Alignment
+
+- The manifest `version` is the **source of truth** for a plugin release.
+- The registry entry and tarball path must match the manifest version.
+  - Example: if `plugin.json.version` is `0.2.2`, the registry entry must list `0.2.2` and the tarball should live at `.../plugins/<id>/0.2.2/bundle.tgz`.
+- If the registry lists a different version than the embedded manifest, installs fail and `refreshPlugins` can create mismatched version records.
+
 ### Secret Configuration
 
 The `secrets` array defines all secrets your plugin needs:
