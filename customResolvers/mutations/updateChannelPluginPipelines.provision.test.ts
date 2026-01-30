@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import updateChannelPluginPipelines from "./updateChannelPluginPipelines.js";
 
-async function testProvisioningRunsForEnabledBetaBot() {
+async function testProvisioningRunsForEnabledBotPlugin() {
   let calledArgs: any = null;
 
   const resolver = updateChannelPluginPipelines({
@@ -15,8 +15,11 @@ async function testProvisioningRunsForEnabledBetaBot() {
           InstalledVersionsConnection: {
             edges: [
               {
-                properties: { enabled: true, settingsJson: { profiles: [{ id: "fantasy", label: "Fantasy Fan" }] } },
-                node: { Plugin: { name: "beta-bot" } }
+                properties: {
+                  enabled: true,
+                  settingsJson: { botName: "HelperBot", profiles: [{ id: "fantasy", label: "Fantasy Fan" }] }
+                },
+                node: { Plugin: { name: "helper-bot", tags: ["bots"] } }
               }
             ]
           }
@@ -27,7 +30,8 @@ async function testProvisioningRunsForEnabledBetaBot() {
     ensureBotsForChannel: async (args: any) => {
       calledArgs = args;
     },
-    getProfiles: (settingsJson: any) => settingsJson?.profiles || []
+    getProfiles: (settingsJson: any) => settingsJson?.profiles || [],
+    getBotName: (settingsJson: any) => settingsJson?.botName || null
   });
 
   const pipelines = [
@@ -41,11 +45,11 @@ async function testProvisioningRunsForEnabledBetaBot() {
 
   assert.ok(calledArgs, "Expected bot provisioning to be called");
   assert.equal(calledArgs.channelUniqueName, "writing");
-  assert.equal(calledArgs.botName, "betabot");
+  assert.equal(calledArgs.botName, "HelperBot");
   assert.equal(calledArgs.profiles.length, 1);
 }
 
-async function testProvisioningSkipsWhenBetaBotDisabled() {
+async function testProvisioningSkipsWhenBotPluginDisabled() {
   let called = false;
 
   const resolver = updateChannelPluginPipelines({
@@ -59,8 +63,8 @@ async function testProvisioningSkipsWhenBetaBotDisabled() {
           InstalledVersionsConnection: {
             edges: [
               {
-                properties: { enabled: false, settingsJson: { profiles: [{ id: "fantasy" }] } },
-                node: { Plugin: { name: "beta-bot" } }
+                properties: { enabled: false, settingsJson: { botName: "HelperBot", profiles: [{ id: "fantasy" }] } },
+                node: { Plugin: { name: "helper-bot", tags: ["bots"] } }
               }
             ]
           }
@@ -82,12 +86,12 @@ async function testProvisioningSkipsWhenBetaBotDisabled() {
 
   await resolver({}, { channelUniqueName: "writing", pipelines }, {}, {});
 
-  assert.equal(called, false, "Expected bot provisioning to be skipped when beta-bot disabled");
+  assert.equal(called, false, "Expected bot provisioning to be skipped when bot plugin disabled");
 }
 
 async function run() {
-  await testProvisioningRunsForEnabledBetaBot();
-  await testProvisioningSkipsWhenBetaBotDisabled();
+  await testProvisioningRunsForEnabledBotPlugin();
+  await testProvisioningSkipsWhenBotPluginDisabled();
   console.log("updateChannelPluginPipelines provisioning tests passed");
 }
 

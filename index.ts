@@ -9,6 +9,7 @@ import commentMentionsMiddleware from "./middleware/commentMentionsMiddleware.js
 import commentPluginPipelineMiddleware from "./middleware/commentPluginPipelineMiddleware.js";
 import wikiPageVersionHistoryMiddleware from "./middleware/wikiPageVersionHistoryMiddleware.js";
 import issueActivityFeedMiddleware from "./middleware/issueActivityFeedMiddleware.js";
+import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import path from "path";
 import dotenv from "dotenv";
 import pkg from "@neo4j/graphql-ogm";
@@ -193,7 +194,8 @@ async function initializeServer() {
       commentMentionsMiddleware,
       commentPluginPipelineMiddleware,
       wikiPageVersionHistoryMiddleware,
-      issueActivityFeedMiddleware
+      issueActivityFeedMiddleware,
+      channelBotsMiddleware
     );
     await ogm.init();
     if (edition === "enterprise") {

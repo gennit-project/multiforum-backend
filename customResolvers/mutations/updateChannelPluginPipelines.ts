@@ -1,6 +1,7 @@
 import type { ChannelModel, ServerConfigModel, UserModel } from '../../ogm_types.js'
 import {
   ensureBotUsersForChannelProfiles,
+  getBotNameFromSettings,
   getProfilesFromSettings
 } from '../../services/botUserService.js'
 import { validatePipelines, type EventPipelineInput } from './updatePluginPipelines.js'
@@ -11,6 +12,7 @@ type Input = {
   User: UserModel
   ensureBotsForChannel?: typeof ensureBotUsersForChannelProfiles
   getProfiles?: typeof getProfilesFromSettings
+  getBotName?: typeof getBotNameFromSettings
 }
 
 type Args = {
@@ -40,6 +42,11 @@ const getResolver = (input: Input) => {
   const { Channel, ServerConfig, User } = input
   const ensureBotsForChannel = input.ensureBotsForChannel || ensureBotUsersForChannelProfiles
   const getProfiles = input.getProfiles || getProfilesFromSettings
+  const getBotName = input.getBotName || getBotNameFromSettings
+  const isBotPlugin = (plugin: any) => {
+    const tags = Array.isArray(plugin?.tags) ? plugin.tags : []
+    return tags.some((tag: any) => String(tag).toLowerCase() === 'bots' || String(tag).toLowerCase() === 'bot')
+  }
 
   return async (_parent: unknown, args: Args, _context: unknown, _resolveInfo: unknown) => {
     const { channelUniqueName, pipelines } = args
@@ -92,6 +99,7 @@ const getResolver = (input: Input) => {
                 version
                 Plugin {
                   name
+                  tags
                 }
               }
             }
@@ -101,15 +109,17 @@ const getResolver = (input: Input) => {
 
       const serverConfig = serverConfigs[0]
       const edges = serverConfig?.InstalledVersionsConnection?.edges || []
-      const betaBotEdge = edges.find((edge: any) => edge?.node?.Plugin?.name === 'beta-bot' && edge?.properties?.enabled)
+      const botEdges = edges.filter((edge: any) => edge?.properties?.enabled && isBotPlugin(edge?.node?.Plugin))
 
-      if (betaBotEdge) {
-        const profiles = getProfiles(betaBotEdge.properties?.settingsJson || {})
+      for (const edge of botEdges) {
+        const botName = getBotName(edge.properties?.settingsJson || {})
+        if (!botName) continue
+        const profiles = getProfiles(edge.properties?.settingsJson || {})
         await ensureBotsForChannel({
           User,
           Channel,
           channelUniqueName,
-          botName: 'betabot',
+          botName,
           profiles
         })
       }

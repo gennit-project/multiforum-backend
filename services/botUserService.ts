@@ -16,7 +16,7 @@ const ensureSafeId = (value: string, label: string) => {
   }
 }
 
-const buildBotUsername = (channelUniqueName: string, botName: string, profileId?: string | null) => {
+export const buildBotUsername = (channelUniqueName: string, botName: string, profileId?: string | null) => {
   const normalizedChannel = normalizeId(channelUniqueName)
   const normalizedBot = normalizeId(botName)
 
@@ -153,17 +153,116 @@ export const ensureBotUsersForChannelProfiles = async (input: {
   }
 }
 
-export const getProfilesFromSettings = (settingsJson: any): BotProfile[] => {
-  const fromServer = settingsJson?.server?.profiles
-  const fromRoot = settingsJson?.profiles
-  const profiles = Array.isArray(fromServer) ? fromServer : Array.isArray(fromRoot) ? fromRoot : []
+const parseSettingsJson = (settingsJson: any) => {
+  if (!settingsJson || typeof settingsJson !== 'string') {
+    return settingsJson
+  }
+  try {
+    return JSON.parse(settingsJson)
+  } catch {
+    return null
+  }
+}
 
-  return profiles
+const parseProfilesJson = (value: any) => {
+  if (!value || typeof value !== 'string') {
+    return null
+  }
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+export const getProfilesFromSettings = (settingsJson: any): BotProfile[] => {
+  const parsed = parseSettingsJson(settingsJson)
+  const fromServer = parsed?.server?.profiles
+  const fromRoot = parsed?.profiles
+  const profiles = Array.isArray(fromServer) ? fromServer : Array.isArray(fromRoot) ? fromRoot : []
+  const profilesJson =
+    parseProfilesJson(parsed?.profilesJson) ||
+    parseProfilesJson(parsed?.server?.profilesJson)
+  const resolvedProfiles = profiles.length > 0 ? profiles : profilesJson
+
+  return (resolvedProfiles || [])
     .filter((profile: any) => profile && typeof profile.id === 'string')
     .map((profile: any) => ({
       id: String(profile.id).trim(),
       label: profile.label ? String(profile.label) : null
     }))
+}
+
+export const getBotNameFromSettings = (settingsJson: any) => {
+  const parsed = parseSettingsJson(settingsJson)
+  const fromRoot = typeof parsed?.botName === 'string' ? parsed.botName : null
+  const fromServer = typeof parsed?.server?.botName === 'string' ? parsed.server.botName : null
+  const botName = (fromRoot || fromServer || '').trim()
+  return botName.length > 0 ? botName : null
+}
+
+export const syncBotUsersForChannelProfiles = async (input: {
+  User: UserModel
+  Channel: ChannelModel
+  channelUniqueName: string
+  botName: string
+  profiles: BotProfile[]
+}) => {
+  const { User, Channel, channelUniqueName, botName, profiles } = input
+
+  const desiredUsernames = new Set(
+    (profiles || [])
+      .filter((profile) => profile?.id)
+      .map((profile) => buildBotUsername(channelUniqueName, botName, profile.id))
+  )
+
+  for (const profile of profiles || []) {
+    if (!profile?.id) continue
+    await ensureBotUserForChannel({
+      User,
+      Channel,
+      channelUniqueName,
+      botName,
+      profileId: profile.id,
+      profileLabel: profile.label || null
+    })
+  }
+
+  const channelResult = await Channel.find({
+    where: { uniqueName: channelUniqueName },
+    selectionSet: `{
+      uniqueName
+      Bots {
+        username
+      }
+    }`
+  })
+
+  const channel = channelResult[0]
+  if (!channel) {
+    throw new Error(`Channel "${channelUniqueName}" not found`)
+  }
+
+  const normalizedChannel = normalizeId(channelUniqueName)
+  const normalizedBot = normalizeId(botName)
+  const botPrefix = `${BOT_PREFIX}-${normalizedChannel}-${normalizedBot}`
+
+  const botsToDisconnect = (channel.Bots || [])
+    .map((bot: any) => bot.username)
+    .filter((username: string) => username.startsWith(botPrefix))
+    .filter((username: string) => !desiredUsernames.has(username))
+
+  if (botsToDisconnect.length > 0) {
+    await Channel.update({
+      where: { uniqueName: channelUniqueName },
+      disconnect: {
+        Bots: botsToDisconnect.map((username: string) => ({
+          where: { node: { username } }
+        }))
+      }
+    })
+  }
 }
 
 export const createBotComment = async (input: {
