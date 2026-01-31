@@ -65,3 +65,15 @@ export const parseStoredPipelines = (stored: any): EventPipeline[] => {
   }
   return Array.isArray(stored) ? stored : []
 }
+
+export const parseManifest = (manifest: any): Record<string, any> => {
+  if (!manifest) return {}
+  if (typeof manifest === 'string') {
+    try {
+      return JSON.parse(manifest)
+    } catch {
+      return {}
+    }
+  }
+  return manifest
+}

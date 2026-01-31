@@ -3,7 +3,7 @@ import type { TriggerArgs, PluginEdgeData, EventPipeline, PipelineStep, PluginTo
 import { DOWNLOAD_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls } from './pipelineUtils.js'
+import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest } from './pipelineUtils.js'
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -107,7 +107,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
       const edgeData = enabledPluginsMap.get(step.pluginId)
       if (edgeData) {
         // Also verify the plugin handles this event type
-        const manifest = edgeData.node.manifest || {}
+        const manifest = parseManifest(edgeData.node.manifest)
         const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
         if (manifestEvents.includes(event)) {
           pluginsToRun.push({
@@ -123,7 +123,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
     // No pipeline defined - fall back to running all enabled plugins that handle this event
     let order = 0
     for (const [pluginId, edgeData] of enabledPluginsMap) {
-      const manifest = edgeData.node.manifest || {}
+      const manifest = parseManifest(edgeData.node.manifest)
       const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
       if (manifestEvents.includes(event)) {
         pluginsToRun.push({
@@ -165,11 +165,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
           targetType: 'DownloadableFile',
           pipelineId,
           executionOrder: order,
-          payload: {
+          payload: JSON.stringify({
             fileName: fileData.fileName,
             url: fileData.url,
             event
-          }
+          }),
+          updatedAt: new Date().toISOString()
         } as any)
       ]
     })
@@ -319,13 +320,13 @@ export const triggerPluginRunsForDownloadableFile = async ({
             ? (result?.result?.message || 'Plugin run completed')
             : (result?.error || 'Plugin reported failure'),
           durationMs,
-          payload: {
+          payload: JSON.stringify({
             event,
             attachments,
             flags,
             logs,
             result
-          }
+          })
         } as any)
       })
 
@@ -359,12 +360,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
           status: 'FAILED',
           message,
           durationMs,
-          payload: {
+          payload: JSON.stringify({
             event,
             error: message,
             logs,
             flags
-          }
+          })
         } as any)
       })
 

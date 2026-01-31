@@ -184,12 +184,13 @@ export const triggerChannelPluginPipeline = async ({
           targetType: 'Discussion',
           pipelineId,
           executionOrder: order,
-          payload: {
+          payload: JSON.stringify({
             discussionId,
             channelUniqueName,
             fileName: downloadableFile.fileName,
             event
-          }
+          }),
+          updatedAt: new Date().toISOString()
         } as any)
       ]
     })
@@ -363,13 +364,13 @@ export const triggerChannelPluginPipeline = async ({
             ? (result?.result?.message || 'Plugin run completed')
             : (result?.error || 'Plugin reported failure'),
           durationMs,
-          payload: {
+          payload: JSON.stringify({
             event,
             channel: channelContext,
             flags,
             logs,
             result
-          }
+          })
         } as any)
       })
 
@@ -403,12 +404,12 @@ export const triggerChannelPluginPipeline = async ({
           status: 'FAILED',
           message,
           durationMs,
-          payload: {
+          payload: JSON.stringify({
             event,
             error: message,
             logs,
             flags
-          }
+          })
         } as any)
       })
 

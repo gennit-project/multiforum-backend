@@ -3,7 +3,7 @@ import type { CommentTriggerArgs, PluginEdgeData, PluginToRun, PendingRun } from
 import { COMMENT_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines } from './pipelineUtils.js'
+import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest } from './pipelineUtils.js'
 import { createBotComment } from '../botUserService.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
@@ -160,12 +160,25 @@ export const triggerPluginRunsForComment = async ({
     eventPipeline = serverPipelines.find(p => p.event === event)
   }
 
+  // Debug: Show enabled plugins
+  const enabledPluginNames = Array.from(enabledPluginsMap.keys())
+  const enabledPluginDetails = Array.from(enabledPluginsMap.entries()).map(([name, edge]) => {
+    const manifest = parseManifest(edge.node.manifest)
+    return {
+      name,
+      version: edge.node.version,
+      manifestEvents: manifest.events || []
+    }
+  })
+
   console.log('[Plugin] Pipeline check:', {
     event,
     channelUniqueName,
     channelPipelinesCount: channelPipelines.length,
     serverPipelinesCount: serverPipelines.length,
-    foundEventPipeline: !!eventPipeline
+    foundEventPipeline: !!eventPipeline,
+    enabledPlugins: enabledPluginDetails,
+    pipelineSteps: eventPipeline?.steps || []
   })
 
   const pipelineId = generatePipelineId()
@@ -175,10 +188,13 @@ export const triggerPluginRunsForComment = async ({
   if (eventPipeline && eventPipeline.steps.length > 0) {
     eventPipeline.steps.forEach((step, index) => {
       const edgeData = enabledPluginsMap.get(step.pluginId)
+      console.log(`[Plugin] Step ${index}: pluginId="${step.pluginId}", found=${!!edgeData}`)
       if (edgeData) {
-        const manifest = edgeData.node.manifest || {}
+        const manifest = parseManifest(edgeData.node.manifest)
         const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
-        if (manifestEvents.includes(event)) {
+        const eventMatch = manifestEvents.includes(event)
+        console.log(`[Plugin] Step ${index}: manifestEvents=${JSON.stringify(manifestEvents)}, eventMatch=${eventMatch}`)
+        if (eventMatch) {
           pluginsToRun.push({
             pluginId: step.pluginId,
             edgeData,
@@ -191,7 +207,7 @@ export const triggerPluginRunsForComment = async ({
   } else {
     let order = 0
     for (const [pluginId, edgeData] of enabledPluginsMap) {
-      const manifest = edgeData.node.manifest || {}
+      const manifest = parseManifest(edgeData.node.manifest)
       const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
       if (manifestEvents.includes(event)) {
         pluginsToRun.push({
@@ -232,11 +248,12 @@ export const triggerPluginRunsForComment = async ({
           targetType: 'Comment',
           pipelineId,
           executionOrder: order,
-          payload: {
+          payload: JSON.stringify({
             event,
             commentId: comment.id,
             channelUniqueName
-          }
+          }),
+          updatedAt: new Date().toISOString()
         } as any)
       ]
     })
@@ -451,12 +468,12 @@ export const triggerPluginRunsForComment = async ({
             ? (result?.result?.message || 'Plugin run completed')
             : (result?.error || 'Plugin reported failure'),
           durationMs,
-          payload: {
+          payload: JSON.stringify({
             event,
             flags,
             logs,
             result
-          }
+          })
         } as any)
       })
 
@@ -489,12 +506,12 @@ export const triggerPluginRunsForComment = async ({
           status: 'FAILED',
           message,
           durationMs,
-          payload: {
+          payload: JSON.stringify({
             event,
             error: message,
             logs,
             flags
-          }
+          })
         } as any)
       })
 
