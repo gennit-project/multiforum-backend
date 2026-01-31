@@ -6,6 +6,7 @@ type Input = {
 
 export type PipelineStepInput = {
   pluginId: string
+  version?: string
   continueOnError?: boolean
   condition?: 'ALWAYS' | 'PREVIOUS_SUCCEEDED' | 'PREVIOUS_FAILED'
 }

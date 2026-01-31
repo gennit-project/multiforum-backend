@@ -3,7 +3,7 @@ import type { TriggerArgs, PluginEdgeData, EventPipeline, PipelineStep, PluginTo
 import { DOWNLOAD_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest } from './pipelineUtils.js'
+import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -81,15 +81,9 @@ export const triggerPluginRunsForDownloadableFile = async ({
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
-  const enabledPluginsMap = new Map<string, PluginEdgeData>()
 
-  // Build a map of enabled plugins by pluginId (name)
-  for (const edge of edges) {
-    const edgeData = edge as PluginEdgeData
-    if (edgeData.properties?.enabled && edgeData.node?.Plugin?.name) {
-      enabledPluginsMap.set(edgeData.node.Plugin.name, edgeData)
-    }
-  }
+  // Build version-aware plugin map (pluginName -> sorted array of versions)
+  const pluginVersionsMap = buildPluginVersionMaps(edges)
 
   // Check if there's a pipeline defined for this event
   const pipelines: EventPipeline[] = serverConfig.pluginPipelines || []
@@ -104,8 +98,10 @@ export const triggerPluginRunsForDownloadableFile = async ({
   if (eventPipeline && eventPipeline.steps.length > 0) {
     // Use pipeline order - only run plugins that are both in the pipeline AND enabled
     eventPipeline.steps.forEach((step, index) => {
-      const edgeData = enabledPluginsMap.get(step.pluginId)
-      if (edgeData) {
+      // Get plugin for step, respecting version specification
+      const pluginMatch = getPluginForStep(pluginVersionsMap, step.pluginId, step.version)
+      if (pluginMatch) {
+        const { edgeData } = pluginMatch
         // Also verify the plugin handles this event type
         const manifest = parseManifest(edgeData.node.manifest)
         const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
@@ -120,18 +116,22 @@ export const triggerPluginRunsForDownloadableFile = async ({
       }
     })
   } else {
-    // No pipeline defined - fall back to running all enabled plugins that handle this event
+    // No pipeline defined - fall back to running latest version of all enabled plugins that handle this event
     let order = 0
-    for (const [pluginId, edgeData] of enabledPluginsMap) {
-      const manifest = parseManifest(edgeData.node.manifest)
-      const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
-      if (manifestEvents.includes(event)) {
-        pluginsToRun.push({
-          pluginId,
-          edgeData,
-          step: { pluginId, condition: 'ALWAYS', continueOnError: false },
-          order: order++
-        })
+    for (const [pluginId, versions] of pluginVersionsMap) {
+      // Use latest version (first in sorted array)
+      const latestVersion = versions[0]
+      if (latestVersion) {
+        const manifest = parseManifest(latestVersion.edgeData.node.manifest)
+        const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
+        if (manifestEvents.includes(event)) {
+          pluginsToRun.push({
+            pluginId,
+            edgeData: latestVersion.edgeData,
+            step: { pluginId, condition: 'ALWAYS', continueOnError: false },
+            order: order++
+          })
+        }
       }
     }
   }

@@ -91,7 +91,68 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
   try {
     const moduleUrl = pathToFileURL(absoluteEntryPath).href
     const importedModule = await import(moduleUrl)
-    const PluginClass = importedModule.default || importedModule
+
+    // Debug: Log what the module exports
+    console.log(`[PluginLoader] Module keys for ${entryPath}:`, Object.keys(importedModule))
+    console.log(`[PluginLoader] Has default export:`, !!importedModule.default)
+    console.log(`[PluginLoader] Default export type:`, typeof importedModule.default)
+
+    // Try to find the plugin class in various export formats
+    let PluginClass = importedModule.default
+
+    // If default is an object (not a function), look inside it for the class
+    if (PluginClass && typeof PluginClass === 'object' && typeof PluginClass !== 'function') {
+      console.log(`[PluginLoader] Default is an object with keys:`, Object.keys(PluginClass))
+
+      // Look for common property names that might hold the class
+      const possibleNames = ['Plugin', 'default', 'ChatGPTBotProfiles', 'BetaReaderBot']
+      for (const name of possibleNames) {
+        if (typeof PluginClass[name] === 'function') {
+          console.log(`[PluginLoader] Found plugin class inside default.${name}`)
+          PluginClass = PluginClass[name]
+          break
+        }
+      }
+
+      // If still not a function, try the first function property in the default object
+      if (typeof PluginClass !== 'function') {
+        for (const key of Object.keys(PluginClass)) {
+          if (typeof PluginClass[key] === 'function') {
+            console.log(`[PluginLoader] Found plugin class inside default.${key}`)
+            PluginClass = PluginClass[key]
+            break
+          }
+        }
+      }
+    }
+
+    // If default is not usable, check for named exports on the module
+    if (typeof PluginClass !== 'function') {
+      const possibleNames = ['Plugin', 'ChatGPTBotProfiles', 'BetaReaderBot']
+      for (const name of possibleNames) {
+        if (typeof importedModule[name] === 'function') {
+          PluginClass = importedModule[name]
+          console.log(`[PluginLoader] Found plugin class at named export: ${name}`)
+          break
+        }
+      }
+
+      // If still not found, try the first function export
+      if (typeof PluginClass !== 'function') {
+        for (const key of Object.keys(importedModule)) {
+          if (typeof importedModule[key] === 'function') {
+            PluginClass = importedModule[key]
+            console.log(`[PluginLoader] Found plugin class at named export: ${key}`)
+            break
+          }
+        }
+      }
+    }
+
+    if (typeof PluginClass !== 'function') {
+      throw new Error(`Plugin module does not export a constructor. Module exports: ${Object.keys(importedModule).join(', ')}. Default export keys: ${importedModule.default ? Object.keys(importedModule.default).join(', ') : 'N/A'}`)
+    }
+
     pluginModuleCache.set(cacheKey, PluginClass)
     return PluginClass
   } finally {

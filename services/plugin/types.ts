@@ -20,6 +20,7 @@ export type Models = {
 // Pipeline step configuration
 export type PipelineStep = {
   pluginId: string
+  version?: string  // Optional: specific version to use. If not specified, uses latest enabled version.
   continueOnError?: boolean
   condition?: 'ALWAYS' | 'PREVIOUS_SUCCEEDED' | 'PREVIOUS_FAILED'
 }

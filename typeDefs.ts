@@ -1156,12 +1156,14 @@ const typeDefinitions = gql`
 
   type PipelineStep {
     pluginId: String!
+    version: String
     continueOnError: Boolean
     condition: PipelineCondition
   }
 
   input PipelineStepInput {
     pluginId: String!
+    version: String
     continueOnError: Boolean
     condition: PipelineCondition
   }

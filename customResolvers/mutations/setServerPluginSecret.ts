@@ -1,7 +1,7 @@
-import crypto from 'crypto'
 import type {
   ServerSecretModel
 } from '../../ogm_types.js'
+import { encryptSecret } from '../../services/plugin/encryption.js'
 
 type Input = {
   ServerSecret: ServerSecretModel
@@ -13,20 +13,6 @@ type Args = {
   value: string
 }
 
-// Simple encryption for demonstration - in production use proper key management
-const ENCRYPTION_KEY = process.env.PLUGIN_SECRET_ENCRYPTION_KEY || 'your-32-char-secret-key-here!!!' // 32 chars
-const ALGORITHM = 'aes-256-gcm'
-
-function encrypt(text: string): string {
-  const iv = crypto.randomBytes(12)
-  const cipher = crypto.createCipher(ALGORITHM, ENCRYPTION_KEY)
-  
-  let encrypted = cipher.update(text, 'utf8', 'hex')
-  encrypted += cipher.final('hex')
-  
-  return iv.toString('hex') + ':' + encrypted
-}
-
 const getResolver = (input: Input) => {
   const { ServerSecret } = input
 
@@ -35,7 +21,7 @@ const getResolver = (input: Input) => {
 
     try {
       // Encrypt the secret value
-      const ciphertext = encrypt(value)
+      const ciphertext = encryptSecret(value)
 
       // Find existing secret or create new one
       const existingSecrets = await ServerSecret.find({
