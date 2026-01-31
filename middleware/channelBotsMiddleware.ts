@@ -87,8 +87,19 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
       if (!edge.properties.enabled) continue;
       if (!isBotPlugin(edge?.node?.Plugin)) continue;
 
+      console.log('🧩 Bot plugin settings (channel)', {
+        channelUniqueName,
+        pluginName: edge?.node?.Plugin?.name,
+        pluginTags: edge?.node?.Plugin?.tags,
+        settingsJson: JSON.stringify(edge.properties.settingsJson || null)
+      });
+
       const botName = getBotNameFromSettings(edge.properties.settingsJson);
       if (!botName) {
+        console.warn('⚠️ Bot plugin has no botName in settingsJson', {
+          channelUniqueName,
+          pluginName: edge?.node?.Plugin?.name
+        });
         continue;
       }
 

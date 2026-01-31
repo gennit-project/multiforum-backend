@@ -13,10 +13,10 @@ import { GraphQLResolveInfo } from 'graphql';
 
 // Define types for the middleware
 interface UpdateDiscussionsArgs {
-  where: {
+  where?: {
     id?: string;
   };
-  update: {
+  update?: {
     title?: string;
     body?: string;
     [key: string]: any;
@@ -43,6 +43,9 @@ const discussionVersionHistoryMiddleware = {
     ) => {
       // Extract the parameters that we need for version history tracking
       const { where, update } = args;
+      if (!update) {
+        return resolve(parent, args, context, info);
+      }
       const discussionId = where?.id;
       let discussionSnapshot = null;
       

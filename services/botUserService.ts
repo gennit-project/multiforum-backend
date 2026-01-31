@@ -6,9 +6,16 @@ type BotProfile = {
 }
 
 const BOT_PREFIX = 'bot'
-const SAFE_ID_REGEX = /^[a-z0-9-]+$/
+const SAFE_ID_REGEX = /^[a-z0-9_-]+$/
 
-const normalizeId = (value: string) => value.trim().toLowerCase()
+const normalizeId = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^[-_]+|[-_]+$/g, '')
 
 const ensureSafeId = (value: string, label: string) => {
   if (!SAFE_ID_REGEX.test(value)) {
@@ -211,11 +218,24 @@ export const syncBotUsersForChannelProfiles = async (input: {
 }) => {
   const { User, Channel, channelUniqueName, botName, profiles } = input
 
+  const baseUsername = buildBotUsername(channelUniqueName, botName, null)
   const desiredUsernames = new Set(
-    (profiles || [])
+    [
+      baseUsername,
+      ...(profiles || [])
       .filter((profile) => profile?.id)
       .map((profile) => buildBotUsername(channelUniqueName, botName, profile.id))
+    ]
   )
+
+  await ensureBotUserForChannel({
+    User,
+    Channel,
+    channelUniqueName,
+    botName,
+    profileId: null,
+    profileLabel: null
+  })
 
   for (const profile of profiles || []) {
     if (!profile?.id) continue

@@ -15,6 +15,13 @@ const discussionChannelSelectionSet = `
     archived
     Channel {
         uniqueName
+        feedbackEnabled
+        Bots {
+            username
+            displayName
+            botProfileId
+            isDeprecated
+        }
     }
     Discussion {
         id

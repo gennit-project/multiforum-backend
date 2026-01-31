@@ -10,10 +10,10 @@ import { GraphQLResolveInfo } from 'graphql';
 
 // Define types for the middleware
 interface UpdateWikiPagesArgs {
-  where: {
+  where?: {
     id?: string;
   };
-  update: {
+  update?: {
     title?: string;
     body?: string;
     [key: string]: any;
@@ -40,6 +40,9 @@ const wikiPageVersionHistoryMiddleware = {
     ) => {
       // Extract the parameters that we need for version history tracking
       const { where, update } = args;
+      if (!update) {
+        return resolve(parent, args, context, info);
+      }
       
       // Check if this is creating new child WikiPages
       const isCreatingChildPages = update.ChildPages?.create;

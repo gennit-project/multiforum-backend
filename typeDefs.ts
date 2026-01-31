@@ -620,6 +620,7 @@ const typeDefinitions = gql`
     PastVersions: [TextVersion!]!
       @relationship(type: "HAS_VERSION", direction: OUT)
     emoji: JSON
+    botMentions: JSON
     GivesFeedbackOnDiscussion: Discussion
       @relationship(type: "HAS_FEEDBACK_COMMENT", direction: OUT)
     GivesFeedbackOnEvent: Event

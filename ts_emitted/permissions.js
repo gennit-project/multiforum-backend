@@ -160,6 +160,8 @@ const permissionList = shield({
         initializeUserFavorites: and(isAuthenticated, allow),
         refreshPlugins: and(isAuthenticated, isAdmin),
         installPluginVersion: and(isAuthenticated, isAdmin),
+        enableServerPlugin: and(isAuthenticated, isAdmin),
+        setServerPluginSecret: and(isAuthenticated, isAdmin),
         deletePluginVersions: allow, // and(isAuthenticated, isAdmin)
     },
 }, {

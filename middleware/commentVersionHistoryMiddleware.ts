@@ -10,10 +10,10 @@ import { GraphQLResolveInfo } from 'graphql';
 
 // Define types for the middleware
 interface UpdateCommentsArgs {
-  where: {
+  where?: {
     id?: string;
   };
-  update: {
+  update?: {
     text?: string;
     [key: string]: any;
   };
@@ -39,6 +39,9 @@ const commentVersionHistoryMiddleware = {
     ) => {
       // Extract the parameters that we need for version history tracking
       const { where, update } = args;
+      if (!update) {
+        return resolve(parent, args, context, info);
+      }
       let commentSnapshot = null;
       
       // Check if text is being updated

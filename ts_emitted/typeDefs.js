@@ -619,6 +619,7 @@ const typeDefinitions = gql `
     PastVersions: [TextVersion!]!
       @relationship(type: "HAS_VERSION", direction: OUT)
     emoji: JSON
+    botMentions: JSON
     GivesFeedbackOnDiscussion: Discussion
       @relationship(type: "HAS_FEEDBACK_COMMENT", direction: OUT)
     GivesFeedbackOnEvent: Event
@@ -975,10 +976,6 @@ const typeDefinitions = gql `
       key: String!
       value: String!
     ): Boolean!
-    validateServerPluginSecret(
-      pluginId: String!
-      key: String!
-    ): ValidationResult!
     updatePluginPipelines(
       pipelines: [EventPipelineInput!]!
     ): JSON!
@@ -1283,11 +1280,6 @@ const typeDefinitions = gql `
     status: SecretValidationStatus!
     lastValidatedAt: DateTime
     validationError: String
-  }
-
-  type ValidationResult {
-    isValid: Boolean!
-    error: String
   }
 
   type GetSortedChannelsResponse {
