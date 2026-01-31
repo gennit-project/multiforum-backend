@@ -124,17 +124,14 @@ export const triggerPluginRunsForComment = async ({
 
   // Build a map of channel-level plugin settings by plugin name
   const channelPluginSettingsMap = new Map<string, any>()
-  console.log('[Plugin] Channel EnabledPluginsConnection edges:', JSON.stringify(channel?.EnabledPluginsConnection?.edges || [], null, 2))
   if (channel?.EnabledPluginsConnection?.edges) {
     for (const edge of channel.EnabledPluginsConnection.edges) {
       const pluginName = edge.node?.Plugin?.name
-      console.log('[Plugin] Channel plugin edge:', { pluginName, settingsJson: edge.properties?.settingsJson })
       if (pluginName && edge.properties?.settingsJson) {
         channelPluginSettingsMap.set(pluginName, edge.properties.settingsJson)
       }
     }
   }
-  console.log('[Plugin] Channel plugin settings map:', Object.fromEntries(channelPluginSettingsMap))
 
   const serverConfigs = await ServerConfig.find({
     selectionSet: `{
@@ -413,16 +410,10 @@ export const triggerPluginRunsForComment = async ({
         ? { channel: channelSettingsJsonRaw }
         : {}
 
-      console.log(`[Plugin:${pluginId}] Settings merge:`, {
-        defaults: settingsDefaults,
-        server: serverSettingsJson,
-        channel: channelSettingsJson
-      })
       const runtimeSettings = mergeSettings(
         mergeSettings(settingsDefaults, serverSettingsJson),
         channelSettingsJson
       )
-      console.log(`[Plugin:${pluginId}] Merged runtime settings:`, runtimeSettings)
 
       const context = {
         scope: 'SERVER' as const,
