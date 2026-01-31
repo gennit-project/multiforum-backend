@@ -3,7 +3,7 @@ import type { ChannelTriggerArgs, PluginEdgeData, EventPipeline, PluginToRun, Pe
 import { CHANNEL_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings } from './pipelineUtils.js'
+import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
 
@@ -23,7 +23,7 @@ export const triggerChannelPluginPipeline = async ({
 
   const { Channel, Discussion, DownloadableFile, PluginRun, ServerConfig, ServerSecret } = models
 
-  // Get the channel with its pipeline configuration
+  // Get the channel with its pipeline configuration and enabled plugins (for channel-level settings)
   const channels = await Channel.find({
     where: { uniqueName: channelUniqueName },
     selectionSet: `{
@@ -46,6 +46,22 @@ export const triggerChannelPluginPipeline = async ({
           order
         }
       }
+      EnabledPluginsConnection {
+        edges {
+          properties {
+            enabled
+            settingsJson
+          }
+          node {
+            id
+            version
+            Plugin {
+              id
+              name
+            }
+          }
+        }
+      }
     }`
   })
 
@@ -56,6 +72,17 @@ export const triggerChannelPluginPipeline = async ({
   const channel = channels[0] as any
   const channelPipelines: EventPipeline[] = channel.pluginPipelines || []
   const eventPipeline = channelPipelines.find(p => p.event === event)
+
+  // Build a map of channel-level plugin settings by plugin name
+  const channelPluginSettingsMap = new Map<string, any>()
+  if (channel?.EnabledPluginsConnection?.edges) {
+    for (const edge of channel.EnabledPluginsConnection.edges) {
+      const pluginName = edge.node?.Plugin?.name
+      if (pluginName && edge.properties?.settingsJson) {
+        channelPluginSettingsMap.set(pluginName, edge.properties.settingsJson)
+      }
+    }
+  }
 
   // If no pipeline is configured for this event, nothing to do
   if (!eventPipeline || eventPipeline.steps.length === 0) {
@@ -129,25 +156,20 @@ export const triggerChannelPluginPipeline = async ({
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
-  const enabledPluginsMap = new Map<string, PluginEdgeData>()
 
-  // Build a map of enabled plugins by pluginId (name)
-  for (const edge of edges) {
-    const edgeData = edge as PluginEdgeData
-    if (edgeData.properties?.enabled && edgeData.node?.Plugin?.name) {
-      enabledPluginsMap.set(edgeData.node.Plugin.name, edgeData)
-    }
-  }
+  // Build version-aware plugin map (pluginName -> sorted array of versions)
+  const pluginVersionsMap = buildPluginVersionMaps(edges)
 
   // Filter pipeline steps to only include server-enabled plugins
   const pluginsToRun: PluginToRun[] = []
 
   eventPipeline.steps.forEach((step, index) => {
-    const edgeData = enabledPluginsMap.get(step.pluginId)
-    if (edgeData) {
+    // Get plugin for step, respecting version specification
+    const pluginMatch = getPluginForStep(pluginVersionsMap, step.pluginId, step.version)
+    if (pluginMatch) {
       pluginsToRun.push({
         pluginId: step.pluginId,
-        edgeData,
+        edgeData: pluginMatch.edgeData,
         step,
         order: index
       })
@@ -293,9 +315,33 @@ export const triggerChannelPluginPipeline = async ({
         }
       }
 
-      const settingsDefaults = pluginVersionData.settingsDefaults || {}
-      const settingsJson = edgeData.properties?.settingsJson || {}
-      const runtimeSettings = mergeSettings(settingsDefaults, settingsJson)
+      // Parse settings if they are JSON strings
+      const parseIfString = (value: any): any => {
+        if (typeof value === 'string') {
+          try {
+            return JSON.parse(value)
+          } catch {
+            return {}
+          }
+        }
+        return value || {}
+      }
+
+      // Merge settings: defaults < server < channel (channel takes highest precedence)
+      const settingsDefaults = parseIfString(pluginVersionData.settingsDefaults)
+      const serverSettingsJson = parseIfString(edgeData.properties?.settingsJson)
+      const channelSettingsJsonRaw = parseIfString(channelPluginSettingsMap.get(pluginId))
+
+      // Channel settings are stored flat but need to be merged into the 'channel' sub-key
+      // to match the plugin's expected structure: { server: {...}, channel: {...} }
+      const channelSettingsJson = Object.keys(channelSettingsJsonRaw).length > 0
+        ? { channel: channelSettingsJsonRaw }
+        : {}
+
+      const runtimeSettings = mergeSettings(
+        mergeSettings(settingsDefaults, serverSettingsJson),
+        channelSettingsJson
+      )
 
       // Build channel context for plugins
       const channelContext = {

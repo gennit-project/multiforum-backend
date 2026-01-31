@@ -3,7 +3,7 @@ import type { CommentTriggerArgs, PluginEdgeData, PluginToRun, PendingRun } from
 import { COMMENT_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest } from './pipelineUtils.js'
+import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { createBotComment } from '../botUserService.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
@@ -96,12 +96,45 @@ export const triggerPluginRunsForComment = async ({
     return []
   }
 
-  // Fetch channel pipelines
+  // Fetch channel pipelines and enabled plugins (for channel-level settings)
   const channels = await Channel.find({
     where: { uniqueName: channelUniqueName },
-    selectionSet: `{ uniqueName pluginPipelines }`
+    selectionSet: `{
+      uniqueName
+      pluginPipelines
+      EnabledPluginsConnection {
+        edges {
+          properties {
+            enabled
+            settingsJson
+          }
+          node {
+            id
+            version
+            Plugin {
+              id
+              name
+            }
+          }
+        }
+      }
+    }`
   })
   const channel = channels[0] as any
+
+  // Build a map of channel-level plugin settings by plugin name
+  const channelPluginSettingsMap = new Map<string, any>()
+  console.log('[Plugin] Channel EnabledPluginsConnection edges:', JSON.stringify(channel?.EnabledPluginsConnection?.edges || [], null, 2))
+  if (channel?.EnabledPluginsConnection?.edges) {
+    for (const edge of channel.EnabledPluginsConnection.edges) {
+      const pluginName = edge.node?.Plugin?.name
+      console.log('[Plugin] Channel plugin edge:', { pluginName, settingsJson: edge.properties?.settingsJson })
+      if (pluginName && edge.properties?.settingsJson) {
+        channelPluginSettingsMap.set(pluginName, edge.properties.settingsJson)
+      }
+    }
+  }
+  console.log('[Plugin] Channel plugin settings map:', Object.fromEntries(channelPluginSettingsMap))
 
   const serverConfigs = await ServerConfig.find({
     selectionSet: `{
@@ -141,14 +174,9 @@ export const triggerPluginRunsForComment = async ({
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
-  const enabledPluginsMap = new Map<string, PluginEdgeData>()
 
-  for (const edge of edges) {
-    const edgeData = edge as PluginEdgeData
-    if (edgeData.properties?.enabled && edgeData.node?.Plugin?.name) {
-      enabledPluginsMap.set(edgeData.node.Plugin.name, edgeData)
-    }
-  }
+  // Build version-aware plugin map (pluginName -> sorted array of versions)
+  const pluginVersionsMap = buildPluginVersionMaps(edges)
 
   // Check channel pipelines first, then fall back to server pipelines
   const channelPipelines = parseStoredPipelines(channel?.pluginPipelines)
@@ -160,16 +188,18 @@ export const triggerPluginRunsForComment = async ({
     eventPipeline = serverPipelines.find(p => p.event === event)
   }
 
-  // Debug: Show enabled plugins
-  const enabledPluginNames = Array.from(enabledPluginsMap.keys())
-  const enabledPluginDetails = Array.from(enabledPluginsMap.entries()).map(([name, edge]) => {
-    const manifest = parseManifest(edge.node.manifest)
-    return {
-      name,
-      version: edge.node.version,
-      manifestEvents: manifest.events || []
+  // Debug: Show enabled plugins (all versions)
+  const enabledPluginDetails: Array<{ name: string; version: string; manifestEvents: string[] }> = []
+  for (const [name, versions] of pluginVersionsMap) {
+    for (const { version, edgeData } of versions) {
+      const manifest = parseManifest(edgeData.node.manifest)
+      enabledPluginDetails.push({
+        name,
+        version,
+        manifestEvents: manifest.events || []
+      })
     }
-  })
+  }
 
   console.log('[Plugin] Pipeline check:', {
     event,
@@ -187,13 +217,16 @@ export const triggerPluginRunsForComment = async ({
 
   if (eventPipeline && eventPipeline.steps.length > 0) {
     eventPipeline.steps.forEach((step, index) => {
-      const edgeData = enabledPluginsMap.get(step.pluginId)
-      console.log(`[Plugin] Step ${index}: pluginId="${step.pluginId}", found=${!!edgeData}`)
-      if (edgeData) {
+      // Get plugin for step, respecting version specification
+      const pluginMatch = getPluginForStep(pluginVersionsMap, step.pluginId, step.version)
+      console.log(`[Plugin] Step ${index}: pluginId="${step.pluginId}", requestedVersion="${step.version || 'latest'}", found=${!!pluginMatch}${pluginMatch ? `, resolvedVersion="${pluginMatch.version}"` : ''}`)
+
+      if (pluginMatch) {
+        const { edgeData, version } = pluginMatch
         const manifest = parseManifest(edgeData.node.manifest)
         const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
         const eventMatch = manifestEvents.includes(event)
-        console.log(`[Plugin] Step ${index}: manifestEvents=${JSON.stringify(manifestEvents)}, eventMatch=${eventMatch}`)
+        console.log(`[Plugin] Step ${index}: version=${version}, manifestEvents=${JSON.stringify(manifestEvents)}, eventMatch=${eventMatch}`)
         if (eventMatch) {
           pluginsToRun.push({
             pluginId: step.pluginId,
@@ -205,17 +238,22 @@ export const triggerPluginRunsForComment = async ({
       }
     })
   } else {
+    // No pipeline defined - fall back to running latest version of all enabled plugins that handle this event
     let order = 0
-    for (const [pluginId, edgeData] of enabledPluginsMap) {
-      const manifest = parseManifest(edgeData.node.manifest)
-      const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
-      if (manifestEvents.includes(event)) {
-        pluginsToRun.push({
-          pluginId,
-          edgeData,
-          step: { pluginId, condition: 'ALWAYS', continueOnError: false },
-          order: order++
-        })
+    for (const [pluginId, versions] of pluginVersionsMap) {
+      // Use latest version (first in sorted array)
+      const latestVersion = versions[0]
+      if (latestVersion) {
+        const manifest = parseManifest(latestVersion.edgeData.node.manifest)
+        const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
+        if (manifestEvents.includes(event)) {
+          pluginsToRun.push({
+            pluginId,
+            edgeData: latestVersion.edgeData,
+            step: { pluginId, condition: 'ALWAYS', continueOnError: false },
+            order: order++
+          })
+        }
       }
     }
   }
@@ -352,9 +390,39 @@ export const triggerPluginRunsForComment = async ({
         }
       }
 
-      const settingsDefaults = pluginVersionData.settingsDefaults || {}
-      const settingsJson = edgeData.properties?.settingsJson || {}
-      const runtimeSettings = mergeSettings(settingsDefaults, settingsJson)
+      // Parse settings if they are JSON strings
+      const parseIfString = (value: any): any => {
+        if (typeof value === 'string') {
+          try {
+            return JSON.parse(value)
+          } catch {
+            return {}
+          }
+        }
+        return value || {}
+      }
+
+      // Merge settings: defaults < server < channel (channel takes highest precedence)
+      const settingsDefaults = parseIfString(pluginVersionData.settingsDefaults)
+      const serverSettingsJson = parseIfString(edgeData.properties?.settingsJson)
+      const channelSettingsJsonRaw = parseIfString(channelPluginSettingsMap.get(pluginId))
+
+      // Channel settings are stored flat but need to be merged into the 'channel' sub-key
+      // to match the plugin's expected structure: { server: {...}, channel: {...} }
+      const channelSettingsJson = Object.keys(channelSettingsJsonRaw).length > 0
+        ? { channel: channelSettingsJsonRaw }
+        : {}
+
+      console.log(`[Plugin:${pluginId}] Settings merge:`, {
+        defaults: settingsDefaults,
+        server: serverSettingsJson,
+        channel: channelSettingsJson
+      })
+      const runtimeSettings = mergeSettings(
+        mergeSettings(settingsDefaults, serverSettingsJson),
+        channelSettingsJson
+      )
+      console.log(`[Plugin:${pluginId}] Merged runtime settings:`, runtimeSettings)
 
       const context = {
         scope: 'SERVER' as const,
