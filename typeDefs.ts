@@ -465,7 +465,7 @@ const typeDefinitions = gql`
     Comments: [Comment!]!
       @relationship(type: "CONTAINS_COMMENT", direction: OUT)
     emoji: JSON
-    botMentions: JSON
+    botMentions: String
     archived: Boolean
     RelatedIssues: [Issue!]! @relationship(type: "CITED_ISSUE", direction: IN)
     answered: Boolean
@@ -620,7 +620,7 @@ const typeDefinitions = gql`
     PastVersions: [TextVersion!]!
       @relationship(type: "HAS_VERSION", direction: OUT)
     emoji: JSON
-    botMentions: JSON
+    botMentions: String
     GivesFeedbackOnDiscussion: Discussion
       @relationship(type: "HAS_FEEDBACK_COMMENT", direction: OUT)
     GivesFeedbackOnEvent: Event

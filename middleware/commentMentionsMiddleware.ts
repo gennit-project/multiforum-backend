@@ -28,14 +28,14 @@ const commentMentionsMiddleware = {
           if (!isDiscussionCommentInput(input)) {
             return {
               ...input,
-              botMentions: []
+              botMentions: null
             }
           }
 
           const mentions = parseBotMentions(input?.text || '')
           return {
             ...input,
-            botMentions: mentions
+            botMentions: mentions.length ? JSON.stringify(mentions) : null
           }
         })
       }

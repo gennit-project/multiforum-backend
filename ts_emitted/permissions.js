@@ -163,6 +163,7 @@ const permissionList = shield({
         enableServerPlugin: and(isAuthenticated, isAdmin),
         setServerPluginSecret: and(isAuthenticated, isAdmin),
         deletePluginVersions: allow, // and(isAuthenticated, isAdmin)
+        updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
     },
 }, {
     debug: true,

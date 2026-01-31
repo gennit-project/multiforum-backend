@@ -68,11 +68,11 @@ const getResolver = (input: Input) => {
 
     const serverConfig = existingConfigs[0]
 
-    // Update the pluginPipelines JSON field
+    // Update the pluginPipelines JSON field (serialized as string for Neo4j)
     await ServerConfig.update({
       where: { serverName: serverConfig.serverName },
       update: {
-        pluginPipelines: pipelines
+        pluginPipelines: JSON.stringify(pipelines)
       }
     })
 

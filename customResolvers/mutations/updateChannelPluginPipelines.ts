@@ -23,6 +23,7 @@ type Args = {
 // Valid events for channel-scoped pipelines
 const VALID_CHANNEL_EVENTS = [
   'discussionChannel.created',
+  'comment.created',
 ]
 
 /**
@@ -77,11 +78,11 @@ const getResolver = (input: Input) => {
       throw new Error(`Channel "${channelUniqueName}" not found`)
     }
 
-    // Update the pluginPipelines JSON field
+    // Update the pluginPipelines JSON field (serialized as string for Neo4j)
     await Channel.update({
       where: { uniqueName: channelUniqueName },
       update: {
-        pluginPipelines: pipelines
+        pluginPipelines: JSON.stringify(pipelines)
       }
     })
 

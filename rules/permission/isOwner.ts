@@ -30,6 +30,7 @@ type IsChannelOwnerInput = {
 
 export const isChannelOwner = rule({ cache: "contextual" })(
   async (parent: any, args: IsChannelOwnerInput, ctx: any, info: any) => {
+    console.log('🔐 isChannelOwner rule called with args:', JSON.stringify(args));
 
     // set user data
     ctx.user = await setUserDataOnContext({
