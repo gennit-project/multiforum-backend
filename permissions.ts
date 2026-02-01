@@ -193,6 +193,8 @@ const permissionList = shield({
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
+      lockIssue: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveDiscussion)),
+      unlockIssue: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveDiscussion)),
       archiveComment: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveComment)),
       archiveDiscussion: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveDiscussion)),
       archiveEvent: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveEvent)),
