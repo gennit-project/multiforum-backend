@@ -10,6 +10,7 @@ import commentPluginPipelineMiddleware from "./middleware/commentPluginPipelineM
 import wikiPageVersionHistoryMiddleware from "./middleware/wikiPageVersionHistoryMiddleware.js";
 import issueActivityFeedMiddleware from "./middleware/issueActivityFeedMiddleware.js";
 import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
+import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
 import path from "path";
 import dotenv from "dotenv";
 import pkg from "@neo4j/graphql-ogm";
@@ -161,7 +162,7 @@ async function initializeServer() {
             process.exit(1);
         }
         let schema = await neoSchema.getSchema();
-        schema = applyMiddleware(schema, permissions, discussionVersionHistoryMiddleware, commentVersionHistoryMiddleware, commentMentionsMiddleware, commentPluginPipelineMiddleware, wikiPageVersionHistoryMiddleware, issueActivityFeedMiddleware, channelBotsMiddleware);
+        schema = applyMiddleware(schema, permissions, discussionVersionHistoryMiddleware, commentVersionHistoryMiddleware, commentMentionsMiddleware, commentPluginPipelineMiddleware, wikiPageVersionHistoryMiddleware, issueActivityFeedMiddleware, channelBotsMiddleware, channelCreatorModeratorMiddleware);
         await ogm.init();
         if (edition === "enterprise") {
             await neoSchema.assertIndexesAndConstraints();
