@@ -703,6 +703,10 @@ const typeDefinitions = gql `
     ActivityFeed: [ModerationAction!]!
       @relationship(type: "ACTIVITY_ON_ISSUE", direction: OUT)
     SubscribedToNotifications: [User!]! @relationship(type: "SUBSCRIBED_TO_ISSUE", direction: IN)
+    locked: Boolean @default(value: false)
+    lockedAt: DateTime
+    lockReason: String
+    LockedBy: ModerationProfile @relationship(type: "LOCKED_ISSUE", direction: IN)
   }
 
   type Feed {
@@ -911,6 +915,8 @@ const typeDefinitions = gql `
       explanation: String
     ): Issue
     unsuspendMod(issueId: ID!, explanation: String): Issue
+    lockIssue(issueId: ID!, reason: String!): Issue
+    unlockIssue(issueId: ID!, reason: String): Issue
     archiveComment(
       commentId: ID!
       selectedForumRules: [String!]!

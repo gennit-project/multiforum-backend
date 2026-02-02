@@ -51,6 +51,8 @@ import suspendUser from './customResolvers/mutations/suspendUser.js';
 import suspendMod from './customResolvers/mutations/suspendMod.js';
 import unsuspendUser from './customResolvers/mutations/unsuspendUser.js';
 import unsuspendMod from './customResolvers/mutations/unsuspendMod.js';
+import lockIssue from './customResolvers/mutations/lockIssue.js';
+import unlockIssue from './customResolvers/mutations/unlockIssue.js';
 import isOriginalPosterSuspended from './customResolvers/queries/isOriginalPosterSuspended.js';
 import subscribeToComment from './customResolvers/mutations/subscribeToComment.js';
 import unsubscribeFromComment from './customResolvers/mutations/unsubscribeFromComment.js';
@@ -338,6 +340,12 @@ export default function (driver) {
                 Comment,
                 Event,
                 Discussion
+            }),
+            lockIssue: lockIssue({
+                Issue
+            }),
+            unlockIssue: unlockIssue({
+                Issue
             }),
             archiveComment: archiveComment({
                 Issue,
