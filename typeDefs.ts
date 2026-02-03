@@ -635,6 +635,7 @@ const typeDefinitions = gql`
     RelatedIssues: [Issue!]! @relationship(type: "CITED_ISSUE", direction: IN)
     SubscribedToNotifications: [User!]!
       @relationship(type: "SUBSCRIBED_TO_NOTIFICATIONS", direction: IN)
+    isFavoritedByUser: Boolean
 
     # Collection support
     InCollections: [Collection!]! @relationship(type: "CONTAINS_COMMENT", direction: IN)
@@ -1447,7 +1448,6 @@ const typeDefinitions = gql`
       offset: Int
       limit: Int
       sort: String
-      username: String
     ): CommentSectionFormat
     getEventComments(
       eventId: ID!
@@ -1462,6 +1462,7 @@ const typeDefinitions = gql`
       limit: Int
       sort: SortType
     ): CommentRepliesFormat
+    getUserFavoriteComment(commentId: ID!): Boolean
     getSortedChannels(
       offset: Int
       limit: Int

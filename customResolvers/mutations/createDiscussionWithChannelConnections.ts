@@ -122,7 +122,8 @@ export const createDiscussionsFromInput = async (
     }
 
     sanitizedInput = input.map(({ discussionCreateInput, channelConnections }) => {
-      const albumCreateNode = discussionCreateInput?.Album?.create?.node;
+      const albumCreate = discussionCreateInput?.Album?.create;
+      const albumCreateNode = albumCreate?.node;
 
       if (!albumCreateNode) {
         return { discussionCreateInput, channelConnections };
@@ -132,9 +133,9 @@ export const createDiscussionsFromInput = async (
         discussionCreateInput: {
           ...discussionCreateInput,
           Album: {
-            ...discussionCreateInput.Album,
+            ...discussionCreateInput?.Album,
             create: {
-              ...discussionCreateInput.Album.create,
+              ...(albumCreate ?? {}),
               node: sanitizeAlbumCreateNode(albumCreateNode, username),
             },
           },

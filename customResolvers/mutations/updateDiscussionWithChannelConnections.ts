@@ -31,7 +31,9 @@ const getResolver = (input: Input) => {
     const albumInput = discussionUpdateInput?.Album;
     const albumCreateNode = albumInput?.create?.node;
     const albumUpdateNode = albumInput?.update?.node;
-    const albumUpdateImagesCreate = albumUpdateNode?.Images?.create;
+    const albumUpdateImagesCreate = Array.isArray(albumUpdateNode?.Images)
+      ? albumUpdateNode?.Images?.some((image) => image?.create?.length)
+      : false;
 
     const needsAlbumSanitization =
       Boolean(albumCreateNode) || Boolean(albumUpdateNode) || Boolean(albumUpdateImagesCreate);

@@ -9,12 +9,13 @@ OPTIONAL MATCH (c)-[:IS_REPLY_TO]->(parent:Comment)
 OPTIONAL MATCH (c)<-[:IS_REPLY_TO]-(child:Comment)
 OPTIONAL MATCH (c)<-[:UPVOTED_COMMENT]-(upvoter:User)
 OPTIONAL MATCH (c)-[:HAS_VERSION]->(pastVersion:TextVersion)<-[:AUTHORED_VERSION]-(pastVersionAuthor:User)
+OPTIONAL MATCH (favUser:User { username: $loggedInUsername })-[:DEFAULT_FAVORITES_COMMENTS]->(c)
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, $modName AS modName, pastVersion, pastVersionAuthor
+WITH c, author, serverRole, channelRole, parent, child, upvoter, $modName AS modName, pastVersion, pastVersionAuthor, favUser
 
 OPTIONAL MATCH (c)<-[:HAS_FEEDBACK_COMMENT]-(feedbackComment:Comment)<-[:AUTHORED_COMMENT]-(feedbackAuthor:ModerationProfile)
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, modName, feedbackComment, feedbackAuthor, pastVersion, pastVersionAuthor,
+WITH c, author, serverRole, channelRole, parent, child, upvoter, modName, feedbackComment, feedbackAuthor, pastVersion, pastVersionAuthor, favUser,
      CASE WHEN modName IS NOT NULL AND feedbackAuthor.displayName = modName THEN feedbackComment
           ELSE NULL END AS filteredFeedbackComment
 
@@ -30,26 +31,27 @@ WITH c, author, serverRole, channelRole, parent,
        Author: CASE WHEN pastVersionAuthor IS NOT NULL THEN {
          username: pastVersionAuthor.username
        } ELSE null END
-     } ELSE null END) AS PastVersions
+     } ELSE null END) AS PastVersions,
+     COUNT(DISTINCT favUser) > 0 AS isFavoritedByUser
 
-WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, parentIds,
+WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
     [comment IN NonFilteredChildComments WHERE comment.id IS NOT NULL] AS ChildComments,
     [version IN PastVersions WHERE version.id IS NOT NULL] AS FilteredPastVersions,
     FeedbackComments
 
-WITH c, author, channelRole, parent, UpvotedByUsers, parentIds, 
+WITH c, author, channelRole, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments,
     COLLECT(DISTINCT serverRole) AS serverRoles
 
-WITH c, author, channelRole, parent, UpvotedByUsers, parentIds,
+WITH c, author, channelRole, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments,
     [role IN serverRoles | {showAdminTag: role.showAdminTag}] as serverRoles
 
-WITH c, author, parent, UpvotedByUsers, parentIds,
+WITH c, author, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments, serverRoles,
     COLLECT(DISTINCT channelRole) AS channelRoles
 
-WITH c, author, parent, UpvotedByUsers, parentIds,
+WITH c, author, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments, serverRoles,
     [role IN channelRoles | {showModTag: role.showModTag}] as channelRoles
 
@@ -70,6 +72,7 @@ RETURN {
         ServerRoles: serverRoles,
         ChannelRoles: channelRoles
     } END,
+    isFavoritedByUser: isFavoritedByUser,
     ParentComment: CASE WHEN SIZE(parentIds) > 0 THEN {id: parentIds[0]} ELSE null END,
     UpvotedByUsers: UpvotedByUsers,
     UpvotedByUsersAggregate: {

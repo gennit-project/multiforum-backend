@@ -16,6 +16,7 @@ import getDiscussionsInChannel from "./customResolvers/queries/getDiscussionsInC
 import getUserContributions from "./customResolvers/queries/getUserContributions.js";
 import getChannelContributions from "./customResolvers/queries/getChannelContributions.js";
 import getModContributions from "./customResolvers/queries/getModContributions.js";
+import getUserFavoriteComment from "./customResolvers/queries/getUserFavoriteComment.js";
 
 import addEmojiToComment from "./customResolvers/mutations/addEmojiToComment.js";
 import removeEmojiFromComment from "./customResolvers/mutations/removeEmojiFromComment.js";
@@ -160,16 +161,17 @@ export default function (driver: any) {
       getCommentSection: getCommentSection({
         driver,
         DiscussionChannel,
-        Comment,
       }),
       getEventComments: getEventComments({
         driver,
         Event,
-        Comment,
       }),
       getCommentReplies: getCommentReplies({
         driver,
         Comment,
+      }),
+      getUserFavoriteComment: getUserFavoriteComment({
+        driver,
       }),
       getSortedChannels: getSortedChannels({
         driver,

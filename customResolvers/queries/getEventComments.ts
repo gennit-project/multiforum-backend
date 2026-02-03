@@ -1,6 +1,7 @@
 import {
     getEventCommentsQuery,
   }from "../cypher/cypherQueries.js";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 
 const eventSelectionSet = `
   {
@@ -26,94 +27,8 @@ const eventSelectionSet = `
   }
   `;
 
-const commentSelectionSet = `
-              {
-                  id
-                  text
-                  emoji
-                  weightedVotesCount
-                  CommentAuthor {
-                      ... on User {
-                          username
-                          displayName
-                          profilePicURL
-                          commentKarma
-                          createdAt
-                          discussionKarma
-                          ServerRoles {
-                            showAdminTag
-                          }
-                          ChannelRoles {
-                            showModTag
-                          }
-                      }
-                      ... on ModerationProfile {
-                        displayName
-                        createdAt
-                      }
-                  }
-                  createdAt
-                  updatedAt
-                  archived
-                  ChildCommentsAggregate {
-                      count
-                  }
-                  ParentComment {
-                      id
-                  }
-                  UpvotedByUsers {
-                      username
-                  }
-                  UpvotedByUsersAggregate {
-                      count
-                  }
-                  ChildComments {
-                      id
-                      text
-                      emoji
-                      weightedVotesCount
-                      CommentAuthor {
-                          ... on User {
-                              username
-                              displayName
-                              profilePicURL
-                              commentKarma
-                              createdAt
-                              discussionKarma
-                              ServerRoles {
-                                showAdminTag
-                              }
-                              ChannelRoles {
-                                showModTag
-                              }
-                          }
-                          ... on ModerationProfile {
-                            displayName
-                            createdAt
-                          }
-                      }
-                      createdAt
-                      updatedAt
-                      archived
-                      ChildCommentsAggregate {
-                          count
-                      }
-                      ParentComment {
-                          id
-                      }
-                      UpvotedByUsers {
-                          username
-                      }
-                      UpvotedByUsersAggregate {
-                          count
-                      }
-                  }
-              }
-          `;
-
 type Input = {
   Event: any;
-  Comment: any;
   driver: any;
 };
 
@@ -125,9 +40,14 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Event, Comment } = input;
+  const { driver, Event } = input;
   return async (parent: any, args: Args, context: any, info: any) => {
     const { eventId, offset, limit, sort } = args;
+    context.user = await setUserDataOnContext({
+      context,
+      getPermissionInfo: false,
+    });
+    const loggedInUsername = context.user?.username || null;
 
     const session = driver.session();
 
@@ -147,57 +67,21 @@ const getResolver = (input: Input) => {
 
       const event = result[0];
 
-      let commentsResult = [];
+      const commentsResult = await session.run(getEventCommentsQuery, {
+        eventId,
+        offset: parseInt(offset, 10),
+        limit: parseInt(limit, 10),
+        sortOption: sort === "top" ? "top" : sort === "hot" ? "hot" : "new",
+        loggedInUsername,
+      });
 
-      if (sort === "new") {
-        // if sort is "new", get the comments sorted by createdAt.
-        commentsResult = await Comment.find({
-          where: {
-            isRootComment: true,
-            Event: {
-              id: eventId,
-            },
-          },
-          selectionSet: commentSelectionSet,
-          options: {
-            offset,
-            limit,
-            sort: {
-              createdAt: "DESC",
-            },
-          },
-        });
-      } else if (sort === "top") {
-        // if sort is "top", get the comments sorted by weightedVotesCount.
-        // Treat a null weightedVotesCount as 0.
-        commentsResult = await session.run(getEventCommentsQuery, {
-          eventId,
-          offset: parseInt(offset, 10),
-          limit: parseInt(limit, 10),
-          sortOption: "top",
-        });
-
-        commentsResult = commentsResult.records.map((record: any) => {
-          return record.get("comment");
-        });
-      } else {
-        // if sort is "hot", get the comments sorted by hot,
-        // which takes into account both weightedVotesCount and createdAt.
-        commentsResult = await session.run(getEventCommentsQuery, {
-          eventId,
-          offset: parseInt(offset, 10),
-          limit: parseInt(limit, 10),
-          sortOption: "hot",
-        });
-
-        commentsResult = commentsResult.records.map((record: any) => {
-          return record.get("comment");
-        });
-      }
+      const comments = commentsResult.records.map((record: any) => {
+        return record.get("comment");
+      });
 
       return {
         Event: event,
-        Comments: commentsResult,
+        Comments: comments,
       };
     } catch (error: any) {
       console.error("Error getting comment section:", error);
