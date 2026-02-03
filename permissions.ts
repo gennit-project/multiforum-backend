@@ -180,7 +180,8 @@ const permissionList = shield({
       updateNotifications: deny,
 
       updateImages: and(isAuthenticated, isImageUploader),
-      createImages: and(isAuthenticated, allow),
+      createImages: deny, // Use createImageWithUploader instead to ensure Uploader is set
+      createImageWithUploader: and(isAuthenticated, canUploadFile),
 
       createDownloadableFiles: and(isAuthenticated, createDownloadableFileInputIsValid, canUploadFile),
       updateDownloadableFiles: and(isAuthenticated, updateDownloadableFileInputIsValid, canUploadFile),

@@ -91,6 +91,7 @@ import updateChannelPluginPipelines from './customResolvers/mutations/updateChan
 
 import userCollections from './customResolvers/fields/userCollections.js';
 import publicCollectionsContaining from './customResolvers/queries/publicCollectionsContaining.js';
+import createImageWithUploader from './customResolvers/mutations/createImageWithUploader.js';
 
 const { OGM } = pkg;
 
@@ -122,6 +123,7 @@ export default function (driver: any) {
   const PluginRun = ogm.model("PluginRun");
   const DownloadableFile = ogm.model("DownloadableFile");
   const ServerSecret = ogm.model("ServerSecret");
+  const Image = ogm.model("Image");
 
   const resolvers = {
     JSON: GraphQLJSON,
@@ -463,6 +465,10 @@ export default function (driver: any) {
       updateChannelPluginPipelines: updateChannelPluginPipelines({
         Channel,
         ServerConfig,
+        User
+      }),
+      createImageWithUploader: createImageWithUploader({
+        Image,
         User
       }),
     },

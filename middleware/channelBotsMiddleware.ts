@@ -4,6 +4,7 @@ import {
   getProfilesFromSettings,
   syncBotUsersForChannelProfiles
 } from '../services/botUserService.js';
+import { mergeSettings } from '../services/plugin/pipelineUtils.js';
 
 interface UpdateChannelsArgs {
   where?: any;
@@ -18,6 +19,17 @@ interface Context {
 }
 
 const BOT_TAGS = new Set(['bot', 'bots']);
+
+const parseSettingsJson = (settingsJson: any) => {
+  if (!settingsJson || typeof settingsJson !== 'string') {
+    return settingsJson || {};
+  }
+  try {
+    return JSON.parse(settingsJson);
+  } catch {
+    return {};
+  }
+};
 
 const isBotPlugin = (plugin: any) => {
   const tags = Array.isArray(plugin?.tags) ? plugin.tags : [];
@@ -69,6 +81,7 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
               settingsJson
             }
             node {
+              settingsDefaults
               Plugin {
                 name
                 tags
@@ -87,23 +100,36 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
       if (!edge.properties.enabled) continue;
       if (!isBotPlugin(edge?.node?.Plugin)) continue;
 
+      // Merge settingsDefaults from PluginVersion with channel-specific settings
+      const settingsDefaults = parseSettingsJson(edge?.node?.settingsDefaults);
+      const channelSettings = parseSettingsJson(edge.properties.settingsJson);
+
+      // Channel settings override defaults; wrap in 'channel' key to match expected structure
+      const channelSettingsWrapped = Object.keys(channelSettings).length > 0
+        ? { channel: channelSettings }
+        : {};
+      const mergedSettings = mergeSettings(settingsDefaults, channelSettingsWrapped);
+
       console.log('🧩 Bot plugin settings (channel)', {
         channelUniqueName,
         pluginName: edge?.node?.Plugin?.name,
         pluginTags: edge?.node?.Plugin?.tags,
-        settingsJson: JSON.stringify(edge.properties.settingsJson || null)
+        settingsDefaults: JSON.stringify(settingsDefaults || null),
+        channelSettings: JSON.stringify(channelSettings || null),
+        mergedSettings: JSON.stringify(mergedSettings || null)
       });
 
-      const botName = getBotNameFromSettings(edge.properties.settingsJson);
+      const botName = getBotNameFromSettings(mergedSettings);
       if (!botName) {
-        console.warn('⚠️ Bot plugin has no botName in settingsJson', {
+        console.warn('⚠️ Bot plugin has no botName in merged settings', {
           channelUniqueName,
-          pluginName: edge?.node?.Plugin?.name
+          pluginName: edge?.node?.Plugin?.name,
+          mergedSettings: JSON.stringify(mergedSettings || null)
         });
         continue;
       }
 
-      const profiles = getProfilesFromSettings(edge.properties.settingsJson);
+      const profiles = getProfilesFromSettings(mergedSettings);
 
       await syncBotUsersForChannelProfiles({
         User,

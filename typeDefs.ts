@@ -768,6 +768,17 @@ const typeDefinitions = gql`
     position: Int
   }
 
+  input CreateImageInput {
+    url: String
+    alt: String
+    caption: String
+    longDescription: String
+    copyright: String
+    hasSensitiveContent: Boolean
+    hasSpoiler: Boolean
+    albumId: ID
+  }
+
   type Mutation {
     createIssue(input: IssueCreateInput!): Issue
     # Collection custom mutations
@@ -793,6 +804,9 @@ const typeDefinitions = gql`
 
     # Initialize user's default favorites collections
     initializeUserFavorites: Boolean!
+
+    # Image upload with automatic uploader assignment
+    createImageWithUploader(input: CreateImageInput!): Image!
 
     addEmojiToComment(
       commentId: ID!
