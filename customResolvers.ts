@@ -92,6 +92,8 @@ import updateChannelPluginPipelines from './customResolvers/mutations/updateChan
 import userCollections from './customResolvers/fields/userCollections.js';
 import publicCollectionsContaining from './customResolvers/queries/publicCollectionsContaining.js';
 import createImageWithUploader from './customResolvers/mutations/createImageWithUploader.js';
+import createImagesWithUploader from './customResolvers/mutations/createImagesWithUploader.js';
+import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithOwner.js';
 
 const { OGM } = pkg;
 
@@ -124,6 +126,7 @@ export default function (driver: any) {
   const DownloadableFile = ogm.model("DownloadableFile");
   const ServerSecret = ogm.model("ServerSecret");
   const Image = ogm.model("Image");
+  const Album = ogm.model("Album");
 
   const resolvers = {
     JSON: GraphQLJSON,
@@ -469,6 +472,14 @@ export default function (driver: any) {
       }),
       createImageWithUploader: createImageWithUploader({
         Image,
+        User
+      }),
+      createImages: createImagesWithUploader({
+        Image,
+        User
+      }),
+      createAlbums: createAlbumsWithOwner({
+        Album,
         User
       }),
     },

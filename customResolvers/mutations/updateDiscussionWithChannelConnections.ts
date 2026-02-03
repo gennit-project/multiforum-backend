@@ -1,6 +1,9 @@
 import { updateDiscussionChannelQuery, severConnectionBetweenDiscussionAndChannelQuery } from "../cypher/cypherQueries.js";
 import { DiscussionWhere, DiscussionUpdateInput } from "../../src/generated/graphql";
 import { discussionVersionHistoryHandler } from "../../hooks/discussionVersionHistoryHook.js";
+import { GraphQLError } from "graphql";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
 
 type Input = {
   Discussion: any;
@@ -23,15 +26,60 @@ const getResolver = (input: Input) => {
       channelConnections = [],
       channelDisconnections = []
     } = args;
+
+    let sanitizedUpdateInput = discussionUpdateInput;
+    const albumInput = discussionUpdateInput?.Album;
+    const albumCreateNode = albumInput?.create?.node;
+    const albumUpdateNode = albumInput?.update?.node;
+    const albumUpdateImagesCreate = albumUpdateNode?.Images?.create;
+
+    const needsAlbumSanitization =
+      Boolean(albumCreateNode) || Boolean(albumUpdateNode) || Boolean(albumUpdateImagesCreate);
+
+    if (needsAlbumSanitization) {
+      context.user = await setUserDataOnContext({
+        context,
+        getPermissionInfo: false,
+      });
+
+      const username = context.user?.username;
+
+      if (!username) {
+        throw new GraphQLError("You must be logged in to update albums.");
+      }
+
+      if (albumInput) {
+        const nextAlbumInput: any = { ...albumInput };
+
+        if (albumCreateNode) {
+          nextAlbumInput.create = {
+            ...albumInput.create,
+            node: sanitizeAlbumCreateNode(albumCreateNode, username),
+          };
+        }
+
+        if (albumUpdateNode) {
+          nextAlbumInput.update = {
+            ...albumInput.update,
+            node: sanitizeAlbumUpdateNode(albumUpdateNode, username),
+          };
+        }
+
+        sanitizedUpdateInput = {
+          ...discussionUpdateInput,
+          Album: nextAlbumInput,
+        };
+      }
+    }
     
     try {
       // Track version history before updating the discussion
-      if (discussionUpdateInput.title || discussionUpdateInput.body) {
+      if (sanitizedUpdateInput.title || sanitizedUpdateInput.body) {
         await discussionVersionHistoryHandler({ 
           context, 
           params: { 
             where,
-            update: discussionUpdateInput
+            update: sanitizedUpdateInput
           }
         });
       }
@@ -39,7 +87,7 @@ const getResolver = (input: Input) => {
       // Update the discussion
       await Discussion.update({
         where: where,
-        update: discussionUpdateInput,
+        update: sanitizedUpdateInput,
       });
       const updatedDiscussionId = where.id;
 
