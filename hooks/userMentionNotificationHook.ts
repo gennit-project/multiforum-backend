@@ -1,31 +1,28 @@
-import { parseUserMentions } from '../utils/userMentionParser.js';
 import { createInAppNotification } from './notificationHelpers.js';
+import { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
+import {
+  buildDiscussionMentionContext,
+  MentionContextDiscussion,
+  DiscussionSnapshot,
+} from '../utils/buildDiscussionMentionContext.js';
+import {
+  buildCommentMentionContext,
+  MentionContextComment,
+  CommentSnapshot,
+} from '../utils/buildCommentMentionContext.js';
 
-type MentionContextComment = {
-  type: 'comment';
-  commentId: string;
-  authorUsername: string | null;
-  authorLabel: string;
-  discussion?: {
-    id: string;
-    title: string;
-    channelUniqueName: string;
-  } | null;
-  event?: {
-    id: string;
-    title: string;
-    channelUniqueName: string;
-  } | null;
-};
-
-type MentionContextDiscussion = {
-  type: 'discussion';
-  discussionId: string;
-  title: string;
-  channelUniqueName: string | null;
-  authorUsername: string | null;
-  authorLabel: string;
-};
+// Re-export for consumers
+export { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
+export {
+  buildDiscussionMentionContext,
+  MentionContextDiscussion,
+  DiscussionSnapshot,
+} from '../utils/buildDiscussionMentionContext.js';
+export {
+  buildCommentMentionContext,
+  MentionContextComment,
+  CommentSnapshot,
+} from '../utils/buildCommentMentionContext.js';
 
 type MentionContext = MentionContextComment | MentionContextDiscussion;
 
@@ -34,107 +31,6 @@ type NotifyMentionsInput = {
   mentionContext: MentionContext;
   previousText?: string | null;
   nextText?: string | null;
-};
-
-// Types for the helper functions
-type DiscussionSnapshot = {
-  id: string;
-  title?: string | null;
-  body?: string | null;
-  Author?: {
-    username?: string | null;
-    displayName?: string | null;
-  } | null;
-  DiscussionChannels?: Array<{
-    channelUniqueName?: string | null;
-  }> | null;
-};
-
-type CommentSnapshot = {
-  id: string;
-  text?: string | null;
-  CommentAuthor?: {
-    username?: string | null;
-    displayName?: string | null;
-    User?: {
-      username?: string | null;
-    } | null;
-  } | null;
-  DiscussionChannel?: {
-    discussionId?: string | null;
-    channelUniqueName?: string | null;
-    Discussion?: {
-      id?: string | null;
-      title?: string | null;
-    } | null;
-  } | null;
-  Event?: {
-    id?: string | null;
-    title?: string | null;
-    EventChannels?: Array<{
-      channelUniqueName?: string | null;
-    }> | null;
-  } | null;
-};
-
-// Helper to build discussion mention context
-export const buildDiscussionMentionContext = (
-  discussion: DiscussionSnapshot
-): MentionContextDiscussion => {
-  const authorUsername = discussion.Author?.username || null;
-  const authorLabel =
-    discussion.Author?.displayName || authorUsername || 'Someone';
-  const channelUniqueName =
-    discussion.DiscussionChannels?.[0]?.channelUniqueName || null;
-
-  return {
-    type: 'discussion',
-    discussionId: discussion.id,
-    title: discussion.title || 'discussion',
-    channelUniqueName,
-    authorUsername,
-    authorLabel,
-  };
-};
-
-// Helper to build comment mention context
-export const buildCommentMentionContext = (
-  comment: CommentSnapshot
-): MentionContextComment => {
-  const authorUsername =
-    comment.CommentAuthor?.username ||
-    comment.CommentAuthor?.User?.username ||
-    null;
-  const authorLabel =
-    comment.CommentAuthor?.displayName || authorUsername || 'Someone';
-
-  const discussionContext = comment.DiscussionChannel?.discussionId
-    ? {
-        id: comment.DiscussionChannel.discussionId,
-        title: comment.DiscussionChannel.Discussion?.title || 'discussion',
-        channelUniqueName: comment.DiscussionChannel.channelUniqueName!,
-      }
-    : null;
-
-  const eventChannelUniqueName =
-    comment.Event?.EventChannels?.[0]?.channelUniqueName || null;
-  const eventContext =
-    comment.Event?.id && eventChannelUniqueName
-      ? {
-          id: comment.Event.id,
-          title: comment.Event.title || 'event',
-          channelUniqueName: eventChannelUniqueName,
-        }
-      : null;
-
-  return {
-    type: 'comment',
-    commentId: comment.id,
-    authorUsername,
-    authorLabel,
-    discussion: discussionContext,
-    event: eventContext,
-  };
 };
 
 // High-level helper to notify discussion mentions
@@ -179,32 +75,13 @@ export const notifyCommentMentions = async ({
   });
 };
 
-export const getNewMentionUsernames = (
-  previousText: string | null | undefined,
-  nextText: string | null | undefined
-): string[] => {
-  const before = parseUserMentions(previousText || '').map(m => m.username);
-  const after = parseUserMentions(nextText || '').map(m => m.username);
-
-  if (!after.length) return [];
-
-  const beforeSet = new Set(before.map(u => u.toLowerCase()));
-  const newMentions: string[] = [];
-
-  for (const username of after) {
-    const key = username.toLowerCase();
-    if (beforeSet.has(key)) continue;
-    if (newMentions.some(existing => existing.toLowerCase() === key)) continue;
-    newMentions.push(username);
-  }
-
-  return newMentions;
-};
-
-const resolveMentionedUsers = async (context: any, usernames: string[]): Promise<string[]> => {
+const resolveMentionedUsers = async (
+  context: any,
+  usernames: string[]
+): Promise<string[]> => {
   if (!usernames.length) return [];
 
-  const normalized = Array.from(new Set(usernames.map(u => u.toLowerCase())));
+  const normalized = Array.from(new Set(usernames.map((u) => u.toLowerCase())));
 
   if (context?.driver) {
     const session = context.driver.session();
@@ -224,13 +101,16 @@ const resolveMentionedUsers = async (context: any, usernames: string[]): Promise
 
   const users = await UserModel.find({
     where: { username_IN: usernames },
-    selectionSet: '{ username }'
+    selectionSet: '{ username }',
   });
 
   return users.map((user: any) => user.username);
 };
 
-const buildNotificationText = (mentionContext: MentionContext, url: string | null): string | null => {
+const buildNotificationText = (
+  mentionContext: MentionContext,
+  url: string | null
+): string | null => {
   if (mentionContext.type === 'comment') {
     if (mentionContext.discussion && url) {
       return `${mentionContext.authorLabel} mentioned you in a comment on [${mentionContext.discussion.title}](${url})`;
@@ -274,7 +154,7 @@ export const notifyNewUserMentions = async ({
   context,
   mentionContext,
   previousText,
-  nextText
+  nextText,
 }: NotifyMentionsInput): Promise<void> => {
   try {
     const newMentions = getNewMentionUsernames(previousText, nextText);
@@ -284,15 +164,22 @@ export const notifyNewUserMentions = async ({
     if (!mentionedUsers.length) return;
 
     const mentionerUsername = mentionContext.authorUsername;
-    const mentionerKey = mentionerUsername ? mentionerUsername.toLowerCase() : null;
+    const mentionerKey = mentionerUsername
+      ? mentionerUsername.toLowerCase()
+      : null;
     const usernamesToNotify = mentionerKey
-      ? mentionedUsers.filter(username => username.toLowerCase() !== mentionerKey)
+      ? mentionedUsers.filter(
+          (username) => username.toLowerCase() !== mentionerKey
+        )
       : mentionedUsers;
 
     if (!usernamesToNotify.length) return;
 
     const notificationUrl = buildNotificationUrl(mentionContext);
-    const notificationText = buildNotificationText(mentionContext, notificationUrl);
+    const notificationText = buildNotificationText(
+      mentionContext,
+      notificationUrl
+    );
     if (!notificationText) return;
 
     const UserModel = context?.ogm?.model('User');
@@ -302,7 +189,7 @@ export const notifyNewUserMentions = async ({
       await createInAppNotification({
         UserModel,
         username,
-        text: notificationText
+        text: notificationText,
       });
     }
   } catch (error) {

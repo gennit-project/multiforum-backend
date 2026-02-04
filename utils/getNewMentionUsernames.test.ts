@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getNewMentionUsernames } from '../hooks/userMentionNotificationHook.js';
+import { getNewMentionUsernames } from './getNewMentionUsernames.js';
 
 test('getNewMentionUsernames returns only newly added mentions', () => {
   const before = 'hello u/alice and u/bob';
@@ -23,3 +23,12 @@ test('getNewMentionUsernames ignores case-only changes and duplicates', () => {
   assert.deepEqual(newMentions, ['bob']);
 });
 
+test('getNewMentionUsernames handles null/undefined previous text', () => {
+  const newMentions = getNewMentionUsernames(null, 'hello u/alice');
+  assert.deepEqual(newMentions, ['alice']);
+});
+
+test('getNewMentionUsernames returns empty array for null/undefined next text', () => {
+  const newMentions = getNewMentionUsernames('u/alice', null);
+  assert.deepEqual(newMentions, []);
+});
