@@ -7,6 +7,8 @@ import discussionVersionHistoryMiddleware from "./middleware/discussionVersionHi
 import commentVersionHistoryMiddleware from "./middleware/commentVersionHistoryMiddleware.js";
 import commentMentionsMiddleware from "./middleware/commentMentionsMiddleware.js";
 import commentPluginPipelineMiddleware from "./middleware/commentPluginPipelineMiddleware.js";
+import commentUserMentionsMiddleware from "./middleware/commentUserMentionsMiddleware.js";
+import discussionMentionsMiddleware from "./middleware/discussionMentionsMiddleware.js";
 import wikiPageVersionHistoryMiddleware from "./middleware/wikiPageVersionHistoryMiddleware.js";
 import issueActivityFeedMiddleware from "./middleware/issueActivityFeedMiddleware.js";
 import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
@@ -191,8 +193,10 @@ async function initializeServer() {
       schema,
       permissions,
       discussionVersionHistoryMiddleware,
+      discussionMentionsMiddleware,
       commentVersionHistoryMiddleware,
       commentMentionsMiddleware,
+      commentUserMentionsMiddleware,
       commentPluginPipelineMiddleware,
       wikiPageVersionHistoryMiddleware,
       issueActivityFeedMiddleware,

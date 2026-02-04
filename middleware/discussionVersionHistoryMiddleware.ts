@@ -9,6 +9,7 @@ import {
   discussionEditNotificationHandler,
   discussionVersionHistoryHandler,
 } from "../hooks/discussionVersionHistoryHook.js";
+import { notifyNewUserMentions } from "../hooks/userMentionNotificationHook.js";
 import { GraphQLResolveInfo } from 'graphql';
 
 // Define types for the middleware
@@ -17,6 +18,17 @@ interface UpdateDiscussionsArgs {
     id?: string;
   };
   update?: {
+    title?: string;
+    body?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+interface UpdateDiscussionWithChannelConnectionsArgs {
+  where?: {
+    id?: string;
+  };
+  discussionUpdateInput?: {
     title?: string;
     body?: string;
     [key: string]: any;
@@ -96,11 +108,101 @@ const discussionVersionHistoryMiddleware = {
       // Continue with the standard resolver
       const result = await resolve(parent, args, context, info);
 
-      if (discussionSnapshot) {
+      if (discussionSnapshot && discussionId) {
         await discussionEditNotificationHandler({
           context,
           params: { where, update },
           discussionSnapshot,
+        });
+
+        const previousText = `${discussionSnapshot.title || ''}\n${discussionSnapshot.body || ''}`.trim();
+        const nextText = `${update.title ?? discussionSnapshot.title ?? ''}\n${update.body ?? discussionSnapshot.body ?? ''}`.trim();
+
+        const authorUsername = discussionSnapshot?.Author?.username || null;
+        const authorLabel =
+          discussionSnapshot?.Author?.displayName || authorUsername || 'Someone';
+        const channelUniqueName =
+          discussionSnapshot?.DiscussionChannels?.[0]?.channelUniqueName || null;
+
+        await notifyNewUserMentions({
+          context,
+          mentionContext: {
+            type: 'discussion',
+            discussionId,
+            title: discussionSnapshot?.title || 'discussion',
+            channelUniqueName,
+            authorUsername,
+            authorLabel
+          },
+          previousText,
+          nextText
+        });
+      }
+
+      return result;
+    }
+    ,
+    updateDiscussionWithChannelConnections: async (
+      resolve: (parent: unknown, args: UpdateDiscussionWithChannelConnectionsArgs, context: Context, info: GraphQLResolveInfo) => Promise<any>,
+      parent: unknown,
+      args: UpdateDiscussionWithChannelConnectionsArgs,
+      context: Context,
+      info: GraphQLResolveInfo
+    ) => {
+      const { where, discussionUpdateInput } = args;
+      if (!discussionUpdateInput) {
+        return resolve(parent, args, context, info);
+      }
+      const discussionId = where?.id;
+      let discussionSnapshot = null;
+
+      const isTitleUpdated = discussionUpdateInput.title !== undefined;
+      const isBodyUpdated = discussionUpdateInput.body !== undefined;
+
+      if ((isTitleUpdated || isBodyUpdated) && discussionId) {
+        const DiscussionModel = context.ogm.model("Discussion");
+        const discussions = await DiscussionModel.find({
+          where: { id: discussionId },
+          selectionSet: `{
+            id
+            title
+            body
+            Author {
+              username
+              displayName
+            }
+            DiscussionChannels {
+              channelUniqueName
+            }
+          }`,
+        });
+        discussionSnapshot = discussions[0] ?? null;
+      }
+
+      const result = await resolve(parent, args, context, info);
+
+      if (discussionSnapshot) {
+        const previousText = `${discussionSnapshot.title || ''}\n${discussionSnapshot.body || ''}`.trim();
+        const nextText = `${discussionUpdateInput.title ?? discussionSnapshot.title ?? ''}\n${discussionUpdateInput.body ?? discussionSnapshot.body ?? ''}`.trim();
+
+        const authorUsername = discussionSnapshot?.Author?.username || null;
+        const authorLabel =
+          discussionSnapshot?.Author?.displayName || authorUsername || 'Someone';
+        const channelUniqueName =
+          discussionSnapshot?.DiscussionChannels?.[0]?.channelUniqueName || null;
+
+        await notifyNewUserMentions({
+          context,
+          mentionContext: {
+            type: 'discussion',
+            discussionId: discussionSnapshot.id,
+            title: discussionSnapshot?.title || 'discussion',
+            channelUniqueName,
+            authorUsername,
+            authorLabel
+          },
+          previousText,
+          nextText
         });
       }
 

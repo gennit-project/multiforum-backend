@@ -1,5 +1,8 @@
 import { createDiscussionChannelQuery } from "../cypher/cypherQueries.js";
 import { triggerChannelPluginPipeline } from "../../services/pluginRunner.js";
+import { GraphQLError } from "graphql";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { sanitizeAlbumCreateNode } from "./utils/ownershipSanitizers.js";
 // The reason why we cannot use the auto-generated resolver
 // to create a Discussion with DiscussionChannels already linked
 // is because the creation of the DiscussionChannel nodes
@@ -52,14 +55,51 @@ const selectionSet = `
 /**
  * Function to create discussions from an input array.
  */
-export const createDiscussionsFromInput = async (Discussion, driver, input, pluginModels) => {
+export const createDiscussionsFromInput = async (Discussion, driver, input, context, pluginModels) => {
+    var _a;
     if (!input || input.length === 0) {
         throw new Error("Input cannot be empty");
+    }
+    let sanitizedInput = input;
+    const hasAlbumCreate = input.some(({ discussionCreateInput }) => { var _a, _b; return (_b = (_a = discussionCreateInput === null || discussionCreateInput === void 0 ? void 0 : discussionCreateInput.Album) === null || _a === void 0 ? void 0 : _a.create) === null || _b === void 0 ? void 0 : _b.node; });
+    if (hasAlbumCreate) {
+        if (!context) {
+            throw new GraphQLError("Context is required for album creation.");
+        }
+        context.user = await setUserDataOnContext({
+            context,
+            getPermissionInfo: false,
+        });
+        const username = (_a = context.user) === null || _a === void 0 ? void 0 : _a.username;
+        if (!username) {
+            throw new GraphQLError("You must be logged in to create albums.");
+        }
+        sanitizedInput = input.map(({ discussionCreateInput, channelConnections }) => {
+            var _a;
+            const albumCreate = (_a = discussionCreateInput === null || discussionCreateInput === void 0 ? void 0 : discussionCreateInput.Album) === null || _a === void 0 ? void 0 : _a.create;
+            const albumCreateNode = albumCreate === null || albumCreate === void 0 ? void 0 : albumCreate.node;
+            if (!albumCreateNode) {
+                return { discussionCreateInput, channelConnections };
+            }
+            return {
+                discussionCreateInput: {
+                    ...discussionCreateInput,
+                    Album: {
+                        ...discussionCreateInput === null || discussionCreateInput === void 0 ? void 0 : discussionCreateInput.Album,
+                        create: {
+                            ...(albumCreate !== null && albumCreate !== void 0 ? albumCreate : {}),
+                            node: sanitizeAlbumCreateNode(albumCreateNode, username),
+                        },
+                    },
+                },
+                channelConnections,
+            };
+        });
     }
     const session = driver.session();
     const discussions = [];
     try {
-        for (const { discussionCreateInput, channelConnections } of input) {
+        for (const { discussionCreateInput, channelConnections } of sanitizedInput) {
             if (!channelConnections || channelConnections.length === 0) {
                 throw new Error("At least one channel must be selected");
             }
@@ -147,7 +187,7 @@ const getResolver = (input) => {
         const { input } = args;
         try {
             // Use the extracted function to create discussions
-            const discussions = await createDiscussionsFromInput(Discussion, driver, input, pluginModels);
+            const discussions = await createDiscussionsFromInput(Discussion, driver, input, context, pluginModels);
             return discussions;
         }
         catch (error) {

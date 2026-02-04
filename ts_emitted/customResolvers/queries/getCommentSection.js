@@ -1,4 +1,5 @@
 import { getCommentsQuery, getNewCommentsQuery } from '../cypher/cypherQueries.js';
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 const discussionChannelSelectionSet = `
 {
     id
@@ -67,9 +68,15 @@ const discussionChannelSelectionSet = `
 }
 `;
 const getResolver = (input) => {
-    const { driver, DiscussionChannel, Comment } = input;
+    const { driver, DiscussionChannel } = input;
     return async (parent, args, context, info) => {
-        const { channelUniqueName, discussionId, modName, offset, limit, sort, username } = args;
+        var _a;
+        const { channelUniqueName, discussionId, modName, offset, limit, sort } = args;
+        context.user = await setUserDataOnContext({
+            context,
+            getPermissionInfo: false
+        });
+        const loggedInUsername = ((_a = context.user) === null || _a === void 0 ? void 0 : _a.username) || null;
         const session = driver.session();
         try {
             const result = await DiscussionChannel.find({
@@ -91,9 +98,9 @@ const getResolver = (input) => {
             const discussionChannel = result[0];
             const discussionChannelId = discussionChannel.id;
             // Filter SubscribedToNotifications to only show current user's subscription status
-            if (username && discussionChannel.SubscribedToNotifications) {
-                const isSubscribed = discussionChannel.SubscribedToNotifications.some((sub) => sub.username === username);
-                discussionChannel.SubscribedToNotifications = isSubscribed ? [{ username }] : [];
+            if (loggedInUsername && discussionChannel.SubscribedToNotifications) {
+                const isSubscribed = discussionChannel.SubscribedToNotifications.some((sub) => sub.username === loggedInUsername);
+                discussionChannel.SubscribedToNotifications = isSubscribed ? [{ username: loggedInUsername }] : [];
             }
             else {
                 discussionChannel.SubscribedToNotifications = [];
@@ -105,7 +112,8 @@ const getResolver = (input) => {
                     discussionChannelId,
                     modName,
                     offset: parseInt(offset, 10),
-                    limit: parseInt(limit, 10)
+                    limit: parseInt(limit, 10),
+                    loggedInUsername
                 });
                 commentsResult = commentsResult.records.map((record) => {
                     return record.get('comment');
@@ -119,7 +127,8 @@ const getResolver = (input) => {
                     modName,
                     offset: parseInt(offset, 10),
                     limit: parseInt(limit, 10),
-                    sortOption: 'top'
+                    sortOption: 'top',
+                    loggedInUsername
                 });
                 commentsResult = commentsResult.records.map((record) => {
                     return record.get('comment');
@@ -133,7 +142,8 @@ const getResolver = (input) => {
                     modName,
                     offset: parseInt(offset, 10),
                     limit: parseInt(limit, 10),
-                    sortOption: 'hot'
+                    sortOption: 'hot',
+                    loggedInUsername
                 });
                 commentsResult = commentsResult.records.map((record) => {
                     return record.get('comment');

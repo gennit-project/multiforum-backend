@@ -14,6 +14,7 @@ import getDiscussionsInChannel from "./customResolvers/queries/getDiscussionsInC
 import getUserContributions from "./customResolvers/queries/getUserContributions.js";
 import getChannelContributions from "./customResolvers/queries/getChannelContributions.js";
 import getModContributions from "./customResolvers/queries/getModContributions.js";
+import getUserFavoriteComment from "./customResolvers/queries/getUserFavoriteComment.js";
 import addEmojiToComment from "./customResolvers/mutations/addEmojiToComment.js";
 import removeEmojiFromComment from "./customResolvers/mutations/removeEmojiFromComment.js";
 import addEmojiToDiscussionChannel from "./customResolvers/mutations/addEmojiToDiscussionChannel.js";
@@ -76,6 +77,9 @@ import updatePluginPipelines from './customResolvers/mutations/updatePluginPipel
 import updateChannelPluginPipelines from './customResolvers/mutations/updateChannelPluginPipelines.js';
 import userCollections from './customResolvers/fields/userCollections.js';
 import publicCollectionsContaining from './customResolvers/queries/publicCollectionsContaining.js';
+import createImageWithUploader from './customResolvers/mutations/createImageWithUploader.js';
+import createImagesWithUploader from './customResolvers/mutations/createImagesWithUploader.js';
+import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithOwner.js';
 const { OGM } = pkg;
 export default function (driver) {
     const ogm = new OGM({
@@ -104,6 +108,8 @@ export default function (driver) {
     const PluginRun = ogm.model("PluginRun");
     const DownloadableFile = ogm.model("DownloadableFile");
     const ServerSecret = ogm.model("ServerSecret");
+    const Image = ogm.model("Image");
+    const Album = ogm.model("Album");
     const resolvers = {
         JSON: GraphQLJSON,
         CommentAuthor: {
@@ -136,16 +142,17 @@ export default function (driver) {
             getCommentSection: getCommentSection({
                 driver,
                 DiscussionChannel,
-                Comment,
             }),
             getEventComments: getEventComments({
                 driver,
                 Event,
-                Comment,
             }),
             getCommentReplies: getCommentReplies({
                 driver,
                 Comment,
+            }),
+            getUserFavoriteComment: getUserFavoriteComment({
+                driver,
             }),
             getSortedChannels: getSortedChannels({
                 driver,
@@ -442,6 +449,18 @@ export default function (driver) {
             updateChannelPluginPipelines: updateChannelPluginPipelines({
                 Channel,
                 ServerConfig,
+                User
+            }),
+            createImageWithUploader: createImageWithUploader({
+                Image,
+                User
+            }),
+            createImages: createImagesWithUploader({
+                Image,
+                User
+            }),
+            createAlbums: createAlbumsWithOwner({
+                Album,
                 User
             }),
         },

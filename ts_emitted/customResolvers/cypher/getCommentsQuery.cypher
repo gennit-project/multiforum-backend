@@ -9,12 +9,13 @@ OPTIONAL MATCH (c)-[:IS_REPLY_TO]->(parent:Comment)
 OPTIONAL MATCH (c)<-[:IS_REPLY_TO]-(child:Comment)
 OPTIONAL MATCH (c)<-[:UPVOTED_COMMENT]-(upvoter:User)
 OPTIONAL MATCH (c)-[:HAS_VERSION]->(pastVersion:TextVersion)<-[:AUTHORED_VERSION]-(pastVersionAuthor:User)
+OPTIONAL MATCH (favUser:User { username: $loggedInUsername })-[:DEFAULT_FAVORITES_COMMENTS]->(c)
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, $modName AS modName, pastVersion, pastVersionAuthor
+WITH c, author, serverRole, channelRole, parent, child, upvoter, $modName AS modName, pastVersion, pastVersionAuthor, favUser
 
 OPTIONAL MATCH (c)<-[:HAS_FEEDBACK_COMMENT]-(feedbackComment:Comment)<-[:AUTHORED_COMMENT]-(feedbackAuthor:ModerationProfile)
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, modName, feedbackComment, feedbackAuthor, pastVersion, pastVersionAuthor,
+WITH c, author, serverRole, channelRole, parent, child, upvoter, modName, feedbackComment, feedbackAuthor, pastVersion, pastVersionAuthor, favUser,
      CASE WHEN modName IS NOT NULL AND feedbackAuthor.displayName = modName THEN feedbackComment
           ELSE NULL END AS filteredFeedbackComment
 
@@ -31,31 +32,32 @@ WITH c, author, serverRole, channelRole, parent,
          username: pastVersionAuthor.username
        } ELSE null END
      } ELSE null END) AS PastVersions,
+     COUNT(DISTINCT favUser) > 0 AS isFavoritedByUser,
      // Compute the age in months from the createdAt timestamp.
      duration.between(c.createdAt, datetime()).months + 
      duration.between(c.createdAt, datetime()).days / 30.0 AS ageInMonths,
      CASE WHEN coalesce(c.weightedVotesCount, 0) < 0 THEN 0 ELSE coalesce(c.weightedVotesCount, 0) END AS weightedVotesCount
 
-WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, parentIds, weightedVotesCount, ageInMonths,
+WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, parentIds, weightedVotesCount, ageInMonths, isFavoritedByUser,
     [comment IN NonFilteredChildComments WHERE comment.id IS NOT NULL] AS ChildComments,
     [version IN PastVersions WHERE version.id IS NOT NULL] AS FilteredPastVersions,
     FeedbackComments
 
-WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount,
+WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, isFavoritedByUser,
     10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
 
 // Collect distinct server roles which should be attached to the comment author.
-WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank,
+WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, isFavoritedByUser,
      COLLECT(DISTINCT serverRole) AS serverRoles, channelRole
 
 // Each serverRole should include: {showAdminTag: role.showAdminTag}
-WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank,
+WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, isFavoritedByUser,
         [role IN serverRoles | {showAdminTag: role.showAdminTag}] AS serverRoles, channelRole
 
-WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, serverRoles,
+WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, serverRoles, isFavoritedByUser,
      COLLECT(DISTINCT channelRole) AS channelRoles
 
-WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, serverRoles,
+WITH c, author, parent, UpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, serverRoles, isFavoritedByUser,
         [role IN channelRoles | {showModTag: role.showModTag}] AS channelRoles
 
 RETURN {
@@ -77,6 +79,7 @@ RETURN {
         ServerRoles: serverRoles,
         ChannelRoles: channelRoles
     } END,
+    isFavoritedByUser: isFavoritedByUser,
     ParentComment: CASE WHEN SIZE(parentIds) > 0 THEN {id: parentIds[0]} ELSE null END,
     UpvotedByUsers: UpvotedByUsers,
     UpvotedByUsersAggregate: {

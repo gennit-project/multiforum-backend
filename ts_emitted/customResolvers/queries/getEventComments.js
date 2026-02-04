@@ -1,4 +1,5 @@
 import { getEventCommentsQuery, } from "../cypher/cypherQueries.js";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 const eventSelectionSet = `
   {
     id
@@ -22,94 +23,16 @@ const eventSelectionSet = `
     cost
   }
   `;
-const commentSelectionSet = `
-              {
-                  id
-                  text
-                  emoji
-                  weightedVotesCount
-                  CommentAuthor {
-                      ... on User {
-                          username
-                          displayName
-                          profilePicURL
-                          commentKarma
-                          createdAt
-                          discussionKarma
-                          ServerRoles {
-                            showAdminTag
-                          }
-                          ChannelRoles {
-                            showModTag
-                          }
-                      }
-                      ... on ModerationProfile {
-                        displayName
-                        createdAt
-                      }
-                  }
-                  createdAt
-                  updatedAt
-                  archived
-                  ChildCommentsAggregate {
-                      count
-                  }
-                  ParentComment {
-                      id
-                  }
-                  UpvotedByUsers {
-                      username
-                  }
-                  UpvotedByUsersAggregate {
-                      count
-                  }
-                  ChildComments {
-                      id
-                      text
-                      emoji
-                      weightedVotesCount
-                      CommentAuthor {
-                          ... on User {
-                              username
-                              displayName
-                              profilePicURL
-                              commentKarma
-                              createdAt
-                              discussionKarma
-                              ServerRoles {
-                                showAdminTag
-                              }
-                              ChannelRoles {
-                                showModTag
-                              }
-                          }
-                          ... on ModerationProfile {
-                            displayName
-                            createdAt
-                          }
-                      }
-                      createdAt
-                      updatedAt
-                      archived
-                      ChildCommentsAggregate {
-                          count
-                      }
-                      ParentComment {
-                          id
-                      }
-                      UpvotedByUsers {
-                          username
-                      }
-                      UpvotedByUsersAggregate {
-                          count
-                      }
-                  }
-              }
-          `;
 const getResolver = (input) => {
-    const { driver, Event, Comment } = input;
+    const { driver, Event } = input;
     return async (parent, args, context, info) => {
+        var _a;
         const { eventId, offset, limit, sort } = args;
+        context.user = await setUserDataOnContext({
+            context,
+            getPermissionInfo: false,
+        });
+        const loggedInUsername = ((_a = context.user) === null || _a === void 0 ? void 0 : _a.username) || null;
         const session = driver.session();
         try {
             const result = await Event.find({
@@ -124,55 +47,19 @@ const getResolver = (input) => {
                 throw new Error("Event not found");
             }
             const event = result[0];
-            let commentsResult = [];
-            if (sort === "new") {
-                // if sort is "new", get the comments sorted by createdAt.
-                commentsResult = await Comment.find({
-                    where: {
-                        isRootComment: true,
-                        Event: {
-                            id: eventId,
-                        },
-                    },
-                    selectionSet: commentSelectionSet,
-                    options: {
-                        offset,
-                        limit,
-                        sort: {
-                            createdAt: "DESC",
-                        },
-                    },
-                });
-            }
-            else if (sort === "top") {
-                // if sort is "top", get the comments sorted by weightedVotesCount.
-                // Treat a null weightedVotesCount as 0.
-                commentsResult = await session.run(getEventCommentsQuery, {
-                    eventId,
-                    offset: parseInt(offset, 10),
-                    limit: parseInt(limit, 10),
-                    sortOption: "top",
-                });
-                commentsResult = commentsResult.records.map((record) => {
-                    return record.get("comment");
-                });
-            }
-            else {
-                // if sort is "hot", get the comments sorted by hot,
-                // which takes into account both weightedVotesCount and createdAt.
-                commentsResult = await session.run(getEventCommentsQuery, {
-                    eventId,
-                    offset: parseInt(offset, 10),
-                    limit: parseInt(limit, 10),
-                    sortOption: "hot",
-                });
-                commentsResult = commentsResult.records.map((record) => {
-                    return record.get("comment");
-                });
-            }
+            const commentsResult = await session.run(getEventCommentsQuery, {
+                eventId,
+                offset: parseInt(offset, 10),
+                limit: parseInt(limit, 10),
+                sortOption: sort === "top" ? "top" : sort === "hot" ? "hot" : "new",
+                loggedInUsername,
+            });
+            const comments = commentsResult.records.map((record) => {
+                return record.get("comment");
+            });
             return {
                 Event: event,
-                Comments: commentsResult,
+                Comments: comments,
             };
         }
         catch (error) {

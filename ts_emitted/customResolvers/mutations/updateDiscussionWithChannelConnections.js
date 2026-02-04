@@ -1,24 +1,65 @@
 import { updateDiscussionChannelQuery, severConnectionBetweenDiscussionAndChannelQuery } from "../cypher/cypherQueries.js";
 import { discussionVersionHistoryHandler } from "../../hooks/discussionVersionHistoryHook.js";
+import { GraphQLError } from "graphql";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
 const getResolver = (input) => {
     const { Discussion, driver } = input;
     return async (parent, args, context, info) => {
+        var _a, _b, _c, _d;
         const { where, discussionUpdateInput, channelConnections = [], channelDisconnections = [] } = args;
+        let sanitizedUpdateInput = discussionUpdateInput;
+        const albumInput = discussionUpdateInput === null || discussionUpdateInput === void 0 ? void 0 : discussionUpdateInput.Album;
+        const albumCreateNode = (_a = albumInput === null || albumInput === void 0 ? void 0 : albumInput.create) === null || _a === void 0 ? void 0 : _a.node;
+        const albumUpdateNode = (_b = albumInput === null || albumInput === void 0 ? void 0 : albumInput.update) === null || _b === void 0 ? void 0 : _b.node;
+        const albumUpdateImagesCreate = Array.isArray(albumUpdateNode === null || albumUpdateNode === void 0 ? void 0 : albumUpdateNode.Images)
+            ? (_c = albumUpdateNode === null || albumUpdateNode === void 0 ? void 0 : albumUpdateNode.Images) === null || _c === void 0 ? void 0 : _c.some((image) => { var _a; return (_a = image === null || image === void 0 ? void 0 : image.create) === null || _a === void 0 ? void 0 : _a.length; })
+            : false;
+        const needsAlbumSanitization = Boolean(albumCreateNode) || Boolean(albumUpdateNode) || Boolean(albumUpdateImagesCreate);
+        if (needsAlbumSanitization) {
+            context.user = await setUserDataOnContext({
+                context,
+                getPermissionInfo: false,
+            });
+            const username = (_d = context.user) === null || _d === void 0 ? void 0 : _d.username;
+            if (!username) {
+                throw new GraphQLError("You must be logged in to update albums.");
+            }
+            if (albumInput) {
+                const nextAlbumInput = { ...albumInput };
+                if (albumCreateNode) {
+                    nextAlbumInput.create = {
+                        ...albumInput.create,
+                        node: sanitizeAlbumCreateNode(albumCreateNode, username),
+                    };
+                }
+                if (albumUpdateNode) {
+                    nextAlbumInput.update = {
+                        ...albumInput.update,
+                        node: sanitizeAlbumUpdateNode(albumUpdateNode, username),
+                    };
+                }
+                sanitizedUpdateInput = {
+                    ...discussionUpdateInput,
+                    Album: nextAlbumInput,
+                };
+            }
+        }
         try {
             // Track version history before updating the discussion
-            if (discussionUpdateInput.title || discussionUpdateInput.body) {
+            if (sanitizedUpdateInput.title || sanitizedUpdateInput.body) {
                 await discussionVersionHistoryHandler({
                     context,
                     params: {
                         where,
-                        update: discussionUpdateInput
+                        update: sanitizedUpdateInput
                     }
                 });
             }
             // Update the discussion
             await Discussion.update({
                 where: where,
-                update: discussionUpdateInput,
+                update: sanitizedUpdateInput,
             });
             const updatedDiscussionId = where.id;
             const session = driver.session();
