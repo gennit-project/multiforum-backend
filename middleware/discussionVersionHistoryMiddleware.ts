@@ -9,7 +9,7 @@ import {
   discussionEditNotificationHandler,
   discussionVersionHistoryHandler,
 } from "../hooks/discussionVersionHistoryHook.js";
-import { notifyNewUserMentions } from "../hooks/userMentionNotificationHook.js";
+import { notifyDiscussionMentions } from "../hooks/userMentionNotificationHook.js";
 import { GraphQLResolveInfo } from 'graphql';
 
 // Define types for the middleware
@@ -118,30 +118,16 @@ const discussionVersionHistoryMiddleware = {
         const previousText = `${discussionSnapshot.title || ''}\n${discussionSnapshot.body || ''}`.trim();
         const nextText = `${update.title ?? discussionSnapshot.title ?? ''}\n${update.body ?? discussionSnapshot.body ?? ''}`.trim();
 
-        const authorUsername = discussionSnapshot?.Author?.username || null;
-        const authorLabel =
-          discussionSnapshot?.Author?.displayName || authorUsername || 'Someone';
-        const channelUniqueName =
-          discussionSnapshot?.DiscussionChannels?.[0]?.channelUniqueName || null;
-
-        await notifyNewUserMentions({
+        await notifyDiscussionMentions({
           context,
-          mentionContext: {
-            type: 'discussion',
-            discussionId,
-            title: discussionSnapshot?.title || 'discussion',
-            channelUniqueName,
-            authorUsername,
-            authorLabel
-          },
+          discussion: discussionSnapshot,
           previousText,
-          nextText
+          nextText,
         });
       }
 
       return result;
-    }
-    ,
+    },
     updateDiscussionWithChannelConnections: async (
       resolve: (parent: unknown, args: UpdateDiscussionWithChannelConnectionsArgs, context: Context, info: GraphQLResolveInfo) => Promise<any>,
       parent: unknown,
@@ -185,30 +171,17 @@ const discussionVersionHistoryMiddleware = {
         const previousText = `${discussionSnapshot.title || ''}\n${discussionSnapshot.body || ''}`.trim();
         const nextText = `${discussionUpdateInput.title ?? discussionSnapshot.title ?? ''}\n${discussionUpdateInput.body ?? discussionSnapshot.body ?? ''}`.trim();
 
-        const authorUsername = discussionSnapshot?.Author?.username || null;
-        const authorLabel =
-          discussionSnapshot?.Author?.displayName || authorUsername || 'Someone';
-        const channelUniqueName =
-          discussionSnapshot?.DiscussionChannels?.[0]?.channelUniqueName || null;
-
-        await notifyNewUserMentions({
+        await notifyDiscussionMentions({
           context,
-          mentionContext: {
-            type: 'discussion',
-            discussionId: discussionSnapshot.id,
-            title: discussionSnapshot?.title || 'discussion',
-            channelUniqueName,
-            authorUsername,
-            authorLabel
-          },
+          discussion: discussionSnapshot,
           previousText,
-          nextText
+          nextText,
         });
       }
 
       return result;
-    }
-  }
+    },
+  },
 };
 
 export default discussionVersionHistoryMiddleware;

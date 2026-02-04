@@ -1,10 +1,47 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { notifyNewUserMentions } from '../hooks/userMentionNotificationHook.js';
+import { notifyCommentMentions } from '../hooks/userMentionNotificationHook.js';
+
+const COMMENT_SELECTION_SET = `{
+  id
+  text
+  CommentAuthor {
+    ... on User {
+      username
+      displayName
+    }
+    ... on ModerationProfile {
+      displayName
+      User {
+        username
+      }
+    }
+  }
+  DiscussionChannel {
+    discussionId
+    channelUniqueName
+    Discussion {
+      id
+      title
+    }
+  }
+  Event {
+    id
+    title
+    EventChannels {
+      channelUniqueName
+    }
+  }
+}`;
 
 const commentUserMentionsMiddleware = {
   Mutation: {
     createComments: async (
-      resolve: (parent: unknown, args: any, context: any, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (
+        parent: unknown,
+        args: any,
+        context: any,
+        info: GraphQLResolveInfo
+      ) => Promise<any>,
       parent: unknown,
       args: any,
       context: any,
@@ -26,89 +63,29 @@ const commentUserMentionsMiddleware = {
 
           const comments = await CommentModel.find({
             where: { id: commentId },
-            selectionSet: `{
-              id
-              text
-              CommentAuthor {
-                ... on User {
-                  username
-                  displayName
-                }
-                ... on ModerationProfile {
-                  displayName
-                  User {
-                    username
-                  }
-                }
-              }
-              DiscussionChannel {
-                discussionId
-                channelUniqueName
-                Discussion {
-                  id
-                  title
-                }
-              }
-              Event {
-                id
-                title
-                EventChannels {
-                  channelUniqueName
-                }
-              }
-            }`
+            selectionSet: COMMENT_SELECTION_SET,
           });
 
           if (!comments.length) continue;
           const comment = comments[0];
 
-          const authorUsername =
-            comment.CommentAuthor?.username ||
-            comment.CommentAuthor?.User?.username ||
-            null;
-          const authorLabel =
-            comment.CommentAuthor?.displayName ||
-            authorUsername ||
-            'Someone';
-
-          const discussionContext = comment.DiscussionChannel?.discussionId
-            ? {
-                id: comment.DiscussionChannel.discussionId,
-                title: comment.DiscussionChannel.Discussion?.title || 'discussion',
-                channelUniqueName: comment.DiscussionChannel.channelUniqueName
-              }
-            : null;
-
-          const eventChannelUniqueName = comment.Event?.EventChannels?.[0]?.channelUniqueName || null;
-          const eventContext = comment.Event?.id && eventChannelUniqueName
-            ? {
-                id: comment.Event.id,
-                title: comment.Event.title || 'event',
-                channelUniqueName: eventChannelUniqueName
-              }
-            : null;
-
-          await notifyNewUserMentions({
+          await notifyCommentMentions({
             context,
-            mentionContext: {
-              type: 'comment',
-              commentId: comment.id,
-              authorUsername,
-              authorLabel,
-              discussion: discussionContext,
-              event: eventContext
-            },
+            comment,
             previousText: null,
-            nextText: comment.text
+            nextText: comment.text,
           });
         }
       } catch (error) {
-        console.warn('Comment user mention notification failed:', (error as any)?.message || error);
+        console.warn(
+          'Comment user mention notification failed:',
+          (error as any)?.message || error
+        );
       }
 
       return result;
-    }
-  }
+    },
+  },
 };
 
 export default commentUserMentionsMiddleware;

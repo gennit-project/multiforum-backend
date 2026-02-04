@@ -6,7 +6,7 @@
 
 // Import the handler function that contains the version history logic
 import { commentVersionHistoryHandler } from "../hooks/commentVersionHistoryHook.js";
-import { notifyNewUserMentions } from "../hooks/userMentionNotificationHook.js";
+import { notifyCommentMentions } from "../hooks/userMentionNotificationHook.js";
 import { GraphQLResolveInfo } from 'graphql';
 
 // Define types for the middleware
@@ -105,44 +105,11 @@ const commentVersionHistoryMiddleware = {
         });
 
         if (commentSnapshot) {
-          const authorUsername =
-            commentSnapshot.CommentAuthor?.username ||
-            commentSnapshot.CommentAuthor?.User?.username ||
-            null;
-          const authorLabel =
-            commentSnapshot.CommentAuthor?.displayName ||
-            authorUsername ||
-            'Someone';
-
-          const discussionContext = commentSnapshot.DiscussionChannel?.discussionId
-            ? {
-                id: commentSnapshot.DiscussionChannel.discussionId,
-                title: commentSnapshot.DiscussionChannel.Discussion?.title || 'discussion',
-                channelUniqueName: commentSnapshot.DiscussionChannel.channelUniqueName
-              }
-            : null;
-
-          const eventChannelUniqueName = commentSnapshot.Event?.EventChannels?.[0]?.channelUniqueName || null;
-          const eventContext = commentSnapshot.Event?.id && eventChannelUniqueName
-            ? {
-                id: commentSnapshot.Event.id,
-                title: commentSnapshot.Event.title || 'event',
-                channelUniqueName: eventChannelUniqueName
-              }
-            : null;
-
-          await notifyNewUserMentions({
+          await notifyCommentMentions({
             context,
-            mentionContext: {
-              type: 'comment',
-              commentId: commentSnapshot.id,
-              authorUsername,
-              authorLabel,
-              discussion: discussionContext,
-              event: eventContext
-            },
+            comment: commentSnapshot,
             previousText: commentSnapshot.text,
-            nextText: update.text
+            nextText: update.text,
           });
         }
       }
