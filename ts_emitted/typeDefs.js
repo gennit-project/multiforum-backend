@@ -1036,9 +1036,24 @@ const typeDefinitions = gql `
     limit: Int
   }
 
+  type SiteWideDiscussionListItem {
+    id: ID!
+    title: String!
+    body: String
+    createdAt: DateTime!
+    updatedAt: DateTime
+    hasSensitiveContent: Boolean
+    hasSpoiler: Boolean
+    Author: User
+    DiscussionChannels: [DiscussionChannel!]!
+    Tags: [Tag!]!
+    Album: Album
+    isFavorited: Boolean
+  }
+
   type SiteWideDiscussionListFormat {
     aggregateDiscussionCount: Int!
-    discussions: [Discussion!]!
+    discussions: [SiteWideDiscussionListItem!]!
   }
 
   type SiteWideWikiListFormat {
@@ -1046,9 +1061,34 @@ const typeDefinitions = gql `
     wikiPages: [WikiPage!]!
   }
 
+  type DiscussionChannelListItem {
+    id: ID!
+    archived: Boolean
+    answered: Boolean
+    locked: Boolean
+    discussionId: ID!
+    createdAt: DateTime!
+    channelUniqueName: String!
+    weightedVotesCount: Float
+    CommentsAggregate: CommentAggregateResult
+    UpvotedByUsers: [User!]!
+    UpvotedByUsersAggregate: UserAggregateResult
+    Discussion: Discussion
+    Channel: Channel
+    isFavorited: Boolean
+  }
+
+  type CommentAggregateResult {
+    count: Int
+  }
+
+  type UserAggregateResult {
+    count: Int
+  }
+
   type DiscussionChannelListFormat {
     aggregateDiscussionChannelsCount: Int!
-    discussionChannels: [DiscussionChannel!]!
+    discussionChannels: [DiscussionChannelListItem!]!
   }
 
   type CommentSectionFormat {
@@ -1434,6 +1474,7 @@ const typeDefinitions = gql `
       showArchived: Boolean
       hasDownload: Boolean
       options: DiscussionListOptions
+      loggedInUsername: String
     ): SiteWideDiscussionListFormat
     getSiteWideWikiList(
       searchInput: String

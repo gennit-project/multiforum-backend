@@ -6,7 +6,25 @@ async function testProvisioningRunsForEnabledBotPlugin() {
 
   const resolver = updateChannelPluginPipelines({
     Channel: {
-      find: async () => [{ uniqueName: "writing", pluginPipelines: [] }],
+      find: async () => [{
+        uniqueName: "writing",
+        pluginPipelines: [],
+        Bots: [],
+        EnabledPluginsConnection: {
+          edges: [
+            {
+              properties: {
+                enabled: true,
+                settingsJson: null
+              },
+              node: {
+                settingsDefaults: { server: { botName: "HelperBot", profiles: [{ id: "fantasy", label: "Fantasy Fan" }] } },
+                Plugin: { name: "helper-bot", tags: ["bots"] }
+              }
+            }
+          ]
+        }
+      }],
       update: async () => ({})
     } as any,
     ServerConfig: {
@@ -17,9 +35,12 @@ async function testProvisioningRunsForEnabledBotPlugin() {
               {
                 properties: {
                   enabled: true,
-                  settingsJson: { botName: "HelperBot", profiles: [{ id: "fantasy", label: "Fantasy Fan" }] }
+                  settingsJson: null
                 },
-                node: { Plugin: { name: "helper-bot", tags: ["bots"] } }
+                node: {
+                  settingsDefaults: { server: { botName: "HelperBot", profiles: [{ id: "fantasy", label: "Fantasy Fan" }] } },
+                  Plugin: { name: "helper-bot", tags: ["bots"] }
+                }
               }
             ]
           }
@@ -27,11 +48,11 @@ async function testProvisioningRunsForEnabledBotPlugin() {
       ]
     } as any,
     User: {} as any,
-    ensureBotsForChannel: async (args: any) => {
+    syncBotsForChannel: async (args: any) => {
       calledArgs = args;
     },
-    getProfiles: (settingsJson: any) => settingsJson?.profiles || [],
-    getBotName: (settingsJson: any) => settingsJson?.botName || null
+    getProfiles: (settingsJson: any) => settingsJson?.server?.profiles || settingsJson?.profiles || [],
+    getBotName: (settingsJson: any) => settingsJson?.server?.botName || settingsJson?.botName || null
   });
 
   const pipelines = [
@@ -54,7 +75,22 @@ async function testProvisioningSkipsWhenBotPluginDisabled() {
 
   const resolver = updateChannelPluginPipelines({
     Channel: {
-      find: async () => [{ uniqueName: "writing", pluginPipelines: [] }],
+      find: async () => [{
+        uniqueName: "writing",
+        pluginPipelines: [],
+        Bots: [],
+        EnabledPluginsConnection: {
+          edges: [
+            {
+              properties: { enabled: false, settingsJson: null },
+              node: {
+                settingsDefaults: { server: { botName: "HelperBot", profiles: [{ id: "fantasy" }] } },
+                Plugin: { name: "helper-bot", tags: ["bots"] }
+              }
+            }
+          ]
+        }
+      }],
       update: async () => ({})
     } as any,
     ServerConfig: {
@@ -63,8 +99,11 @@ async function testProvisioningSkipsWhenBotPluginDisabled() {
           InstalledVersionsConnection: {
             edges: [
               {
-                properties: { enabled: false, settingsJson: { botName: "HelperBot", profiles: [{ id: "fantasy" }] } },
-                node: { Plugin: { name: "helper-bot", tags: ["bots"] } }
+                properties: { enabled: false, settingsJson: null },
+                node: {
+                  settingsDefaults: { server: { botName: "HelperBot", profiles: [{ id: "fantasy" }] } },
+                  Plugin: { name: "helper-bot", tags: ["bots"] }
+                }
               }
             ]
           }
@@ -72,7 +111,7 @@ async function testProvisioningSkipsWhenBotPluginDisabled() {
       ]
     } as any,
     User: {} as any,
-    ensureBotsForChannel: async () => {
+    syncBotsForChannel: async () => {
       called = true;
     }
   });

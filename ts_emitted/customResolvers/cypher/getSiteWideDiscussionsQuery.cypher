@@ -126,6 +126,11 @@ WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRol
          caption: image.caption
      } END) AS albumImages
 
+// Check if the logged-in user has favorited this discussion
+OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
+WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album, albumImages,
+     CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
+
 // Return the results
 RETURN {
     id: d.id,
@@ -149,12 +154,13 @@ RETURN {
               END,
     DiscussionChannels: discussionChannels,
     Tags: [t IN tagsText | {text: t}],
-    Album: CASE 
-      WHEN album IS NULL THEN null 
+    Album: CASE
+      WHEN album IS NULL THEN null
       ELSE {
         id: album.id,
         imageOrder: album.imageOrder,
         Images: albumImages
       }
-    END
+    END,
+    isFavorited: isFavorited
 } AS discussion, totalCount

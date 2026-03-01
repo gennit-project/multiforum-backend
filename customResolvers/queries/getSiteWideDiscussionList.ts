@@ -19,6 +19,7 @@ type Args = {
   selectedTags: string[];
   showArchived: boolean;
   hasDownload: boolean;
+  loggedInUsername?: string;
   options: {
     offset: string;
     limit: string;
@@ -32,7 +33,7 @@ const getResolver = (input: Input) => {
   const { driver, Discussion } = input;
 
   return async (parent: any, args: Args, context: any, info: any) => {
-    const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, options } = args;
+    const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, loggedInUsername, options } = args;
     const { offset, limit, resultsOrder, sort, timeFrame } = options || {};
 
     const session = driver.session();
@@ -58,6 +59,7 @@ const getResolver = (input: Input) => {
               resultsOrder,
               startOfTimeFrame: null,
               sortOption: "new",
+              loggedInUsername: loggedInUsername || null,
             }
           );
 
@@ -100,6 +102,7 @@ const getResolver = (input: Input) => {
               resultsOrder,
               startOfTimeFrame: selectedTimeFrame,
               sortOption: "top",
+              loggedInUsername: loggedInUsername || null,
             }
           );
 
@@ -137,6 +140,7 @@ const getResolver = (input: Input) => {
               resultsOrder,
               startOfTimeFrame: null,
               sortOption: "hot",
+              loggedInUsername: loggedInUsername || null,
             }
           );
 

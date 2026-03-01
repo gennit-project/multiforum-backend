@@ -10,7 +10,7 @@ var timeFrameOptionKeys;
 const getResolver = (input) => {
     const { driver, Discussion } = input;
     return async (parent, args, context, info) => {
-        const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, options } = args;
+        const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, loggedInUsername, options } = args;
         const { offset, limit, resultsOrder, sort, timeFrame } = options || {};
         const session = driver.session();
         let titleRegex = `(?i).*${searchInput}.*`;
@@ -32,6 +32,7 @@ const getResolver = (input) => {
                         resultsOrder,
                         startOfTimeFrame: null,
                         sortOption: "new",
+                        loggedInUsername: loggedInUsername || null,
                     });
                     // For each record, do record.get("discussion") to get the discussions
                     let newRecord = newDiscussionResult.records[0]; // Assuming there's only one result row
@@ -66,6 +67,7 @@ const getResolver = (input) => {
                         resultsOrder,
                         startOfTimeFrame: selectedTimeFrame,
                         sortOption: "top",
+                        loggedInUsername: loggedInUsername || null,
                     });
                     // Extract the total count and the discussions from the query result
                     let topRecord = topDiscussionsResult.records[0]; // Assuming there's only one result row
@@ -95,6 +97,7 @@ const getResolver = (input) => {
                         resultsOrder,
                         startOfTimeFrame: null,
                         sortOption: "hot",
+                        loggedInUsername: loggedInUsername || null,
                     });
                     // Extract the total count and the discussions from the query result
                     let hotRecord = hotDiscussionsResult.records[0]; // Assuming there's only one result row

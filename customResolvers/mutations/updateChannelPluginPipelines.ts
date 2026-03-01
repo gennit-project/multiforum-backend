@@ -1,16 +1,18 @@
 import type { ChannelModel, ServerConfigModel, UserModel } from '../../ogm_types.js'
 import {
-  ensureBotUsersForChannelProfiles,
+  buildBotUsername,
   getBotNameFromSettings,
-  getProfilesFromSettings
+  getProfilesFromSettings,
+  syncBotUsersForChannelProfiles
 } from '../../services/botUserService.js'
+import { mergeSettings } from '../../services/plugin/pipelineUtils.js'
 import { validatePipelines, type EventPipelineInput } from './updatePluginPipelines.js'
 
 type Input = {
   Channel: ChannelModel
   ServerConfig: ServerConfigModel
   User: UserModel
-  ensureBotsForChannel?: typeof ensureBotUsersForChannelProfiles
+  syncBotsForChannel?: typeof syncBotUsersForChannelProfiles
   getProfiles?: typeof getProfilesFromSettings
   getBotName?: typeof getBotNameFromSettings
 }
@@ -39,9 +41,20 @@ const validateChannelEvents = (pipelines: EventPipelineInput[]): string | null =
   return null
 }
 
+const parseSettingsJson = (settingsJson: any) => {
+  if (!settingsJson || typeof settingsJson !== 'string') {
+    return settingsJson || {}
+  }
+  try {
+    return JSON.parse(settingsJson)
+  } catch {
+    return {}
+  }
+}
+
 const getResolver = (input: Input) => {
   const { Channel, ServerConfig, User } = input
-  const ensureBotsForChannel = input.ensureBotsForChannel || ensureBotUsersForChannelProfiles
+  const syncBotsForChannel = input.syncBotsForChannel || syncBotUsersForChannelProfiles
   const getProfiles = input.getProfiles || getProfilesFromSettings
   const getBotName = input.getBotName || getBotNameFromSettings
   const isBotPlugin = (plugin: any) => {
@@ -68,15 +81,38 @@ const getResolver = (input: Input) => {
       throw new Error(eventError)
     }
 
-    // Get the channel
+    // Get the channel with its bots and enabled plugins
     const existingChannels = await Channel.find({
       where: { uniqueName: channelUniqueName },
-      selectionSet: `{ uniqueName pluginPipelines }`
+      selectionSet: `{
+        uniqueName
+        pluginPipelines
+        Bots {
+          username
+        }
+        EnabledPluginsConnection {
+          edges {
+            properties {
+              enabled
+              settingsJson
+            }
+            node {
+              settingsDefaults
+              Plugin {
+                name
+                tags
+              }
+            }
+          }
+        }
+      }`
     })
 
     if (existingChannels.length === 0) {
       throw new Error(`Channel "${channelUniqueName}" not found`)
     }
+
+    const channel = existingChannels[0] as any
 
     // Update the pluginPipelines JSON field (serialized as string for Neo4j)
     await Channel.update({
@@ -87,6 +123,7 @@ const getResolver = (input: Input) => {
     })
 
     try {
+      // Fetch server-level plugin settings
       const serverConfigs = await ServerConfig.find({
         selectionSet: `{
           serverName
@@ -98,6 +135,7 @@ const getResolver = (input: Input) => {
               }
               node {
                 version
+                settingsDefaults
                 Plugin {
                   name
                   tags
@@ -109,14 +147,68 @@ const getResolver = (input: Input) => {
       })
 
       const serverConfig = serverConfigs[0]
-      const edges = serverConfig?.InstalledVersionsConnection?.edges || []
-      const botEdges = edges.filter((edge: any) => edge?.properties?.enabled && isBotPlugin(edge?.node?.Plugin))
+      const serverEdges = serverConfig?.InstalledVersionsConnection?.edges || []
 
-      for (const edge of botEdges) {
-        const botName = getBotName(edge.properties?.settingsJson || {})
+      // Build a map of server-level settings by plugin name
+      const serverSettingsMap = new Map<string, any>()
+      for (const edge of serverEdges) {
+        const pluginName = edge.node?.Plugin?.name
+        if (pluginName && edge.properties?.enabled) {
+          serverSettingsMap.set(pluginName, {
+            settingsJson: parseSettingsJson(edge.properties.settingsJson),
+            settingsDefaults: parseSettingsJson(edge.node.settingsDefaults)
+          })
+        }
+      }
+
+      const channelEdges = channel?.EnabledPluginsConnection?.edges || []
+
+      // Collect ALL desired bot usernames across all enabled bot plugins
+      const allDesiredBotUsernames = new Set<string>()
+
+      for (const edge of channelEdges) {
+        if (!edge?.properties?.enabled) continue
+        if (!isBotPlugin(edge?.node?.Plugin)) continue
+
+        const pluginName = edge?.node?.Plugin?.name
+
+        // Get settings from all three levels
+        const settingsDefaults = parseSettingsJson(edge?.node?.settingsDefaults)
+        const serverData = serverSettingsMap.get(pluginName)
+        const serverSettings = serverData?.settingsJson || {}
+        const channelSettings = parseSettingsJson(edge.properties.settingsJson)
+
+        // Merge settings: defaults < server (wrapped) < channel (wrapped)
+        const serverSettingsWrapped = Object.keys(serverSettings).length > 0
+          ? { server: serverSettings }
+          : {}
+        const channelSettingsWrapped = Object.keys(channelSettings).length > 0
+          ? { channel: channelSettings }
+          : {}
+
+        const mergedSettings = mergeSettings(
+          mergeSettings(settingsDefaults, serverSettingsWrapped),
+          channelSettingsWrapped
+        )
+
+        const botName = getBotName(mergedSettings)
         if (!botName) continue
-        const profiles = getProfiles(edge.properties?.settingsJson || {})
-        await ensureBotsForChannel({
+
+        const profiles = getProfiles(mergedSettings)
+
+        // Calculate all desired usernames for this bot plugin
+        const baseUsername = buildBotUsername(channelUniqueName, botName, null)
+        allDesiredBotUsernames.add(baseUsername)
+
+        for (const profile of profiles) {
+          if (profile?.id) {
+            const profileUsername = buildBotUsername(channelUniqueName, botName, profile.id)
+            allDesiredBotUsernames.add(profileUsername)
+          }
+        }
+
+        // Ensure bot users exist and are connected
+        await syncBotsForChannel({
           User,
           Channel,
           channelUniqueName,
@@ -124,9 +216,32 @@ const getResolver = (input: Input) => {
           profiles
         })
       }
+
+      // Disconnect any bot users that are NOT in the desired set
+      const currentBots = (channel.Bots || []).map((bot: any) => bot.username)
+      const botsToDisconnect = currentBots.filter(
+        (username: string) => username.startsWith('bot-') && !allDesiredBotUsernames.has(username)
+      )
+
+      if (botsToDisconnect.length > 0) {
+        console.log('🧹 Disconnecting orphaned bots from channel (pipeline update)', {
+          channelUniqueName,
+          botsToDisconnect,
+          desiredBots: Array.from(allDesiredBotUsernames)
+        })
+
+        await Channel.update({
+          where: { uniqueName: channelUniqueName },
+          disconnect: {
+            Bots: botsToDisconnect.map((username: string) => ({
+              where: { node: { username } }
+            }))
+          }
+        })
+      }
     } catch (error) {
       console.warn(
-        `Failed to ensure bot users for channel ${channelUniqueName}:`,
+        `Failed to sync bot users for channel ${channelUniqueName}:`,
         (error as any)?.message || error
       )
     }

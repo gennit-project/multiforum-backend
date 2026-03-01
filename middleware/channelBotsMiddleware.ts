@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import {
+  buildBotUsername,
   getBotNameFromSettings,
   getProfilesFromSettings,
   syncBotUsersForChannelProfiles
@@ -16,6 +17,21 @@ interface Context {
   ogm: any;
   driver: any;
   [key: string]: any;
+}
+
+interface ServerPluginEdge {
+  properties?: {
+    enabled?: boolean;
+    settingsJson?: string;
+  };
+  node?: {
+    version?: string;
+    settingsDefaults?: string;
+    Plugin?: {
+      name?: string;
+      tags?: string[];
+    };
+  };
 }
 
 const BOT_TAGS = new Set(['bot', 'bots']);
@@ -69,11 +85,16 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
     const { ogm } = context;
     const Channel = ogm.model('Channel');
     const User = ogm.model('User');
+    const ServerConfig = ogm.model('ServerConfig');
 
+    // Fetch channel with its enabled plugins
     const channels = await Channel.find({
       where: { uniqueName: channelUniqueName },
       selectionSet: `{
         uniqueName
+        Bots {
+          username
+        }
         EnabledPluginsConnection {
           edges {
             properties {
@@ -93,28 +114,85 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
     });
 
     const channel = channels?.[0];
-    const edges = channel?.EnabledPluginsConnection?.edges || [];
+    if (!channel) {
+      return;
+    }
 
-    for (const edge of edges) {
+    // Fetch server-level plugin settings
+    const serverConfigs = await ServerConfig.find({
+      selectionSet: `{
+        serverName
+        InstalledVersionsConnection {
+          edges {
+            properties {
+              enabled
+              settingsJson
+            }
+            node {
+              version
+              settingsDefaults
+              Plugin {
+                name
+                tags
+              }
+            }
+          }
+        }
+      }`
+    });
+
+    const serverConfig = serverConfigs?.[0];
+    const serverEdges: ServerPluginEdge[] = serverConfig?.InstalledVersionsConnection?.edges || [];
+
+    // Build a map of server-level settings by plugin name
+    const serverSettingsMap = new Map<string, any>();
+    for (const edge of serverEdges) {
+      const pluginName = edge.node?.Plugin?.name;
+      if (pluginName && edge.node && edge.properties?.enabled) {
+        serverSettingsMap.set(pluginName, {
+          settingsJson: parseSettingsJson(edge.properties.settingsJson),
+          settingsDefaults: parseSettingsJson(edge.node.settingsDefaults)
+        });
+      }
+    }
+
+    const channelEdges = channel?.EnabledPluginsConnection?.edges || [];
+
+    // Collect ALL desired bot usernames across all enabled bot plugins
+    const allDesiredBotUsernames = new Set<string>();
+
+    for (const edge of channelEdges) {
       if (!edge?.properties) continue;
       if (!edge.properties.enabled) continue;
       if (!isBotPlugin(edge?.node?.Plugin)) continue;
 
-      // Merge settingsDefaults from PluginVersion with channel-specific settings
+      const pluginName = edge?.node?.Plugin?.name;
+
+      // Get settings from all three levels
       const settingsDefaults = parseSettingsJson(edge?.node?.settingsDefaults);
+      const serverData = serverSettingsMap.get(pluginName);
+      const serverSettings = serverData?.settingsJson || {};
       const channelSettings = parseSettingsJson(edge.properties.settingsJson);
 
-      // Channel settings override defaults; wrap in 'channel' key to match expected structure
+      // Merge settings: defaults < server (wrapped) < channel (wrapped)
+      // Server and channel settings are stored flat but need to be wrapped
+      const serverSettingsWrapped = Object.keys(serverSettings).length > 0
+        ? { server: serverSettings }
+        : {};
       const channelSettingsWrapped = Object.keys(channelSettings).length > 0
         ? { channel: channelSettings }
         : {};
-      const mergedSettings = mergeSettings(settingsDefaults, channelSettingsWrapped);
 
-      console.log('🧩 Bot plugin settings (channel)', {
+      const mergedSettings = mergeSettings(
+        mergeSettings(settingsDefaults, serverSettingsWrapped),
+        channelSettingsWrapped
+      );
+
+      console.log('🧩 Bot plugin settings (channel middleware)', {
         channelUniqueName,
-        pluginName: edge?.node?.Plugin?.name,
-        pluginTags: edge?.node?.Plugin?.tags,
+        pluginName,
         settingsDefaults: JSON.stringify(settingsDefaults || null),
+        serverSettings: JSON.stringify(serverSettings || null),
         channelSettings: JSON.stringify(channelSettings || null),
         mergedSettings: JSON.stringify(mergedSettings || null)
       });
@@ -123,7 +201,7 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
       if (!botName) {
         console.warn('⚠️ Bot plugin has no botName in merged settings', {
           channelUniqueName,
-          pluginName: edge?.node?.Plugin?.name,
+          pluginName,
           mergedSettings: JSON.stringify(mergedSettings || null)
         });
         continue;
@@ -131,12 +209,48 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
 
       const profiles = getProfilesFromSettings(mergedSettings);
 
+      // Calculate all desired usernames for this bot plugin
+      const baseUsername = buildBotUsername(channelUniqueName, botName, null);
+      allDesiredBotUsernames.add(baseUsername);
+
+      for (const profile of profiles) {
+        if (profile?.id) {
+          const profileUsername = buildBotUsername(channelUniqueName, botName, profile.id);
+          allDesiredBotUsernames.add(profileUsername);
+        }
+      }
+
+      // Ensure bot users exist and are connected
       await syncBotUsersForChannelProfiles({
         User,
         Channel,
         channelUniqueName,
         botName,
         profiles
+      });
+    }
+
+    // Disconnect any bot users that are NOT in the desired set
+    // This handles cleanup when bot names change or plugins are disabled
+    const currentBots = (channel.Bots || []).map((bot: any) => bot.username);
+    const botsToDisconnect = currentBots.filter(
+      (username: string) => username.startsWith('bot-') && !allDesiredBotUsernames.has(username)
+    );
+
+    if (botsToDisconnect.length > 0) {
+      console.log('🧹 Disconnecting orphaned bots from channel', {
+        channelUniqueName,
+        botsToDisconnect,
+        desiredBots: Array.from(allDesiredBotUsernames)
+      });
+
+      await Channel.update({
+        where: { uniqueName: channelUniqueName },
+        disconnect: {
+          Bots: botsToDisconnect.map((username: string) => ({
+            where: { node: { username } }
+          }))
+        }
       });
     }
   } catch (error) {
