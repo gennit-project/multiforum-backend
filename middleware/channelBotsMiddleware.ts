@@ -238,12 +238,24 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
     );
 
     if (botsToDisconnect.length > 0) {
-      console.log('🧹 Disconnecting orphaned bots from channel', {
+      console.log('🧹 Marking orphaned bots as deprecated and disconnecting from channel', {
         channelUniqueName,
         botsToDisconnect,
         desiredBots: Array.from(allDesiredBotUsernames)
       });
 
+      // Mark the bots as deprecated before disconnecting
+      for (const username of botsToDisconnect) {
+        await User.update({
+          where: { username },
+          update: {
+            isDeprecated: true,
+            deprecatedReason: `Bot profile removed from channel "${channelUniqueName}"`
+          }
+        });
+      }
+
+      // Disconnect the deprecated bots from the channel
       await Channel.update({
         where: { uniqueName: channelUniqueName },
         disconnect: {

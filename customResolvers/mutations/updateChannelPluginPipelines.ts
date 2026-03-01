@@ -224,12 +224,24 @@ const getResolver = (input: Input) => {
       )
 
       if (botsToDisconnect.length > 0) {
-        console.log('🧹 Disconnecting orphaned bots from channel (pipeline update)', {
+        console.log('🧹 Marking orphaned bots as deprecated and disconnecting from channel (pipeline update)', {
           channelUniqueName,
           botsToDisconnect,
           desiredBots: Array.from(allDesiredBotUsernames)
         })
 
+        // Mark the bots as deprecated before disconnecting
+        for (const username of botsToDisconnect) {
+          await User.update({
+            where: { username },
+            update: {
+              isDeprecated: true,
+              deprecatedReason: `Bot profile removed from channel "${channelUniqueName}"`
+            }
+          })
+        }
+
+        // Disconnect the deprecated bots from the channel
         await Channel.update({
           where: { uniqueName: channelUniqueName },
           disconnect: {

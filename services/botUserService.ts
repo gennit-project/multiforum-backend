@@ -39,11 +39,13 @@ export const buildBotUsername = (channelUniqueName: string, botName: string, pro
   return `${BOT_PREFIX}-${normalizedChannel}-${normalizedBot}`
 }
 
-const buildBotDisplayName = (botName: string, profile?: BotProfile | null) => {
-  if (!profile?.id) {
-    return botName
+// Returns just the profile label as the display name, or null if no label.
+// The display name is separate from the username - they are different concepts.
+const buildBotDisplayName = (profile?: BotProfile | null): string | null => {
+  if (!profile?.label) {
+    return null
   }
-  return profile.label ? `${botName} (${profile.label})` : `${botName} (${profile.id})`
+  return profile.label
 }
 
 export const ensureBotUserForChannel = async (input: {
@@ -57,7 +59,7 @@ export const ensureBotUserForChannel = async (input: {
   const { User, Channel, channelUniqueName, botName, profileId, profileLabel } = input
 
   const username = buildBotUsername(channelUniqueName, botName, profileId)
-  const displayName = buildBotDisplayName(botName, profileId ? { id: profileId, label: profileLabel } : null)
+  const displayName = buildBotDisplayName(profileId ? { id: profileId, label: profileLabel } : null)
 
   const existingUsers = await User.find({
     where: { username },
@@ -65,6 +67,8 @@ export const ensureBotUserForChannel = async (input: {
       username
       isBot
       botProfileId
+      isDeprecated
+      deprecatedReason
     }`
   })
 
@@ -89,15 +93,25 @@ export const ensureBotUserForChannel = async (input: {
       ]
     })
     user = created.users[0]
-  } else if (!user.isBot || user.botProfileId !== (profileId || null)) {
-    await User.update({
-      where: { username: user.username },
-      update: {
-        isBot: true,
-        botProfileId: profileId || null,
-        displayName
-      }
-    })
+  } else {
+    // Check if bot needs updates: profile mismatch, or needs to be reactivated from deprecated state
+    const needsUpdate = !user.isBot ||
+      user.botProfileId !== (profileId || null) ||
+      user.isDeprecated ||
+      user.deprecatedReason
+
+    if (needsUpdate) {
+      await User.update({
+        where: { username: user.username },
+        update: {
+          isBot: true,
+          botProfileId: profileId || null,
+          displayName,
+          isDeprecated: false,
+          deprecatedReason: null
+        }
+      })
+    }
   }
 
   const channelResult = await Channel.find({
@@ -138,6 +152,7 @@ export const ensureBotUsersForChannelProfiles = async (input: {
 }) => {
   const { User, Channel, channelUniqueName, botName, profiles } = input
 
+  // Always create the base bot
   await ensureBotUserForChannel({
     User,
     Channel,
@@ -147,6 +162,7 @@ export const ensureBotUsersForChannelProfiles = async (input: {
     profileLabel: null
   })
 
+  // Create profile-specific bots
   for (const profile of profiles) {
     if (!profile?.id) continue
     await ensureBotUserForChannel({
@@ -223,11 +239,12 @@ export const syncBotUsersForChannelProfiles = async (input: {
     [
       baseUsername,
       ...(profiles || [])
-      .filter((profile) => profile?.id)
-      .map((profile) => buildBotUsername(channelUniqueName, botName, profile.id))
+        .filter((profile) => profile?.id)
+        .map((profile) => buildBotUsername(channelUniqueName, botName, profile.id))
     ]
   )
 
+  // Always create the base bot
   await ensureBotUserForChannel({
     User,
     Channel,
@@ -237,6 +254,7 @@ export const syncBotUsersForChannelProfiles = async (input: {
     profileLabel: null
   })
 
+  // Create profile-specific bots
   for (const profile of profiles || []) {
     if (!profile?.id) continue
     await ensureBotUserForChannel({
