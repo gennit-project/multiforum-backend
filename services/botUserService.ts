@@ -152,17 +152,7 @@ export const ensureBotUsersForChannelProfiles = async (input: {
 }) => {
   const { User, Channel, channelUniqueName, botName, profiles } = input
 
-  // Always create the base bot
-  await ensureBotUserForChannel({
-    User,
-    Channel,
-    channelUniqueName,
-    botName,
-    profileId: null,
-    profileLabel: null
-  })
-
-  // Create profile-specific bots
+  // Create profile-specific bots only (no base bot)
   for (const profile of profiles) {
     if (!profile?.id) continue
     await ensureBotUserForChannel({
@@ -234,27 +224,14 @@ export const syncBotUsersForChannelProfiles = async (input: {
 }) => {
   const { User, Channel, channelUniqueName, botName, profiles } = input
 
-  const baseUsername = buildBotUsername(channelUniqueName, botName, null)
+  // Calculate desired usernames for profile-specific bots only (no base bot)
   const desiredUsernames = new Set(
-    [
-      baseUsername,
-      ...(profiles || [])
-        .filter((profile) => profile?.id)
-        .map((profile) => buildBotUsername(channelUniqueName, botName, profile.id))
-    ]
+    (profiles || [])
+      .filter((profile) => profile?.id)
+      .map((profile) => buildBotUsername(channelUniqueName, botName, profile.id))
   )
 
-  // Always create the base bot
-  await ensureBotUserForChannel({
-    User,
-    Channel,
-    channelUniqueName,
-    botName,
-    profileId: null,
-    profileLabel: null
-  })
-
-  // Create profile-specific bots
+  // Create profile-specific bots only (no base bot)
   for (const profile of profiles || []) {
     if (!profile?.id) continue
     await ensureBotUserForChannel({

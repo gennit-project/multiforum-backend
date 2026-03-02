@@ -196,10 +196,7 @@ const getResolver = (input: Input) => {
 
         const profiles = getProfiles(mergedSettings)
 
-        // Calculate all desired usernames for this bot plugin
-        const baseUsername = buildBotUsername(channelUniqueName, botName, null)
-        allDesiredBotUsernames.add(baseUsername)
-
+        // Calculate all desired usernames for this bot plugin (profile-specific only, no base bot)
         for (const profile of profiles) {
           if (profile?.id) {
             const profileUsername = buildBotUsername(channelUniqueName, botName, profile.id)
