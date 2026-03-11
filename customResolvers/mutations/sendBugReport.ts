@@ -1,4 +1,4 @@
-import sgMail from "@sendgrid/mail";
+import { sendEmail } from "../../services/mail/index.js";
 
 type Args = {
   contactEmail: string;
@@ -65,20 +65,8 @@ const getSendBugReportResolver = () => {
     const { contactEmail, username, text, subject } = args;
 
     try {
-      // Set up SendGrid (if API key provided)
-      if (process.env.SENDGRID_API_KEY) {
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      } else {
-        console.warn("SENDGRID_API_KEY is not set. Bug report email will not be sent.");
-        return false;
-      }
-
       if (!process.env.SUPPORT_EMAIL) {
         throw new Error("SUPPORT_EMAIL is not set");
-      }
-
-      if (!process.env.SENDGRID_FROM_EMAIL) {
-        throw new Error("SENDGRID_FROM_EMAIL is not set");
       }
 
       // Create email content for the bug report
@@ -110,19 +98,19 @@ ${username ? `<p><strong>Username:</strong> ${username}</p>` : ''}
 `;
 
       // Send the email to support
-      const msg = {
+      const emailSent = await sendEmail({
         to: process.env.SUPPORT_EMAIL,
-        from: process.env.SENDGRID_FROM_EMAIL,
         subject: `Bug Report: ${subject}`,
         text: plainText,
         html: html,
         replyTo: contactEmail,
-      };
+      }, {
+        throwOnError: true,
+        throwOnMissingFrom: true,
+      });
 
       console.log("Sending bug report email to", process.env.SUPPORT_EMAIL);
-      await sgMail.send(msg);
-
-      return true;
+      return emailSent;
     } catch (e: any) {
       console.error("Error sending bug report email:", e);
       throw new Error(

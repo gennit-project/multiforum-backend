@@ -5,7 +5,7 @@ import {
   createEventCommentNotificationEmail,
   createCommentReplyNotificationEmail 
 } from '../customResolvers/mutations/shared/emailUtils.js';
-import sgMail from '@sendgrid/mail';
+import { sendBatchEmails } from './mail/index.js';
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -600,19 +600,6 @@ export class CommentNotificationService {
     emailContent: { subject: string; plainText: string; html: string }
   ) {
     try {
-      // Set up SendGrid if API key is available
-      if (!process.env.SENDGRID_API_KEY) {
-        console.log('=== DEBUG: SENDGRID_API_KEY not set, skipping email sending');
-        return;
-      }
-      
-      if (!process.env.SENDGRID_FROM_EMAIL) {
-        console.log('=== DEBUG: SENDGRID_FROM_EMAIL not set, skipping email sending');
-        return;
-      }
-      
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      
       // Filter users who have email addresses
       const usersWithEmails = usersToNotify.filter(user => user.email);
       
@@ -626,7 +613,6 @@ export class CommentNotificationService {
       // Prepare batch email data
       const emailsToSend = usersWithEmails.map(user => ({
         to: user.email!,
-        from: process.env.SENDGRID_FROM_EMAIL!,
         subject: emailContent.subject,
         text: emailContent.plainText,
         html: emailContent.html
@@ -635,7 +621,12 @@ export class CommentNotificationService {
       console.log('=== DEBUG: Sending batch emails to:', emailsToSend.map(email => email.to));
       
       // Send batch emails
-      await sgMail.send(emailsToSend);
+      const emailSent = await sendBatchEmails(emailsToSend);
+
+      if (!emailSent) {
+        console.log('=== DEBUG: Batch email send skipped or failed');
+        return;
+      }
       
       console.log('=== DEBUG: Successfully sent', emailsToSend.length, 'batch emails');
       

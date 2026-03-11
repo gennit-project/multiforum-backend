@@ -1,5 +1,5 @@
-import sgMail from "@sendgrid/mail";
 import type { UserModel } from "../../../ogm_types.js";
+import { sendEmail } from "../../../services/mail/index.js";
 
 // Types for email content
 export type EmailContent = {
@@ -29,14 +29,6 @@ export const sendEmailToUser = async (
   notificationOptions?: NotificationOptions
 ): Promise<boolean> => {
   try {
-    // Set up SendGrid (if API key provided)
-    if (process.env.SENDGRID_API_KEY) {
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    } else {
-      console.warn("SENDGRID_API_KEY is not set. Email will not be sent.");
-      return false;
-    }
-
     // Fetch the user's email address
     const users = await User.find({
       where: {
@@ -63,21 +55,17 @@ export const sendEmailToUser = async (
       );
     }
 
-    if (!process.env.SENDGRID_FROM_EMAIL) {
-      throw new Error("SENDGRID_FROM_EMAIL is not set");
-    }
-
-    // Send the email
-    const msg = {
+    const emailSent = await sendEmail({
       to: user.Email.address,
-      from: process.env.SENDGRID_FROM_EMAIL,
       subject: emailContent.subject,
       text: emailContent.plainText,
       html: emailContent.html,
-    };
+    });
 
     console.log("Sending email to", user.Email.address);
-    await sgMail.send(msg);
+    if (!emailSent) {
+      return false;
+    }
 
     // Create in-app notification if requested
     if (notificationOptions?.createInAppNotification) {
