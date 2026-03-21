@@ -8,7 +8,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "test": "node --loader ts-node/esm --test",
+    "test": "node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -name '*test.ts' -print | sort)",
     "prepare": "husky install",
     "codegen": "graphql-codegen --config codegen.ts",
     "tsc": "tsc",
@@ -43,6 +43,7 @@
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.14",
     "random-word-slugs": "^0.1.7",
+    "resend": "^6.9.3",
     "tar-stream": "^3.1.7"
   },
   "devDependencies": {
@@ -53,8 +54,8 @@
     "@types/luxon": "3.4.1",
     "@types/node": "^20.19.11",
     "@types/nodemailer": "^6.4.19",
-    "husky": "^9.1.7",
     "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },

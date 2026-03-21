@@ -1,11 +1,14 @@
 import { execute, parse, subscribe } from 'graphql';
 import { 
-  sendEmailToUser, 
   createCommentNotificationEmail, 
   createEventCommentNotificationEmail,
   createCommentReplyNotificationEmail 
 } from '../customResolvers/mutations/shared/emailUtils.js';
 import { sendBatchEmails } from './mail/index.js';
+import {
+  resolveReplyNotificationRecipients,
+  type NotificationRecipient,
+} from './commentNotificationRecipients.js';
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -198,14 +201,28 @@ export class CommentNotificationService {
             ... on User {
               __typename
               username
+              notifyOnReplyToCommentByDefault
+              Email {
+                address
+              }
             }
             ... on ModerationProfile {
               __typename
               displayName
+              User {
+                username
+                notifyOnReplyToCommentByDefault
+                Email {
+                  address
+                }
+              }
             }
           }
           SubscribedToNotifications {
             username
+            Email {
+              address
+            }
           }
         }
       }`
@@ -577,14 +594,24 @@ export class CommentNotificationService {
 
     console.log('=== DEBUG: Creating batch notifications for comment reply on:', contentTitle);
 
-    // Use batch Cypher query to create notifications for all users subscribed to the parent comment
+    const usersToNotify = resolveReplyNotificationRecipients({
+      commenterUsername,
+      parentCommentAuthor: parentComment.CommentAuthor,
+      subscribedUsers: parentComment.SubscribedToNotifications,
+    });
+
+    console.log('=== DEBUG: Reply notification recipients:', usersToNotify);
+
+    if (usersToNotify.length === 0) {
+      console.log('=== DEBUG: No reply recipients after applying author preference and subscriptions');
+      return;
+    }
+
     if (this.driver) {
-      await this.createBatchNotifications(
+      await this.createNotificationsForUsers(
         this.driver,
+        usersToNotify,
         notificationText,
-        commenterUsername,
-        'Comment',
-        parentCommentId,
         emailContent
       );
     } else {
@@ -596,7 +623,7 @@ export class CommentNotificationService {
    * Send batch emails using SendGrid
    */
   private async sendBatchEmails(
-    usersToNotify: Array<{ username: string; email: string | null }>,
+    usersToNotify: NotificationRecipient[],
     emailContent: { subject: string; plainText: string; html: string }
   ) {
     try {
@@ -633,6 +660,55 @@ export class CommentNotificationService {
     } catch (error) {
       console.error('=== DEBUG ERROR: Failed to send batch emails:', error);
       // Don't throw - continue with in-app notifications even if emails fail
+    }
+  }
+
+  private async createNotificationsForUsers(
+    driver: any,
+    usersToNotify: NotificationRecipient[],
+    notificationText: string,
+    emailContent?: { subject: string; plainText: string; html: string }
+  ) {
+    const session = driver.session();
+
+    try {
+      if (emailContent) {
+        await this.sendBatchEmails(usersToNotify, emailContent);
+      }
+
+      const usernames = usersToNotify.map((user) => user.username);
+      console.log('=== DEBUG: Creating direct notifications for users:', usernames);
+
+      const result = await session.run(
+        `
+        UNWIND $usernames AS username
+        MATCH (user:User {username: username})
+        CREATE (notification:Notification {
+          id: randomUUID(),
+          createdAt: datetime(),
+          read: false,
+          text: $notificationText
+        })
+        CREATE (user)-[:HAS_NOTIFICATION]->(notification)
+        RETURN count(notification) as notificationsCreated, collect(user.username) as notifiedUsers
+        `,
+        {
+          usernames,
+          notificationText,
+        }
+      );
+
+      const notificationsCreated = result.records[0]?.get('notificationsCreated')?.toNumber() || 0;
+      const notifiedUsers = result.records[0]?.get('notifiedUsers') || [];
+
+      console.log('=== DEBUG: Direct notification creation results:', {
+        notificationsCreated,
+        notifiedUsers,
+      });
+
+      return notificationsCreated;
+    } finally {
+      session.close();
     }
   }
 

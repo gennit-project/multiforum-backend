@@ -2,12 +2,17 @@ import {
   createSendGridMailProvider,
   type SendGridMailClient,
 } from "./sendgridProvider.js";
+import {
+  createResendMailProvider,
+  type ResendMailClient,
+} from "./resendProvider.js";
 import type { MailMessage, MailProvider } from "./types.js";
 
-type MailProviderName = "sendgrid";
+type MailProviderName = "sendgrid" | "resend";
 
 type MailServiceDependencies = {
   sendGridClient?: SendGridMailClient;
+  resendClient?: ResendMailClient;
 };
 
 type SendOptions = {
@@ -16,13 +21,18 @@ type SendOptions = {
   dependencies?: MailServiceDependencies;
 };
 
-const DEFAULT_PROVIDER: MailProviderName = "sendgrid";
+const SUPPORTED_PROVIDERS: MailProviderName[] = ["sendgrid", "resend"];
+const DEFAULT_PROVIDER: MailProviderName = "resend";
 
 export const getMailProviderName = (): MailProviderName => {
   const providerName = process.env.EMAIL_PROVIDER?.toLowerCase();
 
-  if (!providerName || providerName === DEFAULT_PROVIDER) {
+  if (!providerName) {
     return DEFAULT_PROVIDER;
+  }
+
+  if (SUPPORTED_PROVIDERS.includes(providerName as MailProviderName)) {
+    return providerName as MailProviderName;
   }
 
   console.warn(
@@ -33,7 +43,7 @@ export const getMailProviderName = (): MailProviderName => {
 };
 
 export const getDefaultFromEmail = (): string | null =>
-  process.env.EMAIL_FROM || process.env.SENDGRID_FROM_EMAIL || null;
+  process.env.EMAIL_FROM || null;
 
 const getMailProvider = (
   dependencies?: MailServiceDependencies
@@ -48,6 +58,17 @@ const getMailProvider = (
     return createSendGridMailProvider({
       apiKey: process.env.SENDGRID_API_KEY,
       client: dependencies?.sendGridClient,
+    });
+  }
+
+  if (providerName === "resend") {
+    if (!process.env.RESEND_API_KEY) {
+      return null;
+    }
+
+    return createResendMailProvider({
+      apiKey: process.env.RESEND_API_KEY,
+      client: dependencies?.resendClient,
     });
   }
 
