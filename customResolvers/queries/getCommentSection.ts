@@ -3,6 +3,7 @@ import {
   getNewCommentsQuery
 } from '../cypher/cypherQueries.js'
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 
 const discussionChannelSelectionSet = `
 {
@@ -175,6 +176,12 @@ const getResolver = (input: Input) => {
           return record.get('comment')
         })
       }
+
+      commentsResult = await populateCommentSubscriptionStatus({
+        comments: commentsResult,
+        loggedInUsername,
+        session,
+      })
 
       return {
         DiscussionChannel: discussionChannel,

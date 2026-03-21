@@ -1,5 +1,6 @@
 import { getEventCommentsQuery, } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 const eventSelectionSet = `
   {
     id
@@ -54,8 +55,13 @@ const getResolver = (input) => {
                 sortOption: sort === "top" ? "top" : sort === "hot" ? "hot" : "new",
                 loggedInUsername,
             });
-            const comments = commentsResult.records.map((record) => {
+            let comments = commentsResult.records.map((record) => {
                 return record.get("comment");
+            });
+            comments = await populateCommentSubscriptionStatus({
+                comments,
+                loggedInUsername,
+                session,
             });
             return {
                 Event: event,

@@ -2,6 +2,7 @@ import {
     getEventCommentsQuery,
   }from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 
 const eventSelectionSet = `
   {
@@ -75,8 +76,14 @@ const getResolver = (input: Input) => {
         loggedInUsername,
       });
 
-      const comments = commentsResult.records.map((record: any) => {
+      let comments = commentsResult.records.map((record: any) => {
         return record.get("comment");
+      });
+
+      comments = await populateCommentSubscriptionStatus({
+        comments,
+        loggedInUsername,
+        session,
       });
 
       return {

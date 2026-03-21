@@ -1,5 +1,6 @@
 import { getCommentsQuery, getNewCommentsQuery } from '../cypher/cypherQueries.js';
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 const discussionChannelSelectionSet = `
 {
     id
@@ -149,6 +150,11 @@ const getResolver = (input) => {
                     return record.get('comment');
                 });
             }
+            commentsResult = await populateCommentSubscriptionStatus({
+                comments: commentsResult,
+                loggedInUsername,
+                session,
+            });
             return {
                 DiscussionChannel: discussionChannel,
                 Comments: commentsResult

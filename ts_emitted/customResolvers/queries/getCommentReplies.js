@@ -1,5 +1,6 @@
 import { getCommentRepliesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 const getResolver = (input) => {
     const { driver, Comment } = input;
     return async (parent, args, context, info) => {
@@ -30,6 +31,11 @@ const getResolver = (input) => {
             }
             commentsResult = commentRepliesResult.records.map((record) => {
                 return record.get("ChildComments");
+            });
+            commentsResult = await populateCommentSubscriptionStatus({
+                comments: commentsResult,
+                loggedInUsername,
+                session,
             });
             aggregateCount = await Comment.aggregate({
                 where: {
