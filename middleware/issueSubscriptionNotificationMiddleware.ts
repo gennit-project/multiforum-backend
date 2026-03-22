@@ -8,52 +8,75 @@ type Resolver = (
   info: GraphQLResolveInfo
 ) => Promise<any>;
 
-const getCreatedActivityNodes = (update: any): any[] => {
-  const activityFeedUpdates = update?.ActivityFeed;
-  if (!Array.isArray(activityFeedUpdates)) {
-    return [];
-  }
+type IssueSubscriptionNotificationDependencies = {
+  notifyIssueSubscribers?: typeof notifyIssueSubscribers;
+};
 
-  return activityFeedUpdates.flatMap((activityUpdate) => {
+export const getCreatedActivityNodes = (args: {
+  update?: { ActivityFeed?: any[] };
+  create?: { ActivityFeed?: any[] };
+}): any[] => {
+  const updatedActivityNodes = (
+    Array.isArray(args?.update?.ActivityFeed) ? args.update.ActivityFeed : []
+  ).flatMap((activityUpdate) => {
     const created = activityUpdate?.create;
     return Array.isArray(created)
       ? created.map((entry) => entry?.node).filter(Boolean)
       : [];
   });
+
+  const createdActivityNodes = (
+    Array.isArray(args?.create?.ActivityFeed) ? args.create.ActivityFeed : []
+  )
+    .map((activityCreate) => activityCreate?.node)
+    .filter(Boolean);
+
+  return [...updatedActivityNodes, ...createdActivityNodes];
 };
 
-const issueSubscriptionNotificationMiddleware = {
-  Mutation: {
-    updateIssues: async (
-      resolve: Resolver,
-      parent: unknown,
-      args: { where?: { id?: string }; update?: Record<string, any> },
-      context: any,
-      info: GraphQLResolveInfo
-    ) => {
-      const activityNodes = getCreatedActivityNodes(args?.update);
-      const result = await resolve(parent, args, context, info);
-      const issueId = result?.issues?.[0]?.id || args?.where?.id;
+export const createIssueSubscriptionNotificationMiddleware = (
+  dependencies: IssueSubscriptionNotificationDependencies = {}
+) => {
+  const notifyIssueSubscribersFn =
+    dependencies.notifyIssueSubscribers || notifyIssueSubscribers;
 
-      if (!issueId || !activityNodes.length) {
+  return {
+    Mutation: {
+      updateIssues: async (
+        resolve: Resolver,
+        parent: unknown,
+        args: {
+          where?: { id?: string };
+          update?: Record<string, any>;
+          create?: Record<string, any>;
+        },
+        context: any,
+        info: GraphQLResolveInfo
+      ) => {
+        const activityNodes = getCreatedActivityNodes(args);
+        const result = await resolve(parent, args, context, info);
+        const issueId = result?.issues?.[0]?.id || args?.where?.id;
+
+        if (!issueId || !activityNodes.length) {
+          return result;
+        }
+
+        for (const node of activityNodes) {
+          await notifyIssueSubscribersFn({
+            IssueModel: context?.ogm?.model("Issue"),
+            driver: context?.driver,
+            issueId,
+            actorUsername: context?.user?.username || null,
+            actionType: node?.actionType || null,
+            actionDescription: node?.actionDescription || "updated the issue",
+            commentText: node?.Comment?.create?.node?.text || null,
+          });
+        }
+
         return result;
-      }
-
-      for (const node of activityNodes) {
-        await notifyIssueSubscribers({
-          IssueModel: context?.ogm?.model("Issue"),
-          driver: context?.driver,
-          issueId,
-          actorUsername: context?.user?.username || null,
-          actionType: node?.actionType || null,
-          actionDescription: node?.actionDescription || "updated the issue",
-          commentText: node?.Comment?.create?.node?.text || null,
-        });
-      }
-
-      return result;
+      },
     },
-  },
+  };
 };
 
-export default issueSubscriptionNotificationMiddleware;
+export default createIssueSubscriptionNotificationMiddleware();
