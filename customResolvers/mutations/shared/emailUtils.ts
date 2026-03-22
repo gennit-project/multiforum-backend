@@ -1,5 +1,6 @@
 import type { UserModel } from "../../../ogm_types.js";
 import { sendEmail } from "../../../services/mail/index.js";
+import { renderEmailMarkdownToHtml } from "../../../services/renderEmailMarkdown.js";
 
 // Types for email content
 export type EmailContent = {
@@ -137,11 +138,12 @@ View the comment at:
 ${commentUrl}
 `;
 
+  const renderedCommentHtml = renderEmailMarkdownToHtml(commentText);
   // Create HTML version with some basic formatting
   const html = `
 <p><strong>${commenterUsername}</strong> commented on your discussion "<strong>${discussionTitle}</strong>":</p>
 <blockquote style="border-left: 4px solid #ccc; padding-left: 16px; margin-left: 0;">
-  ${commentText}
+  ${renderedCommentHtml}
 </blockquote>
 <p>
   <a href="${commentUrl}">View the comment</a>
@@ -189,11 +191,12 @@ View the comment at:
 ${commentUrl}
 `;
 
+  const renderedCommentHtml = renderEmailMarkdownToHtml(commentText);
   // Create HTML version with some basic formatting
   const html = `
 <p><strong>${commenterUsername}</strong> commented on the event "<strong>${eventTitle}</strong>":</p>
 <blockquote style="border-left: 4px solid #ccc; padding-left: 16px; margin-left: 0;">
-  ${commentText}
+  ${renderedCommentHtml}
 </blockquote>
 <p>
   <a href="${commentUrl}">View the comment</a>
@@ -234,11 +237,12 @@ View the reply at:
 ${contentUrl}
 `;
 
+  const renderedReplyHtml = renderEmailMarkdownToHtml(replyText);
   // Create HTML version with some basic formatting
   const html = `
 <p><strong>${commenterUsername}</strong> replied to your comment on "<strong>${contentTitle}</strong>":</p>
 <blockquote style="border-left: 4px solid #ccc; padding-left: 16px; margin-left: 0;">
-  ${replyText}
+  ${renderedReplyHtml}
 </blockquote>
 <p>
   <a href="${contentUrl}">View the reply</a>
