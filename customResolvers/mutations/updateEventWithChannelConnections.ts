@@ -7,6 +7,11 @@ import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateN
 type Input = {
   Event: any;
   driver: any;
+  dependencies?: {
+    sendBatchEmails?: typeof sendBatchEmails;
+    createEventUpdateNotificationEmail?: typeof createEventUpdateNotificationEmail;
+    buildEventUpdateNotificationPayload?: typeof buildEventUpdateNotificationPayload;
+  };
 };
 
 type Args = {
@@ -17,7 +22,14 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { Event, driver } = input;
+  const { Event, driver, dependencies } = input;
+  const sendBatchEmailsFn = dependencies?.sendBatchEmails || sendBatchEmails;
+  const createEventUpdateNotificationEmailFn =
+    dependencies?.createEventUpdateNotificationEmail ||
+    createEventUpdateNotificationEmail;
+  const buildEventUpdateNotificationPayloadFn =
+    dependencies?.buildEventUpdateNotificationPayload ||
+    buildEventUpdateNotificationPayload;
   return async (parent: any, args: Args, context: any, info: any) => {
     const {
       where,
@@ -146,7 +158,7 @@ const getResolver = (input: Input) => {
       });
 
       const updatedEvent = result[0];
-      const eventUpdateNotification = buildEventUpdateNotificationPayload(
+      const eventUpdateNotification = buildEventUpdateNotificationPayloadFn(
         existingEvent,
         updatedEvent
       );
@@ -156,7 +168,7 @@ const getResolver = (input: Input) => {
         const usersToNotify = (updatedEvent.SubscribedToEventUpdates || []).filter(
           (user: any) => user.username !== actorUsername
         );
-        const emailContent = createEventUpdateNotificationEmail(
+        const emailContent = createEventUpdateNotificationEmailFn(
           updatedEvent.title,
           eventUpdateNotification.summaryLines,
           eventUpdateNotification.eventUrl,
@@ -170,10 +182,10 @@ const getResolver = (input: Input) => {
             subject: emailContent.subject,
             text: emailContent.plainText,
             html: emailContent.html,
-          }));
+        }));
 
         if (emailRecipients.length > 0) {
-          await sendBatchEmails(emailRecipients);
+          await sendBatchEmailsFn(emailRecipients);
         }
 
         if (usersToNotify.length > 0) {

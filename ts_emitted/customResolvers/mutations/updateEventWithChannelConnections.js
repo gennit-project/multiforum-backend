@@ -3,7 +3,12 @@ import { sendBatchEmails } from "../../services/mail/index.js";
 import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
 const getResolver = (input) => {
-    const { Event, driver } = input;
+    const { Event, driver, dependencies } = input;
+    const sendBatchEmailsFn = (dependencies === null || dependencies === void 0 ? void 0 : dependencies.sendBatchEmails) || sendBatchEmails;
+    const createEventUpdateNotificationEmailFn = (dependencies === null || dependencies === void 0 ? void 0 : dependencies.createEventUpdateNotificationEmail) ||
+        createEventUpdateNotificationEmail;
+    const buildEventUpdateNotificationPayloadFn = (dependencies === null || dependencies === void 0 ? void 0 : dependencies.buildEventUpdateNotificationPayload) ||
+        buildEventUpdateNotificationPayload;
     return async (parent, args, context, info) => {
         var _a;
         const { where, eventUpdateInput, channelConnections, channelDisconnections, } = args;
@@ -118,11 +123,11 @@ const getResolver = (input) => {
                 selectionSet,
             });
             const updatedEvent = result[0];
-            const eventUpdateNotification = buildEventUpdateNotificationPayload(existingEvent, updatedEvent);
+            const eventUpdateNotification = buildEventUpdateNotificationPayloadFn(existingEvent, updatedEvent);
             if (eventUpdateNotification) {
                 const actorUsername = ((_a = context.user) === null || _a === void 0 ? void 0 : _a.username) || null;
                 const usersToNotify = (updatedEvent.SubscribedToEventUpdates || []).filter((user) => user.username !== actorUsername);
-                const emailContent = createEventUpdateNotificationEmail(updatedEvent.title, eventUpdateNotification.summaryLines, eventUpdateNotification.eventUrl, eventUpdateNotification.subject);
+                const emailContent = createEventUpdateNotificationEmailFn(updatedEvent.title, eventUpdateNotification.summaryLines, eventUpdateNotification.eventUrl, eventUpdateNotification.subject);
                 const emailRecipients = usersToNotify
                     .filter((user) => { var _a; return (_a = user.Email) === null || _a === void 0 ? void 0 : _a.address; })
                     .map((user) => ({
@@ -132,7 +137,7 @@ const getResolver = (input) => {
                     html: emailContent.html,
                 }));
                 if (emailRecipients.length > 0) {
-                    await sendBatchEmails(emailRecipients);
+                    await sendBatchEmailsFn(emailRecipients);
                 }
                 if (usersToNotify.length > 0) {
                     const notificationSession = driver.session();
