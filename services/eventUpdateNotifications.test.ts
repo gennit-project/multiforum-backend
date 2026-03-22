@@ -81,3 +81,35 @@ test("buildEventUpdateNotificationPayload builds subject and event URL", () => {
     'Title changed to "Phoenix Makers Meetup".',
   ]);
 });
+
+test("buildEventUpdateNotificationPayload includes showCanceledEvents for canceled events", () => {
+  process.env.FRONTEND_URL = "https://example.com";
+
+  const payload = buildEventUpdateNotificationPayload(
+    {
+      id: "event-1",
+      title: "Phoenix Meetup",
+      startTime: "2026-04-01T18:00:00.000Z",
+      endTime: "2026-04-01T19:00:00.000Z",
+      locationName: "Library",
+      address: "123 Main St",
+      virtualEventUrl: null,
+      canceled: false,
+    },
+    {
+      id: "event-1",
+      title: "Phoenix Meetup",
+      startTime: "2026-04-01T18:00:00.000Z",
+      endTime: "2026-04-01T19:00:00.000Z",
+      locationName: "Library",
+      address: "123 Main St",
+      virtualEventUrl: null,
+      canceled: true,
+    }
+  );
+
+  assert.equal(
+    payload?.eventUrl,
+    "https://example.com/events/list/search/event-1?showCanceledEvents=true"
+  );
+});

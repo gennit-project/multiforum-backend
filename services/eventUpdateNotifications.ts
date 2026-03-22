@@ -89,7 +89,8 @@ export const buildEventUpdateNotificationPayload = (
     return null;
   }
 
-  const eventUrl = `${process.env.FRONTEND_URL}/events/list/search/${after.id}`;
+  const canceledEventQuery = after.canceled ? "?showCanceledEvents=true" : "";
+  const eventUrl = `${process.env.FRONTEND_URL}/events/list/search/${after.id}${canceledEventQuery}`;
   const subject = after.canceled
     ? `Event canceled: ${after.title}`
     : `Event updated: ${after.title}`;
