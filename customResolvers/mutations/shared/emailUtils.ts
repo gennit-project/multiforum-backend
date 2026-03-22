@@ -319,3 +319,36 @@ ${commentUrl}
     html,
   };
 };
+
+export const createIssueSubscriptionNotificationEmail = (
+  subject: string,
+  summaryText: string,
+  detailText: string,
+  issueUrl: string
+): EmailContent => {
+  const renderedDetailHtml = detailText
+    ? renderEmailMarkdownToHtml(detailText)
+    : "";
+
+  const plainText = `
+${summaryText}
+${detailText ? `\n\n${detailText}` : ""}
+
+View the issue at:
+${issueUrl}
+`;
+
+  const html = `
+<p>${summaryText}</p>
+${detailText ? `<blockquote style="border-left: 4px solid #ccc; padding-left: 16px; margin-left: 0;">${renderedDetailHtml}</blockquote>` : ""}
+<p>
+  <a href="${issueUrl}">View the issue</a>
+</p>
+`;
+
+  return {
+    subject,
+    plainText,
+    html,
+  };
+};

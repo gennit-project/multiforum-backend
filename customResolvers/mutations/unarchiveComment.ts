@@ -11,6 +11,7 @@ import type {
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js'
 import { GraphQLError } from 'graphql'
 import { getModerationActionCreateInput } from './reportComment.js'
+import { notifyIssueSubscribers } from '../../services/issueNotifications.js'
 
 type Args = {
   commentId: string
@@ -200,6 +201,15 @@ const getResolver = (input: Input) => {
         throw new GraphQLError('Error updating issue')
       }
       existingIssue = issueData.issues[0]
+      await notifyIssueSubscribers({
+        IssueModel: Issue,
+        driver: context.driver,
+        issueId,
+        actorUsername: loggedInUsername,
+        actionType: 'un-archive',
+        actionDescription: 'Un-archived the comment',
+        commentText: explanation
+      })
     } catch (error) {
       throw new GraphQLError('Error updating issue')
     }

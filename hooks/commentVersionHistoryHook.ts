@@ -163,10 +163,12 @@ export const commentVersionHistoryHandler = async ({
       const attribution = getAttributionFromContext(context);
       await createIssueActivityFeedItems({
         IssueModel,
+        driver: context?.driver,
         issueIds,
         actionDescription: 'edited the comment',
         actionType: 'edit',
         attribution,
+        actorUsername: context?.user?.username || null,
         commentId,
       });
     } else {

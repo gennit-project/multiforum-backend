@@ -26,7 +26,7 @@ const getResolver = (input: Input) => {
         `
         MATCH (i:Issue {id: $issueId})
         MATCH (u:User {username: $username})
-        MERGE (u)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(i)
+        MERGE (u)-[:SUBSCRIBED_TO_ISSUE]->(i)
         `,
         { issueId, username }
       );
@@ -37,7 +37,8 @@ const getResolver = (input: Input) => {
         selectionSet: `{
           id
           issueNumber
-          reportText
+          title
+          channelUniqueName
           createdAt
           SubscribedToNotifications {
             username

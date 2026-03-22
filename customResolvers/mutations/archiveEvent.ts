@@ -17,6 +17,7 @@ import {
   getIssueCreateInput,
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
+import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 import {
   checkChannelModPermissions,
   ModChannelPermission,
@@ -210,6 +211,15 @@ const getResolver = (input: Input) => {
         throw new GraphQLError("Error updating issue");
       }
       existingIssue = issueData.issues[0];
+      await notifyIssueSubscribers({
+        IssueModel: Issue,
+        driver: context.driver,
+        issueId,
+        actorUsername: loggedInUsername,
+        actionType: "archive",
+        actionDescription: "Archived the event and closed the issue",
+        commentText: finalEventText,
+      });
     } catch (error) {
       throw new GraphQLError("Error updating issue");
     }

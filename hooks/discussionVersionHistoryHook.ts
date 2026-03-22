@@ -165,6 +165,7 @@ export const discussionVersionHistoryHandler = async ({
     for (const revision of createdRevisionIds) {
       await createIssueActivityFeedItems({
         IssueModel,
+        driver: context?.driver,
         issueIds,
         actionDescription:
           revision.type === 'title'
@@ -172,6 +173,7 @@ export const discussionVersionHistoryHandler = async ({
             : 'edited the discussion body',
         actionType: 'edit',
         attribution,
+        actorUsername: context?.user?.username || null,
         revisionId: revision.id,
       });
     }

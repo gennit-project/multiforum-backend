@@ -11,6 +11,7 @@ import commentUserMentionsMiddleware from "./middleware/commentUserMentionsMiddl
 import discussionMentionsMiddleware from "./middleware/discussionMentionsMiddleware.js";
 import wikiPageVersionHistoryMiddleware from "./middleware/wikiPageVersionHistoryMiddleware.js";
 import issueActivityFeedMiddleware from "./middleware/issueActivityFeedMiddleware.js";
+import issueSubscriptionNotificationMiddleware from "./middleware/issueSubscriptionNotificationMiddleware.js";
 import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
 import path from "path";
@@ -200,6 +201,7 @@ async function initializeServer() {
       commentPluginPipelineMiddleware,
       wikiPageVersionHistoryMiddleware,
       issueActivityFeedMiddleware,
+      issueSubscriptionNotificationMiddleware,
       channelBotsMiddleware,
       channelCreatorModeratorMiddleware
     );

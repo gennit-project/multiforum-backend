@@ -212,10 +212,12 @@ const recordDeleteClosure = async (input: {
 
     await createIssueActivityFeedItems({
       IssueModel,
+      driver: context?.driver,
       issueIds: [issueId],
       actionDescription: actionText,
       actionType: 'delete',
       attribution,
+      actorUsername: context?.user?.username || null,
     });
   }
 };
@@ -242,13 +244,15 @@ const recordEditActivity = async (input: {
 
   const attribution = getAttributionFromContext(context);
   await createIssueActivityFeedItems({
-    IssueModel,
-    issueIds,
-    actionDescription,
-    actionType: 'edit',
-    attribution,
-  });
-};
+      IssueModel,
+      driver: context?.driver,
+      issueIds,
+      actionDescription,
+      actionType: 'edit',
+      attribution,
+      actorUsername: context?.user?.username || null,
+    });
+  };
 
 const issueActivityFeedMiddleware = {
   Mutation: {

@@ -83,6 +83,7 @@ const permissionList = shield({
       notifyOnReplyToDiscussionByDefault: isAccountOwner,
       notifyOnReplyToEventByDefault: isAccountOwner,
       notifyWhenTagged: isAccountOwner,
+      notifyOnSubscribedIssueUpdates: isAccountOwner,
       notifyOnFeedback: isAccountOwner,
       notificationBundleInterval: isAccountOwner,
       notificationBundleEnabled: isAccountOwner,

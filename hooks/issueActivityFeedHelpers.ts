@@ -13,13 +13,18 @@ type RelatedIssueLookup = {
 
 type IssueActivityInput = {
   IssueModel: IssueModel;
+  driver?: any;
   issueIds: string[];
   actionDescription: string;
   actionType?: string;
   attribution: ActivityAttribution;
+  actorUsername?: string | null;
   revisionId?: string;
   commentId?: string | null;
+  commentText?: string | null;
 };
+
+import { notifyIssueSubscribers } from "../services/issueNotifications.js";
 
 export const getAttributionFromContext = (context: any): ActivityAttribution => {
   return {
@@ -67,12 +72,15 @@ export const createIssueActivityFeedItems = async (
 ) => {
   const {
     IssueModel,
+    driver,
     issueIds,
     actionDescription,
     actionType,
     attribution,
+    actorUsername,
     revisionId,
     commentId,
+    commentText,
   } = input;
 
   if (!issueIds.length) {
@@ -148,6 +156,18 @@ export const createIssueActivityFeedItems = async (
           ],
         },
       });
+
+      if (driver) {
+        await notifyIssueSubscribers({
+          IssueModel,
+          driver,
+          issueId,
+          actorUsername: actorUsername || attribution.username || null,
+          actionType,
+          actionDescription,
+          commentText,
+        });
+      }
     } catch (error) {
       console.error('Error creating issue activity feed item:', error);
     }

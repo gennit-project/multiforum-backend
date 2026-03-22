@@ -6,6 +6,7 @@ import type {
 } from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
+import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 
 type Args = {
   issueId: string;
@@ -162,6 +163,16 @@ const getResolver = (input: Input) => {
       if (!updatedIssue) {
         throw new GraphQLError("Error updating issue");
       }
+
+      await notifyIssueSubscribers({
+        IssueModel: Issue,
+        driver: context.driver,
+        issueId,
+        actorUsername: loggedInUsername,
+        actionType: "unlock",
+        actionDescription: "Unlocked the issue",
+        commentText: reason || null,
+      });
 
       console.log(`✅ Issue ${existingIssue.issueNumber} unlocked by ${loggedInModName}`);
       return updatedIssue;

@@ -11,6 +11,7 @@ import type {
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
 import { getModerationActionCreateInput } from '../reportComment.js'
+import { notifyIssueSubscribers } from '../../../services/issueNotifications.js'
 
 type CreateSuspensionResolverOptions = {
   Issue: IssueModel
@@ -225,6 +226,16 @@ export function createSuspensionResolver ({
     if (!updatedIssueNode?.id) {
       throw new GraphQLError('Unable to update Issue with ModerationAction')
     }
+
+    await notifyIssueSubscribers({
+      IssueModel: Issue,
+      driver: context.driver,
+      issueId,
+      actorUsername: loggedInUsername,
+      actionType: 'suspension',
+      actionDescription: `Suspended ${relatedAccountName}`,
+      commentText: explanation
+    })
 
     // 7. Construct the channel update input for either a user or mod
     let channelUpdateInput = null
