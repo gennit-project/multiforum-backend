@@ -592,6 +592,8 @@ const typeDefinitions = gql `
       @relationship(type: "HAS_FEEDBACK_COMMENT", direction: IN)
     SubscribedToNotifications: [User!]!
       @relationship(type: "SUBSCRIBED_TO_NOTIFICATIONS", direction: IN)
+    SubscribedToEventUpdates: [User!]!
+      @relationship(type: "SUBSCRIBED_TO_EVENT_UPDATES", direction: IN)
   }
 
   type Comment {
@@ -967,6 +969,8 @@ const typeDefinitions = gql `
     unsubscribeFromDiscussionChannel(discussionChannelId: ID!): DiscussionChannel
     subscribeToEvent(eventId: ID!): Event
     unsubscribeFromEvent(eventId: ID!): Event
+    subscribeToEventUpdates(eventId: ID!): Event
+    unsubscribeFromEventUpdates(eventId: ID!): Event
     subscribeToComment(commentId: ID!): Comment
     unsubscribeFromComment(commentId: ID!): Comment
     subscribeToIssue(issueId: ID!): Issue

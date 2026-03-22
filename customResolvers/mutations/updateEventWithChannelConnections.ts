@@ -1,5 +1,8 @@
 import { updateEventChannelQuery, severConnectionBetweenEventAndChannelQuery } from "../cypher/cypherQueries.js";
 import { EventWhere, EventUpdateInput } from "../../src/generated/graphql";
+import { sendBatchEmails } from "../../services/mail/index.js";
+import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
+import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
 
 type Input = {
   Event: any;
@@ -23,15 +26,36 @@ const getResolver = (input: Input) => {
       channelDisconnections,
     } = args;
 
+    const session = driver.session();
+
     try {
+      const existingEvents = await Event.find({
+        where,
+        selectionSet: `
+          {
+            id
+            title
+            startTime
+            endTime
+            locationName
+            address
+            virtualEventUrl
+            canceled
+          }
+        `,
+      });
+
+      const existingEvent = existingEvents[0];
+      if (!existingEvent) {
+        throw new Error("Event not found");
+      }
+
       // Update the event
       await Event.update({
         where: where,
         update: eventUpdateInput,
       });
       const updatedEventId = where.id;
-
-      const session = driver.session();
 
       // Update the channel connections
       for (let i = 0; i < channelConnections.length; i++) {
@@ -100,6 +124,12 @@ const getResolver = (input: Input) => {
           SubscribedToNotifications {
             username
           }
+          SubscribedToEventUpdates {
+            username
+            Email {
+              address
+            }
+          }
           createdAt
           updatedAt
           Tags {
@@ -114,12 +144,67 @@ const getResolver = (input: Input) => {
         },
         selectionSet,
       });
-      session.close();
 
-      return result[0];
+      const updatedEvent = result[0];
+      const eventUpdateNotification = buildEventUpdateNotificationPayload(
+        existingEvent,
+        updatedEvent
+      );
+
+      if (eventUpdateNotification) {
+        const actorUsername = context.user?.username || null;
+        const usersToNotify = (updatedEvent.SubscribedToEventUpdates || []).filter(
+          (user: any) => user.username !== actorUsername
+        );
+        const emailContent = createEventUpdateNotificationEmail(
+          updatedEvent.title,
+          eventUpdateNotification.summaryLines,
+          eventUpdateNotification.eventUrl,
+          eventUpdateNotification.subject
+        );
+
+        const emailRecipients = usersToNotify
+          .filter((user: any) => user.Email?.address)
+          .map((user: any) => ({
+            to: user.Email.address,
+            subject: emailContent.subject,
+            text: emailContent.plainText,
+            html: emailContent.html,
+          }));
+
+        if (emailRecipients.length > 0) {
+          await sendBatchEmails(emailRecipients);
+        }
+
+        if (usersToNotify.length > 0) {
+          const notificationSession = driver.session();
+          await notificationSession.run(
+            `
+            UNWIND $usernames AS username
+            MATCH (user:User {username: username})
+            CREATE (notification:Notification {
+              id: randomUUID(),
+              createdAt: datetime(),
+              read: false,
+              text: $notificationText
+            })
+            CREATE (user)-[:HAS_NOTIFICATION]->(notification)
+            `,
+            {
+              usernames: usersToNotify.map((user: any) => user.username),
+              notificationText: eventUpdateNotification.notificationText,
+            }
+          );
+          await notificationSession.close();
+        }
+      }
+
+      return updatedEvent;
     } catch (error: any) {
       console.error("Error updating event:", error);
       throw new Error(`Failed to update event. ${error.message}`);
+    } finally {
+      await session.close();
     }
   };
 };

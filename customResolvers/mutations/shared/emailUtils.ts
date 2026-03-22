@@ -251,3 +251,38 @@ ${contentUrl}
     html
   };
 };
+
+export const createEventUpdateNotificationEmail = (
+  eventTitle: string,
+  summaryLines: string[],
+  eventUrl: string,
+  subjectOverride?: string
+): EmailContent => {
+  const subject = subjectOverride || `Event updated: ${eventTitle}`;
+  const joinedSummary = summaryLines.map((line) => `- ${line}`).join("\n");
+  const plainText = `
+The event "${eventTitle}" was updated.
+
+${joinedSummary}
+
+View the latest event details at:
+${eventUrl}
+`;
+
+  const htmlSummary = summaryLines.map((line) => `<li>${line}</li>`).join("");
+  const html = `
+<p>The event "<strong>${eventTitle}</strong>" was updated.</p>
+<ul>
+  ${htmlSummary}
+</ul>
+<p>
+  <a href="${eventUrl}">View the latest event details</a>
+</p>
+`;
+
+  return {
+    subject,
+    plainText,
+    html,
+  };
+};

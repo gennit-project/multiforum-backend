@@ -52,6 +52,9 @@ const selectionSet = `
     SubscribedToNotifications {
       username
     }
+    SubscribedToEventUpdates {
+      username
+    }
     createdAt
     updatedAt
     Tags {

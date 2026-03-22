@@ -75,6 +75,8 @@ import subscribeToDiscussionChannel from './customResolvers/mutations/subscribeT
 import unsubscribeFromDiscussionChannel from './customResolvers/mutations/unsubscribeFromDiscussionChannel.js';
 import subscribeToEvent from './customResolvers/mutations/subscribeToEvent.js';
 import unsubscribeFromEvent from './customResolvers/mutations/unsubscribeFromEvent.js';
+import subscribeToEventUpdates from './customResolvers/mutations/subscribeToEventUpdates.js';
+import unsubscribeFromEventUpdates from './customResolvers/mutations/unsubscribeFromEventUpdates.js';
 import subscribeToIssue from './customResolvers/mutations/subscribeToIssue.js';
 import unsubscribeFromIssue from './customResolvers/mutations/unsubscribeFromIssue.js';
 import sendBugReport from './customResolvers/mutations/sendBugReport.js';
@@ -425,6 +427,14 @@ export default function (driver: any) {
         driver
       }),
       unsubscribeFromEvent: unsubscribeFromEvent({
+        Event,
+        driver
+      }),
+      subscribeToEventUpdates: subscribeToEventUpdates({
+        Event,
+        driver
+      }),
+      unsubscribeFromEventUpdates: unsubscribeFromEventUpdates({
         Event,
         driver
       }),

@@ -1,16 +1,39 @@
 import { updateEventChannelQuery, severConnectionBetweenEventAndChannelQuery } from "../cypher/cypherQueries.js";
+import { sendBatchEmails } from "../../services/mail/index.js";
+import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
+import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
 const getResolver = (input) => {
     const { Event, driver } = input;
     return async (parent, args, context, info) => {
+        var _a;
         const { where, eventUpdateInput, channelConnections, channelDisconnections, } = args;
+        const session = driver.session();
         try {
+            const existingEvents = await Event.find({
+                where,
+                selectionSet: `
+          {
+            id
+            title
+            startTime
+            endTime
+            locationName
+            address
+            virtualEventUrl
+            canceled
+          }
+        `,
+            });
+            const existingEvent = existingEvents[0];
+            if (!existingEvent) {
+                throw new Error("Event not found");
+            }
             // Update the event
             await Event.update({
                 where: where,
                 update: eventUpdateInput,
             });
             const updatedEventId = where.id;
-            const session = driver.session();
             // Update the channel connections
             for (let i = 0; i < channelConnections.length; i++) {
                 const channelUniqueName = channelConnections[i];
@@ -75,6 +98,12 @@ const getResolver = (input) => {
           SubscribedToNotifications {
             username
           }
+          SubscribedToEventUpdates {
+            username
+            Email {
+              address
+            }
+          }
           createdAt
           updatedAt
           Tags {
@@ -88,12 +117,50 @@ const getResolver = (input) => {
                 },
                 selectionSet,
             });
-            session.close();
-            return result[0];
+            const updatedEvent = result[0];
+            const eventUpdateNotification = buildEventUpdateNotificationPayload(existingEvent, updatedEvent);
+            if (eventUpdateNotification) {
+                const actorUsername = ((_a = context.user) === null || _a === void 0 ? void 0 : _a.username) || null;
+                const usersToNotify = (updatedEvent.SubscribedToEventUpdates || []).filter((user) => user.username !== actorUsername);
+                const emailContent = createEventUpdateNotificationEmail(updatedEvent.title, eventUpdateNotification.summaryLines, eventUpdateNotification.eventUrl, eventUpdateNotification.subject);
+                const emailRecipients = usersToNotify
+                    .filter((user) => { var _a; return (_a = user.Email) === null || _a === void 0 ? void 0 : _a.address; })
+                    .map((user) => ({
+                    to: user.Email.address,
+                    subject: emailContent.subject,
+                    text: emailContent.plainText,
+                    html: emailContent.html,
+                }));
+                if (emailRecipients.length > 0) {
+                    await sendBatchEmails(emailRecipients);
+                }
+                if (usersToNotify.length > 0) {
+                    const notificationSession = driver.session();
+                    await notificationSession.run(`
+            UNWIND $usernames AS username
+            MATCH (user:User {username: username})
+            CREATE (notification:Notification {
+              id: randomUUID(),
+              createdAt: datetime(),
+              read: false,
+              text: $notificationText
+            })
+            CREATE (user)-[:HAS_NOTIFICATION]->(notification)
+            `, {
+                        usernames: usersToNotify.map((user) => user.username),
+                        notificationText: eventUpdateNotification.notificationText,
+                    });
+                    await notificationSession.close();
+                }
+            }
+            return updatedEvent;
         }
         catch (error) {
             console.error("Error updating event:", error);
             throw new Error(`Failed to update event. ${error.message}`);
+        }
+        finally {
+            await session.close();
         }
     };
 };

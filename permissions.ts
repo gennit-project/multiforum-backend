@@ -207,6 +207,8 @@ const permissionList = shield({
       unsubscribeFromDiscussionChannel: and(isAuthenticated, allow),
       subscribeToEvent: and(isAuthenticated, allow),
       unsubscribeFromEvent: and(isAuthenticated, allow),
+      subscribeToEventUpdates: and(isAuthenticated, allow),
+      unsubscribeFromEventUpdates: and(isAuthenticated, allow),
       subscribeToComment: and(isAuthenticated, allow),
       unsubscribeFromComment: and(isAuthenticated, allow),
       subscribeToIssue: and(isAuthenticated, allow),
