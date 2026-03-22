@@ -9,6 +9,11 @@ test('getNewMentionUsernames returns only newly added mentions', () => {
   assert.deepEqual(newMentions, ['carl']);
 });
 
+test('getNewMentionUsernames treats u/username and @username as the same mention', () => {
+  const result = getNewMentionUsernames('hello u/alice', 'hello @Alice and @bob');
+  assert.deepEqual(result, ['bob']);
+});
+
 test('getNewMentionUsernames ignores removed mentions', () => {
   const before = 'u/alice u/bob';
   const after = 'u/alice';

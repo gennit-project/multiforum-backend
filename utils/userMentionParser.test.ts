@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseUserMentions } from './userMentionParser.js';
 
-test('parseUserMentions finds unique u/username mentions', () => {
-  const text = 'hello u/alice and u/Bob and u/alice again';
+test('parseUserMentions finds unique u/username and @username mentions', () => {
+  const text = 'hello u/alice and @Bob and u/alice again and @bob again';
   const mentions = parseUserMentions(text);
   const usernames = mentions.map((m) => m.username);
   assert.deepEqual(usernames, ['alice', 'Bob']);
@@ -26,6 +26,13 @@ test('parseUserMentions ignores markdown links and autolinks', () => {
 
 test('parseUserMentions ignores raw urls', () => {
   const text = 'https://example.com/u/alice u/bob www.example.com/u/carl';
+  const mentions = parseUserMentions(text);
+  const usernames = mentions.map((m) => m.username);
+  assert.deepEqual(usernames, ['bob']);
+});
+
+test('parseUserMentions does not treat email addresses as mentions', () => {
+  const text = 'email me at alice@example.com and tag @bob';
   const mentions = parseUserMentions(text);
   const usernames = mentions.map((m) => m.username);
   assert.deepEqual(usernames, ['bob']);

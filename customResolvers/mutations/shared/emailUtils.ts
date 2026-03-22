@@ -286,3 +286,32 @@ ${eventUrl}
     html,
   };
 };
+
+export const createCommentMentionNotificationEmail = (
+  mentionerLabel: string,
+  contentTitle: string,
+  commentUrl: string,
+  isEventComment = false
+): EmailContent => {
+  const contentLabel = isEventComment ? "event" : "discussion";
+  const subject = `${mentionerLabel} mentioned you in a comment`;
+  const plainText = `
+${mentionerLabel} mentioned you in a comment on the ${contentLabel} "${contentTitle}".
+
+View the comment at:
+${commentUrl}
+`;
+
+  const html = `
+<p><strong>${mentionerLabel}</strong> mentioned you in a comment on the ${contentLabel} "<strong>${contentTitle}</strong>".</p>
+<p>
+  <a href="${commentUrl}">View the comment</a>
+</p>
+`;
+
+  return {
+    subject,
+    plainText,
+    html,
+  };
+};

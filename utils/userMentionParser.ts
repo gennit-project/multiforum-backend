@@ -9,7 +9,7 @@ const MARKDOWN_LINK_REGEX = /!?\[[^\]]*\]\([^\)]*\)/g;
 const AUTO_LINK_REGEX = /<[^>]+>/g;
 const URL_REGEX = /\bhttps?:\/\/\S+|\bwww\.\S+/gi;
 
-const USER_MENTION_REGEX = /(^|[^A-Za-z0-9_])u\/([A-Za-z0-9_]+)/g;
+const USER_MENTION_REGEX = /(^|[^A-Za-z0-9_])(?:u\/|@)([A-Za-z0-9_]+)/g;
 
 const stripCodeAndLinks = (text: string): string => {
   return text
@@ -38,7 +38,7 @@ export const parseUserMentions = (text: string | null | undefined): UserMention[
 
     mentions.push({
       username,
-      raw: `u/${username}`
+      raw: match[0].trim()
     });
   }
 
