@@ -18,6 +18,8 @@ import {
   CollectionWhere,
   Image,
   ImageWhere,
+  Issue,
+  IssueWhere,
 } from "../../src/generated/graphql.js";
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 
@@ -589,6 +591,122 @@ export const isImageUploader = rule({ cache: "contextual" })(
     }
 
     console.log('✅ isImageUploader - User is the uploader');
+    return true;
+  }
+);
+
+type IsIssueAuthorInput = {
+  where: IssueWhere;
+};
+
+/**
+ * Check if the current user is the author of the issue.
+ * The issue author can be either a User or a ModerationProfile.
+ */
+export const isIssueAuthor = rule({ cache: "contextual" })(
+  async (parent: any, args: IsIssueAuthorInput, ctx: any, info: any) => {
+    const { where } = args;
+    const issueId = where?.id;
+
+    // Set user data
+    ctx.user = await setUserDataOnContext({
+      context: ctx,
+      getPermissionInfo: false,
+    });
+
+    const username = ctx.user.username;
+    const modName = ctx.user.data?.ModerationProfile?.displayName || null;
+    const ogm = ctx.ogm;
+
+    if (!issueId) {
+      throw new Error(ERROR_MESSAGES.issue.noId);
+    }
+
+    const IssueModel = ogm.model("Issue");
+
+    // Get the issue author using the OGM
+    const issues: Issue[] = await IssueModel.find({
+      where: { id: issueId },
+      selectionSet: `{
+        Author {
+          ... on User {
+            username
+          }
+          ... on ModerationProfile {
+            displayName
+          }
+        }
+      }`,
+    });
+
+    if (!issues || issues.length === 0) {
+      throw new Error(ERROR_MESSAGES.issue.notFound);
+    }
+
+    const issue = issues[0];
+    const author = issue?.Author;
+
+    if (!author) {
+      throw new Error(ERROR_MESSAGES.issue.noAuthor);
+    }
+
+    // The issue author could be a user or a moderation profile
+    // @ts-ignore - Author union type
+    const authorUsername = author.username;
+    // @ts-ignore - Author union type
+    const authorModProfileName = author.displayName;
+
+    // Check if the current user matches the author
+    if (authorUsername && authorUsername === username) {
+      return true;
+    }
+    if (authorModProfileName && authorModProfileName === modName) {
+      return true;
+    }
+
+    return false; // Permission check - return false to allow OR to work
+  }
+);
+
+type IssueIsNotLockedInput = {
+  where: IssueWhere;
+};
+
+// Extended Issue type to include locked field (exists in schema but not yet in generated types)
+type IssueWithLocked = Issue & { locked?: boolean };
+
+/**
+ * Check if the issue is not locked.
+ * Locked issues cannot be modified by OPs (only by moderators).
+ */
+export const issueIsNotLocked = rule({ cache: "contextual" })(
+  async (parent: any, args: IssueIsNotLockedInput, ctx: any, info: any) => {
+    const { where } = args;
+    const issueId = where?.id;
+    const ogm = ctx.ogm;
+
+    if (!issueId) {
+      throw new Error(ERROR_MESSAGES.issue.noId);
+    }
+
+    const IssueModel = ogm.model("Issue");
+
+    const issues: IssueWithLocked[] = await IssueModel.find({
+      where: { id: issueId },
+      selectionSet: `{ locked }`,
+    });
+
+    if (!issues || issues.length === 0) {
+      throw new Error(ERROR_MESSAGES.issue.notFound);
+    }
+
+    const issue = issues[0];
+
+    // If locked, deny the action (return false to allow OR with mod permissions)
+    if (issue.locked) {
+      return false;
+    }
+
     return true;
   }
 );

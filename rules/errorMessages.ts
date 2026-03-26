@@ -51,5 +51,12 @@ export const ERROR_MESSAGES = {
     notFound: "Image not found.",
     noUploader: "Could not find the original uploader of this image.",
     notOwner: "You must be the original uploader of this image to do that.",
+  },
+  issue: {
+    noId: "You must provide an issue id.",
+    notFound: "Issue not found.",
+    noAuthor: "Could not find the author of this issue.",
+    notAuthor: "You must be the author of this issue to do that.",
+    isLocked: "This issue is locked and cannot be modified.",
   }
 };

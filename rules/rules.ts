@@ -11,6 +11,8 @@ import {
   isCommentAuthor,
   isCollectionOwner,
   isImageUploader,
+  isIssueAuthor,
+  issueIsNotLocked,
 } from "./permission/isOwner.js";
 import {
   hasChannelPermission,
@@ -497,6 +499,8 @@ const ruleList = {
   isDiscussionChannelOwner,
   isEventOwner,
   isCommentAuthor,
+  isIssueAuthor,
+  issueIsNotLocked,
   isAuthenticatedAndVerified,
   isAuthenticated,
   issueIsValid,

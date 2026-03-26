@@ -8,6 +8,8 @@ const {
   isDiscussionOwner,
   isEventOwner,
   isCommentAuthor,
+  isIssueAuthor,
+  issueIsNotLocked,
   isDiscussionChannelOwner,
   canCreateChannel,
   canCreateDiscussion,
@@ -160,7 +162,18 @@ const permissionList = shield({
       createIssue: and(isAuthenticated, issueIsValid),
       createIssues: and(isAuthenticated, issueIsValid),
       deleteIssues: and(isAuthenticated, allow), // canDeleteIssues,
-      updateIssues: and(isAuthenticated, allow), // canUpdateIssues,
+      // Issue updates (close/reopen) can be done by:
+      // 1. Channel owners (always)
+      // 2. Issue author (if issue is not locked)
+      // 3. Moderators with archive permissions
+      updateIssues: and(
+        isAuthenticated,
+        or(
+          isChannelOwner,
+          and(isIssueAuthor, issueIsNotLocked),
+          canArchiveAndUnarchiveDiscussion
+        )
+      ),
 
       createAlbums: and(isAuthenticated, allow),
       updateAlbums: and(isAuthenticated, allow),
