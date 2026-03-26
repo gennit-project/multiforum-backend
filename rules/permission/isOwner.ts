@@ -86,25 +86,29 @@ export const isChannelOwner = rule({ cache: "contextual" })(
     }
 
     // If no channel name is provided but we have an issueId, look it up
-    if (!uniqueName && issueId) {
+    // Also check where.id for mutations like updateIssues that pass issue ID in where clause
+    const resolvedIssueId = issueId || (where as any)?.id;
+    if (!uniqueName && resolvedIssueId) {
       const Issue = ogm.model("Issue");
       const issue = await Issue.find({
-        where: { id: issueId },
-        selectionSet: `{ 
+        where: { id: resolvedIssueId },
+        selectionSet: `{
           channelUniqueName
         }`,
       });
       console.log('issue', JSON.stringify(issue));
 
       if (!issue || !issue[0]) {
-        throw new Error(ERROR_MESSAGES.channel.notFound);
+        // Return false instead of throwing to allow OR chain to continue
+        return false;
       }
 
       uniqueName = issue[0].channelUniqueName;
     }
 
     if (!uniqueName) {
-      throw new Error(ERROR_MESSAGES.channel.notFound);
+      // Return false instead of throwing to allow OR chain to continue
+      return false;
     }
 
     const ChannelModel = ogm.model("Channel");
