@@ -1,6 +1,6 @@
 import { and, shield, allow, deny, or } from "graphql-shield";
 import rules from "./rules/rules.js";
-const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, canEditComments, canEditDiscussions, canEditEvents, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, isCollectionOwner, isImageUploader, } = rules;
+const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isIssueAuthor, issueIsNotLocked, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, canEditComments, canEditDiscussions, canEditEvents, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, isCollectionOwner, isImageUploader, } = rules;
 const permissionList = shield({
     Query: {
         "*": allow,
@@ -102,7 +102,11 @@ const permissionList = shield({
         createIssue: and(isAuthenticated, issueIsValid),
         createIssues: and(isAuthenticated, issueIsValid),
         deleteIssues: and(isAuthenticated, allow), // canDeleteIssues,
-        updateIssues: and(isAuthenticated, allow), // canUpdateIssues,
+        // Issue updates (close/reopen) can be done by:
+        // 1. Channel owners (always)
+        // 2. Issue author (if issue is not locked)
+        // 3. Moderators with archive permissions
+        updateIssues: and(isAuthenticated, or(isChannelOwner, and(isIssueAuthor, issueIsNotLocked), canArchiveAndUnarchiveDiscussion)),
         createAlbums: and(isAuthenticated, allow),
         updateAlbums: and(isAuthenticated, allow),
         deleteAlbums: and(isAuthenticated, allow),
