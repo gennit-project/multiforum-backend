@@ -139,15 +139,33 @@ const getResolver = (input: Input) => {
           issues {
             id
             issueNumber
+            title
+            body
             channelUniqueName
             isOpen
             createdAt
             updatedAt
+            relatedCommentId
+            relatedDiscussionId
+            relatedEventId
+            flaggedServerRuleViolation
             locked
             lockedAt
             lockReason
+            Author {
+              __typename
+              ... on ModerationProfile {
+                displayName
+              }
+              ... on User {
+                username
+              }
+            }
             LockedBy {
               displayName
+            }
+            SubscribedToNotifications {
+              username
             }
             ActivityFeed {
               id
