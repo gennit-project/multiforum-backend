@@ -153,13 +153,8 @@ const getResolver = (input: Input) => {
             lockedAt
             lockReason
             Author {
-              __typename
-              ... on ModerationProfile {
-                displayName
-              }
-              ... on User {
-                username
-              }
+              username
+              displayName
             }
             LockedBy {
               displayName
