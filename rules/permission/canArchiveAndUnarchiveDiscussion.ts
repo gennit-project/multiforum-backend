@@ -5,12 +5,13 @@ import { rule } from "graphql-shield";
 export const canArchiveAndUnarchiveDiscussion = rule({ cache: "contextual" })(
   async (parent: any, args: any, context: any, info: any) => {
     let channelUniqueName = args.channelUniqueName;
-    const issueId = args.issueId;
-    
+    // Support both direct issueId arg and where.id from updateIssues mutation
+    const issueId = args.issueId || args.where?.id;
+
     console.log('can archive and unarchive discussion');
     console.log("channelUniqueName", channelUniqueName);
     console.log("issueId", issueId);
-    
+
     // If channelUniqueName is not provided, look it up from the issue
     if (!channelUniqueName && issueId) {
       const Issue = context.ogm.model("Issue");
