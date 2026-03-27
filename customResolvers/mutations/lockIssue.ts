@@ -152,10 +152,6 @@ const getResolver = (input: Input) => {
             locked
             lockedAt
             lockReason
-            Author {
-              username
-              displayName
-            }
             LockedBy {
               displayName
             }
