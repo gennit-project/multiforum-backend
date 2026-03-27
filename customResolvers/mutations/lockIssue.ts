@@ -140,6 +140,7 @@ const getResolver = (input: Input) => {
             id
             issueNumber
             channelUniqueName
+            isOpen
             locked
             lockedAt
             lockReason
