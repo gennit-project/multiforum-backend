@@ -126,6 +126,18 @@ export default function (driver) {
                 return "User";
             },
         },
+        IssueAuthor: {
+            __resolveType(obj, context, info) {
+                if (obj.username) {
+                    return "User";
+                }
+                // Both user and mod profiles have this field so the order matters.
+                if (obj.displayName) {
+                    return "ModerationProfile";
+                }
+                return "User";
+            },
+        },
         User: {
             Collections: userCollections({ ogm }),
         },
