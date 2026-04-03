@@ -203,12 +203,14 @@ export const getUserDataFromUsername = async (
   }
 };
 
+export type AuthContextForUserLookup = {
+  ogm: any;
+  req: any;
+  jwtError?: any;
+};
+
 type SetUserDataInput = {
-  context: {
-    ogm: any;
-    req: any;
-    jwtError?: any;
-  };
+  context: AuthContextForUserLookup;
   getPermissionInfo: boolean;
   checkSpecificChannel?: string;
 };

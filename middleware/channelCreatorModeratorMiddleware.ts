@@ -1,5 +1,8 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { setUserDataOnContext } from '../rules/permission/userDataHelperFunctions.js';
+import {
+  setUserDataOnContext,
+  type AuthContextForUserLookup,
+} from '../rules/permission/userDataHelperFunctions.js';
 
 interface CreateChannelsArgs {
   input?: any[];
@@ -9,6 +12,8 @@ interface CreateChannelsArgs {
 interface Context {
   ogm: any;
   driver: any;
+  req?: any;
+  jwtError?: any;
   [key: string]: any;
 }
 
@@ -35,7 +40,7 @@ const channelCreatorModeratorMiddleware = {
       // 2. Get logged-in user's ModerationProfile displayName
       try {
         const userData = await setUserDataOnContext({
-          context: context as unknown as { ogm: any; req: any; jwtError?: any },
+          context: context as AuthContextForUserLookup,
           getPermissionInfo: false,
         });
 

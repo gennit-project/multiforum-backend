@@ -97,6 +97,7 @@ import publicCollectionsContaining from './customResolvers/queries/publicCollect
 import createImageWithUploader from './customResolvers/mutations/createImageWithUploader.js';
 import createImagesWithUploader from './customResolvers/mutations/createImagesWithUploader.js';
 import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithOwner.js';
+import createDownloadableFileUrlResolver from './customResolvers/fields/downloadableFileUrl.js';
 
 const { OGM } = pkg;
 
@@ -159,6 +160,9 @@ export default function (driver: any) {
     },
     User: {
       Collections: userCollections({ ogm }),
+    },
+    DownloadableFile: {
+      url: createDownloadableFileUrlResolver(),
     },
     Query: {
       getSiteWideDiscussionList: getSiteWideDiscussionList({
