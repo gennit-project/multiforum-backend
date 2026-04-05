@@ -4,6 +4,7 @@
 - New discussions have `hasDownload: false` explicitly set
 - Older discussions have `hasDownload: null` (field didn't exist when they were created)
 - Users searching for `hasDownload: false` should get both explicit `false` values AND `null` values
+- `hasDownload: true` is also used by the frontend to choose the download-style layout, so it cannot be treated as the only source of truth for whether a discussion belongs in a public download list
 
 ## Solution
 Updated the Cypher query filter logic to handle this properly:
@@ -15,9 +16,18 @@ AND ($hasDownload IS NULL OR d.hasDownload = $hasDownload)
 
 ### After:
 ```cypher
-AND ($hasDownload IS NULL OR 
-     ($hasDownload = true AND d.hasDownload = true) OR 
-     ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL)))
+AND (
+  $hasDownload IS NULL OR
+  (
+    $hasDownload = true AND
+    d.hasDownload = true AND
+    EXISTS { MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile) }
+  ) OR
+  (
+    $hasDownload = false AND
+    (d.hasDownload = false OR d.hasDownload IS NULL)
+  )
+)
 ```
 
 ## How It Works
@@ -27,9 +37,9 @@ AND ($hasDownload IS NULL OR
 - **Query Logic**: `$hasDownload IS NULL` is true, so the entire condition passes
 
 ### When `$hasDownload` is `true`:
-- **Behavior**: Returns only discussions with explicit `hasDownload: true`
-- **Query Logic**: `$hasDownload = true AND d.hasDownload = true`
-- **Results**: Only discussions that explicitly have downloads
+- **Behavior**: Returns only discussions with explicit `hasDownload: true` and at least one attached `DownloadableFile`
+- **Query Logic**: `$hasDownload = true AND d.hasDownload = true AND EXISTS { MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile) }`
+- **Results**: Public download lists exclude orphaned downloads, but detail pages can still render in download layout because the `hasDownload` flag remains unchanged
 
 ### When `$hasDownload` is `false`:
 - **Behavior**: Returns discussions with `hasDownload: false` OR `hasDownload: null`
@@ -53,4 +63,4 @@ getSiteWideDiscussionList(hasDownload: false)
 - ✅ `getSiteWideDiscussionsQuery.cypher` (both count and main query sections)
 - ✅ `getDiscussionChannelsQuery.cypher` (both count and main query sections)
 
-This ensures backward compatibility with existing data while providing the expected filtering behavior for users.
+This keeps `hasDownload` as the frontend presentation flag while making public download lists require an actual attached file.

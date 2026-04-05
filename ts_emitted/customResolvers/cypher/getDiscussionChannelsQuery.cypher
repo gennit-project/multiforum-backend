@@ -18,12 +18,20 @@ WHERE
     AND ($showArchived OR coalesce(dc.archived, false) = false)
     // If showUnanswered=true, only show unanswered discussions.
     AND (NOT $showUnanswered OR coalesce(dc.answered, false) = false)
-    // Filter by hasDownload only when provided
+    // hasDownload controls discussion presentation, but download list
+    // membership additionally requires at least one attached DownloadableFile.
     AND CASE
         WHEN $hasDownload IS NULL THEN true
         ELSE EXISTS {
             MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion)
-            WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
+            WHERE (
+              $hasDownload = true AND
+              d.hasDownload = true AND
+              EXISTS { MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile) }
+            ) OR (
+              $hasDownload = false AND
+              (d.hasDownload = false OR d.hasDownload IS NULL)
+            )
         }
     END
     // Filter by label options if specified
@@ -59,12 +67,20 @@ WHERE
     AND ($showArchived OR coalesce(dc.archived, false) = false)
     // If showUnanswered=true, only show unanswered discussions.
     AND (NOT $showUnanswered OR coalesce(dc.answered, false) = false)
-    // Filter by hasDownload only when provided
+    // hasDownload controls discussion presentation, but download list
+    // membership additionally requires at least one attached DownloadableFile.
     AND CASE
         WHEN $hasDownload IS NULL THEN true
         ELSE EXISTS {
             MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion)
-            WHERE ($hasDownload = true AND d.hasDownload = true) OR ($hasDownload = false AND (d.hasDownload = false OR d.hasDownload IS NULL))
+            WHERE (
+              $hasDownload = true AND
+              d.hasDownload = true AND
+              EXISTS { MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile) }
+            ) OR (
+              $hasDownload = false AND
+              (d.hasDownload = false OR d.hasDownload IS NULL)
+            )
         }
     END
     // Filter by label options if specified
