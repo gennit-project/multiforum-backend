@@ -218,6 +218,7 @@ const typeDefinitions = gql`
     # channel roles / admin
     AdminOfChannels: [Channel!]!    @relationship(type: "ADMIN_OF_CHANNEL", direction: OUT)
     ModOfChannels:   [Channel!]!    @relationship(type: "MODERATOR_OF_CHANNEL", direction: OUT)
+    AdminOfServers:  [ServerConfig!]! @relationship(type: "ADMIN_OF_SERVER", direction: OUT)
     
     RecentlyVisitedChannels: [Channel!]! @relationship(type: "RECENTLY_VISITED_CHANNEL", direction: OUT)
 
@@ -668,6 +669,8 @@ const typeDefinitions = gql`
       @relationship(type: "HAS_MOD_ROLE", direction: OUT)
     ModServerRoles: [ModServerRole!]!
       @relationship(type: "HAS_MOD_ROLE", direction: OUT)
+    ModOfServers: [ServerConfig!]!
+      @relationship(type: "MODERATOR_OF_SERVER", direction: OUT)
     ActivityFeed: [ModerationAction!]!
       @relationship(type: "ACTIVITY_ON_ISSUE", direction: OUT)
     Suspensions: [Suspension!]!
@@ -1304,6 +1307,9 @@ const typeDefinitions = gql`
       @relationship(type: "HAS_DEFAULT_SUSPENDED_ROLE", direction: OUT)
     DefaultSuspendedModRole: ModServerRole
       @relationship(type: "HAS_DEFAULT_SUSPENDED_ROLE", direction: OUT)
+    Admins: [User!]! @relationship(type: "ADMIN_OF_SERVER", direction: IN)
+    Moderators: [ModerationProfile!]!
+      @relationship(type: "MODERATOR_OF_SERVER", direction: IN)
 
     # plugins
     pluginRegistries: [String]

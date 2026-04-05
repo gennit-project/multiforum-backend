@@ -54,7 +54,7 @@ import {
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
 } from "./validation/downloadableFileIsValid.js";
-import { setUserDataOnContext } from "./permission/userDataHelperFunctions.js";
+import { getServerScopedMembership } from "./permission/getServerScopedMembership.js";
 
 export async function evaluateCanCreateChannelRule(ctx: any) {
   const hasPermissionToCreateChannels = await hasServerPermission(
@@ -295,31 +295,8 @@ export const canCreateComment = rule({ cache: "contextual" })(
 
 const isAdmin = rule({ cache: "contextual" })(
   async (parent: any, args: any, ctx: any, info: any) => {
-    // set user on context
-    ctx.user = await setUserDataOnContext({
-      context: ctx,
-      getPermissionInfo: true,
-    });
-
-    if (!ctx.user) {
-      return false;
-    }
-    let isAdmin = false;
-    const serverRoles = ctx.user?.data?.ServerRoles || [];
-    const email = ctx.user?.email;
-
-    if (email === process.env.CYPRESS_ADMIN_TEST_EMAIL) {
-      // This email is used only for cypress tests. We need
-      // to whitelist it as an admin so that we don't have the catch-22
-      // of needing an admin to create an admin.
-      isAdmin = true;
-    }
-    for (const role of serverRoles) {
-      if (role.showAdminTag) {
-        isAdmin = true;
-      }
-    }
-    return isAdmin;
+    const membership = await getServerScopedMembership(ctx);
+    return membership.isServerAdmin;
   }
 );
 

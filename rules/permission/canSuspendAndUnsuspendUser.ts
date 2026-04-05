@@ -2,7 +2,7 @@ import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import { rule } from "graphql-shield";
 import { ERROR_MESSAGES } from "../errorMessages.js";
-import { setUserDataOnContext } from "./userDataHelperFunctions.js";
+import { getServerScopedMembership } from "./getServerScopedMembership.js";
 
 // Helper function to check if a user is a channel owner
 async function isUserChannelOwner(username: string, channelName: string, context: any): Promise<boolean> {
@@ -27,31 +27,8 @@ async function isUserChannelOwner(username: string, channelName: string, context
 
 // Helper function to check if current user is a site admin
 async function isUserSiteAdmin(context: any): Promise<boolean> {
-  context.user = await setUserDataOnContext({
-    context,
-    getPermissionInfo: true,
-  });
-
-  if (!context.user) {
-    return false;
-  }
-  
-  const serverRoles = context.user?.data?.ServerRoles || [];
-  const email = context.user?.email;
-
-  // Special case for Cypress tests
-  if (email === process.env.CYPRESS_ADMIN_TEST_EMAIL) {
-    return true;
-  }
-  
-  // Check if user has an admin role
-  for (const role of serverRoles) {
-    if (role.showAdminTag) {
-      return true;
-    }
-  }
-  
-  return false;
+  const membership = await getServerScopedMembership(context);
+  return membership.isServerAdmin;
 }
 
 export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
