@@ -56,19 +56,22 @@ import {
 } from "./validation/downloadableFileIsValid.js";
 import { setUserDataOnContext } from "./permission/userDataHelperFunctions.js";
 
-const canCreateChannel = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) => {
-    const hasPermissionToCreateChannels = hasServerPermission(
-      "canCreateChannel",
-      ctx
-    );
+export async function evaluateCanCreateChannelRule(ctx: any) {
+  const hasPermissionToCreateChannels = await hasServerPermission(
+    "canCreateChannel",
+    ctx
+  );
 
-    if (hasPermissionToCreateChannels instanceof Error) {
-      return hasPermissionToCreateChannels;
-    }
-
-    return true;
+  if (hasPermissionToCreateChannels instanceof Error) {
+    return hasPermissionToCreateChannels;
   }
+
+  return true;
+}
+
+const canCreateChannel = rule({ cache: "contextual" })(
+  async (parent: any, args: any, ctx: any, info: any) =>
+    evaluateCanCreateChannelRule(ctx)
 );
 
 export type CreateDiscussionItem = {

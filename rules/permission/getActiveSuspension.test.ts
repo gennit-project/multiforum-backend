@@ -147,3 +147,60 @@ test("keeps indefinite suspensions active", async () => {
   assert.equal(result.activeSuspension?.id, "indefinite");
   assert.equal(result.expiredUserSuspensions.length, 0);
 });
+
+test("matches fallback suspended user relationship data", async () => {
+  const ogm = buildOgm({
+    SuspendedUsers: [
+      {
+        id: "fallback-user",
+        suspendedUntil: futureDate(),
+        suspendedIndefinitely: false,
+        SuspendedUser: { username: "alice" },
+      },
+    ],
+  });
+
+  const result = await getActiveSuspension({
+    ogm,
+    channelUniqueName: "forum-1",
+    username: "alice",
+  });
+
+  assert.equal(result.isSuspended, true);
+  assert.equal(result.activeSuspension?.id, "fallback-user");
+});
+
+test("matches fallback suspended mod relationship data", async () => {
+  const ogm = buildOgm({
+    SuspendedMods: [
+      {
+        id: "fallback-mod",
+        suspendedUntil: futureDate(),
+        suspendedIndefinitely: false,
+        SuspendedMod: { displayName: "ModA" },
+      },
+    ],
+  });
+
+  const result = await getActiveSuspension({
+    ogm,
+    channelUniqueName: "forum-1",
+    modProfileName: "ModA",
+  });
+
+  assert.equal(result.isSuspended, true);
+  assert.equal(result.activeSuspension?.id, "fallback-mod");
+});
+
+test("throws if neither username nor modProfileName is provided", async () => {
+  const ogm = buildOgm({});
+
+  await assert.rejects(
+    () =>
+      getActiveSuspension({
+        ogm,
+        channelUniqueName: "forum-1",
+      }),
+    /Must provide a username or modProfileName/
+  );
+});

@@ -5,13 +5,12 @@ import type {
   CommentModel,
   DiscussionModel,
   EventModel,
-  ModerationProfile,
-  User,
   IssueUpdateInput
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
 import { getModerationActionCreateInput } from '../reportComment.js'
 import { notifyIssueSubscribers } from '../../../services/issueNotifications.js'
+import { resolveIssueTarget } from '../../shared/resolveIssueTarget.js'
 
 type CreateSuspensionResolverOptions = {
   Issue: IssueModel
@@ -58,90 +57,15 @@ export function createSuspensionResolver ({
       throw new GraphQLError('Issue ID is required')
     }
 
-    function isUser (data: User | ModerationProfile): data is User {
-      return (data as User).username !== undefined
-    }
-
-    // 1. Fetch the Issue
-    const [foundIssue] = await Issue.find({
-      where: { id: issueId },
-      selectionSet: `{
-        id
-        channelUniqueName
-        relatedDiscussionId
-        relatedEventId
-        relatedCommentId
-        Channel { uniqueName }
-      }`
-    })
-
-    if (!foundIssue) {
-      throw new GraphQLError('Issue not found')
-    }
-
-    const { relatedDiscussionId, relatedEventId, relatedCommentId } = foundIssue
-    const channelUniqueName = foundIssue.Channel?.uniqueName
-    if (!channelUniqueName) {
-      throw new GraphQLError(
-        'Could not find the forum (channel) name for the issue.'
-      )
-    }
-
-    // 2. Figure out the "original poster" for discussion/event/comment
-    let originalPosterData = null
-    if (relatedDiscussionId) {
-      const [discussion] = await Discussion.find({
-        where: { id: relatedDiscussionId },
-        selectionSet: `{ id Author { username } }`
+    const { channelUniqueName, relatedAccountName, relatedAccountType } =
+      await resolveIssueTarget({
+        Issue,
+        Comment,
+        Discussion,
+        Event,
+        issueId,
+        suspendedEntityName,
       })
-      originalPosterData = discussion?.Author
-    }
-    if (relatedEventId) {
-      const [event] = await Event.find({
-        where: { id: relatedEventId },
-        selectionSet: `{ id Poster { username } }`
-      })
-      originalPosterData = event?.Poster
-    }
-    if (relatedCommentId) {
-      const [comment] = await Comment.find({
-        where: { id: relatedCommentId },
-        selectionSet: `{ 
-          id 
-          CommentAuthor { 
-            ... on User { username }
-            ... on ModerationProfile { displayName }
-          } 
-        }`
-      })
-      originalPosterData = comment?.CommentAuthor
-    }
-
-    // 3. Extract the actual "name" to suspend
-    let relatedAccountName = ''
-    let relatedAccountType = ''
-    if (originalPosterData && !isUser(originalPosterData)) {
-      // It's a ModerationProfile
-      if (!originalPosterData.displayName) {
-        throw new GraphQLError(
-          `Could not find the ${suspendedEntityName} account name to be suspended.`
-        )
-      }
-      relatedAccountName = originalPosterData.displayName
-      relatedAccountType = 'ModerationProfile'
-    } else if (originalPosterData && isUser(originalPosterData)) {
-      if (!originalPosterData.username) {
-        throw new GraphQLError(
-          `Could not find the ${suspendedEntityName} account name to be suspended.`
-        )
-      }
-      relatedAccountName = originalPosterData.username
-      relatedAccountType = 'User'
-    } else {
-      throw new GraphQLError(
-        `Could not find the ${suspendedEntityName} account name to be suspended.`
-      )
-    }
 
     // 4. Confirm the person calling this is indeed a moderator
     context.user = await setUserDataOnContext({
