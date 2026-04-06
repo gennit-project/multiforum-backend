@@ -1,6 +1,8 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { ServerRole } from "../../ogm_types.js";
+import { getPermissionRequestCache } from "./getPermissionRequestCache.js";
+import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 
 type EvaluateServerPermissionInput = {
   permission: keyof ServerRole;
@@ -61,54 +63,51 @@ export const hasServerPermission: (
   context: any
 ) => Promise<Error | boolean> = async (permission, context) => {
   // 1. Check for server roles on the user object.
-  context.user = await setUserDataOnContext({
-    context,
-    getPermissionInfo: true,
-  });
+  if (!context.user?.data) {
+    context.user = await setUserDataOnContext({
+      context,
+      getPermissionInfo: true,
+    });
+  }
   const usersServerRoles = context.user?.data?.ServerRoles || [];
 
   const username = context.user?.username;
   const Suspension = context.ogm.model("Suspension");
   const nowIso = new Date().toISOString();
+  const cache = getPermissionRequestCache(context);
 
   let hasActiveSuspension = false;
   if (username) {
-    const activeSuspensions = await Suspension.find({
-      where: {
+    if (!cache.activeServerSuspensionByUsername.has(username)) {
+      cache.activeServerSuspensionByUsername.set(
         username,
-        OR: [
-          { suspendedIndefinitely: true },
-          { suspendedUntil_GT: nowIso },
-        ],
-      },
-      selectionSet: `{ id suspendedIndefinitely suspendedUntil }`,
-    });
-    hasActiveSuspension = (activeSuspensions?.length || 0) > 0;
+        Suspension.find({
+          where: {
+            username,
+            OR: [
+              { suspendedIndefinitely: true },
+              { suspendedUntil_GT: nowIso },
+            ],
+          },
+          selectionSet: `{ id suspendedIndefinitely suspendedUntil }`,
+        }).then((activeSuspensions: any[]) => (activeSuspensions?.length || 0) > 0)
+      );
+    }
+
+    hasActiveSuspension =
+      (await cache.activeServerSuspensionByUsername.get(username)) ?? false;
   }
 
-  const ServerConfig = context.ogm.model("ServerConfig");
-  const serverConfig = await ServerConfig.find({
-    where: { serverName: process.env.SERVER_CONFIG_NAME },
-    selectionSet: `{ 
-      DefaultServerRole { 
-        canCreateChannel
-        canUploadFile
-      } 
-      DefaultSuspendedRole {
-        canCreateChannel
-        canUploadFile
-      }
-    }`,
-  });
+  const serverConfig = await getServerConfigForPermissions(context);
 
-  if (!serverConfig || !serverConfig[0]) {
+  if (!serverConfig) {
     return new Error(
       "While checking server permissions, could not find the server config, which contains the default server role. Therefore could not check the user's permissions."
     );
   }
 
-  const defaultServerRole = serverConfig[0]?.DefaultServerRole;
-  const defaultSuspendedRole = serverConfig[0]?.DefaultSuspendedRole;
+  const defaultServerRole = serverConfig.DefaultServerRole;
+  const defaultSuspendedRole = serverConfig.DefaultSuspendedRole;
 
   const result = evaluateServerPermission({
     permission,

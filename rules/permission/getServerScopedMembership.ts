@@ -1,4 +1,5 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
+import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 
 type ServerRoleLike = {
   showAdminTag?: boolean | null;
@@ -61,20 +62,7 @@ export const getServerScopedMembership = async (
     });
   }
 
-  const ServerConfig = context.ogm.model("ServerConfig");
-  const serverConfigs = await ServerConfig.find({
-    where: { serverName: process.env.SERVER_CONFIG_NAME },
-    selectionSet: `{
-      Admins {
-        username
-      }
-      Moderators {
-        displayName
-      }
-    }`,
-  });
-
-  const serverConfig = serverConfigs?.[0];
+  const serverConfig = await getServerConfigForPermissions(context);
 
   return evaluateServerScopedMembership({
     username: context.user?.username,

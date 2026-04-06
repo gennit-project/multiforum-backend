@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { evaluateServerPermission } from "./hasServerPermission.js";
+import {
+  evaluateServerPermission,
+  hasServerPermission,
+} from "./hasServerPermission.js";
 
 const baseRole = (canCreateChannel: boolean, canUploadFile: boolean = true) => ({
   canCreateChannel,
@@ -50,11 +53,75 @@ async function testUserRoleMustAllow() {
   assert.ok(result instanceof Error, "Explicit user server role denying permission should block");
 }
 
+async function testHasServerPermissionCachesRequestLookups() {
+  let suspensionFindCalls = 0;
+  let serverConfigFindCalls = 0;
+  const context = {
+    user: {
+      username: "alice",
+      data: {
+        ServerRoles: [],
+      },
+    },
+    req: {
+      headers: {},
+    },
+    ogm: {
+      model(name: string) {
+        if (name === "Suspension") {
+          return {
+            find: async () => {
+              suspensionFindCalls += 1;
+              return [];
+            },
+          };
+        }
+
+        if (name === "ServerConfig") {
+          return {
+            find: async () => {
+              serverConfigFindCalls += 1;
+              return [
+                {
+                  DefaultServerRole: {
+                    canCreateChannel: true,
+                    canUploadFile: true,
+                  },
+                  DefaultSuspendedRole: {
+                    canCreateChannel: false,
+                    canUploadFile: false,
+                  },
+                  Admins: [],
+                  Moderators: [],
+                },
+              ];
+            },
+          };
+        }
+
+        throw new Error(`Unexpected model lookup: ${name}`);
+      },
+    },
+  };
+
+  await hasServerPermission("canCreateChannel", context);
+  await hasServerPermission("canCreateChannel", context);
+
+  assert.deepEqual({
+    suspensionFindCalls,
+    serverConfigFindCalls,
+  }, {
+    suspensionFindCalls: 1,
+    serverConfigFindCalls: 1,
+  });
+}
+
 async function run() {
   await testSuspendedUsesDefaultSuspendedRole();
   await testSuspendedAllowedWhenSuspendedRoleAllows();
   await testFallsBackToDefaultServerRole();
   await testUserRoleMustAllow();
+  await testHasServerPermissionCachesRequestLookups();
   console.log("hasServerPermission tests passed");
 }
 

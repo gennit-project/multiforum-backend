@@ -47,7 +47,8 @@ async function testCypressAdminFallbackStillWorks() {
 }
 
 async function testGetServerScopedMembershipReadsServerConfigRelationships() {
-  const context = {
+  let findCalls = 0;
+  const context: any = {
     user: {
       username: "alice",
       email: "alice@example.com",
@@ -65,12 +66,15 @@ async function testGetServerScopedMembershipReadsServerConfigRelationships() {
       model(name: string) {
         if (name === "ServerConfig") {
           return {
-            find: async () => [
-              {
-                Admins: [{ username: "alice" }],
-                Moderators: [{ displayName: "Mod Alice" }],
-              },
-            ],
+            find: async () => {
+              findCalls += 1;
+              return [
+                {
+                  Admins: [{ username: "alice" }],
+                  Moderators: [{ displayName: "Mod Alice" }],
+                },
+              ];
+            },
           };
         }
 
@@ -83,11 +87,15 @@ async function testGetServerScopedMembershipReadsServerConfigRelationships() {
   process.env.SERVER_CONFIG_NAME = "test-server";
 
   try {
-    const result = await getServerScopedMembership(context);
+    await getServerScopedMembership(context);
+    await getServerScopedMembership(context);
 
-    assert.deepEqual(result, {
-      isServerAdmin: true,
-      isServerModerator: true,
+    assert.deepEqual({
+      findCalls,
+      cache: context.__permissionRequestCache != null,
+    }, {
+      findCalls: 1,
+      cache: true,
     });
   } finally {
     process.env.SERVER_CONFIG_NAME = originalServerName;
