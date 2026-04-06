@@ -222,7 +222,6 @@ export const hasChannelModPermission: (
     return true;
   }
 
-  console.log(`Permission check failed: ${permission} is ${roleToUse[permission]} for role:`, roleToUse);
   // If blocked due to suspension, create a notification for transparency.
   if (suspensionInfo.isSuspended && modProfileName && context.user?.username) {
     try {
@@ -242,7 +241,7 @@ export const hasChannelModPermission: (
       console.error("Failed to create suspension notification for mod", error);
     }
   }
-  return false;
+  return new Error(ERROR_MESSAGES.channel.noModPermission);
 };
 
 // Helper function to check mod permissions across multiple channels
@@ -277,7 +276,7 @@ export async function checkChannelModPermissions(
     }
     
     if (permissionResult === false) {
-      return new Error(`The user does not have the required permission (${permissionCheck}) in channel ${channelConnection}.`);
+      return new Error(ERROR_MESSAGES.channel.noModPermission);
     }
   }
 

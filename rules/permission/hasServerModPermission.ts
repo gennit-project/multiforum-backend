@@ -70,5 +70,5 @@ export const hasServerModPermission: (
   if (permission === "canGiveFeedback") {
     return serverRoleToCheck.canGiveFeedback;
   }
-  throw new Error(ERROR_MESSAGES.channel.noChannelPermission);
+  throw new Error(ERROR_MESSAGES.server.noServerPermission);
 };

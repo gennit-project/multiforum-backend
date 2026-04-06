@@ -1,4 +1,5 @@
 import { rule } from "graphql-shield";
+import { ERROR_MESSAGES } from "./errorMessages.js";
 import { isAuthenticatedAndVerified, isAuthenticated } from "./permission/userDataHelperFunctions.js";
 import { hasServerPermission } from "./permission/hasServerPermission.js";
 import { hasServerModPermission } from "./permission/hasServerModPermission.js";
@@ -370,7 +371,7 @@ const canUpvoteComment = rule({ cache: "contextual" })(
     });
 
     if (!permissionResult) {
-      throw new Error("The user does not have permission in this channel.");
+      throw new Error(ERROR_MESSAGES.channel.noChannelPermission);
     }
 
     if (permissionResult instanceof Error) {
@@ -429,7 +430,7 @@ const canUpvoteDiscussion = rule({ cache: "contextual" })(
     });
 
     if (!permissionResult) {
-      throw new Error("The user does not have permission in this channel.");
+      throw new Error(ERROR_MESSAGES.channel.noChannelPermission);
     }
 
     if (permissionResult instanceof Error) {

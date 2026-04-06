@@ -55,7 +55,7 @@ export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
       : new Error(ERROR_MESSAGES.server.noServerPermission);
   }
 
-  return new Error(ERROR_MESSAGES.channel.noChannelPermission);
+  return new Error(ERROR_MESSAGES.server.noServerPermission);
 }
 
 export const hasServerPermission: (

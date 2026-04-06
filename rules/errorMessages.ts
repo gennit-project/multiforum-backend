@@ -3,7 +3,7 @@ export const ERROR_MESSAGES = {
     noPermission: "You do not have permission to do that.",
   },
   server: {
-    noServerPermission: "You don't have permission to do that.",
+    noServerPermission: "You do not have permission to do that.",
   },
   discussion: {
     noId: "You must provide a discussion id.",
@@ -30,9 +30,10 @@ export const ERROR_MESSAGES = {
     notAuthenticated: "You must be logged in to do that.",
     notVerified: "You must verify your email address to do that.",
     notOwner: "You must be the owner of this channel to do that.",
-    noChannelPermission: "You do not have permission to create channels.",
+    noChannelPermission: "You do not have permission to do that in this channel.",
     notMod: "You need to be a moderator to do that.",
     noModRole: "You need to have a moderator role to do that.",
+    noModPermission: "You do not have permission to do that as a moderator.",
     tokenExpired: "Your session has expired. Please sign in again.",
     invalidToken: "Your authentication token is invalid. Please sign in again.",
     cantSuspendOwner: "Only site administrators can suspend forum owners from their own forums.",

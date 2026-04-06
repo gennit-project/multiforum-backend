@@ -172,7 +172,7 @@ export const hasChannelPermission: (
     }
   }
 
-  return new Error(`The user does not have the required permission (${permission}) in channel ${channelName}.`);
+  return new Error(ERROR_MESSAGES.channel.noChannelPermission);
 };
 
 type CheckChannelPermissionInput = {
