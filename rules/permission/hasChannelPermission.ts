@@ -78,6 +78,7 @@ export const hasChannelPermission: (
   // Check for an active suspension
   const suspensionInfo = await getActiveSuspension({
     ogm: context.ogm,
+    driver: context.driver,
     channelUniqueName: channelName,
     username,
   });

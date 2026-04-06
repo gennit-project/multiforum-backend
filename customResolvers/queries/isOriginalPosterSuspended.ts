@@ -34,6 +34,7 @@ export default function getResolver (input: Input) {
 
     const suspensionInfo = await getActiveSuspension({
       ogm: context.ogm,
+      driver: context.driver,
       channelUniqueName: target.channelUniqueName,
       username: target.username,
       modProfileName: target.modProfileName,

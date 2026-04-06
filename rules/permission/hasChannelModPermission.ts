@@ -164,6 +164,7 @@ export const hasChannelModPermission: (
 
   const suspensionInfo = await getActiveSuspension({
     ogm: context.ogm,
+    driver: context.driver,
     channelUniqueName: channelName,
     modProfileName,
   });

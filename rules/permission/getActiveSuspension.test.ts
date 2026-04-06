@@ -43,6 +43,38 @@ const buildOgm = (channelResult: ChannelFindResult) => {
 const futureDate = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
 const pastDate = () => new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
+const buildDriver = (responses: {
+  userSuspensions?: SuspensionStub[];
+  modSuspensions?: SuspensionStub[];
+}) => {
+  const run = async (query: string) => {
+    if (query.includes("MATCH (channel)-[:SUSPENDED_AS_USER]->")) {
+      return {
+        records: (responses.userSuspensions ?? []).map((suspension) => ({
+          get: () => suspension,
+        })),
+      };
+    }
+
+    if (query.includes("MATCH (channel)-[:SUSPENDED_AS_MOD]->")) {
+      return {
+        records: (responses.modSuspensions ?? []).map((suspension) => ({
+          get: () => suspension,
+        })),
+      };
+    }
+
+    throw new Error(`Unexpected query: ${query}`);
+  };
+
+  return {
+    session: () => ({
+      run,
+      close: async () => {},
+    }),
+  };
+};
+
 test("returns active user suspension and issue metadata", async () => {
   const ogm = buildOgm({
     SuspendedUsers: [
@@ -190,6 +222,51 @@ test("matches fallback suspended mod relationship data", async () => {
 
   assert.equal(result.isSuspended, true);
   assert.equal(result.activeSuspension?.id, "fallback-mod");
+});
+
+test("uses targeted driver query for user suspensions", async () => {
+  const result = await getActiveSuspension({
+    ogm: buildOgm({}),
+    driver: buildDriver({
+      userSuspensions: [
+        {
+          id: "driver-user",
+          username: "alice",
+          suspendedUntil: futureDate(),
+          suspendedIndefinitely: false,
+          RelatedIssue: { id: "issue-driver", issueNumber: 77 },
+        },
+      ],
+    }),
+    channelUniqueName: "forum-1",
+    username: "alice",
+  });
+
+  assert.equal(result.isSuspended, true);
+  assert.equal(result.activeSuspension?.id, "driver-user");
+  assert.equal(result.relatedIssueNumber, 77);
+});
+
+test("returns expired targeted driver mod suspensions for cleanup", async () => {
+  const result = await getActiveSuspension({
+    ogm: buildOgm({}),
+    driver: buildDriver({
+      modSuspensions: [
+        {
+          id: "driver-mod-expired",
+          modProfileName: "ModA",
+          suspendedUntil: pastDate(),
+          suspendedIndefinitely: false,
+        },
+      ],
+    }),
+    channelUniqueName: "forum-1",
+    modProfileName: "ModA",
+  });
+
+  assert.equal(result.isSuspended, false);
+  assert.equal(result.expiredModSuspensions.length, 1);
+  assert.equal(result.expiredModSuspensions[0].id, "driver-mod-expired");
 });
 
 test("returns unsuspended result when channel is not found", async () => {
