@@ -288,6 +288,36 @@ test("returns expired suspensions from the non-active side when both user and mo
   assert.equal(result.expiredModSuspensions[0].id, "mod-expired");
 });
 
+test("skips expired user suspensions until it finds a later active user suspension", async () => {
+  const ogm = buildOgm({
+    SuspendedUsers: [
+      {
+        id: "user-expired",
+        username: "alice",
+        suspendedUntil: pastDate(),
+        suspendedIndefinitely: false,
+      },
+      {
+        id: "user-active",
+        username: "alice",
+        suspendedUntil: futureDate(),
+        suspendedIndefinitely: false,
+      },
+    ],
+  });
+
+  const result = await getActiveSuspension({
+    ogm,
+    channelUniqueName: "forum-1",
+    username: "alice",
+  });
+
+  assert.equal(result.isSuspended, true);
+  assert.equal(result.activeSuspension?.id, "user-active");
+  assert.equal(result.expiredUserSuspensions.length, 1);
+  assert.equal(result.expiredUserSuspensions[0].id, "user-expired");
+});
+
 test("throws if neither username nor modProfileName is provided", async () => {
   const ogm = buildOgm({});
 
