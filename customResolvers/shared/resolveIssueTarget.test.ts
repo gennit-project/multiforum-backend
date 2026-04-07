@@ -42,6 +42,7 @@ test("resolves a discussion author's username", async () => {
   });
 
   assert.equal(result.channelUniqueName, "cats");
+  assert.equal(result.scope, "channel");
   assert.equal(result.relatedAccountType, "User");
   assert.equal(result.relatedAccountName, "alice");
   assert.equal(result.username, "alice");
@@ -76,22 +77,55 @@ test("resolves a comment author's moderation profile", async () => {
   });
 
   assert.equal(result.channelUniqueName, "dogs");
+  assert.equal(result.scope, "channel");
   assert.equal(result.relatedAccountType, "ModerationProfile");
   assert.equal(result.relatedAccountName, "Mod Jane");
   assert.equal(result.modProfileName, "Mod Jane");
 });
 
-test("throws when the issue has no channel unique name", async () => {
+test("resolves a server-scoped issue from related username", async () => {
   const Issue = new ModelStub([
     {
       id: "issue-3",
-      relatedDiscussionId: "discussion-1",
+      relatedDiscussionId: null,
       relatedEventId: null,
       relatedCommentId: null,
+      relatedUsername: "alice",
+      relatedModProfileName: null,
       Channel: null,
     },
   ]);
-  const Discussion = new ModelStub([{ id: "discussion-1", Author: { username: "alice" } }]);
+  const Discussion = new ModelStub([]);
+  const Event = new ModelStub([]);
+  const Comment = new ModelStub([]);
+
+  const result = await resolveIssueTarget({
+    Issue: Issue as any,
+    Discussion: Discussion as any,
+    Event: Event as any,
+    Comment: Comment as any,
+    issueId: "issue-3",
+  });
+
+  assert.equal(result.channelUniqueName, null);
+  assert.equal(result.scope, "server");
+  assert.equal(result.relatedAccountType, "User");
+  assert.equal(result.relatedAccountName, "alice");
+});
+
+test("throws when a server-scoped issue has no related account", async () => {
+  const Issue = new ModelStub([
+    {
+      id: "issue-4",
+      relatedDiscussionId: null,
+      relatedEventId: null,
+      relatedCommentId: null,
+      relatedUsername: null,
+      relatedModProfileName: null,
+      Channel: null,
+    },
+  ]);
+  const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
 
@@ -102,8 +136,8 @@ test("throws when the issue has no channel unique name", async () => {
         Discussion: Discussion as any,
         Event: Event as any,
         Comment: Comment as any,
-        issueId: "issue-3",
+        issueId: "issue-4",
       }),
-    /Could not find the forum/
+    /Could not find the user account name/
   );
 });

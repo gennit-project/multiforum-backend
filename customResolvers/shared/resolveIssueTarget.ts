@@ -24,9 +24,12 @@ type IssueTarget = {
     relatedDiscussionId?: string | null
     relatedEventId?: string | null
     relatedCommentId?: string | null
+    relatedUsername?: string | null
+    relatedModProfileName?: string | null
     Channel?: { uniqueName?: string | null } | null
   }
-  channelUniqueName: string
+  channelUniqueName: string | null
+  scope: 'channel' | 'server'
   relatedAccountName: string
   relatedAccountType: 'User' | 'ModerationProfile'
   username?: string
@@ -56,6 +59,8 @@ export async function resolveIssueTarget({
       relatedDiscussionId
       relatedEventId
       relatedCommentId
+      relatedUsername
+      relatedModProfileName
       Channel { uniqueName }
     }`,
   })
@@ -64,10 +69,37 @@ export async function resolveIssueTarget({
     throw new GraphQLError('Issue not found')
   }
 
-  const channelUniqueName = foundIssue.Channel?.uniqueName
-  if (!channelUniqueName) {
+  const channelUniqueName = foundIssue.Channel?.uniqueName || null
+  const scope = channelUniqueName ? 'channel' : 'server'
+
+  if (scope === 'server') {
+    if (
+      suspendedEntityName === 'mod' &&
+      foundIssue.relatedModProfileName
+    ) {
+      return {
+        issue: foundIssue,
+        channelUniqueName: null,
+        scope,
+        relatedAccountName: foundIssue.relatedModProfileName,
+        relatedAccountType: 'ModerationProfile',
+        modProfileName: foundIssue.relatedModProfileName,
+      }
+    }
+
+    if (foundIssue.relatedUsername) {
+      return {
+        issue: foundIssue,
+        channelUniqueName: null,
+        scope,
+        relatedAccountName: foundIssue.relatedUsername,
+        relatedAccountType: 'User',
+        username: foundIssue.relatedUsername,
+      }
+    }
+
     throw new GraphQLError(
-      'Could not find the forum (channel) name for the issue.'
+      `Could not find the ${suspendedEntityName} account name to be suspended.`
     )
   }
 
@@ -119,6 +151,7 @@ export async function resolveIssueTarget({
     return {
       issue: foundIssue,
       channelUniqueName,
+      scope,
       relatedAccountName: originalPosterData.displayName,
       relatedAccountType: 'ModerationProfile',
       modProfileName: originalPosterData.displayName,
@@ -134,6 +167,7 @@ export async function resolveIssueTarget({
   return {
     issue: foundIssue,
     channelUniqueName,
+    scope,
     relatedAccountName: originalPosterData.username,
     relatedAccountType: 'User',
     username: originalPosterData.username,

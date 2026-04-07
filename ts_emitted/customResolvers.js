@@ -341,6 +341,7 @@ export default function (driver) {
             suspendUser: suspendUser({
                 Issue,
                 Channel,
+                ServerConfig,
                 Comment,
                 Event,
                 Discussion
@@ -348,20 +349,23 @@ export default function (driver) {
             unsuspendUser: unsuspendUser({
                 Issue,
                 Channel,
+                ServerConfig,
                 Comment,
                 Event,
                 Discussion
             }),
-            suspendMod: unsuspendMod({
+            suspendMod: suspendMod({
                 Issue,
                 Channel,
+                ServerConfig,
                 Comment,
                 Event,
                 Discussion
             }),
-            unsuspendMod: suspendMod({
+            unsuspendMod: unsuspendMod({
                 Issue,
                 Channel,
+                ServerConfig,
                 Comment,
                 Event,
                 Discussion

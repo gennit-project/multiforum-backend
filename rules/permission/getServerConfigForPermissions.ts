@@ -10,17 +10,91 @@ export const getServerConfigForPermissions = async (context: any) => {
       selectionSet: `{
         DefaultServerRole {
           canCreateChannel
+          canCreateDiscussion
+          canCreateEvent
+          canCreateComment
+          canUpvoteComment
+          canUpvoteDiscussion
           canUploadFile
         }
         DefaultSuspendedRole {
           canCreateChannel
+          canCreateDiscussion
+          canCreateEvent
+          canCreateComment
+          canUpvoteComment
+          canUpvoteDiscussion
           canUploadFile
+        }
+        DefaultModRole {
+          canOpenSupportTickets
+          canLockChannel
+          canCloseSupportTickets
+          canGiveFeedback
+          canHideComment
+          canHideDiscussion
+          canHideEvent
+          canEditComments
+          canEditDiscussions
+          canEditEvents
+          canReport
+          canSuspendUser
+        }
+        DefaultElevatedModRole {
+          canOpenSupportTickets
+          canLockChannel
+          canCloseSupportTickets
+          canGiveFeedback
+          canHideComment
+          canHideDiscussion
+          canHideEvent
+          canEditComments
+          canEditDiscussions
+          canEditEvents
+          canReport
+          canSuspendUser
+        }
+        DefaultSuspendedModRole {
+          canOpenSupportTickets
+          canLockChannel
+          canCloseSupportTickets
+          canGiveFeedback
+          canHideComment
+          canHideDiscussion
+          canHideEvent
+          canEditComments
+          canEditDiscussions
+          canEditEvents
+          canReport
+          canSuspendUser
         }
         Admins {
           username
         }
         Moderators {
           displayName
+        }
+        SuspendedUsers {
+          id
+          username
+          serverName
+          suspendedUntil
+          suspendedIndefinitely
+          RelatedIssue {
+            id
+            issueNumber
+          }
+        }
+        SuspendedMods {
+          id
+          modProfileName
+          serverName
+          suspendedUntil
+          suspendedIndefinitely
+          RelatedIssue {
+            id
+            issueNumber
+          }
         }
       }`,
     }).then((serverConfigs: any[]) => serverConfigs?.[0] ?? null);

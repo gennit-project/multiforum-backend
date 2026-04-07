@@ -5,6 +5,7 @@ import type {
   CommentModel,
   DiscussionModel,
   EventModel,
+  ServerConfigModel,
   IssueUpdateInput
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
@@ -15,6 +16,7 @@ import { resolveIssueTarget } from '../../shared/resolveIssueTarget.js'
 type CreateUnsuspendResolverOptions = {
   Issue: IssueModel
   Channel: ChannelModel
+  ServerConfig: ServerConfigModel
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
@@ -39,6 +41,7 @@ type Args = {
 export function createUnsuspendResolver ({
   Issue,
   Channel,
+  ServerConfig,
   Discussion,
   Event,
   Comment,
@@ -51,12 +54,13 @@ export function createUnsuspendResolver ({
     resolveInfo: any
   ) {
     const { issueId, explanation } = args
+    const actionChannelName = process.env.SERVER_CONFIG_NAME || 'server'
 
     if (!issueId) {
       throw new GraphQLError('Issue ID is required')
     }
 
-    const { channelUniqueName, relatedAccountName, relatedAccountType } =
+    const { scope, channelUniqueName, relatedAccountName, relatedAccountType } =
       await resolveIssueTarget({
         Issue,
         Comment,
@@ -84,14 +88,14 @@ export function createUnsuspendResolver ({
     const unsuspendModActionCreateInput = getModerationActionCreateInput({
       text: explanation,
       loggedInModName,
-      channelUniqueName,
+      channelUniqueName: channelUniqueName || actionChannelName,
       actionType: 'unsuspend',
       actionDescription: `Unsuspended ${relatedAccountName}`,
       issueId
     })
     const closeIssueModActionCreateInput = getModerationActionCreateInput({
       loggedInModName,
-      channelUniqueName,
+      channelUniqueName: channelUniqueName || actionChannelName,
       actionType: 'close',
       actionDescription: 'Closed the issue after unsuspending the user',
       issueId
@@ -147,7 +151,7 @@ export function createUnsuspendResolver ({
     })
 
     // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput = null
+    let channelUpdateInput: any = null
     if (relatedAccountType === 'User') {
       channelUpdateInput = {
         SuspendedUsers: [
@@ -185,13 +189,20 @@ export function createUnsuspendResolver ({
         ]
       }
     }
-    // 8. Update the channel with the suspension relationship
+    // 8. Update the scope owner with the suspension relationship
     if (channelUpdateInput) {
       try {
-        await Channel.update({
-          where: { uniqueName: channelUniqueName },
-          update: channelUpdateInput
-        })
+        if (scope === 'server') {
+          await ServerConfig.update({
+            where: { serverName: process.env.SERVER_CONFIG_NAME },
+            update: channelUpdateInput as any
+          })
+        } else {
+          await Channel.update({
+            where: { uniqueName: channelUniqueName },
+            update: channelUpdateInput as any
+          })
+        }
       } catch (err) {
         throw new GraphQLError('Error unsuspending user')
       }

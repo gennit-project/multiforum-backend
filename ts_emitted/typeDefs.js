@@ -310,7 +310,8 @@ const typeDefinitions = gql `
 
   type Suspension {
     id: ID! @id
-    channelUniqueName: String!
+    channelUniqueName: String
+    serverName: String
     username: String
     modProfileName: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -1309,6 +1310,8 @@ const typeDefinitions = gql `
     Admins: [User!]! @relationship(type: "ADMIN_OF_SERVER", direction: IN)
     Moderators: [ModerationProfile!]!
       @relationship(type: "MODERATOR_OF_SERVER", direction: IN)
+    SuspendedUsers: [Suspension!]! @relationship(type: "SUSPENDED_AS_USER", direction: OUT)
+    SuspendedMods: [Suspension!]! @relationship(type: "SUSPENDED_AS_MOD", direction: OUT)
 
     # plugins
     pluginRegistries: [String]

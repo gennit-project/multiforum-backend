@@ -3,6 +3,7 @@ import { ModChannelPermission } from "./hasChannelModPermission.js";
 import { rule } from "graphql-shield";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { getServerScopedMembership } from "./getServerScopedMembership.js";
+import { hasServerModPermission } from "./hasServerModPermission.js";
 
 // Helper function to check if a user is a channel owner
 async function isUserChannelOwner(username: string, channelName: string, context: any): Promise<boolean> {
@@ -29,6 +30,24 @@ async function isUserChannelOwner(username: string, channelName: string, context
 async function isUserSiteAdmin(context: any): Promise<boolean> {
   const membership = await getServerScopedMembership(context);
   return membership.isServerAdmin;
+}
+
+async function isUserServerAdmin(username: string, context: any): Promise<boolean> {
+  const ServerConfig = context.ogm.model("ServerConfig");
+  const serverConfigs = await ServerConfig.find({
+    where: { serverName: process.env.SERVER_CONFIG_NAME },
+    selectionSet: `{
+      Admins {
+        username
+      }
+    }`,
+  });
+
+  const serverConfig = serverConfigs?.[0];
+  return (
+    serverConfig?.Admins?.some((admin: { username: string }) => admin.username === username) ??
+    false
+  );
 }
 
 export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
@@ -60,7 +79,19 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
     }
 
     if (!channelUniqueName) {
-      return new Error("No channel specified for this operation.");
+      if (targetUsername) {
+        const targetIsServerAdmin = await isUserServerAdmin(targetUsername, context);
+        if (targetIsServerAdmin) {
+          const isSiteAdmin = await isUserSiteAdmin(context);
+          if (!isSiteAdmin) {
+            return new Error(ERROR_MESSAGES.channel.cantSuspendOwner);
+          }
+
+          return true;
+        }
+      }
+
+      return hasServerModPermission("canSuspendUser", context);
     }
     
     // Check if the target user is a channel owner

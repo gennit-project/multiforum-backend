@@ -1,8 +1,9 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { ServerRole } from "../../ogm_types.js";
-import { getPermissionRequestCache } from "./getPermissionRequestCache.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
+import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
+import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
 
 type EvaluateServerPermissionInput = {
   permission: keyof ServerRole;
@@ -72,30 +73,28 @@ export const hasServerPermission: (
   const usersServerRoles = context.user?.data?.ServerRoles || [];
 
   const username = context.user?.username;
-  const Suspension = context.ogm.model("Suspension");
-  const nowIso = new Date().toISOString();
-  const cache = getPermissionRequestCache(context);
-
   let hasActiveSuspension = false;
-  if (username) {
-    if (!cache.activeServerSuspensionByUsername.has(username)) {
-      cache.activeServerSuspensionByUsername.set(
-        username,
-        Suspension.find({
-          where: {
-            username,
-            OR: [
-              { suspendedIndefinitely: true },
-              { suspendedUntil_GT: nowIso },
-            ],
-          },
-          selectionSet: `{ id suspendedIndefinitely suspendedUntil }`,
-        }).then((activeSuspensions: any[]) => (activeSuspensions?.length || 0) > 0)
-      );
-    }
 
-    hasActiveSuspension =
-      (await cache.activeServerSuspensionByUsername.get(username)) ?? false;
+  if (username) {
+    const suspensionInfo = await getActiveServerSuspension({
+      context,
+      username,
+    });
+
+    hasActiveSuspension = suspensionInfo.isSuspended;
+
+    if (
+      suspensionInfo.expiredUserSuspensions.length > 0 ||
+      suspensionInfo.expiredModSuspensions.length > 0
+    ) {
+      disconnectExpiredServerSuspensions({
+        context,
+        expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
+        expiredModSuspensions: suspensionInfo.expiredModSuspensions,
+      }).catch((error) => {
+        console.error("Failed to disconnect expired server suspensions", error);
+      });
+    }
   }
 
   const serverConfig = await getServerConfigForPermissions(context);

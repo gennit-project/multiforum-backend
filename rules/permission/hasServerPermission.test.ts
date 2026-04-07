@@ -54,9 +54,26 @@ async function testUserRoleMustAllow() {
 }
 
 async function testHasServerPermissionCachesRequestLookups() {
-  let suspensionFindCalls = 0;
+  let suspensionQueryCalls = 0;
   let serverConfigFindCalls = 0;
   const context = {
+    driver: {
+      session: () => ({
+        run: async (query: string) => {
+          if (query.includes("MATCH (serverConfig)-[:SUSPENDED_AS_USER]->")) {
+            suspensionQueryCalls += 1;
+            return { records: [] };
+          }
+
+          if (query.includes("MATCH (serverConfig)-[:SUSPENDED_AS_MOD]->")) {
+            return { records: [] };
+          }
+
+          throw new Error(`Unexpected query: ${query}`);
+        },
+        close: async () => {},
+      }),
+    },
     user: {
       username: "alice",
       data: {
@@ -68,15 +85,6 @@ async function testHasServerPermissionCachesRequestLookups() {
     },
     ogm: {
       model(name: string) {
-        if (name === "Suspension") {
-          return {
-            find: async () => {
-              suspensionFindCalls += 1;
-              return [];
-            },
-          };
-        }
-
         if (name === "ServerConfig") {
           return {
             find: async () => {
@@ -108,10 +116,10 @@ async function testHasServerPermissionCachesRequestLookups() {
   await hasServerPermission("canCreateChannel", context);
 
   assert.deepEqual({
-    suspensionFindCalls,
+    suspensionQueryCalls,
     serverConfigFindCalls,
   }, {
-    suspensionFindCalls: 1,
+    suspensionQueryCalls: 2,
     serverConfigFindCalls: 1,
   });
 }

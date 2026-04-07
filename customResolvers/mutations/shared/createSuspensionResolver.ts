@@ -5,6 +5,7 @@ import type {
   CommentModel,
   DiscussionModel,
   EventModel,
+  ServerConfigModel,
   IssueUpdateInput
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
@@ -15,6 +16,7 @@ import { resolveIssueTarget } from '../../shared/resolveIssueTarget.js'
 type CreateSuspensionResolverOptions = {
   Issue: IssueModel
   Channel: ChannelModel
+  ServerConfig: ServerConfigModel
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
@@ -40,6 +42,7 @@ type Args = {
 export function createSuspensionResolver ({
   Issue,
   Channel,
+  ServerConfig,
   Discussion,
   Event,
   Comment,
@@ -52,12 +55,13 @@ export function createSuspensionResolver ({
     resolveInfo: any
   ) {
     const { issueId, suspendUntil, suspendIndefinitely, explanation } = args
+    const actionChannelName = process.env.SERVER_CONFIG_NAME || 'server'
 
     if (!issueId) {
       throw new GraphQLError('Issue ID is required')
     }
 
-    const { channelUniqueName, relatedAccountName, relatedAccountType } =
+    const { scope, channelUniqueName, relatedAccountName, relatedAccountType } =
       await resolveIssueTarget({
         Issue,
         Comment,
@@ -85,7 +89,7 @@ export function createSuspensionResolver ({
     const suspensionModActionCreateInput = getModerationActionCreateInput({
       text: explanation,
       loggedInModName,
-      channelUniqueName,
+      channelUniqueName: channelUniqueName || actionChannelName,
       actionType: 'suspension',
       actionDescription: `Suspended ${relatedAccountName}`,
       issueId,
@@ -95,7 +99,7 @@ export function createSuspensionResolver ({
 
     const closeIssueModActionCreateInput = getModerationActionCreateInput({
       loggedInModName,
-      channelUniqueName,
+      channelUniqueName: channelUniqueName || actionChannelName,
       actionType: 'close',
       actionDescription: 'Closed the issue while suspending the user',
       issueId
@@ -162,7 +166,7 @@ export function createSuspensionResolver ({
     })
 
     // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput = null
+    let channelUpdateInput: any = null
     if (relatedAccountType === 'User') {
       channelUpdateInput = {
         SuspendedUsers: [
@@ -173,6 +177,7 @@ export function createSuspensionResolver ({
                   // Create Suspension, which contains the length
                   // of the suspension and the reason for it.
                   channelUniqueName: channelUniqueName,
+                  serverName: scope === 'server' ? actionChannelName : null,
                   username: relatedAccountName,
                   suspendedUntil: suspendUntil,
                   suspendedIndefinitely: suspendIndefinitely,
@@ -210,6 +215,7 @@ export function createSuspensionResolver ({
                 // of the suspension and the reason for it.
                 node: {
                   channelUniqueName: channelUniqueName,
+                  serverName: scope === 'server' ? actionChannelName : null,
                   modProfileName: relatedAccountName,
                   suspendedUntil: suspendUntil,
                   suspendedIndefinitely: suspendIndefinitely,
@@ -239,23 +245,39 @@ export function createSuspensionResolver ({
       }
     }
 
-    // 8. Update the channel with the suspension relationship
+    // 8. Update the scope owner with the suspension relationship
     if (channelUpdateInput) {
       try {
-        const channelData = await Channel.update({
-          where: { uniqueName: channelUniqueName },
-          update: channelUpdateInput,
-          // If you need the updated fields
-          selectionSet: `{
-            channels {
-              uniqueName
-            }
-          }`
-        })
+        if (scope === 'server') {
+          const serverData = await ServerConfig.update({
+            where: { serverName: process.env.SERVER_CONFIG_NAME },
+            update: channelUpdateInput as any,
+            selectionSet: `{
+              serverConfigs {
+                serverName
+              }
+            }`,
+          })
 
-        const updatedChannel = channelData.channels?.[0] || null
-        if (!updatedChannel?.uniqueName) {
-          throw new GraphQLError('Error updating channel')
+          const updatedServer = serverData.serverConfigs?.[0] || null
+          if (!updatedServer?.serverName) {
+            throw new GraphQLError('Error updating server config')
+          }
+        } else {
+          const channelData = await Channel.update({
+            where: { uniqueName: channelUniqueName },
+            update: channelUpdateInput as any,
+            selectionSet: `{
+              channels {
+                uniqueName
+              }
+            }`
+          })
+
+          const updatedChannel = channelData.channels?.[0] || null
+          if (!updatedChannel?.uniqueName) {
+            throw new GraphQLError('Error updating channel')
+          }
         }
       } catch (err) {
         throw new GraphQLError('Error updating channel')

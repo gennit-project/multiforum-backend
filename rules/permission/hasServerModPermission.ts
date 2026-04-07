@@ -1,74 +1,76 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { ModServerRole } from "../../ogm_types.js";
+import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
+import { getServerScopedMembership } from "./getServerScopedMembership.js";
+import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
+import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
 
 export const hasServerModPermission: (
   permission: keyof ModServerRole,
   context: any
 ) => Promise<Error | boolean> = async (permission, context) => {
-
-  // 1. Check for server roles on the user object.
-  context.user = await setUserDataOnContext({
-    context,
-    getPermissionInfo: true,
-  });
-  const modServerRoles = context.user?.ModerationProfile?.ModServerRoles || [];
-
-  // 2. If there is at least one mod role on the user
-  //    object, loop over them. All of them must explicitly
-  //    allow the permission. Otherwise, if one says false
-  //    or is noggggt mentioned, return false.
-  if (modServerRoles.length > 0) {
-    for (const modServerRole of modServerRoles) {
-      if (!modServerRole[permission]) {
-        throw new Error(ERROR_MESSAGES.server.noServerPermission);
-      }
-    }
+  if (!context.user?.data) {
+    context.user = await setUserDataOnContext({
+      context,
+      getPermissionInfo: true,
+    });
   }
 
-  // 3. If there are no server roles on the user object,
-  //    get the default server role. This is located on the
-  //    ServerConfig object.
-  const ServerConfig = context.ogm.model("ServerConfig");
-  const serverConfig = await ServerConfig.find({
-    where: { serverName: process.env.SERVER_CONFIG_NAME },
-    selectionSet: `{ 
-      DefaultModRole { 
-        canOpenSupportTickets
-        canLockChannel
-        canCloseSupportTickets
-        canGiveFeedback
-      } 
-    }`,
-  });
+  const modProfileName = context.user?.data?.ModerationProfile?.displayName;
+  if (!modProfileName) {
+    return new Error(ERROR_MESSAGES.channel.notMod);
+  }
 
-  if (!serverConfig || !serverConfig[0]) {
+  const serverConfig = await getServerConfigForPermissions(context);
+  if (!serverConfig) {
     throw new Error(
       "Could not find the server config, which contains the default server mod role. Therefore could not check the user's permissions."
     );
   }
 
-  const defaultServerModRole = serverConfig[0]?.DefaultModRole;
+  const suspensionInfo = await getActiveServerSuspension({
+    context,
+    modProfileName,
+  });
 
-  if (!defaultServerModRole) {
-    throw new Error("Could not find the default server mod role.");
+  if (
+    suspensionInfo.expiredUserSuspensions.length > 0 ||
+    suspensionInfo.expiredModSuspensions.length > 0
+  ) {
+    disconnectExpiredServerSuspensions({
+      context,
+      expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
+      expiredModSuspensions: suspensionInfo.expiredModSuspensions,
+    }).catch((error) => {
+      console.error("Failed to disconnect expired server suspensions", error);
+    });
   }
 
-  modServerRoles.push(serverConfig[0]?.DefaultModRole);
+  const membership = await getServerScopedMembership(context);
 
-  // Error handling: Make sure we could successfully fetch the
-  // default server role. If not, return an error.
-  if (!modServerRoles[0]) {
-    throw new Error(
-      "Could not find permission on user's mod profile roles or on the default server mod role."
-    );
+  if (membership.isServerAdmin) {
+    return true;
   }
 
-  // 3. Check if the permission is allowed by the default
-  //    server role.
-  const serverRoleToCheck = modServerRoles[0];
-  if (permission === "canGiveFeedback") {
-    return serverRoleToCheck.canGiveFeedback;
+  let roleToCheck: ModServerRole | null = null;
+
+  if (suspensionInfo.isSuspended) {
+    roleToCheck = serverConfig.DefaultSuspendedModRole ?? null;
+  } else if (membership.isServerModerator) {
+    roleToCheck =
+      serverConfig.DefaultElevatedModRole ??
+      serverConfig.DefaultModRole ??
+      null;
+  } else {
+    roleToCheck = serverConfig.DefaultModRole ?? null;
   }
-  throw new Error(ERROR_MESSAGES.server.noServerPermission);
+
+  if (!roleToCheck) {
+    return new Error(ERROR_MESSAGES.server.noServerPermission);
+  }
+
+  return roleToCheck[permission] === true
+    ? true
+    : new Error(ERROR_MESSAGES.server.noServerPermission);
 };

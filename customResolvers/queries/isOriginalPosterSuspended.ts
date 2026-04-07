@@ -6,6 +6,7 @@ import type {
   ChannelModel
 } from '../../ogm_types.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
+import { getActiveServerSuspension } from '../../rules/permission/getActiveServerSuspension.js'
 import { resolveIssueTarget } from '../shared/resolveIssueTarget.js'
 
 type Input = {
@@ -32,13 +33,19 @@ export default function getResolver (input: Input) {
       issueId,
     })
 
-    const suspensionInfo = await getActiveSuspension({
-      ogm: context.ogm,
-      driver: context.driver,
-      channelUniqueName: target.channelUniqueName,
-      username: target.username,
-      modProfileName: target.modProfileName,
-    })
+    const suspensionInfo = target.scope === 'server'
+      ? await getActiveServerSuspension({
+          context,
+          username: target.username,
+          modProfileName: target.modProfileName,
+        })
+      : await getActiveSuspension({
+          ogm: context.ogm,
+          driver: context.driver,
+          channelUniqueName: target.channelUniqueName as string,
+          username: target.username,
+          modProfileName: target.modProfileName,
+        })
 
     return suspensionInfo.isSuspended
   }
