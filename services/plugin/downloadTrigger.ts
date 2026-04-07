@@ -5,6 +5,7 @@ import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
+import { createPromptDebugLogger } from './promptDebug.js'
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -303,7 +304,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
         },
         storeFlag: async (flag: any) => {
           flags.push(flag)
-        }
+        },
+        logPromptDebug: createPromptDebugLogger({
+          pluginId,
+          channelId,
+          logs
+        })
       }
 
       const pluginInstance = new PluginClass(context)

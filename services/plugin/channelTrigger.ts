@@ -5,6 +5,7 @@ import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
+import { createPromptDebugLogger } from './promptDebug.js'
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
 
@@ -380,7 +381,12 @@ export const triggerChannelPluginPipeline = async ({
         },
         storeFlag: async (flag: any) => {
           flags.push(flag)
-        }
+        },
+        logPromptDebug: createPromptDebugLogger({
+          pluginId,
+          channelId: channelUniqueName,
+          logs
+        })
       }
 
       const pluginInstance = new PluginClass(context)

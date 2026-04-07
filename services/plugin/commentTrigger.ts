@@ -6,6 +6,7 @@ import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { createBotComment } from '../botUserService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
+import { createPromptDebugLogger } from './promptDebug.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -440,6 +441,11 @@ export const triggerPluginRunsForComment = async ({
         storeFlag: async (flag: any) => {
           flags.push(flag)
         },
+        logPromptDebug: createPromptDebugLogger({
+          pluginId,
+          channelId: channelUniqueName,
+          logs
+        }),
         createCommentAsBot: async (input: {
           text: string
           botName: string
