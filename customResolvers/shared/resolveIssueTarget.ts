@@ -72,32 +72,32 @@ export async function resolveIssueTarget({
   const channelUniqueName = foundIssue.Channel?.uniqueName || null
   const scope = channelUniqueName ? 'channel' : 'server'
 
+  if (
+    suspendedEntityName === 'mod' &&
+    foundIssue.relatedModProfileName
+  ) {
+    return {
+      issue: foundIssue,
+      channelUniqueName,
+      scope,
+      relatedAccountName: foundIssue.relatedModProfileName,
+      relatedAccountType: 'ModerationProfile',
+      modProfileName: foundIssue.relatedModProfileName,
+    }
+  }
+
+  if (foundIssue.relatedUsername) {
+    return {
+      issue: foundIssue,
+      channelUniqueName,
+      scope,
+      relatedAccountName: foundIssue.relatedUsername,
+      relatedAccountType: 'User',
+      username: foundIssue.relatedUsername,
+    }
+  }
+
   if (scope === 'server') {
-    if (
-      suspendedEntityName === 'mod' &&
-      foundIssue.relatedModProfileName
-    ) {
-      return {
-        issue: foundIssue,
-        channelUniqueName: null,
-        scope,
-        relatedAccountName: foundIssue.relatedModProfileName,
-        relatedAccountType: 'ModerationProfile',
-        modProfileName: foundIssue.relatedModProfileName,
-      }
-    }
-
-    if (foundIssue.relatedUsername) {
-      return {
-        issue: foundIssue,
-        channelUniqueName: null,
-        scope,
-        relatedAccountName: foundIssue.relatedUsername,
-        relatedAccountType: 'User',
-        username: foundIssue.relatedUsername,
-      }
-    }
-
     throw new GraphQLError(
       `Could not find the ${suspendedEntityName} account name to be suspended.`
     )

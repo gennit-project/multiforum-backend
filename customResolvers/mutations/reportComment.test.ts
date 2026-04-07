@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getIssueCreateInput } from "./reportComment.js";
+import {
+  getIssueCreateInput,
+  getRelatedIssueAccountFields,
+} from "./reportComment.js";
 
 test("getIssueCreateInput preserves related mod profile targets", () => {
   const result = getIssueCreateInput({
@@ -32,4 +35,22 @@ test("getIssueCreateInput preserves related user targets", () => {
   });
 
   assert.equal(result.relatedUsername, "alice");
+});
+
+test("getRelatedIssueAccountFields maps user authors to related usernames", () => {
+  const result = getRelatedIssueAccountFields({
+    __typename: "User",
+    username: "alice",
+  });
+
+  assert.equal(result.relatedUsername, "alice");
+});
+
+test("getRelatedIssueAccountFields maps mod authors to related mod profiles", () => {
+  const result = getRelatedIssueAccountFields({
+    __typename: "ModerationProfile",
+    displayName: "mod-bob",
+  });
+
+  assert.equal(result.relatedModProfileName, "mod-bob");
 });

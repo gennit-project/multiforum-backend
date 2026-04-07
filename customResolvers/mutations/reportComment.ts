@@ -26,6 +26,18 @@ type Input = {
   driver: any
 }
 
+type IssueCommentAuthor =
+  | {
+      __typename?: 'User'
+      username?: string | null
+    }
+  | {
+      __typename?: 'ModerationProfile'
+      displayName?: string | null
+    }
+  | null
+  | undefined
+
 type ModActionInput = {
   text?: string
   loggedInModName: string
@@ -213,6 +225,27 @@ export const getIssueCreateInput = (
   return output
 }
 
+export const getRelatedIssueAccountFields = (
+  commentAuthor: IssueCommentAuthor
+): {
+  relatedUsername?: string
+  relatedModProfileName?: string
+} => {
+  if (commentAuthor?.__typename === 'User') {
+    return {
+      relatedUsername: commentAuthor.username ?? undefined
+    }
+  }
+
+  if (commentAuthor?.__typename === 'ModerationProfile') {
+    return {
+      relatedModProfileName: commentAuthor.displayName ?? undefined
+    }
+  }
+
+  return {}
+}
+
 const getResolver = (input: Input) => {
   const { Issue, Comment, driver } = input
   return async (parent: any, args: Args, context: any, resolveInfo: any) => {
@@ -268,6 +301,8 @@ const getResolver = (input: Input) => {
             id
             issueNumber
             flaggedServerRuleViolation
+            relatedUsername
+            relatedModProfileName
         }`
     })
 
@@ -283,37 +318,32 @@ const getResolver = (input: Input) => {
       selectedServerRules
     })
 
+    const commentData = await Comment.find({
+      where: {
+        id: commentId
+      },
+      selectionSet: `{
+              id
+              text
+              CommentAuthor {
+                __typename
+                ... on User {
+                  username
+                }
+                ... on ModerationProfile {
+                  displayName
+                }
+              }
+          }`
+    })
+    const commentText = commentData[0]?.text || ''
+    const {
+      relatedUsername,
+      relatedModProfileName
+    } = getRelatedIssueAccountFields(commentData[0]?.CommentAuthor)
+
     // If an issue does NOT already exist, create a new issue.
     if (!existingIssueId) {
-      const commentData = await Comment.find({
-        where: {
-          id: commentId
-        },
-        selectionSet: `{
-                id
-                text
-                CommentAuthor {
-                  __typename
-                  ... on User {
-                    username
-                  }
-                  ... on ModerationProfile {
-                    displayName
-                  }
-                }
-            }`
-      })
-      const commentText = commentData[0]?.text || ''
-      const commentAuthor = commentData[0]?.CommentAuthor
-      const relatedUsername =
-        commentAuthor?.__typename === 'User'
-          ? commentAuthor.username ?? undefined
-          : undefined
-      const relatedModProfileName =
-        commentAuthor?.__typename === 'ModerationProfile'
-          ? commentAuthor.displayName ?? undefined
-          : undefined
-
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
       const issueCreateInput: IssueCreateInput = getIssueCreateInput({
         contextText: commentText,
@@ -375,6 +405,16 @@ const getResolver = (input: Input) => {
       flaggedServerRuleViolation:
         existingIssueFlaggedServerRuleViolation ||
         selectedServerRules.length > 0
+    }
+
+    const existingIssue = issueData[0]
+
+    if (!existingIssue?.relatedUsername && relatedUsername) {
+      issueUpdateInput.relatedUsername = relatedUsername
+    }
+
+    if (!existingIssue?.relatedModProfileName && relatedModProfileName) {
+      issueUpdateInput.relatedModProfileName = relatedModProfileName
     }
 
     try {

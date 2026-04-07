@@ -83,6 +83,34 @@ test("resolves a comment author's moderation profile", async () => {
   assert.equal(result.modProfileName, "Mod Jane");
 });
 
+test("prefers related mod profile metadata on channel-scoped issues", async () => {
+  const Issue = new ModelStub([
+    {
+      id: "issue-2b",
+      relatedDiscussionId: null,
+      relatedEventId: null,
+      relatedCommentId: "comment-1",
+      relatedUsername: null,
+      relatedModProfileName: "Mod Jane",
+      Channel: { uniqueName: "dogs" },
+    },
+  ]);
+  const Discussion = new ModelStub([]);
+  const Event = new ModelStub([]);
+  const Comment = new ModelStub([]);
+
+  const result = await resolveIssueTarget({
+    Issue: Issue as any,
+    Discussion: Discussion as any,
+    Event: Event as any,
+    Comment: Comment as any,
+    issueId: "issue-2b",
+    suspendedEntityName: "mod",
+  });
+
+  assert.equal(result.modProfileName, "Mod Jane");
+});
+
 test("resolves a server-scoped issue from related username", async () => {
   const Issue = new ModelStub([
     {
@@ -111,6 +139,33 @@ test("resolves a server-scoped issue from related username", async () => {
   assert.equal(result.scope, "server");
   assert.equal(result.relatedAccountType, "User");
   assert.equal(result.relatedAccountName, "alice");
+});
+
+test("prefers related usernames on channel-scoped issues", async () => {
+  const Issue = new ModelStub([
+    {
+      id: "issue-3b",
+      relatedDiscussionId: "discussion-1",
+      relatedEventId: null,
+      relatedCommentId: null,
+      relatedUsername: "alice",
+      relatedModProfileName: null,
+      Channel: { uniqueName: "cats" },
+    },
+  ]);
+  const Discussion = new ModelStub([]);
+  const Event = new ModelStub([]);
+  const Comment = new ModelStub([]);
+
+  const result = await resolveIssueTarget({
+    Issue: Issue as any,
+    Discussion: Discussion as any,
+    Event: Event as any,
+    Comment: Comment as any,
+    issueId: "issue-3b",
+  });
+
+  assert.equal(result.username, "alice");
 });
 
 test("throws when a server-scoped issue has no related account", async () => {
