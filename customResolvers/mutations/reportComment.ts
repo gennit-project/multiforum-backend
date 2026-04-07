@@ -134,6 +134,8 @@ type InputIssueCreate = {
   relatedCommentId?: string
   relatedDiscussionId?: string
   relatedEventId?: string
+  relatedUsername?: string
+  relatedModProfileName?: string
   issueNumber?: number
 }
 
@@ -149,6 +151,8 @@ export const getIssueCreateInput = (
     relatedCommentId,
     relatedDiscussionId,
     relatedEventId,
+    relatedUsername,
+    relatedModProfileName,
     issueNumber
   } = input
 
@@ -172,6 +176,8 @@ export const getIssueCreateInput = (
     flaggedServerRuleViolation: selectedServerRules.length > 0,
     channelUniqueName: channelUniqueName,
     issueNumber: issueNumber ?? 0,
+    relatedUsername,
+    relatedModProfileName,
     Author: {
       ModerationProfile: {
         connect: {
@@ -285,10 +291,28 @@ const getResolver = (input: Input) => {
         },
         selectionSet: `{
                 id
-                text            
+                text
+                CommentAuthor {
+                  __typename
+                  ... on User {
+                    username
+                  }
+                  ... on ModerationProfile {
+                    displayName
+                  }
+                }
             }`
       })
       const commentText = commentData[0]?.text || ''
+      const commentAuthor = commentData[0]?.CommentAuthor
+      const relatedUsername =
+        commentAuthor?.__typename === 'User'
+          ? commentAuthor.username ?? undefined
+          : undefined
+      const relatedModProfileName =
+        commentAuthor?.__typename === 'ModerationProfile'
+          ? commentAuthor.displayName ?? undefined
+          : undefined
 
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
       const issueCreateInput: IssueCreateInput = getIssueCreateInput({
@@ -299,6 +323,8 @@ const getResolver = (input: Input) => {
         channelUniqueName,
         reportedContentType: 'comment',
         relatedCommentId: commentId,
+        relatedUsername,
+        relatedModProfileName,
         issueNumber
       })
       try {
