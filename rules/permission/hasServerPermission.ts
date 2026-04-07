@@ -4,6 +4,7 @@ import { ServerRole } from "../../ogm_types.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
+import { createSuspensionNotification } from "./suspensionNotification.js";
 
 type EvaluateServerPermissionInput = {
   permission: keyof ServerRole;
@@ -63,6 +64,7 @@ export const hasServerPermission: (
   permission: keyof ServerRole,
   context: any
 ) => Promise<Error | boolean> = async (permission, context) => {
+  const User = context.ogm.model("User");
   // 1. Check for server roles on the user object.
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
@@ -74,9 +76,11 @@ export const hasServerPermission: (
 
   const username = context.user?.username;
   let hasActiveSuspension = false;
+  let suspensionInfo: Awaited<ReturnType<typeof getActiveServerSuspension>> | null =
+    null;
 
   if (username) {
-    const suspensionInfo = await getActiveServerSuspension({
+    suspensionInfo = await getActiveServerSuspension({
       context,
       username,
     });
@@ -115,6 +119,26 @@ export const hasServerPermission: (
     defaultSuspendedRole,
     hasActiveSuspension,
   });
+
+  if (result instanceof Error && hasActiveSuspension && username) {
+    try {
+      await createSuspensionNotification({
+        UserModel: User,
+        username,
+        scopeName: process.env.SERVER_CONFIG_NAME || "server",
+        scopeType: "server",
+        permission,
+        relatedIssueId: suspensionInfo?.relatedIssueId || null,
+        relatedIssueNumber: suspensionInfo?.relatedIssueNumber || null,
+        suspendedUntil: suspensionInfo?.activeSuspension?.suspendedUntil || null,
+        suspendedIndefinitely:
+          suspensionInfo?.activeSuspension?.suspendedIndefinitely || null,
+        actorType: "user",
+      });
+    } catch (error) {
+      console.error("Failed to create server suspension notification", error);
+    }
+  }
 
   return result;
 };

@@ -54,6 +54,13 @@ async function testServerModeratorUsesElevatedRoleForSuspendPermission() {
           };
         }
 
+        if (name === "User") {
+          return {
+            find: async () => [],
+            update: async () => ({}),
+          };
+        }
+
         throw new Error(`Unexpected model lookup: ${name}`);
       },
     },
@@ -103,6 +110,13 @@ async function testSuspendedServerModUsesSuspendedRole() {
           };
         }
 
+        if (name === "User") {
+          return {
+            find: async () => [],
+            update: async () => ({}),
+          };
+        }
+
         throw new Error(`Unexpected model lookup: ${name}`);
       },
     },
@@ -141,6 +155,13 @@ async function testServerAdminBypassesServerModRoleChecks() {
                 SuspendedMods: [],
               },
             ],
+          };
+        }
+
+        if (name === "User") {
+          return {
+            find: async () => [],
+            update: async () => ({}),
           };
         }
 

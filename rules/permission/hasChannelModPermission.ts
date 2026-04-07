@@ -228,7 +228,8 @@ export const hasChannelModPermission: (
       await createSuspensionNotification({
         UserModel: User,
         username: context.user.username,
-        channelName,
+        scopeName: channelName,
+        scopeType: "channel",
         permission,
         relatedIssueId: suspensionInfo.relatedIssueId,
         relatedIssueNumber: suspensionInfo.relatedIssueNumber,

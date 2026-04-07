@@ -1,7 +1,8 @@
 type CreateSuspensionNotificationInput = {
   UserModel: any;
   username: string;
-  channelName: string;
+  scopeName: string;
+  scopeType: "channel" | "server";
   permission: string;
   relatedIssueId?: string | null;
   relatedIssueNumber?: number | null;
@@ -20,7 +21,8 @@ export async function createSuspensionNotification(
   const {
     UserModel,
     username,
-    channelName,
+    scopeName,
+    scopeType,
     permission,
     relatedIssueId,
     relatedIssueNumber,
@@ -32,14 +34,18 @@ export async function createSuspensionNotification(
   if (!username) return;
 
   const issueRef = relatedIssueNumber
-    ? `[Issue #${relatedIssueNumber}](/forums/${channelName}/issues/${relatedIssueNumber})`
+    ? scopeType === "server"
+      ? `[Issue #${relatedIssueNumber}](/admin/issues/${relatedIssueNumber})`
+      : `[Issue #${relatedIssueNumber}](/forums/${scopeName}/issues/${relatedIssueNumber})`
     : relatedIssueId
     ? `Issue ${relatedIssueId}`
     : "the related moderation issue";
+  const scopeLabel =
+    scopeType === "server" ? "at the server level" : `in ${scopeName}`;
   const subject =
     actorType === "mod"
-      ? `Your moderator account is suspended in ${channelName}`
-      : `You are suspended in ${channelName}`;
+      ? `Your moderator account is suspended ${scopeLabel}`
+      : `You are suspended ${scopeLabel}`;
   const expiresText = suspendedIndefinitely
     ? "Suspension is indefinite."
     : suspendedUntil
@@ -52,10 +58,16 @@ export async function createSuspensionNotification(
 
   const existing = await UserModel.find({
     where: { username },
-    selectionSet: `{ Notifications(where: { text: "${escapedText}", read: false }) { id } }`,
+    selectionSet: `{ 
+      notifyOnSuspensionBlocks
+      Notifications(where: { text: "${escapedText}", read: false }) { id } 
+    }`,
   });
 
-  const alreadyNotified = existing?.[0]?.Notifications?.length > 0;
+  const user = existing?.[0];
+  if (user?.notifyOnSuspensionBlocks === false) return;
+
+  const alreadyNotified = user?.Notifications?.length > 0;
   if (alreadyNotified) return;
 
   await UserModel.update({

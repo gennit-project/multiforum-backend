@@ -5,11 +5,13 @@ import { getServerConfigForPermissions } from "./getServerConfigForPermissions.j
 import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
+import { createSuspensionNotification } from "./suspensionNotification.js";
 
 export const hasServerModPermission: (
   permission: keyof ModServerRole,
   context: any
 ) => Promise<Error | boolean> = async (permission, context) => {
+  const User = context.ogm.model("User");
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
       context,
@@ -70,7 +72,29 @@ export const hasServerModPermission: (
     return new Error(ERROR_MESSAGES.server.noServerPermission);
   }
 
-  return roleToCheck[permission] === true
-    ? true
-    : new Error(ERROR_MESSAGES.server.noServerPermission);
+  if (roleToCheck[permission] === true) {
+    return true;
+  }
+
+  if (suspensionInfo.isSuspended && context.user?.username) {
+    try {
+      await createSuspensionNotification({
+        UserModel: User,
+        username: context.user.username,
+        scopeName: process.env.SERVER_CONFIG_NAME || "server",
+        scopeType: "server",
+        permission,
+        relatedIssueId: suspensionInfo.relatedIssueId,
+        relatedIssueNumber: suspensionInfo.relatedIssueNumber,
+        suspendedUntil: suspensionInfo.activeSuspension?.suspendedUntil || null,
+        suspendedIndefinitely:
+          suspensionInfo.activeSuspension?.suspendedIndefinitely || null,
+        actorType: "mod",
+      });
+    } catch (error) {
+      console.error("Failed to create server mod suspension notification", error);
+    }
+  }
+
+  return new Error(ERROR_MESSAGES.server.noServerPermission);
 };

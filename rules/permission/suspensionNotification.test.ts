@@ -6,9 +6,14 @@ class UserModelStub {
   public finds: any[] = [];
   public updates: any[] = [];
   private notifications: Record<string, string[]> = {};
+  private notifyOnSuspensionBlocks: Record<string, boolean> = {};
 
-  constructor(initialNotifications?: Record<string, string[]>) {
-    this.notifications = initialNotifications || {};
+  constructor(input?: {
+    initialNotifications?: Record<string, string[]>;
+    notifyOnSuspensionBlocks?: Record<string, boolean>;
+  }) {
+    this.notifications = input?.initialNotifications || {};
+    this.notifyOnSuspensionBlocks = input?.notifyOnSuspensionBlocks || {};
   }
 
   async find({ where }: any) {
@@ -17,6 +22,8 @@ class UserModelStub {
     const texts = this.notifications[username] || [];
     return [
       {
+        notifyOnSuspensionBlocks:
+          this.notifyOnSuspensionBlocks[username] ?? true,
         Notifications: texts.map((text) => ({ id: text, text })),
       },
     ];
@@ -38,7 +45,8 @@ test("creates notification when missing", async () => {
   await createSuspensionNotification({
     UserModel: userModel,
     username: "alice",
-    channelName: "forum-1",
+    scopeName: "forum-1",
+    scopeType: "channel",
     permission: "canCreateDiscussion",
     relatedIssueId: "issue-123",
     relatedIssueNumber: 123,
@@ -58,12 +66,15 @@ test("creates notification when missing", async () => {
 test("does not duplicate notification", async () => {
   const existingText =
     "You are suspended in forum-1 and cannot canCreateDiscussion. See [Issue #123](/forums/forum-1/issues/123) for details. Suspension expires on 2030-01-15.";
-  const userModel = new UserModelStub({ alice: [existingText] });
+  const userModel = new UserModelStub({
+    initialNotifications: { alice: [existingText] },
+  });
 
   await createSuspensionNotification({
     UserModel: userModel,
     username: "alice",
-    channelName: "forum-1",
+    scopeName: "forum-1",
+    scopeType: "channel",
     permission: "canCreateDiscussion",
     relatedIssueId: "issue-123",
     relatedIssueNumber: 123,
@@ -81,7 +92,8 @@ test("formats indefinite suspension message", async () => {
   await createSuspensionNotification({
     UserModel: userModel,
     username: "mod-user",
-    channelName: "forum-2",
+    scopeName: "forum-2",
+    scopeType: "channel",
     permission: "canHideDiscussion",
     relatedIssueNumber: 77,
     suspendedIndefinitely: true,
@@ -94,4 +106,42 @@ test("formats indefinite suspension message", async () => {
   assert.ok(text.includes("Your moderator account is suspended in forum-2"));
   assert.ok(text.includes("Issue #77"));
   assert.ok(text.includes("Suspension is indefinite."));
+});
+
+test("skips notification when suspension-block preference is disabled", async () => {
+  const userModel = new UserModelStub({
+    notifyOnSuspensionBlocks: { alice: false },
+  });
+
+  await createSuspensionNotification({
+    UserModel: userModel,
+    username: "alice",
+    scopeName: "forum-1",
+    scopeType: "channel",
+    permission: "canCreateDiscussion",
+    relatedIssueNumber: 123,
+    suspendedIndefinitely: true,
+    actorType: "user",
+  });
+
+  assert.equal(userModel.updates.length, 0, "Should honor the opt-out preference");
+});
+
+test("formats server-scoped issue links", async () => {
+  const userModel = new UserModelStub();
+
+  await createSuspensionNotification({
+    UserModel: userModel,
+    username: "alice",
+    scopeName: "main",
+    scopeType: "server",
+    permission: "canCreateChannel",
+    relatedIssueNumber: 45,
+    suspendedIndefinitely: true,
+    actorType: "user",
+  });
+
+  const text = userModel.updates[0].update.Notifications[0].create[0].node
+    .text as string;
+  assert.ok(text.includes("/admin/issues/45"));
 });

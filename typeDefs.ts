@@ -278,6 +278,7 @@ const typeDefinitions = gql`
     notifyWhenTagged: Boolean @default(value: true)
     notifyOnSubscribedIssueUpdates: Boolean @default(value: true)
     notifyOnFeedback: Boolean @default(value: true)
+    notifyOnSuspensionBlocks: Boolean @default(value: true)
     notificationBundleInterval: String
     notificationBundleEnabled: Boolean @default(value: true)
     notificationBundleContent: String

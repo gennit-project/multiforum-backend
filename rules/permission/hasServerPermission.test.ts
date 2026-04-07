@@ -107,6 +107,13 @@ async function testHasServerPermissionCachesRequestLookups() {
           };
         }
 
+        if (name === "User") {
+          return {
+            find: async () => [],
+            update: async () => ({}),
+          };
+        }
+
         throw new Error(`Unexpected model lookup: ${name}`);
       },
     },

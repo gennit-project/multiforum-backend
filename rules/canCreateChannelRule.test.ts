@@ -23,24 +23,37 @@ const buildDriver = (userSuspensions: Array<Record<string, unknown>> = []) => ({
   }),
 });
 
+const buildOgm = (defaultServerRole: { canCreateChannel: boolean; canUploadFile: boolean }) => ({
+  model: (name: string) => {
+    if (name === "ServerConfig") {
+      return {
+        find: async () => [
+          {
+            DefaultServerRole: defaultServerRole,
+            DefaultSuspendedRole: {
+              canCreateChannel: false,
+              canUploadFile: false,
+            },
+          },
+        ],
+      };
+    }
+
+    if (name === "User") {
+      return {
+        find: async () => [],
+        update: async () => ({}),
+      };
+    }
+
+    throw new Error(`Unexpected model lookup: ${name}`);
+  },
+});
+
 test("returns the permission error when server permission check fails", async () => {
   const ctx = {
     driver: buildDriver(),
-    ogm: {
-      model: (name: string) => {
-        if (name === "ServerConfig") {
-          return {
-            find: async () => [
-              {
-                DefaultServerRole: { canCreateChannel: false, canUploadFile: true },
-                DefaultSuspendedRole: { canCreateChannel: false, canUploadFile: false },
-              },
-            ],
-          };
-        }
-        throw new Error(`Unexpected model lookup: ${name}`);
-      },
-    },
+    ogm: buildOgm({ canCreateChannel: false, canUploadFile: true }),
     req: { headers: {} },
   };
 
@@ -51,21 +64,7 @@ test("returns the permission error when server permission check fails", async ()
 test("returns true when server permission check succeeds", async () => {
   const ctx = {
     driver: buildDriver(),
-    ogm: {
-      model: (name: string) => {
-        if (name === "ServerConfig") {
-          return {
-            find: async () => [
-              {
-                DefaultServerRole: { canCreateChannel: true, canUploadFile: true },
-                DefaultSuspendedRole: { canCreateChannel: false, canUploadFile: false },
-              },
-            ],
-          };
-        }
-        throw new Error(`Unexpected model lookup: ${name}`);
-      },
-    },
+    ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
     req: { headers: {} },
   };
 
@@ -78,21 +77,7 @@ test("returns error when user has an active indefinite suspension", async () => 
     driver: buildDriver([
       { id: "suspension-1", suspendedIndefinitely: true, suspendedUntil: null },
     ]),
-    ogm: {
-      model: (name: string) => {
-        if (name === "ServerConfig") {
-          return {
-            find: async () => [
-              {
-                DefaultServerRole: { canCreateChannel: true, canUploadFile: true },
-                DefaultSuspendedRole: { canCreateChannel: false, canUploadFile: false },
-              },
-            ],
-          };
-        }
-        throw new Error(`Unexpected model lookup: ${name}`);
-      },
-    },
+    ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
     user: {
       username: "suspended-user",
       data: { ServerRoles: [] }, // Pre-populate to skip setUserDataOnContext
@@ -110,21 +95,7 @@ test("returns error when user has an active time-limited suspension", async () =
     driver: buildDriver([
       { id: "suspension-2", suspendedIndefinitely: false, suspendedUntil: futureDate },
     ]),
-    ogm: {
-      model: (name: string) => {
-        if (name === "ServerConfig") {
-          return {
-            find: async () => [
-              {
-                DefaultServerRole: { canCreateChannel: true, canUploadFile: true },
-                DefaultSuspendedRole: { canCreateChannel: false, canUploadFile: false },
-              },
-            ],
-          };
-        }
-        throw new Error(`Unexpected model lookup: ${name}`);
-      },
-    },
+    ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
     user: {
       username: "time-limited-suspended-user",
       data: { ServerRoles: [] }, // Pre-populate to skip setUserDataOnContext
