@@ -4,6 +4,7 @@ import { CHANNEL_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
 
@@ -29,6 +30,8 @@ export const triggerChannelPluginPipeline = async ({
     selectionSet: `{
       uniqueName
       displayName
+      description
+      rules
       pluginPipelines
       Tags {
         text
@@ -391,7 +394,21 @@ export const triggerChannelPluginPipeline = async ({
           fileName: downloadableFile.fileName,
           fileSize: downloadableFile.size,
           fileUrl: downloadableFile.url,
-          channel: channelContext
+          channel: channelContext,
+          context: buildBotInvocationContext({
+            invocationType: 'discussion-created',
+            channel: {
+              uniqueName: channel.uniqueName,
+              displayName: channel.displayName,
+              description: channel.description,
+              rules: channel.rules
+            },
+            discussion: {
+              id: discussion.id,
+              title: discussion.title,
+              body: discussion.body
+            }
+          })
         }
       }
 

@@ -4,6 +4,7 @@ import { DOWNLOAD_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -28,8 +29,16 @@ export const triggerPluginRunsForDownloadableFile = async ({
       size
       Discussion {
         id
+        title
+        body
         DiscussionChannels {
           channelUniqueName
+          Channel {
+            uniqueName
+            displayName
+            description
+            rules
+          }
         }
       }
     }`
@@ -41,7 +50,9 @@ export const triggerPluginRunsForDownloadableFile = async ({
 
   const downloadableFile = files[0]
   const fileData = downloadableFile as any
-  const channelId = fileData.Discussion?.DiscussionChannels?.[0]?.channelUniqueName || null
+  const discussionChannel = fileData.Discussion?.DiscussionChannels?.[0] || null
+  const channelId = discussionChannel?.channelUniqueName || null
+  const channelNode = discussionChannel?.Channel || null
 
   const serverConfigs = await ServerConfig.find({
     selectionSet: `{
@@ -301,7 +312,23 @@ export const triggerPluginRunsForDownloadableFile = async ({
         payload: {
           discussionId: fileData.Discussion?.id,
           attachmentUrls: attachments,
-          downloadableFileId: fileData.id
+          downloadableFileId: fileData.id,
+          context: buildBotInvocationContext({
+            invocationType: 'downloadable-file-created',
+            channel: {
+              uniqueName: channelNode?.uniqueName || channelId,
+              displayName: channelNode?.displayName || channelId,
+              description: channelNode?.description,
+              rules: channelNode?.rules
+            },
+            discussion: fileData.Discussion?.id
+              ? {
+                  id: fileData.Discussion.id,
+                  title: fileData.Discussion.title,
+                  body: fileData.Discussion.body
+                }
+              : null
+          })
         }
       }
 

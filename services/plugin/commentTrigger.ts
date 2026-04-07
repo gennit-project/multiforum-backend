@@ -5,6 +5,7 @@ import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { createBotComment } from '../botUserService.js'
+import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -53,6 +54,8 @@ export const triggerPluginRunsForComment = async ({
       Channel {
         uniqueName
         displayName
+        description
+        rules
       }
       Event {
         id
@@ -101,6 +104,9 @@ export const triggerPluginRunsForComment = async ({
     where: { uniqueName: channelUniqueName },
     selectionSet: `{
       uniqueName
+      displayName
+      description
+      rules
       pluginPipelines
       EnabledPluginsConnection {
         edges {
@@ -121,6 +127,10 @@ export const triggerPluginRunsForComment = async ({
     }`
   })
   const channel = channels[0] as any
+  const parentComments = await collectParentCommentThread({
+    Comment,
+    parentCommentId: comment.ParentComment?.id || null
+  })
 
   // Build a map of channel-level plugin settings by plugin name
   const channelPluginSettingsMap = new Map<string, any>()
@@ -471,28 +481,30 @@ export const triggerPluginRunsForComment = async ({
         return null
       })()
 
+      const parsedBotMentions = (() => {
+        if (!comment.botMentions) {
+          return []
+        }
+        if (typeof comment.botMentions === 'string') {
+          try {
+            const parsed = JSON.parse(comment.botMentions)
+            return Array.isArray(parsed) ? parsed : []
+          } catch {
+            return []
+          }
+        }
+        if (Array.isArray(comment.botMentions)) {
+          return comment.botMentions
+        }
+        return []
+      })()
+
       const eventEnvelope = {
         type: event,
         payload: {
           commentId: comment.id,
           commentText: comment.text,
-          botMentions: (() => {
-            if (!comment.botMentions) {
-              return []
-            }
-            if (typeof comment.botMentions === 'string') {
-              try {
-                const parsed = JSON.parse(comment.botMentions)
-                return Array.isArray(parsed) ? parsed : []
-              } catch {
-                return []
-              }
-            }
-            if (Array.isArray(comment.botMentions)) {
-              return comment.botMentions
-            }
-            return []
-          })(),
+          botMentions: parsedBotMentions,
           isFeedbackComment: comment.isFeedbackComment || false,
           createdAt: comment.createdAt,
           author: authorInfo,
@@ -505,9 +517,44 @@ export const triggerPluginRunsForComment = async ({
             : null,
           channel: {
             uniqueName: channelUniqueName,
-            displayName: comment.Channel?.displayName || null
+            displayName:
+              channel?.displayName ||
+              comment.Channel?.displayName ||
+              null,
+            description:
+              channel?.description ||
+              comment.Channel?.description ||
+              null,
+            rules: Array.isArray(channel?.rules) ? channel.rules : []
           },
-          parentCommentId: comment.ParentComment?.id || null
+          parentCommentId: comment.ParentComment?.id || null,
+          context: buildBotInvocationContext({
+            invocationType:
+              parsedBotMentions.length > 0
+                ? 'tagged-comment'
+                : 'comment-created',
+            channel: {
+              uniqueName: channelUniqueName,
+              displayName:
+                channel?.displayName ||
+                comment.Channel?.displayName ||
+                null,
+              description:
+                channel?.description ||
+                comment.Channel?.description ||
+                null,
+              rules: channel?.rules
+            },
+            discussion: discussionChannel?.Discussion
+              ? {
+                  id: discussionChannel.Discussion.id,
+                  title: discussionChannel.Discussion.title,
+                  body: discussionChannel.Discussion.body
+                }
+              : null,
+            comment,
+            parentComments
+          })
         }
       }
 
