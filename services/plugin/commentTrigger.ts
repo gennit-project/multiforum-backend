@@ -5,6 +5,7 @@ import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { createBotComment } from '../botUserService.js'
+import { createBotReport } from '../botReportService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 
@@ -13,13 +14,14 @@ export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 export const triggerPluginRunsForComment = async ({
   commentId,
   event,
-  models
+  models,
+  driver
 }: CommentTriggerArgs) => {
   if (!COMMENT_EVENTS.has(event)) {
     throw new Error(`Unsupported comment plugin event: ${event}`)
   }
 
-  const { Channel, Comment, PluginRun, ServerConfig, ServerSecret, User } = models
+  const { Channel, Comment, Discussion, Event, Issue, PluginRun, ServerConfig, ServerSecret, User } = models
 
   const comments = await Comment.find({
     where: { id: commentId },
@@ -465,6 +467,26 @@ export const triggerPluginRunsForComment = async ({
             parentCommentId: input.parentCommentId || null,
             discussionChannelId: comment.DiscussionChannel?.id || null,
             eventId: comment.Event?.id || null
+          })
+        },
+        reportContentAsBot: async (input: {
+          contentType: 'comment' | 'discussion' | 'event'
+          contentId: string
+          reportText: string
+          selectedForumRules: string[]
+          selectedServerRules: string[]
+          botName: string
+          profileId?: string | null
+          profileLabel?: string | null
+        }) => {
+          if (!driver) {
+            throw new Error('Database driver not available for reportContentAsBot')
+          }
+          return createBotReport({
+            models: { Channel, Comment, Discussion, Event, Issue, User },
+            driver,
+            channelUniqueName,
+            reportInput: input
           })
         }
       }

@@ -71,11 +71,15 @@ export type CommentTriggerArgs = {
   models: {
     Channel: any
     Comment: any
+    Discussion: any
+    Event: any
+    Issue: any
     PluginRun: PluginRunModel
     ServerConfig: ServerConfigModel
     ServerSecret: ServerSecretModel
     User: any
   }
+  driver?: any
 }
 
 // Arguments for channel trigger
