@@ -119,6 +119,13 @@ const permissionList = shield({
         cancelInviteForumMod: and(isAuthenticated, isChannelOwner),
         removeForumMod: and(isAuthenticated, isChannelOwner),
         acceptForumModInvite: and(isAuthenticated),
+        // Server admin/mod invite workflow
+        inviteServerAdmin: and(isAuthenticated, isAdmin),
+        cancelInviteServerAdmin: and(isAuthenticated, isAdmin),
+        acceptServerAdminInvite: and(isAuthenticated),
+        inviteServerMod: and(isAuthenticated, isAdmin),
+        cancelInviteServerMod: and(isAuthenticated, isAdmin),
+        acceptServerModInvite: and(isAuthenticated),
         createNotifications: deny,
         deleteNotifications: deny,
         updateNotifications: deny,

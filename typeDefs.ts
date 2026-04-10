@@ -243,9 +243,12 @@ const typeDefinitions = gql`
     ModChannelRoles: [ModChannelRole!]! @relationship(type: "HAS_MOD_ROLE", direction: OUT)
     ModServerRoles:  [ModServerRole!]!  @relationship(type: "HAS_MOD_ROLE", direction: OUT)
 
-    # pending invites
+    # pending invites (channel level)
     PendingModInvites:    [Channel!]! @relationship(type: "HAS_PENDING_MOD_INVITE", direction: IN)
     PendingOwnerInvites:  [Channel!]! @relationship(type: "HAS_PENDING_INVITE", direction: IN)
+    # pending invites (server level)
+    PendingServerAdminInvites: [ServerConfig!]! @relationship(type: "HAS_PENDING_SERVER_ADMIN_INVITE", direction: IN)
+    PendingServerModInvites:   [ServerConfig!]! @relationship(type: "HAS_PENDING_SERVER_MOD_INVITE", direction: IN)
 
     # commerce
     stripeAccountId: String
@@ -904,6 +907,25 @@ const typeDefinitions = gql`
     ): Boolean
     removeForumMod(channelUniqueName: String!, username: String!): Boolean
     acceptForumModInvite(channelUniqueName: String!): Boolean
+    # Server admin/mod invite workflow
+    inviteServerAdmin(
+      inviteeUsername: String!
+      serverName: String!
+    ): Boolean
+    cancelInviteServerAdmin(
+      serverName: String!
+      inviteeUsername: String!
+    ): Boolean
+    acceptServerAdminInvite(serverName: String!): Boolean
+    inviteServerMod(
+      inviteeUsername: String!
+      serverName: String!
+    ): Boolean
+    cancelInviteServerMod(
+      serverName: String!
+      inviteeUsername: String!
+    ): Boolean
+    acceptServerModInvite(serverName: String!): Boolean
     reportDiscussion(
       discussionId: ID!
       reportText: String!
@@ -1312,6 +1334,10 @@ const typeDefinitions = gql`
     Admins: [User!]! @relationship(type: "ADMIN_OF_SERVER", direction: IN)
     Moderators: [ModerationProfile!]!
       @relationship(type: "MODERATOR_OF_SERVER", direction: IN)
+    PendingAdminInvites: [User!]!
+      @relationship(type: "HAS_PENDING_SERVER_ADMIN_INVITE", direction: OUT)
+    PendingModInvites: [User!]!
+      @relationship(type: "HAS_PENDING_SERVER_MOD_INVITE", direction: OUT)
     SuspendedUsers: [Suspension!]! @relationship(type: "SUSPENDED_AS_USER", direction: OUT)
     SuspendedMods: [Suspension!]! @relationship(type: "SUSPENDED_AS_MOD", direction: OUT)
 

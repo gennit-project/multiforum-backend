@@ -37,6 +37,12 @@ import removeForumMod from './customResolvers/mutations/removeForumMod.js';
 import acceptForumModInvite from './customResolvers/mutations/acceptForumModInvite.js';
 import cancelInviteForumMod from './customResolvers/mutations/cancelInviteForumMod.js';
 import cancelInviteOwner from './customResolvers/mutations/cancelInviteForumOwner.js';
+import inviteServerAdmin from './customResolvers/mutations/inviteServerAdmin.js';
+import acceptServerAdminInvite from './customResolvers/mutations/acceptServerAdminInvite.js';
+import cancelInviteServerAdmin from './customResolvers/mutations/cancelInviteServerAdmin.js';
+import inviteServerMod from './customResolvers/mutations/inviteServerMod.js';
+import acceptServerModInvite from './customResolvers/mutations/acceptServerModInvite.js';
+import cancelInviteServerMod from './customResolvers/mutations/cancelInviteServerMod.js';
 import getSortedChannels from './customResolvers/queries/getSortedChannels.js';
 import reportComment from './customResolvers/mutations/reportComment.js';
 import reportDiscussion from './customResolvers/mutations/reportDiscussion.js';
@@ -305,6 +311,28 @@ export default function (driver) {
             }),
             acceptForumModInvite: acceptForumModInvite({
                 Channel,
+                User
+            }),
+            // Server admin/mod invite workflow
+            inviteServerAdmin: inviteServerAdmin({
+                ServerConfig,
+                User
+            }),
+            cancelInviteServerAdmin: cancelInviteServerAdmin({
+                ServerConfig
+            }),
+            acceptServerAdminInvite: acceptServerAdminInvite({
+                ServerConfig
+            }),
+            inviteServerMod: inviteServerMod({
+                ServerConfig,
+                User
+            }),
+            cancelInviteServerMod: cancelInviteServerMod({
+                ServerConfig
+            }),
+            acceptServerModInvite: acceptServerModInvite({
+                ServerConfig,
                 User
             }),
             dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
