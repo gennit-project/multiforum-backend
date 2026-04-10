@@ -1,5 +1,5 @@
 import { rule } from "graphql-shield";
-import { ERROR_MESSAGES } from "../../rules/errorMessages.js";
+import { ERROR_MESSAGES } from "../errorMessages.js";
 import {
   ChannelWhere,
   Channel,
