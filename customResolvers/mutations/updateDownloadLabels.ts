@@ -1,20 +1,12 @@
 import type {
-  IssueModel,
   DiscussionModel,
   DiscussionChannelModel,
   FilterOptionModel,
-  IssueCreateInput,
+  ModerationActionModel,
   ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
 } from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
-import {
-  getModerationActionCreateInput,
-  getIssueCreateInput,
-} from "./reportComment.js";
-import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 
 type Args = {
   discussionId: string;
@@ -23,15 +15,14 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
   Discussion: DiscussionModel;
   DiscussionChannel: DiscussionChannelModel;
   FilterOption: FilterOptionModel;
-  driver: any;
+  ModerationAction: ModerationActionModel;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Discussion, DiscussionChannel, FilterOption, driver } = input;
+  const { Discussion, DiscussionChannel, FilterOption, ModerationAction } = input;
 
   return async (parent: any, args: Args, context: any, resolveInfo: any) => {
     const {
@@ -206,106 +197,33 @@ const getResolver = (input: Input) => {
 
     const updatedDiscussionChannel = updateResult.discussionChannels[0];
 
-    // If the user is not the owner (i.e., is a mod), create a moderation action
+    // If the user is not the owner (i.e., is a mod), create a moderation action record
     if (!isOwner && hasModPermission && loggedInModName) {
-      // Find or create an issue for this discussion
-      let existingIssueId = "";
-      let existingIssue: any = null;
+      const actionDescription = labelNames.length > 0
+        ? `Updated download labels to: ${labelNames.join(", ")} on "${discussion.title || 'untitled'}"`
+        : `Removed all download labels from "${discussion.title || 'untitled'}"`;
 
-      const issueData = await Issue.find({
-        where: {
-          channelUniqueName: channelUniqueName,
-          relatedDiscussionId: discussionId,
-        },
-        selectionSet: `{
-          id
-          issueNumber
-          isOpen
-        }`,
-      });
-
-      if (issueData.length > 0) {
-        existingIssueId = issueData[0]?.id || "";
-        existingIssue = issueData[0];
-      } else {
-        // Create a new issue for tracking this moderation action
-        const discussionTitle = discussion.title || "";
-        const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
-
-        const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-          contextText: discussionTitle,
-          selectedForumRules: [],
-          selectedServerRules: [],
-          loggedInModName,
-          channelUniqueName,
-          reportedContentType: "discussion",
-          relatedDiscussionId: discussionId,
-          issueNumber,
-        });
-
-        // Override the title for label updates
-        issueCreateInput.title = `[Label update] "${discussionTitle.substring(0, 50)}${discussionTitle.length > 50 ? '...' : ''}"`;
-        issueCreateInput.isOpen = false; // Label updates don't need to stay open
-
-        try {
-          const newIssueData = await Issue.create({
-            input: [issueCreateInput],
-            selectionSet: `{
-              issues {
-                id
-                issueNumber
-              }
-            }`,
-          });
-          existingIssueId = newIssueData.issues[0]?.id || "";
-          existingIssue = newIssueData.issues[0];
-        } catch (error) {
-          console.error("Error creating issue for label update:", error);
-          // Don't fail the label update if issue creation fails
-        }
-      }
-
-      // If we have an issue, add the moderation action
-      if (existingIssueId) {
-        const actionDescription = labelNames.length > 0
-          ? `Updated download labels to: ${labelNames.join(", ")}`
-          : "Removed all download labels";
-
-        const moderationActionCreateInput: ModerationActionCreateInput =
-          getModerationActionCreateInput({
-            text: actionDescription,
-            loggedInModName,
-            channelUniqueName,
-            actionType: "label_update",
-            actionDescription,
-            issueId: existingIssueId,
-          });
-
-        const issueUpdateWhere: IssueWhere = {
-          id: existingIssueId,
-        };
-
-        const issueUpdateInput: IssueUpdateInput = {
-          ActivityFeed: [
-            {
-              create: [
-                {
-                  node: moderationActionCreateInput,
-                },
-              ],
+      const moderationActionInput: ModerationActionCreateInput = {
+        actionType: "label_update",
+        actionDescription,
+        ModerationProfile: {
+          connect: {
+            where: {
+              node: {
+                displayName: loggedInModName,
+              },
             },
-          ],
-        };
+          },
+        },
+      };
 
-        try {
-          await Issue.update({
-            where: issueUpdateWhere,
-            update: issueUpdateInput,
-          });
-        } catch (error) {
-          console.error("Error adding moderation action:", error);
-          // Don't fail the label update if moderation action creation fails
-        }
+      try {
+        await ModerationAction.create({
+          input: [moderationActionInput],
+        });
+      } catch (error) {
+        console.error("Error creating moderation action:", error);
+        // Don't fail the label update if moderation action creation fails
       }
     }
 

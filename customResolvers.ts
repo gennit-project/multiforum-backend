@@ -152,6 +152,7 @@ export default function (driver: any) {
   const WikiPage = ogm.model("WikiPage");
   const TextVersion = ogm.model("TextVersion");
   const FilterOption = ogm.model("FilterOption");
+  const ModerationAction = ogm.model("ModerationAction");
 
   const resolvers = {
     JSON: GraphQLJSON,
@@ -610,11 +611,10 @@ export default function (driver: any) {
         User
       }),
       updateDownloadLabels: updateDownloadLabels({
-        Issue,
         Discussion,
         DiscussionChannel,
         FilterOption,
-        driver
+        ModerationAction,
       }),
     },
   };
