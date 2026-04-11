@@ -77,6 +77,13 @@ const typeDefinitions = gql `
     scanStatus: ScanStatus! @default(value: PENDING)
     scanCheckedAt: DateTime
 
+    # Moderation state
+    archived: Boolean @default(value: false)
+    permanentlyRemoved: Boolean @default(value: false)
+    permanentlyRemovedAt: DateTime
+    PermanentlyRemovedByUser: User @relationship(type: "REMOVED_IMAGE", direction: IN)
+    PermanentlyRemovedByMod: ModerationProfile @relationship(type: "REMOVED_IMAGE", direction: IN)
+
     Album:    Album @relationship(type: "HAS_IMAGE", direction: IN)
     Uploader: User  @relationship(type: "UPLOADED_IMAGE", direction: IN)
     RelatedIssues: [Issue!]! @relationship(type: "CITED_ISSUE", direction: IN)
@@ -234,6 +241,7 @@ const typeDefinitions = gql `
 
     # wiki authorship
     AuthoredWikiPages:          [WikiPage!]!   @relationship(type: "AUTHORED_VERSION", direction: OUT)
+    OriginalWikiPages:          [WikiPage!]!   @relationship(type: "AUTHORED_WIKI_PAGE", direction: OUT)
     AuthoredWikiPageVersions:   [TextVersion!]! @relationship(type: "AUTHORED_VERSION", direction: OUT)
 
     # roles & perms
@@ -303,6 +311,7 @@ const typeDefinitions = gql `
     channelUniqueName: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
+    OriginalAuthor: User @relationship(type: "AUTHORED_WIKI_PAGE", direction: IN)
     VersionAuthor: User @relationship(type: "AUTHORED_VERSION", direction: IN)
     PastVersions: [TextVersion!]!
       @relationship(type: "HAS_VERSION", direction: OUT)
@@ -710,9 +719,17 @@ const typeDefinitions = gql `
     relatedDiscussionId: ID
     relatedCommentId: ID
     relatedEventId: ID
+    relatedWikiPageId: ID
+    relatedWikiRevisionId: ID
     relatedUsername: String
     relatedModProfileName: String
     relatedChannelUniqueName: String
+    # Image moderation
+    relatedImageId: ID
+    relatedAlbumId: ID
+    relatedProfilePicUserId: ID
+    relatedChannelIconName: String
+    relatedChannelBannerName: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     flaggedServerRuleViolation: Boolean
@@ -945,6 +962,14 @@ const typeDefinitions = gql `
     ): Issue
     reportEvent(
       eventId: ID!
+      reportText: String!
+      selectedForumRules: [String!]!
+      selectedServerRules: [String!]!
+      channelUniqueName: String!
+    ): Issue
+    reportWikiEdit(
+      wikiPageId: ID!
+      wikiRevisionId: ID
       reportText: String!
       selectedForumRules: [String!]!
       selectedServerRules: [String!]!
@@ -1205,6 +1230,7 @@ const typeDefinitions = gql `
     canCloseSupportTickets: Boolean
     canReport: Boolean
     canSuspendUser: Boolean
+    canArchiveImage: Boolean
   }
 
   type ModServerRole {
@@ -1222,6 +1248,8 @@ const typeDefinitions = gql `
     canCloseSupportTickets: Boolean
     canReport: Boolean
     canSuspendUser: Boolean
+    canArchiveImage: Boolean
+    canPermanentlyRemoveImage: Boolean
   }
 
   type Plugin {
