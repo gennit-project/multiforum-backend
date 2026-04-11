@@ -1004,6 +1004,22 @@ const typeDefinitions = gql`
       reportText: String!
       selectedServerRules: [String!]!
     ): Issue
+    archiveImage(
+      imageId: ID!
+      selectedForumRules: [String!]!
+      selectedServerRules: [String!]!
+      reportText: String!
+      channelUniqueName: String
+    ): Issue
+    unarchiveImage(
+      imageId: ID!
+      explanation: String
+      channelUniqueName: String
+    ): Issue
+    permanentlyRemoveImage(
+      imageId: ID!
+      explanation: String
+    ): Issue
     lockChannel(
       channelUniqueName: String!
       reason: String!

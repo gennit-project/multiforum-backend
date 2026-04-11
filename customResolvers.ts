@@ -73,6 +73,9 @@ import archiveDiscussion from './customResolvers/mutations/archiveDiscussion.js'
 import unarchiveDiscussion from './customResolvers/mutations/unarchiveDiscussion.js';
 import archiveEvent from './customResolvers/mutations/archiveEvent.js';
 import unarchiveEvent from './customResolvers/mutations/unarchiveEvent.js';
+import archiveImage from './customResolvers/mutations/archiveImage.js';
+import unarchiveImage from './customResolvers/mutations/unarchiveImage.js';
+import permanentlyRemoveImage from './customResolvers/mutations/permanentlyRemoveImage.js';
 import createIssue from './customResolvers/mutations/createIssue.js';
 
 import suspendUser from './customResolvers/mutations/suspendUser.js';
@@ -421,6 +424,20 @@ export default function (driver: any) {
       reportChannelImage: reportChannelImage({
         Issue,
         Channel,
+        driver
+      }),
+      archiveImage: archiveImage({
+        Issue,
+        Image,
+        driver
+      }),
+      unarchiveImage: unarchiveImage({
+        Issue,
+        Image
+      }),
+      permanentlyRemoveImage: permanentlyRemoveImage({
+        Issue,
+        Image,
         driver
       }),
       lockChannel: lockChannel({
