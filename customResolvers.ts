@@ -59,7 +59,11 @@ import getSortedChannels from './customResolvers/queries/getSortedChannels.js';
 import reportComment from './customResolvers/mutations/reportComment.js';
 import reportDiscussion from './customResolvers/mutations/reportDiscussion.js';
 import reportEvent from './customResolvers/mutations/reportEvent.js';
+import reportWikiEdit from './customResolvers/mutations/reportWikiEdit.js';
 import reportChannel from './customResolvers/mutations/reportChannel.js';
+import reportImage from './customResolvers/mutations/reportImage.js';
+import reportProfilePicture from './customResolvers/mutations/reportProfilePicture.js';
+import reportChannelImage from './customResolvers/mutations/reportChannelImage.js';
 import lockChannel from './customResolvers/mutations/lockChannel.js';
 import unlockChannel from './customResolvers/mutations/unlockChannel.js';
 
@@ -141,6 +145,8 @@ export default function (driver: any) {
   const ServerSecret = ogm.model("ServerSecret");
   const Image = ogm.model("Image");
   const Album = ogm.model("Album");
+  const WikiPage = ogm.model("WikiPage");
+  const TextVersion = ogm.model("TextVersion");
 
   const resolvers = {
     JSON: GraphQLJSON,
@@ -391,7 +397,28 @@ export default function (driver: any) {
         Event,
         driver
       }),
+      reportWikiEdit: reportWikiEdit({
+        Issue,
+        WikiPage,
+        TextVersion,
+        driver
+      }),
       reportChannel: reportChannel({
+        Issue,
+        Channel,
+        driver
+      }),
+      reportImage: reportImage({
+        Issue,
+        Image,
+        driver
+      }),
+      reportProfilePicture: reportProfilePicture({
+        Issue,
+        User,
+        driver
+      }),
+      reportChannelImage: reportChannelImage({
         Issue,
         Channel,
         driver
@@ -412,7 +439,9 @@ export default function (driver: any) {
         ServerConfig,
         Comment,
         Event,
-        Discussion
+        Discussion,
+        WikiPage,
+        TextVersion
       }),
       unsuspendUser: unsuspendUser({
         Issue,

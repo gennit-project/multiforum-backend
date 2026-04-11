@@ -33,6 +33,11 @@ const typeDefinitions = gql`
     FAILED
   }
 
+  enum ChannelImageType {
+    ICON
+    BANNER
+  }
+
   enum CollectionVisibility {
     PUBLIC
     PRIVATE
@@ -978,6 +983,24 @@ const typeDefinitions = gql`
     ): Issue
     reportChannel(
       channelUniqueName: String!
+      reportText: String!
+      selectedServerRules: [String!]!
+    ): Issue
+    reportImage(
+      imageId: ID!
+      reportText: String!
+      selectedForumRules: [String!]!
+      selectedServerRules: [String!]!
+      channelUniqueName: String
+    ): Issue
+    reportProfilePicture(
+      username: String!
+      reportText: String!
+      selectedServerRules: [String!]!
+    ): Issue
+    reportChannelImage(
+      channelUniqueName: String!
+      imageType: ChannelImageType!
       reportText: String!
       selectedServerRules: [String!]!
     ): Issue
