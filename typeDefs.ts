@@ -1119,6 +1119,11 @@ const typeDefinitions = gql`
       channelUniqueName: String!
       pipelines: [EventPipelineInput!]!
     ): JSON!
+    updateDownloadLabels(
+      discussionId: ID!
+      channelUniqueName: String!
+      labelOptionIds: [ID!]!
+    ): DiscussionChannel
   }
 
   input SiteWideDiscussionSortOrder {

@@ -115,6 +115,7 @@ import createImageWithUploader from './customResolvers/mutations/createImageWith
 import createImagesWithUploader from './customResolvers/mutations/createImagesWithUploader.js';
 import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithOwner.js';
 import createDownloadableFileUrlResolver from './customResolvers/fields/downloadableFileUrl.js';
+import updateDownloadLabels from './customResolvers/mutations/updateDownloadLabels.js';
 
 const { OGM } = pkg;
 
@@ -150,6 +151,7 @@ export default function (driver: any) {
   const Album = ogm.model("Album");
   const WikiPage = ogm.model("WikiPage");
   const TextVersion = ogm.model("TextVersion");
+  const FilterOption = ogm.model("FilterOption");
 
   const resolvers = {
     JSON: GraphQLJSON,
@@ -606,6 +608,13 @@ export default function (driver: any) {
       createAlbums: createAlbumsWithOwner({
         Album,
         User
+      }),
+      updateDownloadLabels: updateDownloadLabels({
+        Issue,
+        Discussion,
+        DiscussionChannel,
+        FilterOption,
+        driver
       }),
     },
   };

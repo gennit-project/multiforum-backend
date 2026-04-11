@@ -269,6 +269,7 @@ const permissionList = shield({
       setServerPluginSecret: and(isAuthenticated, isAdmin),
       deletePluginVersions: allow, // and(isAuthenticated, isAdmin)
       updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
+      updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
     },
   },{
     debug: true,
