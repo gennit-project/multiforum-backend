@@ -59,6 +59,9 @@ import getSortedChannels from './customResolvers/queries/getSortedChannels.js';
 import reportComment from './customResolvers/mutations/reportComment.js';
 import reportDiscussion from './customResolvers/mutations/reportDiscussion.js';
 import reportEvent from './customResolvers/mutations/reportEvent.js';
+import reportChannel from './customResolvers/mutations/reportChannel.js';
+import lockChannel from './customResolvers/mutations/lockChannel.js';
+import unlockChannel from './customResolvers/mutations/unlockChannel.js';
 
 import archiveComment from './customResolvers/mutations/archiveComment.js';
 import unarchiveComment from './customResolvers/mutations/unarchiveComment.js'
@@ -386,6 +389,21 @@ export default function (driver: any) {
       reportEvent: reportEvent({
         Issue,
         Event,
+        driver
+      }),
+      reportChannel: reportChannel({
+        Issue,
+        Channel,
+        driver
+      }),
+      lockChannel: lockChannel({
+        Issue,
+        Channel,
+        driver
+      }),
+      unlockChannel: unlockChannel({
+        Issue,
+        Channel,
         driver
       }),
       suspendUser: suspendUser({

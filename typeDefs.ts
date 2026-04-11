@@ -391,6 +391,9 @@ const typeDefinitions = gql`
     displayName: String
     description: String
     locked: Boolean
+    lockedAt: DateTime
+    lockReason: String
+    LockedBy: ModerationProfile @relationship(type: "LOCKED_CHANNEL", direction: IN)
     deleted: Boolean
     channelIconURL: String
     channelBannerURL: String
@@ -710,6 +713,7 @@ const typeDefinitions = gql`
     relatedEventId: ID
     relatedUsername: String
     relatedModProfileName: String
+    relatedChannelUniqueName: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     flaggedServerRuleViolation: Boolean
@@ -947,6 +951,20 @@ const typeDefinitions = gql`
       selectedServerRules: [String!]!
       channelUniqueName: String!
     ): Issue
+    reportChannel(
+      channelUniqueName: String!
+      reportText: String!
+      selectedServerRules: [String!]!
+    ): Issue
+    lockChannel(
+      channelUniqueName: String!
+      reason: String!
+      issueId: ID
+    ): Channel
+    unlockChannel(
+      channelUniqueName: String!
+      reason: String
+    ): Channel
     suspendUser(
       issueId: ID!
       suspendUntil: DateTime

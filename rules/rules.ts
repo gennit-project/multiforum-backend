@@ -29,6 +29,7 @@ import { canEditEvents } from "./permission/canEditEvents.js";
 import { canReport } from "./permission/canReport.js";
 import { canSuspendAndUnsuspendUser } from "./permission/canSuspendAndUnsuspendUser.js";
 import { canBecomeForumAdmin } from "./permission/canBecomeForumAdmin.js";
+import { canLockChannel } from "./permission/canLockChannel.js";
 import {
   CommentCreateInput,
   DiscussionCreateInput,
@@ -516,6 +517,7 @@ const ruleList = {
   canReport,
   canSuspendAndUnsuspendUser,
   canBecomeForumAdmin,
+  canLockChannel,
   isCollectionOwner,
   isImageUploader,
 };

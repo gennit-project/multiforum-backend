@@ -40,6 +40,7 @@ const {
   isAuthenticatedAndVerified,
   isAuthenticated,
   canBecomeForumAdmin,
+  canLockChannel,
   isCollectionOwner,
   isImageUploader,
 } = rules;
@@ -212,6 +213,9 @@ const permissionList = shield({
       reportDiscussion: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportComment: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportEvent: and(isAuthenticated, or(isChannelOwner, canReport)),
+      reportChannel: and(isAuthenticated, canReport), // Channel reports require mod profile, no channel owner shortcut
+      lockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
+      unlockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
