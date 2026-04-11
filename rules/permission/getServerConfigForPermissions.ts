@@ -39,6 +39,8 @@ export const getServerConfigForPermissions = async (context: any) => {
           canEditEvents
           canReport
           canSuspendUser
+          canArchiveImage
+          canPermanentlyRemoveImage
         }
         DefaultElevatedModRole {
           canOpenSupportTickets
@@ -53,6 +55,8 @@ export const getServerConfigForPermissions = async (context: any) => {
           canEditEvents
           canReport
           canSuspendUser
+          canArchiveImage
+          canPermanentlyRemoveImage
         }
         DefaultSuspendedModRole {
           canOpenSupportTickets
@@ -67,6 +71,8 @@ export const getServerConfigForPermissions = async (context: any) => {
           canEditEvents
           canReport
           canSuspendUser
+          canArchiveImage
+          canPermanentlyRemoveImage
         }
         Admins {
           username

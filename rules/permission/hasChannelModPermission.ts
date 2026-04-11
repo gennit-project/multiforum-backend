@@ -16,7 +16,8 @@ export enum ModChannelPermission {
   canOpenSupportTickets = "canOpenSupportTickets",
   canCloseSupportTickets = "canCloseSupportTickets",
   canReport = "canReport",
-  canSuspendUser = "canSuspendUser"
+  canSuspendUser = "canSuspendUser",
+  canArchiveImage = "canArchiveImage"
 }
 
 type HasChannelModPermissionInput = {
@@ -51,8 +52,8 @@ export const hasChannelModPermission: (
     where: {
       uniqueName: channelName,
     },
-    selectionSet: `{ 
-      DefaultModRole { 
+    selectionSet: `{
+      DefaultModRole {
         canHideComment
         canHideEvent
         canHideDiscussion
@@ -64,6 +65,7 @@ export const hasChannelModPermission: (
         canCloseSupportTickets
         canReport
         canSuspendUser
+        canArchiveImage
       }
       ElevatedModRole {
         canHideComment
@@ -77,6 +79,7 @@ export const hasChannelModPermission: (
         canCloseSupportTickets
         canReport
         canSuspendUser
+        canArchiveImage
       }
       SuspendedModRole {
         canHideComment
@@ -90,6 +93,7 @@ export const hasChannelModPermission: (
         canCloseSupportTickets
         canReport
         canSuspendUser
+        canArchiveImage
       }
       SuspendedMods {
         modProfileName
@@ -113,8 +117,8 @@ export const hasChannelModPermission: (
   const ServerConfig = context.ogm.model("ServerConfig");
   const serverConfig = await ServerConfig.find({
     where: { serverName: process.env.SERVER_CONFIG_NAME },
-    selectionSet: `{ 
-      DefaultModRole { 
+    selectionSet: `{
+      DefaultModRole {
         canOpenSupportTickets
         canLockChannel
         canCloseSupportTickets
@@ -125,9 +129,9 @@ export const hasChannelModPermission: (
         canEditComments
         canEditDiscussions
         canEditEvents
-        canGiveFeedback
         canReport
         canSuspendUser
+        canArchiveImage
       }
       DefaultSuspendedModRole {
         canOpenSupportTickets
@@ -140,9 +144,9 @@ export const hasChannelModPermission: (
         canEditComments
         canEditDiscussions
         canEditEvents
-        canGiveFeedback
         canReport
         canSuspendUser
+        canArchiveImage
       }
       DefaultElevatedModRole {
         canOpenSupportTickets
@@ -155,9 +159,9 @@ export const hasChannelModPermission: (
         canEditComments
         canEditDiscussions
         canEditEvents
-        canGiveFeedback
         canReport
         canSuspendUser
+        canArchiveImage
       }
     }`,
   });

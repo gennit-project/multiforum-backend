@@ -34,6 +34,8 @@ const {
   canArchiveAndUnarchiveComment,
   canArchiveAndUnarchiveDiscussion,
   canArchiveAndUnarchiveEvent,
+  canArchiveAndUnarchiveImage,
+  canPermanentlyRemoveImage,
   canEditComments,
   canEditDiscussions,
   canEditEvents,
@@ -213,6 +215,7 @@ const permissionList = shield({
       reportDiscussion: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportComment: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportEvent: and(isAuthenticated, or(isChannelOwner, canReport)),
+      reportWikiEdit: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportChannel: and(isAuthenticated, canReport), // Channel reports require mod profile, no channel owner shortcut
       lockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
       unlockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
@@ -228,7 +231,10 @@ const permissionList = shield({
       unarchiveComment: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveComment)),
       unarchiveDiscussion: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveDiscussion)),
       unarchiveEvent: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveEvent)),
-      
+      archiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
+      unarchiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
+      permanentlyRemoveImage: and(isAuthenticated, canPermanentlyRemoveImage),
+
       subscribeToDiscussionChannel: and(isAuthenticated, allow),
       unsubscribeFromDiscussionChannel: and(isAuthenticated, allow),
       subscribeToEvent: and(isAuthenticated, allow),

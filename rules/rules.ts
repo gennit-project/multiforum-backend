@@ -23,6 +23,8 @@ import { checkChannelModPermissions, ModChannelPermission } from "./permission/h
 import { canArchiveAndUnarchiveDiscussion } from "./permission/canArchiveAndUnarchiveDiscussion.js";
 import { canArchiveAndUnarchiveEvent } from "./permission/canArchiveAndUnarchiveEvent.js";
 import { canArchiveAndUnarchiveComment } from "./permission/canArchiveAndUnarchiveComment.js";
+import { canArchiveAndUnarchiveImage } from "./permission/canArchiveAndUnarchiveImage.js";
+import { canPermanentlyRemoveImage } from "./permission/canPermanentlyRemoveImage.js";
 import { canEditComments } from "./permission/canEditComments.js";
 import { canEditDiscussions } from "./permission/canEditDiscussions.js";
 import { canEditEvents } from "./permission/canEditEvents.js";
@@ -511,6 +513,8 @@ const ruleList = {
   canArchiveAndUnarchiveDiscussion,
   canArchiveAndUnarchiveEvent,
   canArchiveAndUnarchiveComment,
+  canArchiveAndUnarchiveImage,
+  canPermanentlyRemoveImage,
   canEditComments,
   canEditDiscussions,
   canEditEvents,
