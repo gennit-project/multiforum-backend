@@ -19,12 +19,13 @@ export const hasChannelPermission: (
   const Channel = context.ogm.model("Channel");
   const User = context.ogm.model("User");
 
-  // Set user data on context
-  context.user = await setUserDataOnContext({
-    context,
-    getPermissionInfo: true,
-    checkSpecificChannel: channelName,
-  });
+  if (!context.user?.username) {
+    context.user = await setUserDataOnContext({
+      context,
+      getPermissionInfo: true,
+      checkSpecificChannel: channelName,
+    });
+  }
 
   if (!context.user) {
     return new Error(ERROR_MESSAGES.channel.noChannelPermission);

@@ -37,6 +37,11 @@ import {
   DiscussionCreateInput,
   EventCreateInput,
   EventUpdateInput,
+  MutationCreateWikiPagesArgs,
+  MutationUpdateChannelsArgs,
+  MutationUpdateWikiPagesArgs,
+  WikiPageChildPagesUpdateFieldInput,
+  WikiPageCreateInput,
 } from "../src/generated/graphql.js";
 import {
   createDiscussionInputIsValid,
@@ -323,6 +328,151 @@ const canUploadFile = rule({ cache: "contextual" })(
   }
 );
 
+type WikiPageLookup = {
+  channelUniqueName?: string | null;
+};
+
+type WikiPageMutationArgs = Partial<
+  MutationCreateWikiPagesArgs & MutationUpdateWikiPagesArgs
+>;
+
+type WikiPageChildPagesUpdate =
+  | WikiPageChildPagesUpdateFieldInput
+  | {
+      create?: Array<{ node?: Pick<WikiPageCreateInput, "channelUniqueName"> }>;
+    };
+
+function addChannelName(
+  channelNames: Set<string>,
+  channelName?: string | null
+) {
+  if (channelName) {
+    channelNames.add(channelName);
+  }
+}
+
+async function getWikiPageChannelNamesByWhere(
+  args: WikiPageMutationArgs,
+  ctx: any
+) {
+  const channelNames = new Set<string>();
+  const where = args?.where || {};
+
+  addChannelName(channelNames, where.channelUniqueName);
+
+  if (where.id || where.slug) {
+    const WikiPage = ctx.ogm.model("WikiPage");
+    const wikiPages = (await WikiPage.find({
+      where,
+      selectionSet: `{
+        channelUniqueName
+      }`,
+    })) as WikiPageLookup[];
+
+    wikiPages.forEach((wikiPage) => {
+      addChannelName(channelNames, wikiPage.channelUniqueName);
+    });
+  }
+
+  return Array.from(channelNames);
+}
+
+function getCreatedWikiPageChannelNames(
+  input?: MutationCreateWikiPagesArgs["input"]
+) {
+  const channelNames = new Set<string>();
+  const inputs = input || [];
+
+  inputs.forEach((item) => {
+    addChannelName(channelNames, item?.channelUniqueName);
+  });
+
+  return Array.from(channelNames);
+}
+
+function getChildPageCreateChannelNames(
+  childPages?: MutationUpdateWikiPagesArgs["update"] extends infer T
+    ? T extends { ChildPages?: infer U }
+      ? U
+      : never
+    : never
+) {
+  const updates = Array.isArray(childPages)
+    ? childPages
+    : childPages
+    ? ([childPages] as WikiPageChildPagesUpdate[])
+    : [];
+
+  return updates.flatMap(
+    (update: WikiPageChildPagesUpdate) =>
+      update.create
+        ?.map((item) => item?.node?.channelUniqueName)
+        .filter((channelName): channelName is string => !!channelName) || []
+  );
+}
+
+export async function evaluateCanEditWikiPagesRule(
+  args: WikiPageMutationArgs,
+  ctx: any
+) {
+  const whereChannelNames = await getWikiPageChannelNamesByWhere(args, ctx);
+  const createdChildChannelNames = getChildPageCreateChannelNames(
+    args?.update?.ChildPages
+  );
+  const createdPageChannelNames = getCreatedWikiPageChannelNames(args?.input);
+  const channelConnections = Array.from(
+    new Set([
+      ...whereChannelNames,
+      ...createdChildChannelNames,
+      ...createdPageChannelNames,
+    ])
+  );
+
+  return checkChannelPermissions({
+    channelConnections,
+    context: ctx,
+    permissionCheck: "canUpdateChannel",
+  });
+}
+
+export async function evaluateCanEditWikiHomePageRule(
+  args: MutationUpdateChannelsArgs,
+  ctx: any
+) {
+  const wikiHomePageUpdate = args?.update?.WikiHomePage;
+
+  if (!wikiHomePageUpdate) {
+    return true;
+  }
+
+  const channelNames = new Set<string>();
+  addChannelName(channelNames, args?.where?.uniqueName);
+  addChannelName(
+    channelNames,
+    wikiHomePageUpdate?.create?.node?.channelUniqueName
+  );
+  addChannelName(
+    channelNames,
+    wikiHomePageUpdate?.update?.node?.channelUniqueName
+  );
+
+  return checkChannelPermissions({
+    channelConnections: Array.from(channelNames),
+    context: ctx,
+    permissionCheck: "canUpdateChannel",
+  });
+}
+
+const canEditWikiPages = rule({ cache: "contextual" })(
+  async (parent: any, args: any, ctx: any, info: any) =>
+    evaluateCanEditWikiPagesRule(args, ctx)
+);
+
+const canEditWikiHomePage = rule({ cache: "contextual" })(
+  async (parent: any, args: any, ctx: any, info: any) =>
+    evaluateCanEditWikiHomePageRule(args, ctx)
+);
+
 type CanUpvoteCommentArgs = {
   commentId: string;
   username: string;
@@ -524,6 +674,8 @@ const ruleList = {
   canLockChannel,
   isCollectionOwner,
   isImageUploader,
+  canEditWikiPages,
+  canEditWikiHomePage,
 };
 
 export default ruleList;

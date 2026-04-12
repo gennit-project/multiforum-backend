@@ -45,6 +45,8 @@ const {
   canLockChannel,
   isCollectionOwner,
   isImageUploader,
+  canEditWikiPages,
+  canEditWikiHomePage,
 } = rules;
 
 const permissionList = shield({
@@ -120,7 +122,7 @@ const permissionList = shield({
       updateUsers: and(isAuthenticated, or(isAccountOwner, isAdmin)),
       
       createChannels: and(isAuthenticated, createChannelInputIsValid, canCreateChannel),
-      updateChannels:allow,// and(isAuthenticated, updateChannelInputIsValid, or(isChannelOwner, isAdmin)),
+      updateChannels: canEditWikiHomePage,// and(isAuthenticated, updateChannelInputIsValid, or(isChannelOwner, isAdmin)),
       deleteChannels: and(isAuthenticated, or(isAdmin, isChannelOwner)),
 
       deleteEmails: and(isAuthenticated, or(isAccountOwner, isAdmin)),
@@ -137,8 +139,8 @@ const permissionList = shield({
       deleteCommentRevision: and(isAuthenticated, allow),
       deleteDiscussionBodyRevision: and(isAuthenticated, allow),
       deleteWikiRevision: and(isAuthenticated, allow),
-      createWikiPages: and(isAuthenticated, allow),
-      updateWikiPages: and(isAuthenticated, allow),
+      createWikiPages: and(isAuthenticated, canEditWikiPages),
+      updateWikiPages: and(isAuthenticated, canEditWikiPages),
       
       createEventWithChannelConnections: and(isAuthenticated, createEventInputIsValid, canCreateEvent),
       updateEventWithChannelConnections: and(isAuthenticated, updateEventInputIsValid, or(isEventOwner, isAdmin, canEditEvents)),
