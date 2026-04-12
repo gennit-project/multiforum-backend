@@ -1,4 +1,5 @@
 import { execute, parse, subscribe } from 'graphql';
+import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -39,12 +40,14 @@ export class WikiPageVersionHistoryService {
               id
               title
               body
+              editReason
               updatedAt
             }
             previousState {
               id
               title
               body
+              editReason
             }
           }
         }
@@ -109,6 +112,7 @@ export class WikiPageVersionHistoryService {
             await this.trackVersionHistory(
               wikiPageId, 
               updatedWikiPage.title,
+              updatedWikiPage.editReason,
               currentUsername
             );
           }
@@ -118,6 +122,7 @@ export class WikiPageVersionHistoryService {
             await this.trackVersionHistory(
               wikiPageId, 
               updatedWikiPage.body,
+              updatedWikiPage.editReason,
               currentUsername
             );
           }
@@ -167,7 +172,12 @@ export class WikiPageVersionHistoryService {
   /**
    * Track version history for a wikiPage
    */
-  private async trackVersionHistory(wikiPageId: string, content: string, username: string) {
+  private async trackVersionHistory(
+    wikiPageId: string,
+    content: string,
+    editReason: string | null | undefined,
+    username: string
+  ) {
     // Get the OGM models
     const WikiPageModel = this.ogm.model('WikiPage');
     const TextVersionModel = this.ogm.model('TextVersion');
@@ -195,13 +205,19 @@ export class WikiPageVersionHistoryService {
 
       // Create new TextVersion for the new content
       // The createdAt timestamp will be automatically set by @timestamp directive
+      const textVersionInput: TextVersionCreateInput = {
+        body: content,
+        Author: {
+          connect: { where: { node: { username } } }
+        }
+      };
+
+      if (editReason) {
+        textVersionInput.editReason = editReason;
+      }
+
       const textVersionResult = await TextVersionModel.create({
-        input: [{
-          body: content,
-          Author: {
-            connect: { where: { node: { username } } }
-          }
-        }]
+        input: [textVersionInput]
       });
 
       if (!textVersionResult.textVersions.length) {

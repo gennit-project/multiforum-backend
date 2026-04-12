@@ -7,6 +7,7 @@
 // Import the handler function that contains the version history logic
 import { wikiPageVersionHistoryHandler } from "../hooks/wikiPageVersionHistoryHook.js";
 import { GraphQLResolveInfo } from 'graphql';
+import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 
 // Define types for the middleware
 interface UpdateWikiPagesArgs {
@@ -16,6 +17,7 @@ interface UpdateWikiPagesArgs {
   update?: {
     title?: string;
     body?: string;
+    editReason?: string;
     [key: string]: any;
   };
   [key: string]: any;
@@ -102,11 +104,25 @@ async function handleChildWikiPageCreation(result: any, update: any, context: Co
         console.log(`Creating first TextVersion for child WikiPage ${childPage.id}`);
         
         if (childPage.title) {
-          await createFirstTextVersion(TextVersionModel, childPage.id, childPage.title, currentUsername, WikiPageModel);
+          await createFirstTextVersion(
+            TextVersionModel,
+            childPage.id,
+            childPage.title,
+            childPage.editReason,
+            currentUsername,
+            WikiPageModel
+          );
         }
         
         if (childPage.body) {
-          await createFirstTextVersion(TextVersionModel, childPage.id, childPage.body, currentUsername, WikiPageModel);
+          await createFirstTextVersion(
+            TextVersionModel,
+            childPage.id,
+            childPage.body,
+            childPage.editReason,
+            currentUsername,
+            WikiPageModel
+          );
         }
       }
     }
@@ -125,18 +141,25 @@ async function createFirstTextVersion(
   TextVersionModel: any,
   wikiPageId: string,
   content: string,
+  editReason: string | null | undefined,
   username: string,
   WikiPageModel: any
 ) {
   try {
+    const textVersionInput: TextVersionCreateInput = {
+      body: content,
+      Author: {
+        connect: { where: { node: { username } } }
+      }
+    };
+
+    if (editReason) {
+      textVersionInput.editReason = editReason;
+    }
+
     // Create the TextVersion
     const textVersionResult = await TextVersionModel.create({
-      input: [{
-        body: content,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      }]
+      input: [textVersionInput]
     });
 
     if (!textVersionResult.textVersions.length) {

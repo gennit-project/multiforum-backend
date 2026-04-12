@@ -325,6 +325,7 @@ const typeDefinitions = gql`
     id: ID! @id
     title: String!
     body: String
+    editReason: String
     slug: String!
     channelUniqueName: String
     createdAt: DateTime! @timestamp(operations: [CREATE])

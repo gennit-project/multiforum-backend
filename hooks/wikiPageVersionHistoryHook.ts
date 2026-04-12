@@ -1,3 +1,5 @@
+import type { TextVersionCreateInput } from "../src/generated/graphql.js";
+
 /**
  * Hook to track wikiPage version history when a wikiPage is updated
  * This will capture the old title and body before the update is applied
@@ -41,6 +43,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: any) =>
         id
         title
         body
+        editReason
         VersionAuthor {
           username
         }
@@ -70,6 +73,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: any) =>
       await trackVersionHistory(
         wikiPageId,
         wikiPage.title,
+        wikiPage.editReason,
         username,
         WikiPageModel,
         TextVersionModel,
@@ -82,6 +86,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: any) =>
       await trackVersionHistory(
         wikiPageId,
         wikiPage.body,
+        wikiPage.editReason,
         username,
         WikiPageModel,
         TextVersionModel,
@@ -100,6 +105,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: any) =>
 async function trackVersionHistory(
   wikiPageId: string,
   previousContent: string,
+  editReason: string | null | undefined,
   username: string,
   WikiPageModel: any,
   TextVersionModel: any,
@@ -127,13 +133,19 @@ async function trackVersionHistory(
 
     // Create new TextVersion for previous content
     // The createdAt timestamp will be automatically set by @timestamp directive
+    const textVersionInput: TextVersionCreateInput = {
+      body: previousContent,
+      Author: {
+        connect: { where: { node: { username } } }
+      }
+    };
+
+    if (editReason) {
+      textVersionInput.editReason = editReason;
+    }
+
     const textVersionResult = await TextVersionModel.create({
-      input: [{
-        body: previousContent,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      }]
+      input: [textVersionInput]
     });
 
     if (!textVersionResult.textVersions.length) {
