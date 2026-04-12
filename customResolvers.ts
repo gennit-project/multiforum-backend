@@ -60,6 +60,7 @@ import reportComment from './customResolvers/mutations/reportComment.js';
 import reportDiscussion from './customResolvers/mutations/reportDiscussion.js';
 import reportEvent from './customResolvers/mutations/reportEvent.js';
 import reportWikiEdit from './customResolvers/mutations/reportWikiEdit.js';
+import redactTextVersionRevision from './customResolvers/mutations/redactTextVersionRevision.js';
 import reportChannel from './customResolvers/mutations/reportChannel.js';
 import reportImage from './customResolvers/mutations/reportImage.js';
 import reportProfilePicture from './customResolvers/mutations/reportProfilePicture.js';
@@ -409,6 +410,18 @@ export default function (driver: any) {
         WikiPage,
         TextVersion,
         driver
+      }),
+      deleteCommentRevision: redactTextVersionRevision({
+        TextVersion,
+        revisionType: 'comment',
+      }),
+      deleteDiscussionBodyRevision: redactTextVersionRevision({
+        TextVersion,
+        revisionType: 'discussion body',
+      }),
+      deleteWikiRevision: redactTextVersionRevision({
+        TextVersion,
+        revisionType: 'wiki',
       }),
       reportChannel: reportChannel({
         Issue,

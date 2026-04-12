@@ -994,6 +994,9 @@ const typeDefinitions = gql`
       selectedServerRules: [String!]!
       channelUniqueName: String!
     ): Issue
+    deleteCommentRevision(textVersionId: ID!): TextVersion
+    deleteDiscussionBodyRevision(textVersionId: ID!): TextVersion
+    deleteWikiRevision(textVersionId: ID!): TextVersion
     reportChannel(
       channelUniqueName: String!
       reportText: String!

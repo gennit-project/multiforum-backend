@@ -133,7 +133,10 @@ const permissionList = shield({
       deleteDiscussionChannels: and(isAuthenticated, isAdmin),
       updateDiscussionChannels: and(isAuthenticated, or(isAdmin, isDiscussionChannelOwner)),
 
-      deleteTextVersions: and(isAuthenticated, allow),
+      deleteTextVersions: deny,
+      deleteCommentRevision: and(isAuthenticated, allow),
+      deleteDiscussionBodyRevision: and(isAuthenticated, allow),
+      deleteWikiRevision: and(isAuthenticated, allow),
       createWikiPages: and(isAuthenticated, allow),
       updateWikiPages: and(isAuthenticated, allow),
       
