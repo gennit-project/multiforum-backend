@@ -309,6 +309,18 @@ const typeDefinitions = gql`
     Author: User @relationship(type: "AUTHORED_VERSION", direction: IN)
   }
 
+  type LabelChangeHistory {
+    id: ID! @id
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    actionType: String! # "added" or "removed"
+    labelDisplayName: String!
+    labelValue: String!
+    # Actor can be the author (User) or a moderator (ModerationProfile)
+    ActorUser: User @relationship(type: "MADE_LABEL_CHANGE", direction: IN)
+    ActorMod: ModerationProfile @relationship(type: "MADE_LABEL_CHANGE", direction: IN)
+    DiscussionChannel: DiscussionChannel @relationship(type: "HAS_LABEL_CHANGE", direction: IN)
+  }
+
   type WikiPage {
     id: ID! @id
     title: String!
@@ -497,6 +509,7 @@ const typeDefinitions = gql`
     SubscribedToNotifications: [User!]!
       @relationship(type: "SUBSCRIBED_TO_NOTIFICATIONS", direction: IN)
     LabelOptions: [FilterOption!]! @relationship(type: "HAS_LABEL_OPTION", direction: OUT)
+    LabelChangeHistory: [LabelChangeHistory!]! @relationship(type: "HAS_LABEL_CHANGE", direction: OUT)
   }
 
   type Discussion {

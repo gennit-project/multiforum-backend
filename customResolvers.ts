@@ -153,6 +153,7 @@ export default function (driver: any) {
   const TextVersion = ogm.model("TextVersion");
   const FilterOption = ogm.model("FilterOption");
   const ModerationAction = ogm.model("ModerationAction");
+  const LabelChangeHistory = ogm.model("LabelChangeHistory");
 
   const resolvers = {
     JSON: GraphQLJSON,
@@ -615,6 +616,7 @@ export default function (driver: any) {
         DiscussionChannel,
         FilterOption,
         ModerationAction,
+        LabelChangeHistory,
       }),
     },
   };

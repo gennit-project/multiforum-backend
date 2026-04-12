@@ -5,6 +5,12 @@ import type {
   ModerationActionModel,
   ModerationActionCreateInput,
 } from "../../ogm_types.js";
+
+// LabelChangeHistory model type - defined locally until OGM types are regenerated
+type LabelChangeHistoryModel = {
+  create: (args: { input: any[] }) => Promise<any>;
+  find: (args: any) => Promise<any[]>;
+};
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 
@@ -19,10 +25,11 @@ type Input = {
   DiscussionChannel: DiscussionChannelModel;
   FilterOption: FilterOptionModel;
   ModerationAction: ModerationActionModel;
+  LabelChangeHistory: LabelChangeHistoryModel;
 };
 
 const getResolver = (input: Input) => {
-  const { Discussion, DiscussionChannel, FilterOption, ModerationAction } = input;
+  const { Discussion, DiscussionChannel, FilterOption, ModerationAction, LabelChangeHistory } = input;
 
   return async (parent: any, args: Args, context: any, resolveInfo: any) => {
     const {
@@ -136,7 +143,40 @@ const getResolver = (input: Input) => {
     const labelsToConnect = labelOptionIds.filter((id: string) => !existingLabelIds.includes(id));
     const labelsToDisconnect = existingLabelIds.filter((id: string) => !labelOptionIds.includes(id));
 
-    // Get label names for the moderation action description
+    // Get label details for labels being added
+    let addedLabels: Array<{ id: string; displayName: string; value: string }> = [];
+    if (labelsToConnect.length > 0) {
+      const addedLabelData = await FilterOption.find({
+        where: {
+          id_IN: labelsToConnect,
+        },
+        selectionSet: `{
+          id
+          displayName
+          value
+        }`,
+      });
+      addedLabels = addedLabelData.map((l: any) => ({
+        id: l.id,
+        displayName: l.displayName || l.value,
+        value: l.value,
+      }));
+    }
+
+    // Get label details for labels being removed
+    let removedLabels: Array<{ id: string; displayName: string; value: string }> = [];
+    if (labelsToDisconnect.length > 0) {
+      // Get details from existing labels on the discussion channel
+      removedLabels = (discussionChannel.LabelOptions || [])
+        .filter((l: any) => labelsToDisconnect.includes(l.id))
+        .map((l: any) => ({
+          id: l.id,
+          displayName: l.displayName || l.value,
+          value: l.value,
+        }));
+    }
+
+    // Get label names for the moderation action description (all final labels)
     let labelNames: string[] = [];
     if (labelOptionIds.length > 0) {
       const labelData = await FilterOption.find({
@@ -196,6 +236,91 @@ const getResolver = (input: Input) => {
     });
 
     const updatedDiscussionChannel = updateResult.discussionChannels[0];
+
+    // Create LabelChangeHistory records for all label changes
+    // This tracks the activity feed visible on the download detail page
+    try {
+      // Create records for added labels
+      for (const label of addedLabels) {
+        const historyInput: any = {
+          actionType: "added",
+          labelDisplayName: label.displayName,
+          labelValue: label.value,
+          DiscussionChannel: {
+            connect: {
+              where: {
+                node: { id: discussionChannelId },
+              },
+            },
+          },
+        };
+
+        // Connect to the appropriate actor
+        if (!isOwner && hasModPermission && loggedInModName) {
+          historyInput.ActorMod = {
+            connect: {
+              where: {
+                node: { displayName: loggedInModName },
+              },
+            },
+          };
+        } else {
+          historyInput.ActorUser = {
+            connect: {
+              where: {
+                node: { username: loggedInUsername },
+              },
+            },
+          };
+        }
+
+        await LabelChangeHistory.create({
+          input: [historyInput],
+        });
+      }
+
+      // Create records for removed labels
+      for (const label of removedLabels) {
+        const historyInput: any = {
+          actionType: "removed",
+          labelDisplayName: label.displayName,
+          labelValue: label.value,
+          DiscussionChannel: {
+            connect: {
+              where: {
+                node: { id: discussionChannelId },
+              },
+            },
+          },
+        };
+
+        // Connect to the appropriate actor
+        if (!isOwner && hasModPermission && loggedInModName) {
+          historyInput.ActorMod = {
+            connect: {
+              where: {
+                node: { displayName: loggedInModName },
+              },
+            },
+          };
+        } else {
+          historyInput.ActorUser = {
+            connect: {
+              where: {
+                node: { username: loggedInUsername },
+              },
+            },
+          };
+        }
+
+        await LabelChangeHistory.create({
+          input: [historyInput],
+        });
+      }
+    } catch (error) {
+      console.error("Error creating label change history:", error);
+      // Don't fail the label update if history creation fails
+    }
 
     // If the user is not the owner (i.e., is a mod), create a moderation action record
     if (!isOwner && hasModPermission && loggedInModName) {
