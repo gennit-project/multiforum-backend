@@ -6,7 +6,7 @@ export const REDACTED_REVISION_BODY = '[deleted]';
 const revisionPermissionByType = {
     comment: ModChannelPermission.canEditComments,
     'discussion body': ModChannelPermission.canEditDiscussions,
-    wiki: ModChannelPermission.canEditDiscussions
+    wiki: ModChannelPermission.canDeleteWiki
 };
 export const getRevisionRedactionTarget = async (input) => {
     const { driver, textVersionId } = input;

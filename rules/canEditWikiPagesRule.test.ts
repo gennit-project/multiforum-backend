@@ -1,15 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  evaluateCanDeleteWikiPagesRule,
   evaluateCanEditWikiHomePageRule,
   evaluateCanEditWikiPagesRule,
 } from "./rules.js";
+import { ModChannelPermission } from "./permission/hasChannelModPermission.js";
 
 type BuildOgmInput = {
   defaultCanUpdateChannel?: boolean;
   suspendedCanUpdateChannel?: boolean;
   suspendedUsers?: Array<{ username: string }>;
-  wikiPages?: Array<{ channelUniqueName: string }>;
+  wikiPages?: Array<{
+    id?: string;
+    channelUniqueName: string;
+    OriginalAuthor?: { username: string };
+  }>;
 };
 
 const buildOgm = ({
@@ -69,7 +75,19 @@ const buildOgm = ({
 
     if (name === "WikiPage") {
       return {
-        find: async () => wikiPages,
+        find: async ({ where }: { where?: { id?: string; id_IN?: string[] } }) => {
+          if (where?.id) {
+            return wikiPages.filter((wikiPage) => wikiPage.id === where.id);
+          }
+
+          if (where?.id_IN?.length) {
+            return wikiPages.filter(
+              (wikiPage) => wikiPage.id && where.id_IN?.includes(wikiPage.id)
+            );
+          }
+
+          return wikiPages;
+        },
       };
     }
 
@@ -88,7 +106,7 @@ const buildContext = (input: BuildOgmInput = {}) => ({
 
 test("allows wiki page updates when the channel role can update the channel", async () => {
   const ctx = buildContext({
-    wikiPages: [{ channelUniqueName: "sourceit" }],
+    wikiPages: [{ id: "wiki-page-1", channelUniqueName: "sourceit" }],
   });
 
   const result = await evaluateCanEditWikiPagesRule(
@@ -102,7 +120,7 @@ test("allows wiki page updates when the channel role can update the channel", as
 test("blocks wiki page updates for suspended users when the suspended role cannot update the channel", async () => {
   const ctx = buildContext({
     suspendedUsers: [{ username: "wiki-author" }],
-    wikiPages: [{ channelUniqueName: "sourceit" }],
+    wikiPages: [{ id: "wiki-page-1", channelUniqueName: "sourceit" }],
   });
 
   const result = await evaluateCanEditWikiPagesRule(
@@ -116,7 +134,7 @@ test("blocks wiki page updates for suspended users when the suspended role canno
 test("checks child wiki page creation against the parent page channel", async () => {
   const ctx = buildContext({
     suspendedUsers: [{ username: "wiki-author" }],
-    wikiPages: [{ channelUniqueName: "sourceit" }],
+    wikiPages: [{ id: "wiki-home", channelUniqueName: "sourceit" }],
   });
 
   const result = await evaluateCanEditWikiPagesRule(
@@ -174,4 +192,76 @@ test("allows unrelated channel updates to keep existing updateChannels behavior"
   );
 
   assert.equal(result, true);
+});
+
+test("allows original wiki page authors to delete their pages", async () => {
+  const ctx = buildContext({
+    wikiPages: [
+      {
+        id: "wiki-page-1",
+        channelUniqueName: "sourceit",
+        OriginalAuthor: { username: "wiki-author" },
+      },
+    ],
+  });
+
+  const result = await evaluateCanDeleteWikiPagesRule(
+    { where: { id: "wiki-page-1" } },
+    ctx
+  );
+
+  assert.equal(result, true);
+});
+
+test("checks the dedicated wiki delete permission for non-author page deletion", async () => {
+  const ctx = buildContext({
+    wikiPages: [
+      {
+        id: "wiki-page-1",
+        channelUniqueName: "sourceit",
+        OriginalAuthor: { username: "page-creator" },
+      },
+    ],
+  });
+  const permissionCalls: Array<{
+    channelConnections: string[];
+    permissionCheck: ModChannelPermission;
+  }> = [];
+
+  const result = await evaluateCanDeleteWikiPagesRule(
+    { where: { id: "wiki-page-1" } },
+    ctx,
+    async ({ channelConnections, permissionCheck }) => {
+      permissionCalls.push({ channelConnections, permissionCheck });
+      return true;
+    }
+  );
+
+  assert.equal(result, true);
+  assert.deepEqual(permissionCalls, [
+    {
+      channelConnections: ["sourceit"],
+      permissionCheck: ModChannelPermission.canDeleteWiki,
+    },
+  ]);
+});
+
+test("blocks wiki page deletion when the user is not the original author or a permitted mod", async () => {
+  const ctx = buildContext({
+    wikiPages: [
+      {
+        id: "wiki-page-1",
+        channelUniqueName: "sourceit",
+        OriginalAuthor: { username: "page-creator" },
+      },
+    ],
+  });
+
+  const result = await evaluateCanDeleteWikiPagesRule(
+    { where: { id: "wiki-page-1" } },
+    ctx,
+    async () => new Error("No permission")
+  );
+
+  assert.ok(result instanceof Error);
 });

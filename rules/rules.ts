@@ -38,10 +38,12 @@ import {
   EventCreateInput,
   EventUpdateInput,
   MutationCreateWikiPagesArgs,
+  MutationDeleteWikiPagesArgs,
   MutationUpdateChannelsArgs,
   MutationUpdateWikiPagesArgs,
   WikiPageChildPagesUpdateFieldInput,
   WikiPageCreateInput,
+  WikiPageWhere,
 } from "../src/generated/graphql.js";
 import {
   createDiscussionInputIsValid,
@@ -329,11 +331,17 @@ const canUploadFile = rule({ cache: "contextual" })(
 );
 
 type WikiPageLookup = {
+  id?: string | null;
   channelUniqueName?: string | null;
+  OriginalAuthor?: {
+    username?: string | null;
+  } | null;
 };
 
 type WikiPageMutationArgs = Partial<
-  MutationCreateWikiPagesArgs & MutationUpdateWikiPagesArgs
+  MutationCreateWikiPagesArgs &
+    MutationUpdateWikiPagesArgs &
+    MutationDeleteWikiPagesArgs
 >;
 
 type WikiPageChildPagesUpdate =
@@ -351,28 +359,51 @@ function addChannelName(
   }
 }
 
+function hasWikiPageWhere(where?: WikiPageWhere | null) {
+  return !!where && Object.keys(where).length > 0;
+}
+
+async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: any) {
+  if (!hasWikiPageWhere(where)) {
+    return [];
+  }
+
+  const WikiPage = ctx.ogm.model("WikiPage");
+  return (await WikiPage.find({
+    where,
+    selectionSet: `{
+      id
+      channelUniqueName
+      OriginalAuthor {
+        username
+      }
+    }`,
+  })) as WikiPageLookup[];
+}
+
+function collectWikiPageChannelNames(wikiPages: WikiPageLookup[]) {
+  const channelNames = new Set<string>();
+
+  wikiPages.forEach((wikiPage) => {
+    addChannelName(channelNames, wikiPage.channelUniqueName);
+  });
+
+  return Array.from(channelNames);
+}
+
 async function getWikiPageChannelNamesByWhere(
   args: WikiPageMutationArgs,
   ctx: any
 ) {
   const channelNames = new Set<string>();
-  const where = args?.where || {};
+  const where = args?.where || null;
 
-  addChannelName(channelNames, where.channelUniqueName);
+  addChannelName(channelNames, where?.channelUniqueName);
 
-  if (where.id || where.slug) {
-    const WikiPage = ctx.ogm.model("WikiPage");
-    const wikiPages = (await WikiPage.find({
-      where,
-      selectionSet: `{
-        channelUniqueName
-      }`,
-    })) as WikiPageLookup[];
-
-    wikiPages.forEach((wikiPage) => {
-      addChannelName(channelNames, wikiPage.channelUniqueName);
-    });
-  }
+  const wikiPages = await getWikiPagesByWhere(where, ctx);
+  collectWikiPageChannelNames(wikiPages).forEach((channelName) => {
+    addChannelName(channelNames, channelName);
+  });
 
   return Array.from(channelNames);
 }
@@ -463,9 +494,61 @@ export async function evaluateCanEditWikiHomePageRule(
   });
 }
 
+export async function evaluateCanDeleteWikiPagesRule(
+  args: MutationDeleteWikiPagesArgs,
+  ctx: any,
+  checkModPermissions = checkChannelModPermissions
+) {
+  if (!hasWikiPageWhere(args?.where || null)) {
+    return new Error("No wiki page specified for this operation.");
+  }
+
+  const wikiPages = await getWikiPagesByWhere(args?.where || null, ctx);
+
+  if (!wikiPages.length) {
+    return new Error("Could not find the wiki page or its associated channel.");
+  }
+
+  const currentUsername = ctx.user?.username || null;
+  if (!currentUsername) {
+    return new Error(ERROR_MESSAGES.channel.notAuthenticated);
+  }
+
+  const userOwnsAllPages = wikiPages.every(
+    (wikiPage) => wikiPage.OriginalAuthor?.username === currentUsername
+  );
+
+  if (userOwnsAllPages) {
+    return true;
+  }
+
+  const channelConnections = collectWikiPageChannelNames(wikiPages);
+
+  if (!channelConnections.length) {
+    return new Error("No channel specified for this operation.");
+  }
+
+  const permissionResult = await checkModPermissions({
+    channelConnections,
+    context: ctx,
+    permissionCheck: ModChannelPermission.canDeleteWiki,
+  });
+
+  if (permissionResult instanceof Error) {
+    return permissionResult;
+  }
+
+  return true;
+}
+
 const canEditWikiPages = rule({ cache: "contextual" })(
   async (parent: any, args: any, ctx: any, info: any) =>
     evaluateCanEditWikiPagesRule(args, ctx)
+);
+
+const canDeleteWikiPages = rule({ cache: "contextual" })(
+  async (parent: any, args: any, ctx: any, info: any) =>
+    evaluateCanDeleteWikiPagesRule(args, ctx)
 );
 
 const canEditWikiHomePage = rule({ cache: "contextual" })(
@@ -675,6 +758,7 @@ const ruleList = {
   isCollectionOwner,
   isImageUploader,
   canEditWikiPages,
+  canDeleteWikiPages,
   canEditWikiHomePage,
 };
 

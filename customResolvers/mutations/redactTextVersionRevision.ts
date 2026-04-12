@@ -47,7 +47,7 @@ type Input = {
 const revisionPermissionByType: Record<RevisionType, ModChannelPermission> = {
   comment: ModChannelPermission.canEditComments,
   'discussion body': ModChannelPermission.canEditDiscussions,
-  wiki: ModChannelPermission.canEditDiscussions
+  wiki: ModChannelPermission.canDeleteWiki
 }
 
 export const getRevisionRedactionTarget = async (input: {

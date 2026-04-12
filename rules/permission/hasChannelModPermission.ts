@@ -17,7 +17,8 @@ export enum ModChannelPermission {
   canCloseSupportTickets = "canCloseSupportTickets",
   canReport = "canReport",
   canSuspendUser = "canSuspendUser",
-  canArchiveImage = "canArchiveImage"
+  canArchiveImage = "canArchiveImage",
+  canDeleteWiki = "canDeleteWiki"
 }
 
 type HasChannelModPermissionInput = {
@@ -66,6 +67,7 @@ export const hasChannelModPermission: (
         canReport
         canSuspendUser
         canArchiveImage
+        canDeleteWiki
       }
       ElevatedModRole {
         canHideComment
@@ -80,6 +82,7 @@ export const hasChannelModPermission: (
         canReport
         canSuspendUser
         canArchiveImage
+        canDeleteWiki
       }
       SuspendedModRole {
         canHideComment
@@ -94,6 +97,7 @@ export const hasChannelModPermission: (
         canReport
         canSuspendUser
         canArchiveImage
+        canDeleteWiki
       }
       SuspendedMods {
         modProfileName
@@ -132,6 +136,7 @@ export const hasChannelModPermission: (
         canReport
         canSuspendUser
         canArchiveImage
+        canDeleteWiki
       }
       DefaultSuspendedModRole {
         canOpenSupportTickets
@@ -147,6 +152,7 @@ export const hasChannelModPermission: (
         canReport
         canSuspendUser
         canArchiveImage
+        canDeleteWiki
       }
       DefaultElevatedModRole {
         canOpenSupportTickets
@@ -162,6 +168,7 @@ export const hasChannelModPermission: (
         canReport
         canSuspendUser
         canArchiveImage
+        canDeleteWiki
       }
     }`,
   });

@@ -222,6 +222,47 @@ test('redactTextVersionRevision lets a moderator with the edit permission redact
   assert.equal(permissionCalls[0].permissionCheck, 'canEditDiscussions')
 })
 
+test('redactTextVersionRevision uses the wiki delete permission for wiki revisions', async () => {
+  const updatedRevision = {
+    id: 'version-1',
+    body: REDACTED_REVISION_BODY
+  }
+  const { TextVersion, calls } = buildTextVersionModel({
+    findResult: [{ id: 'version-1', body: 'old text' }],
+    updateResult: { textVersions: [updatedRevision] }
+  })
+  const { driver } = buildDriver({
+    targetType: 'wiki',
+    targetId: 'wiki-1',
+    ownerUsername: 'alice',
+    ownerModProfileName: null,
+    channelUniqueName: 'cats'
+  })
+  const permissionCalls: any[] = []
+  const resolver = redactTextVersionRevision(
+    buildResolverInput({
+      TextVersion,
+      driver,
+      revisionType: 'wiki',
+      checkModPermissions: async (input: any) => {
+        permissionCalls.push(input)
+        return true
+      }
+    })
+  )
+
+  await resolver(
+    null,
+    { textVersionId: 'version-1' },
+    { user: { username: 'mod', data: { ModerationProfile: { displayName: 'mod-cats' } } } },
+    {}
+  )
+
+  assert.equal(calls.update.length, 1)
+  assert.deepEqual(permissionCalls[0].channelConnections, ['cats'])
+  assert.equal(permissionCalls[0].permissionCheck, 'canDeleteWiki')
+})
+
 test('redactTextVersionRevision rejects mismatched revision types', async () => {
   const { TextVersion } = buildTextVersionModel({
     findResult: [{ id: 'version-1', body: 'old text' }]

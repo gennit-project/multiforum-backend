@@ -46,6 +46,7 @@ const {
   isCollectionOwner,
   isImageUploader,
   canEditWikiPages,
+  canDeleteWikiPages,
   canEditWikiHomePage,
 } = rules;
 
@@ -139,6 +140,7 @@ const permissionList = shield({
       deleteCommentRevision: and(isAuthenticated, allow),
       deleteDiscussionBodyRevision: and(isAuthenticated, allow),
       deleteWikiRevision: and(isAuthenticated, allow),
+      deleteWikiPages: and(isAuthenticated, or(isAdmin, canDeleteWikiPages)),
       createWikiPages: and(isAuthenticated, canEditWikiPages),
       updateWikiPages: and(isAuthenticated, canEditWikiPages),
       

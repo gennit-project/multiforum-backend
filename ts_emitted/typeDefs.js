@@ -1292,6 +1292,7 @@ const typeDefinitions = gql `
     canReport: Boolean
     canSuspendUser: Boolean
     canArchiveImage: Boolean
+    canDeleteWiki: Boolean
   }
 
   type ModServerRole {
@@ -1310,6 +1311,7 @@ const typeDefinitions = gql `
     canReport: Boolean
     canSuspendUser: Boolean
     canArchiveImage: Boolean
+    canDeleteWiki: Boolean
     canPermanentlyRemoveImage: Boolean
   }
 
