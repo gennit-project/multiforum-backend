@@ -391,14 +391,17 @@ export default function (driver) {
             }),
             deleteCommentRevision: redactTextVersionRevision({
                 TextVersion,
+                driver,
                 revisionType: 'comment',
             }),
             deleteDiscussionBodyRevision: redactTextVersionRevision({
                 TextVersion,
+                driver,
                 revisionType: 'discussion body',
             }),
             deleteWikiRevision: redactTextVersionRevision({
                 TextVersion,
+                driver,
                 revisionType: 'wiki',
             }),
             reportChannel: reportChannel({
