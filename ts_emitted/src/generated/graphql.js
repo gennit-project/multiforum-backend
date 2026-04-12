@@ -1,3 +1,8 @@
+export var ChannelImageType;
+(function (ChannelImageType) {
+    ChannelImageType["Banner"] = "BANNER";
+    ChannelImageType["Icon"] = "ICON";
+})(ChannelImageType || (ChannelImageType = {}));
 export var CollectionItemType;
 (function (CollectionItemType) {
     CollectionItemType["Channel"] = "CHANNEL";

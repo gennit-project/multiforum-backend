@@ -47,7 +47,11 @@ import getSortedChannels from './customResolvers/queries/getSortedChannels.js';
 import reportComment from './customResolvers/mutations/reportComment.js';
 import reportDiscussion from './customResolvers/mutations/reportDiscussion.js';
 import reportEvent from './customResolvers/mutations/reportEvent.js';
+import reportWikiEdit from './customResolvers/mutations/reportWikiEdit.js';
 import reportChannel from './customResolvers/mutations/reportChannel.js';
+import reportImage from './customResolvers/mutations/reportImage.js';
+import reportProfilePicture from './customResolvers/mutations/reportProfilePicture.js';
+import reportChannelImage from './customResolvers/mutations/reportChannelImage.js';
 import lockChannel from './customResolvers/mutations/lockChannel.js';
 import unlockChannel from './customResolvers/mutations/unlockChannel.js';
 import archiveComment from './customResolvers/mutations/archiveComment.js';
@@ -56,6 +60,9 @@ import archiveDiscussion from './customResolvers/mutations/archiveDiscussion.js'
 import unarchiveDiscussion from './customResolvers/mutations/unarchiveDiscussion.js';
 import archiveEvent from './customResolvers/mutations/archiveEvent.js';
 import unarchiveEvent from './customResolvers/mutations/unarchiveEvent.js';
+import archiveImage from './customResolvers/mutations/archiveImage.js';
+import unarchiveImage from './customResolvers/mutations/unarchiveImage.js';
+import permanentlyRemoveImage from './customResolvers/mutations/permanentlyRemoveImage.js';
 import createIssue from './customResolvers/mutations/createIssue.js';
 import suspendUser from './customResolvers/mutations/suspendUser.js';
 import suspendMod from './customResolvers/mutations/suspendMod.js';
@@ -92,6 +99,7 @@ import createImageWithUploader from './customResolvers/mutations/createImageWith
 import createImagesWithUploader from './customResolvers/mutations/createImagesWithUploader.js';
 import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithOwner.js';
 import createDownloadableFileUrlResolver from './customResolvers/fields/downloadableFileUrl.js';
+import updateDownloadLabels from './customResolvers/mutations/updateDownloadLabels.js';
 const { OGM } = pkg;
 export default function (driver) {
     const ogm = new OGM({
@@ -122,6 +130,11 @@ export default function (driver) {
     const ServerSecret = ogm.model("ServerSecret");
     const Image = ogm.model("Image");
     const Album = ogm.model("Album");
+    const WikiPage = ogm.model("WikiPage");
+    const TextVersion = ogm.model("TextVersion");
+    const FilterOption = ogm.model("FilterOption");
+    const ModerationAction = ogm.model("ModerationAction");
+    const LabelChangeHistory = ogm.model("LabelChangeHistory");
     const resolvers = {
         JSON: GraphQLJSON,
         CommentAuthor: {
@@ -369,9 +382,44 @@ export default function (driver) {
                 Event,
                 driver
             }),
+            reportWikiEdit: reportWikiEdit({
+                Issue,
+                WikiPage,
+                TextVersion,
+                driver
+            }),
             reportChannel: reportChannel({
                 Issue,
                 Channel,
+                driver
+            }),
+            reportImage: reportImage({
+                Issue,
+                Image,
+                driver
+            }),
+            reportProfilePicture: reportProfilePicture({
+                Issue,
+                User,
+                driver
+            }),
+            reportChannelImage: reportChannelImage({
+                Issue,
+                Channel,
+                driver
+            }),
+            archiveImage: archiveImage({
+                Issue,
+                Image,
+                driver
+            }),
+            unarchiveImage: unarchiveImage({
+                Issue,
+                Image
+            }),
+            permanentlyRemoveImage: permanentlyRemoveImage({
+                Issue,
+                Image,
                 driver
             }),
             lockChannel: lockChannel({
@@ -390,7 +438,9 @@ export default function (driver) {
                 ServerConfig,
                 Comment,
                 Event,
-                Discussion
+                Discussion,
+                WikiPage,
+                TextVersion
             }),
             unsuspendUser: unsuspendUser({
                 Issue,
@@ -538,6 +588,13 @@ export default function (driver) {
             createAlbums: createAlbumsWithOwner({
                 Album,
                 User
+            }),
+            updateDownloadLabels: updateDownloadLabels({
+                Discussion,
+                DiscussionChannel,
+                FilterOption,
+                ModerationAction,
+                LabelChangeHistory,
             }),
         },
     };

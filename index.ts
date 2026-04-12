@@ -151,6 +151,11 @@ CREATE CONSTRAINT issue_channel_comment_unique IF NOT EXISTS FOR (i:Issue)
 REQUIRE (i.channelUniqueName, i.relatedCommentId) IS UNIQUE
 `;
 
+const ensureUniqueIssueWikiRevisionPerChannel = `
+CREATE CONSTRAINT issue_channel_wiki_revision_unique IF NOT EXISTS FOR (i:Issue)
+REQUIRE (i.channelUniqueName, i.relatedWikiPageId, i.relatedWikiRevisionId) IS UNIQUE
+`;
+
 async function initializeServer() {
   try {
     console.log("🚀 Initializing server...");
@@ -173,6 +178,7 @@ async function initializeServer() {
       await driver.session().run(ensureUniqueIssueDiscussionPerChannel);
       await driver.session().run(ensureUniqueIssueEventPerChannel);
       await driver.session().run(ensureUniqueIssueCommentPerChannel);
+      await driver.session().run(ensureUniqueIssueWikiRevisionPerChannel);
     }
 
     if (process.env.GENERATE_OGM_TYPES === "true") {

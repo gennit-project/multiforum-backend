@@ -6,7 +6,9 @@ import type {
   DiscussionModel,
   EventModel,
   ServerConfigModel,
-  IssueUpdateInput
+  IssueUpdateInput,
+  TextVersionModel,
+  WikiPageModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
 import { getModerationActionCreateInput } from '../reportComment.js'
@@ -20,6 +22,8 @@ type CreateSuspensionResolverOptions = {
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
+  WikiPage?: WikiPageModel
+  TextVersion?: TextVersionModel
 
   // The name of the field on the Issue that identifies the user or mod to suspend
   issueRelatedAccountField: 'relatedUsername' | 'relatedModProfileName'
@@ -46,6 +50,8 @@ export function createSuspensionResolver ({
   Discussion,
   Event,
   Comment,
+  WikiPage,
+  TextVersion,
   suspendedEntityName,
 }: CreateSuspensionResolverOptions) {
   return async function suspendEntityResolver (
@@ -67,6 +73,8 @@ export function createSuspensionResolver ({
         Comment,
         Discussion,
         Event,
+        WikiPage,
+        TextVersion,
         issueId,
         suspendedEntityName,
       })

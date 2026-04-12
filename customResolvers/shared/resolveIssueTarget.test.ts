@@ -141,6 +141,87 @@ test("resolves a server-scoped issue from related username", async () => {
   assert.equal(result.relatedAccountName, "alice");
 });
 
+test("resolves a wiki revision author's username", async () => {
+  const Issue = new ModelStub([
+    {
+      id: "issue-wiki-revision",
+      relatedDiscussionId: null,
+      relatedEventId: null,
+      relatedCommentId: null,
+      relatedWikiPageId: "wiki-page-1",
+      relatedWikiRevisionId: "revision-1",
+      relatedUsername: null,
+      relatedModProfileName: null,
+      Channel: { uniqueName: "docs" },
+    },
+  ]);
+  const Discussion = new ModelStub([]);
+  const Event = new ModelStub([]);
+  const Comment = new ModelStub([]);
+  const WikiPage = new ModelStub([]);
+  const TextVersion = new ModelStub([
+    {
+      id: "revision-1",
+      Author: { username: "wiki-editor" },
+    },
+  ]);
+
+  const result = await resolveIssueTarget({
+    Issue: Issue as any,
+    Discussion: Discussion as any,
+    Event: Event as any,
+    Comment: Comment as any,
+    WikiPage: WikiPage as any,
+    TextVersion: TextVersion as any,
+    issueId: "issue-wiki-revision",
+  });
+
+  assert.equal(result.channelUniqueName, "docs");
+  assert.equal(result.relatedAccountType, "User");
+  assert.equal(result.relatedAccountName, "wiki-editor");
+  assert.equal(result.username, "wiki-editor");
+});
+
+test("falls back to a wiki page's original author", async () => {
+  const Issue = new ModelStub([
+    {
+      id: "issue-wiki-page",
+      relatedDiscussionId: null,
+      relatedEventId: null,
+      relatedCommentId: null,
+      relatedWikiPageId: "wiki-page-1",
+      relatedWikiRevisionId: null,
+      relatedUsername: null,
+      relatedModProfileName: null,
+      Channel: { uniqueName: "docs" },
+    },
+  ]);
+  const Discussion = new ModelStub([]);
+  const Event = new ModelStub([]);
+  const Comment = new ModelStub([]);
+  const WikiPage = new ModelStub([
+    {
+      id: "wiki-page-1",
+      OriginalAuthor: { username: "page-creator" },
+      VersionAuthor: { username: "last-editor" },
+    },
+  ]);
+  const TextVersion = new ModelStub([]);
+
+  const result = await resolveIssueTarget({
+    Issue: Issue as any,
+    Discussion: Discussion as any,
+    Event: Event as any,
+    Comment: Comment as any,
+    WikiPage: WikiPage as any,
+    TextVersion: TextVersion as any,
+    issueId: "issue-wiki-page",
+  });
+
+  assert.equal(result.relatedAccountName, "page-creator");
+  assert.equal(result.username, "page-creator");
+});
+
 test("prefers related usernames on channel-scoped issues", async () => {
   const Issue = new ModelStub([
     {

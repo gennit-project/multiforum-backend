@@ -5,7 +5,9 @@ import type {
   EventModel,
   IssueModel,
   ModerationProfile,
+  TextVersionModel,
   User,
+  WikiPageModel,
 } from '../../ogm_types.js'
 
 type ResolveIssueTargetInput = {
@@ -13,6 +15,8 @@ type ResolveIssueTargetInput = {
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
+  WikiPage?: WikiPageModel
+  TextVersion?: TextVersionModel
   issueId: string
   suspendedEntityName?: 'user' | 'mod'
 }
@@ -24,6 +28,8 @@ type IssueTarget = {
     relatedDiscussionId?: string | null
     relatedEventId?: string | null
     relatedCommentId?: string | null
+    relatedWikiPageId?: string | null
+    relatedWikiRevisionId?: string | null
     relatedUsername?: string | null
     relatedModProfileName?: string | null
     Channel?: { uniqueName?: string | null } | null
@@ -44,6 +50,8 @@ export async function resolveIssueTarget({
   Comment,
   Discussion,
   Event,
+  WikiPage,
+  TextVersion,
   issueId,
   suspendedEntityName = 'user',
 }: ResolveIssueTargetInput): Promise<IssueTarget> {
@@ -59,6 +67,8 @@ export async function resolveIssueTarget({
       relatedDiscussionId
       relatedEventId
       relatedCommentId
+      relatedWikiPageId
+      relatedWikiRevisionId
       relatedUsername
       relatedModProfileName
       Channel { uniqueName }
@@ -133,6 +143,27 @@ export async function resolveIssueTarget({
       }`,
     })
     originalPosterData = comment?.CommentAuthor || null
+  }
+
+  if (foundIssue.relatedWikiRevisionId && TextVersion) {
+    const [revision] = await TextVersion.find({
+      where: { id: foundIssue.relatedWikiRevisionId },
+      selectionSet: `{ id Author { username } }`,
+    })
+    originalPosterData = revision?.Author || null
+  }
+
+  if (!originalPosterData && foundIssue.relatedWikiPageId && WikiPage) {
+    const [wikiPage] = await WikiPage.find({
+      where: { id: foundIssue.relatedWikiPageId },
+      selectionSet: `{
+        id
+        OriginalAuthor { username }
+        VersionAuthor { username }
+      }`,
+    })
+    originalPosterData =
+      wikiPage?.OriginalAuthor || wikiPage?.VersionAuthor || null
   }
 
   if (!originalPosterData) {

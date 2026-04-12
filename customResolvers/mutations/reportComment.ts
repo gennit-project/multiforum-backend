@@ -143,9 +143,12 @@ type InputIssueCreate = {
   loggedInModName: string
   channelUniqueName: string
   reportedContentType: 'comment' | 'discussion' | 'event'
+    | 'wiki edit'
   relatedCommentId?: string
   relatedDiscussionId?: string
   relatedEventId?: string
+  relatedWikiPageId?: string
+  relatedWikiRevisionId?: string
   relatedUsername?: string
   relatedModProfileName?: string
   issueNumber?: number
@@ -163,6 +166,8 @@ export const getIssueCreateInput = (
     relatedCommentId,
     relatedDiscussionId,
     relatedEventId,
+    relatedWikiPageId,
+    relatedWikiRevisionId,
     relatedUsername,
     relatedModProfileName,
     issueNumber
@@ -176,6 +181,9 @@ export const getIssueCreateInput = (
   }
   if (reportedContentType === 'event' && !relatedEventId) {
     throw new GraphQLError('Event ID is required')
+  }
+  if (reportedContentType === 'wiki edit' && !relatedWikiPageId) {
+    throw new GraphQLError('Wiki page ID is required')
   }
 
   const truncatedContextText = contextText?.substring(0, 50) || ''
@@ -220,6 +228,10 @@ export const getIssueCreateInput = (
       break
     case 'event':
       output.relatedEventId = relatedEventId
+      break
+    case 'wiki edit':
+      output.relatedWikiPageId = relatedWikiPageId
+      output.relatedWikiRevisionId = relatedWikiRevisionId
       break
   }
   return output

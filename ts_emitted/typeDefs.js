@@ -32,6 +32,11 @@ const typeDefinitions = gql `
     FAILED
   }
 
+  enum ChannelImageType {
+    ICON
+    BANNER
+  }
+
   enum CollectionVisibility {
     PUBLIC
     PRIVATE
@@ -303,6 +308,18 @@ const typeDefinitions = gql `
     Author: User @relationship(type: "AUTHORED_VERSION", direction: IN)
   }
 
+  type LabelChangeHistory {
+    id: ID! @id
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    actionType: String! # "added" or "removed"
+    labelDisplayName: String!
+    labelValue: String!
+    # Actor can be the author (User) or a moderator (ModerationProfile)
+    ActorUser: User @relationship(type: "MADE_LABEL_CHANGE", direction: IN)
+    ActorMod: ModerationProfile @relationship(type: "MADE_LABEL_CHANGE", direction: IN)
+    DiscussionChannel: DiscussionChannel @relationship(type: "HAS_LABEL_CHANGE", direction: IN)
+  }
+
   type WikiPage {
     id: ID! @id
     title: String!
@@ -491,6 +508,7 @@ const typeDefinitions = gql `
     SubscribedToNotifications: [User!]!
       @relationship(type: "SUBSCRIBED_TO_NOTIFICATIONS", direction: IN)
     LabelOptions: [FilterOption!]! @relationship(type: "HAS_LABEL_OPTION", direction: OUT)
+    LabelChangeHistory: [LabelChangeHistory!]! @relationship(type: "HAS_LABEL_CHANGE", direction: OUT)
   }
 
   type Discussion {
@@ -980,6 +998,40 @@ const typeDefinitions = gql `
       reportText: String!
       selectedServerRules: [String!]!
     ): Issue
+    reportImage(
+      imageId: ID!
+      reportText: String!
+      selectedForumRules: [String!]!
+      selectedServerRules: [String!]!
+      channelUniqueName: String
+    ): Issue
+    reportProfilePicture(
+      username: String!
+      reportText: String!
+      selectedServerRules: [String!]!
+    ): Issue
+    reportChannelImage(
+      channelUniqueName: String!
+      imageType: ChannelImageType!
+      reportText: String!
+      selectedServerRules: [String!]!
+    ): Issue
+    archiveImage(
+      imageId: ID!
+      selectedForumRules: [String!]!
+      selectedServerRules: [String!]!
+      reportText: String!
+      channelUniqueName: String
+    ): Issue
+    unarchiveImage(
+      imageId: ID!
+      explanation: String
+      channelUniqueName: String
+    ): Issue
+    permanentlyRemoveImage(
+      imageId: ID!
+      explanation: String
+    ): Issue
     lockChannel(
       channelUniqueName: String!
       reason: String!
@@ -1079,6 +1131,11 @@ const typeDefinitions = gql `
       channelUniqueName: String!
       pipelines: [EventPipelineInput!]!
     ): JSON!
+    updateDownloadLabels(
+      discussionId: ID!
+      channelUniqueName: String!
+      labelOptionIds: [ID!]!
+    ): DiscussionChannel
   }
 
   input SiteWideDiscussionSortOrder {

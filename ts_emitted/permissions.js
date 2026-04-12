@@ -1,6 +1,6 @@
 import { and, shield, allow, deny, or } from "graphql-shield";
 import rules from "./rules/rules.js";
-const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isIssueAuthor, issueIsNotLocked, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, canEditComments, canEditDiscussions, canEditEvents, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, canLockChannel, isCollectionOwner, isImageUploader, } = rules;
+const { isAdmin, isAccountOwner, isChannelOwner, isDiscussionOwner, isEventOwner, isCommentAuthor, isIssueAuthor, issueIsNotLocked, isDiscussionChannelOwner, canCreateChannel, canCreateDiscussion, canCreateEvent, canCreateComment, canUploadFile, canUpvoteComment, canUpvoteDiscussion, issueIsValid, createChannelInputIsValid, updateChannelInputIsValid, createDiscussionInputIsValid, updateDiscussionInputIsValid, createEventInputIsValid, updateEventInputIsValid, createCommentInputIsValid, updateCommentInputIsValid, createDownloadableFileInputIsValid, updateDownloadableFileInputIsValid, canReport, canSuspendAndUnsuspendUser, canArchiveAndUnarchiveComment, canArchiveAndUnarchiveDiscussion, canArchiveAndUnarchiveEvent, canArchiveAndUnarchiveImage, canPermanentlyRemoveImage, canEditComments, canEditDiscussions, canEditEvents, isAuthenticatedAndVerified, isAuthenticated, canBecomeForumAdmin, canLockChannel, isCollectionOwner, isImageUploader, } = rules;
 const permissionList = shield({
     Query: {
         "*": allow,
@@ -138,6 +138,7 @@ const permissionList = shield({
         reportDiscussion: and(isAuthenticated, or(isChannelOwner, canReport)),
         reportComment: and(isAuthenticated, or(isChannelOwner, canReport)),
         reportEvent: and(isAuthenticated, or(isChannelOwner, canReport)),
+        reportWikiEdit: and(isAuthenticated, or(isChannelOwner, canReport)),
         reportChannel: and(isAuthenticated, canReport), // Channel reports require mod profile, no channel owner shortcut
         lockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
         unlockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
@@ -153,6 +154,9 @@ const permissionList = shield({
         unarchiveComment: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveComment)),
         unarchiveDiscussion: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveDiscussion)),
         unarchiveEvent: and(isAuthenticated, or(isChannelOwner, canArchiveAndUnarchiveEvent)),
+        archiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
+        unarchiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
+        permanentlyRemoveImage: and(isAuthenticated, canPermanentlyRemoveImage),
         subscribeToDiscussionChannel: and(isAuthenticated, allow),
         unsubscribeFromDiscussionChannel: and(isAuthenticated, allow),
         subscribeToEvent: and(isAuthenticated, allow),
@@ -184,6 +188,7 @@ const permissionList = shield({
         setServerPluginSecret: and(isAuthenticated, isAdmin),
         deletePluginVersions: allow, // and(isAuthenticated, isAdmin)
         updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
+        updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
     },
 }, {
     debug: true,
