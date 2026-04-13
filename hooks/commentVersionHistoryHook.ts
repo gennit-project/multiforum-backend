@@ -245,15 +245,16 @@ async function trackTextVersionHistory(
       return;
     }
 
-    // Update comment to connect the new TextVersion
+    // Update comment to connect the new TextVersion and set textLastEdited
     await CommentModel.update({
       where: { id: commentId },
       update: {
+        textLastEdited: new Date().toISOString(),
         PastVersions: {
-          connect: [{ 
-            where: { 
-              node: { id: textVersionId } 
-            } 
+          connect: [{
+            where: {
+              node: { id: textVersionId }
+            }
           }]
         }
       }
