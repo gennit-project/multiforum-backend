@@ -107,6 +107,7 @@ test("notifyIssueSubscribers notifies subscribers and only emails opted-in users
     usernames: ["alice", "bob"],
     notificationText: "New reply on Issue #42: Broken image links",
   });
+  assert.match(sessions[0]?.runCalls[0]?.query, /notificationType: "moderation"/);
 });
 
 test("notifyIssueSubscribers skips report actions", async () => {

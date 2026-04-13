@@ -672,6 +672,7 @@ const typeDefinitions = gql `
     deleted: Boolean
     archived: Boolean
     updatedAt: DateTime @timestamp(operations: [UPDATE])
+    textLastEdited: DateTime
     createdAt: DateTime! @timestamp(operations: [CREATE])
     Tags: [Tag!]! @relationship(type: "HAS_TAG", direction: OUT)
     weightedVotesCount: Float

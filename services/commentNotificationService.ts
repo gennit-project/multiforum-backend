@@ -368,7 +368,8 @@ export class CommentNotificationService {
     commenterUsername: string,
     entityType: 'DiscussionChannel' | 'Event' | 'Comment',
     entityId: string,
-    emailContent?: { subject: string; plainText: string; html: string }
+    emailContent?: { subject: string; plainText: string; html: string },
+    notificationType: string = 'reply'
   ) {
     console.log('=== DEBUG: Starting createBatchNotifications');
     console.log('=== DEBUG: Parameters:', {
@@ -438,7 +439,8 @@ export class CommentNotificationService {
           id: randomUUID(),
           createdAt: datetime(),
           read: false,
-          text: $notificationText
+          text: $notificationText,
+          notificationType: $notificationType
         })
         CREATE (user)-[:HAS_NOTIFICATION]->(notification)
         RETURN count(notification) as notificationsCreated, collect(user.username) as notifiedUsers
@@ -448,7 +450,8 @@ export class CommentNotificationService {
       const result = await session.run(cypherQuery, {
         entityId,
         commenterUsername,
-        notificationText
+        notificationText,
+        notificationType
       });
 
       const notificationsCreated = result.records[0]?.get('notificationsCreated')?.toNumber() || 0;
@@ -545,7 +548,8 @@ export class CommentNotificationService {
         commenterUsername,
         'DiscussionChannel',
         discussionChannel.id,
-        emailContent
+        emailContent,
+        'reply'
       );
       console.log('=== DEBUG: Batch notifications result:', notificationsCreated);
     } else {
@@ -605,7 +609,8 @@ export class CommentNotificationService {
         commenterUsername,
         'Event',
         event.id,
-        emailContent
+        emailContent,
+        'reply'
       );
     } else {
       console.error('=== DEBUG ERROR: Driver not available for batch notifications');
@@ -692,7 +697,8 @@ export class CommentNotificationService {
         this.driver,
         usersToNotify,
         notificationText,
-        emailContent
+        emailContent,
+        'reply'
       );
     } else {
       console.error('=== DEBUG ERROR: Driver not available for batch notifications');
@@ -747,7 +753,8 @@ export class CommentNotificationService {
     driver: any,
     usersToNotify: NotificationRecipient[],
     notificationText: string,
-    emailContent?: { subject: string; plainText: string; html: string }
+    emailContent?: { subject: string; plainText: string; html: string },
+    notificationType: string = 'reply'
   ) {
     const session = driver.session();
 
@@ -767,7 +774,8 @@ export class CommentNotificationService {
           id: randomUUID(),
           createdAt: datetime(),
           read: false,
-          text: $notificationText
+          text: $notificationText,
+          notificationType: $notificationType
         })
         CREATE (user)-[:HAS_NOTIFICATION]->(notification)
         RETURN count(notification) as notificationsCreated, collect(user.username) as notifiedUsers
@@ -775,6 +783,7 @@ export class CommentNotificationService {
         {
           usernames,
           notificationText,
+          notificationType,
         }
       );
 
