@@ -12,6 +12,7 @@ import {
 import { notifyFeedback } from '../hooks/feedbackNotificationHook.js';
 import { notifyModMentions } from '../hooks/modMentionNotificationHook.js';
 import { notifyCommentMentions } from '../hooks/userMentionNotificationHook.js';
+import { appendNotificationFooter } from '../utils/notificationFooter.js';
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -507,9 +508,14 @@ export class CommentNotificationService {
     });
 
     const channelName = fullComment.Channel?.uniqueName;
-    
-    // Create notification text for in-app notification
-    const notificationText = `${commenterUsername} commented on the discussion [${discussion.title}](${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussion.id}/comments/${commentId})`;
+    const discussionUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussion.id}`;
+
+    // Create notification text for in-app notification with unsubscribe footer
+    const baseNotificationText = `${commenterUsername} commented on the discussion [${discussion.title}](${discussionUrl}/comments/${commentId})`;
+    const notificationText = appendNotificationFooter(baseNotificationText, {
+      contentType: 'discussion',
+      contentUrl: discussionUrl,
+    });
 
     // Create email content for discussion notification
     const emailContent = createCommentNotificationEmail(
@@ -570,8 +576,14 @@ export class CommentNotificationService {
       return;
     }
 
-    // Create notification text for in-app notification
-    const notificationText = `${commenterUsername} commented on the event [${event.title}](${process.env.FRONTEND_URL}/forums/${channelName}/events/${event.id}/comments/${commentId})`;
+    const eventUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/events/${event.id}`;
+
+    // Create notification text for in-app notification with unsubscribe footer
+    const baseNotificationText = `${commenterUsername} commented on the event [${event.title}](${eventUrl}/comments/${commentId})`;
+    const notificationText = appendNotificationFooter(baseNotificationText, {
+      contentType: 'event',
+      contentUrl: eventUrl,
+    });
 
     // Create email content for event notification
     const emailContent = createEventCommentNotificationEmail(
@@ -622,33 +634,42 @@ export class CommentNotificationService {
     console.log('Parent comment ID:', parentCommentId);
 
     // Determine content title and URL based on parent comment's context
-    let contentTitle, contentUrl, channelName;
+    let contentTitle: string;
+    let contentUrl: string;
+    let commentPermalinkUrl: string;
+    let channelName: string | undefined;
 
     // Check if the reply is on a discussion or event (from the current comment's context)
     if (fullComment.DiscussionChannel) {
       const discussion = fullComment.DiscussionChannel.Discussion;
       contentTitle = discussion?.title || 'a discussion';
       channelName = fullComment.Channel?.uniqueName;
-      contentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussion?.id}/comments/${parentCommentId}`;
+      contentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussion?.id}`;
+      commentPermalinkUrl = `${contentUrl}/comments/${parentCommentId}`;
     } else if (fullComment.Event) {
       const event = fullComment.Event;
       contentTitle = event?.title || 'an event';
       channelName = fullComment.Channel?.uniqueName;
-      contentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/events/${event?.id}/comments/${parentCommentId}`;
+      contentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/events/${event?.id}`;
+      commentPermalinkUrl = `${contentUrl}/comments/${parentCommentId}`;
     } else {
       console.log('No content reference found for comment reply');
       return;
     }
 
-    // Create notification text for in-app notification
-    const notificationText = `${commenterUsername} replied to your comment on [${contentTitle}](${contentUrl})`;
+    // Create notification text for in-app notification with unsubscribe footer
+    const baseNotificationText = `${commenterUsername} replied to your comment on [${contentTitle}](${commentPermalinkUrl})`;
+    const notificationText = appendNotificationFooter(baseNotificationText, {
+      contentType: 'comment',
+      contentUrl: commentPermalinkUrl,
+    });
 
     // Create email content for reply notification
     const emailContent = createCommentReplyNotificationEmail(
       fullComment.text,
       contentTitle,
       commenterUsername,
-      contentUrl
+      commentPermalinkUrl
     );
 
     console.log('=== DEBUG: Creating batch notifications for comment reply on:', contentTitle);

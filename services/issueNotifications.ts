@@ -1,5 +1,6 @@
 import { sendBatchEmails } from "./mail/index.js";
 import { createIssueSubscriptionNotificationEmail } from "../customResolvers/mutations/shared/emailUtils.js";
+import { appendNotificationFooter } from "../utils/notificationFooter.js";
 
 type IssueNotificationDependencies = {
   sendBatchEmails?: typeof sendBatchEmails;
@@ -115,6 +116,15 @@ export const notifyIssueSubscribers = async ({
     actionDescription,
   });
   const issueUrl = buildIssueUrl(issue.channelUniqueName, issue.issueNumber);
+
+  // Add unsubscribe footer to notification text
+  const notificationTextWithFooter = issueUrl
+    ? appendNotificationFooter(copy.notificationText, {
+        contentType: 'issue',
+        contentUrl: issueUrl,
+      })
+    : copy.notificationText;
+
   const emailContent = createIssueSubscriptionNotificationEmailFn(
     copy.subject,
     copy.summary,
@@ -155,7 +165,7 @@ export const notifyIssueSubscribers = async ({
       `,
       {
         usernames: subscribers.map((subscriber) => subscriber.username),
-        notificationText: copy.notificationText,
+        notificationText: notificationTextWithFooter,
       }
     );
   } finally {
