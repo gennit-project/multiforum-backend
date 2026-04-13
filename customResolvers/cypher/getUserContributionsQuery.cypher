@@ -78,8 +78,29 @@ WITH comments, discussions, collect({
   }] ELSE [] END
 }) AS events
 
+// Match wiki edits and their parent wiki pages
+OPTIONAL MATCH (u)-[:AUTHORED_VERSION]->(wikiEdit:TextVersion)
+WHERE date(datetime(wikiEdit.createdAt)) >= startDate AND date(datetime(wikiEdit.createdAt)) <= endDate
+OPTIONAL MATCH (wikiPage:WikiPage)-[:HAS_VERSION]->(wikiEdit)
+WITH comments, discussions, events, collect({
+  id: wikiEdit.id,
+  body: COALESCE(wikiEdit.body, ""),
+  editReason: wikiEdit.editReason,
+  createdAt: toString(wikiEdit.createdAt),
+  Author: CASE WHEN wikiEdit IS NOT NULL THEN {
+    username: u.username,
+    profilePicURL: COALESCE(u.profilePicURL, null)
+  } ELSE NULL END,
+  WikiPage: CASE WHEN wikiPage IS NOT NULL THEN {
+    id: wikiPage.id,
+    title: wikiPage.title,
+    slug: wikiPage.slug,
+    channelUniqueName: wikiPage.channelUniqueName
+  } ELSE NULL END
+}) AS wikiEdits
+
 // Combine and group
-WITH (comments + discussions + events) AS allActivities
+WITH (comments + discussions + events + wikiEdits) AS allActivities
 UNWIND allActivities AS activity
 WITH date(datetime(activity.createdAt)) AS activityDate, collect(activity) AS activities
 
@@ -93,6 +114,7 @@ RETURN
     Comments: [a IN activities WHERE a.text IS NOT NULL | a],
     Discussions: [a IN activities WHERE a.title IS NOT NULL AND a.DiscussionChannels IS NOT NULL AND (a.hasDownload = false OR a.hasDownload IS NULL) | a],
     Downloads: [a IN activities WHERE a.title IS NOT NULL AND a.DiscussionChannels IS NOT NULL AND a.hasDownload = true | a],
-    Events: [a IN activities WHERE a.title IS NOT NULL AND a.EventChannels IS NOT NULL | a]
+    Events: [a IN activities WHERE a.title IS NOT NULL AND a.EventChannels IS NOT NULL | a],
+    WikiEdits: [a IN activities WHERE a.WikiPage IS NOT NULL | a]
   }] AS activities
 ORDER BY activityDate ASC

@@ -1547,6 +1547,22 @@ const typeDefinitions = gql `
     Author: User
   }
 
+  type WikiPageInfo {
+    id: ID
+    title: String
+    slug: String
+    channelUniqueName: String
+  }
+
+  type WikiEditInfo {
+    id: ID!
+    body: String
+    editReason: String
+    createdAt: DateTime
+    Author: User
+    WikiPage: WikiPageInfo
+  }
+
   type Activity {
     id: String!
     type: String!
@@ -1555,6 +1571,7 @@ const typeDefinitions = gql `
     Discussions: [DiscussionInfo!]!
     Downloads: [DiscussionInfo!]!
     Events: [EventInfo!]!
+    WikiEdits: [WikiEditInfo!]!
   }
 
   type DayData {
