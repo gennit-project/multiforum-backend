@@ -6,7 +6,8 @@ import type {
   DiscussionModel,
   EventModel,
   ServerConfigModel,
-  IssueUpdateInput
+  IssueUpdateInput,
+  UserModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
 import { getModerationActionCreateInput } from '../reportComment.js'
@@ -20,6 +21,7 @@ type CreateUnsuspendResolverOptions = {
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
+  User: UserModel
 
   // The name of the field on the Issue that identifies the user or mod to suspend
   issueRelatedAccountField: 'relatedUsername' | 'relatedModProfileName'
@@ -45,6 +47,7 @@ export function createUnsuspendResolver ({
   Discussion,
   Event,
   Comment,
+  User,
   suspendedEntityName,
 }: CreateUnsuspendResolverOptions) {
   return async function unsuspendEntityResolver (
@@ -66,6 +69,7 @@ export function createUnsuspendResolver ({
         Comment,
         Discussion,
         Event,
+        User,
         issueId,
         suspendedEntityName,
       })

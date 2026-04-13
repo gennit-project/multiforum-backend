@@ -235,7 +235,8 @@ export default function (driver: any) {
         Discussion,
         Event,
         Comment,
-        Channel
+        Channel,
+        User
       }),
       safetyCheck: safetyCheck,
       getServerPluginSecrets: getServerPluginSecrets({
@@ -477,6 +478,7 @@ export default function (driver: any) {
         Comment,
         Event,
         Discussion,
+        User,
         WikiPage,
         TextVersion
       }),
@@ -486,7 +488,8 @@ export default function (driver: any) {
         ServerConfig,
         Comment,
         Event,
-        Discussion
+        Discussion,
+        User
       }),
       suspendMod: suspendMod({
         Issue,
@@ -494,7 +497,8 @@ export default function (driver: any) {
         ServerConfig,
         Comment,
         Event,
-        Discussion
+        Discussion,
+        User
       }),
       unsuspendMod: unsuspendMod({
         Issue,
@@ -502,7 +506,8 @@ export default function (driver: any) {
         ServerConfig,
         Comment,
         Event,
-        Discussion
+        Discussion,
+        User
       }),
       lockIssue: lockIssue({
         Issue

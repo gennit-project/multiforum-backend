@@ -8,6 +8,7 @@ import type {
   ServerConfigModel,
   IssueUpdateInput,
   TextVersionModel,
+  UserModel,
   WikiPageModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
@@ -22,6 +23,7 @@ type CreateSuspensionResolverOptions = {
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
+  User: UserModel
   WikiPage?: WikiPageModel
   TextVersion?: TextVersionModel
 
@@ -50,6 +52,7 @@ export function createSuspensionResolver ({
   Discussion,
   Event,
   Comment,
+  User,
   WikiPage,
   TextVersion,
   suspendedEntityName,
@@ -73,6 +76,7 @@ export function createSuspensionResolver ({
         Comment,
         Discussion,
         Event,
+        User,
         WikiPage,
         TextVersion,
         issueId,

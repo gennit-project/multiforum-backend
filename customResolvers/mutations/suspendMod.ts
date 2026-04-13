@@ -1,4 +1,4 @@
-import type { IssueModel, ChannelModel, EventModel, DiscussionModel, CommentModel, ServerConfigModel } from "../../ogm_types.js";
+import type { IssueModel, ChannelModel, EventModel, DiscussionModel, CommentModel, ServerConfigModel, UserModel } from "../../ogm_types.js";
 import { createSuspensionResolver } from "./shared/createSuspensionResolver.js";
 
 type Input = {
@@ -8,16 +8,18 @@ type Input = {
   Event: EventModel;
   Comment: CommentModel;
   Discussion: DiscussionModel;
+  User: UserModel;
 };
 
 export default function getResolver(input: Input) {
-  const { 
-    Issue, 
+  const {
+    Issue,
     Channel,
     ServerConfig,
     Comment,
     Event,
-    Discussion
+    Discussion,
+    User
   } = input;
   return createSuspensionResolver({
     Issue,
@@ -26,6 +28,7 @@ export default function getResolver(input: Input) {
     Comment,
     Event,
     Discussion,
+    User,
     issueRelatedAccountField: "relatedModProfileName",
     channelSuspendedField: "SuspendedMods",
     suspendedEntityName: "mod",

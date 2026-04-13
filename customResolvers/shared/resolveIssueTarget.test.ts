@@ -27,17 +27,19 @@ test("resolves a discussion author's username", async () => {
   const Discussion = new ModelStub([
     {
       id: "discussion-1",
-      Author: { username: "alice" },
+      Author: { username: "alice", isBot: false },
     },
   ]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
+  const User = new ModelStub([]);
 
   const result = await resolveIssueTarget({
     Issue: Issue as any,
     Discussion: Discussion as any,
     Event: Event as any,
     Comment: Comment as any,
+    User: User as any,
     issueId: "issue-1",
   });
 
@@ -66,12 +68,14 @@ test("resolves a comment author's moderation profile", async () => {
       CommentAuthor: { displayName: "Mod Jane" },
     },
   ]);
+  const User = new ModelStub([]);
 
   const result = await resolveIssueTarget({
     Issue: Issue as any,
     Discussion: Discussion as any,
     Event: Event as any,
     Comment: Comment as any,
+    User: User as any,
     issueId: "issue-2",
     suspendedEntityName: "mod",
   });
@@ -98,12 +102,14 @@ test("prefers related mod profile metadata on channel-scoped issues", async () =
   const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
+  const User = new ModelStub([]);
 
   const result = await resolveIssueTarget({
     Issue: Issue as any,
     Discussion: Discussion as any,
     Event: Event as any,
     Comment: Comment as any,
+    User: User as any,
     issueId: "issue-2b",
     suspendedEntityName: "mod",
   });
@@ -126,12 +132,14 @@ test("resolves a server-scoped issue from related username", async () => {
   const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
+  const User = new ModelStub([{ username: "alice", isBot: false }]);
 
   const result = await resolveIssueTarget({
     Issue: Issue as any,
     Discussion: Discussion as any,
     Event: Event as any,
     Comment: Comment as any,
+    User: User as any,
     issueId: "issue-3",
   });
 
@@ -158,11 +166,12 @@ test("resolves a wiki revision author's username", async () => {
   const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
+  const User = new ModelStub([]);
   const WikiPage = new ModelStub([]);
   const TextVersion = new ModelStub([
     {
       id: "revision-1",
-      Author: { username: "wiki-editor" },
+      Author: { username: "wiki-editor", isBot: false },
     },
   ]);
 
@@ -171,6 +180,7 @@ test("resolves a wiki revision author's username", async () => {
     Discussion: Discussion as any,
     Event: Event as any,
     Comment: Comment as any,
+    User: User as any,
     WikiPage: WikiPage as any,
     TextVersion: TextVersion as any,
     issueId: "issue-wiki-revision",
@@ -199,11 +209,12 @@ test("falls back to a wiki page's original author", async () => {
   const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
+  const User = new ModelStub([]);
   const WikiPage = new ModelStub([
     {
       id: "wiki-page-1",
-      OriginalAuthor: { username: "page-creator" },
-      VersionAuthor: { username: "last-editor" },
+      OriginalAuthor: { username: "page-creator", isBot: false },
+      VersionAuthor: { username: "last-editor", isBot: false },
     },
   ]);
   const TextVersion = new ModelStub([]);
@@ -213,6 +224,7 @@ test("falls back to a wiki page's original author", async () => {
     Discussion: Discussion as any,
     Event: Event as any,
     Comment: Comment as any,
+    User: User as any,
     WikiPage: WikiPage as any,
     TextVersion: TextVersion as any,
     issueId: "issue-wiki-page",
@@ -237,12 +249,14 @@ test("prefers related usernames on channel-scoped issues", async () => {
   const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
+  const User = new ModelStub([{ username: "alice", isBot: false }]);
 
   const result = await resolveIssueTarget({
     Issue: Issue as any,
     Discussion: Discussion as any,
     Event: Event as any,
     Comment: Comment as any,
+    User: User as any,
     issueId: "issue-3b",
   });
 
@@ -264,6 +278,7 @@ test("throws when a server-scoped issue has no related account", async () => {
   const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
+  const User = new ModelStub([]);
 
   await assert.rejects(
     () =>
@@ -272,6 +287,7 @@ test("throws when a server-scoped issue has no related account", async () => {
         Discussion: Discussion as any,
         Event: Event as any,
         Comment: Comment as any,
+        User: User as any,
         issueId: "issue-4",
       }),
     /Could not find the user account name/

@@ -4,10 +4,11 @@ import { COMMENT_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
-import { createBotComment } from '../botUserService.js'
+import { createBotComment, buildBotUsername } from '../botUserService.js'
 import { createBotReport } from '../botReportService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
+import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -455,6 +456,19 @@ export const triggerPluginRunsForComment = async ({
           profileLabel?: string | null
           parentCommentId?: string | null
         }) => {
+          // Check if the bot is suspended before allowing it to comment
+          const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
+          const suspensionInfo = await getActiveSuspension({
+            ogm: models,
+            driver,
+            channelUniqueName,
+            username: botUsername,
+          })
+          if (suspensionInfo.isSuspended) {
+            logs.push(`Bot "${botUsername}" is suspended - action blocked`)
+            return null
+          }
+
           return createBotComment({
             Comment,
             User,
@@ -482,6 +496,20 @@ export const triggerPluginRunsForComment = async ({
           if (!driver) {
             throw new Error('Database driver not available for reportContentAsBot')
           }
+
+          // Check if the bot is suspended before allowing it to report
+          const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
+          const suspensionInfo = await getActiveSuspension({
+            ogm: models,
+            driver,
+            channelUniqueName,
+            username: botUsername,
+          })
+          if (suspensionInfo.isSuspended) {
+            logs.push(`Bot "${botUsername}" is suspended - action blocked`)
+            return null
+          }
+
           return createBotReport({
             models: { Channel, Comment, Discussion, Event, Issue, User },
             driver,

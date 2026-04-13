@@ -1,4 +1,4 @@
-import type { IssueModel, ChannelModel, EventModel, DiscussionModel, CommentModel, ServerConfigModel, TextVersionModel, WikiPageModel } from "../../ogm_types.js";
+import type { IssueModel, ChannelModel, EventModel, DiscussionModel, CommentModel, ServerConfigModel, TextVersionModel, WikiPageModel, UserModel } from "../../ogm_types.js";
 import { createSuspensionResolver } from "./shared/createSuspensionResolver.js";
 
 type Input = {
@@ -8,12 +8,13 @@ type Input = {
   Event: EventModel;
   Comment: CommentModel;
   Discussion: DiscussionModel;
+  User: UserModel;
   WikiPage?: WikiPageModel;
   TextVersion?: TextVersionModel;
 };
 
 export default function getResolver(input: Input) {
-  const { Issue, Channel, ServerConfig, Event, Comment, Discussion, WikiPage, TextVersion } = input;
+  const { Issue, Channel, ServerConfig, Event, Comment, Discussion, User, WikiPage, TextVersion } = input;
   return createSuspensionResolver({
     Issue,
     Channel,
@@ -21,6 +22,7 @@ export default function getResolver(input: Input) {
     Event,
     Comment,
     Discussion,
+    User,
     WikiPage,
     TextVersion,
     issueRelatedAccountField: "relatedUsername",

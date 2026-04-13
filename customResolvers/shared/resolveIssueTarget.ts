@@ -7,6 +7,7 @@ import type {
   ModerationProfile,
   TextVersionModel,
   User,
+  UserModel,
   WikiPageModel,
 } from '../../ogm_types.js'
 
@@ -15,6 +16,7 @@ type ResolveIssueTargetInput = {
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
+  User: UserModel
   WikiPage?: WikiPageModel
   TextVersion?: TextVersionModel
   issueId: string
@@ -40,6 +42,7 @@ type IssueTarget = {
   relatedAccountType: 'User' | 'ModerationProfile'
   username?: string
   modProfileName?: string
+  isBot: boolean
 }
 
 const isUser = (data: User | ModerationProfile): data is User =>
@@ -50,6 +53,7 @@ export async function resolveIssueTarget({
   Comment,
   Discussion,
   Event,
+  User,
   WikiPage,
   TextVersion,
   issueId,
@@ -93,10 +97,16 @@ export async function resolveIssueTarget({
       relatedAccountName: foundIssue.relatedModProfileName,
       relatedAccountType: 'ModerationProfile',
       modProfileName: foundIssue.relatedModProfileName,
+      isBot: false,
     }
   }
 
   if (foundIssue.relatedUsername) {
+    // Query user to check if they are a bot
+    const [relatedUser] = await User.find({
+      where: { username: foundIssue.relatedUsername },
+      selectionSet: `{ username isBot }`,
+    })
     return {
       issue: foundIssue,
       channelUniqueName,
@@ -104,6 +114,7 @@ export async function resolveIssueTarget({
       relatedAccountName: foundIssue.relatedUsername,
       relatedAccountType: 'User',
       username: foundIssue.relatedUsername,
+      isBot: relatedUser?.isBot ?? false,
     }
   }
 
@@ -118,7 +129,7 @@ export async function resolveIssueTarget({
   if (foundIssue.relatedDiscussionId) {
     const [discussion] = await Discussion.find({
       where: { id: foundIssue.relatedDiscussionId },
-      selectionSet: `{ id Author { username } }`,
+      selectionSet: `{ id Author { username isBot } }`,
     })
     originalPosterData = discussion?.Author || null
   }
@@ -126,7 +137,7 @@ export async function resolveIssueTarget({
   if (foundIssue.relatedEventId) {
     const [event] = await Event.find({
       where: { id: foundIssue.relatedEventId },
-      selectionSet: `{ id Poster { username } }`,
+      selectionSet: `{ id Poster { username isBot } }`,
     })
     originalPosterData = event?.Poster || null
   }
@@ -137,7 +148,7 @@ export async function resolveIssueTarget({
       selectionSet: `{
         id
         CommentAuthor {
-          ... on User { username }
+          ... on User { username isBot }
           ... on ModerationProfile { displayName }
         }
       }`,
@@ -148,7 +159,7 @@ export async function resolveIssueTarget({
   if (foundIssue.relatedWikiRevisionId && TextVersion) {
     const [revision] = await TextVersion.find({
       where: { id: foundIssue.relatedWikiRevisionId },
-      selectionSet: `{ id Author { username } }`,
+      selectionSet: `{ id Author { username isBot } }`,
     })
     originalPosterData = revision?.Author || null
   }
@@ -158,8 +169,8 @@ export async function resolveIssueTarget({
       where: { id: foundIssue.relatedWikiPageId },
       selectionSet: `{
         id
-        OriginalAuthor { username }
-        VersionAuthor { username }
+        OriginalAuthor { username isBot }
+        VersionAuthor { username isBot }
       }`,
     })
     originalPosterData =
@@ -186,6 +197,7 @@ export async function resolveIssueTarget({
       relatedAccountName: originalPosterData.displayName,
       relatedAccountType: 'ModerationProfile',
       modProfileName: originalPosterData.displayName,
+      isBot: false,
     }
   }
 
@@ -202,5 +214,6 @@ export async function resolveIssueTarget({
     relatedAccountName: originalPosterData.username,
     relatedAccountType: 'User',
     username: originalPosterData.username,
+    isBot: (originalPosterData as any).isBot ?? false,
   }
 }

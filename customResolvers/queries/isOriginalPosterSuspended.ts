@@ -3,7 +3,8 @@ import type {
   CommentModel,
   DiscussionModel,
   EventModel,
-  ChannelModel
+  ChannelModel,
+  UserModel
 } from '../../ogm_types.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import { getActiveServerSuspension } from '../../rules/permission/getActiveServerSuspension.js'
@@ -15,10 +16,11 @@ type Input = {
   Comment: CommentModel
   Discussion: DiscussionModel
   Event: EventModel
+  User: UserModel
 }
 
 export default function getResolver (input: Input) {
-  const { Issue, Event, Comment, Discussion } = input
+  const { Issue, Event, Comment, Discussion, User } = input
   return async (parent: any, args: any, context: any, resolveInfo: any) => {
     const { issueId } = args
     if (!issueId) {
@@ -30,6 +32,7 @@ export default function getResolver (input: Input) {
       Comment,
       Discussion,
       Event,
+      User,
       issueId,
     })
 
