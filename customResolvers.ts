@@ -118,6 +118,10 @@ import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithO
 import createDownloadableFileUrlResolver from './customResolvers/fields/downloadableFileUrl.js';
 import updateDownloadLabels from './customResolvers/mutations/updateDownloadLabels.js';
 
+import createScratchpadEntry from './customResolvers/mutations/createScratchpadEntry.js';
+import updateScratchpadEntryVisibility from './customResolvers/mutations/updateScratchpadEntryVisibility.js';
+import deleteScratchpadEntry from './customResolvers/mutations/deleteScratchpadEntry.js';
+
 const { OGM } = pkg;
 
 export default function (driver: any) {
@@ -155,6 +159,7 @@ export default function (driver: any) {
   const FilterOption = ogm.model("FilterOption");
   const ModerationAction = ogm.model("ModerationAction");
   const LabelChangeHistory = ogm.model("LabelChangeHistory");
+  const ScratchpadEntry = ogm.model("ScratchpadEntry");
 
   const resolvers = {
     JSON: GraphQLJSON,
@@ -638,6 +643,19 @@ export default function (driver: any) {
         FilterOption,
         ModerationAction,
         LabelChangeHistory,
+      }),
+      createScratchpadEntry: createScratchpadEntry({
+        ScratchpadEntry,
+        Comment,
+        DiscussionChannel,
+        User,
+        driver,
+      }),
+      updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
+        ScratchpadEntry,
+      }),
+      deleteScratchpadEntry: deleteScratchpadEntry({
+        ScratchpadEntry,
       }),
     },
   };
