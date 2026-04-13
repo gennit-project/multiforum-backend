@@ -181,6 +181,7 @@ const typeDefinitions = gql`
     createdAt: DateTime! @timestamp(operations: [CREATE])
     read: Boolean
     text: String
+    notificationType: String # "feedback", "mention", "reply", "moderation", "scratchpad", etc.
   }
 
   type Message {

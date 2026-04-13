@@ -1,14 +1,17 @@
 import { execute, parse, subscribe } from 'graphql';
-import { 
-  createCommentNotificationEmail, 
+import {
+  createCommentNotificationEmail,
   createEventCommentNotificationEmail,
-  createCommentReplyNotificationEmail 
+  createCommentReplyNotificationEmail
 } from '../customResolvers/mutations/shared/emailUtils.js';
 import { sendBatchEmails } from './mail/index.js';
 import {
   resolveReplyNotificationRecipients,
   type NotificationRecipient,
 } from './commentNotificationRecipients.js';
+import { notifyFeedback } from '../hooks/feedbackNotificationHook.js';
+import { notifyModMentions } from '../hooks/modMentionNotificationHook.js';
+import { notifyCommentMentions } from '../hooks/userMentionNotificationHook.js';
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -146,6 +149,7 @@ export class CommentNotificationService {
         id
         text
         isRootComment
+        isFeedbackComment
         Channel {
           uniqueName
         }
@@ -153,10 +157,14 @@ export class CommentNotificationService {
           ... on User {
             __typename
             username
+            displayName
           }
           ... on ModerationProfile {
             __typename
             displayName
+            User {
+              username
+            }
           }
         }
         DiscussionChannel {
@@ -191,6 +199,31 @@ export class CommentNotificationService {
             }
           }
           SubscribedToNotifications {
+            username
+          }
+        }
+        GivesFeedbackOnComment {
+          id
+          CommentAuthor {
+            ... on User {
+              username
+            }
+            ... on ModerationProfile {
+              User {
+                username
+              }
+            }
+          }
+        }
+        GivesFeedbackOnDiscussion {
+          id
+          Author {
+            username
+          }
+        }
+        GivesFeedbackOnEvent {
+          id
+          Poster {
             username
           }
         }
@@ -248,14 +281,40 @@ export class CommentNotificationService {
     // Get the commenter info
     const commenterUsername =
       fullComment.CommentAuthor?.username ||
-      fullComment.CommentAuthor?.displayName ||
+      fullComment.CommentAuthor?.User?.username ||
       'Someone';
+
+    const commenterDisplayName =
+      fullComment.CommentAuthor?.displayName ||
+      commenterUsername;
+
+    const authorLabel = `[@${commenterDisplayName}](/u/${commenterUsername})`;
 
     console.log('Processing notification for comment type:');
     console.log('- Has DiscussionChannel:', !!fullComment.DiscussionChannel);
     console.log('- Has Event:', !!fullComment.Event);
     console.log('- Has ParentComment:', !!fullComment.ParentComment);
+    console.log('- Is feedback comment:', !!fullComment.isFeedbackComment);
     console.log('- Commenter username:', commenterUsername);
+
+    const channelUniqueName = fullComment.Channel?.uniqueName ||
+      fullComment.DiscussionChannel?.channelUniqueName ||
+      fullComment.Event?.EventChannels?.[0]?.channelUniqueName;
+
+    // FEEDBACK NOTIFICATION
+    // When someone gives feedback on content, notify the content author
+    if (fullComment.isFeedbackComment) {
+      console.log('=== DEBUG: Processing FEEDBACK comment notification');
+      await this.processFeedbackNotification(fullComment, commentId, commenterUsername, commenterDisplayName, channelUniqueName);
+    }
+
+    // MOD MENTION NOTIFICATIONS
+    // Check for /m/modProfileName mentions and notify those moderators
+    await this.processModMentionNotifications(fullComment, commentId, commenterUsername, authorLabel, channelUniqueName);
+
+    // USER MENTION NOTIFICATIONS
+    // Check for @username mentions and notify those users
+    await this.processUserMentionNotifications(fullComment, commentId, commenterUsername, commenterDisplayName, channelUniqueName);
 
     // COMMENT REPLY NOTIFICATION
     // Check for replies first, as a reply can also have a DiscussionChannel or Event
@@ -709,6 +768,137 @@ export class CommentNotificationService {
       return notificationsCreated;
     } finally {
       session.close();
+    }
+  }
+
+  /**
+   * Process feedback notification - notify the content author that they received feedback
+   */
+  private async processFeedbackNotification(
+    fullComment: any,
+    commentId: string,
+    authorUsername: string,
+    authorDisplayName: string,
+    channelUniqueName: string | null
+  ) {
+    try {
+      // Determine who should receive the feedback notification
+      let targetAuthorUsername: string | null = null;
+      let targetType: 'comment' | 'discussion' | 'event' = 'comment';
+      let targetId: string | null = null;
+      let discussionId: string | null = null;
+      let eventId: string | null = null;
+
+      if (fullComment.GivesFeedbackOnComment) {
+        const feedbackTarget = fullComment.GivesFeedbackOnComment;
+        targetAuthorUsername =
+          feedbackTarget.CommentAuthor?.username ||
+          feedbackTarget.CommentAuthor?.User?.username;
+        targetType = 'comment';
+        targetId = feedbackTarget.id;
+        discussionId = fullComment.DiscussionChannel?.discussionId;
+        eventId = fullComment.Event?.id;
+      } else if (fullComment.GivesFeedbackOnDiscussion) {
+        const feedbackTarget = fullComment.GivesFeedbackOnDiscussion;
+        targetAuthorUsername = feedbackTarget.Author?.username;
+        targetType = 'discussion';
+        targetId = feedbackTarget.id;
+        discussionId = feedbackTarget.id;
+      } else if (fullComment.GivesFeedbackOnEvent) {
+        const feedbackTarget = fullComment.GivesFeedbackOnEvent;
+        targetAuthorUsername = feedbackTarget.Poster?.username;
+        targetType = 'event';
+        targetId = feedbackTarget.id;
+        eventId = feedbackTarget.id;
+      }
+
+      if (!targetAuthorUsername || !targetId) {
+        console.log('=== DEBUG: No feedback target found');
+        return;
+      }
+
+      console.log('=== DEBUG: Sending feedback notification to:', targetAuthorUsername);
+
+      await notifyFeedback({
+        context: { ogm: this.ogm, driver: this.driver },
+        feedbackContext: {
+          feedbackCommentId: commentId,
+          authorUsername,
+          authorDisplayName,
+          targetType,
+          targetId,
+          channelUniqueName: channelUniqueName || undefined,
+          discussionId: discussionId || undefined,
+          eventId: eventId || undefined,
+        },
+        targetAuthorUsername,
+      });
+    } catch (error) {
+      console.error('Error processing feedback notification:', error);
+    }
+  }
+
+  /**
+   * Process mod mention notifications - notify moderators mentioned with /m/modProfileName
+   */
+  private async processModMentionNotifications(
+    fullComment: any,
+    commentId: string,
+    authorUsername: string,
+    authorLabel: string,
+    channelUniqueName: string | null
+  ) {
+    try {
+      const discussionChannel = fullComment.DiscussionChannel;
+      const event = fullComment.Event;
+
+      await notifyModMentions({
+        context: { ogm: this.ogm, driver: this.driver },
+        mentionContext: {
+          type: 'comment',
+          authorUsername,
+          authorLabel,
+          commentId,
+          discussionId: discussionChannel?.discussionId,
+          discussionTitle: discussionChannel?.Discussion?.title,
+          eventId: event?.id,
+          eventTitle: event?.title,
+          channelUniqueName: channelUniqueName || undefined,
+        },
+        previousText: null, // New comment, no previous text
+        nextText: fullComment.text,
+      });
+    } catch (error) {
+      console.error('Error processing mod mention notifications:', error);
+    }
+  }
+
+  /**
+   * Process user mention notifications - notify users mentioned with @username
+   */
+  private async processUserMentionNotifications(
+    fullComment: any,
+    commentId: string,
+    _authorUsername: string,
+    _authorDisplayName: string,
+    _channelUniqueName: string | null
+  ) {
+    try {
+      // Pass the full comment which matches CommentSnapshot structure
+      await notifyCommentMentions({
+        context: { ogm: this.ogm, driver: this.driver },
+        comment: {
+          id: commentId,
+          text: fullComment.text,
+          CommentAuthor: fullComment.CommentAuthor,
+          DiscussionChannel: fullComment.DiscussionChannel,
+          Event: fullComment.Event,
+        },
+        previousText: null, // New comment, no previous text
+        nextText: fullComment.text,
+      });
+    } catch (error) {
+      console.error('Error processing user mention notifications:', error);
     }
   }
 

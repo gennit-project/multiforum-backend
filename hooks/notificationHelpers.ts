@@ -2,12 +2,14 @@ type CreateInAppNotificationInput = {
   UserModel: any;
   username: string;
   text: string;
+  notificationType?: string; // "feedback", "mention", "reply", "moderation", "scratchpad", etc.
 };
 
 export const createInAppNotification = async ({
   UserModel,
   username,
   text,
+  notificationType,
 }: CreateInAppNotificationInput): Promise<boolean> => {
   try {
     const userUpdateResult = await UserModel.update({
@@ -20,6 +22,7 @@ export const createInAppNotification = async ({
                 node: {
                   text,
                   read: false,
+                  ...(notificationType && { notificationType }),
                 },
               },
             ],
