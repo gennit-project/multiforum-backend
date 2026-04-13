@@ -14,6 +14,7 @@ import { GraphQLError } from "graphql";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import getNextServerIssueNumber from "./utils/getNextServerIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
+import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
 
 type Args = {
   imageId: string;
@@ -430,6 +431,26 @@ const getResolver = (input: Input) => {
       const imageUpdateId = imageUpdateData.images[0]?.id || null;
       if (!imageUpdateId) {
         throw new GraphQLError("Error updating image");
+      }
+
+      // Notify the image uploader that their content was archived
+      const issueNumber = existingIssue?.issueNumber;
+      if (uploaderUsername && issueNumber) {
+        const baseUrl = process.env.FRONTEND_URL || '';
+        // Image URLs vary - use the image ID as the content reference
+        const contentUrl = channelUniqueName
+          ? `${baseUrl}/forums/${channelUniqueName}/images/${imageId}`
+          : `${baseUrl}/images/${imageId}`;
+
+        await notifyArchivedContentAuthor({
+          context: { ogm: context.ogm, driver: context.driver },
+          contentType: 'image',
+          authorUsername: uploaderUsername,
+          contentUrl,
+          channelUniqueName: channelUniqueName || 'server',
+          issueNumber,
+          moderatorUsername: loggedInUsername,
+        });
       }
 
       return existingIssue;

@@ -19,6 +19,7 @@ import {
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
+import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
 
 type Args = {
   discussionId: string;
@@ -88,6 +89,9 @@ const getResolver = (input: Input) => {
       selectionSet: `{
             id
             title
+            Author {
+              username
+            }
         }`,
     });
 
@@ -258,6 +262,26 @@ const getResolver = (input: Input) => {
       if (!discussionChannelUpdateId) {
         throw new GraphQLError("Error updating discussionChannel");
       }
+
+      // Notify the discussion author that their content was archived
+      const discussionAuthorUsername = discussionData[0]?.Author?.username;
+      const issueNumber = existingIssue?.issueNumber;
+
+      if (discussionAuthorUsername && issueNumber) {
+        const baseUrl = process.env.FRONTEND_URL || '';
+        const contentUrl = `${baseUrl}/forums/${channelUniqueName}/discussions/${discussionId}`;
+
+        await notifyArchivedContentAuthor({
+          context: { ogm: context.ogm, driver: context.driver },
+          contentType: 'discussion',
+          authorUsername: discussionAuthorUsername,
+          contentUrl,
+          channelUniqueName,
+          issueNumber,
+          moderatorUsername: loggedInUsername,
+        });
+      }
+
       return existingIssue;
     } catch (error) {
       console.log("Error creating issue", error);

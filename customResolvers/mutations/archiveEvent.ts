@@ -18,6 +18,7 @@ import {
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
+import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
 import {
   checkChannelModPermissions,
   ModChannelPermission,
@@ -100,6 +101,9 @@ const getResolver = (input: Input) => {
       selectionSet: `{
             id
             title
+            Poster {
+              username
+            }
         }`,
     });
 
@@ -274,6 +278,26 @@ const getResolver = (input: Input) => {
       if (!eventChannelUpdateId) {
         throw new GraphQLError("Error updating eventChannel");
       }
+
+      // Notify the event poster that their content was archived
+      const eventPosterUsername = eventData[0]?.Poster?.username;
+      const issueNumber = existingIssue?.issueNumber;
+
+      if (eventPosterUsername && issueNumber) {
+        const baseUrl = process.env.FRONTEND_URL || '';
+        const contentUrl = `${baseUrl}/forums/${channelUniqueName}/events/${eventId}`;
+
+        await notifyArchivedContentAuthor({
+          context: { ogm: context.ogm, driver: context.driver },
+          contentType: 'event',
+          authorUsername: eventPosterUsername,
+          contentUrl,
+          channelUniqueName,
+          issueNumber,
+          moderatorUsername: loggedInUsername,
+        });
+      }
+
       return existingIssue;
     } catch (error) {
       console.log("Error creating issue", error);

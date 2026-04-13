@@ -18,6 +18,7 @@ import {
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
+import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
 
 type Args = {
   commentId: string;
@@ -76,13 +77,25 @@ const getResolver = (input: Input) => {
       selectionSet: `{
             id
             text
+            CommentAuthor {
+              ... on User {
+                username
+              }
+              ... on ModerationProfile {
+                User {
+                  username
+                }
+              }
+            }
             Channel {
               uniqueName
             }
             DiscussionChannel {
+              discussionId
               channelUniqueName
             }
             Event {
+              id
               EventChannels {
                 channelUniqueName
               }
@@ -309,6 +322,37 @@ const getResolver = (input: Input) => {
       if (!commentUpdateId) {
         throw new GraphQLError("Error updating comment");
       }
+
+      // Notify the comment author that their content was archived
+      const commentAuthorData = commentData[0]?.CommentAuthor as any;
+      const commentAuthorUsername =
+        commentAuthorData?.username ||
+        commentAuthorData?.User?.username;
+      const issueNumber = existingIssue?.issueNumber;
+
+      if (commentAuthorUsername && issueNumber) {
+        // Build the comment URL based on context
+        let contentUrl = '';
+        const baseUrl = process.env.FRONTEND_URL || '';
+        if (commentData[0]?.DiscussionChannel?.discussionId) {
+          contentUrl = `${baseUrl}/forums/${channelUniqueName}/discussions/${commentData[0].DiscussionChannel.discussionId}/comments/${commentId}`;
+        } else if (commentData[0]?.Event?.id) {
+          contentUrl = `${baseUrl}/forums/${channelUniqueName}/events/${commentData[0].Event.id}/comments/${commentId}`;
+        }
+
+        if (contentUrl) {
+          await notifyArchivedContentAuthor({
+            context: { ogm: context.ogm, driver: context.driver },
+            contentType: 'comment',
+            authorUsername: commentAuthorUsername,
+            contentUrl,
+            channelUniqueName,
+            issueNumber,
+            moderatorUsername: loggedInUsername,
+          });
+        }
+      }
+
       return existingIssue;
     } catch (error) {
       throw new GraphQLError("Error updating comment");
