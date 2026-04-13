@@ -876,6 +876,7 @@ const typeDefinitions = gql `
 
     # Library management
     addToOwnedDownloads(pluginVersionId: ID!): Boolean!
+    trackDownload(downloadableFileId: ID!, discussionId: ID!): Boolean!
 
     # Initialize user's default favorites collections
     initializeUserFavorites: Boolean!

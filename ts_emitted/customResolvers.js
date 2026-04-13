@@ -86,6 +86,7 @@ import sendBugReport from './customResolvers/mutations/sendBugReport.js';
 import refreshPlugins from './customResolvers/mutations/refreshPlugins.js';
 import installPluginVersion from './customResolvers/mutations/installPluginVersion.js';
 import triggerDownloadableFilePluginRuns from './customResolvers/mutations/triggerDownloadableFilePluginRuns.js';
+import trackDownload from './customResolvers/mutations/trackDownload.js';
 import enableServerPlugin from './customResolvers/mutations/enableServerPlugin.js';
 import setServerPluginSecret from './customResolvers/mutations/setServerPluginSecret.js';
 import getServerPluginSecrets from './customResolvers/queries/getServerPluginSecrets.js';
@@ -584,6 +585,9 @@ export default function (driver) {
                 PluginRun,
                 ServerConfig,
                 ServerSecret
+            }),
+            trackDownload: trackDownload({
+                driver
             }),
             enableServerPlugin: enableServerPlugin({
                 Plugin,

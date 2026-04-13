@@ -1,0 +1,127 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import trackDownload from './trackDownload.js'
+
+type RunCall = [string, {
+  username?: string
+  downloadableFileId: string
+  discussionId: string
+}]
+
+type FakeRecord = {
+  get: (key: string) => number
+}
+
+const buildDriver = (updated = 1) => {
+  const calls = {
+    run: [] as RunCall[],
+    close: 0,
+    defaultAccessMode: null as string | null
+  }
+
+  const record: FakeRecord = {
+    get: (key: string) => key === 'updated' ? updated : 0
+  }
+
+  const driver = {
+    session: (input: { defaultAccessMode: string }) => {
+      calls.defaultAccessMode = input.defaultAccessMode
+
+      return {
+        run: async (...args: RunCall) => {
+          calls.run.push(args)
+          return { records: [record] }
+        },
+        close: () => {
+          calls.close += 1
+        }
+      }
+    }
+  }
+
+  return { driver, calls }
+}
+
+test('trackDownload requires a downloadable file ID', async () => {
+  const { driver } = buildDriver()
+  const resolver = trackDownload({ driver })
+
+  await assert.rejects(
+    resolver(null, { downloadableFileId: '', discussionId: 'discussion-1' }, {
+      user: { username: 'alice' }
+    }),
+    /Downloadable file ID is required/
+  )
+})
+
+test('trackDownload requires a discussion ID', async () => {
+  const { driver } = buildDriver()
+  const resolver = trackDownload({ driver })
+
+  await assert.rejects(
+    resolver(null, { downloadableFileId: 'file-1', discussionId: '' }, {
+      user: { username: 'alice' }
+    }),
+    /Discussion ID is required/
+  )
+})
+
+test('trackDownload counts anonymous downloads as total-only activity', async () => {
+  const { driver, calls } = buildDriver()
+  const resolver = trackDownload({
+    driver,
+    getUserData: async () => ({
+      username: null,
+      email: null,
+      email_verified: false,
+      data: null
+    })
+  })
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+    {}
+  )
+
+  assert.equal(result, true)
+  assert.equal(calls.run.length, 1)
+  assert.equal(calls.run[0][1].username, undefined)
+  assert.match(calls.run[0][0], /downloadCountTotal/)
+  assert.doesNotMatch(calls.run[0][0], /downloadCountUnique/)
+  assert.doesNotMatch(calls.run[0][0], /OWNS_DOWNLOAD/)
+})
+
+test('trackDownload updates counters and saves the download discussion', async () => {
+  const { driver, calls } = buildDriver()
+  const resolver = trackDownload({ driver })
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+    { user: { username: 'alice' } }
+  )
+
+  assert.equal(result, true)
+  assert.equal(calls.defaultAccessMode, 'WRITE')
+  assert.equal(calls.close, 1)
+  assert.equal(calls.run.length, 1)
+  assert.equal(calls.run[0][1].username, 'alice')
+  assert.equal(calls.run[0][1].downloadableFileId, 'file-1')
+  assert.equal(calls.run[0][1].discussionId, 'discussion-1')
+  assert.match(calls.run[0][0], /downloadCountTotal/)
+  assert.match(calls.run[0][0], /downloadCountUnique/)
+  assert.match(calls.run[0][0], /OWNS_DOWNLOAD/)
+})
+
+test('trackDownload throws when the file does not belong to the discussion', async () => {
+  const { driver } = buildDriver(0)
+  const resolver = trackDownload({ driver })
+
+  await assert.rejects(
+    resolver(null, { downloadableFileId: 'file-1', discussionId: 'discussion-1' }, {
+      user: { username: 'alice' }
+    }),
+    /Downloadable file not found for this discussion/
+  )
+})
