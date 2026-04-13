@@ -33,6 +33,75 @@ type Input = {
   driver: any;
 };
 
+type CommentAuthorForNotification =
+  | {
+      __typename: "User";
+      username?: string | null;
+    }
+  | {
+      __typename: "ModerationProfile";
+      User?: { username?: string | null } | null;
+    }
+  | null
+  | undefined;
+
+type ArchivedCommentContext = {
+  DiscussionChannel?: {
+    discussionId?: string | null;
+  } | null;
+  Event?: {
+    id?: string | null;
+  } | null;
+  ParentComment?: {
+    DiscussionChannel?: {
+      discussionId?: string | null;
+    } | null;
+    Event?: {
+      id?: string | null;
+    } | null;
+  } | null;
+};
+
+const getCommentAuthorUsername = (
+  author: CommentAuthorForNotification
+): string | null => {
+  if (!author) {
+    return null;
+  }
+
+  if (author.__typename === "User") {
+    return author.username || null;
+  }
+
+  return author.User?.username || null;
+};
+
+const buildArchivedCommentUrl = ({
+  baseUrl,
+  channelUniqueName,
+  commentId,
+  comment,
+}: {
+  baseUrl: string;
+  channelUniqueName: string;
+  commentId: string;
+  comment: ArchivedCommentContext;
+}): string => {
+  const discussionId =
+    comment.DiscussionChannel?.discussionId ||
+    comment.ParentComment?.DiscussionChannel?.discussionId;
+  if (discussionId) {
+    return `${baseUrl}/forums/${channelUniqueName}/discussions/${discussionId}/comments/${commentId}`;
+  }
+
+  const eventId = comment.Event?.id || comment.ParentComment?.Event?.id;
+  if (eventId) {
+    return `${baseUrl}/forums/${channelUniqueName}/events/${eventId}/comments/${commentId}`;
+  }
+
+  return "";
+};
+
 const getResolver = (input: Input) => {
   const { Issue, Comment, driver } = input;
   return async (parent: any, args: Args, context: any, resolveInfo: any) => {
@@ -78,6 +147,7 @@ const getResolver = (input: Input) => {
             id
             text
             CommentAuthor {
+              __typename
               ... on User {
                 username
               }
@@ -105,9 +175,11 @@ const getResolver = (input: Input) => {
                 uniqueName
               }
               DiscussionChannel {
+                discussionId
                 channelUniqueName
               }
               Event {
+                id
                 EventChannels {
                   channelUniqueName
                 }
@@ -324,21 +396,18 @@ const getResolver = (input: Input) => {
       }
 
       // Notify the comment author that their content was archived
-      const commentAuthorData = commentData[0]?.CommentAuthor as any;
-      const commentAuthorUsername =
-        commentAuthorData?.username ||
-        commentAuthorData?.User?.username;
+      const commentAuthorUsername = getCommentAuthorUsername(
+        commentData[0]?.CommentAuthor as CommentAuthorForNotification
+      );
       const issueNumber = existingIssue?.issueNumber;
 
       if (commentAuthorUsername && issueNumber) {
-        // Build the comment URL based on context
-        let contentUrl = '';
-        const baseUrl = process.env.FRONTEND_URL || '';
-        if (commentData[0]?.DiscussionChannel?.discussionId) {
-          contentUrl = `${baseUrl}/forums/${channelUniqueName}/discussions/${commentData[0].DiscussionChannel.discussionId}/comments/${commentId}`;
-        } else if (commentData[0]?.Event?.id) {
-          contentUrl = `${baseUrl}/forums/${channelUniqueName}/events/${commentData[0].Event.id}/comments/${commentId}`;
-        }
+        const contentUrl = buildArchivedCommentUrl({
+          baseUrl: process.env.FRONTEND_URL || "",
+          channelUniqueName,
+          commentId,
+          comment: commentData[0] as ArchivedCommentContext,
+        });
 
         if (contentUrl) {
           await notifyArchivedContentAuthor({
