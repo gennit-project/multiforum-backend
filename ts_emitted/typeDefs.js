@@ -180,6 +180,7 @@ const typeDefinitions = gql `
     createdAt: DateTime! @timestamp(operations: [CREATE])
     read: Boolean
     text: String
+    notificationType: String # "feedback", "mention", "reply", "moderation", "scratchpad", etc.
   }
 
   type Message {
@@ -297,6 +298,24 @@ const typeDefinitions = gql `
     notificationBundleInterval: String
     notificationBundleEnabled: Boolean @default(value: true)
     notificationBundleContent: String
+
+    # scratchpad (thank-you notes from super upvotes)
+    ScratchpadEntries: [ScratchpadEntry!]! @relationship(type: "HAS_SCRATCHPAD_ENTRY", direction: OUT)
+    WrittenScratchpadEntries: [ScratchpadEntry!]! @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: OUT)
+  }
+
+  type ScratchpadEntry {
+    id: ID! @id
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    text: String!
+    isPublic: Boolean! @default(value: false)
+    sourceType: String! # "comment" or "discussion"
+    sourceId: String!
+    sourceChannelUniqueName: String
+
+    # Relationships
+    Author: User! @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: IN)
+    Recipient: User! @relationship(type: "HAS_SCRATCHPAD_ENTRY", direction: IN)
   }
 
   type TextVersion {
@@ -498,6 +517,8 @@ const typeDefinitions = gql `
     Channel: Channel @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
     UpvotedByUsers: [User!]!
       @relationship(type: "UPVOTED_DISCUSSION", direction: IN)
+    SuperUpvotedByUsers: [User!]!
+      @relationship(type: "SUPER_UPVOTED_DISCUSSION", direction: IN)
     Comments: [Comment!]!
       @relationship(type: "CONTAINS_COMMENT", direction: OUT)
     emoji: JSON
@@ -656,6 +677,8 @@ const typeDefinitions = gql `
     weightedVotesCount: Float
     UpvotedByUsers: [User!]!
       @relationship(type: "UPVOTED_COMMENT", direction: IN)
+    SuperUpvotedByUsers: [User!]!
+      @relationship(type: "SUPER_UPVOTED_COMMENT", direction: IN)
     PastVersions: [TextVersion!]!
       @relationship(type: "HAS_VERSION", direction: OUT)
     emoji: JSON
@@ -909,6 +932,23 @@ const typeDefinitions = gql `
       discussionChannelId: ID!
       username: String!
     ): DiscussionChannel
+
+    # Super upvote / Scratchpad
+    createScratchpadEntry(
+      recipientUsername: String!
+      text: String!
+      sourceType: String!
+      sourceId: String!
+      sourceChannelUniqueName: String
+    ): ScratchpadEntry
+    updateScratchpadEntryVisibility(
+      scratchpadEntryId: ID!
+      isPublic: Boolean!
+    ): ScratchpadEntry
+    deleteScratchpadEntry(
+      scratchpadEntryId: ID!
+    ): Boolean
+
     createSignedStorageURL(filename: String!, contentType: String!, channelConnections: [String!]): SignedURL
     createEmailAndUser(emailAddress: String!, username: String!): User
     dropDataForCypressTests: DropDataResponse

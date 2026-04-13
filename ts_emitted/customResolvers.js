@@ -101,6 +101,9 @@ import createImagesWithUploader from './customResolvers/mutations/createImagesWi
 import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithOwner.js';
 import createDownloadableFileUrlResolver from './customResolvers/fields/downloadableFileUrl.js';
 import updateDownloadLabels from './customResolvers/mutations/updateDownloadLabels.js';
+import createScratchpadEntry from './customResolvers/mutations/createScratchpadEntry.js';
+import updateScratchpadEntryVisibility from './customResolvers/mutations/updateScratchpadEntryVisibility.js';
+import deleteScratchpadEntry from './customResolvers/mutations/deleteScratchpadEntry.js';
 const { OGM } = pkg;
 export default function (driver) {
     const ogm = new OGM({
@@ -136,6 +139,7 @@ export default function (driver) {
     const FilterOption = ogm.model("FilterOption");
     const ModerationAction = ogm.model("ModerationAction");
     const LabelChangeHistory = ogm.model("LabelChangeHistory");
+    const ScratchpadEntry = ogm.model("ScratchpadEntry");
     const resolvers = {
         JSON: GraphQLJSON,
         CommentAuthor: {
@@ -215,7 +219,8 @@ export default function (driver) {
                 Discussion,
                 Event,
                 Comment,
-                Channel
+                Channel,
+                User
             }),
             safetyCheck: safetyCheck,
             getServerPluginSecrets: getServerPluginSecrets({
@@ -455,6 +460,7 @@ export default function (driver) {
                 Comment,
                 Event,
                 Discussion,
+                User,
                 WikiPage,
                 TextVersion
             }),
@@ -464,7 +470,8 @@ export default function (driver) {
                 ServerConfig,
                 Comment,
                 Event,
-                Discussion
+                Discussion,
+                User
             }),
             suspendMod: suspendMod({
                 Issue,
@@ -472,7 +479,8 @@ export default function (driver) {
                 ServerConfig,
                 Comment,
                 Event,
-                Discussion
+                Discussion,
+                User
             }),
             unsuspendMod: unsuspendMod({
                 Issue,
@@ -480,7 +488,8 @@ export default function (driver) {
                 ServerConfig,
                 Comment,
                 Event,
-                Discussion
+                Discussion,
+                User
             }),
             lockIssue: lockIssue({
                 Issue
@@ -611,6 +620,19 @@ export default function (driver) {
                 FilterOption,
                 ModerationAction,
                 LabelChangeHistory,
+            }),
+            createScratchpadEntry: createScratchpadEntry({
+                ScratchpadEntry,
+                Comment,
+                DiscussionChannel,
+                User,
+                driver,
+            }),
+            updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
+                ScratchpadEntry,
+            }),
+            deleteScratchpadEntry: deleteScratchpadEntry({
+                ScratchpadEntry,
             }),
         },
     };

@@ -165,6 +165,7 @@ const createScratchpadEntryResolver = (input: Input) => {
         UserModel: User,
         username: recipientUsername,
         text: notificationText,
+        notificationType: 'scratchpad',
       });
 
       await tx.commit();
