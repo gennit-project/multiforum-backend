@@ -10,6 +10,25 @@ type CachedUserInfo = {
   email: string | null;
 };
 
+const isMockAuthEnabled = () =>
+  process.env.E2E_MOCK_AUTH === "true" ||
+  process.env.PLAYWRIGHT_MOCK_AUTH === "true";
+
+const decodeMockTokenPayload = (token: string) => {
+  const decodedMock = jwt.decode(token);
+
+  if (!decodedMock || typeof decodedMock === "string") {
+    return { email: null, username: null };
+  }
+
+  return {
+    email:
+      typeof decodedMock.email === "string" ? decodedMock.email : null,
+    username:
+      typeof decodedMock.username === "string" ? decodedMock.username : null,
+  };
+};
+
 // Lazy initialization of the JWKS client
 let client: any = null;
 
@@ -238,16 +257,31 @@ export const setUserDataOnContext = async (
     };
   }
 
-  if (!process.env.AUTH0_DOMAIN) {
-    throw new Error("AUTH0_DOMAIN environment variable is not defined.");
-  }
-
   let email: string | null = null;
   let decoded: any;
   let username: string | null | undefined = null;
   let modProfileName: string | null | undefined = null;
 
   if (token) {
+    if (isMockAuthEnabled()) {
+      const mockPayload = decodeMockTokenPayload(token);
+      email = mockPayload.email;
+      username = mockPayload.username;
+
+      if (!username && email) {
+        username = await getUserFromEmail(email, ogm.model("Email"));
+      }
+
+      if (username) {
+        modProfileName = await getModProfileNameFromUsername(username, ogm);
+      }
+    }
+
+    if (!username && !email) {
+      if (!process.env.AUTH0_DOMAIN) {
+        throw new Error("AUTH0_DOMAIN environment variable is not defined.");
+      }
+
     decoded = await new Promise((resolve, reject) => {
       jwt.verify(token, getKey, { algorithms: ["RS256"] }, (err, decoded) => {
         if (!err) {
@@ -292,62 +326,63 @@ export const setUserDataOnContext = async (
         // For queries, resolve with null and let the rule handlers decide how to handle it
         resolve(null);
       });
-    });
+      });
 
-    // Check the audience of the token
-    const audience = decoded?.aud;
+      // Check the audience of the token
+      const audience = decoded?.aud;
 
-    if (audience === process.env.AUTH0_CLIENT_ID) {
-      // UI-based token
-      email = decoded?.email;
-    } else if (
-      Array.isArray(audience) &&
-      audience.includes("https://gennit.us.auth0.com/api/v2/")
-    ) {
-      // Programmatic token
+      if (audience === process.env.AUTH0_CLIENT_ID) {
+        // UI-based token
+        email = decoded?.email;
+      } else if (
+        Array.isArray(audience) &&
+        audience.includes("https://gennit.us.auth0.com/api/v2/")
+      ) {
+        // Programmatic token
 
-      // Check if userinfo is cached
-      const cachedUserInfo: CachedUserInfo | undefined =
-        userInfoCache.get(token);
+        // Check if userinfo is cached
+        const cachedUserInfo: CachedUserInfo | undefined =
+          userInfoCache.get(token);
 
-      if (cachedUserInfo) {
-        email = cachedUserInfo.email;
-      } else {
-        try {
-          const userInfoResponse = await axios.get(
-            `https://${process.env.AUTH0_DOMAIN}/userinfo`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          email = userInfoResponse?.data?.email;
-        } catch (error) {
-          console.error("Error fetching email from Auth0 userinfo:", error);
+        if (cachedUserInfo) {
+          email = cachedUserInfo.email;
+        } else {
+          try {
+            const userInfoResponse = await axios.get(
+              `https://${process.env.AUTH0_DOMAIN}/userinfo`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            email = userInfoResponse?.data?.email;
+          } catch (error) {
+            console.error("Error fetching email from Auth0 userinfo:", error);
+          }
+
+          // Cache the userinfo response
+          const userInfoToCache: CachedUserInfo = { email };
+          userInfoCache.set(token, userInfoToCache);
         }
-
-        // Cache the userinfo response
-        const userInfoToCache: CachedUserInfo = { email };
-        userInfoCache.set(token, userInfoToCache);
+      }  else {
+        console.error("Token audience is unrecognized.");
       }
-    }  else {
-      console.error("Token audience is unrecognized.");
-    }
 
-    // Get the username from the email by calling getUserFromEmail
-    if (email) {
-      username = await getUserFromEmail(email, ogm.model("Email"));
-    }
-    if (username) {
-      modProfileName = await getModProfileNameFromUsername(username, ogm);
+      // Get the username from the email by calling getUserFromEmail
+      if (email) {
+        username = await getUserFromEmail(email, ogm.model("Email"));
+      }
+      if (username) {
+        modProfileName = await getModProfileNameFromUsername(username, ogm);
+      }
     }
   }
 
   return {
     username: username || null,
     email,
-    email_verified: false,
+    email_verified: isMockAuthEnabled() ? true : false,
     data: {
       ServerRoles: [],
       ChannelRoles: [],
