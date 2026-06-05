@@ -394,6 +394,13 @@ const typeDefinitions = gql`
     downloadCountTotal:  Int @default(value: 0)
     downloadCountUnique: Int @default(value: 0)
 
+    # post-download attribution and support links
+    attributionOverride: String
+    supportPatreonUrl: String
+    supportBuyMeACoffeeUrl: String
+    supportKoFiUrl: String
+    supportPayPalMeUrl: String
+
     # license & versions
     license: License @relationship(type: "USES_LICENSE", direction: OUT)
     versions: [FileVersion!]! @relationship(type: "HAS_VERSION", direction: OUT)
@@ -844,6 +851,14 @@ const typeDefinitions = gql`
     position: Int
   }
 
+  input DownloadSupportSettingsInput {
+    attributionOverride: String
+    supportPatreonUrl: String
+    supportBuyMeACoffeeUrl: String
+    supportKoFiUrl: String
+    supportPayPalMeUrl: String
+  }
+
   input CreateImageInput {
     url: String
     alt: String
@@ -878,6 +893,11 @@ const typeDefinitions = gql`
     # Library management
     addToOwnedDownloads(pluginVersionId: ID!): Boolean!
     trackDownload(downloadableFileId: ID!, discussionId: ID!): Boolean!
+    updateDownloadableFileSupportSettings(
+      downloadableFileId: ID!
+      discussionId: ID!
+      input: DownloadSupportSettingsInput!
+    ): Boolean!
 
     # Initialize user's default favorites collections
     initializeUserFavorites: Boolean!

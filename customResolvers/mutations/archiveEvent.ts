@@ -299,9 +299,10 @@ const getResolver = (input: Input) => {
       }
 
       return existingIssue;
-    } catch (error) {
-      console.log("Error creating issue", error);
-      return false;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Error updating eventChannel for archiveEvent:", errorMessage, error);
+      throw new GraphQLError(`Failed to update event channel: ${errorMessage}`);
     }
   };
 };

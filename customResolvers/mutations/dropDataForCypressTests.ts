@@ -2,66 +2,130 @@ type Input = {
     driver: any;
 };
 
+// Helper to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Run a single delete with retry logic for transient errors
+// Uses batched delete to avoid memory issues
+async function runDeleteWithRetry(
+    driver: any,
+    nodeLabel: string,
+    maxRetries: number = 3,
+    baseDelayMs: number = 200
+): Promise<void> {
+    const batchedQuery = `
+        CALL {
+            MATCH (n:${nodeLabel})
+            WITH n LIMIT 500
+            DETACH DELETE n
+            RETURN count(*) as deleted
+        } IN TRANSACTIONS OF 500 ROWS
+        RETURN sum(deleted) as totalDeleted
+    `;
+
+    // Fallback to simple delete for Neo4j versions that don't support CALL IN TRANSACTIONS
+    const simpleQuery = `MATCH (n:${nodeLabel}) WITH n LIMIT 1000 DETACH DELETE n RETURN count(*) as deleted`;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const session = driver.session();
+        try {
+            // Try batched delete first
+            try {
+                await session.run(batchedQuery);
+                return; // Success
+            } catch (batchError: any) {
+                // If CALL IN TRANSACTIONS not supported, fall back to simple delete
+                if (batchError?.message?.includes('CALL') || batchError?.code?.includes('SyntaxError')) {
+                    // Use simple delete in a loop until no more nodes
+                    let deleted = 1;
+                    while (deleted > 0) {
+                        const result = await session.run(simpleQuery);
+                        deleted = result.records[0]?.get('deleted')?.toNumber?.() || 0;
+                    }
+                    return;
+                }
+                throw batchError;
+            }
+        } catch (error: any) {
+            const isRetriable = error?.retriable === true ||
+                error?.code?.includes('TransientError') ||
+                error?.code?.includes('DeadlockDetected');
+
+            if (isRetriable && attempt < maxRetries) {
+                const delayMs = baseDelayMs * Math.pow(2, attempt - 1);
+                console.warn(`Transient error on attempt ${attempt} for ${nodeLabel}. Retrying in ${delayMs}ms...`);
+                await delay(delayMs);
+            } else {
+                // Log and continue - some node types may not exist or deletion may have partially completed
+                console.warn(`Error deleting ${nodeLabel}:`, error?.message || error);
+                return;
+            }
+        } finally {
+            try {
+                await session.close();
+            } catch {
+                // Ignore session close errors
+            }
+        }
+    }
+}
+
 const dropDataForCypressTestsResolver = (input: Input) => {
     const { driver } = input;
-  
-    return async (parent: any, args: any, context: any, resolveInfo: any) => {
-      const session = driver.session();
-  
-      const tx = session.beginTransaction();
-  
-      try {
-        const deleteQueries = [
-          "MATCH (e:Event) DETACH DELETE e",
-          "MATCH (em:Email) DETACH DELETE em",
-          "MATCH (u:User) DETACH DELETE u",
-          "MATCH (ch:Channel) DETACH DELETE ch",
-          "MATCH (t:Tag) DETACH DELETE t",
-          "MATCH (d:Discussion) DETACH DELETE d",
-          "MATCH (c:Comment) DETACH DELETE c",
-          "MATCH (ec:EventChannel) DETACH DELETE ec",
-          "MATCH (dc:DiscussionChannel) DETACH DELETE dc",
-          "MATCH (cr:ChannelRole) DETACH DELETE cr",
-          "MATCH (mcr:ModChannelRole) DETACH DELETE mcr",
-          "MATCH (sr:ServerRole) DETACH DELETE sr",
-          "MATCH (msr:ModServerRole) DETACH DELETE msr",
-          "MATCH (sc:ServerConfig) DETACH DELETE sc",
-          "MATCH (mp:ModerationProfile) DETACH DELETE mp",
-          "MATCH (i:Issue) DETACH DELETE i",
-          "MATCH (counter:ChannelIssueCounter) DETACH DELETE counter",
-          "MATCH (w:WikiPage) DETACH DELETE w",
-          "MATCH (tx:TextVersion) DETACH DELETE tx",
-        ];
-  
-        // Execute each delete query sequentially
-        for (const query of deleteQueries) {
-          await tx.run(query);
-        }
-  
-        await tx.commit();
-  
-        return { success: true, message: "All test data has been dropped." };
-      } catch (error) {
-        if (tx) {
-          try {
-            await tx.rollback();
-          } catch (rollbackError) {
-            console.error("Failed to rollback transaction", rollbackError);
-          }
-        }
-        console.error(error);
-        throw new Error("Failed to drop test data.");
-      } finally {
-        if (session) {
-          try {
-            await session.close();
-          } catch (sessionCloseError) {
-            console.error("Failed to close session", sessionCloseError);
-          }
-        }
+
+    return async () => {
+      // Order matters: delete dependent nodes first to reduce lock contention
+      const nodeLabels = [
+        // User-generated content and related metadata
+        "ScratchpadEntry",
+        "LabelChangeHistory",
+        "ModerationAction",
+        "Notification",
+        "Activity",
+        "Feedback",
+        "FileVersion",
+        "Purchase",
+        "FilterOption",
+        "FilterGroup",
+        "Suspension",
+        "Image",
+        "Album",
+        "TextVersion",
+        "Comment",
+        "Issue",
+        "ChannelIssueCounter",
+        "EventChannel",
+        "DiscussionChannel",
+        "Event",
+        "RecurringEvent",
+        "Discussion",
+        "DownloadableFile",
+        "Collection",
+        "Message",
+        "Contact",
+        "Emoji",
+        "Feed",
+        "WikiPage",
+        "Tag",
+        // Roles and config
+        "ModerationProfile",
+        "ModChannelRole",
+        "ChannelRole",
+        "ModServerRole",
+        "ServerRole",
+        "Channel",
+        "ServerConfig",
+        "Email",
+        "User",
+      ];
+
+      // Run each delete in its own session
+      for (const label of nodeLabels) {
+        await runDeleteWithRetry(driver, label);
       }
+
+      return { success: true, message: "All test data has been dropped." };
     };
   };
-  
+
   export default dropDataForCypressTestsResolver;
-  

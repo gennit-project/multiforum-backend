@@ -102,6 +102,7 @@ import refreshPlugins from './customResolvers/mutations/refreshPlugins.js';
 import installPluginVersion from './customResolvers/mutations/installPluginVersion.js';
 import triggerDownloadableFilePluginRuns from './customResolvers/mutations/triggerDownloadableFilePluginRuns.js';
 import trackDownload from './customResolvers/mutations/trackDownload.js';
+import updateDownloadableFileSupportSettings from './customResolvers/mutations/updateDownloadableFileSupportSettings.js';
 import enableServerPlugin from './customResolvers/mutations/enableServerPlugin.js';
 import setServerPluginSecret from './customResolvers/mutations/setServerPluginSecret.js';
 import getServerPluginSecrets from './customResolvers/queries/getServerPluginSecrets.js';
@@ -610,6 +611,9 @@ export default function (driver: any) {
         ServerSecret
       }),
       trackDownload: trackDownload({
+        driver
+      }),
+      updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
         driver
       }),
       enableServerPlugin: enableServerPlugin({

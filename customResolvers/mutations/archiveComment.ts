@@ -15,6 +15,7 @@ import { getFinalCommentText } from "./reportDiscussion.js";
 import {
   getModerationActionCreateInput,
   getIssueCreateInput,
+  getRelatedIssueAccountFields,
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
@@ -227,6 +228,11 @@ const getResolver = (input: Input) => {
       selectedServerRules,
     });
 
+    // Extract related account fields from the comment author
+    const { relatedUsername, relatedModProfileName } = getRelatedIssueAccountFields(
+      commentData[0]?.CommentAuthor
+    );
+
     if (!existingIssueId) {
       // If an issue does NOT already exist, create a new issue.
       try {
@@ -241,6 +247,8 @@ const getResolver = (input: Input) => {
           channelUniqueName,
           reportedContentType: "comment",
           relatedCommentId: commentId,
+          relatedUsername,
+          relatedModProfileName,
           issueNumber,
         });
         const issueData = await Issue.create({
@@ -259,9 +267,10 @@ const getResolver = (input: Input) => {
         }
         existingIssueId = issueId;
         existingIssue = issueData.issues[0];
-      } catch (error) {
-        console.log("Error creating issue", error);
-        return false;
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error("Error creating issue for archiveComment:", errorMessage, error);
+        throw new GraphQLError(`Failed to create issue for archived comment: ${errorMessage}`);
       }
     }
     

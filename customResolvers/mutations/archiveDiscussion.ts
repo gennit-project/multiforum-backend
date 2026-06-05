@@ -283,9 +283,10 @@ const getResolver = (input: Input) => {
       }
 
       return existingIssue;
-    } catch (error) {
-      console.log("Error creating issue", error);
-      return false;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Error updating discussionChannel for archiveDiscussion:", errorMessage, error);
+      throw new GraphQLError(`Failed to update discussion channel: ${errorMessage}`);
     }
   };
 };
