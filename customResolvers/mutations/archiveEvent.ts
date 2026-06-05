@@ -269,10 +269,6 @@ const getResolver = (input: Input) => {
         where: eventChannelUpdateWhere,
         update: eventChannelUpdateInput,
       });
-      console.log(
-        "result of event channel update data",
-        eventChannelUpdateData
-      );
       const eventChannelUpdateId =
         eventChannelUpdateData.eventChannels[0]?.id || null;
       if (!eventChannelUpdateId) {
