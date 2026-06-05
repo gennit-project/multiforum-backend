@@ -297,8 +297,6 @@ const getResolver = (input: Input) => {
         suspendUntil: undefined,
         suspendIndefinitely: false,
       });
-      console.log('mod action create input ',JSON.stringify(archiveCommentModActionCreateInput))
-
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
       id: existingIssueId,
