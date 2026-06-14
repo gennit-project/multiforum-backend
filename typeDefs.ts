@@ -1053,6 +1053,10 @@ const typeDefinitions = gql`
       channelConnections: [String!]
       channelDisconnections: [String]
     ): Event
+    deleteEventInSeries(
+      eventId: ID!
+      scope: EventEditScope!
+    ): DeleteEventInSeriesResult
     upvoteComment(commentId: ID!, username: String!): Comment
     undoUpvoteComment(commentId: ID!, username: String!): Comment
     upvoteDiscussionChannel(
@@ -1383,6 +1387,12 @@ const typeDefinitions = gql`
     Discussion: Discussion
     Channel: Channel
     isFavorited: Boolean
+  }
+
+  type DeleteEventInSeriesResult {
+    success: Boolean!
+    deletedCount: Int!
+    message: String
   }
 
   type CommentAggregateResult {

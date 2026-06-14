@@ -8,6 +8,7 @@ import createEventWithChannelConnections from "./customResolvers/mutations/creat
 import createEventSeriesWithChannelConnections from "./customResolvers/mutations/createEventSeriesWithChannelConnections.js";
 import updateEventWithChannelConnections from "./customResolvers/mutations/updateEventWithChannelConnections.js";
 import updateEventInSeries from "./customResolvers/mutations/updateEventInSeries.js";
+import deleteEventInSeries from "./customResolvers/mutations/deleteEventInSeries.js";
 
 import getSiteWideDiscussionList from "./customResolvers/queries/getSiteWideDiscussionList.js";
 import getSiteWideWikiList from "./customResolvers/queries/getSiteWideWikiList.js";
@@ -302,6 +303,11 @@ export default function (driver: any) {
         driver,
       }),
       updateEventInSeries: updateEventInSeries({
+        Event,
+        EventSeries,
+        driver,
+      }),
+      deleteEventInSeries: deleteEventInSeries({
         Event,
         EventSeries,
         driver,
