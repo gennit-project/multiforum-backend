@@ -19,6 +19,11 @@ type DiscussionInput = {
   editMode: boolean;
 };
 
+type ChannelImagePreference = {
+  uniqueName?: string | null;
+  imageUploadsEnabled?: boolean | null;
+};
+
 const validateDiscussionInput = (input: DiscussionInput): true | string => {
   const { title, body, editMode } = input;
 
@@ -53,6 +58,122 @@ function getDownloadableFileIds(discussionCreateInput: any) {
         ?.map((connection: any) => connection?.where?.node?.id)
         .filter((id: unknown): id is string => typeof id === "string") || []
   );
+}
+
+function asArray<T>(value: T | T[] | null | undefined): T[] {
+  if (!value) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
+}
+
+function imagesFieldCreatesOrConnectsImages(imagesField: any) {
+  return asArray(imagesField).some(
+    (fieldInput) =>
+      asArray(fieldInput?.create).length > 0 ||
+      asArray(fieldInput?.connect).length > 0
+  );
+}
+
+export function albumInputCreatesOrConnectsImages(albumInput: any) {
+  const createNodes = asArray(albumInput?.create).flatMap((createInput) =>
+    createInput?.node ? [createInput.node] : []
+  );
+  const updateNodes = asArray(albumInput?.update).flatMap((updateInput) =>
+    updateInput?.node ? [updateInput.node] : []
+  );
+
+  return [...createNodes, ...updateNodes].some((node) =>
+    imagesFieldCreatesOrConnectsImages(node?.Images)
+  );
+}
+
+async function validateImageUploadsEnabled(
+  channelConnections: string[],
+  ctx: any
+) {
+  const Channel = ctx.ogm.model("Channel");
+
+  const uniqueChannelConnections = Array.from(
+    new Set(channelConnections.filter(Boolean))
+  );
+
+  for (const channelName of uniqueChannelConnections) {
+    const channels = (await Channel.find({
+      where: { uniqueName: channelName },
+      selectionSet: `{
+        uniqueName
+        imageUploadsEnabled
+      }`,
+    })) as ChannelImagePreference[];
+    const channel = channels[0];
+
+    if (!channel) {
+      return `Channel '${channelName}' not found`;
+    }
+
+    if (channel.imageUploadsEnabled === false) {
+      return `Image uploads are disabled in channel '${channelName}'.`;
+    }
+  }
+
+  return true;
+}
+
+async function getDiscussionChannelNamesByWhere(where: any, ctx: any) {
+  if (!where || Object.keys(where).length === 0) {
+    return [];
+  }
+
+  const Discussion = ctx.ogm.model("Discussion");
+  const discussions = await Discussion.find({
+    where,
+    selectionSet: `{
+      DiscussionChannels {
+        channelUniqueName
+      }
+    }`,
+  });
+
+  return (
+    discussions?.flatMap(
+      (discussion: any) =>
+        discussion?.DiscussionChannels?.map(
+          (discussionChannel: any) => discussionChannel?.channelUniqueName
+        ) || []
+    ) || []
+  ).filter(
+    (channelName: unknown): channelName is string =>
+      typeof channelName === "string"
+  );
+}
+
+export async function validateDiscussionImagePreferences(
+  {
+    discussionInput,
+    channelConnections,
+    where,
+  }: {
+    discussionInput: any;
+    channelConnections?: string[];
+    where?: any;
+  },
+  ctx: any
+) {
+  if (!albumInputCreatesOrConnectsImages(discussionInput?.Album)) {
+    return true;
+  }
+
+  const targetChannelConnections = channelConnections?.length
+    ? channelConnections
+    : await getDiscussionChannelNamesByWhere(where, ctx);
+
+  if (!targetChannelConnections.length) {
+    return "No channel specified for this operation.";
+  }
+
+  return validateImageUploadsEnabled(targetChannelConnections, ctx);
 }
 
 export async function validateDiscussionDownloadPreferences(
@@ -134,6 +255,17 @@ export const createDiscussionInputIsValid = rule({ cache: "contextual" })(
         return downloadValidation;
       }
 
+      const imageValidation = await validateDiscussionImagePreferences(
+        {
+          discussionInput: item.discussionCreateInput,
+          channelConnections: item.channelConnections,
+        },
+        ctx
+      );
+      if (imageValidation !== true) {
+        return imageValidation;
+      }
+
       isValid = true;
     }
     return isValid;
@@ -142,12 +274,28 @@ export const createDiscussionInputIsValid = rule({ cache: "contextual" })(
 
 export const updateDiscussionInputIsValid = rule({ cache: "contextual" })(
   async (parent: any, args: CanUpdateDiscussionArgs, ctx: any, info: any) => {
-    if (!args.discussionUpdateInput) {
+    const discussionUpdateInput =
+      args.discussionUpdateInput || (args as any).update;
+
+    if (!discussionUpdateInput) {
       return "Missing discussionUpdateInput in args.";
     }
-    return validateDiscussionInput({
-      ...args.discussionUpdateInput,
+    const discussionValidation = validateDiscussionInput({
+      ...discussionUpdateInput,
       editMode: true,
     });
+
+    if (discussionValidation !== true) {
+      return discussionValidation;
+    }
+
+    return validateDiscussionImagePreferences(
+      {
+        discussionInput: discussionUpdateInput,
+        channelConnections: args.channelConnections,
+        where: (args as any).where,
+      },
+      ctx
+    );
   }
 );

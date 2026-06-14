@@ -2,16 +2,21 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { CommentCreateInput } from "../../src/generated/graphql.js";
 import { validateFeedbackEnabled } from "./commentIsValid.js";
-import { validateDiscussionDownloadPreferences } from "./discussionIsValid.js";
+import {
+  validateDiscussionDownloadPreferences,
+  validateDiscussionImagePreferences,
+} from "./discussionIsValid.js";
 import { validateEventChannelsEnabled } from "./eventIsValid.js";
 import { ModelStub } from "../../tests/testUtils.js";
 
 const createContext = ({
   channel,
+  discussion,
   downloadableFile,
   serverConfig = { allowedFileTypes: [] },
 }: {
   channel: Record<string, unknown> | null;
+  discussion?: Record<string, unknown> | null;
   downloadableFile?: Record<string, unknown> | null;
   serverConfig?: Record<string, unknown>;
 }) => ({
@@ -27,6 +32,10 @@ const createContext = ({
 
       if (name === "DownloadableFile") {
         return new ModelStub(() => (downloadableFile ? [downloadableFile] : []));
+      }
+
+      if (name === "Discussion") {
+        return new ModelStub(() => (discussion ? [discussion] : []));
       }
 
       throw new Error(`Unexpected model lookup: ${name}`);
@@ -180,6 +189,86 @@ test("download validation allows enabled channels with allowed file types", asyn
         allowedFileTypes: ["zip"],
       },
       downloadableFile: { id: "file-1", fileName: "archive.zip" },
+    })
+  );
+
+  assert.equal(result, true);
+});
+
+test("discussion image validation rejects disabled image upload channels on create", async () => {
+  const result = await validateDiscussionImagePreferences(
+    {
+      discussionInput: {
+        Album: {
+          create: {
+            node: {
+              Images: {
+                connect: [{ where: { node: { id: "image-1" } } }],
+              },
+            },
+          },
+        },
+      },
+      channelConnections: ["cats"],
+    },
+    createContext({
+      channel: { uniqueName: "cats", imageUploadsEnabled: false },
+    })
+  );
+
+  assert.equal(result, "Image uploads are disabled in channel 'cats'.");
+});
+
+test("discussion image validation rejects disabled image upload channels on update", async () => {
+  const result = await validateDiscussionImagePreferences(
+    {
+      discussionInput: {
+        Album: {
+          update: {
+            node: {
+              Images: [
+                {
+                  connect: [{ where: { node: { id: "image-1" } } }],
+                },
+              ],
+            },
+          },
+        },
+      },
+      where: { id: "discussion-1" },
+    },
+    createContext({
+      channel: { uniqueName: "cats", imageUploadsEnabled: false },
+      discussion: {
+        id: "discussion-1",
+        DiscussionChannels: [{ channelUniqueName: "cats" }],
+      },
+    })
+  );
+
+  assert.equal(result, "Image uploads are disabled in channel 'cats'.");
+});
+
+test("discussion image validation ignores album image removals", async () => {
+  const result = await validateDiscussionImagePreferences(
+    {
+      discussionInput: {
+        Album: {
+          update: {
+            node: {
+              Images: [
+                {
+                  disconnect: [{ where: { node: { id: "image-1" } } }],
+                },
+              ],
+            },
+          },
+        },
+      },
+      channelConnections: ["cats"],
+    },
+    createContext({
+      channel: { uniqueName: "cats", imageUploadsEnabled: false },
     })
   );
 
