@@ -3,11 +3,19 @@ import {
   updateEventChannelQuery,
   severConnectionBetweenEventAndChannelQuery,
 } from "../cypher/cypherQueries.js";
+import { sendBatchEmails } from "../../services/mail/index.js";
+import { createSeriesUpdateNotificationEmail } from "./shared/emailUtils.js";
+import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
 
 type Input = {
   Event: any;
   EventSeries: any;
   driver: any;
+  dependencies?: {
+    sendBatchEmails?: typeof sendBatchEmails;
+    createSeriesUpdateNotificationEmail?: typeof createSeriesUpdateNotificationEmail;
+    buildEventUpdateNotificationPayload?: typeof buildEventUpdateNotificationPayload;
+  };
 };
 
 type Args = {
@@ -72,9 +80,16 @@ function getOccurrenceLevelUpdates(
 }
 
 const getResolver = (input: Input) => {
-  const { Event, EventSeries, driver } = input;
+  const { Event, EventSeries, driver, dependencies } = input;
+  const sendBatchEmailsFn = dependencies?.sendBatchEmails || sendBatchEmails;
+  const createSeriesUpdateNotificationEmailFn =
+    dependencies?.createSeriesUpdateNotificationEmail ||
+    createSeriesUpdateNotificationEmail;
+  const buildEventUpdateNotificationPayloadFn =
+    dependencies?.buildEventUpdateNotificationPayload ||
+    buildEventUpdateNotificationPayload;
 
-  return async (_parent: any, args: Args, _context: any, _info: any) => {
+  return async (_parent: any, args: Args, context: any, _info: any) => {
     const {
       eventId,
       scope,
@@ -86,13 +101,19 @@ const getResolver = (input: Input) => {
     const session = driver.session();
 
     try {
-      // Fetch the event and its series relationship
+      // Fetch the event and its series relationship with fields needed for notifications
       const existingEvents = await Event.find({
         where: { id: eventId },
         selectionSet: `
           {
             id
             title
+            startTime
+            endTime
+            locationName
+            address
+            virtualEventUrl
+            canceled
             occurrenceIndex
             EventSeries {
               id
@@ -218,7 +239,7 @@ const getResolver = (input: Input) => {
         });
       }
 
-      // Refetch the updated event
+      // Refetch the updated event with subscriber info for notifications
       const selectionSet = `
         {
           id
@@ -252,6 +273,12 @@ const getResolver = (input: Input) => {
               uniqueName
             }
           }
+          SubscribedToEventUpdates {
+            username
+            Email {
+              address
+            }
+          }
           Tags {
             text
           }
@@ -265,7 +292,89 @@ const getResolver = (input: Input) => {
         selectionSet,
       });
 
-      return result[0];
+      const updatedEvent = result[0];
+
+      // Send notifications for series updates
+      const eventUpdateNotification = buildEventUpdateNotificationPayloadFn(
+        existingEvent,
+        updatedEvent
+      );
+
+      if (eventUpdateNotification) {
+        const actorUsername = context.user?.username || null;
+
+        // Determine how many events were affected
+        let affectedCount = 1;
+        if (eventSeries && scope === "THIS_AND_FUTURE") {
+          const currentIndex = existingEvent.occurrenceIndex || 0;
+          affectedCount = eventSeries.Occurrences.filter(
+            (occ: any) => (occ.occurrenceIndex || 0) >= currentIndex
+          ).length;
+        } else if (eventSeries && scope === "ALL_IN_SERIES") {
+          affectedCount = eventSeries.Occurrences.length;
+        }
+
+        // Get subscribers excluding the actor
+        const usersToNotify = (updatedEvent.SubscribedToEventUpdates || []).filter(
+          (user: any) => user.username !== actorUsername
+        );
+
+        if (usersToNotify.length > 0) {
+          const emailContent = createSeriesUpdateNotificationEmailFn(
+            updatedEvent.title,
+            eventUpdateNotification.summaryLines,
+            eventUpdateNotification.eventUrl,
+            scope,
+            affectedCount,
+            eventUpdateNotification.subject
+          );
+
+          const emailRecipients = usersToNotify
+            .filter((user: any) => user.Email?.address)
+            .map((user: any) => ({
+              to: user.Email.address,
+              subject: emailContent.subject,
+              text: emailContent.plainText,
+              html: emailContent.html,
+            }));
+
+          if (emailRecipients.length > 0) {
+            await sendBatchEmailsFn(emailRecipients);
+          }
+
+          // Create in-app notifications
+          const notificationSession = driver.session();
+          try {
+            const scopeText = scope === "THIS_ONLY"
+              ? ""
+              : scope === "THIS_AND_FUTURE"
+                ? ` (this and ${affectedCount - 1} future)`
+                : ` (all ${affectedCount} in series)`;
+
+            await notificationSession.run(
+              `
+              UNWIND $usernames AS username
+              MATCH (user:User {username: username})
+              CREATE (notification:Notification {
+                id: randomUUID(),
+                createdAt: datetime(),
+                read: false,
+                text: $notificationText
+              })
+              CREATE (user)-[:HAS_NOTIFICATION]->(notification)
+              `,
+              {
+                usernames: usersToNotify.map((user: any) => user.username),
+                notificationText: `${updatedEvent.title} was updated${scopeText}.`,
+              }
+            );
+          } finally {
+            await notificationSession.close();
+          }
+        }
+      }
+
+      return updatedEvent;
     } catch (error: any) {
       console.error("Error updating event in series:", error);
       throw new Error(`Failed to update event in series. ${error.message}`);

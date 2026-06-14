@@ -320,6 +320,55 @@ ${commentUrl}
   };
 };
 
+export const createSeriesUpdateNotificationEmail = (
+  eventTitle: string,
+  summaryLines: string[],
+  eventUrl: string,
+  scope: "THIS_ONLY" | "THIS_AND_FUTURE" | "ALL_IN_SERIES",
+  affectedCount: number,
+  subjectOverride?: string
+): EmailContent => {
+  const scopeDescriptions: Record<string, string> = {
+    THIS_ONLY: "This occurrence only",
+    THIS_AND_FUTURE: `This and ${affectedCount - 1} future occurrence${affectedCount > 2 ? "s" : ""}`,
+    ALL_IN_SERIES: `All ${affectedCount} occurrences in the series`,
+  };
+
+  const scopeText = scopeDescriptions[scope] || scope;
+  const subject = subjectOverride || `Event series updated: ${eventTitle}`;
+  const joinedSummary = summaryLines.map((line) => `- ${line}`).join("\n");
+  const plainText = `
+The event "${eventTitle}" was updated.
+
+Scope: ${scopeText}
+
+Changes:
+${joinedSummary}
+
+View the latest event details at:
+${eventUrl}
+`;
+
+  const htmlSummary = summaryLines.map((line) => `<li>${line}</li>`).join("");
+  const html = `
+<p>The event "<strong>${eventTitle}</strong>" was updated.</p>
+<p><em>Scope: ${scopeText}</em></p>
+<p>Changes:</p>
+<ul>
+  ${htmlSummary}
+</ul>
+<p>
+  <a href="${eventUrl}">View the latest event details</a>
+</p>
+`;
+
+  return {
+    subject,
+    plainText,
+    html,
+  };
+};
+
 export const createIssueSubscriptionNotificationEmail = (
   subject: string,
   summaryText: string,
