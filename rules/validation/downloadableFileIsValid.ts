@@ -18,10 +18,48 @@ type UpdateDownloadableFileArgs = {
   where: any;
 };
 
+type DownloadChannelPreference = {
+  uniqueName?: string | null;
+  downloadsEnabled?: boolean | null;
+  allowedFileTypes?: string[] | null;
+};
+
+export const validateDownloadChannelsEnabled = async (
+  channelConnections: string[] | undefined,
+  ctx: ValidationContext
+): Promise<true | string> => {
+  if (!channelConnections?.length) {
+    return true;
+  }
+
+  const ChannelModel = ctx.ogm.model("Channel");
+
+  for (const channelName of channelConnections) {
+    const channels = (await ChannelModel.find({
+      where: { uniqueName: channelName },
+      selectionSet: `{
+        uniqueName
+        downloadsEnabled
+      }`,
+    })) as DownloadChannelPreference[];
+    const channel = channels?.[0];
+
+    if (!channel) {
+      return `Channel '${channelName}' not found`;
+    }
+
+    if (channel.downloadsEnabled === false) {
+      return `Downloads are disabled in channel '${channelName}'.`;
+    }
+  }
+
+  return true;
+};
+
 /**
  * Validate that the file type is allowed by both ServerConfig and all target channels
  */
-const validateFileTypePermissions = async (
+export const validateFileTypePermissions = async (
   fileName: string,
   channelConnections: string[] | undefined,
   ctx: ValidationContext
@@ -67,13 +105,18 @@ const validateFileTypePermissions = async (
           where: { uniqueName: channelName },
           selectionSet: `{
             uniqueName
+            downloadsEnabled
             allowedFileTypes
           }`
-        });
+        }) as DownloadChannelPreference[];
 
         const channel = channels?.[0];
         if (!channel) {
           return `Channel '${channelName}' not found`;
+        }
+
+        if (channel.downloadsEnabled === false) {
+          return `Downloads are disabled in channel '${channelName}'.`;
         }
 
         const channelAllowedFileTypes = channel.allowedFileTypes || [];

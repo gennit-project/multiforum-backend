@@ -336,6 +336,14 @@ type WikiPageLookup = {
   OriginalAuthor?: {
     username?: string | null;
   } | null;
+  ChildPages?: Array<{
+    id?: string | null;
+  }> | null;
+};
+
+type WikiChannelPreference = {
+  uniqueName?: string | null;
+  wikiEnabled?: boolean | null;
 };
 
 type WikiPageMutationArgs = Partial<
@@ -376,6 +384,9 @@ async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: any) {
       channelUniqueName
       OriginalAuthor {
         username
+      }
+      ChildPages {
+        id
       }
     }`,
   })) as WikiPageLookup[];
@@ -442,6 +453,31 @@ function getChildPageCreateChannelNames(
   );
 }
 
+async function validateWikiChannelsEnabled(
+  channelConnections: string[],
+  ctx: any
+) {
+  const Channel = ctx.ogm.model("Channel");
+  const channelNames = Array.from(new Set(channelConnections.filter(Boolean)));
+
+  for (const channelName of channelNames) {
+    const channels = (await Channel.find({
+      where: { uniqueName: channelName },
+      selectionSet: `{
+        uniqueName
+        wikiEnabled
+      }`,
+    })) as WikiChannelPreference[];
+    const channel = channels[0];
+
+    if (channel?.wikiEnabled === false) {
+      return new Error(`Wiki is disabled in channel '${channelName}'.`);
+    }
+  }
+
+  return true;
+}
+
 export async function evaluateCanEditWikiPagesRule(
   args: WikiPageMutationArgs,
   ctx: any
@@ -458,6 +494,14 @@ export async function evaluateCanEditWikiPagesRule(
       ...createdPageChannelNames,
     ])
   );
+  const wikiEnabledResult = await validateWikiChannelsEnabled(
+    channelConnections,
+    ctx
+  );
+
+  if (wikiEnabledResult instanceof Error) {
+    return wikiEnabledResult;
+  }
 
   return checkChannelPermissions({
     channelConnections,
@@ -486,9 +530,18 @@ export async function evaluateCanEditWikiHomePageRule(
     channelNames,
     wikiHomePageUpdate?.update?.node?.channelUniqueName
   );
+  const channelConnections = Array.from(channelNames);
+  const wikiEnabledResult = await validateWikiChannelsEnabled(
+    channelConnections,
+    ctx
+  );
+
+  if (wikiEnabledResult instanceof Error) {
+    return wikiEnabledResult;
+  }
 
   return checkChannelPermissions({
-    channelConnections: Array.from(channelNames),
+    channelConnections,
     context: ctx,
     permissionCheck: "canUpdateChannel",
   });
@@ -512,6 +565,16 @@ export async function evaluateCanDeleteWikiPagesRule(
   const currentUsername = ctx.user?.username || null;
   if (!currentUsername) {
     return new Error(ERROR_MESSAGES.channel.notAuthenticated);
+  }
+
+  const pagesWithChildren = wikiPages.filter(
+    (wikiPage) => wikiPage.ChildPages?.length
+  );
+
+  if (pagesWithChildren.length) {
+    return new Error(
+      "Cannot delete a wiki page that has child pages. Delete child pages first."
+    );
   }
 
   const userOwnsAllPages = wikiPages.every(
