@@ -603,6 +603,20 @@ const typeDefinitions = gql`
     AFTER
   }
 
+  enum RepeatPatternType {
+    MANUAL
+    DAILY
+    WEEKLY
+    MONTHLY
+    YEARLY
+  }
+
+  enum RepeatEndType {
+    NEVER
+    AFTER_COUNT
+    ON_DATE
+  }
+
   type RepeatEvery {
     count: Int
     unit: RepeatUnit
@@ -615,6 +629,56 @@ const typeDefinitions = gql`
     until: DateTime
   }
 
+  type RepeatPattern {
+    type: RepeatPatternType!
+    count: Int
+    daysOfWeek: [Int]
+    endType: RepeatEndType!
+    endCount: Int
+    endDate: DateTime
+  }
+
+  input RepeatPatternInput {
+    type: RepeatPatternType!
+    count: Int
+    daysOfWeek: [Int]
+    endType: RepeatEndType!
+    endCount: Int
+    endDate: DateTime
+  }
+
+  input DateOccurrenceInput {
+    startTime: DateTime!
+    endTime: DateTime!
+  }
+
+  type EventSeries {
+    id: ID! @id
+    title: String!
+    description: String
+    locationName: String
+    address: String
+    virtualEventUrl: String
+    placeId: String
+    isInPrivateResidence: Boolean
+    cost: String
+    free: Boolean
+    location: Point
+    isHostedByOP: Boolean
+    coverImageURL: String
+    canceled: Boolean
+    deleted: Boolean
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    updatedAt: DateTime @timestamp(operations: [UPDATE])
+    repeatPattern: RepeatPattern
+    Poster: User @relationship(type: "POSTED_BY", direction: IN)
+    Tags: [Tag!]! @relationship(type: "HAS_TAG", direction: OUT)
+    Occurrences: [Event!]! @relationship(type: "HAS_OCCURRENCE", direction: OUT)
+    EventChannels: [EventChannel!]!
+      @relationship(type: "POSTED_IN_CHANNEL", direction: IN)
+  }
+
+  # Legacy type - keeping for backward compatibility during migration
   type RecurringEvent {
     id: ID! @id
     repeatEvery: RepeatEvery
@@ -647,9 +711,16 @@ const typeDefinitions = gql`
     isAllDay: Boolean
     coverImageURL: String
     locked: Boolean
+    # Series-related fields
+    occurrenceIndex: Int # Position in series (0-based), null for standalone events
+    overrideSeriesTitle: Boolean # True if title diverged from series
+    overrideSeriesDescription: Boolean # True if description diverged from series
+    overrideSeriesLocation: Boolean # True if location diverged from series
+    overrideSeriesCost: Boolean # True if cost diverged from series
     Comments: [Comment!]! @relationship(type: "HAS_COMMENT", direction: OUT)
     RecurringEvent: RecurringEvent
       @relationship(type: "HAS_RECURRING_EVENT", direction: OUT)
+    EventSeries: EventSeries @relationship(type: "HAS_OCCURRENCE", direction: IN)
     Poster: User @relationship(type: "POSTED_BY", direction: IN)
     Tags: [Tag!]! @relationship(type: "HAS_TAG", direction: OUT)
     EventChannels: [EventChannel!]!
@@ -829,6 +900,27 @@ const typeDefinitions = gql`
     channelConnections: [String!]!
   }
 
+  input EventSeriesCreateInput {
+    title: String!
+    description: String
+    locationName: String
+    address: String
+    virtualEventUrl: String
+    placeId: String
+    isInPrivateResidence: Boolean
+    cost: String
+    free: Boolean
+    latitude: Float
+    longitude: Float
+    isHostedByOP: Boolean
+    isAllDay: Boolean
+    coverImageURL: String
+    tags: [String!]
+    channelConnections: [String!]!
+    occurrences: [DateOccurrenceInput!]!
+    repeatPattern: RepeatPatternInput
+  }
+
   input LabelFilterInput {
     groupKey: String!
     values: [String!]!
@@ -939,6 +1031,9 @@ const typeDefinitions = gql`
     createEventWithChannelConnections(
       input: [EventCreateInputWithChannels!]!
     ): [Event!]!
+    createEventSeriesWithChannelConnections(
+      input: EventSeriesCreateInput!
+    ): EventSeries
     updateEventWithChannelConnections(
       where: EventWhere!
       eventUpdateInput: EventUpdateInput!

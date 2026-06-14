@@ -5,6 +5,7 @@ import createDiscussionWithChannelConnections from "./customResolvers/mutations/
 import updateDiscussionWithChannelConnections from "./customResolvers/mutations/updateDiscussionWithChannelConnections.js";
 
 import createEventWithChannelConnections from "./customResolvers/mutations/createEventWithChannelConnections.js";
+import createEventSeriesWithChannelConnections from "./customResolvers/mutations/createEventSeriesWithChannelConnections.js";
 import updateEventWithChannelConnections from "./customResolvers/mutations/updateEventWithChannelConnections.js";
 
 import getSiteWideDiscussionList from "./customResolvers/queries/getSiteWideDiscussionList.js";
@@ -136,6 +137,7 @@ export default function (driver: any) {
   const DiscussionChannel = ogm.model("DiscussionChannel");
   const Event = ogm.model("Event");
   const EventChannel = ogm.model("EventChannel");
+  const EventSeries = ogm.model("EventSeries");
   const Comment = ogm.model("Comment");
   const User = ogm.model("User");
   const ModerationProfile = ogm.model("ModerationProfile");
@@ -286,6 +288,12 @@ export default function (driver: any) {
         }),
       createEventWithChannelConnections: createEventWithChannelConnections({
         Event,
+        driver,
+      }),
+      createEventSeriesWithChannelConnections: createEventSeriesWithChannelConnections({
+        EventSeries,
+        Event,
+        Tag,
         driver,
       }),
       updateEventWithChannelConnections: updateEventWithChannelConnections({
