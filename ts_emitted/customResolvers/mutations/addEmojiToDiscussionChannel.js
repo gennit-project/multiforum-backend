@@ -1,4 +1,5 @@
 import { updateEmoji } from "./updateEmoji.js";
+import { assertDiscussionChannelEmojiEnabled } from "./channelPreferenceGuards.js";
 const getResolver = (input) => {
     const { DiscussionChannel } = input;
     return async (parent, args, context, resolveInfo) => {
@@ -7,15 +8,7 @@ const getResolver = (input) => {
             throw new Error("All arguments (discussionChannelId, emojiLabel, unicode, username) are required");
         }
         try {
-            const result = await DiscussionChannel.find({
-                where: {
-                    id: discussionChannelId,
-                },
-            });
-            if (result.length === 0) {
-                throw new Error("DiscussionChannel not found");
-            }
-            const discussionChannel = result[0];
+            const discussionChannel = await assertDiscussionChannelEmojiEnabled(DiscussionChannel, discussionChannelId);
             const updatedEmojiJSON = updateEmoji(discussionChannel.emoji, {
                 emojiLabel,
                 unicode,
@@ -36,6 +29,7 @@ const getResolver = (input) => {
         }
         catch (e) {
             console.error(e);
+            throw e;
         }
     };
 };

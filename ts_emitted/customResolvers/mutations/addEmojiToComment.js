@@ -1,4 +1,5 @@
 import { updateEmoji } from "./updateEmoji.js";
+import { assertCommentEmojiEnabled } from "./channelPreferenceGuards.js";
 const getResolver = (input) => {
     const { Comment } = input;
     return async (parent, args, context, resolveInfo) => {
@@ -7,15 +8,7 @@ const getResolver = (input) => {
             throw new Error("All arguments (commentId, emojiLabel, unicode, username) are required");
         }
         try {
-            const result = await Comment.find({
-                where: {
-                    id: commentId,
-                },
-            });
-            if (result.length === 0) {
-                throw new Error("Comment not found");
-            }
-            const comment = result[0];
+            const comment = await assertCommentEmojiEnabled(Comment, commentId);
             const updatedEmojiJSON = updateEmoji(comment.emoji, {
                 emojiLabel,
                 unicode,
@@ -36,6 +29,7 @@ const getResolver = (input) => {
         }
         catch (e) {
             console.error(e);
+            throw e;
         }
     };
 };

@@ -24,6 +24,12 @@ export var CollectionVisibility;
     CollectionVisibility["Private"] = "PRIVATE";
     CollectionVisibility["Public"] = "PUBLIC";
 })(CollectionVisibility || (CollectionVisibility = {}));
+export var EventEditScope;
+(function (EventEditScope) {
+    EventEditScope["AllInSeries"] = "ALL_IN_SERIES";
+    EventEditScope["ThisAndFuture"] = "THIS_AND_FUTURE";
+    EventEditScope["ThisOnly"] = "THIS_ONLY";
+})(EventEditScope || (EventEditScope = {}));
 export var EventType;
 (function (EventType) {
     EventType["Create"] = "CREATE";
@@ -62,6 +68,20 @@ export var PriceModel;
     PriceModel["Subscription"] = "SUBSCRIPTION";
     PriceModel["Temporary"] = "TEMPORARY";
 })(PriceModel || (PriceModel = {}));
+export var RepeatEndType;
+(function (RepeatEndType) {
+    RepeatEndType["AfterCount"] = "AFTER_COUNT";
+    RepeatEndType["Never"] = "NEVER";
+    RepeatEndType["OnDate"] = "ON_DATE";
+})(RepeatEndType || (RepeatEndType = {}));
+export var RepeatPatternType;
+(function (RepeatPatternType) {
+    RepeatPatternType["Daily"] = "DAILY";
+    RepeatPatternType["Manual"] = "MANUAL";
+    RepeatPatternType["Monthly"] = "MONTHLY";
+    RepeatPatternType["Weekly"] = "WEEKLY";
+    RepeatPatternType["Yearly"] = "YEARLY";
+})(RepeatPatternType || (RepeatPatternType = {}));
 export var RepeatUnit;
 (function (RepeatUnit) {
     RepeatUnit["Day"] = "DAY";

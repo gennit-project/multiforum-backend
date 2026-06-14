@@ -4,7 +4,10 @@ import GraphQLJSON from "graphql-type-json";
 import createDiscussionWithChannelConnections from "./customResolvers/mutations/createDiscussionWithChannelConnections.js";
 import updateDiscussionWithChannelConnections from "./customResolvers/mutations/updateDiscussionWithChannelConnections.js";
 import createEventWithChannelConnections from "./customResolvers/mutations/createEventWithChannelConnections.js";
+import createEventSeriesWithChannelConnections from "./customResolvers/mutations/createEventSeriesWithChannelConnections.js";
 import updateEventWithChannelConnections from "./customResolvers/mutations/updateEventWithChannelConnections.js";
+import updateEventInSeries from "./customResolvers/mutations/updateEventInSeries.js";
+import deleteEventInSeries from "./customResolvers/mutations/deleteEventInSeries.js";
 import getSiteWideDiscussionList from "./customResolvers/queries/getSiteWideDiscussionList.js";
 import getSiteWideWikiList from "./customResolvers/queries/getSiteWideWikiList.js";
 import getCommentSection from "./customResolvers/queries/getCommentSection.js";
@@ -116,6 +119,7 @@ export default function (driver) {
     const DiscussionChannel = ogm.model("DiscussionChannel");
     const Event = ogm.model("Event");
     const EventChannel = ogm.model("EventChannel");
+    const EventSeries = ogm.model("EventSeries");
     const Comment = ogm.model("Comment");
     const User = ogm.model("User");
     const ModerationProfile = ogm.model("ModerationProfile");
@@ -265,8 +269,24 @@ export default function (driver) {
                 Event,
                 driver,
             }),
+            createEventSeriesWithChannelConnections: createEventSeriesWithChannelConnections({
+                EventSeries,
+                Event,
+                Tag,
+                driver,
+            }),
             updateEventWithChannelConnections: updateEventWithChannelConnections({
                 Event,
+                driver,
+            }),
+            updateEventInSeries: updateEventInSeries({
+                Event,
+                EventSeries,
+                driver,
+            }),
+            deleteEventInSeries: deleteEventInSeries({
+                Event,
+                EventSeries,
                 driver,
             }),
             addEmojiToComment: addEmojiToComment({

@@ -1,4 +1,5 @@
 import { removeEmoji } from "./updateEmoji.js";
+import { assertDiscussionChannelEmojiEnabled } from "./channelPreferenceGuards.js";
 const getRemoveEmojiResolver = (input) => {
     const { DiscussionChannel } = input;
     return async (parent, args, context, resolveInfo) => {
@@ -7,15 +8,7 @@ const getRemoveEmojiResolver = (input) => {
             throw new Error("All arguments (discussionChannelId, emojiLabel, username) are required");
         }
         try {
-            const result = await DiscussionChannel.find({
-                where: {
-                    id: discussionChannelId,
-                },
-            });
-            if (result.length === 0) {
-                throw new Error("DiscussionChannel not found");
-            }
-            const discussionChannel = result[0];
+            const discussionChannel = await assertDiscussionChannelEmojiEnabled(DiscussionChannel, discussionChannelId);
             const updatedEmojiJSON = removeEmoji(discussionChannel.emoji, {
                 emojiLabel,
                 username,
@@ -35,6 +28,7 @@ const getRemoveEmojiResolver = (input) => {
         }
         catch (e) {
             console.error(e);
+            throw e;
         }
     };
 };

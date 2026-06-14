@@ -10,7 +10,7 @@ const isUrlEncoded = (filename) => {
 /**
  * Validate file type against ServerConfig and Channel allowed file types
  */
-const validateFileType = async (filename, channelConnections = [], ctx) => {
+export const validateFileType = async (filename, channelConnections = [], ctx) => {
     var _a;
     // Extract file extension
     const fileExtension = (_a = filename.split('.').pop()) === null || _a === void 0 ? void 0 : _a.toLowerCase();
@@ -39,13 +39,13 @@ const validateFileType = async (filename, channelConnections = [], ctx) => {
         // If there are channel connections, check each channel's allowed file types
         if (channelConnections.length > 0) {
             for (const channelName of channelConnections) {
-                const channels = await ChannelModel.find({
+                const channels = (await ChannelModel.find({
                     where: { uniqueName: channelName },
                     selectionSet: `{
             uniqueName
             allowedFileTypes
           }`
-                });
+                }));
                 const channel = channels === null || channels === void 0 ? void 0 : channels[0];
                 if (!channel) {
                     throw new Error(`Channel '${channelName}' not found`);
@@ -71,7 +71,33 @@ const validateFileType = async (filename, channelConnections = [], ctx) => {
         throw new Error("Failed to validate file type permissions");
     }
 };
-const validateFile = async (filename, channelConnections = [], ctx) => {
+export const validateImageUploadsEnabled = async (channelConnections = [], ctx) => {
+    if (channelConnections.length === 0) {
+        return;
+    }
+    const ChannelModel = ctx.ogm.model("Channel");
+    for (const channelName of channelConnections) {
+        const channels = (await ChannelModel.find({
+            where: { uniqueName: channelName },
+            selectionSet: `{
+        uniqueName
+        imageUploadsEnabled
+      }`
+        }));
+        const channel = channels === null || channels === void 0 ? void 0 : channels[0];
+        if (!channel) {
+            throw new Error(`Channel '${channelName}' not found`);
+        }
+        if (channel.imageUploadsEnabled === false) {
+            throw new Error(`Image uploads are disabled in channel '${channelName}'.`);
+        }
+    }
+};
+export const validateFile = async (filename, contentType, channelConnections = [], ctx) => {
+    if (contentType.toLowerCase().startsWith("image/")) {
+        await validateImageUploadsEnabled(channelConnections, ctx);
+        return;
+    }
     // Validate file type against server and channel configurations
     await validateFileType(filename, channelConnections, ctx);
 };
@@ -82,7 +108,7 @@ const createSignedStorageURL = () => {
             throw new Error("Filename is not properly URL encoded");
         }
         // Validate file against server and channel configurations
-        await validateFile(filename, channelConnections, ctx);
+        await validateFile(filename, contentType, channelConnections, ctx);
         const storage = new Storage();
         const bucketName = process.env.GCS_BUCKET_NAME;
         if (!bucketName) {
