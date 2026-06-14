@@ -10,6 +10,12 @@ interface ValidationContext {
   ogm: any;
 }
 
+type ChannelUploadPreferences = {
+  uniqueName?: string | null;
+  imageUploadsEnabled?: boolean | null;
+  allowedFileTypes?: string[] | null;
+};
+
 const isUrlEncoded = (filename: string): boolean => {
   try {
     return filename === encodeURIComponent(decodeURIComponent(filename));
@@ -21,7 +27,7 @@ const isUrlEncoded = (filename: string): boolean => {
 /**
  * Validate file type against ServerConfig and Channel allowed file types
  */
-const validateFileType = async (
+export const validateFileType = async (
   filename: string,
   channelConnections: string[] = [],
   ctx: ValidationContext
@@ -61,13 +67,13 @@ const validateFileType = async (
     // If there are channel connections, check each channel's allowed file types
     if (channelConnections.length > 0) {
       for (const channelName of channelConnections) {
-        const channels = await ChannelModel.find({
+        const channels = (await ChannelModel.find({
           where: { uniqueName: channelName },
           selectionSet: `{
             uniqueName
             allowedFileTypes
           }`
-        });
+        })) as ChannelUploadPreferences[];
 
         const channel = channels?.[0];
         if (!channel) {
@@ -99,11 +105,47 @@ const validateFileType = async (
   }
 };
 
-const validateFile = async (
-  filename: string,
+export const validateImageUploadsEnabled = async (
   channelConnections: string[] = [],
   ctx: ValidationContext
 ): Promise<void> => {
+  if (channelConnections.length === 0) {
+    return;
+  }
+
+  const ChannelModel = ctx.ogm.model("Channel");
+
+  for (const channelName of channelConnections) {
+    const channels = (await ChannelModel.find({
+      where: { uniqueName: channelName },
+      selectionSet: `{
+        uniqueName
+        imageUploadsEnabled
+      }`
+    })) as ChannelUploadPreferences[];
+    const channel = channels?.[0];
+
+    if (!channel) {
+      throw new Error(`Channel '${channelName}' not found`);
+    }
+
+    if (channel.imageUploadsEnabled === false) {
+      throw new Error(`Image uploads are disabled in channel '${channelName}'.`);
+    }
+  }
+};
+
+export const validateFile = async (
+  filename: string,
+  contentType: string,
+  channelConnections: string[] = [],
+  ctx: ValidationContext
+): Promise<void> => {
+  if (contentType.toLowerCase().startsWith("image/")) {
+    await validateImageUploadsEnabled(channelConnections, ctx);
+    return;
+  }
+
   // Validate file type against server and channel configurations
   await validateFileType(filename, channelConnections, ctx);
 };
@@ -117,7 +159,7 @@ const createSignedStorageURL = () => {
     }
 
     // Validate file against server and channel configurations
-    await validateFile(filename, channelConnections, ctx);
+    await validateFile(filename, contentType, channelConnections, ctx);
 
     const storage = new Storage();
     const bucketName = process.env.GCS_BUCKET_NAME;
