@@ -11,6 +11,34 @@ type EventInput = {
   virtualEventUrl?: string | null;
 };
 
+export const validateEventChannelsEnabled = async (
+  channelConnections: string[],
+  ctx: any
+): Promise<true | string> => {
+  const Channel = ctx.ogm.model("Channel");
+
+  for (const channelName of channelConnections) {
+    const channels = await Channel.find({
+      where: { uniqueName: channelName },
+      selectionSet: `{
+        uniqueName
+        eventsEnabled
+      }`,
+    });
+
+    const channel = channels?.[0];
+    if (!channel) {
+      return `Channel '${channelName}' not found.`;
+    }
+
+    if (channel.eventsEnabled === false) {
+      return `Events are disabled in channel '${channelName}'.`;
+    }
+  }
+
+  return true;
+};
+
 function checkUrl(str: string) {
   // Valid URL checker from Devshed
   // Sources:
@@ -71,6 +99,14 @@ export const createEventInputIsValid = rule({ cache: "contextual" })(
       );
       if (validation !== true) {
         throw new Error(validation);
+      }
+
+      const channelValidation = await validateEventChannelsEnabled(
+        event.channelConnections || [],
+        ctx
+      );
+      if (channelValidation !== true) {
+        throw new Error(channelValidation);
       }
     }
     return true;

@@ -1,4 +1,5 @@
 import { removeEmoji } from "./updateEmoji.js";
+import { assertCommentEmojiEnabled } from "./channelPreferenceGuards.js";
 
 type Input = {
   Comment: any;
@@ -22,17 +23,7 @@ const getRemoveEmojiResolver = (input: Input) => {
     }
 
     try {
-      const result = await Comment.find({
-        where: {
-          id: commentId,
-        },
-      });
-
-      if (result.length === 0) {
-        throw new Error("Comment not found");
-      }
-
-      const comment = result[0];
+      const comment = await assertCommentEmojiEnabled(Comment, commentId);
       const updatedEmojiJSON = removeEmoji(comment.emoji, {
         emojiLabel,
         username,
@@ -53,6 +44,7 @@ const getRemoveEmojiResolver = (input: Input) => {
       };
     } catch (e) {
       console.error(e);
+      throw e;
     }
   };
 };

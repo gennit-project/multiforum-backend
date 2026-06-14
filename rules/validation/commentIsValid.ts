@@ -50,6 +50,47 @@ export const validateCreateCommentInput = (
 
 type CreateCommentInput = { input: CommentCreateInput[] };
 
+export const validateFeedbackEnabled = async (
+  createCommentInput: CommentCreateInput,
+  ctx: any
+): Promise<true | string> => {
+  const isFeedbackComment = !!(
+    createCommentInput.GivesFeedbackOnEvent ||
+    createCommentInput.GivesFeedbackOnDiscussion ||
+    createCommentInput.GivesFeedbackOnComment
+  );
+
+  if (!isFeedbackComment) {
+    return true;
+  }
+
+  const channelName =
+    createCommentInput.Channel?.connect?.where?.node?.uniqueName;
+  if (!channelName) {
+    return "Comment must be connected to a Channel.";
+  }
+
+  const Channel = ctx.ogm.model("Channel");
+  const channels = await Channel.find({
+    where: { uniqueName: channelName },
+    selectionSet: `{
+      uniqueName
+      feedbackEnabled
+    }`,
+  });
+
+  const channel = channels?.[0];
+  if (!channel) {
+    return `Channel '${channelName}' not found.`;
+  }
+
+  if (channel.feedbackEnabled === false) {
+    return `Feedback is disabled in channel '${channelName}'.`;
+  }
+
+  return true;
+};
+
 export const createCommentInputIsValid = rule({ cache: "contextual" })(
   async (parent: any, args: CreateCommentInput, ctx: any, info: any) => {
     if (!args.input || !args.input[0] || !args.input[0]) {
@@ -63,7 +104,12 @@ export const createCommentInputIsValid = rule({ cache: "contextual" })(
       username: createCommentInput?.CommentAuthor?.User?.connect?.where?.node?.username || "",
       editMode: false
     })
-    return validateCreateCommentInput(createCommentInput);
+    const validation = validateCreateCommentInput(createCommentInput);
+    if (validation !== true) {
+      return validation;
+    }
+
+    return validateFeedbackEnabled(createCommentInput, ctx);
   }
 );
 
