@@ -617,6 +617,12 @@ const typeDefinitions = gql`
     ON_DATE
   }
 
+  enum EventEditScope {
+    THIS_ONLY
+    THIS_AND_FUTURE
+    ALL_IN_SERIES
+  }
+
   type RepeatEvery {
     count: Int
     unit: RepeatUnit
@@ -1036,6 +1042,13 @@ const typeDefinitions = gql`
     ): EventSeries
     updateEventWithChannelConnections(
       where: EventWhere!
+      eventUpdateInput: EventUpdateInput!
+      channelConnections: [String!]
+      channelDisconnections: [String]
+    ): Event
+    updateEventInSeries(
+      eventId: ID!
+      scope: EventEditScope!
       eventUpdateInput: EventUpdateInput!
       channelConnections: [String!]
       channelDisconnections: [String]

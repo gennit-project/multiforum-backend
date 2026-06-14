@@ -7,6 +7,7 @@ import updateDiscussionWithChannelConnections from "./customResolvers/mutations/
 import createEventWithChannelConnections from "./customResolvers/mutations/createEventWithChannelConnections.js";
 import createEventSeriesWithChannelConnections from "./customResolvers/mutations/createEventSeriesWithChannelConnections.js";
 import updateEventWithChannelConnections from "./customResolvers/mutations/updateEventWithChannelConnections.js";
+import updateEventInSeries from "./customResolvers/mutations/updateEventInSeries.js";
 
 import getSiteWideDiscussionList from "./customResolvers/queries/getSiteWideDiscussionList.js";
 import getSiteWideWikiList from "./customResolvers/queries/getSiteWideWikiList.js";
@@ -298,6 +299,11 @@ export default function (driver: any) {
       }),
       updateEventWithChannelConnections: updateEventWithChannelConnections({
         Event,
+        driver,
+      }),
+      updateEventInSeries: updateEventInSeries({
+        Event,
+        EventSeries,
         driver,
       }),
       addEmojiToComment: addEmojiToComment({
