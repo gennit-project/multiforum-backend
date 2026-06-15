@@ -170,7 +170,23 @@ const createScratchpadEntryResolver = (input: Input) => {
 
       await tx.commit();
 
-      // Return the created entry with author info
+      // Fetch the updated SuperUpvotedByUsers for cache update
+      let superUpvotedByUsers: any[] = [];
+      if (sourceType === 'comment') {
+        const result = await Comment.find({
+          where: { id: sourceId },
+          selectionSet: `{ SuperUpvotedByUsers { username } }`,
+        });
+        superUpvotedByUsers = result[0]?.SuperUpvotedByUsers || [];
+      } else {
+        const result = await DiscussionChannel.find({
+          where: { id: sourceId },
+          selectionSet: `{ SuperUpvotedByUsers { username } }`,
+        });
+        superUpvotedByUsers = result[0]?.SuperUpvotedByUsers || [];
+      }
+
+      // Return the created entry with author info and updated super upvoted users
       return {
         id: createdEntry.id,
         createdAt: createdEntry.createdAt,
@@ -185,6 +201,7 @@ const createScratchpadEntryResolver = (input: Input) => {
         Recipient: {
           username: recipientUsername,
         },
+        superUpvotedByUsers,
       };
     } catch (e) {
       if (tx) {

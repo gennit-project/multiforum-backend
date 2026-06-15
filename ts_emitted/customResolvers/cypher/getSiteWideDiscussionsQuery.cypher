@@ -143,14 +143,18 @@ LIMIT toInteger($limit)
 OPTIONAL MATCH (d)-[:HAS_ALBUM]->(album:Album)
 OPTIONAL MATCH (album)-[:HAS_IMAGE]->(image:Image)
 WHERE image.id IS NOT NULL
+  AND (image.archived IS NULL OR image.archived = false)
+  AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
 
 WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album,
-     COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
+     [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
          id: image.id,
          url: image.url,
          alt: image.alt,
-         caption: image.caption
-     } END) AS albumImages
+         caption: image.caption,
+         archived: image.archived,
+         permanentlyRemoved: image.permanentlyRemoved
+     } END) WHERE img IS NOT NULL] AS albumImages
 
 // Check if the logged-in user has favorited this discussion
 OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
