@@ -1383,6 +1383,7 @@ const typeDefinitions = gql`
     weightedVotesCount: Float
     CommentsAggregate: CommentAggregateResult
     UpvotedByUsers: [User!]!
+    SuperUpvotedByUsers: [User!]!
     UpvotedByUsersAggregate: UserAggregateResult
     Discussion: Discussion
     Channel: Channel
