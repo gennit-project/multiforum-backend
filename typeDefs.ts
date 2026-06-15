@@ -572,6 +572,18 @@ const typeDefinitions = gql`
     InCollections: [Collection!]! @relationship(type: "CONTAINS_DISCUSSION", direction: IN)
     bookmarkCount: Int! @cypher(statement: "MATCH (this)<-[:BOOKMARKED]-() RETURN count(*)", columnName: "bookmarkCount")
 
+    # Whether the given user has favorited this discussion (or download).
+    # Returns null when no username is provided.
+    isFavorited(username: String): Boolean @cypher(statement: """
+      OPTIONAL MATCH (favDiscussionUser:User {username: $username})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(this)
+      OPTIONAL MATCH (favDownloadUser:User {username: $username})-[:DEFAULT_FAVORITES_DOWNLOADS]->(this)
+      RETURN CASE
+        WHEN $username IS NULL OR $username = '' THEN null
+        WHEN favDiscussionUser IS NOT NULL OR favDownloadUser IS NOT NULL THEN true
+        ELSE false
+      END AS isFavorited
+    """, columnName: "isFavorited")
+
     # Shared collections
     SharedCollection: Collection @relationship(type: "SHARES_COLLECTION", direction: OUT)
   }
