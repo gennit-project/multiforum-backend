@@ -207,6 +207,9 @@ export default function (driver: any) {
     Comment: {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
     },
+    Album: {
+      Images: emptyArrayFallback('Images'),
+    },
     Query: {
       getSiteWideDiscussionList: getSiteWideDiscussionList({
         Discussion,
