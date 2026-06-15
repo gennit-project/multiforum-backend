@@ -210,6 +210,23 @@ export default function (driver: any) {
     Album: {
       Images: emptyArrayFallback('Images'),
     },
+    Channel: {
+      Moderators: emptyArrayFallback('Moderators'),
+      Admins: emptyArrayFallback('Admins'),
+      Bots: emptyArrayFallback('Bots'),
+      Tags: emptyArrayFallback('Tags'),
+      PendingOwnerInvites: emptyArrayFallback('PendingOwnerInvites'),
+      PendingModInvites: emptyArrayFallback('PendingModInvites'),
+      RelatedChannels: emptyArrayFallback('RelatedChannels'),
+      PinnedDiscussionChannels: emptyArrayFallback('PinnedDiscussionChannels'),
+      PinnedWikiPages: emptyArrayFallback('PinnedWikiPages'),
+      InCollections: emptyArrayFallback('InCollections'),
+      EventChannels: emptyArrayFallback('EventChannels'),
+      DiscussionChannels: emptyArrayFallback('DiscussionChannels'),
+      Comments: emptyArrayFallback('Comments'),
+      SuspendedUsers: emptyArrayFallback('SuspendedUsers'),
+      SuspendedMods: emptyArrayFallback('SuspendedMods'),
+    },
     Query: {
       getSiteWideDiscussionList: getSiteWideDiscussionList({
         Discussion,
