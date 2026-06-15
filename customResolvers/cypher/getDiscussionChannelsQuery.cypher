@@ -159,12 +159,12 @@ WHERE image.id IS NOT NULL
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters,
      weightedVotesCount, comments, hotRank, serverRoles, channelRoles,
      album,
-     COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
+     [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL AND image.archived <> true AND image.permanentlyRemoved <> true THEN {
          id: image.id,
          url: image.url,
          alt: image.alt,
          caption: image.caption
-     } END) AS albumImages
+     } END) WHERE img IS NOT NULL] AS albumImages
 
 // Check if the logged-in user has favorited this discussion
 OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
