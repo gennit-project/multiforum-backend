@@ -59,9 +59,10 @@ WITH d, COLLECT(dc) AS discussionChannels, totalCount
 // Unwind the discussion channels to work with them individually for fetching related data
 UNWIND discussionChannels AS dc
 OPTIONAL MATCH (dc)-[:UPVOTED_DISCUSSION]->(upvoter:User)
+OPTIONAL MATCH (dc)<-[:SUPER_UPVOTED_DISCUSSION]-(superUpvoter:User)
 OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(c:Comment)
-WITH d, dc, COLLECT(DISTINCT upvoter) AS upvotedByUsers, COUNT(DISTINCT c) AS commentsCount, totalCount
-WITH d, COLLECT({dc: dc, upvotedByUsers: upvotedByUsers, commentsCount: commentsCount}) AS channelData, totalCount
+WITH d, dc, COLLECT(DISTINCT upvoter) AS upvotedByUsers, COLLECT(DISTINCT superUpvoter) AS superUpvotedByUsers, COUNT(DISTINCT c) AS commentsCount, totalCount
+WITH d, COLLECT({dc: dc, upvotedByUsers: upvotedByUsers, superUpvotedByUsers: superUpvotedByUsers, commentsCount: commentsCount}) AS channelData, totalCount
 
 // Now, you can proceed with calculating the score and other aggregations at the discussion level
 WITH d, channelData, totalCount,
@@ -74,6 +75,7 @@ WITH d, score, totalCount,
         channelUniqueName: channel.dc.channelUniqueName,
         discussionId: channel.dc.discussionId,
         UpvotedByUsers: [up in channel.upvotedByUsers | { username: up.username }],
+        SuperUpvotedByUsers: [sup in channel.superUpvotedByUsers | { username: sup.username }],
         CommentsAggregate: {
             count: channel.commentsCount
         }

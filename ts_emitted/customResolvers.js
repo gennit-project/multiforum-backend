@@ -107,8 +107,10 @@ import createAlbumsWithOwner from './customResolvers/mutations/createAlbumsWithO
 import createDownloadableFileUrlResolver from './customResolvers/fields/downloadableFileUrl.js';
 import updateDownloadLabels from './customResolvers/mutations/updateDownloadLabels.js';
 import createScratchpadEntry from './customResolvers/mutations/createScratchpadEntry.js';
+import undoSuperUpvote from './customResolvers/mutations/undoSuperUpvote.js';
 import updateScratchpadEntryVisibility from './customResolvers/mutations/updateScratchpadEntryVisibility.js';
 import deleteScratchpadEntry from './customResolvers/mutations/deleteScratchpadEntry.js';
+import emptyArrayFallback from './customResolvers/fields/emptyArrayFallback.js';
 const { OGM } = pkg;
 export default function (driver) {
     const ogm = new OGM({
@@ -177,6 +179,39 @@ export default function (driver) {
         },
         DownloadableFile: {
             url: createDownloadableFileUrlResolver(),
+        },
+        DiscussionChannel: {
+            SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+        },
+        DiscussionChannelListItem: {
+            SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+            UpvotedByUsers: emptyArrayFallback('UpvotedByUsers'),
+        },
+        Comment: {
+            SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+        },
+        ScratchpadEntry: {
+            superUpvotedByUsers: (parent) => parent.superUpvotedByUsers || [],
+        },
+        Album: {
+            Images: emptyArrayFallback('Images'),
+        },
+        Channel: {
+            Moderators: emptyArrayFallback('Moderators'),
+            Admins: emptyArrayFallback('Admins'),
+            Bots: emptyArrayFallback('Bots'),
+            Tags: emptyArrayFallback('Tags'),
+            PendingOwnerInvites: emptyArrayFallback('PendingOwnerInvites'),
+            PendingModInvites: emptyArrayFallback('PendingModInvites'),
+            RelatedChannels: emptyArrayFallback('RelatedChannels'),
+            PinnedDiscussionChannels: emptyArrayFallback('PinnedDiscussionChannels'),
+            PinnedWikiPages: emptyArrayFallback('PinnedWikiPages'),
+            InCollections: emptyArrayFallback('InCollections'),
+            EventChannels: emptyArrayFallback('EventChannels'),
+            DiscussionChannels: emptyArrayFallback('DiscussionChannels'),
+            Comments: emptyArrayFallback('Comments'),
+            SuspendedUsers: emptyArrayFallback('SuspendedUsers'),
+            SuspendedMods: emptyArrayFallback('SuspendedMods'),
         },
         Query: {
             getSiteWideDiscussionList: getSiteWideDiscussionList({
@@ -654,6 +689,12 @@ export default function (driver) {
                 Comment,
                 DiscussionChannel,
                 User,
+                driver,
+            }),
+            undoSuperUpvote: undoSuperUpvote({
+                Comment,
+                DiscussionChannel,
+                ScratchpadEntry,
                 driver,
             }),
             updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({

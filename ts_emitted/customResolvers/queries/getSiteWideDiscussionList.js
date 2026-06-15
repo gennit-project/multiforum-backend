@@ -74,9 +74,7 @@ const getResolver = (input) => {
                     if (topRecord) {
                         totalCount = topRecord.get("totalCount");
                     }
-                    let topDiscussions = topDiscussionsResult.records.map((record) => {
-                        return record.get("discussion");
-                    });
+                    let topDiscussions = topDiscussionsResult.records.map((record) => record.get("discussion"));
                     return {
                         discussions: topDiscussions,
                         aggregateDiscussionCount: totalCount,
@@ -104,9 +102,7 @@ const getResolver = (input) => {
                     if (hotRecord) {
                         totalCount = hotRecord.get("totalCount");
                     }
-                    let hotDiscussions = hotDiscussionsResult.records.map((record) => {
-                        return record.get("discussion");
-                    });
+                    let hotDiscussions = hotDiscussionsResult.records.map((record) => record.get("discussion"));
                     return {
                         discussions: hotDiscussions,
                         aggregateDiscussionCount: totalCount,

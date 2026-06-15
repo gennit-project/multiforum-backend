@@ -8,19 +8,21 @@ OPTIONAL MATCH (author)-[:HAS_CHANNEL_ROLE]->(channelRole:ChannelRole)
 OPTIONAL MATCH (c)-[:IS_REPLY_TO]->(parent:Comment)
 OPTIONAL MATCH (c)<-[:IS_REPLY_TO]-(child:Comment)
 OPTIONAL MATCH (c)<-[:UPVOTED_COMMENT]-(upvoter:User)
+OPTIONAL MATCH (c)<-[:SUPER_UPVOTED_COMMENT]-(superUpvoter:User)
 OPTIONAL MATCH (c)-[:HAS_VERSION]->(pastVersion:TextVersion)<-[:AUTHORED_VERSION]-(pastVersionAuthor:User)
 OPTIONAL MATCH (favUser:User { username: $loggedInUsername })-[:DEFAULT_FAVORITES_COMMENTS]->(c)
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, $modName AS modName, pastVersion, pastVersionAuthor, favUser
+WITH c, author, serverRole, channelRole, parent, child, upvoter, superUpvoter, $modName AS modName, pastVersion, pastVersionAuthor, favUser
 
 OPTIONAL MATCH (c)<-[:HAS_FEEDBACK_COMMENT]-(feedbackComment:Comment)<-[:AUTHORED_COMMENT]-(feedbackAuthor:ModerationProfile)
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, modName, feedbackComment, feedbackAuthor, pastVersion, pastVersionAuthor, favUser,
+WITH c, author, serverRole, channelRole, parent, child, upvoter, superUpvoter, modName, feedbackComment, feedbackAuthor, pastVersion, pastVersionAuthor, favUser,
      CASE WHEN modName IS NOT NULL AND feedbackAuthor.displayName = modName THEN feedbackComment
           ELSE NULL END AS filteredFeedbackComment
 
 WITH c, author, serverRole, channelRole, parent,
-     COLLECT(DISTINCT upvoter{.*, createdAt: toString(upvoter.createdAt)}) AS UpvotedByUsers, 
+     COLLECT(DISTINCT upvoter{.*, createdAt: toString(upvoter.createdAt)}) AS UpvotedByUsers,
+     COLLECT(DISTINCT superUpvoter{.*, createdAt: toString(superUpvoter.createdAt)}) AS SuperUpvotedByUsers,
      COLLECT(DISTINCT parent.id) AS parentIds,
      COLLECT(DISTINCT filteredFeedbackComment {id: feedbackComment.id}) AS FeedbackComments,
      COLLECT(DISTINCT CASE WHEN child IS NOT NULL THEN {id: child.id, text: child.text} ELSE null END) AS NonFilteredChildComments,
@@ -34,24 +36,24 @@ WITH c, author, serverRole, channelRole, parent,
      } ELSE null END) AS PastVersions,
      COUNT(DISTINCT favUser) > 0 AS isFavoritedByUser
 
-WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
+WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
     [comment IN NonFilteredChildComments WHERE comment.id IS NOT NULL] AS ChildComments,
     [version IN PastVersions WHERE version.id IS NOT NULL] AS FilteredPastVersions,
     FeedbackComments
 
-WITH c, author, channelRole, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
+WITH c, author, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments,
     COLLECT(DISTINCT serverRole) AS serverRoles
 
-WITH c, author, channelRole, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
+WITH c, author, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments,
     [role IN serverRoles | {showAdminTag: role.showAdminTag}] as serverRoles
 
-WITH c, author, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
+WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments, serverRoles,
     COLLECT(DISTINCT channelRole) AS channelRoles
 
-WITH c, author, parent, UpvotedByUsers, parentIds, isFavoritedByUser,
+WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
     ChildComments, FilteredPastVersions, FeedbackComments, serverRoles,
     [role IN channelRoles | {showModTag: role.showModTag}] as channelRoles
 
@@ -78,6 +80,7 @@ RETURN {
     UpvotedByUsersAggregate: {
         count: SIZE(UpvotedByUsers)
     },
+    SuperUpvotedByUsers: SuperUpvotedByUsers,
     ChildComments: CASE WHEN SIZE(ChildComments) > 0 THEN ChildComments ELSE [] END,
     ChildCommentsAggregate: {
         count: SIZE(ChildComments)
