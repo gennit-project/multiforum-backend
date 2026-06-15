@@ -127,6 +127,8 @@ import createScratchpadEntry from './customResolvers/mutations/createScratchpadE
 import updateScratchpadEntryVisibility from './customResolvers/mutations/updateScratchpadEntryVisibility.js';
 import deleteScratchpadEntry from './customResolvers/mutations/deleteScratchpadEntry.js';
 
+import emptyArrayFallback from './customResolvers/fields/emptyArrayFallback.js';
+
 const { OGM } = pkg;
 
 export default function (driver: any) {
@@ -198,6 +200,12 @@ export default function (driver: any) {
     },
     DownloadableFile: {
       url: createDownloadableFileUrlResolver(),
+    },
+    DiscussionChannel: {
+      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+    },
+    Comment: {
+      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
     },
     Query: {
       getSiteWideDiscussionList: getSiteWideDiscussionList({

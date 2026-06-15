@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { beforeEach, afterEach } from "node:test";
 import jwt from "jsonwebtoken";
 import { createDiscussionsFromInput } from "./createDiscussionWithChannelConnections.js";
+
+// Store original env value
+let originalMockAuth: string | undefined;
 
 type FindArgs = {
   where?: Record<string, unknown>;
@@ -88,6 +91,20 @@ const createContext = (username: string = "testuser") => ({
 });
 
 test("createDiscussionWithChannelConnections", async (t) => {
+  // Enable mock auth for tests that use JWT context
+  beforeEach(() => {
+    originalMockAuth = process.env.E2E_MOCK_AUTH;
+    process.env.E2E_MOCK_AUTH = "true";
+  });
+
+  afterEach(() => {
+    if (originalMockAuth === undefined) {
+      delete process.env.E2E_MOCK_AUTH;
+    } else {
+      process.env.E2E_MOCK_AUTH = originalMockAuth;
+    }
+  });
+
   await t.test("creates a discussion with channel connections", async () => {
     const discussionModel = new DiscussionModelStub();
     const session = new SessionStub();
@@ -176,7 +193,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
         );
       },
       {
-        message: "At least one channel must be selected",
+        message: "Failed to create discussions: At least one channel must be selected",
       }
     );
   });
