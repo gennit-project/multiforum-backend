@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/gennit-project/multiforum-backend/branch/main/graph/badge.svg)](https://codecov.io/gh/gennit-project/multiforum-backend)
+
 ## Project Intro
 
 An introduction to the project is in the frontend README: https://github.com/gennit-project/multiforum-frontend

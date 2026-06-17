@@ -1,0 +1,39 @@
+# Codecov configuration
+# https://docs.codecov.com/docs/codecovyml-reference
+
+coverage:
+  status:
+    # Overall project coverage check
+    project:
+      default:
+        # Don't fail the check based on absolute coverage
+        # Just report the coverage level
+        informational: true
+    # Per-PR coverage change check
+    patch:
+      default:
+        # Require new code in PRs to have some coverage
+        # Set to informational initially while building coverage
+        informational: true
+
+# Comment settings for PR coverage reports
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+# Ignore these paths in coverage calculations
+ignore:
+  - "**/*.spec.ts"
+  - "**/*.test.ts"
+  - "tests/**"
+  - "ts_emitted/**"
+  - "node_modules/**"
+  - "coverage/**"
+  - "build_scripts/**"
+  - "src/generated/**"
+  - "ogm_types.ts"
+  - "typeDefs.ts"
+  - "**/*.d.ts"
