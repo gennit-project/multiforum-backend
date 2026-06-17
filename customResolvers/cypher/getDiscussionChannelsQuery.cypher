@@ -38,10 +38,17 @@ WHERE
     AND (
         SIZE($labelFilters) = 0 OR
         ALL(labelFilter IN $labelFilters WHERE
-            EXISTS {
-                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
-                WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
-            }
+            (
+                coalesce(labelFilter.mode, 'INCLUDE') = 'INCLUDE' AND EXISTS {
+                    MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
+                    WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
+                }
+                OR
+                labelFilter.mode = 'EXCLUDE' AND NOT EXISTS {
+                    MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
+                    WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
+                }
+            )
         )
     )
 
@@ -87,10 +94,17 @@ WHERE
     AND (
         SIZE($labelFilters) = 0 OR
         ALL(labelFilter IN $labelFilters WHERE
-            EXISTS {
-                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
-                WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
-            }
+            (
+                coalesce(labelFilter.mode, 'INCLUDE') = 'INCLUDE' AND EXISTS {
+                    MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
+                    WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
+                }
+                OR
+                labelFilter.mode = 'EXCLUDE' AND NOT EXISTS {
+                    MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
+                    WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
+                }
+            )
         )
     )
 

@@ -17,6 +17,7 @@ type Input = {
 type LabelFilter = {
   groupKey: string;
   values: string[];
+  mode?: "INCLUDE" | "EXCLUDE";
 };
 
 type Args = {

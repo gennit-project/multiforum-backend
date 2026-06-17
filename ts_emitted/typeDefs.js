@@ -929,6 +929,7 @@ const typeDefinitions = gql `
   input LabelFilterInput {
     groupKey: String!
     values: [String!]!
+    mode: FilterMode = INCLUDE
   }
 
   input DiscussionCreateInputWithChannels {
@@ -1382,6 +1383,7 @@ const typeDefinitions = gql `
     weightedVotesCount: Float
     CommentsAggregate: CommentAggregateResult
     UpvotedByUsers: [User!]!
+    SuperUpvotedByUsers: [User!]!
     UpvotedByUsersAggregate: UserAggregateResult
     Discussion: Discussion
     Channel: Channel

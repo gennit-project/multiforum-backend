@@ -930,6 +930,7 @@ const typeDefinitions = gql`
   input LabelFilterInput {
     groupKey: String!
     values: [String!]!
+    mode: FilterMode = INCLUDE
   }
 
   input DiscussionCreateInputWithChannels {
