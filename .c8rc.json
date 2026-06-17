@@ -1,0 +1,21 @@
+{
+  "all": false,
+  "reporter": ["text", "lcov"],
+  "reports-dir": "./coverage",
+  "src": ["."],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "tests/**",
+    "ts_emitted/**",
+    "node_modules/**",
+    "coverage/**",
+    "build_scripts/**",
+    "src/generated/**",
+    "ogm_types.ts",
+    "typeDefs.ts",
+    "**/*.d.ts",
+    "**/*.config.ts",
+    "codegen.ts"
+  ]
+}

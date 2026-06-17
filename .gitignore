@@ -12,6 +12,8 @@ docker-compose-remote.yml
 ssl
 config
 ts_emitted
+coverage
+.nyc_output
 listical-dev-gcp.json
 # Stale middleware folder excluded from compilation
 middleware/
