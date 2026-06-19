@@ -331,13 +331,24 @@ export const setUserDataOnContext = async (
       // Check the audience of the token
       const audience = decoded?.aud;
 
+      // A token is accepted as "programmatic" (server-to-server / server-session)
+      // if its audience matches a recognized API. `aud` may be a string or an
+      // array, so match either form.
+      const audienceMatches = (target: string | undefined) =>
+        !!target &&
+        (audience === target ||
+          (Array.isArray(audience) && audience.includes(target)));
+      const isProgrammaticToken =
+        // Legacy: tokens minted for the Auth0 Management API.
+        audienceMatches("https://gennit.us.auth0.com/api/v2/") ||
+        // Dedicated app API (server-session SDK). Set AUTH0_AUDIENCE to the
+        // API identifier registered in Auth0, e.g. https://api.c0nduit.app
+        audienceMatches(process.env.AUTH0_AUDIENCE);
+
       if (audience === process.env.AUTH0_CLIENT_ID) {
         // UI-based token
         email = decoded?.email;
-      } else if (
-        Array.isArray(audience) &&
-        audience.includes("https://gennit.us.auth0.com/api/v2/")
-      ) {
+      } else if (isProgrammaticToken) {
         // Programmatic token
 
         // Check if userinfo is cached
