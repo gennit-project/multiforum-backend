@@ -168,6 +168,9 @@ const permissionList = shield({
       undoUpvoteDiscussionChannel: and(isAuthenticated, canUpvoteDiscussion), // We are intentionally reusing the same rule for undoing an upvote as for upvoting.
       // Any user who can upvote a discussion can undo their upvote. The undo upvote resolver
       // checks if the user has upvoted the discussion and if so, removes the upvote.
+
+      createScratchpadEntry: and(isAuthenticated, allow), // Super upvote - any authenticated user can send a thank-you note
+      undoSuperUpvote: and(isAuthenticated, allow), // Undo super upvote - any authenticated user can undo their super upvote
       
       createIssue: and(isAuthenticated, issueIsValid),
       createIssues: and(isAuthenticated, issueIsValid),

@@ -124,6 +124,7 @@ import createDownloadableFileUrlResolver from './customResolvers/fields/download
 import updateDownloadLabels from './customResolvers/mutations/updateDownloadLabels.js';
 
 import createScratchpadEntry from './customResolvers/mutations/createScratchpadEntry.js';
+import undoSuperUpvote from './customResolvers/mutations/undoSuperUpvote.js';
 import updateScratchpadEntryVisibility from './customResolvers/mutations/updateScratchpadEntryVisibility.js';
 import deleteScratchpadEntry from './customResolvers/mutations/deleteScratchpadEntry.js';
 
@@ -204,8 +205,15 @@ export default function (driver: any) {
     DiscussionChannel: {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
     },
+    DiscussionChannelListItem: {
+      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+      UpvotedByUsers: emptyArrayFallback('UpvotedByUsers'),
+    },
     Comment: {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+    },
+    ScratchpadEntry: {
+      superUpvotedByUsers: (parent: any) => parent.superUpvotedByUsers || [],
     },
     Album: {
       Images: emptyArrayFallback('Images'),
@@ -705,6 +713,12 @@ export default function (driver: any) {
         Comment,
         DiscussionChannel,
         User,
+        driver,
+      }),
+      undoSuperUpvote: undoSuperUpvote({
+        Comment,
+        DiscussionChannel,
+        ScratchpadEntry,
         driver,
       }),
       updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({

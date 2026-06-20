@@ -54,6 +54,9 @@ const discussionChannelSelectionSet = `
     UpvotedByUsersAggregate {
         count
     }
+    SuperUpvotedByUsers {
+        username
+    }
     Answers {
         id
         text

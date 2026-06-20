@@ -317,6 +317,9 @@ const typeDefinitions = gql`
     # Relationships
     Author: User! @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: IN)
     Recipient: User! @relationship(type: "HAS_SCRATCHPAD_ENTRY", direction: IN)
+
+    # For cache updates after super upvoting (not a DB field)
+    superUpvotedByUsers: [User!]
   }
 
   type TextVersion {
@@ -1076,6 +1079,10 @@ const typeDefinitions = gql`
       sourceId: String!
       sourceChannelUniqueName: String
     ): ScratchpadEntry
+    undoSuperUpvote(
+      sourceType: String!
+      sourceId: String!
+    ): UndoSuperUpvoteResult
     updateScratchpadEntryVisibility(
       scratchpadEntryId: ID!
       isPublic: Boolean!
@@ -1394,6 +1401,14 @@ const typeDefinitions = gql`
     success: Boolean!
     deletedCount: Int!
     message: String
+  }
+
+  type UndoSuperUpvoteResult {
+    success: Boolean!
+    message: String
+    sourceId: String
+    sourceType: String
+    superUpvotedByUsers: [User!]
   }
 
   type CommentAggregateResult {
