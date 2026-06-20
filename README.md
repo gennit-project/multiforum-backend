@@ -202,3 +202,21 @@ This approach ensures users are promptly notified of new interactions with their
 ## Environment Variables and Running the App
 
 I will fill out this section when the project is finished, or if someone expresses interest in collaborating on this project, whichever comes sooner. Anyone interested can contact me at catherine.luse@gmail.com.
+
+### Authentication
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `AUTH0_AUDIENCE` | Yes (for server-session auth) | Identifier of the dedicated Auth0 API (resource server) that access tokens are issued for, e.g. `https://api.c0nduit.app`. **Not** the Auth0 Management API (`https://<tenant>/api/v2/`). |
+
+How it's used: requests authenticate by inspecting the access token's `aud`
+(audience) claim. `setUserDataOnContext`
+([rules/permission/userDataHelperFunctions.ts](rules/permission/userDataHelperFunctions.ts))
+treats a token whose audience matches `AUTH0_AUDIENCE` as a programmatic /
+server-session token and resolves the user via Auth0's `/userinfo` endpoint.
+
+Why it matters: the Nuxt frontend's server-session SDK (`@auth0/auth0-nuxt`)
+mints access tokens for this audience. If `AUTH0_AUDIENCE` is unset, those
+tokens fall through the audience checks and server-side user lookups are
+rejected — users appear logged in but resolve with no username/profile. The
+value must match the frontend's `NUXT_AUTH0_AUDIENCE`.
