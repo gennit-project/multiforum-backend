@@ -1,4 +1,5 @@
 import { hasServerModPermission } from "./hasServerModPermission.js";
+import { normalizeServerModPermissionResult } from "./serverModPermissionResult.js";
 import { rule } from "graphql-shield";
 
 export interface CanPermanentlyRemoveImageArgs {
@@ -18,10 +19,6 @@ export const canPermanentlyRemoveImage = rule({ cache: "contextual" })(
       context
     );
 
-    if (permissionResult instanceof Error) {
-      return permissionResult;
-    }
-
-    return true;
+    return normalizeServerModPermissionResult(permissionResult);
   }
 );

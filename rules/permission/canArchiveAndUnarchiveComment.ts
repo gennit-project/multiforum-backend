@@ -1,5 +1,6 @@
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
+import { resolveChannelForModPermission } from "./resolveChannelForModPermission.js";
 import { rule } from "graphql-shield";
 
 export interface CanArchiveAndUnarchiveCommentArgs {
@@ -14,46 +15,43 @@ export const canArchiveAndUnarchiveComment = rule({ cache: "contextual" })(
     const issueId = args.issueId;
     const commentId = args.commentId;
     
-    // If channelUniqueName is not provided, look it up from the issue
+    // If channelUniqueName is not provided, look it up from the issue and/or
+    // comment. Both lookups run (comment last) to match the original ordering.
+    let issue;
+    let comment;
     if (!channelUniqueName) {
       if (issueId) {
-        const Issue = context.ogm.model("Issue");
-        const issue = await Issue.find({
+        issue = await context.ogm.model("Issue").find({
           where: { id: issueId },
-          selectionSet: `{ 
+          selectionSet: `{
             channelUniqueName
           }`,
         });
-
-        if (!issue || !issue[0]) {
-          return new Error("Could not find the issue or its associated channel.");
-        }
-
-        channelUniqueName = issue[0].channelUniqueName;
       }
       if (commentId) {
-        const Comment = context.ogm.model("Comment");
-        const comment = await Comment.find({
+        comment = await context.ogm.model("Comment").find({
           where: { id: commentId },
-          selectionSet: `{ 
+          selectionSet: `{
             Channel {
               uniqueName
             }
           }`,
         });
-
-        if (!comment || !comment[0]) {
-          return new Error("Could not find the comment or its associated channel.");
-        }
-
-        channelUniqueName = comment[0].Channel?.uniqueName;
       }
     }
 
-    if (!channelUniqueName) {
-      return new Error("No channel specified for this operation.");
+    const resolution = resolveChannelForModPermission({
+      channelUniqueName,
+      issueId,
+      commentId,
+      issue,
+      comment,
+    });
+    if (resolution.error) {
+      return resolution.error;
     }
-    
+    channelUniqueName = resolution.channelUniqueName;
+
     // Check if the user has the required permission in the specified channel
     const permissionResult = await checkChannelModPermissions({
         channelConnections: [channelUniqueName],

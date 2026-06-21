@@ -57,7 +57,7 @@ function checkUrl(str: string) {
   return valid;
 }
 
-const validateEventInput = (
+export const validateEventInput = (
   input: EventInput,
   createMode: boolean
 ): true | string => {

@@ -8,8 +8,9 @@
     "node": "22.x"
   },
   "scripts": {
-    "test": "node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -name '*test.ts' -print | sort)",
-    "coverage": "c8 node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -name '*test.ts' -print | sort)",
+    "test": "node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
+    "test:integration": "node --loader ts-node/esm --test $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
+    "coverage": "c8 node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
     "prepare": "husky install",
     "codegen": "graphql-codegen --config codegen.ts",
     "tsc": "tsc",

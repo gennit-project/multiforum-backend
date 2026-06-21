@@ -12,9 +12,12 @@ coverage:
     # Per-PR coverage change check
     patch:
       default:
-        # Require new code in PRs to have some coverage
-        # Set to informational initially while building coverage
-        informational: true
+        # New/changed code in a PR must be covered. This ratchets quality
+        # forward without requiring the whole legacy baseline to be tested.
+        target: 80%
+        # Allow a small slack so trivial untestable lines don't block a PR.
+        threshold: 5%
+        informational: false
 
 # Comment settings for PR coverage reports
 comment:

@@ -22,7 +22,7 @@ type ChannelInput = {
   isEditMode?: boolean | null;
 };
 
-const validateChannelInput = (input: ChannelInput): true | string => {
+export const validateChannelInput = (input: ChannelInput): true | string => {
   const { uniqueName, description, displayName, isEditMode } = input;
 
   if (!isEditMode) {

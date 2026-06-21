@@ -1,6 +1,7 @@
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
+import { normalizeServerModPermissionResult } from "./serverModPermissionResult.js";
 import { rule } from "graphql-shield";
 
 export interface CanArchiveAndUnarchiveImageArgs {
@@ -26,11 +27,7 @@ export const canArchiveAndUnarchiveImage = rule({ cache: "contextual" })(
         context
       );
 
-      if (permissionResult instanceof Error) {
-        return permissionResult;
-      }
-
-      return true;
+      return normalizeServerModPermissionResult(permissionResult);
     }
 
     // Channel-scoped image archival
