@@ -102,8 +102,12 @@ async function testDecryptTamperedCiphertext() {
   const encrypted = encryptSecret(plaintext);
   const parts = encrypted.split(":");
 
-  // Tamper with the encrypted data
-  const tamperedEncrypted = parts[2].replace(/[0-9a-f]/, "0");
+  // Tamper with the encrypted data by flipping the first hex char to a
+  // guaranteed-different value. (A naive replace(/[0-9a-f]/, "0") would be a
+  // no-op whenever the first char is already "0" — roughly 1 run in 16 — which
+  // made this test flaky since the IV/ciphertext is randomized each run.)
+  const tamperedFirstChar = parts[2][0] === "0" ? "1" : "0";
+  const tamperedEncrypted = tamperedFirstChar + parts[2].slice(1);
   const tamperedCiphertext = `${parts[0]}:${parts[1]}:${tamperedEncrypted}`;
 
   // This should throw because GCM authentication will fail
