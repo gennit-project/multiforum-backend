@@ -29,6 +29,7 @@ const {
   updateCommentInputIsValid,
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
+  updateUserInputIsValid,
   canReport,
   canSuspendAndUnsuspendUser,
   canArchiveAndUnarchiveComment,
@@ -120,7 +121,7 @@ const permissionList = shield({
       deleteServerRoles: and(isAuthenticated, isAdmin),
       
       createEmailAndUser: allow, // Keep this as-is since this is for user registration
-      updateUsers: and(isAuthenticated, or(isAccountOwner, isAdmin)),
+      updateUsers: and(isAuthenticated, updateUserInputIsValid, or(isAccountOwner, isAdmin)),
       
       createChannels: and(isAuthenticated, createChannelInputIsValid, canCreateChannel),
       updateChannels: canEditWikiHomePage,// and(isAuthenticated, updateChannelInputIsValid, or(isChannelOwner, isAdmin)),

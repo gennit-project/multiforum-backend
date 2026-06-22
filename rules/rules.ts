@@ -65,6 +65,7 @@ import {
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
 } from "./validation/downloadableFileIsValid.js";
+import { updateUserInputIsValid } from "./validation/userIsValid.js";
 import { getServerScopedMembership } from "./permission/getServerScopedMembership.js";
 
 export async function evaluateCanCreateChannelRule(ctx: any) {
@@ -798,6 +799,7 @@ const ruleList = {
   updateEventInputIsValid,
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
+  updateUserInputIsValid,
   hasChannelPermission,
   isAdmin,
   isAccountOwner,
