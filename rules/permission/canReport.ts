@@ -1,5 +1,6 @@
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
+import { resolveChannelForModPermission } from "./resolveChannelForModPermission.js";
 import { rule } from "graphql-shield";
 
 export interface CanReportArgs {
@@ -16,27 +17,27 @@ export const canReport = rule({ cache: "contextual" })(
     console.log("channelUniqueName", channelUniqueName);
     console.log("issueId", issueId);
     
-    // If channelUniqueName is not provided, look it up from the issue
+    // If channelUniqueName is not provided, look it up from the issue.
+    let issue;
     if (!channelUniqueName && issueId) {
-      const Issue = context.ogm.model("Issue");
-      const issue = await Issue.find({
+      issue = await context.ogm.model("Issue").find({
         where: { id: issueId },
-        selectionSet: `{ 
+        selectionSet: `{
           channelUniqueName
         }`,
       });
-
-      if (!issue || !issue[0]) {
-        return new Error("Could not find the issue or its associated channel.");
-      }
-
-      channelUniqueName = issue[0].channelUniqueName;
     }
 
-    if (!channelUniqueName) {
-      return new Error("No channel specified for this operation.");
+    const resolution = resolveChannelForModPermission({
+      channelUniqueName,
+      issueId,
+      issue,
+    });
+    if (resolution.error) {
+      return resolution.error;
     }
-    
+    channelUniqueName = resolution.channelUniqueName;
+
     // Check if the user has the required permission in the specified channel
     const permissionResult = await checkChannelModPermissions({
         channelConnections: [channelUniqueName],

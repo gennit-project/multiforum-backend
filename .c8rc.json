@@ -1,5 +1,5 @@
 {
-  "all": false,
+  "all": true,
   "reporter": ["text", "lcov"],
   "reports-dir": "./coverage",
   "src": ["."],

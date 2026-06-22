@@ -16,7 +16,7 @@ type UserInput = {
   isEditMode?: boolean | null;
 };
 
-const validateUserInput = (input: UserInput): true | string => {
+export const validateUserInput = (input: UserInput): true | string => {
   const { username, bio, displayName, isEditMode } = input;
 
   if (!isEditMode) {

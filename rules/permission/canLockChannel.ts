@@ -1,5 +1,6 @@
 import { rule } from "graphql-shield";
 import { hasServerModPermission } from "./hasServerModPermission.js";
+import { normalizeServerModPermissionResult } from "./serverModPermissionResult.js";
 
 /**
  * Permission rule that checks if the user has the canLockChannel server mod permission.
@@ -12,14 +13,8 @@ export const canLockChannel = rule({ cache: "contextual" })(
       ctx
     );
 
-    if (!permissionResult) {
-      return false;
-    }
-
-    if (permissionResult instanceof Error) {
-      return permissionResult;
-    }
-
-    return true;
+    return normalizeServerModPermissionResult(permissionResult, {
+      denyOnFalsy: true,
+    });
   }
 );

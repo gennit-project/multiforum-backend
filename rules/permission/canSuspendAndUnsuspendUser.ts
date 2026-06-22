@@ -50,6 +50,58 @@ async function isUserServerAdmin(username: string, context: any): Promise<boolea
   );
 }
 
+export type SuspendUserDecision =
+  | { type: "allow" }
+  | { type: "deny"; error: Error }
+  | { type: "delegateServer" }
+  | { type: "delegateChannel" };
+
+// Pure decision for suspend/unsuspend. The rule resolves the channel and looks
+// up the relevant admin/owner flags (in the same conditional order as before),
+// then this maps them to a verdict — or to which async permission check the
+// rule should delegate to. Channel owners and server admins can only be
+// suspended by site admins.
+export function evaluateCanSuspendUser(input: {
+  hasChannel: boolean;
+  targetUsername?: string;
+  targetIsServerAdmin: boolean;
+  isChannelOwner: boolean;
+  isSiteAdmin: boolean;
+}): SuspendUserDecision {
+  const {
+    hasChannel,
+    targetUsername,
+    targetIsServerAdmin,
+    isChannelOwner,
+    isSiteAdmin,
+  } = input;
+
+  if (!hasChannel) {
+    if (targetUsername && targetIsServerAdmin) {
+      if (!isSiteAdmin) {
+        return {
+          type: "deny",
+          error: new Error(ERROR_MESSAGES.channel.cantSuspendOwner),
+        };
+      }
+      return { type: "allow" };
+    }
+    return { type: "delegateServer" };
+  }
+
+  if (targetUsername && isChannelOwner) {
+    if (!isSiteAdmin) {
+      return {
+        type: "deny",
+        error: new Error(ERROR_MESSAGES.channel.cantSuspendOwner),
+      };
+    }
+    return { type: "allow" };
+  }
+
+  return { type: "delegateChannel" };
+}
+
 export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
   async (parent: any, args: any, context: any, info: any) => {
     let channelUniqueName = args.channelUniqueName;
@@ -78,52 +130,61 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
       channelUniqueName = issue[0].channelUniqueName;
     }
 
-    if (!channelUniqueName) {
-      if (targetUsername) {
-        const targetIsServerAdmin = await isUserServerAdmin(targetUsername, context);
-        if (targetIsServerAdmin) {
-          const isSiteAdmin = await isUserSiteAdmin(context);
-          if (!isSiteAdmin) {
-            return new Error(ERROR_MESSAGES.channel.cantSuspendOwner);
-          }
+    // Look up the admin/owner flags the decision needs, in the same conditional
+    // order as before so no extra queries run. isSiteAdmin is only fetched when
+    // the target is a protected owner/admin, matching the original.
+    const hasChannel = Boolean(channelUniqueName);
+    let targetIsServerAdmin = false;
+    let isChannelOwner = false;
+    let isSiteAdmin = false;
 
-          return true;
+    if (!hasChannel) {
+      if (targetUsername) {
+        targetIsServerAdmin = await isUserServerAdmin(targetUsername, context);
+        if (targetIsServerAdmin) {
+          isSiteAdmin = await isUserSiteAdmin(context);
         }
       }
+    } else if (targetUsername) {
+      isChannelOwner = await isUserChannelOwner(
+        targetUsername,
+        channelUniqueName,
+        context
+      );
+      if (isChannelOwner) {
+        isSiteAdmin = await isUserSiteAdmin(context);
+      }
+    }
 
+    const decision = evaluateCanSuspendUser({
+      hasChannel,
+      targetUsername,
+      targetIsServerAdmin,
+      isChannelOwner,
+      isSiteAdmin,
+    });
+
+    if (decision.type === "allow") {
+      return true;
+    }
+    if (decision.type === "deny") {
+      return decision.error;
+    }
+    if (decision.type === "delegateServer") {
       return hasServerModPermission("canSuspendUser", context);
     }
-    
-    // Check if the target user is a channel owner
-    if (targetUsername) {
-      const isChannelOwner = await isUserChannelOwner(targetUsername, channelUniqueName, context);
-      
-      if (isChannelOwner) {
-        // If target is a channel owner, only site admins can suspend them
-        const isSiteAdmin = await isUserSiteAdmin(context);
-        
-        if (!isSiteAdmin) {
-          return new Error(ERROR_MESSAGES.channel.cantSuspendOwner);
-        }
-        
-        // If user is a site admin, they can suspend the channel owner
-        return true;
-      }
-    }
-    
-    // For non-channel owners, proceed with regular permission check
+
+    // delegateChannel: fall back to the regular channel mod permission check.
     const permissionResult = await checkChannelModPermissions({
-        channelConnections: [channelUniqueName],
-        context,
-        permissionCheck: ModChannelPermission.canSuspendUser
+      channelConnections: [channelUniqueName],
+      context,
+      permissionCheck: ModChannelPermission.canSuspendUser,
     });
-    
-    // If the user does not have the required permission, return an error
+
     if (permissionResult instanceof Error) {
-        return permissionResult;
+      return permissionResult;
     }
-    
-    // If the user has the required permission, return true
+
     return true;
 }
 );
