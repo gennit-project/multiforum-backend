@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "index.ts",
+    "build_scripts/**/*.{ts,js}",
+    "**/*.test.ts",
+    "tests/**/*.ts"
+  ],
+  "project": ["**/*.ts"],
+  "ignore": [
+    "ogm_types.ts",
+    "typeDefs.ts",
+    "src/generated/**"
+  ],
+  "ignoreExportsUsedInFile": true
+}
