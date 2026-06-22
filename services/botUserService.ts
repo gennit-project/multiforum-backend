@@ -143,29 +143,6 @@ export const ensureBotUserForChannel = async (input: {
   return user
 }
 
-export const ensureBotUsersForChannelProfiles = async (input: {
-  User: UserModel
-  Channel: ChannelModel
-  channelUniqueName: string
-  botName: string
-  profiles: BotProfile[]
-}) => {
-  const { User, Channel, channelUniqueName, botName, profiles } = input
-
-  // Create profile-specific bots only (no base bot)
-  for (const profile of profiles) {
-    if (!profile?.id) continue
-    await ensureBotUserForChannel({
-      User,
-      Channel,
-      channelUniqueName,
-      botName,
-      profileId: profile.id,
-      profileLabel: profile.label || null
-    })
-  }
-}
-
 const parseSettingsJson = (settingsJson: any) => {
   if (!settingsJson || typeof settingsJson !== 'string') {
     return settingsJson
