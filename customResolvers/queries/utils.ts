@@ -17,7 +17,3 @@ export const timeFrameOptions = {
     start: DateTime.local().minus({ years: 1 }).toUTC().toISO(),
   },
 }
-
-export default {
-    timeFrameOptions,
-}
