@@ -320,6 +320,33 @@ ${commentUrl}
   };
 };
 
+export const createDiscussionMentionNotificationEmail = (
+  mentionerLabel: string,
+  discussionTitle: string,
+  discussionUrl: string
+): EmailContent => {
+  const subject = `${mentionerLabel} mentioned you in a discussion`;
+  const plainText = `
+${mentionerLabel} mentioned you in the discussion "${discussionTitle}".
+
+View the discussion at:
+${discussionUrl}
+`;
+
+  const html = `
+<p><strong>${mentionerLabel}</strong> mentioned you in the discussion "<strong>${discussionTitle}</strong>".</p>
+<p>
+  <a href="${discussionUrl}">View the discussion</a>
+</p>
+`;
+
+  return {
+    subject,
+    plainText,
+    html,
+  };
+};
+
 export const createSeriesUpdateNotificationEmail = (
   eventTitle: string,
   summaryLines: string[],
