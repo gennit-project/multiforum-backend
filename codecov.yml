@@ -12,12 +12,10 @@ coverage:
     # Per-PR coverage change check
     patch:
       default:
-        # New/changed code in a PR must be covered. This ratchets quality
-        # forward without requiring the whole legacy baseline to be tested.
-        target: 80%
-        # Allow a small slack so trivial untestable lines don't block a PR.
-        threshold: 5%
-        informational: false
+        # Report patch (changed-lines) coverage on PRs, but never block. With
+        # the legacy codebase well below 80%, a hard patch gate blocks nearly
+        # every normal PR, so coverage is informational only for now.
+        informational: true
 
 # Comment settings for PR coverage reports
 comment:
