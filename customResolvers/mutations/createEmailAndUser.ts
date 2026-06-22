@@ -1,5 +1,6 @@
 import { EmailModel, UserModel, UserCreateInput } from "../../ogm_types.js";
 import { generateSlug } from "random-word-slugs";
+import { validateUserInput } from "../../rules/validation/userIsValid.js";
 
 type Args = {
   emailAddress: string;
@@ -25,6 +26,14 @@ export const createUsersWithEmails = async (
   }
   if (username.toLowerCase().startsWith("bot-")) {
     throw new Error("Usernames starting with \"bot-\" are reserved");
+  }
+
+  // Enforce username format/length rules at registration. The standard
+  // createUsers mutation (which createUserInputIsValid guards) is denied, so
+  // this custom registration path is where create-side validation must live.
+  const usernameValidation = validateUserInput({ username, isEditMode: false });
+  if (usernameValidation !== true) {
+    throw new Error(usernameValidation);
   }
 
   // Check if the user already exists

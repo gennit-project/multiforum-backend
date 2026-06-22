@@ -11,7 +11,10 @@ import {
   MentionContextComment,
   CommentSnapshot,
 } from '../utils/buildCommentMentionContext.js';
-import { createCommentMentionNotificationEmail } from '../customResolvers/mutations/shared/emailUtils.js';
+import {
+  createCommentMentionNotificationEmail,
+  createDiscussionMentionNotificationEmail,
+} from '../customResolvers/mutations/shared/emailUtils.js';
 
 // Re-export for consumers
 export { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
@@ -37,6 +40,7 @@ type NotifyMentionsInput = {
     createInAppNotification?: typeof createInAppNotification;
     sendEmail?: typeof sendEmail;
     createCommentMentionNotificationEmail?: typeof createCommentMentionNotificationEmail;
+    createDiscussionMentionNotificationEmail?: typeof createDiscussionMentionNotificationEmail;
   };
 };
 
@@ -203,6 +207,9 @@ export const notifyNewUserMentions = async ({
     const createCommentMentionNotificationEmailFn =
       dependencies?.createCommentMentionNotificationEmail ||
       createCommentMentionNotificationEmail;
+    const createDiscussionMentionNotificationEmailFn =
+      dependencies?.createDiscussionMentionNotificationEmail ||
+      createDiscussionMentionNotificationEmail;
     const newMentions = getNewMentionUsernames(previousText, nextText);
     if (!newMentions.length) return;
 
@@ -238,26 +245,38 @@ export const notifyNewUserMentions = async ({
         text: notificationText,
       });
 
-      if (
-        mentionContext.type === 'comment' &&
-        notificationUrl &&
-        user.notifyWhenTagged &&
-        user.email
-      ) {
-        const contentTitle = mentionContext.event?.title || mentionContext.discussion?.title || 'discussion';
-        const emailContent = createCommentMentionNotificationEmailFn(
-          mentionContext.authorLabel,
-          contentTitle,
-          notificationUrl,
-          Boolean(mentionContext.event)
-        );
+      if (notificationUrl && user.notifyWhenTagged && user.email) {
+        let emailContent:
+          | ReturnType<typeof createCommentMentionNotificationEmail>
+          | null = null;
 
-        await sendEmailFn({
-          to: user.email,
-          subject: emailContent.subject,
-          text: emailContent.plainText,
-          html: emailContent.html,
-        });
+        if (mentionContext.type === 'comment') {
+          const contentTitle =
+            mentionContext.event?.title ||
+            mentionContext.discussion?.title ||
+            'discussion';
+          emailContent = createCommentMentionNotificationEmailFn(
+            mentionContext.authorLabel,
+            contentTitle,
+            notificationUrl,
+            Boolean(mentionContext.event)
+          );
+        } else if (mentionContext.type === 'discussion') {
+          emailContent = createDiscussionMentionNotificationEmailFn(
+            mentionContext.authorLabel,
+            mentionContext.title,
+            notificationUrl
+          );
+        }
+
+        if (emailContent) {
+          await sendEmailFn({
+            to: user.email,
+            subject: emailContent.subject,
+            text: emailContent.plainText,
+            html: emailContent.html,
+          });
+        }
       }
     }
   } catch (error) {
