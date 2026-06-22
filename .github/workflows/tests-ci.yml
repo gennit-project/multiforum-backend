@@ -40,3 +40,23 @@ jobs:
 
       - name: Verify build (tsc + cypher copy)
         run: npm run build
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Clean install dependencies
+        run: npm ci
+
+      # Testcontainers manages the Neo4j container itself via the Docker daemon
+      # that is available on GitHub-hosted Ubuntu runners.
+      - name: Run Cypher integration tests against live Neo4j
+        run: npm run test:integration
