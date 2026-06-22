@@ -37,4 +37,5 @@ ignore:
   - "src/generated/**"
   - "ogm_types.ts"
   - "typeDefs.ts"
+  - "index.ts"
   - "**/*.d.ts"
