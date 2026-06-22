@@ -19,7 +19,9 @@ let container: StartedNeo4jContainer | undefined;
 let driver: Driver | undefined;
 
 export async function startNeo4j(): Promise<Driver> {
-  container = await new Neo4jContainer(NEO4J_IMAGE).start();
+  // Enable APOC — the app's OGM-generated queries (e.g. suspension date
+  // formatting) depend on apoc.* procedures.
+  container = await new Neo4jContainer(NEO4J_IMAGE).withApoc().start();
   driver = neo4j.driver(
     container.getBoltUri(),
     neo4j.auth.basic(container.getUsername(), container.getPassword())
