@@ -30,7 +30,9 @@ beforeEach(async () => {
   // A channel-scoped Issue (Channel -[:HAS_ISSUE]-> Issue makes scope 'channel')
   // targeting user "baduser" via relatedUsername.
   await run(
-    `CREATE (ch:Channel { uniqueName: 'test-channel', displayName: 'Test Channel' })
+    // Channel.createdAt is non-nullable; the unsuspend Channel.update re-validates
+    // the node, so seed it (raw-Cypher seeding bypasses the @timestamp default).
+    `CREATE (ch:Channel { uniqueName: 'test-channel', displayName: 'Test Channel', createdAt: datetime() })
      CREATE (target:User { username: 'baduser', displayName: 'Bad User' })
      CREATE (i:Issue {
         id: 'issue-1', issueNumber: 1, isOpen: true,
@@ -52,6 +54,13 @@ const suspendUser = (args: Record<string, unknown> = {}) =>
       explanation: "Repeated rule violations",
       ...args,
     },
+    ctx()
+  );
+
+const unsuspendUser = (args: Record<string, unknown> = {}) =>
+  env.resolvers.Mutation.unsuspendUser(
+    null,
+    { issueId: "issue-1", explanation: "Appeal granted", ...args },
     ctx()
   );
 
@@ -95,4 +104,24 @@ test("suspendUser attaches the suspension to the channel", async () => {
 
 test("suspendUser throws when the issue id is missing", async () => {
   await assert.rejects(suspendUser({ issueId: undefined }), /Issue ID is required/i);
+});
+
+test("unsuspendUser detaches the suspension and records an unsuspend action", async () => {
+  await suspendUser();
+  await unsuspendUser();
+
+  const rel = await run(
+    `MATCH (ch:Channel { uniqueName: 'test-channel' })-[:SUSPENDED_AS_USER]->(s:Suspension { username: 'baduser' })
+     RETURN count(s) AS n`
+  );
+  assert.equal(Number(rel[0].n), 0, "suspension should be detached from the channel");
+
+  const actions = await run(
+    `MATCH (i:Issue { id: 'issue-1' })-[:ACTIVITY_ON_ISSUE]->(a:ModerationAction)
+     RETURN collect(a.actionType) AS types`
+  );
+  assert.ok(
+    (actions[0].types as string[]).includes("unsuspend"),
+    `got ${JSON.stringify(actions[0].types)}`
+  );
 });
