@@ -1,275 +1,55 @@
 [![codecov](https://codecov.io/gh/gennit-project/multiforum-backend/branch/main/graph/badge.svg)](https://codecov.io/gh/gennit-project/multiforum-backend)
 
-## Project Intro
+# Multiforum Backend
 
-An introduction to the project is in the frontend README: https://github.com/gennit-project/multiforum-frontend
+The GraphQL/Neo4j backend for Multiforum. The frontend lives in a separate
+repository: [gennit-project/multiforum-nuxt](https://github.com/gennit-project/multiforum-nuxt).
 
-## Technology Stack
+> Multiforum is under active development; test coverage is being expanded as core features stabilize.
 
-On the backend (https://github.com/gennit-project/multiforum-backend), an Apollo server fetches data from the database (a graph database, Neo4j). Some resolvers are auto-generated using the [Neo4j graphql library](https://neo4j.com/docs/graphql/current/), while more complex resolvers are implemented using a combination of the [OGM](https://neo4j.com/docs/graphql/current/ogm/) and custom Cypher queries.
+## About
 
-The frontend is a Vue application that makes GraphQL queries to the Apollo server.
+An [Apollo Server](https://www.apollographql.com/docs/apollo-server/) fetches data
+from a [Neo4j](https://neo4j.com/) graph database. Some resolvers are
+auto-generated using the [Neo4j GraphQL library](https://neo4j.com/docs/graphql/current/),
+while more complex resolvers are implemented using a combination of the
+[OGM](https://neo4j.com/docs/graphql/current/ogm/) and custom Cypher queries.
 
-## Permission System Architecture
+The frontend is a Nuxt/Vue application that makes GraphQL queries to this server.
+For a full product overview, see the
+[frontend README](https://github.com/gennit-project/multiforum-nuxt).
 
-Multiforum uses a comprehensive role-based permission system that governs what actions users can perform across the platform. The system operates at both server-wide and channel-specific levels.
+## Technology Summary
 
-### Permission Model Overview
+- **API**: Apollo Server (GraphQL)
+- **Database**: Neo4j (Neo4j GraphQL library + OGM + custom Cypher)
+- **Authentication**: Auth0
+- **Email**: Resend or SendGrid
+- **File storage**: Google Cloud Storage
 
-The permission system uses the following components:
+## Developer Docs
 
-#### Types of Roles
+- [Environment variables and running the app](./docs/environment-variables.md)
+- [Permission system architecture](./docs/permission-system.md)
+- [Comment notification system](./docs/notifications.md)
+- [Plugin requirements](./PLUGIN_REQUIREMENTS.md)
+- [Enhanced error handling](./ENHANCED_ERROR_HANDLING_USAGE.md)
+- [`hasDownload` filter logic](./HASDOWNLOAD_FILTER_LOGIC.md)
+- [Developer workflow and standards](./CLAUDE.md)
 
-1. **Server Roles** - Server-wide role definitions for regular users
-   - Define baseline permissions for all users across the platform
-   - Examples: `canCreateChannel`, `canCreateDiscussion`, `canUpvoteComment`
+## Common Commands
 
-2. **Channel Roles** - Channel-specific role definitions for regular users
-   - Define permissions for actions within specific channels
-   - Examples: `canCreateDiscussion`, `canCreateComment`, `canUpvoteDiscussion`
+| Command | Description |
+| --- | --- |
+| `npm run codegen` | Generate GraphQL code |
+| `npm run tsc` | Run the TypeScript compiler |
+| `npm run build` | Build the project (tsc + copy Cypher files) |
+| `npm run start` | Start the server |
+| `npm run logSchema` | Log the GraphQL schema to the console |
 
-3. **Mod Server Roles** - Server-wide role definitions for moderators
-   - Define baseline moderation capabilities across all channels
-   - Examples: `canHideComment`, `canGiveFeedback`, `canSuspendUser`
+See [Environment variables and running the app](./docs/environment-variables.md)
+for the configuration needed before starting the server.
 
-4. **Mod Channel Roles** - Channel-specific role definitions for moderators
-   - Define moderation capabilities within specific channels
-   - Examples: `canHideDiscussion`, `canGiveFeedback`, `canReport`
+## Status
 
-5. **Suspended Roles** - Define restricted permissions for suspended users/moderators
-   - Different variants for regular users and moderators
-   - Typically limit user capabilities while suspended
-
-#### User Classifications
-
-- **Regular Users** - Standard platform users
-- **Channel Owners** - Have administrative control over specific channels
-- **Moderators** - Users with moderation capabilities
-- **Suspended Users** - Users with temporarily restricted permissions
-
-### How Permissions Are Applied
-
-The permission system follows a hierarchical flow:
-
-1. **Authentication Check**
-   - Verifies that the user is logged in and their JWT is valid
-
-2. **Role Determination**
-   - For each action, the system determines which role applies to the user
-   - The system follows this priority order when determining permissions:
-     - For regular user actions (e.g., creating posts):
-       1. Channel Owner status (automatic permission for all channel actions)
-       2. Suspension status (uses SuspendedRole if suspended)
-       3. Channel-specific roles
-       4. Channel default role
-       5. Server default role
-     - For moderation actions:
-       1. Channel Owner status (automatic permission for all moderation actions)
-       2. Suspension status (uses SuspendedModRole if suspended)
-       3. Elevated moderator status and role
-       4. Default moderator role
-       5. Server default moderator role
-
-3. **Permission Verification**
-   - Once the appropriate role is determined, the system checks if that role grants the specific permission required for the action
-   - If the permission is granted, the action proceeds
-   - If the permission is denied, an error is returned
-
-### Special Cases
-
-- **Channel Owners** always have full permissions within their channels
-- **Feedback Comments** require moderator permissions (`canGiveFeedback`) rather than standard comment permissions
-- **Suspended Users** have limited permissions based on the Suspended roles
-
-### Suspension System
-
-The suspension system enforces restrictions on users and moderators at both channel and server levels.
-
-#### Suspension Data Model
-
-Suspensions are stored as `Suspension` nodes in the database with the following key properties:
-- `suspendedUntil` - Date/time when the suspension expires (nullable)
-- `suspendedIndefinitely` - Boolean flag for permanent suspensions
-- `RelatedIssue` - Link to the moderation issue that triggered the suspension
-
-Channels maintain relationships to active suspensions:
-- `Channel.SuspendedUsers` - User suspensions for that channel
-- `Channel.SuspendedMods` - Moderator suspensions for that channel
-
-#### Suspension Detection
-
-The `getActiveSuspension` function (`rules/permission/getActiveSuspension.ts`) determines if a user or moderator has an active suspension:
-
-1. **Active suspension criteria**: A suspension is considered active if:
-   - `suspendedIndefinitely` is true, OR
-   - `suspendedUntil` is in the future
-
-2. **Expired suspension handling**: Expired suspensions are identified and returned to the caller for cleanup. The `disconnectExpiredSuspensions` function handles removing expired suspensions from channel relationships while preserving the `Suspension` nodes for historical records.
-
-3. **Return value**: The function returns:
-   - `isSuspended` - Whether the user/mod has an active suspension
-   - `activeSuspension` - The suspension details (if any)
-   - `relatedIssueId` - For linking to the moderation issue
-   - `expiredUserSuspensions` / `expiredModSuspensions` - Lists of expired suspensions for cleanup
-   - `suspendedEntity` - Whether it's a "user" or "mod" suspension
-
-#### Channel-Level Suspension Enforcement
-
-Channel permissions (`hasChannelPermission.ts`, `hasChannelModPermission.ts`) enforce suspensions:
-
-1. Check for active suspension using `getActiveSuspension`
-2. If suspended, use the `SuspendedRole` (or `DefaultSuspendedRole` fallback) instead of normal roles
-3. Check the requested permission against the suspended role
-4. If blocked, create a notification explaining why (via `createSuspensionNotification`)
-5. Clean up any expired suspensions in the background
-
-#### Server-Level Suspension Enforcement
-
-Server permissions (`hasServerPermission.ts`) also check for suspensions:
-
-1. Query for any active suspensions (indefinite or unexpired) across all channels
-2. If any active suspension exists, use `DefaultSuspendedRole` for server-level actions
-3. This blocks suspended users from creating new channels/forums
-
-#### User Notifications
-
-When a suspended user attempts a blocked action, `createSuspensionNotification` (`rules/permission/suspensionNotification.ts`):
-- Creates an in-app notification explaining the block
-- Includes the channel name, blocked permission, and related issue reference
-- De-duplicates notifications to avoid spam (checks for existing unread notification with same text)
-
-### Current Implementation Notes
-
-- The ability to create customized channel roles (changing what is allowed for standard users or moderators in a given channel) is a planned feature but is not currently available
-- Currently, the permissions are defined in the server configuration
-- All permission checks are enforced through GraphQL Shield middleware combined with custom rule resolvers
-
-### Permission Check Implementation
-
-Permission checks are implemented in two main files:
-
-1. `hasChannelPermission.ts` - Handles regular user permissions for channel-specific actions
-2. `hasChannelModPermission.ts` - Handles moderator permissions for moderation actions
-
-These files share a similar logical flow but handle different types of roles and permissions.
-
-## Comment Notification System
-
-The platform implements a real-time notification system for comments that alerts users when:
-- Someone comments on their discussion
-- Someone comments on their event
-- Someone replies to their comment
-
-### Technical Implementation
-
-The notification system is implemented using Neo4j GraphQL's subscription feature, which leverages Neo4j's Change Data Capture (CDC) capabilities. This approach offers several advantages over middleware-based approaches:
-
-1. **Reliability**: The system uses Neo4j's native CDC mechanism to capture comment creation events directly from the database, ensuring no events are missed even during high loads.
-
-2. **Decoupling**: The notification system operates independently from the HTTP request/response cycle, allowing the comment creation API to remain fast and responsive.
-
-3. **Resilience**: The subscription-based approach can recover from temporary failures and automatically reconnect to the event stream.
-
-4. **Maintainability**: With clear separation of concerns, the notification logic is isolated in a dedicated service that's easier to test and update.
-
-### How It Works
-
-1. **Enabling Subscriptions**: The Neo4j GraphQL schema is extended with the `@subscription` directive, enabling subscription capabilities.
-
-2. **CommentNotificationService**: A dedicated service class subscribes to the `commentCreated` event stream from Neo4j.
-
-3. **Event Processing**: When a new comment is created, the service:
-   - Receives the event with the new comment's basic information
-   - Queries the database for the full comment details and related entities
-   - Determines the notification type based on the comment context (discussion comment, event comment, or reply)
-   - Identifies the user who should receive the notification
-   - Generates both email and in-app notifications with appropriate links
-
-4. **Notification Delivery**:
-   - Email notifications are sent via SendGrid
-   - In-app notifications are stored in the database and made available to users when they log in
-
-### Notification Content
-
-Notifications include:
-- Who created the comment
-- The content being commented on (discussion, event, or parent comment)
-- The comment text
-- A direct link to view the comment using the permalink format
-
-This approach ensures users are promptly notified of new interactions with their content while maintaining system performance and scalability.
-
-## Environment Variables and Running the App
-
-Configuration is supplied via environment variables (e.g. a `.env` file locally,
-or Heroku config vars in production). The variables the server reads are grouped
-below.
-
-### Authentication (Auth0)
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `AUTH0_DOMAIN` | Yes | Auth0 tenant domain, e.g. `your-tenant.us.auth0.com`. Used to build the JWKS URI (`https://$AUTH0_DOMAIN/.well-known/jwks.json`) for verifying access tokens and to call `/userinfo`. |
-| `AUTH0_CLIENT_ID` | Yes | Client ID of the Auth0 application. A token whose `aud` equals this is treated as a UI/SPA token (the email is read from the token directly). |
-| `AUTH0_AUDIENCE` | Yes (for server-session auth) | Identifier of the dedicated Auth0 API (resource server) that access tokens are issued for, e.g. `https://api.c0nduit.app`. **Not** the Auth0 Management API (`https://<tenant>/api/v2/`). |
-
-How auth resolution works: requests authenticate by inspecting the access
-token's `aud` (audience) claim in `setUserDataOnContext`
-([rules/permission/userDataHelperFunctions.ts](rules/permission/userDataHelperFunctions.ts)).
-A token matching `AUTH0_CLIENT_ID` is a UI token; a token matching
-`AUTH0_AUDIENCE` is treated as a programmatic / server-session token and the
-user is resolved via Auth0's `/userinfo` endpoint.
-
-Why `AUTH0_AUDIENCE` matters: the Nuxt frontend's server-session SDK
-(`@auth0/auth0-nuxt`) mints access tokens for this audience. If it's unset, those
-tokens fall through the audience checks and server-side user lookups are
-rejected — users appear logged in but resolve with no username/profile. The
-value must match the frontend's `NUXT_AUTH0_AUDIENCE`.
-
-### Database (Neo4j)
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `NEO4J_URI` | Yes | Bolt connection URI for the Neo4j database, e.g. `neo4j+s://<id>.databases.neo4j.io` or `bolt://127.0.0.1:7687`. |
-| `NEO4J_USER` | Yes | Neo4j username (typically `neo4j`). |
-| `NEO4J_PASSWORD` | Yes | Neo4j password. |
-
-### Email
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `EMAIL_PROVIDER` | If sending email | Which provider to use: `resend` or `sendgrid`. |
-| `EMAIL_FROM` | If sending email | Default "from" address for outbound email. |
-| `RESEND_API_KEY` | If `EMAIL_PROVIDER=resend` | API key for [Resend](https://resend.com). |
-| `SENDGRID_API_KEY` | If `EMAIL_PROVIDER=sendgrid` | API key for SendGrid. |
-| `SENDGRID_FROM_EMAIL` | If using SendGrid | Verified SendGrid sender address. |
-| `SUPPORT_EMAIL` | No | Destination address for support/contact messages. |
-
-### File storage (Google Cloud Storage)
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `GCS_BUCKET_NAME` | If uploads enabled | Google Cloud Storage bucket for uploaded images/files. |
-| `GOOGLE_CREDENTIALS_BASE64` | If uploads enabled | Base64-encoded GCP service-account JSON. At startup it is decoded to a file and `GOOGLE_APPLICATION_CREDENTIALS` is pointed at it (convenient for single-value secrets on Heroku). |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Alternative to the above | Filesystem path to a GCP service-account JSON file. Set automatically when `GOOGLE_CREDENTIALS_BASE64` is provided. |
-
-### Server / app
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `PORT` | No | Port the Apollo server listens on (defaults are provided in code; Heroku sets this automatically). |
-| `NODE_ENV` | No | Standard Node environment (`development` / `production` / `test`). |
-| `SERVER_CONFIG_NAME` | Yes | Name of the `ServerConfig` record this instance runs as (e.g. `Listical`). The special value `Cypress Test Server` enables test-only behavior. |
-| `FRONTEND_URL` | Yes | Base URL of the frontend, used to build links in outbound emails (e.g. mod-invite acceptance links). |
-| `SLACK_WEBHOOK_URL` | No | Incoming-webhook URL for posting server notifications to Slack. |
-| `PLUGIN_SECRET_ENCRYPTION_KEY` | If plugins store secrets | 32-character key used to encrypt plugin secrets at rest. Set a strong value in production (the in-code fallback is a placeholder only). |
-
-### Build / development / test
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `GENERATE_OGM_TYPES` | No | Set to `true` to (re)generate the Neo4j OGM TypeScript types during startup/build. |
-| `E2E_MOCK_AUTH` | Test only | Set to `true` to enable mocked authentication for end-to-end runs. |
-| `PLAYWRIGHT_MOCK_AUTH` | Test only | Set to `true` to enable mocked authentication during Playwright runs. |
-| `CYPRESS_ADMIN_TEST_EMAIL` | Test only | Email of the seeded admin test user for E2E runs. |
-| `CYPRESS_ADMIN_TEST_USERNAME` | Test only | Username of the seeded admin test user for E2E runs. |
+This project is in active development.
