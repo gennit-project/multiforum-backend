@@ -228,6 +228,9 @@ const permissionList = shield({
       reportEvent: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportWikiEdit: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportChannel: and(isAuthenticated, canReport), // Channel reports require mod profile, no channel owner shortcut
+      reportImage: and(isAuthenticated, or(isChannelOwner, canReport)), // mirrors reportComment/reportDiscussion (channel-scoped image content)
+      reportChannelImage: and(isAuthenticated, canReport), // server-scoped, but canReport resolves the channel from channelUniqueName (like reportChannel)
+      reportProfilePicture: and(isAuthenticated, isAdmin), // server-scoped, no channel to scope canReport to
       lockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
       unlockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),

@@ -112,3 +112,38 @@ for (const mutation of unmappedGenerated) {
     assert.equal(result.data, null);
   });
 }
+
+// The image/profile report mutations are now wired (previously absent from
+// permissions.ts and thus hitting the default deny). Each is gated
+// `and(isAuthenticated, ...)`, so an unauthenticated request must fail with the
+// not-authenticated error — NOT the "Not Authorised!" default-deny fallback.
+// This distinguishes "wired but unauthenticated" from "still default-denied".
+const authGatedReports: Array<{ name: string; op: string }> = [
+  {
+    name: "reportImage",
+    op: `mutation { reportImage(imageId: "i", reportText: "t", selectedForumRules: [], selectedServerRules: []) { id } }`,
+  },
+  {
+    name: "reportChannelImage",
+    op: `mutation { reportChannelImage(channelUniqueName: "c", imageType: ICON, reportText: "t", selectedServerRules: []) { id } }`,
+  },
+  {
+    name: "reportProfilePicture",
+    op: `mutation { reportProfilePicture(username: "u", reportText: "t", selectedServerRules: []) { id } }`,
+  },
+];
+
+for (const { name, op } of authGatedReports) {
+  test(`${name} is wired (unauthenticated -> notAuthenticated, not default-deny)`, async () => {
+    const result = await execUnauthenticated(op);
+
+    assert.ok(result.errors && result.errors.length > 0, `${name} should error`);
+    assert.equal(
+      result.errors[0].message,
+      ERROR_MESSAGES.channel.notAuthenticated,
+      `${name} should be auth-gated, got: ${result.errors[0].message}`
+    );
+    // Issue is nullable, so a denied field nulls itself (rather than all of data).
+    assert.equal((result.data as Record<string, unknown> | null)?.[name], null);
+  });
+}
