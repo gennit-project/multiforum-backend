@@ -61,6 +61,7 @@ UNWIND discussionChannels AS dc
 OPTIONAL MATCH (dc)-[:UPVOTED_DISCUSSION]->(upvoter:User)
 OPTIONAL MATCH (dc)<-[:SUPER_UPVOTED_DISCUSSION]-(superUpvoter:User)
 OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(c:Comment)
+WHERE c.isFeedbackComment IS NULL OR c.isFeedbackComment = false
 WITH d, dc, COLLECT(DISTINCT upvoter) AS upvotedByUsers, COLLECT(DISTINCT superUpvoter) AS superUpvotedByUsers, COUNT(DISTINCT c) AS commentsCount, totalCount
 WITH d, COLLECT({dc: dc, upvotedByUsers: upvotedByUsers, superUpvotedByUsers: superUpvotedByUsers, commentsCount: commentsCount}) AS channelData, totalCount
 
