@@ -30,11 +30,12 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run coverage
 
-      - name: Upload coverage to Codecov
+      - name: Upload unit coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
+          flags: unit
           fail_ci_if_error: false
           verbose: true
 
@@ -57,6 +58,18 @@ jobs:
         run: npm ci
 
       # Testcontainers manages the Neo4j container itself via the Docker daemon
-      # that is available on GitHub-hosted Ubuntu runners.
-      - name: Run Cypher integration tests against live Neo4j
-        run: npm run test:integration
+      # that is available on GitHub-hosted Ubuntu runners. Run under c8 so the
+      # resolver coverage these tests provide is reported too.
+      - name: Run integration tests against live Neo4j (with coverage)
+        run: npm run coverage:integration
+
+      # Uploaded under the `integration` flag; Codecov merges it with the unit
+      # upload so a line covered by either suite counts as covered.
+      - name: Upload integration coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: integration
+          fail_ci_if_error: false
+          verbose: true
