@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 
+type GetActiveSuspensionInput = Parameters<typeof getActiveSuspension>[0];
+type OgmArg = GetActiveSuspensionInput["ogm"];
+type DriverArg = NonNullable<GetActiveSuspensionInput["driver"]>;
+
 type SuspensionStub = {
   id: string;
   username?: string | null;
@@ -37,7 +41,7 @@ const buildOgm = (channelResult: ChannelFindResult) => {
       if (name === "Channel") return channelStub;
       throw new Error(`Unexpected model lookup: ${name}`);
     },
-  };
+  } as unknown as OgmArg;
 };
 
 const futureDate = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
@@ -72,7 +76,7 @@ const buildDriver = (responses: {
       run,
       close: async () => {},
     }),
-  };
+  } as unknown as DriverArg;
 };
 
 test("returns active user suspension and issue metadata", async () => {
@@ -281,7 +285,7 @@ test("returns unsuspended result when channel is not found", async () => {
       }
       throw new Error(`Unexpected model lookup: ${name}`);
     },
-  };
+  } as unknown as OgmArg;
 
   const result = await getActiveSuspension({
     ogm,

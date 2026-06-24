@@ -6,6 +6,8 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import { applyMiddleware } from "graphql-middleware";
+import type { IMiddleware } from "graphql-middleware";
+import type { ApolloServerPlugin } from "@apollo/server";
 import typesDefinitions from "./typeDefs.js";
 import permissions from "./permissions.js";
 import discussionVersionHistoryMiddleware from "./middleware/discussionVersionHistoryMiddleware.js";
@@ -30,6 +32,8 @@ import { DiscussionVersionHistoryService } from "./services/discussionVersionHis
 import { CommentVersionHistoryService } from "./services/commentVersionHistoryService.js";
 import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistoryService.js";
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
+import type { GraphQLSchema } from "graphql";
+import type { Ogm, GraphQLRequest, GraphQLContext } from "./types/context.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -47,20 +51,22 @@ async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDel
       session.close();
       return; // Exit loop on successful connection
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
       console.error(`❌ Neo4j connection attempt ${attempt} failed:`, {
         attempt,
         maxRetries,
-        error: (error as any).message,
-        stack: (error as any).stack,
+        error: errorMessage,
+        stack: errorStack,
         timestamp: new Date().toISOString()
       });
-      
+
       if (attempt === maxRetries) {
-        const criticalError = new Error(`Failed to connect to Neo4j after ${maxRetries} attempts: ${(error as any).message}`);
+        const criticalError = new Error(`Failed to connect to Neo4j after ${maxRetries} attempts: ${errorMessage}`);
         logCriticalError(criticalError, {
           service: 'Neo4j',
           attempts: maxRetries,
-          lastError: (error as any).message
+          lastError: errorMessage
         });
         throw criticalError;
       }
@@ -185,20 +191,21 @@ async function initializeServer() {
     }
 
     let schema = await neoSchema.getSchema();
+    type AppMiddleware = IMiddleware<unknown, GraphQLContext>;
     schema = applyMiddleware(
       schema,
-      permissions,
-      discussionVersionHistoryMiddleware,
-      discussionMentionsMiddleware,
-      commentVersionHistoryMiddleware,
-      commentMentionsMiddleware,
-      commentUserMentionsMiddleware,
-      commentPluginPipelineMiddleware,
-      wikiPageVersionHistoryMiddleware,
-      issueActivityFeedMiddleware,
-      issueSubscriptionNotificationMiddleware,
-      channelBotsMiddleware,
-      channelCreatorModeratorMiddleware
+      permissions as AppMiddleware,
+      discussionVersionHistoryMiddleware as AppMiddleware,
+      discussionMentionsMiddleware as AppMiddleware,
+      commentVersionHistoryMiddleware as AppMiddleware,
+      commentMentionsMiddleware as AppMiddleware,
+      commentUserMentionsMiddleware as AppMiddleware,
+      commentPluginPipelineMiddleware as AppMiddleware,
+      wikiPageVersionHistoryMiddleware as AppMiddleware,
+      issueActivityFeedMiddleware as AppMiddleware,
+      issueSubscriptionNotificationMiddleware as AppMiddleware,
+      channelBotsMiddleware as AppMiddleware,
+      channelCreatorModeratorMiddleware as AppMiddleware
     );
     await ogm.init();
     if (edition === "enterprise") {
@@ -214,7 +221,7 @@ async function initializeServer() {
       plugins: [
         // Drains in-flight requests before the HTTP server shuts down.
         ApolloServerPluginDrainHttpServer({ httpServer }),
-        errorHandlingPlugin,
+        errorHandlingPlugin as ApolloServerPlugin,
       ],
     });
 
@@ -233,7 +240,7 @@ async function initializeServer() {
           const isMutation = req.body.query?.trim().startsWith("mutation");
 
           // Add this information to the context so it can be used by permission rules
-          (req as any).isMutation = isMutation;
+          (req as GraphQLRequest).isMutation = isMutation;
 
           if (!queryString.includes("IntrospectionQuery")) {
             console.log('📊 GraphQL Operation:', {
@@ -285,7 +292,7 @@ async function initializeServer() {
 /**
  * Start background services with enhanced error handling
  */
-async function startBackgroundServices(schema: any, ogm: any) {
+async function startBackgroundServices(schema: GraphQLSchema, ogm: Ogm) {
   const services = [
     {
       name: 'Comment Notification Service',

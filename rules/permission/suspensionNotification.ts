@@ -1,5 +1,7 @@
+import type { UserModel } from "../../ogm_types.js";
+
 type CreateSuspensionNotificationInput = {
-  UserModel: any;
+  UserModel: UserModel;
   username: string;
   scopeName: string;
   scopeType: "channel" | "server";

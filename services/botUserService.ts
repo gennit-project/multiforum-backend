@@ -1,4 +1,4 @@
-import type { ChannelModel, CommentCreateInput, CommentModel, UserModel } from '../ogm_types.js'
+import type { ChannelModel, CommentCreateInput, CommentModel, UserCreateInput, UserModel } from '../ogm_types.js'
 
 type BotProfile = {
   id: string
@@ -89,7 +89,7 @@ export const ensureBotUserForChannel = async (input: {
               }
             }
           }
-        } as any)
+        } as unknown as UserCreateInput)
       ]
     })
     user = created.users[0]
@@ -129,7 +129,7 @@ export const ensureBotUserForChannel = async (input: {
     throw new Error(`Channel "${channelUniqueName}" not found`)
   }
 
-  const existingBotUsernames = new Set((channel.Bots || []).map((bot: any) => bot.username))
+  const existingBotUsernames = new Set((channel.Bots || []).map((bot: { username: string }) => bot.username))
 
   if (!existingBotUsernames.has(username)) {
     await Channel.update({
@@ -143,9 +143,11 @@ export const ensureBotUserForChannel = async (input: {
   return user
 }
 
-const parseSettingsJson = (settingsJson: any) => {
+type ParsedSettings = Record<string, any> | null
+
+const parseSettingsJson = (settingsJson: unknown): ParsedSettings => {
   if (!settingsJson || typeof settingsJson !== 'string') {
-    return settingsJson
+    return (settingsJson as ParsedSettings) ?? null
   }
   try {
     return JSON.parse(settingsJson)
@@ -154,7 +156,7 @@ const parseSettingsJson = (settingsJson: any) => {
   }
 }
 
-const parseProfilesJson = (value: any) => {
+const parseProfilesJson = (value: unknown): unknown[] | null => {
   if (!value || typeof value !== 'string') {
     return null
   }
@@ -166,7 +168,7 @@ const parseProfilesJson = (value: any) => {
   }
 }
 
-export const getProfilesFromSettings = (settingsJson: any): BotProfile[] => {
+export const getProfilesFromSettings = (settingsJson: unknown): BotProfile[] => {
   const parsed = parseSettingsJson(settingsJson)
   const fromServer = parsed?.server?.profiles
   const fromRoot = parsed?.profiles
@@ -177,14 +179,14 @@ export const getProfilesFromSettings = (settingsJson: any): BotProfile[] => {
   const resolvedProfiles = profiles.length > 0 ? profiles : profilesJson
 
   return (resolvedProfiles || [])
-    .filter((profile: any) => profile && typeof profile.id === 'string')
-    .map((profile: any) => ({
+    .filter((profile: { id?: unknown; label?: unknown }) => profile && typeof profile.id === 'string')
+    .map((profile: { id: unknown; label?: unknown }) => ({
       id: String(profile.id).trim(),
       label: profile.label ? String(profile.label) : null
     }))
 }
 
-export const getBotNameFromSettings = (settingsJson: any) => {
+export const getBotNameFromSettings = (settingsJson: unknown) => {
   const parsed = parseSettingsJson(settingsJson)
   const fromRoot = typeof parsed?.botName === 'string' ? parsed.botName : null
   const fromServer = typeof parsed?.server?.botName === 'string' ? parsed.server.botName : null
@@ -241,7 +243,7 @@ export const syncBotUsersForChannelProfiles = async (input: {
   const botPrefix = `${BOT_PREFIX}-${normalizedChannel}-${normalizedBot}`
 
   const botsToDisconnect = (channel.Bots || [])
-    .map((bot: any) => bot.username)
+    .map((bot: { username: string }) => bot.username)
     .filter((username: string) => username.startsWith(botPrefix))
     .filter((username: string) => !desiredUsernames.has(username))
 

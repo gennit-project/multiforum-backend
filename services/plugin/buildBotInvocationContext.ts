@@ -83,7 +83,7 @@ export const collectParentCommentThread = async ({
   parentCommentId,
 }: {
   Comment: {
-    find: (input: { where: { id: string }; selectionSet: string }) => Promise<any[]>
+    find: (input: { where: { id: string }; selectionSet: string }) => Promise<BotCommentSnapshot[]>
   }
   parentCommentId?: string | null
 }): Promise<BotThreadCommentContext[]> => {

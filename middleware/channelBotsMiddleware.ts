@@ -6,17 +6,19 @@ import {
   syncBotUsersForChannelProfiles
 } from '../services/botUserService.js';
 import { mergeSettings } from '../services/plugin/pipelineUtils.js';
+import type { GraphQLContext } from '../types/context.js';
 
 interface UpdateChannelsArgs {
-  where?: any;
-  update?: any;
-  [key: string]: any;
+  where?: { uniqueName?: string; [key: string]: unknown };
+  update?: { EnabledPlugins?: unknown; [key: string]: unknown };
+  [key: string]: unknown;
 }
 
-interface Context {
-  ogm: any;
-  driver: any;
-  [key: string]: any;
+interface UpdateChannelsResult {
+  updateChannels?: {
+    channels?: Array<{ uniqueName?: string }>;
+  };
+  [key: string]: unknown;
 }
 
 interface ServerPluginEdge {
@@ -36,9 +38,9 @@ interface ServerPluginEdge {
 
 const BOT_TAGS = new Set(['bot', 'bots']);
 
-const parseSettingsJson = (settingsJson: any) => {
+const parseSettingsJson = (settingsJson: unknown): Record<string, unknown> => {
   if (!settingsJson || typeof settingsJson !== 'string') {
-    return settingsJson || {};
+    return (settingsJson as Record<string, unknown>) || {};
   }
   try {
     return JSON.parse(settingsJson);
@@ -47,18 +49,18 @@ const parseSettingsJson = (settingsJson: any) => {
   }
 };
 
-const isBotPlugin = (plugin: any) => {
+const isBotPlugin = (plugin: { tags?: unknown } | null | undefined) => {
   const tags = Array.isArray(plugin?.tags) ? plugin.tags : [];
-  return tags.some((tag: any) => BOT_TAGS.has(String(tag).toLowerCase()));
+  return tags.some((tag: unknown) => BOT_TAGS.has(String(tag).toLowerCase()));
 };
 
 const channelBotsMiddleware = {
   Mutation: {
     updateChannels: async (
-      resolve: (parent: unknown, args: UpdateChannelsArgs, context: Context, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (parent: unknown, args: UpdateChannelsArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<UpdateChannelsResult>,
       parent: unknown,
       args: UpdateChannelsArgs,
-      context: Context,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const isUpdatingEnabledPlugins = Boolean(args.update?.EnabledPlugins);
@@ -73,7 +75,7 @@ const channelBotsMiddleware = {
   }
 };
 
-async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context: Context) {
+async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChannelsArgs, context: GraphQLContext) {
   try {
     const channelUniqueName =
       args.where?.uniqueName || result?.updateChannels?.channels?.[0]?.uniqueName;
@@ -142,10 +144,11 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
     });
 
     const serverConfig = serverConfigs?.[0];
-    const serverEdges: ServerPluginEdge[] = serverConfig?.InstalledVersionsConnection?.edges || [];
+    const serverEdges: ServerPluginEdge[] =
+      (serverConfig?.InstalledVersionsConnection?.edges as unknown as ServerPluginEdge[]) || [];
 
     // Build a map of server-level settings by plugin name
-    const serverSettingsMap = new Map<string, any>();
+    const serverSettingsMap = new Map<string, { settingsJson: Record<string, unknown>; settingsDefaults: Record<string, unknown> }>();
     for (const edge of serverEdges) {
       const pluginName = edge.node?.Plugin?.name;
       if (pluginName && edge.node && edge.properties?.enabled) {
@@ -170,7 +173,7 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
 
       // Get settings from all three levels
       const settingsDefaults = parseSettingsJson(edge?.node?.settingsDefaults);
-      const serverData = serverSettingsMap.get(pluginName);
+      const serverData = serverSettingsMap.get(pluginName || '');
       const serverSettings = serverData?.settingsJson || {};
       const channelSettings = parseSettingsJson(edge.properties.settingsJson);
 
@@ -229,7 +232,7 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
 
     // Disconnect any bot users that are NOT in the desired set
     // This handles cleanup when bot names change or plugins are disabled
-    const currentBots = (channel.Bots || []).map((bot: any) => bot.username);
+    const currentBots = (channel.Bots || []).map((bot: { username: string }) => bot.username);
     const botsToDisconnect = currentBots.filter(
       (username: string) => username.startsWith('bot-') && !allDesiredBotUsernames.has(username)
     );
@@ -265,7 +268,7 @@ async function syncBotsForChannel(result: any, args: UpdateChannelsArgs, context
   } catch (error) {
     console.warn(
       'Failed to sync bot users after channel plugin update:',
-      (error as any)?.message || error
+      error instanceof Error ? error.message : error
     );
   }
 }

@@ -1,13 +1,16 @@
+import type { Driver } from "neo4j-driver";
 import { updateDiscussionChannelQuery, severConnectionBetweenDiscussionAndChannelQuery } from "../cypher/cypherQueries.js";
 import { DiscussionWhere, DiscussionUpdateInput } from "../../src/generated/graphql";
 import { discussionVersionHistoryHandler } from "../../hooks/discussionVersionHistoryHook.js";
-import { GraphQLError } from "graphql";
+import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { DiscussionModel } from "../../ogm_types.js";
 
 type Input = {
-  Discussion: any;
-  driver: any;
+  Discussion: DiscussionModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -19,7 +22,7 @@ type Args = {
 
 const getResolver = (input: Input) => {
   const { Discussion, driver } = input;
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const {
       where,
       discussionUpdateInput,
@@ -180,9 +183,10 @@ const getResolver = (input: Input) => {
       session.close();
 
       return result[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating discussion:", error);
-      throw new Error(`Failed to update discussion. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to update discussion. ${message}`);
     }
   };
 };

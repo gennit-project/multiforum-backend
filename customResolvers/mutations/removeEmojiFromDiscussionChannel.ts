@@ -1,8 +1,11 @@
 import { removeEmoji } from "./updateEmoji.js";
 import { assertDiscussionChannelEmojiEnabled } from "./channelPreferenceGuards.js";
+import type { DiscussionChannelModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type Input = {
-  DiscussionChannel: any;
+  DiscussionChannel: DiscussionChannelModel;
 };
 
 type Args = {
@@ -13,7 +16,7 @@ type Args = {
 
 const getRemoveEmojiResolver = (input: Input) => {
   const { DiscussionChannel } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { discussionChannelId, emojiLabel, username } = args;
 
     if (!discussionChannelId || !emojiLabel || !username) {

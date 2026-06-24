@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import type { Driver } from 'neo4j-driver'
 import updateDownloadableFileSupportSettings, {
   validateSupportSettings
 } from './updateDownloadableFileSupportSettings.js'
+import type { GraphQLContext } from '../../types/context.js'
 
 const buildDriver = ({
   target = {
@@ -58,7 +60,7 @@ const buildDriver = ({
     }
   }
 
-  return { driver, calls }
+  return { driver: driver as unknown as Driver, calls }
 }
 
 test('validateSupportSettings accepts supported domains', () => {
@@ -96,7 +98,7 @@ test('updateDownloadableFileSupportSettings lets the download author update supp
         supportPatreonUrl: 'https://patreon.com/alice'
       }
     },
-    { user: { username: 'alice' } }
+    { user: { username: 'alice' } } as unknown as GraphQLContext
   )
 
   assert.equal(result, true)
@@ -133,7 +135,7 @@ test('updateDownloadableFileSupportSettings lets a moderator with discussion edi
       discussionId: 'discussion-1',
       input: {}
     },
-    { user: { username: 'mod' } }
+    { user: { username: 'mod' } } as unknown as GraphQLContext
   )
 
   assert.equal(calls.run.length, 2)
@@ -145,7 +147,9 @@ test('updateDownloadableFileSupportSettings rejects an unrelated user', async ()
   const { driver } = buildDriver()
   const resolver = updateDownloadableFileSupportSettings({
     driver,
-    checkModPermissions: async () => false,
+    checkModPermissions: (async () => false) as unknown as Parameters<
+      typeof updateDownloadableFileSupportSettings
+    >[0]['checkModPermissions'],
     getServerMembership: async () => ({
       isServerAdmin: false,
       isServerModerator: false
@@ -160,7 +164,7 @@ test('updateDownloadableFileSupportSettings rejects an unrelated user', async ()
         discussionId: 'discussion-1',
         input: {}
       },
-      { user: { username: 'bob' } }
+      { user: { username: 'bob' } } as unknown as GraphQLContext
     ),
     /You do not have permission to update this download/
   )

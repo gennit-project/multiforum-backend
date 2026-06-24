@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
 import { normalizeServerModPermissionResult } from "./serverModPermissionResult.js";
 
@@ -7,7 +9,7 @@ import { normalizeServerModPermissionResult } from "./serverModPermissionResult.
  * This is required for locking and unlocking channels.
  */
 export const canLockChannel = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) => {
+  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const permissionResult = await hasServerModPermission(
       "canLockChannel",
       ctx

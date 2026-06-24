@@ -1,18 +1,22 @@
+import type { Driver } from "neo4j-driver";
+import type { EventModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+
 type Args = {
   eventId: string;
 };
 
 type Input = {
-  Event: any;
-  driver: any;
+  Event: EventModel;
+  driver: Driver;
 };
 
 const getResolver = (input: Input) => {
   const { Event, driver } = input;
 
-  return async (parent: any, args: Args, context: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext) => {
     const { eventId } = args;
-    const { username } = context.user;
+    const { username } = context.user!;
 
     if (!username) {
       throw new Error("Authentication required");
@@ -43,9 +47,10 @@ const getResolver = (input: Input) => {
       });
 
       return result[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error subscribing to event updates:", error);
-      throw new Error(`Failed to subscribe to event updates: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to subscribe to event updates: ${message}`);
     } finally {
       session.close();
     }

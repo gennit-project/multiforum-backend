@@ -4,10 +4,12 @@ import type {
   Suspension,
   ChannelModel,
 } from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import type { Ogm } from "../../types/context.js";
 
 type ActiveSuspensionInput = {
-  ogm: any;
-  driver?: any;
+  ogm: Ogm;
+  driver?: Driver;
   channelUniqueName: string;
   username?: string;
   modProfileName?: string;
@@ -118,7 +120,7 @@ const MOD_SUSPENSION_QUERY = `
 `;
 
 const fetchTargetedSuspensions = async (params: {
-  driver: any;
+  driver: Driver;
   channelUniqueName: string;
   username?: string;
   modProfileName?: string;
@@ -146,10 +148,10 @@ const fetchTargetedSuspensions = async (params: {
     ]);
 
     return {
-      userSuspensions: userResult.records.map((record: any) =>
+      userSuspensions: userResult.records.map((record: { get(key: string): unknown }) =>
         normalizeValue(record.get("suspension"))
       ),
-      modSuspensions: modResult.records.map((record: any) =>
+      modSuspensions: modResult.records.map((record: { get(key: string): unknown }) =>
         normalizeValue(record.get("suspension"))
       ),
     };
@@ -226,7 +228,7 @@ export async function getActiveSuspension(
       (username
         ? (channel.SuspendedUsers || []).filter((s: Suspension) => {
             const suspensionUsername =
-              s.username || (s as any)?.SuspendedUser?.username;
+              s.username || s.SuspendedUser?.username;
             return suspensionUsername === username;
           })
         : []) ?? [];
@@ -235,7 +237,7 @@ export async function getActiveSuspension(
       (modProfileName
         ? (channel.SuspendedMods || []).filter((s: Suspension) => {
             const suspensionDisplayName =
-              (s as any).modProfileName || (s as any)?.SuspendedMod?.displayName;
+              s.modProfileName || s.SuspendedMod?.displayName;
             return suspensionDisplayName === modProfileName;
           })
         : []) ?? [];
@@ -268,9 +270,9 @@ export async function getActiveSuspension(
     activeSuspension,
     isSuspended: !!activeSuspension,
     relatedIssueId:
-      (activeSuspension as any)?.RelatedIssue?.id || null,
+      activeSuspension?.RelatedIssue?.id || null,
     relatedIssueNumber:
-      (activeSuspension as any)?.RelatedIssue?.issueNumber || null,
+      activeSuspension?.RelatedIssue?.issueNumber || null,
     expiredUserSuspensions,
     expiredModSuspensions,
     suspendedEntity,

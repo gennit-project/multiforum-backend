@@ -1,12 +1,14 @@
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
 
 // Helper function to check if a user is a channel owner
-async function isUserChannelOwner(username: string, channelName: string, context: any): Promise<boolean> {
+async function isUserChannelOwner(username: string, channelName: string, context: GraphQLContext): Promise<boolean> {
   const Channel = context.ogm.model("Channel");
   
   const channel = await Channel.find({
@@ -22,17 +24,17 @@ async function isUserChannelOwner(username: string, channelName: string, context
     return false;
   }
 
-  const channelOwners = channel[0].Admins.map((admin: any) => admin.username);
+  const channelOwners = channel[0].Admins.map((admin: { username: string }) => admin.username);
   return channelOwners.includes(username);
 }
 
 // Helper function to check if current user is a site admin
-async function isUserSiteAdmin(context: any): Promise<boolean> {
+async function isUserSiteAdmin(context: GraphQLContext): Promise<boolean> {
   const membership = await getServerScopedMembership(context);
   return membership.isServerAdmin;
 }
 
-async function isUserServerAdmin(username: string, context: any): Promise<boolean> {
+async function isUserServerAdmin(username: string, context: GraphQLContext): Promise<boolean> {
   const ServerConfig = context.ogm.model("ServerConfig");
   const serverConfigs = await ServerConfig.find({
     where: { serverName: process.env.SERVER_CONFIG_NAME },
@@ -102,8 +104,14 @@ export function evaluateCanSuspendUser(input: {
   return { type: "delegateChannel" };
 }
 
+interface CanSuspendAndUnsuspendUserArgs {
+  channelUniqueName?: string;
+  issueId?: string;
+  username?: string;
+}
+
 export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
-  async (parent: any, args: any, context: any, info: any) => {
+  async (parent: unknown, args: CanSuspendAndUnsuspendUserArgs, context: GraphQLContext, info: GraphQLResolveInfo) => {
     let channelUniqueName = args.channelUniqueName;
     const issueId = args.issueId;
     const targetUsername = args.username; // The username of the user to be suspended
@@ -127,7 +135,7 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
         return new Error("Could not find the issue or its associated channel.");
       }
 
-      channelUniqueName = issue[0].channelUniqueName;
+      channelUniqueName = issue[0].channelUniqueName ?? undefined;
     }
 
     // Look up the admin/owner flags the decision needs, in the same conditional
@@ -148,7 +156,7 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
     } else if (targetUsername) {
       isChannelOwner = await isUserChannelOwner(
         targetUsername,
-        channelUniqueName,
+        channelUniqueName ?? "",
         context
       );
       if (isChannelOwner) {
@@ -176,7 +184,7 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
 
     // delegateChannel: fall back to the regular channel mod permission check.
     const permissionResult = await checkChannelModPermissions({
-      channelConnections: [channelUniqueName],
+      channelConnections: [channelUniqueName ?? ""],
       context,
       permissionCheck: ModChannelPermission.canSuspendUser,
     });

@@ -12,7 +12,8 @@ type LabelChangeHistoryModel = {
   find: (args: any) => Promise<any[]>;
 };
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import { GraphQLError } from "graphql";
+import { GraphQLError, type GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 
 type Args = {
   discussionId: string;
@@ -31,7 +32,7 @@ type Input = {
 const getResolver = (input: Input) => {
   const { Discussion, DiscussionChannel, FilterOption, ModerationAction, LabelChangeHistory } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const {
       discussionId,
       channelUniqueName,
@@ -87,7 +88,7 @@ const getResolver = (input: Input) => {
     if (!isOwner) {
       // Check if user is a channel admin
       const isChannelAdmin = context.user?.data?.ModeratedChannels?.some(
-        (c: any) => c.uniqueName === channelUniqueName
+        (c: { uniqueName: string }) => c.uniqueName === channelUniqueName
       );
 
       // Check if user is a server admin
@@ -95,17 +96,17 @@ const getResolver = (input: Input) => {
 
       // Check if mod has canEditDiscussions permission for the channel
       const channelModPermissions = context.user?.data?.ModerationProfile?.ModChannelRoles?.filter(
-        (role: any) => role.channelUniqueName === channelUniqueName
+        (role: { channelUniqueName: string }) => role.channelUniqueName === channelUniqueName
       ) || [];
 
       const hasChannelModEditPermission = channelModPermissions.some(
-        (role: any) => role.canEditDiscussions === true
+        (role: { canEditDiscussions?: boolean }) => role.canEditDiscussions === true
       );
 
       // Check if mod has server-level canEditDiscussions permission
       const serverModPermissions = context.user?.data?.ModerationProfile?.ModServerRoles || [];
       const hasServerModEditPermission = serverModPermissions.some(
-        (role: any) => role.canEditDiscussions === true
+        (role: { canEditDiscussions?: boolean }) => role.canEditDiscussions === true
       );
 
       hasModPermission = isChannelAdmin || isServerAdmin || hasChannelModEditPermission || hasServerModEditPermission;
@@ -137,7 +138,7 @@ const getResolver = (input: Input) => {
 
     const discussionChannel = discussionChannelData[0];
     const discussionChannelId = discussionChannel.id;
-    const existingLabelIds = discussionChannel.LabelOptions?.map((l: any) => l.id) || [];
+    const existingLabelIds = discussionChannel.LabelOptions?.map((l: { id: string }) => l.id) || [];
 
     // Calculate which labels to connect and disconnect
     const labelsToConnect = labelOptionIds.filter((id: string) => !existingLabelIds.includes(id));
@@ -156,7 +157,7 @@ const getResolver = (input: Input) => {
           value
         }`,
       });
-      addedLabels = addedLabelData.map((l: any) => ({
+      addedLabels = addedLabelData.map((l: { id: string; displayName?: string | null; value: string }) => ({
         id: l.id,
         displayName: l.displayName || l.value,
         value: l.value,
@@ -168,8 +169,8 @@ const getResolver = (input: Input) => {
     if (labelsToDisconnect.length > 0) {
       // Get details from existing labels on the discussion channel
       removedLabels = (discussionChannel.LabelOptions || [])
-        .filter((l: any) => labelsToDisconnect.includes(l.id))
-        .map((l: any) => ({
+        .filter((l: { id: string }) => labelsToDisconnect.includes(l.id))
+        .map((l: { id: string; displayName?: string | null; value: string }) => ({
           id: l.id,
           displayName: l.displayName || l.value,
           value: l.value,
@@ -189,7 +190,7 @@ const getResolver = (input: Input) => {
           value
         }`,
       });
-      labelNames = labelData.map((l: any) => l.displayName || l.value);
+      labelNames = labelData.map((l: { displayName?: string | null; value: string }) => l.displayName || l.value);
     }
 
     // Build the update operation

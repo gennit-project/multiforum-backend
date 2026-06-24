@@ -1,8 +1,9 @@
 import { ChannelModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type CheckZeroAdminsInput = {
   channelName: string;
-  context: any;
+  context: GraphQLContext;
 };
 
 export const channelHasZeroAdmins = async (input: CheckZeroAdminsInput): Promise<boolean> => {

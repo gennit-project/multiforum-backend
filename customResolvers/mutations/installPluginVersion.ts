@@ -3,9 +3,15 @@ import { Storage } from '@google-cloud/storage'
 import type {
   PluginModel,
   PluginVersionModel,
-  ServerConfigModel
+  ServerConfigModel,
+  PluginCreateInput,
+  PluginUpdateInput,
+  PluginVersionCreateInput,
+  PluginVersionUpdateInput
 } from '../../ogm_types.js'
+import type { GraphQLResolveInfo } from 'graphql'
 import { parseManifestFromTarball } from './shared/pluginManifest.js'
+import type { GraphQLContext } from '../../types/context.js'
 
 type RegistryPlugin = {
   id: string
@@ -35,7 +41,7 @@ type Args = {
 const getResolver = (input: Input) => {
   const { Plugin, PluginVersion, ServerConfig } = input
 
-  return async (_parent: any, args: Args, _context: any, _resolveInfo: any) => {
+  return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     const { pluginId, version } = args
 
     try {
@@ -78,8 +84,9 @@ const getResolver = (input: Input) => {
           }
           registryData = await response.json()
         }
-      } catch (error) {
-        throw new Error(`Failed to fetch plugin registry: ${(error as any).message}`)
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to fetch plugin registry: ${message}`)
       }
 
       // First, resolve the plugin node using either the Neo4j ID or the plugin slug
@@ -122,7 +129,7 @@ const getResolver = (input: Input) => {
         }`
       })
 
-      let registryVersion: any
+      let registryVersion: { version: string; tarballUrl: string; integritySha256: string }
 
       // Always get the version data from the registry for integrity verification
       const registryPlugin = registryData.plugins.find(p => p.id === pluginSlug)
@@ -193,10 +200,29 @@ const getResolver = (input: Input) => {
         throw new Error(`Manifest ID ${artifacts.id} doesn't match requested plugin ${pluginSlug}`)
       }
 
-      const manifest = artifacts.manifest || {}
-      const metadata = manifest.metadata || {}
+      type PluginManifestMetadata = {
+        author?: { name?: string; url?: string }
+        tags?: unknown[]
+        homepage?: string
+        license?: string
+        [key: string]: unknown
+      }
+      type PluginManifest = {
+        name?: string
+        description?: string
+        homepage?: string
+        license?: string
+        metadata?: PluginManifestMetadata
+        settingsDefaults?: unknown
+        settings?: unknown
+        ui?: unknown
+        documentation?: { readmePath?: string }
+        [key: string]: unknown
+      }
+      const manifest = (artifacts.manifest || {}) as PluginManifest
+      const metadata = (manifest.metadata || {}) as PluginManifestMetadata
       const author = metadata.author || {}
-      const tags = Array.isArray(metadata.tags) ? metadata.tags.filter((tag: any) => typeof tag === 'string') : []
+      const tags = Array.isArray(metadata.tags) ? metadata.tags.filter((tag: unknown) => typeof tag === 'string') : []
 
       const pluginUpdatePayload = {
         displayName: manifest.name || pluginSlug,
@@ -223,7 +249,7 @@ const getResolver = (input: Input) => {
               license: pluginUpdatePayload.license,
               tags: pluginUpdatePayload.tags,
               metadata: pluginUpdatePayload.metadata
-            } as any)
+            } as unknown as PluginCreateInput)
           ]
         })
         pluginRecord = createResult.plugins[0]
@@ -239,7 +265,7 @@ const getResolver = (input: Input) => {
             license: pluginUpdatePayload.license,
             tags: pluginUpdatePayload.tags,
             metadata: pluginUpdatePayload.metadata
-          } as any)
+          } as unknown as PluginUpdateInput)
         })
       }
 
@@ -275,7 +301,7 @@ const getResolver = (input: Input) => {
                   where: { node: { id: pluginRecord!.id } }
                 }
               }
-            } as any)
+            } as unknown as PluginVersionCreateInput)
           ]
         })
         pluginVersion = createResult.pluginVersions[0]
@@ -292,7 +318,7 @@ const getResolver = (input: Input) => {
             uiSchema,
             documentationPath,
             readmeMarkdown
-          } as any),
+          } as unknown as PluginVersionUpdateInput),
           connect: {
             Plugin: {
               where: { node: { id: pluginRecord!.id } }
@@ -355,9 +381,10 @@ const getResolver = (input: Input) => {
         settingsJson: null
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error in installPluginVersion resolver:', error)
-      throw new Error(`Failed to install plugin: ${(error as any).message}`)
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to install plugin: ${message}`)
     }
   }
 }

@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { hasServerModPermission } from "./hasServerModPermission.js";
 
-const buildDriver = (responses: { modSuspensions?: any[] }) => ({
+type ServerModContext = Parameters<typeof hasServerModPermission>[1];
+
+const asContext = (context: unknown) => context as unknown as ServerModContext;
+
+const buildDriver = (responses: { modSuspensions?: unknown[] }) => ({
   session: () => ({
     run: async (query: string) => {
       if (query.includes("MATCH (serverConfig)-[:SUSPENDED_AS_MOD]->")) {
@@ -23,7 +27,7 @@ const buildDriver = (responses: { modSuspensions?: any[] }) => ({
 });
 
 async function testServerModeratorUsesElevatedRoleForSuspendPermission() {
-  const result = await hasServerModPermission("canSuspendUser", {
+  const result = await hasServerModPermission("canSuspendUser", asContext({
     driver: buildDriver({}),
     user: {
       username: "alice",
@@ -64,13 +68,13 @@ async function testServerModeratorUsesElevatedRoleForSuspendPermission() {
         throw new Error(`Unexpected model lookup: ${name}`);
       },
     },
-  });
+  }));
 
   assert.equal(result, true);
 }
 
 async function testSuspendedServerModUsesSuspendedRole() {
-  const result = await hasServerModPermission("canSuspendUser", {
+  const result = await hasServerModPermission("canSuspendUser", asContext({
     driver: buildDriver({
       modSuspensions: [
         {
@@ -120,14 +124,14 @@ async function testSuspendedServerModUsesSuspendedRole() {
         throw new Error(`Unexpected model lookup: ${name}`);
       },
     },
-  });
+  }));
 
   assert.ok(result instanceof Error);
   assert.equal(result.message, "You do not have permission to do that.");
 }
 
 async function testServerAdminBypassesServerModRoleChecks() {
-  const result = await hasServerModPermission("canSuspendUser", {
+  const result = await hasServerModPermission("canSuspendUser", asContext({
     driver: buildDriver({}),
     user: {
       username: "alice",
@@ -168,7 +172,7 @@ async function testServerAdminBypassesServerModRoleChecks() {
         throw new Error(`Unexpected model lookup: ${name}`);
       },
     },
-  });
+  }));
 
   assert.equal(result, true);
 }

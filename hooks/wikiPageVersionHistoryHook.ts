@@ -1,10 +1,25 @@
 import type { TextVersionCreateInput } from "../src/generated/graphql.js";
+import type { GraphQLContext } from "../types/context.js";
+import type {
+  WikiPageModel,
+  WikiPageUpdateInput,
+  TextVersionModel,
+  UserModel,
+} from "../ogm_types.js";
+
+type WikiPageVersionHistoryHandlerInput = {
+  context: GraphQLContext;
+  params: {
+    where?: { id?: string | null };
+    update?: { title?: string | null; body?: string | null } | null;
+  };
+};
 
 /**
  * Hook to track wikiPage version history when a wikiPage is updated
  * This will capture the old title and body before the update is applied
  */
-export const wikiPageVersionHistoryHandler = async ({ context, params }: any) => {
+export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPageVersionHistoryHandlerInput) => {
   try {
     console.log('WikiPage version history hook running...');
     
@@ -107,9 +122,9 @@ async function trackVersionHistory(
   previousContent: string,
   editReason: string | null | undefined,
   username: string,
-  WikiPageModel: any,
-  TextVersionModel: any,
-  UserModel: any
+  WikiPageModel: WikiPageModel,
+  TextVersionModel: TextVersionModel,
+  UserModel: UserModel
 ) {
   console.log(`Tracking version history for wikiPage ${wikiPageId}`);
 
@@ -173,13 +188,13 @@ async function trackVersionHistory(
       where: { id: wikiPageId },
       update: {
         PastVersions: {
-          connect: [{ 
-            where: { 
-              node: { id: textVersionId } 
-            } 
+          connect: [{
+            where: {
+              node: { id: textVersionId }
+            }
           }]
         }
-      }
+      } as unknown as WikiPageUpdateInput
     });
 
     console.log(`Successfully added version history for wikiPage ${wikiPageId}`);

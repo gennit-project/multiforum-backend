@@ -1,7 +1,8 @@
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { getSiteWideWikiPagesQuery } from "../cypher/cypherQueries.js";
 
 type Input = {
-  driver: any;
+  driver: Driver;
 };
 
 type Args = {
@@ -16,7 +17,7 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver } = input;
 
-  return async (_parent: any, args: Args) => {
+  return async (_parent: unknown, args: Args) => {
     const {
       searchInput = "",
       selectedChannels = [],
@@ -45,7 +46,7 @@ const getResolver = (input: Input) => {
         totalCount = record.get("totalCount");
       }
 
-      const wikiPages = result.records.map((record: any) =>
+      const wikiPages = result.records.map((record: Neo4jRecord) =>
         record.get("wikiPage")
       );
 
@@ -53,9 +54,10 @@ const getResolver = (input: Input) => {
         wikiPages,
         aggregateWikiPageCount: totalCount,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error getting wiki pages:", error);
-      throw new Error(`Failed to fetch wiki pages. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch wiki pages. ${message}`);
     } finally {
       session.close();
     }

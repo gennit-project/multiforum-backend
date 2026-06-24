@@ -6,6 +6,7 @@ import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -50,7 +51,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
   }
 
   const downloadableFile = files[0]
-  const fileData = downloadableFile as any
+  // The runtime schema exposes a singular `Discussion` on DownloadableFile that
+  // the generated DownloadableFile type doesn't model yet, so extend the
+  // generated type with that queried field.
+  const fileData = downloadableFile as DownloadableFileType & {
+    Discussion?: DiscussionType | null
+  }
   const discussionChannel = fileData.Discussion?.DiscussionChannels?.[0] || null
   const channelId = discussionChannel?.channelUniqueName || null
   const channelNode = discussionChannel?.Channel || null
@@ -87,15 +93,19 @@ export const triggerPluginRunsForDownloadableFile = async ({
     }`
   })
 
-  const serverConfig = serverConfigs[0] as any
+  const serverConfig: ServerConfigType | undefined = serverConfigs[0]
   if (!serverConfig) {
     return []
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
-  // Build version-aware plugin map (pluginName -> sorted array of versions)
-  const pluginVersionsMap = buildPluginVersionMaps(edges)
+  // Build version-aware plugin map (pluginName -> sorted array of versions).
+  // The generated relationship edge type is cast to the plugin layer's
+  // structurally-compatible PluginEdgeData at this consumer boundary.
+  const pluginVersionsMap = buildPluginVersionMaps(
+    edges as unknown as PluginEdgeData[]
+  )
 
   // Check if there's a pipeline defined for this event
   const pipelines: EventPipeline[] = serverConfig.pluginPipelines || []
@@ -152,7 +162,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
     return []
   }
 
-  const runs: any[] = []
+  const runs: unknown[] = []
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
@@ -183,7 +193,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
             event
           }),
           updatedAt: new Date().toISOString()
-        } as any)
+        } as unknown as PluginRunCreateInput)
       ]
     })
 
@@ -212,7 +222,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped'
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -239,7 +249,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -257,12 +267,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
     // Update status to RUNNING
     await PluginRun.update({
       where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as any)
+      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
 
     const runStart = performance.now()
     const logs: string[] = []
-    const flags: any[] = []
+    const flags: unknown[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -281,7 +291,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
         try {
           decryptedSecrets[secret.key] = decryptSecret(secret.ciphertext)
         } catch (error) {
-          logs.push(`Failed to decrypt secret ${secret.key}: ${(error as any).message}`)
+          logs.push(`Failed to decrypt secret ${secret.key}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
@@ -297,12 +307,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: any[]) => {
+        log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
           console.log(`[Plugin:${pluginId}]`, message)
         },
-        storeFlag: async (flag: any) => {
+        storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
         logPromptDebug: createPromptDebugLogger({
@@ -360,7 +370,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
             logs,
             result
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       // Check if we should stop the pipeline
@@ -383,7 +393,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
     } catch (error) {
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
-      const message = (error as any).message || 'Plugin execution failed'
+      const message = (error instanceof Error ? error.message : '') || 'Plugin execution failed'
 
       previousStatus = 'FAILED'
 
@@ -399,7 +409,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
             logs,
             flags
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       // Check if we should stop the pipeline

@@ -8,6 +8,7 @@ import {
 } from "./discussionIsValid.js";
 import { validateEventChannelsEnabled } from "./eventIsValid.js";
 import { ModelStub } from "../../tests/testUtils.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 const createContext = ({
   channel,
@@ -41,7 +42,7 @@ const createContext = ({
       throw new Error(`Unexpected model lookup: ${name}`);
     },
   },
-});
+} as unknown as GraphQLContext);
 
 const feedbackCommentInput = (): CommentCreateInput => ({
   isRootComment: false,

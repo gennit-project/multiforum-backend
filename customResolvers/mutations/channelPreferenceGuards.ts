@@ -1,3 +1,5 @@
+import type { CommentModel, DiscussionChannelModel } from "../../ogm_types.js";
+
 const emojiDisabledMessage = (channelName: string) =>
   `Emoji reactions are disabled in channel '${channelName}'.`;
 
@@ -16,7 +18,7 @@ const getEmojiEnabledFromChannel = (channel?: {
 };
 
 export const assertDiscussionChannelEmojiEnabled = async (
-  DiscussionChannel: any,
+  DiscussionChannel: DiscussionChannelModel,
   discussionChannelId: string
 ) => {
   const discussionChannels = await DiscussionChannel.find({
@@ -52,7 +54,7 @@ export const assertDiscussionChannelEmojiEnabled = async (
 };
 
 export const assertCommentEmojiEnabled = async (
-  Comment: any,
+  Comment: CommentModel,
   commentId: string
 ) => {
   const comments = await Comment.find({

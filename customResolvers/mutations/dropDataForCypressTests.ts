@@ -1,5 +1,15 @@
+import type { Driver } from "neo4j-driver";
+
 type Input = {
-    driver: any;
+    driver: Driver;
+};
+
+// Minimal shape of the errors thrown by the Neo4j driver that this retry
+// logic inspects.
+type Neo4jLikeError = {
+    message?: string;
+    code?: string;
+    retriable?: boolean;
 };
 
 // Helper to delay execution
@@ -8,7 +18,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 // Run a single delete with retry logic for transient errors
 // Uses batched delete to avoid memory issues
 async function runDeleteWithRetry(
-    driver: any,
+    driver: Driver,
     nodeLabel: string,
     maxRetries: number = 3,
     baseDelayMs: number = 200
@@ -33,7 +43,8 @@ async function runDeleteWithRetry(
             try {
                 await session.run(batchedQuery);
                 return; // Success
-            } catch (batchError: any) {
+            } catch (batchErrorRaw: unknown) {
+                const batchError = batchErrorRaw as Neo4jLikeError;
                 // If CALL IN TRANSACTIONS not supported, fall back to simple delete
                 if (batchError?.message?.includes('CALL') || batchError?.code?.includes('SyntaxError')) {
                     // Use simple delete in a loop until no more nodes
@@ -46,7 +57,8 @@ async function runDeleteWithRetry(
                 }
                 throw batchError;
             }
-        } catch (error: any) {
+        } catch (errorRaw: unknown) {
+            const error = errorRaw as Neo4jLikeError;
             const isRetriable = error?.retriable === true ||
                 error?.code?.includes('TransientError') ||
                 error?.code?.includes('DeadlockDetected');

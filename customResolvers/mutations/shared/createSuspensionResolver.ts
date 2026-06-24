@@ -1,4 +1,6 @@
 import { GraphQLError } from 'graphql'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../../types/context.js'
 import type {
   ChannelModel,
   IssueModel,
@@ -7,6 +9,8 @@ import type {
   EventModel,
   ServerConfigModel,
   IssueUpdateInput,
+  ChannelUpdateInput,
+  ServerConfigUpdateInput,
   TextVersionModel,
   UserModel,
   WikiPageModel
@@ -58,10 +62,10 @@ export function createSuspensionResolver ({
   suspendedEntityName,
 }: CreateSuspensionResolverOptions) {
   return async function suspendEntityResolver (
-    parent: any,
+    parent: unknown,
     args: Args,
-    context: any,
-    resolveInfo: any
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
   ) {
     const { issueId, suspendUntil, suspendIndefinitely, explanation } = args
     const actionChannelName = process.env.SERVER_CONFIG_NAME || 'server'
@@ -178,7 +182,7 @@ export function createSuspensionResolver ({
     })
 
     // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput: any = null
+    let channelUpdateInput: ChannelUpdateInput | ServerConfigUpdateInput | null = null
     if (relatedAccountType === 'User') {
       channelUpdateInput = {
         SuspendedUsers: [
@@ -263,7 +267,7 @@ export function createSuspensionResolver ({
         if (scope === 'server') {
           const serverData = await ServerConfig.update({
             where: { serverName: process.env.SERVER_CONFIG_NAME },
-            update: channelUpdateInput as any,
+            update: channelUpdateInput as ServerConfigUpdateInput,
             selectionSet: `{
               serverConfigs {
                 serverName
@@ -278,7 +282,7 @@ export function createSuspensionResolver ({
         } else {
           const channelData = await Channel.update({
             where: { uniqueName: channelUniqueName },
-            update: channelUpdateInput as any,
+            update: channelUpdateInput as ChannelUpdateInput,
             selectionSet: `{
               channels {
                 uniqueName

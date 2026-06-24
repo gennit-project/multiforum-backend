@@ -1,13 +1,14 @@
 import { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../types/context.js'
 import { triggerPluginRunsForComment } from '../services/pluginRunner.js'
 
 const commentPluginPipelineMiddleware = {
   Mutation: {
     createComments: async (
-      resolve: (parent: unknown, args: any, context: any, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (parent: unknown, args: unknown, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<{ comments?: { id?: string }[] } | undefined>,
       parent: unknown,
-      args: any,
-      context: any,
+      args: unknown,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info)
@@ -51,7 +52,7 @@ const commentPluginPipelineMiddleware = {
           })
         }
       } catch (error) {
-        console.warn('Comment plugin pipeline failed:', (error as any)?.message || error)
+        console.warn('Comment plugin pipeline failed:', error instanceof Error ? error.message : error)
       }
 
       return result

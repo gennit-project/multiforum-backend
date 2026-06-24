@@ -1,9 +1,20 @@
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
 import { createDiscussionChannelQuery } from "../cypher/cypherQueries.js";
 import { DiscussionCreateInput } from "../../src/generated/graphql";
 import { triggerChannelPluginPipeline } from "../../services/pluginRunner.js";
 import { GraphQLError } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateNode } from "./utils/ownershipSanitizers.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type {
+  DiscussionModel,
+  ChannelModel,
+  DownloadableFileModel,
+  PluginRunModel,
+  ServerConfigModel,
+  ServerSecretModel,
+} from "../../ogm_types.js";
 
 type DiscussionCreateInputWithChannels = {
   discussionCreateInput: DiscussionCreateInput;
@@ -15,14 +26,14 @@ type Args = {
 };
 
 type Input = {
-  Discussion: any;
-  driver: any;
+  Discussion: DiscussionModel;
+  driver: Driver;
   // Additional models for plugin pipeline support
-  Channel?: any;
-  DownloadableFile?: any;
-  PluginRun?: any;
-  ServerConfig?: any;
-  ServerSecret?: any;
+  Channel?: ChannelModel;
+  DownloadableFile?: DownloadableFileModel;
+  PluginRun?: PluginRunModel;
+  ServerConfig?: ServerConfigModel;
+  ServerSecret?: ServerSecretModel;
 };
 
 // The reason why we cannot use the auto-generated resolver
@@ -82,18 +93,18 @@ const selectionSet = `
  * Function to create discussions from an input array.
  */
 export const createDiscussionsFromInput = async (
-  Discussion: any,
-  driver: any,
+  Discussion: DiscussionModel,
+  driver: Driver,
   input: DiscussionCreateInputWithChannels[],
-  context?: any,
+  context?: GraphQLContext,
   pluginModels?: {
-    Channel: any;
-    DownloadableFile: any;
-    PluginRun: any;
-    ServerConfig: any;
-    ServerSecret: any;
+    Channel: ChannelModel;
+    DownloadableFile: DownloadableFileModel;
+    PluginRun: PluginRunModel;
+    ServerConfig: ServerConfigModel;
+    ServerSecret: ServerSecretModel;
   }
-): Promise<any[]> => {
+): Promise<unknown[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
@@ -142,11 +153,11 @@ export const createDiscussionsFromInput = async (
         },
         channelConnections,
       };
-    });
+    }) as DiscussionCreateInputWithChannels[];
   }
 
   const session = driver.session();
-  const discussions: any[] = [];
+  const discussions: unknown[] = [];
 
   try {
     for (const { discussionCreateInput, channelConnections } of sanitizedInput) {
@@ -171,7 +182,7 @@ export const createDiscussionsFromInput = async (
           await session.run(createDiscussionChannelQuery, {
             discussionId: newDiscussionId,
             channelUniqueName,
-            upvotedBy: newDiscussion.Author.username,
+            upvotedBy: newDiscussion.Author?.username,
           });
 
           // Trigger channel plugin pipeline if discussion has a download
@@ -193,13 +204,15 @@ export const createDiscussionsFromInput = async (
                   ServerSecret: pluginModels.ServerSecret,
                 }
               });
-            } catch (pipelineError: any) {
+            } catch (pipelineError: unknown) {
               // Log pipeline errors but don't fail the discussion creation
-              console.error(`Channel pipeline error for ${channelUniqueName}:`, pipelineError.message);
+              const message = pipelineError instanceof Error ? pipelineError.message : String(pipelineError);
+              console.error(`Channel pipeline error for ${channelUniqueName}:`, message);
             }
           }
-        } catch (error: any) {
-          if (error.message.includes("Constraint validation failed")) {
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          if (message.includes("Constraint validation failed")) {
             console.warn(`Skipping duplicate DiscussionChannel: ${channelUniqueName}`);
             continue;
           } else {
@@ -218,9 +231,10 @@ export const createDiscussionsFromInput = async (
 
       discussions.push(fetchedDiscussion[0]);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating discussions:", error);
-    throw new Error(`Failed to create discussions: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to create discussions: ${message}`);
   } finally {
     session.close();
   }
@@ -239,7 +253,7 @@ const getResolver = (input: Input) => {
     ? { Channel, DownloadableFile, PluginRun, ServerConfig, ServerSecret }
     : undefined;
 
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input } = args;
 
     try {
@@ -252,9 +266,10 @@ const getResolver = (input: Input) => {
         pluginModels
       );
       return discussions;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      throw new Error(`An error occurred while creating discussions: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`An error occurred while creating discussions: ${message}`);
     }
   };
 };

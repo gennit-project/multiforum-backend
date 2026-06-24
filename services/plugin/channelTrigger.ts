@@ -6,6 +6,7 @@ import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
 
@@ -73,12 +74,12 @@ export const triggerChannelPluginPipeline = async ({
     throw new Error(`Channel "${channelUniqueName}" not found`)
   }
 
-  const channel = channels[0] as any
+  const channel: Channel = channels[0]
   const channelPipelines: EventPipeline[] = channel.pluginPipelines || []
   const eventPipeline = channelPipelines.find(p => p.event === event)
 
   // Build a map of channel-level plugin settings by plugin name
-  const channelPluginSettingsMap = new Map<string, any>()
+  const channelPluginSettingsMap = new Map<string, unknown>()
   if (channel?.EnabledPluginsConnection?.edges) {
     for (const edge of channel.EnabledPluginsConnection.edges) {
       const pluginName = edge.node?.Plugin?.name
@@ -114,7 +115,12 @@ export const triggerChannelPluginPipeline = async ({
     throw new Error(`Discussion "${discussionId}" not found`)
   }
 
-  const discussion = discussions[0] as any
+  // The runtime schema exposes a singular `DownloadableFile` on Discussion that
+  // the generated type (which only has the `DownloadableFiles` array) doesn't
+  // model yet, so extend the generated type with that queried field.
+  const discussion = discussions[0] as Discussion & {
+    DownloadableFile?: DownloadableFile | null
+  }
   const downloadableFile = discussion.DownloadableFile
 
   // If no downloadable file, nothing to process
@@ -154,15 +160,19 @@ export const triggerChannelPluginPipeline = async ({
     }`
   })
 
-  const serverConfig = serverConfigs[0] as any
+  const serverConfig: ServerConfig | undefined = serverConfigs[0]
   if (!serverConfig) {
     return []
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
-  // Build version-aware plugin map (pluginName -> sorted array of versions)
-  const pluginVersionsMap = buildPluginVersionMaps(edges)
+  // Build version-aware plugin map (pluginName -> sorted array of versions).
+  // The generated relationship edge type is cast to the plugin layer's
+  // structurally-compatible PluginEdgeData at this consumer boundary.
+  const pluginVersionsMap = buildPluginVersionMaps(
+    edges as unknown as PluginEdgeData[]
+  )
 
   // Filter pipeline steps to only include server-enabled plugins
   const pluginsToRun: PluginToRun[] = []
@@ -185,7 +195,7 @@ export const triggerChannelPluginPipeline = async ({
   }
 
   const pipelineId = generatePipelineId()
-  const runs: any[] = []
+  const runs: unknown[] = []
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
@@ -217,7 +227,7 @@ export const triggerChannelPluginPipeline = async ({
             event
           }),
           updatedAt: new Date().toISOString()
-        } as any)
+        } as PluginRunCreateInput)
       ]
     })
 
@@ -246,7 +256,7 @@ export const triggerChannelPluginPipeline = async ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped'
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -273,7 +283,7 @@ export const triggerChannelPluginPipeline = async ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -291,12 +301,12 @@ export const triggerChannelPluginPipeline = async ({
     // Update status to RUNNING
     await PluginRun.update({
       where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as any)
+      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
 
     const runStart = performance.now()
     const logs: string[] = []
-    const flags: any[] = []
+    const flags: unknown[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -315,12 +325,12 @@ export const triggerChannelPluginPipeline = async ({
         try {
           decryptedSecrets[secret.key] = decryptSecret(secret.ciphertext)
         } catch (error) {
-          logs.push(`Failed to decrypt secret ${secret.key}: ${(error as any).message}`)
+          logs.push(`Failed to decrypt secret ${secret.key}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
       // Parse settings if they are JSON strings
-      const parseIfString = (value: any): any => {
+      const parseIfString = (value: unknown): Record<string, unknown> => {
         if (typeof value === 'string') {
           try {
             return JSON.parse(value)
@@ -328,7 +338,7 @@ export const triggerChannelPluginPipeline = async ({
             return {}
           }
         }
-        return value || {}
+        return (value as Record<string, unknown>) || {}
       }
 
       // Merge settings: defaults < server < channel (channel takes highest precedence)
@@ -351,14 +361,21 @@ export const triggerChannelPluginPipeline = async ({
       const channelContext = {
         uniqueName: channel.uniqueName,
         displayName: channel.displayName,
-        tags: (channel.Tags || []).map((t: any) => t.text),
-        filterGroups: (channel.FilterGroups || []).map((fg: any) => ({
+        tags: (channel.Tags || []).map((t: { text: string }) => t.text),
+        filterGroups: (channel.FilterGroups || []).map((fg: {
+          id: string
+          key: string
+          displayName: string
+          mode: string
+          order: number
+          options?: Array<{ id: string; value: string; displayName: string; order: number }>
+        }) => ({
           id: fg.id,
           key: fg.key,
           displayName: fg.displayName,
           mode: fg.mode,
           order: fg.order,
-          options: (fg.options || []).map((opt: any) => ({
+          options: (fg.options || []).map((opt: { id: string; value: string; displayName: string; order: number }) => ({
             id: opt.id,
             value: opt.value,
             displayName: opt.displayName,
@@ -374,12 +391,12 @@ export const triggerChannelPluginPipeline = async ({
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: any[]) => {
+        log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
           console.log(`[Plugin:${pluginId}:${channelUniqueName}]`, message)
         },
-        storeFlag: async (flag: any) => {
+        storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
         logPromptDebug: createPromptDebugLogger({
@@ -440,7 +457,7 @@ export const triggerChannelPluginPipeline = async ({
             logs,
             result
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       // Check if we should stop the pipeline
@@ -463,7 +480,7 @@ export const triggerChannelPluginPipeline = async ({
     } catch (error) {
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
-      const message = (error as any).message || 'Plugin execution failed'
+      const message = (error instanceof Error ? error.message : '') || 'Plugin execution failed'
 
       previousStatus = 'FAILED'
 
@@ -479,7 +496,7 @@ export const triggerChannelPluginPipeline = async ({
             logs,
             flags
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       // Check if we should stop the pipeline

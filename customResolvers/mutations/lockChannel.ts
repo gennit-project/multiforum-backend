@@ -5,6 +5,9 @@ import type {
   ModerationActionCreateInput,
   IssueUpdateInput,
 } from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import getNextServerIssueNumber from "./utils/getNextServerIssueNumber.js";
@@ -18,12 +21,12 @@ type Args = {
 type Input = {
   Issue: IssueModel;
   Channel: ChannelModel;
-  driver: any;
+  driver: Driver;
 };
 
 const getResolver = (input: Input) => {
   const { Issue, Channel, driver } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, reason, issueId } = args;
 
     if (!channelUniqueName) {

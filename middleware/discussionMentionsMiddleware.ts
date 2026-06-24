@@ -1,5 +1,9 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { notifyDiscussionMentions } from '../hooks/userMentionNotificationHook.js';
+import type { GraphQLContext } from '../types/context.js';
+import {
+  notifyDiscussionMentions,
+  type DiscussionSnapshot,
+} from '../hooks/userMentionNotificationHook.js';
 
 const DISCUSSION_SELECTION_SET = `{
   id
@@ -15,8 +19,8 @@ const DISCUSSION_SELECTION_SET = `{
 }`;
 
 const processCreatedDiscussions = async (
-  context: any,
-  createdDiscussions: any[]
+  context: GraphQLContext,
+  createdDiscussions: { id?: string }[]
 ): Promise<void> => {
   const DiscussionModel = context?.ogm?.model('Discussion');
   if (!DiscussionModel || !createdDiscussions.length) return;
@@ -31,7 +35,7 @@ const processCreatedDiscussions = async (
     });
 
     if (!discussions.length) continue;
-    const discussion = discussions[0];
+    const discussion = discussions[0] as unknown as DiscussionSnapshot;
 
     const textToParse =
       `${discussion.title || ''}\n${discussion.body || ''}`.trim();
@@ -50,13 +54,13 @@ const discussionMentionsMiddleware = {
     createDiscussions: async (
       resolve: (
         parent: unknown,
-        args: any,
-        context: any,
+        args: unknown,
+        context: GraphQLContext,
         info: GraphQLResolveInfo
-      ) => Promise<any>,
+      ) => Promise<{ discussions?: { id?: string }[] } | undefined>,
       parent: unknown,
-      args: any,
-      context: any,
+      args: unknown,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info);
@@ -67,7 +71,7 @@ const discussionMentionsMiddleware = {
       } catch (error) {
         console.warn(
           'Discussion user mention notification failed:',
-          (error as any)?.message || error
+          error instanceof Error ? error.message : error
         );
       }
 
@@ -76,13 +80,13 @@ const discussionMentionsMiddleware = {
     createDiscussionWithChannelConnections: async (
       resolve: (
         parent: unknown,
-        args: any,
-        context: any,
+        args: unknown,
+        context: GraphQLContext,
         info: GraphQLResolveInfo
-      ) => Promise<any>,
+      ) => Promise<{ discussions?: { id?: string }[] } | { id?: string }[] | undefined>,
       parent: unknown,
-      args: any,
-      context: any,
+      args: unknown,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info);
@@ -95,7 +99,7 @@ const discussionMentionsMiddleware = {
       } catch (error) {
         console.warn(
           'Discussion user mention notification failed:',
-          (error as any)?.message || error
+          error instanceof Error ? error.message : error
         );
       }
 

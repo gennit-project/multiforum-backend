@@ -1,9 +1,11 @@
+import type { GraphQLResolveInfo } from 'graphql'
 import type {
   PluginModel,
   PluginVersionModel,
   ServerConfigModel,
   ServerSecretModel
 } from '../../ogm_types.js'
+import type { GraphQLContext } from '../../types/context.js'
 
 type Input = {
   Plugin: PluginModel
@@ -16,13 +18,13 @@ type Args = {
   pluginId: string
   version: string
   enabled: boolean
-  settingsJson?: any
+  settingsJson?: Record<string, unknown>
 }
 
 const getResolver = (input: Input) => {
   const { Plugin, PluginVersion, ServerConfig, ServerSecret } = input
 
-  return async (_parent: any, args: Args, _context: any, _resolveInfo: any) => {
+  return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     const { pluginId, version, enabled, settingsJson = {} } = args
 
     try {
@@ -63,11 +65,10 @@ const getResolver = (input: Input) => {
         throw new Error(`Plugin ${pluginId} version ${version} not found`)
       }
 
-      const pluginData = plugin as any
-      const pluginVersionData = pluginVersion as any
-      const manifest = pluginVersionData.manifest || {}
+      // `manifest` is a JSON scalar, so it's still read as a dynamic record.
+      const manifest = (pluginVersion.manifest as Record<string, unknown>) || {}
       const manifestSecrets = Array.isArray(manifest.secrets) ? manifest.secrets : []
-      const requiredServerSecrets = manifestSecrets.filter((secret: any) => secret && secret.scope === 'server' && secret.required !== false)
+      const requiredServerSecrets = manifestSecrets.filter((secret: { scope?: string; required?: boolean }) => secret && secret.scope === 'server' && secret.required !== false)
 
       // 2. Get server config
       const serverConfigs = await ServerConfig.find({
@@ -104,7 +105,7 @@ const getResolver = (input: Input) => {
         })
 
         const secretMap = new Map(secrets.map(secret => [secret.key, secret]))
-        const requiredKeys = requiredServerSecrets.map((secret: any) => secret.key as string)
+        const requiredKeys = requiredServerSecrets.map((secret: { key: string }) => secret.key as string)
 
         const missingKeys = requiredKeys.filter((key: string) => !secretMap.has(key))
         if (missingKeys.length > 0) {
@@ -112,7 +113,7 @@ const getResolver = (input: Input) => {
         }
 
         const invalidKeys = requiredKeys.filter((key: string) => {
-          const record: any = secretMap.get(key)
+          const record = secretMap.get(key) as { isValid?: boolean | null; validationError?: string | null; lastValidatedAt?: string | null } | undefined
           if (!record) return false
           if (record.lastValidatedAt && record.isValid === false) {
             return true
@@ -153,31 +154,32 @@ const getResolver = (input: Input) => {
 
       return {
         plugin: {
-          id: pluginData.id,
-          name: pluginData.name,
-          displayName: pluginData.displayName,
-          description: pluginData.description,
-          authorName: pluginData.authorName,
-          authorUrl: pluginData.authorUrl,
-          homepage: pluginData.homepage,
-          license: pluginData.license,
-          tags: pluginData.tags || [],
-          metadata: pluginData.metadata || null
+          id: plugin.id,
+          name: plugin.name,
+          displayName: plugin.displayName,
+          description: plugin.description,
+          authorName: plugin.authorName,
+          authorUrl: plugin.authorUrl,
+          homepage: plugin.homepage,
+          license: plugin.license,
+          tags: plugin.tags || [],
+          metadata: plugin.metadata || null
         },
         version,
         scope: 'SERVER',
         enabled,
         settingsJson,
         manifest: manifest || null,
-        settingsDefaults: pluginVersionData.settingsDefaults || null,
-        uiSchema: pluginVersionData.uiSchema || null,
-        documentationPath: pluginVersionData.documentationPath || null,
-        readmeMarkdown: pluginVersionData.readmeMarkdown || null
+        settingsDefaults: pluginVersion.settingsDefaults || null,
+        uiSchema: pluginVersion.uiSchema || null,
+        documentationPath: pluginVersion.documentationPath || null,
+        readmeMarkdown: pluginVersion.readmeMarkdown || null
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error in enableServerPlugin resolver:', error)
-      throw new Error(`Failed to ${enabled ? 'enable' : 'disable'} plugin: ${(error as any).message}`)
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to ${enabled ? 'enable' : 'disable'} plugin: ${message}`)
     }
   }
 }

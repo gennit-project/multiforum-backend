@@ -1,8 +1,11 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
+
 const safetyCheck = async (
-  parent: any,
-  args: any,
-  context: any,
-  info: any
+  parent: unknown,
+  args: unknown,
+  context: GraphQLContext,
+  info: GraphQLResolveInfo
 ) => {
   return {
     environment: {

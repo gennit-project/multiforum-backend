@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { evaluateCanCreateChannelRule } from "./rules.js";
+import type { GraphQLContext } from "../types/context.js";
 
 const buildDriver = (userSuspensions: Array<Record<string, unknown>> = []) => ({
   session: () => ({
@@ -57,7 +58,7 @@ test("returns the permission error when server permission check fails", async ()
     req: { headers: {} },
   };
 
-  const result = await evaluateCanCreateChannelRule(ctx);
+  const result = await evaluateCanCreateChannelRule(ctx as unknown as GraphQLContext);
   assert.ok(result instanceof Error);
 });
 
@@ -68,7 +69,7 @@ test("returns true when server permission check succeeds", async () => {
     req: { headers: {} },
   };
 
-  const result = await evaluateCanCreateChannelRule(ctx);
+  const result = await evaluateCanCreateChannelRule(ctx as unknown as GraphQLContext);
   assert.equal(result, true);
 });
 
@@ -85,7 +86,7 @@ test("returns error when user has an active indefinite suspension", async () => 
     req: { headers: {} },
   };
 
-  const result = await evaluateCanCreateChannelRule(ctx);
+  const result = await evaluateCanCreateChannelRule(ctx as unknown as GraphQLContext);
   assert.ok(result instanceof Error, "Expected an Error for suspended user");
 });
 
@@ -103,6 +104,6 @@ test("returns error when user has an active time-limited suspension", async () =
     req: { headers: {} },
   };
 
-  const result = await evaluateCanCreateChannelRule(ctx);
+  const result = await evaluateCanCreateChannelRule(ctx as unknown as GraphQLContext);
   assert.ok(result instanceof Error, "Expected an Error for time-limited suspended user");
 });

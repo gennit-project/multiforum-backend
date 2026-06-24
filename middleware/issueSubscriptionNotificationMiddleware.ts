@@ -1,35 +1,58 @@
 import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../types/context.js";
 import { notifyIssueSubscribers } from "../services/issueNotifications.js";
 
 type Resolver = (
   parent: unknown,
-  args: any,
-  context: any,
+  args: unknown,
+  context: GraphQLContext,
   info: GraphQLResolveInfo
-) => Promise<any>;
+) => Promise<{ issues?: { id?: string }[] } | undefined>;
 
 type IssueSubscriptionNotificationDependencies = {
   notifyIssueSubscribers?: typeof notifyIssueSubscribers;
 };
 
-export const getCreatedActivityNodes = (args: {
-  update?: { ActivityFeed?: any[] };
-  create?: { ActivityFeed?: any[] };
-}): any[] => {
+type ActivityNode = {
+  actionType?: string | null;
+  actionDescription?: string | null;
+  Comment?: { create?: { node?: { text?: string | null } | null } | null } | null;
+  [key: string]: unknown;
+};
+
+type ActivityUpdateEntry = {
+  create?: Array<{ node?: ActivityNode | null } | null> | null;
+  [key: string]: unknown;
+};
+
+type ActivityCreateEntry = {
+  node?: ActivityNode | null;
+  [key: string]: unknown;
+};
+
+type UpdateIssuesActivityArgs = {
+  where?: { id?: string };
+  update?: { ActivityFeed?: ActivityUpdateEntry[]; [key: string]: unknown };
+  create?: { ActivityFeed?: ActivityCreateEntry[]; [key: string]: unknown };
+};
+
+export const getCreatedActivityNodes = (args: UpdateIssuesActivityArgs): ActivityNode[] => {
   const updatedActivityNodes = (
     Array.isArray(args?.update?.ActivityFeed) ? args.update.ActivityFeed : []
-  ).flatMap((activityUpdate) => {
+  ).flatMap((activityUpdate: ActivityUpdateEntry) => {
     const created = activityUpdate?.create;
     return Array.isArray(created)
-      ? created.map((entry) => entry?.node).filter(Boolean)
+      ? created
+          .map((entry) => entry?.node)
+          .filter((node): node is ActivityNode => Boolean(node))
       : [];
   });
 
   const createdActivityNodes = (
     Array.isArray(args?.create?.ActivityFeed) ? args.create.ActivityFeed : []
   )
-    .map((activityCreate) => activityCreate?.node)
-    .filter(Boolean);
+    .map((activityCreate: ActivityCreateEntry) => activityCreate?.node)
+    .filter((node): node is ActivityNode => Boolean(node));
 
   return [...updatedActivityNodes, ...createdActivityNodes];
 };
@@ -45,12 +68,8 @@ export const createIssueSubscriptionNotificationMiddleware = (
       updateIssues: async (
         resolve: Resolver,
         parent: unknown,
-        args: {
-          where?: { id?: string };
-          update?: Record<string, any>;
-          create?: Record<string, any>;
-        },
-        context: any,
+        args: UpdateIssuesActivityArgs,
+        context: GraphQLContext,
         info: GraphQLResolveInfo
       ) => {
         const activityNodes = getCreatedActivityNodes(args);

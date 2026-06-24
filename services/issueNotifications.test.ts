@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { notifyIssueSubscribers } from "./issueNotifications.js";
+import type { Driver } from "neo4j-driver";
+import type { IssueModel } from "../ogm_types.js";
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
@@ -64,8 +66,8 @@ test("notifyIssueSubscribers notifies subscribers and only emails opted-in users
   };
 
   await notifyIssueSubscribers({
-    IssueModel,
-    driver,
+    IssueModel: IssueModel as unknown as IssueModel,
+    driver: driver as unknown as Driver,
     issueId: "issue-1",
     actorUsername: "editor",
     actionType: "comment",
@@ -119,8 +121,8 @@ test("notifyIssueSubscribers skips report actions", async () => {
   };
 
   const result = await notifyIssueSubscribers({
-    IssueModel,
-    driver,
+    IssueModel: IssueModel as unknown as IssueModel,
+    driver: driver as unknown as Driver,
     issueId: "issue-1",
     actorUsername: "editor",
     actionType: "report",

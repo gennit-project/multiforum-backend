@@ -1,24 +1,12 @@
-type ConnectByUsername = {
-  connect: {
-    where: {
-      node: {
-        username: string;
-      };
-    };
-  };
-};
+import type {
+  AlbumCreateInput,
+  AlbumUpdateInput,
+  AlbumImagesFieldInput,
+  AlbumOwnerFieldInput,
+  ImageUploaderFieldInput,
+} from "../../../ogm_types.js";
 
-const buildOwnerConnect = (username: string): ConnectByUsername => ({
-  connect: {
-    where: {
-      node: {
-        username,
-      },
-    },
-  },
-});
-
-const buildUploaderConnect = (username: string): ConnectByUsername => ({
+const buildOwnerConnect = (username: string): AlbumOwnerFieldInput => ({
   connect: {
     where: {
       node: {
@@ -28,7 +16,19 @@ const buildUploaderConnect = (username: string): ConnectByUsername => ({
   },
 });
 
-const sanitizeImageCreateEntries = (createInput: any, username: string) => {
+const buildUploaderConnect = (username: string): ImageUploaderFieldInput => ({
+  connect: {
+    where: {
+      node: {
+        username,
+      },
+    },
+  },
+});
+
+type UnknownRecord = Record<string, unknown>;
+
+const sanitizeImageCreateEntries = (createInput: unknown, username: string) => {
   if (!createInput) {
     return createInput;
   }
@@ -36,14 +36,14 @@ const sanitizeImageCreateEntries = (createInput: any, username: string) => {
   const createArray = Array.isArray(createInput) ? createInput : [createInput];
 
   return createArray.map((entry) => {
-    if (!entry || !entry.node) {
+    if (!entry || !(entry as UnknownRecord).node) {
       return entry;
     }
 
-    const { Uploader, ...restNode } = entry.node;
+    const { Uploader, ...restNode } = (entry as UnknownRecord).node as UnknownRecord;
 
     return {
-      ...entry,
+      ...(entry as UnknownRecord),
       node: {
         ...restNode,
         Uploader: buildUploaderConnect(username),
@@ -52,21 +52,27 @@ const sanitizeImageCreateEntries = (createInput: any, username: string) => {
   });
 };
 
-export const sanitizeImagesFieldInput = (imagesField: any, username: string) => {
-  if (!imagesField?.create) {
-    return imagesField;
+export const sanitizeImagesFieldInput = (
+  imagesField: unknown,
+  username: string
+): AlbumImagesFieldInput | null | undefined => {
+  if (!(imagesField as UnknownRecord | null | undefined)?.create) {
+    return imagesField as AlbumImagesFieldInput | null | undefined;
   }
 
   return {
-    ...imagesField,
-    create: sanitizeImageCreateEntries(imagesField.create, username),
-  };
+    ...(imagesField as UnknownRecord),
+    create: sanitizeImageCreateEntries((imagesField as UnknownRecord).create, username),
+  } as AlbumImagesFieldInput;
 };
 
-export const sanitizeAlbumCreateInput = (albumInput: any, username: string) => {
-  const { Owner, ...rest } = albumInput || {};
+export const sanitizeAlbumCreateInput = (
+  albumInput: unknown,
+  username: string
+): AlbumCreateInput => {
+  const { Owner, ...rest } = (albumInput as UnknownRecord) || {};
 
-  const sanitized: any = {
+  const sanitized: UnknownRecord = {
     ...rest,
     Owner: buildOwnerConnect(username),
   };
@@ -75,25 +81,31 @@ export const sanitizeAlbumCreateInput = (albumInput: any, username: string) => {
     sanitized.Images = sanitizeImagesFieldInput(sanitized.Images, username);
   }
 
-  return sanitized;
+  return sanitized as AlbumCreateInput;
 };
 
-export const sanitizeAlbumCreateNode = (node: any, username: string) => {
+export const sanitizeAlbumCreateNode = (
+  node: unknown,
+  username: string
+): AlbumCreateInput | null | undefined => {
   if (!node) {
-    return node;
+    return node as null | undefined;
   }
 
   return sanitizeAlbumCreateInput(node, username);
 };
 
-export const sanitizeAlbumUpdateNode = (node: any, username: string) => {
+export const sanitizeAlbumUpdateNode = (
+  node: unknown,
+  username: string
+): AlbumUpdateInput | null | undefined => {
   if (!node) {
-    return node;
+    return node as null | undefined;
   }
 
-  const { Owner, ...rest } = node;
+  const { Owner, ...rest } = node as UnknownRecord;
 
-  const sanitized: any = {
+  const sanitized: UnknownRecord = {
     ...rest,
   };
 
@@ -101,5 +113,5 @@ export const sanitizeAlbumUpdateNode = (node: any, username: string) => {
     sanitized.Images = sanitizeImagesFieldInput(sanitized.Images, username);
   }
 
-  return sanitized;
+  return sanitized as AlbumUpdateInput;
 };

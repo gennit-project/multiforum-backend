@@ -5,6 +5,7 @@ import {
   getNewModMentions,
   notifyModMentions,
 } from "./modMentionNotificationHook.js";
+import type { GraphQLContext } from "../types/context.js";
 
 // Unit tests for extraction functions
 test("extractModMentions extracts mod profile names from text", () => {
@@ -96,7 +97,7 @@ const buildMockContext = (
         },
       }),
     },
-  };
+  } as unknown as GraphQLContext;
 };
 
 test("notifyModMentions sends notification to mentioned mod", async () => {

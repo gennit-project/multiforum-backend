@@ -4,10 +4,12 @@
 import type {
   Suspension,
   ChannelModel,
+  ChannelUpdateInput,
 } from "../../ogm_types.js";
+import type { Ogm } from "../../types/context.js";
 
 type DisconnectExpiredSuspensionsInput = {
-  ogm: any;
+  ogm: Ogm;
   channelUniqueName: string;
   expiredUserSuspensions: Suspension[];
   expiredModSuspensions: Suspension[];
@@ -25,7 +27,7 @@ export async function disconnectExpiredSuspensions(
 
   const Channel: ChannelModel = ogm.model("Channel");
 
-  const disconnectOperations: any = {};
+  const disconnectOperations: ChannelUpdateInput = {};
 
   if (expiredUserSuspensions.length > 0) {
     disconnectOperations.SuspendedUsers = [

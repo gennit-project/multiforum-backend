@@ -2,6 +2,8 @@ import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import { resolveChannelForModPermission } from "./resolveChannelForModPermission.js";
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 
 export interface CanArchiveAndUnarchiveCommentArgs {
   channelUniqueName?: string;
@@ -10,7 +12,7 @@ export interface CanArchiveAndUnarchiveCommentArgs {
 }
 
 export const canArchiveAndUnarchiveComment = rule({ cache: "contextual" })(
-  async (parent: any, args: CanArchiveAndUnarchiveCommentArgs, context: any, info: any) => {
+  async (parent: unknown, args: CanArchiveAndUnarchiveCommentArgs, context: GraphQLContext, info: GraphQLResolveInfo) => {
     let channelUniqueName = args.channelUniqueName;
     const issueId = args.issueId;
     const commentId = args.commentId;

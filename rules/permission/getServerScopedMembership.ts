@@ -1,5 +1,6 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type ServerRoleLike = {
   showAdminTag?: boolean | null;
@@ -53,7 +54,7 @@ export function evaluateServerScopedMembership(
 }
 
 export const getServerScopedMembership = async (
-  context: any
+  context: GraphQLContext
 ): Promise<ServerScopedMembership> => {
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({

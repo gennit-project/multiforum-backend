@@ -5,6 +5,8 @@ import addEmojiToDiscussionChannelResolver from "./addEmojiToDiscussionChannel.j
 import removeEmojiFromCommentResolver from "./removeEmojiFromComment.js";
 import removeEmojiFromDiscussionChannelResolver from "./removeEmojiFromDiscussionChannel.js";
 import { ModelStub, withMutedConsoleError } from "../../tests/testUtils.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 const emojiArgs = {
   emojiLabel: "thumbsup",
@@ -43,7 +45,7 @@ test("addEmojiToComment rejects disabled emoji channels", async () => {
 
   await assert.rejects(
     withMutedConsoleError(() =>
-      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {}, null)
+      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
@@ -62,8 +64,8 @@ test("removeEmojiFromComment rejects disabled emoji channels", async () => {
           emojiLabel: emojiArgs.emojiLabel,
           username: emojiArgs.username,
         },
-        {},
-        null
+        {} as unknown as GraphQLContext,
+        null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
@@ -84,8 +86,8 @@ test("addEmojiToDiscussionChannel rejects disabled emoji channels", async () => 
           ...emojiArgs,
           discussionChannelId: "discussion-channel-1",
         },
-        {},
-        null
+        {} as unknown as GraphQLContext,
+        null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
@@ -107,8 +109,8 @@ test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async (
           emojiLabel: emojiArgs.emojiLabel,
           username: emojiArgs.username,
         },
-        {},
-        null
+        {} as unknown as GraphQLContext,
+        null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/

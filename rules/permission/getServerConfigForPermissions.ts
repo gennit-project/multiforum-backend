@@ -1,6 +1,7 @@
 import { getPermissionRequestCache } from "./getPermissionRequestCache.js";
+import type { GraphQLContext } from "../../types/context.js";
 
-export const getServerConfigForPermissions = async (context: any) => {
+export const getServerConfigForPermissions = async (context: GraphQLContext) => {
   const cache = getPermissionRequestCache(context);
 
   if (!cache.serverConfigPromise) {

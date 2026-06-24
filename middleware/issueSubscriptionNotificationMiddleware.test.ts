@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { GraphQLContext } from "../types/context.js";
 import {
   createIssueSubscriptionNotificationMiddleware,
   getCreatedActivityNodes,
@@ -70,7 +71,7 @@ test("issue subscription middleware notifies for issue comments created via crea
       driver: { session: () => ({}) },
       user: { username: "alice" },
       ogm: { model: () => "IssueModel" },
-    },
+    } as unknown as GraphQLContext,
     {} as any
   );
 

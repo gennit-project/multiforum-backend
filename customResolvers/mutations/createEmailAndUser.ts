@@ -1,4 +1,6 @@
 import { EmailModel, UserModel, UserCreateInput } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 import { generateSlug } from "random-word-slugs";
 import { validateUserInput } from "../../rules/validation/userIsValid.js";
 
@@ -131,17 +133,18 @@ export const createUsersWithEmails = async (
 const getCreateEmailAndUserResolver = (input: Input) => {
   const { User, Email } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { emailAddress, username } = args;
 
     try {
       // Use the extracted function to create a user
       const newUser = await createUsersWithEmails(User, Email, emailAddress, username);
       return newUser;
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
+      const message = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `An error occurred while creating the user and linking the email: ${e?.message}`
+        `An error occurred while creating the user and linking the email: ${message}`
       );
     }
   };

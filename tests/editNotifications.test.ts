@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { commentVersionHistoryHandler } from "../hooks/commentVersionHistoryHook.js";
 import { discussionEditNotificationHandler } from "../hooks/discussionVersionHistoryHook.js";
+import type { GraphQLContext } from "../types/context.js";
+import type { CommentSnapshot } from "../utils/buildCommentMentionContext.js";
 
 const buildUserModel = () => {
   const updates: Array<any> = [];
@@ -57,7 +59,7 @@ test("comment edit by mod notifies OP", async () => {
   };
 
   await commentVersionHistoryHandler({
-    context,
+    context: context as unknown as GraphQLContext,
     params: { where: { id: "comment-1" }, update: { text: "new text" } },
     commentSnapshot: {
       id: "comment-1",
@@ -69,7 +71,7 @@ test("comment edit by mod notifies OP", async () => {
         Discussion: { id: "discussion-1", title: "Test Discussion" },
       },
       PastVersions: [],
-    },
+    } as unknown as CommentSnapshot,
   });
 
   assert.equal(updates.length, 1);
@@ -105,7 +107,7 @@ test("comment edit by OP does not notify", async () => {
   };
 
   await commentVersionHistoryHandler({
-    context,
+    context: context as unknown as GraphQLContext,
     params: { where: { id: "comment-2" }, update: { text: "new text" } },
     commentSnapshot: {
       id: "comment-2",
@@ -117,7 +119,7 @@ test("comment edit by OP does not notify", async () => {
         Discussion: { id: "discussion-2", title: "Test Discussion" },
       },
       PastVersions: [],
-    },
+    } as unknown as CommentSnapshot,
   });
 
   assert.equal(updates.length, 0);
@@ -143,7 +145,7 @@ test("discussion edit by mod notifies OP", async () => {
   };
 
   await discussionEditNotificationHandler({
-    context,
+    context: context as unknown as GraphQLContext,
     params: { where: { id: "discussion-3" }, update: { title: "New Title" } },
     discussionSnapshot: {
       id: "discussion-3",
@@ -183,7 +185,7 @@ test("discussion edit by OP does not notify", async () => {
   };
 
   await discussionEditNotificationHandler({
-    context,
+    context: context as unknown as GraphQLContext,
     params: { where: { id: "discussion-4" }, update: { body: "New Body" } },
     discussionSnapshot: {
       id: "discussion-4",

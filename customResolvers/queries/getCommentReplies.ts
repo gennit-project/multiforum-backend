@@ -1,10 +1,14 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { getCommentRepliesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { CommentModel } from "../../ogm_types.js";
 
 type Input = {
-  Comment: any;
-  driver: any;
+  Comment: CommentModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -17,7 +21,7 @@ type Args = {
 
 const getResolver = (input: Input) => {
   const { driver, Comment } = input;
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { commentId, modName, offset, limit, sort } = args;
     context.user = await setUserDataOnContext({
       context,
@@ -47,7 +51,7 @@ const getResolver = (input: Input) => {
         };
       }
 
-      commentsResult = commentRepliesResult.records.map((record: any) => {
+      commentsResult = commentRepliesResult.records.map((record: Neo4jRecord) => {
         return record.get("ChildComments");
       });
 
@@ -66,7 +70,7 @@ const getResolver = (input: Input) => {
         aggregate: {
           count: true,
         },
-      }).then((result: any) => {
+      }).then((result: { count: number }) => {
         return result.count;
       });
 
@@ -74,9 +78,10 @@ const getResolver = (input: Input) => {
         ChildComments: commentsResult,
         aggregateChildCommentCount: aggregateCount || 0,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error getting comment section:", error);
-      throw new Error(`Failed to fetch comment section. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch comment section. ${message}`);
     } finally {
       session.close();
     }

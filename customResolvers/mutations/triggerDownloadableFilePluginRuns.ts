@@ -7,6 +7,8 @@ import type {
   ServerSecretModel
 } from '../../ogm_types.js'
 import { triggerPluginRunsForDownloadableFile, isSupportedEvent } from '../../services/pluginRunner.js'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../types/context.js'
 
 type Input = {
   DownloadableFile: DownloadableFileModel
@@ -25,7 +27,12 @@ type Args = {
 const getResolver = (input: Input) => {
   const { DownloadableFile, Plugin, PluginVersion, PluginRun, ServerConfig, ServerSecret } = input
 
-  return async (_parent: any, args: Args, _context: any, _info: any) => {
+  return async (
+    _parent: unknown,
+    args: Args,
+    _context: GraphQLContext,
+    _info: GraphQLResolveInfo
+  ) => {
     const { downloadableFileId, event } = args
 
     if (!isSupportedEvent(event)) {

@@ -107,5 +107,5 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": ["**/*.ts", "**/*.d.ts"],
-  "exclude": ["node_modules", "ts_emitted", "middleware"]
+  "exclude": ["node_modules", "ts_emitted"]
 }

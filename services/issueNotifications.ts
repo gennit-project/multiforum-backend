@@ -1,6 +1,8 @@
+import type { Driver } from "neo4j-driver";
 import { sendBatchEmails } from "./mail/index.js";
 import { createIssueSubscriptionNotificationEmail } from "../customResolvers/mutations/shared/emailUtils.js";
 import { appendNotificationFooter } from "../utils/notificationFooter.js";
+import type { IssueModel } from "../ogm_types.js";
 
 type IssueNotificationDependencies = {
   sendBatchEmails?: typeof sendBatchEmails;
@@ -8,8 +10,8 @@ type IssueNotificationDependencies = {
 };
 
 type NotifyIssueSubscribersInput = {
-  IssueModel: any;
-  driver: any;
+  IssueModel: IssueModel;
+  driver: Driver;
   issueId: string;
   actorUsername?: string | null;
   actionType?: string | null;

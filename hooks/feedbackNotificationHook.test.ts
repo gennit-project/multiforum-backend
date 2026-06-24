@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { notifyFeedback } from "./feedbackNotificationHook.js";
+import type { GraphQLContext } from "../types/context.js";
 
 type NotificationInput = {
   UserModel: any;
@@ -37,7 +38,7 @@ test("notifyFeedback sends notification when user has notifyOnFeedback enabled",
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as GraphQLContext;
 
   await notifyFeedback({
     context,
@@ -71,7 +72,7 @@ test("notifyFeedback does not send notification when notifyOnFeedback is disable
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as GraphQLContext;
 
   await notifyFeedback({
     context,
@@ -100,7 +101,7 @@ test("notifyFeedback does not notify yourself", async () => {
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as GraphQLContext;
 
   await notifyFeedback({
     context,
@@ -129,7 +130,7 @@ test("notifyFeedback builds correct URL for discussion feedback", async () => {
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as GraphQLContext;
 
   await notifyFeedback({
     context,
@@ -159,7 +160,7 @@ test("notifyFeedback builds correct URL for event feedback", async () => {
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as GraphQLContext;
 
   await notifyFeedback({
     context,
@@ -189,7 +190,7 @@ test("notifyFeedback does NOT include feedback content in notification (privacy)
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as GraphQLContext;
 
   await notifyFeedback({
     context,

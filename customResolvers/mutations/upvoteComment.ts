@@ -1,10 +1,14 @@
 import { commentIsUpvotedByUserQuery } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { CommentModel, UserModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type Input = {
-  Comment: any;
-  User: any;
-  driver: any;
+  Comment: CommentModel;
+  User: UserModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -14,7 +18,12 @@ type Args = {
 
 const upvoteCommentResolver = (input: Input) => {
   const { Comment, User, driver } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const { commentId, username } = args;
 
     if (!commentId || !username) {
@@ -74,8 +83,15 @@ const upvoteCommentResolver = (input: Input) => {
 
       const comment = commentResult[0];
 
-      const postAuthorUsername = comment.CommentAuthor?.username;
-      const postAuthorKarma = comment.CommentAuthor?.commentKarma || 0;
+      const commentAuthor = comment.CommentAuthor;
+      const postAuthorUsername =
+        commentAuthor && "username" in commentAuthor
+          ? commentAuthor.username
+          : undefined;
+      const postAuthorKarma =
+        commentAuthor && "commentKarma" in commentAuthor
+          ? commentAuthor.commentKarma || 0
+          : 0;
 
       // Fetch data of the user who is upvoting the comment
       // because we need it to calculate the weighted vote bonus.
@@ -130,7 +146,7 @@ const upvoteCommentResolver = (input: Input) => {
 
       return {
         id: commentId,
-        weightedVotesCount: comment.weightedVotesCount + 1 + weightedVoteBonus,
+        weightedVotesCount: (comment.weightedVotesCount ?? 0) + 1 + weightedVoteBonus,
         UpvotedByUsers: [
           ...existingUpvotedByUsers,
           {

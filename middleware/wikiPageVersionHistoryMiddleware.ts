@@ -8,6 +8,12 @@
 import { wikiPageVersionHistoryHandler } from "../hooks/wikiPageVersionHistoryHook.js";
 import { GraphQLResolveInfo } from 'graphql';
 import type { TextVersionCreateInput } from "../src/generated/graphql.js";
+import type { GraphQLContext } from "../types/context.js";
+import type {
+  TextVersionModel,
+  WikiPageModel,
+  WikiPageUpdateInput,
+} from "../ogm_types.js";
 
 // Define types for the middleware
 interface UpdateWikiPagesArgs {
@@ -18,15 +24,10 @@ interface UpdateWikiPagesArgs {
     title?: string;
     body?: string;
     editReason?: string;
-    [key: string]: any;
+    ChildPages?: { create?: unknown };
+    [key: string]: unknown;
   };
-  [key: string]: any;
-}
-
-interface Context {
-  ogm: any;
-  driver: any;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Define the middleware
@@ -34,10 +35,10 @@ const wikiPageVersionHistoryMiddleware = {
   Mutation: {
     // Apply to the auto-generated updateWikiPages mutation
     updateWikiPages: async (
-      resolve: (parent: unknown, args: UpdateWikiPagesArgs, context: Context, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (parent: unknown, args: UpdateWikiPagesArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<unknown>,
       parent: unknown,
       args: UpdateWikiPagesArgs,
-      context: Context,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       // Extract the parameters that we need for version history tracking
@@ -52,7 +53,11 @@ const wikiPageVersionHistoryMiddleware = {
       if (isCreatingChildPages) {
         // Handle child WikiPage creation - create first TextVersions after creation
         const result = await resolve(parent, args, context, info);
-        await handleChildWikiPageCreation(result, update, context);
+        await handleChildWikiPageCreation(
+          result as UpdateWikiPagesResult | undefined,
+          update,
+          context
+        );
         return result;
       } else if (update.title || update.body) {
         // Run the version history handler before the update (existing functionality)
@@ -71,7 +76,26 @@ const wikiPageVersionHistoryMiddleware = {
 /**
  * Handle creation of child WikiPages by creating first TextVersions
  */
-async function handleChildWikiPageCreation(result: any, update: any, context: Context) {
+interface ChildWikiPage {
+  id: string;
+  title?: string | null;
+  body?: string | null;
+  editReason?: string | null;
+}
+
+interface UpdateWikiPagesResult {
+  updateWikiPages?: {
+    wikiPages?: Array<{
+      ChildPages?: ChildWikiPage[];
+    }>;
+  };
+}
+
+async function handleChildWikiPageCreation(
+  result: UpdateWikiPagesResult | undefined,
+  update: Record<string, unknown>,
+  context: GraphQLContext
+) {
   try {
     const { ogm } = context;
     const TextVersionModel = ogm.model('TextVersion');
@@ -138,12 +162,12 @@ async function handleChildWikiPageCreation(result: any, update: any, context: Co
  * Create a TextVersion and connect it to a WikiPage
  */
 async function createFirstTextVersion(
-  TextVersionModel: any,
+  TextVersionModel: TextVersionModel,
   wikiPageId: string,
   content: string,
   editReason: string | null | undefined,
   username: string,
-  WikiPageModel: any
+  WikiPageModel: WikiPageModel
 ) {
   try {
     const textVersionInput: TextVersionCreateInput = {
@@ -172,15 +196,18 @@ async function createFirstTextVersion(
     // Connect the TextVersion to the WikiPage
     await WikiPageModel.update({
       where: { id: wikiPageId },
+      // The OGM-generated WikiPageUpdateInput expects PastVersions as an array of
+      // update-field inputs; this connect-shaped payload is the runtime shape the
+      // OGM accepts, so cast to satisfy the generated type without changing behavior.
       update: {
         PastVersions: {
-          connect: [{ 
-            where: { 
-              node: { id: textVersionId } 
-            } 
+          connect: [{
+            where: {
+              node: { id: textVersionId }
+            }
           }]
         }
-      }
+      } as unknown as WikiPageUpdateInput
     });
 
     console.log(`Successfully created first TextVersion for WikiPage ${wikiPageId}`);
@@ -193,7 +220,7 @@ async function createFirstTextVersion(
  * Get the current username from the request context
  * This is a placeholder - implement according to your auth system
  */
-function getCurrentUsernameFromContext(context: Context): string | null {
+function getCurrentUsernameFromContext(context: GraphQLContext): string | null {
   // TODO: Implement proper user extraction from context
   // This might involve decoding JWT tokens from headers, session management, etc.
   // For now, return a placeholder

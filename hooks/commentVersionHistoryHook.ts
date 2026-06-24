@@ -4,6 +4,21 @@ import {
   getIssueIdsForRelated,
 } from './issueActivityFeedHelpers.js';
 import { createInAppNotification } from './notificationHelpers.js';
+import type { GraphQLContext } from '../types/context.js';
+import type {
+  CommentModel,
+  CommentUpdateInput,
+  TextVersionModel,
+  UserModel,
+} from '../ogm_types.js';
+import type { TextVersionCreateInput } from '../src/generated/graphql.js';
+import type { CommentSnapshot } from '../utils/buildCommentMentionContext.js';
+
+type VersionHistoryHandlerInput = {
+  context: GraphQLContext;
+  params: { where?: { id?: string | null }; update?: { text?: string | null } | null };
+  commentSnapshot?: CommentSnapshot | null;
+};
 
 /**
  * Hook to track comment version history when a comment is updated
@@ -13,7 +28,7 @@ export const commentVersionHistoryHandler = async ({
   context,
   params,
   commentSnapshot,
-}: any) => {
+}: VersionHistoryHandlerInput) => {
   try {
     console.log('Comment version history hook running...');
     
@@ -45,7 +60,7 @@ export const commentVersionHistoryHandler = async ({
     const UserModel = ogm.model('User');
     const IssueModel = ogm.model('Issue');
     
-    let comment = commentSnapshot;
+    let comment: CommentSnapshot | null | undefined = commentSnapshot;
 
     if (!comment) {
       // Fetch the current comment to get current values before update
@@ -93,7 +108,7 @@ export const commentVersionHistoryHandler = async ({
         return;
       }
 
-      comment = comments[0];
+      comment = comments[0] as unknown as CommentSnapshot;
     }
     
     // Get the username from CommentAuthor which can be either User or ModerationProfile
@@ -185,11 +200,11 @@ export const commentVersionHistoryHandler = async ({
  */
 async function trackTextVersionHistory(
   commentId: string,
-  newText: string,
+  newText: string | null | undefined,
   username: string | null,
-  CommentModel: any,
-  TextVersionModel: any,
-  UserModel: any
+  CommentModel: CommentModel,
+  TextVersionModel: TextVersionModel,
+  UserModel: UserModel
 ) {
   console.log(
     `Tracking text version history for comment ${commentId} by user ${username ?? '[unknown]'}`
@@ -202,7 +217,7 @@ async function trackTextVersionHistory(
       return;
     }
 
-    const textVersionInput: Record<string, any> = {
+    const textVersionInput: TextVersionCreateInput = {
       body: newText,
     };
 
@@ -257,7 +272,7 @@ async function trackTextVersionHistory(
             }
           }]
         }
-      }
+      } as unknown as CommentUpdateInput
     });
 
     console.log(`Successfully added text version history for comment ${commentId}`);

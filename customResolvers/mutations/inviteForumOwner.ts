@@ -4,6 +4,8 @@ import type {
   UserModel,
 } from "../../ogm_types.js";
 import { sendEmailToUser, EmailContent } from "./shared/emailUtils.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type Args = {
   inviteeUsername: string;
@@ -18,7 +20,7 @@ type Input = {
 const getResolver = (input: Input) => {
   const { Channel, User } = input; // This refers to the OGM model
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, inviteeUsername } = args;
 
     if (!channelUniqueName || !inviteeUsername) {

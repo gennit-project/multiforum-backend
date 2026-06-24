@@ -1,7 +1,14 @@
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { EmailModel } from "../../ogm_types.js";
+import type { GraphQLContext, GraphQLRequest, Ogm } from "../../types/context.js";
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
 import jwt from "jsonwebtoken";
+import type {
+  GetPublicKeyOrSecret,
+  JwtHeader,
+  SigningKeyCallback,
+} from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import axios from "axios";
 import NodeCache from "node-cache";
@@ -30,7 +37,7 @@ const decodeMockTokenPayload = (token: string) => {
 };
 
 // Lazy initialization of the JWKS client
-let client: any = null;
+let client: jwksClient.JwksClient | null = null;
 
 // Cache response from Auth0 userinfo endpoint
 // so that we will not hit the rate limit.
@@ -48,36 +55,36 @@ const getJwksClient = () => {
   return client;
 };
 
-const getKey = (header: any, callback: any) => {
+const getKey: GetPublicKeyOrSecret = (header: JwtHeader, callback: SigningKeyCallback) => {
   if (!header || !header.kid) {
-    return callback(new Error("Missing 'kid' in JWT header"), null);
+    return callback(new Error("Missing 'kid' in JWT header"), undefined);
   }
 
   try {
     const jwksClientInstance = getJwksClient(); // Lazily initialize the JWKS client
-    jwksClientInstance.getSigningKey(header.kid, (err: any, key: any) => {
+    jwksClientInstance.getSigningKey(header.kid, (err: Error | null, key?: jwksClient.SigningKey) => {
       if (err) {
         console.error("Error retrieving signing key:", err);
-        if (err.code === "ENOTFOUND") {
+        if ((err as NodeJS.ErrnoException).code === "ENOTFOUND") {
           console.error(
             `DNS resolution failed for domain: ${process.env.AUTH0_DOMAIN}`
           );
         }
-        return callback(err, null);
+        return callback(err, undefined);
       }
-      const signingKey = key.getPublicKey();
+      const signingKey = key?.getPublicKey();
       callback(null, signingKey);
     });
   } catch (error) {
     console.error("Error initializing JWKS client or retrieving key:", error);
-    return callback(error, null);
+    return callback(error instanceof Error ? error : new Error(String(error)), undefined);
   }
 };
 
 export const getModProfileNameFromUsername = async (
   username: string,
-  ogm: any,
-  jwtError?: any
+  ogm: Ogm,
+  jwtError?: Error
 ) => {
   const User = ogm.model("User");
   try {
@@ -120,9 +127,9 @@ export const getUserFromEmail = async (
 
 
 export type AuthContextForUserLookup = {
-  ogm: any;
-  req: any;
-  jwtError?: any;
+  ogm: Ogm;
+  req?: GraphQLRequest;
+  jwtError?: Error;
 };
 
 type SetUserDataInput = {
@@ -300,7 +307,7 @@ export const setUserDataOnContext = async (
 };
 
 export const isAuthenticatedAndVerified = rule({ cache: "contextual" })(
-  async (parent: any, args: any, context: any, info: any) => {
+  async (parent: unknown, args: unknown, context: GraphQLContext, info: GraphQLResolveInfo) => {
     // Determine whether the current operation is a mutation (fallback to GraphQL info)
     const operationType = info?.operation?.operation;
     const isMutation =
@@ -354,7 +361,7 @@ export const isAuthenticatedAndVerified = rule({ cache: "contextual" })(
 
 // Rule that only checks for authentication but not email verification
 export const isAuthenticated = rule({ cache: "contextual" })(
-  async (parent: any, args: any, context: any, info: any) => {
+  async (parent: unknown, args: unknown, context: GraphQLContext, info: GraphQLResolveInfo) => {
     // Determine the operation type (falling back to GraphQL info when necessary)
     const operationType = info?.operation?.operation;
     const isMutation =

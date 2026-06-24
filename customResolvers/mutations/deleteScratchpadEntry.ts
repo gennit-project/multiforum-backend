@@ -1,5 +1,9 @@
+import type { ScratchpadEntryModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
+
 type Input = {
-  ScratchpadEntry: any;
+  ScratchpadEntry: ScratchpadEntryModel;
 };
 
 type Args = {
@@ -9,7 +13,7 @@ type Args = {
 const deleteScratchpadEntryResolver = (input: Input) => {
   const { ScratchpadEntry } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { scratchpadEntryId } = args;
 
     // Get logged in user from context

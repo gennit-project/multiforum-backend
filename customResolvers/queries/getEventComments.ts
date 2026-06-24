@@ -1,8 +1,12 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import {
     getEventCommentsQuery,
   }from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { EventModel } from "../../ogm_types.js";
 
 const eventSelectionSet = `
   {
@@ -29,8 +33,8 @@ const eventSelectionSet = `
   `;
 
 type Input = {
-  Event: any;
-  driver: any;
+  Event: EventModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -42,7 +46,7 @@ type Args = {
 
 const getResolver = (input: Input) => {
   const { driver, Event } = input;
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { eventId, offset, limit, sort } = args;
     context.user = await setUserDataOnContext({
       context,
@@ -76,7 +80,7 @@ const getResolver = (input: Input) => {
         loggedInUsername,
       });
 
-      let comments = commentsResult.records.map((record: any) => {
+      let comments = commentsResult.records.map((record: Neo4jRecord) => {
         return record.get("comment");
       });
 
@@ -90,7 +94,7 @@ const getResolver = (input: Input) => {
         Event: event,
         Comments: comments,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error getting comment section:", error);
       return {
         Event: null,

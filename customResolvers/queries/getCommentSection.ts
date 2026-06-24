@@ -1,9 +1,13 @@
+import type { GraphQLResolveInfo } from 'graphql'
+import type { Driver, Record as Neo4jRecord } from 'neo4j-driver'
 import {
   getCommentsQuery,
   getNewCommentsQuery
 } from '../cypher/cypherQueries.js'
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { DiscussionChannelModel } from "../../ogm_types.js";
 
 const discussionChannelSelectionSet = `
 {
@@ -77,8 +81,8 @@ const discussionChannelSelectionSet = `
 `
 
 type Input = {
-  driver: any
-  DiscussionChannel: any
+  driver: Driver
+  DiscussionChannel: DiscussionChannelModel
 }
 
 type Args = {
@@ -92,7 +96,7 @@ type Args = {
 
 const getResolver = (input: Input) => {
   const { driver, DiscussionChannel } = input
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, discussionId, modName, offset, limit, sort } =
       args
     context.user = await setUserDataOnContext({
@@ -127,17 +131,21 @@ const getResolver = (input: Input) => {
 
       // Filter SubscribedToNotifications to only show current user's subscription status
       if (loggedInUsername && discussionChannel.SubscribedToNotifications) {
-        const isSubscribed = discussionChannel.SubscribedToNotifications.some((sub: any) => sub.username === loggedInUsername)
-        discussionChannel.SubscribedToNotifications = isSubscribed ? [{ username: loggedInUsername }] : []
+        const isSubscribed = discussionChannel.SubscribedToNotifications.some((sub: { username: string }) => sub.username === loggedInUsername)
+        discussionChannel.SubscribedToNotifications = (isSubscribed ? [{ username: loggedInUsername }] : []) as typeof discussionChannel.SubscribedToNotifications
       } else {
         discussionChannel.SubscribedToNotifications = []
       }
 
-      let commentsResult = []
+      let commentsResult: Array<{
+        id?: string | null
+        SubscribedToNotifications?: Array<{ username: string }>
+        [key: string]: unknown
+      }> = []
 
       if (sort === 'new') {
         // if sort is "new", get the comments sorted by createdAt.
-        commentsResult = await session.run(getNewCommentsQuery, {
+        const queryResult = await session.run(getNewCommentsQuery, {
           discussionChannelId,
           modName,
           offset: parseInt(offset, 10),
@@ -145,13 +153,13 @@ const getResolver = (input: Input) => {
           loggedInUsername
         })
 
-        commentsResult = commentsResult.records.map((record: any) => {
+        commentsResult = queryResult.records.map((record: Neo4jRecord) => {
           return record.get('comment')
         })
       } else if (sort === 'top') {
         // if sort is "top", get the comments sorted by weightedVotesCount.
         // Treat a null weightedVotesCount as 0.
-        commentsResult = await session.run(getCommentsQuery, {
+        const queryResult = await session.run(getCommentsQuery, {
           discussionChannelId,
           modName,
           offset: parseInt(offset, 10),
@@ -160,13 +168,13 @@ const getResolver = (input: Input) => {
           loggedInUsername
         })
 
-        commentsResult = commentsResult.records.map((record: any) => {
+        commentsResult = queryResult.records.map((record: Neo4jRecord) => {
           return record.get('comment')
         })
       } else {
         // if sort is "hot", get the comments sorted by hotness,
         // which takes into account both weightedVotesCount and createdAt.
-        commentsResult = await session.run(getCommentsQuery, {
+        const queryResult = await session.run(getCommentsQuery, {
           discussionChannelId,
           modName,
           offset: parseInt(offset, 10),
@@ -175,7 +183,7 @@ const getResolver = (input: Input) => {
           loggedInUsername
         })
 
-        commentsResult = commentsResult.records.map((record: any) => {
+        commentsResult = queryResult.records.map((record: Neo4jRecord) => {
           return record.get('comment')
         })
       }
@@ -190,9 +198,10 @@ const getResolver = (input: Input) => {
         DiscussionChannel: discussionChannel,
         Comments: commentsResult
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error getting comment section:', error)
-      throw new Error(`Failed to fetch comment section. ${error.message}`)
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to fetch comment section. ${message}`)
     } finally {
       session.close()
     }

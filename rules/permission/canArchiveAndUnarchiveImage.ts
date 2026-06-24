@@ -3,6 +3,8 @@ import { ModChannelPermission } from "./hasChannelModPermission.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
 import { normalizeServerModPermissionResult } from "./serverModPermissionResult.js";
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 
 export interface CanArchiveAndUnarchiveImageArgs {
   channelUniqueName?: string | null;
@@ -11,10 +13,10 @@ export interface CanArchiveAndUnarchiveImageArgs {
 
 export const canArchiveAndUnarchiveImage = rule({ cache: "contextual" })(
   async (
-    parent: any,
+    parent: unknown,
     args: CanArchiveAndUnarchiveImageArgs,
-    context: any,
-    info: any
+    context: GraphQLContext,
+    info: GraphQLResolveInfo
   ) => {
     const channelUniqueName = args.channelUniqueName;
     const imageId = args.imageId;

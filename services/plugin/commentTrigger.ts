@@ -9,6 +9,8 @@ import { createBotReport } from '../botReportService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
+import type { Ogm } from '../../types/context.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Comment, ServerConfig } from '../../ogm_types.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -81,7 +83,18 @@ export const triggerPluginRunsForComment = async ({
     throw new Error(`Comment "${commentId}" not found`)
   }
 
-  const comment = comments[0] as any
+  // The selectionSet flattens CommentAuthor's inline-fragment fields (User and
+  // ModerationProfile branches) into a single accessor shape that the generated
+  // `Comment.CommentAuthor` union (User | ModerationProfile) doesn't model, so
+  // intersect the generated type with the queried author shape.
+  const comment = comments[0] as Comment & {
+    CommentAuthor?: {
+      username?: string | null
+      displayName?: string | null
+      isBot?: boolean | null
+      User?: { username?: string | null } | null
+    } | null
+  }
   const discussionChannel = comment.DiscussionChannel || null
   const isDiscussionComment =
     Boolean(discussionChannel?.id) &&
@@ -130,14 +143,14 @@ export const triggerPluginRunsForComment = async ({
       }
     }`
   })
-  const channel = channels[0] as any
+  const channel: Channel = channels[0]
   const parentComments = await collectParentCommentThread({
     Comment,
     parentCommentId: comment.ParentComment?.id || null
   })
 
   // Build a map of channel-level plugin settings by plugin name
-  const channelPluginSettingsMap = new Map<string, any>()
+  const channelPluginSettingsMap = new Map<string, unknown>()
   if (channel?.EnabledPluginsConnection?.edges) {
     for (const edge of channel.EnabledPluginsConnection.edges) {
       const pluginName = edge.node?.Plugin?.name
@@ -179,7 +192,7 @@ export const triggerPluginRunsForComment = async ({
     }`
   })
 
-  const serverConfig = serverConfigs[0] as any
+  const serverConfig: ServerConfig | undefined = serverConfigs[0]
   if (!serverConfig) {
     return []
   }
@@ -187,7 +200,7 @@ export const triggerPluginRunsForComment = async ({
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
   // Build version-aware plugin map (pluginName -> sorted array of versions)
-  const pluginVersionsMap = buildPluginVersionMaps(edges)
+  const pluginVersionsMap = buildPluginVersionMaps(edges as unknown as PluginEdgeData[])
 
   // Check channel pipelines first, then fall back to server pipelines
   const channelPipelines = parseStoredPipelines(channel?.pluginPipelines)
@@ -207,7 +220,7 @@ export const triggerPluginRunsForComment = async ({
       enabledPluginDetails.push({
         name,
         version,
-        manifestEvents: manifest.events || []
+        manifestEvents: Array.isArray(manifest.events) ? manifest.events : []
       })
     }
   }
@@ -273,7 +286,7 @@ export const triggerPluginRunsForComment = async ({
     return []
   }
 
-  const runs: any[] = []
+  const runs: unknown[] = []
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
@@ -303,7 +316,7 @@ export const triggerPluginRunsForComment = async ({
             channelUniqueName
           }),
           updatedAt: new Date().toISOString()
-        } as any)
+        } as PluginRunCreateInput)
       ]
     })
 
@@ -330,7 +343,7 @@ export const triggerPluginRunsForComment = async ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped'
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -356,7 +369,7 @@ export const triggerPluginRunsForComment = async ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -373,12 +386,12 @@ export const triggerPluginRunsForComment = async ({
 
     await PluginRun.update({
       where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as any)
+      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
 
     const runStart = performance.now()
     const logs: string[] = []
-    const flags: any[] = []
+    const flags: unknown[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -397,12 +410,12 @@ export const triggerPluginRunsForComment = async ({
         try {
           decryptedSecrets[secret.key] = decryptSecret(secret.ciphertext)
         } catch (error) {
-          logs.push(`Failed to decrypt secret ${secret.key}: ${(error as any).message}`)
+          logs.push(`Failed to decrypt secret ${secret.key}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
       // Parse settings if they are JSON strings
-      const parseIfString = (value: any): any => {
+      const parseIfString = (value: unknown): Record<string, unknown> => {
         if (typeof value === 'string') {
           try {
             return JSON.parse(value)
@@ -410,7 +423,7 @@ export const triggerPluginRunsForComment = async ({
             return {}
           }
         }
-        return value || {}
+        return (value as Record<string, unknown>) || {}
       }
 
       // Merge settings: defaults < server < channel (channel takes highest precedence)
@@ -436,12 +449,12 @@ export const triggerPluginRunsForComment = async ({
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: any[]) => {
+        log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
           console.log(`[Plugin:${pluginId}]`, message)
         },
-        storeFlag: async (flag: any) => {
+        storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
         logPromptDebug: createPromptDebugLogger({
@@ -459,7 +472,7 @@ export const triggerPluginRunsForComment = async ({
           // Check if the bot is suspended before allowing it to comment
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
           const suspensionInfo = await getActiveSuspension({
-            ogm: models,
+            ogm: models as unknown as Ogm,
             driver,
             channelUniqueName,
             username: botUsername,
@@ -500,7 +513,7 @@ export const triggerPluginRunsForComment = async ({
           // Check if the bot is suspended before allowing it to report
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
           const suspensionInfo = await getActiveSuspension({
-            ogm: models,
+            ogm: models as unknown as Ogm,
             driver,
             channelUniqueName,
             username: botUsername,
@@ -636,7 +649,7 @@ export const triggerPluginRunsForComment = async ({
             logs,
             result
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
@@ -658,7 +671,7 @@ export const triggerPluginRunsForComment = async ({
     } catch (error) {
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
-      const message = (error as any).message || 'Plugin execution failed'
+      const message = (error instanceof Error ? error.message : '') || 'Plugin execution failed'
 
       previousStatus = 'FAILED'
 
@@ -674,7 +687,7 @@ export const triggerPluginRunsForComment = async ({
             logs,
             flags
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const updated = await PluginRun.find({

@@ -1,5 +1,9 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { ScratchpadEntryModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+
 type Input = {
-  ScratchpadEntry: any;
+  ScratchpadEntry: ScratchpadEntryModel;
 };
 
 type Args = {
@@ -10,7 +14,12 @@ type Args = {
 const updateScratchpadEntryVisibilityResolver = (input: Input) => {
   const { ScratchpadEntry } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const { scratchpadEntryId, isPublic } = args;
 
     // Get logged in user from context

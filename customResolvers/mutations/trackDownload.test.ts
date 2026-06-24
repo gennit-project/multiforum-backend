@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import type { Driver } from 'neo4j-driver'
+import type { GraphQLContext } from '../../types/context.js'
 import trackDownload from './trackDownload.js'
 
 type RunCall = [string, {
@@ -39,7 +41,7 @@ const buildDriver = (updated = 1) => {
     }
   }
 
-  return { driver, calls }
+  return { driver: driver as unknown as Driver, calls }
 }
 
 test('trackDownload requires a downloadable file ID', async () => {
@@ -49,7 +51,7 @@ test('trackDownload requires a downloadable file ID', async () => {
   await assert.rejects(
     resolver(null, { downloadableFileId: '', discussionId: 'discussion-1' }, {
       user: { username: 'alice' }
-    }),
+    } as unknown as GraphQLContext),
     /Downloadable file ID is required/
   )
 })
@@ -61,7 +63,7 @@ test('trackDownload requires a discussion ID', async () => {
   await assert.rejects(
     resolver(null, { downloadableFileId: 'file-1', discussionId: '' }, {
       user: { username: 'alice' }
-    }),
+    } as unknown as GraphQLContext),
     /Discussion ID is required/
   )
 })
@@ -81,7 +83,7 @@ test('trackDownload counts anonymous downloads as total-only activity', async ()
   const result = await resolver(
     null,
     { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
-    {}
+    {} as unknown as GraphQLContext
   )
 
   assert.equal(result, true)
@@ -99,7 +101,7 @@ test('trackDownload updates counters and saves the download discussion', async (
   const result = await resolver(
     null,
     { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
-    { user: { username: 'alice' } }
+    { user: { username: 'alice' } } as unknown as GraphQLContext
   )
 
   assert.equal(result, true)
@@ -121,7 +123,7 @@ test('trackDownload throws when the file does not belong to the discussion', asy
   await assert.rejects(
     resolver(null, { downloadableFileId: 'file-1', discussionId: 'discussion-1' }, {
       user: { username: 'alice' }
-    }),
+    } as unknown as GraphQLContext),
     /Downloadable file not found for this discussion/
   )
 })

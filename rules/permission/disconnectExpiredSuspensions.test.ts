@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
+import type { Ogm } from "../../types/context.js";
 
 type SuspensionStub = {
   id: string;
@@ -22,7 +23,7 @@ const buildOgm = (channelStub: ChannelModelStub) => {
       if (name === "Channel") return channelStub;
       throw new Error(`Unexpected model lookup: ${name}`);
     },
-  };
+  } as unknown as Ogm;
 };
 
 async function testDisconnectsUserSuspensions() {

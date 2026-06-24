@@ -1,7 +1,8 @@
-import type { Suspension } from "../../ogm_types.js";
+import type { Suspension, ServerConfigUpdateInput } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type DisconnectExpiredServerSuspensionsInput = {
-  context: any;
+  context: GraphQLContext;
   expiredUserSuspensions: Suspension[];
   expiredModSuspensions: Suspension[];
 };
@@ -12,7 +13,7 @@ export async function disconnectExpiredServerSuspensions(
   const { context, expiredUserSuspensions, expiredModSuspensions } = input;
   const ServerConfig = context.ogm.model("ServerConfig");
 
-  const update: any = {};
+  const update: ServerConfigUpdateInput = {};
 
   if (expiredUserSuspensions.length > 0) {
     update.SuspendedUsers = [

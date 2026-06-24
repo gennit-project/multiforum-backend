@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
+import type { Driver } from "neo4j-driver";
 import reportEventResolver from "./reportEvent.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type FindArgs = {
   where?: Record<string, unknown>;
@@ -58,7 +61,7 @@ const createDriver = () => ({
     }),
     close: async () => {},
   }),
-});
+}) as unknown as Driver;
 
 const createUserModel = () =>
   new ModelStub(({ where }) => {
@@ -96,7 +99,7 @@ const createContext = () => ({
     },
   },
   driver: createDriver(),
-});
+}) as unknown as GraphQLContext;
 
 test("reportEvent creates an issue and reopens it with a report activity item", async () => {
   process.env.PLAYWRIGHT_MOCK_AUTH = "true";
@@ -125,7 +128,7 @@ test("reportEvent creates an issue and reopens it with a report activity item", 
       channelUniqueName: "cats",
     },
     createContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(result?.id, "issue-1");
@@ -175,7 +178,7 @@ test("reportEvent reuses existing issues and preserves server-rule flagging", as
       channelUniqueName: "cats",
     },
     createContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(Issue.createCalls.length, 0);
@@ -212,7 +215,7 @@ test("reportEvent flags new issues for server-rule violations", async () => {
       channelUniqueName: "cats",
     },
     createContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(Issue.createCalls[0].input[0].flaggedServerRuleViolation, true);

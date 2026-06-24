@@ -1,18 +1,28 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { CommentModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+
 type Args = {
   commentId: string;
 };
 
 type Input = {
-  Comment: any;
-  driver: any;
+  Comment: CommentModel;
+  driver: Driver;
 };
 
 const getResolver = (input: Input) => {
   const { Comment, driver } = input;
 
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    info: GraphQLResolveInfo
+  ) => {
     const { commentId } = args;
-    const { username } = context.user;
+    const { username } = context.user!;
 
     if (!username) {
       throw new Error("Authentication required");
@@ -46,9 +56,10 @@ const getResolver = (input: Input) => {
       });
 
       return result[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error unsubscribing from comment:", error);
-      throw new Error(`Failed to unsubscribe from comment: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to unsubscribe from comment: ${message}`);
     } finally {
       session.close();
     }

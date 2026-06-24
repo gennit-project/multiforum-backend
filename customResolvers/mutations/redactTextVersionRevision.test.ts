@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import type { Driver } from 'neo4j-driver'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../types/context.js'
 import redactTextVersionRevision, {
   assertCanRedactRevision,
   REDACTED_REVISION_BODY
@@ -65,7 +68,7 @@ const buildDriver = (
     })
   }
 
-  return { driver, calls }
+  return { driver: driver as unknown as Driver, calls }
 }
 
 const buildResolverInput = ({
@@ -101,7 +104,7 @@ test('redactTextVersionRevision requires a revision ID', async () => {
   })
 
   await assert.rejects(
-    resolver(null, { textVersionId: '' }, {}, {}),
+    resolver(null, { textVersionId: '' }, {} as unknown as GraphQLContext, {} as unknown as GraphQLResolveInfo),
     /Revision ID is required/
   )
 })
@@ -116,7 +119,7 @@ test('redactTextVersionRevision throws when the revision is missing', async () =
   })
 
   await assert.rejects(
-    resolver(null, { textVersionId: 'version-1' }, {}, {}),
+    resolver(null, { textVersionId: 'version-1' }, {} as unknown as GraphQLContext, {} as unknown as GraphQLResolveInfo),
     /wiki revision not found/
   )
 })
@@ -145,8 +148,8 @@ test('redactTextVersionRevision returns an already-redacted revision without upd
   const result = await resolver(
     null,
     { textVersionId: 'version-1' },
-    { user: { username: 'alice', data: { ModerationProfile: null } } },
-    {}
+    { user: { username: 'alice', data: { ModerationProfile: null } } } as unknown as GraphQLContext,
+    {} as unknown as GraphQLResolveInfo
   )
 
   assert.equal(result, revision)
@@ -172,8 +175,8 @@ test('redactTextVersionRevision replaces the body with a deleted marker', async 
   const result = await resolver(
     null,
     { textVersionId: 'version-1' },
-    { user: { username: 'alice', data: { ModerationProfile: null } } },
-    {}
+    { user: { username: 'alice', data: { ModerationProfile: null } } } as unknown as GraphQLContext,
+    {} as unknown as GraphQLResolveInfo
   )
 
   assert.equal(result, updatedRevision)
@@ -213,8 +216,8 @@ test('redactTextVersionRevision lets a moderator with the edit permission redact
   await resolver(
     null,
     { textVersionId: 'version-1' },
-    { user: { username: 'mod', data: { ModerationProfile: { displayName: 'mod-cats' } } } },
-    {}
+    { user: { username: 'mod', data: { ModerationProfile: { displayName: 'mod-cats' } } } } as unknown as GraphQLContext,
+    {} as unknown as GraphQLResolveInfo
   )
 
   assert.equal(calls.update.length, 1)
@@ -254,8 +257,8 @@ test('redactTextVersionRevision uses the wiki delete permission for wiki revisio
   await resolver(
     null,
     { textVersionId: 'version-1' },
-    { user: { username: 'mod', data: { ModerationProfile: { displayName: 'mod-cats' } } } },
-    {}
+    { user: { username: 'mod', data: { ModerationProfile: { displayName: 'mod-cats' } } } } as unknown as GraphQLContext,
+    {} as unknown as GraphQLResolveInfo
   )
 
   assert.equal(calls.update.length, 1)
@@ -286,8 +289,8 @@ test('redactTextVersionRevision rejects mismatched revision types', async () => 
     resolver(
       null,
       { textVersionId: 'version-1' },
-      { user: { username: 'alice', data: { ModerationProfile: null } } },
-      {}
+      { user: { username: 'alice', data: { ModerationProfile: null } } } as unknown as GraphQLContext,
+      {} as unknown as GraphQLResolveInfo
     ),
     /comment revision not found/
   )
@@ -298,7 +301,7 @@ test('assertCanRedactRevision rejects non-authors without mod permission', async
     assertCanRedactRevision({
       context: {
         user: { username: 'bob', data: { ModerationProfile: { displayName: 'mod-bob' } } }
-      },
+      } as unknown as GraphQLContext,
       target: {
         targetType: 'wiki',
         targetId: 'wiki-1',

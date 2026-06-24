@@ -1,10 +1,16 @@
 import type {
   PluginModel,
   PluginVersionModel,
-  ServerConfigModel
+  ServerConfigModel,
+  PluginCreateInput,
+  PluginUpdateInput,
+  PluginVersionCreateInput,
+  PluginVersionUpdateInput
 } from '../../ogm_types.js'
 import { Storage } from '@google-cloud/storage'
+import type { GraphQLResolveInfo } from 'graphql'
 import { getManifestArtifacts } from './shared/pluginManifest.js'
+import type { GraphQLContext } from '../../types/context.js'
 
 type RegistryPlugin = {
   id: string
@@ -30,7 +36,7 @@ type Input = {
 const getResolver = (input: Input) => {
   const { Plugin, PluginVersion, ServerConfig } = input
 
-  return async (_parent: any, _args: any, _context: any, _resolveInfo: any) => {
+  return async (_parent: unknown, _args: unknown, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     try {
       // Get the server config to find registry URLs
       const serverConfigs = await ServerConfig.find({
@@ -78,10 +84,11 @@ const getResolver = (input: Input) => {
           }
           registryData = await response.json()
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Failed to fetch plugin registry:', error)
+        const message = error instanceof Error ? error.message : String(error)
         throw new Error(
-          `Failed to fetch plugin registry: ${(error as any).message}`
+          `Failed to fetch plugin registry: ${message}`
         )
       }
 
@@ -159,12 +166,14 @@ const getResolver = (input: Input) => {
                 }
               }
             }
-          } catch (versionError) {
-            console.warn(`Skipping version ${version.id} due to error:`, (versionError as any).message)
+          } catch (versionError: unknown) {
+            const message = versionError instanceof Error ? versionError.message : String(versionError)
+            console.warn(`Skipping version ${version.id} due to error:`, message)
           }
         }
-      } catch (orphanError) {
-        console.warn('Error while checking orphaned versions:', (orphanError as any).message)
+      } catch (orphanError: unknown) {
+        const message = orphanError instanceof Error ? orphanError.message : String(orphanError)
+        console.warn('Error while checking orphaned versions:', message)
         // Continue with normal processing even if orphan check fails
       }
 
@@ -193,8 +202,23 @@ for (const registryPlugin of registryData.plugins) {
         continue
       }
 
-      const manifest = artifacts.manifest || {}
-      const metadata = manifest.metadata || {}
+      type PluginManifestMetadata = {
+        author?: { name?: string; url?: string }
+        tags?: unknown[]
+        homepage?: string
+        license?: string
+        [key: string]: unknown
+      }
+      type PluginManifest = {
+        name?: string
+        description?: string
+        homepage?: string
+        license?: string
+        metadata?: PluginManifestMetadata
+        [key: string]: unknown
+      }
+      const manifest = (artifacts.manifest || {}) as PluginManifest
+      const metadata = (manifest.metadata || {}) as PluginManifestMetadata
       const author = metadata.author || {}
       const tags = Array.isArray(metadata.tags) ? metadata.tags : []
       const metadataValue =
@@ -227,7 +251,7 @@ for (const registryPlugin of registryData.plugins) {
               license: pluginUpdatePayload.license,
               tags: pluginUpdatePayload.tags,
               metadata: pluginUpdatePayload.metadata
-            } as any)
+            } as unknown as PluginCreateInput)
           ]
         })
         pluginRecord = createResult.plugins[0]
@@ -243,7 +267,7 @@ for (const registryPlugin of registryData.plugins) {
             license: pluginUpdatePayload.license,
             tags: pluginUpdatePayload.tags,
             metadata: pluginUpdatePayload.metadata
-          } as any)
+          } as unknown as PluginUpdateInput)
         })
       }
 
@@ -291,7 +315,7 @@ for (const registryPlugin of registryData.plugins) {
                   where: { node: { id: pluginRecord!.id } }
                 }
               }
-            } as any)
+            } as unknown as PluginVersionCreateInput)
           ]
         })
       } else {
@@ -311,7 +335,7 @@ for (const registryPlugin of registryData.plugins) {
             uiSchema,
             documentationPath: artifacts.readmePath ?? null,
             readmeMarkdown: artifacts.readmeMarkdown ?? null
-          } as any),
+          } as unknown as PluginVersionUpdateInput),
           connect: {
             Plugin: {
               where: { node: { id: pluginRecord!.id } }
@@ -319,8 +343,9 @@ for (const registryPlugin of registryData.plugins) {
           }
         })
       }
-    } catch (error) {
-      console.warn(`Failed to process version ${registryVersion.version} for plugin ${registryPlugin.id}:`, (error as any).message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.warn(`Failed to process version ${registryVersion.version} for plugin ${registryPlugin.id}:`, message)
       continue
     }
   }
@@ -368,8 +393,9 @@ for (const registryPlugin of registryData.plugins) {
           if (pluginWithVersions[0]) {
             pluginsWithVersions.push(pluginWithVersions[0])
           }
-        } catch (error) {
-          console.warn(`Could not load versions for plugin ${plugin.id}:`, (error as any).message)
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error)
+          console.warn(`Could not load versions for plugin ${plugin.id}:`, message)
           // Still include the plugin but with empty versions array
           pluginsWithVersions.push({
             ...plugin,
@@ -379,9 +405,10 @@ for (const registryPlugin of registryData.plugins) {
       }
       
       return pluginsWithVersions
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error in refreshPlugins resolver:', error)
-      throw new Error(`Failed to refresh plugins: ${(error as any).message}`)
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to refresh plugins: ${message}`)
     }
   }
 }

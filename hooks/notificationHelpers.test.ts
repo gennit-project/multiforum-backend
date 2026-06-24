@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createInAppNotification } from "./notificationHelpers.js";
+import type { UserModel } from "../ogm_types.js";
 
 // Minimal fake of the OGM User model: captures the update payload and returns a
 // configurable result (or throws).
@@ -24,7 +25,7 @@ const fakeUserModel = (
 test("returns true when the update reports an updated user", async () => {
   const UserModel = fakeUserModel({ users: [{ username: "alice" }] });
   const ok = await createInAppNotification({
-    UserModel,
+    UserModel: UserModel as unknown as UserModel,
     username: "alice",
     text: "hello",
   });
@@ -34,7 +35,7 @@ test("returns true when the update reports an updated user", async () => {
 test("returns false when no user was updated", async () => {
   const UserModel = fakeUserModel({ users: [] });
   const ok = await createInAppNotification({
-    UserModel,
+    UserModel: UserModel as unknown as UserModel,
     username: "ghost",
     text: "hello",
   });
@@ -44,7 +45,7 @@ test("returns false when no user was updated", async () => {
 test("returns false (and does not throw) when the update errors", async () => {
   const UserModel = fakeUserModel(null, { throwError: true });
   const ok = await createInAppNotification({
-    UserModel,
+    UserModel: UserModel as unknown as UserModel,
     username: "alice",
     text: "hello",
   });
@@ -54,7 +55,7 @@ test("returns false (and does not throw) when the update errors", async () => {
 test("targets the right user and creates an unread notification", async () => {
   const UserModel = fakeUserModel({ users: [{ username: "alice" }] });
   await createInAppNotification({
-    UserModel,
+    UserModel: UserModel as unknown as UserModel,
     username: "alice",
     text: "you were mentioned",
   });
@@ -71,7 +72,7 @@ test("targets the right user and creates an unread notification", async () => {
 test("includes notificationType when provided", async () => {
   const UserModel = fakeUserModel({ users: [{ username: "alice" }] });
   await createInAppNotification({
-    UserModel,
+    UserModel: UserModel as unknown as UserModel,
     username: "alice",
     text: "feedback left",
     notificationType: "feedback",

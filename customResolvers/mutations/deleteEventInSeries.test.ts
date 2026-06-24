@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import getResolver from "./deleteEventInSeries.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
@@ -64,13 +66,13 @@ test("deleteEventInSeries THIS_ONLY deletes only the specified event", async () 
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { eventId: "event-1", scope: "THIS_ONLY" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(deleteCalls.length, 1);
@@ -102,13 +104,13 @@ test("deleteEventInSeries THIS_AND_FUTURE deletes this and future occurrences", 
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { eventId: "event-1", scope: "THIS_AND_FUTURE" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   // Should delete event-1, event-2, event-3 (indices 1, 2, 3)
@@ -162,13 +164,13 @@ test("deleteEventInSeries THIS_AND_FUTURE deletes series when all occurrences re
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { eventId: "event-0", scope: "THIS_AND_FUTURE" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   // Should delete both events
@@ -203,13 +205,13 @@ test("deleteEventInSeries ALL_IN_SERIES deletes all occurrences and series", asy
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { eventId: "event-1", scope: "ALL_IN_SERIES" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   // Should delete all 4 events
@@ -241,10 +243,10 @@ test("deleteEventInSeries throws error when event not found", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
-    resolver(null, { eventId: "nonexistent", scope: "THIS_ONLY" }, {}, null),
+    resolver(null, { eventId: "nonexistent", scope: "THIS_ONLY" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo),
     { message: /Event not found/ }
   );
 });
@@ -261,14 +263,14 @@ test("deleteEventInSeries throws error for invalid scope", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
     resolver(
       null,
       { eventId: "event-1", scope: "INVALID" as any },
-      {},
-      null
+      {} as unknown as GraphQLContext,
+      null as unknown as GraphQLResolveInfo
     ),
     { message: /Invalid scope/ }
   );
@@ -303,14 +305,14 @@ test("deleteEventInSeries handles standalone event without series", async () => 
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   // Even with ALL_IN_SERIES scope, should only delete the single event
   const result = await resolver(
     null,
     { eventId: "event-solo", scope: "ALL_IN_SERIES" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(deleteCalls.length, 1);
@@ -340,13 +342,13 @@ test("deleteEventInSeries THIS_ONLY handles standalone event", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { eventId: "event-solo", scope: "THIS_ONLY" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(deleteCalls.length, 1);
@@ -375,13 +377,13 @@ test("deleteEventInSeries THIS_AND_FUTURE handles standalone event", async () =>
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { eventId: "event-solo", scope: "THIS_AND_FUTURE" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(deleteCalls.length, 1);
@@ -400,13 +402,13 @@ test("deleteEventInSeries closes session on success", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await resolver(
     null,
     { eventId: "event-1", scope: "THIS_ONLY" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(sessions[0].closeCalls, 1);
@@ -424,10 +426,10 @@ test("deleteEventInSeries closes session on error", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
-    resolver(null, { eventId: "event-1", scope: "THIS_ONLY" }, {}, null)
+    resolver(null, { eventId: "event-1", scope: "THIS_ONLY" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
   );
 
   assert.equal(sessions[0].closeCalls, 1);

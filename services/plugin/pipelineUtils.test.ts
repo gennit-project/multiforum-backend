@@ -106,7 +106,9 @@ async function testGetAttachmentUrlsWithUrl() {
 
 async function testGetAttachmentUrlsWithoutUrl() {
   const downloadableFile = { name: "file.zip", size: 1024 };
-  const urls = getAttachmentUrls(downloadableFile);
+  const urls = getAttachmentUrls(
+    downloadableFile as unknown as Parameters<typeof getAttachmentUrls>[0]
+  );
 
   assert.deepEqual(urls, [], "Should return empty array when no URL");
 }
@@ -296,7 +298,9 @@ async function testBuildPluginVersionMapsSinglePlugin() {
       node: { Plugin: { name: "scanner" }, version: "1.0.0" }
     }
   ];
-  const result = buildPluginVersionMaps(edges);
+  const result = buildPluginVersionMaps(
+    edges as unknown as Parameters<typeof buildPluginVersionMaps>[0]
+  );
 
   assert.equal(result.size, 1, "Should have one plugin");
   assert.equal(result.get("scanner")?.length, 1, "Should have one version");
@@ -318,7 +322,9 @@ async function testBuildPluginVersionMapsMultipleVersionsSorted() {
       node: { Plugin: { name: "scanner" }, version: "1.5.0" }
     }
   ];
-  const result = buildPluginVersionMaps(edges);
+  const result = buildPluginVersionMaps(
+    edges as unknown as Parameters<typeof buildPluginVersionMaps>[0]
+  );
 
   const versions = result.get("scanner");
   assert.equal(versions?.length, 3, "Should have 3 versions");
@@ -338,7 +344,9 @@ async function testBuildPluginVersionMapsSkipsDisabled() {
       node: { Plugin: { name: "scanner" }, version: "2.0.0" }
     }
   ];
-  const result = buildPluginVersionMaps(edges);
+  const result = buildPluginVersionMaps(
+    edges as unknown as Parameters<typeof buildPluginVersionMaps>[0]
+  );
 
   assert.equal(result.get("scanner")?.length, 1, "Should only include enabled versions");
   assert.equal(result.get("scanner")?.[0].version, "1.0.0", "Only enabled version should be present");
@@ -355,7 +363,9 @@ async function testBuildPluginVersionMapsMultiplePlugins() {
       node: { Plugin: { name: "notifier" }, version: "2.0.0" }
     }
   ];
-  const result = buildPluginVersionMaps(edges);
+  const result = buildPluginVersionMaps(
+    edges as unknown as Parameters<typeof buildPluginVersionMaps>[0]
+  );
 
   assert.equal(result.size, 2, "Should have two plugins");
   assert.ok(result.has("scanner"), "Should have scanner");
@@ -373,7 +383,9 @@ async function testBuildPluginVersionMapsSkipsMissingPluginName() {
       node: { Plugin: { name: "valid" }, version: "1.0.0" }
     }
   ];
-  const result = buildPluginVersionMaps(edges);
+  const result = buildPluginVersionMaps(
+    edges as unknown as Parameters<typeof buildPluginVersionMaps>[0]
+  );
 
   assert.equal(result.size, 1, "Should only include edges with plugin name");
   assert.ok(result.has("valid"), "Should have valid plugin");
@@ -391,10 +403,13 @@ async function testGetPluginForStepLatestVersion() {
     ]]
   ]);
 
-  const result = getPluginForStep(map, "scanner");
+  const result = getPluginForStep(
+    map as unknown as Parameters<typeof getPluginForStep>[0],
+    "scanner"
+  );
 
   assert.equal(result?.version, "2.0.0", "Should return latest version");
-  assert.equal(result?.edgeData.id, "v2", "Should return correct edge data");
+  assert.equal((result?.edgeData as unknown as { id: string }).id, "v2", "Should return correct edge data");
 }
 
 async function testGetPluginForStepSpecificVersion() {
@@ -405,10 +420,14 @@ async function testGetPluginForStepSpecificVersion() {
     ]]
   ]);
 
-  const result = getPluginForStep(map, "scanner", "1.0.0");
+  const result = getPluginForStep(
+    map as unknown as Parameters<typeof getPluginForStep>[0],
+    "scanner",
+    "1.0.0"
+  );
 
   assert.equal(result?.version, "1.0.0", "Should return requested version");
-  assert.equal(result?.edgeData.id, "v1", "Should return correct edge data");
+  assert.equal((result?.edgeData as unknown as { id: string }).id, "v1", "Should return correct edge data");
 }
 
 async function testGetPluginForStepVersionNotFound() {
@@ -418,7 +437,11 @@ async function testGetPluginForStepVersionNotFound() {
     ]]
   ]);
 
-  const result = getPluginForStep(map, "scanner", "1.0.0");
+  const result = getPluginForStep(
+    map as unknown as Parameters<typeof getPluginForStep>[0],
+    "scanner",
+    "1.0.0"
+  );
 
   assert.equal(result, null, "Should return null when requested version not found");
 }
@@ -428,7 +451,10 @@ async function testGetPluginForStepPluginNotFound() {
     ["scanner", [{ version: "1.0.0", edgeData: {} }]]
   ]);
 
-  const result = getPluginForStep(map, "notifier");
+  const result = getPluginForStep(
+    map as unknown as Parameters<typeof getPluginForStep>[0],
+    "notifier"
+  );
 
   assert.equal(result, null, "Should return null when plugin not found");
 }
@@ -438,7 +464,10 @@ async function testGetPluginForStepEmptyVersions() {
     ["scanner", []]
   ]);
 
-  const result = getPluginForStep(map, "scanner");
+  const result = getPluginForStep(
+    map as unknown as Parameters<typeof getPluginForStep>[0],
+    "scanner"
+  );
 
   assert.equal(result, null, "Should return null when no versions available");
 }

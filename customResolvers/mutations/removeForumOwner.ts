@@ -1,4 +1,6 @@
 import type { ChannelUpdateInput, ChannelModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type Args = {
   username: string;
@@ -11,7 +13,7 @@ type Input = {
 
 const getResolver = (input: Input) => {
   const { Channel } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, username } = args;
 
     if (!channelUniqueName || !username) {

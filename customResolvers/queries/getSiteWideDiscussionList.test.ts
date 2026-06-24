@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLContext } from "../../types/context.js";
 import getSiteWideDiscussionListResolver from "./getSiteWideDiscussionList.js";
 
 type SessionRunCall = {
@@ -23,14 +26,17 @@ const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
       },
       close: async () => {},
     }),
-  };
+  } as unknown as Driver & { runCalls: SessionRunCall[] };
 };
 
-const createMockContext = () => ({
-  req: {
-    headers: {},
-  },
-});
+const createMockContext = () =>
+  ({
+    req: {
+      headers: {},
+    },
+  }) as unknown as GraphQLContext;
+
+const mockInfo = null as unknown as GraphQLResolveInfo;
 
 const baseArgs = {
   searchInput: "",
@@ -56,7 +62,7 @@ test("getSiteWideDiscussionList passes empty search input when not provided", as
     driver,
   });
 
-  await resolver(null, { ...baseArgs, searchInput: "" } as any, createMockContext(), null);
+  await resolver(null, { ...baseArgs, searchInput: "" } as any, createMockContext(), mockInfo);
 
   assert.equal(driver.runCalls.length, 1);
   assert.equal(driver.runCalls[0].params.searchInput, "");
@@ -75,7 +81,7 @@ test("getSiteWideDiscussionList passes search input with regex pattern for title
     null,
     { ...baseArgs, searchInput: "hello world" } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.searchInput, "hello world");
@@ -95,7 +101,7 @@ test("getSiteWideDiscussionList passes empty array when no channels selected", a
     null,
     { ...baseArgs, selectedChannels: [] } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.deepEqual(driver.runCalls[0].params.selectedChannels, []);
@@ -113,7 +119,7 @@ test("getSiteWideDiscussionList passes selected channels to query", async () => 
     null,
     { ...baseArgs, selectedChannels: channels } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.deepEqual(driver.runCalls[0].params.selectedChannels, channels);
@@ -131,7 +137,7 @@ test("getSiteWideDiscussionList passes empty array when no tags selected", async
     null,
     { ...baseArgs, selectedTags: [] } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.deepEqual(driver.runCalls[0].params.selectedTags, []);
@@ -149,7 +155,7 @@ test("getSiteWideDiscussionList passes selected tags to query", async () => {
     null,
     { ...baseArgs, selectedTags: tags } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.deepEqual(driver.runCalls[0].params.selectedTags, tags);
@@ -167,7 +173,7 @@ test("getSiteWideDiscussionList passes showArchived=false to exclude archived di
     null,
     { ...baseArgs, showArchived: false } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.showArchived, false);
@@ -184,7 +190,7 @@ test("getSiteWideDiscussionList passes showArchived=true to include archived dis
     null,
     { ...baseArgs, showArchived: true } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.showArchived, true);
@@ -202,7 +208,7 @@ test("getSiteWideDiscussionList passes hasDownload=false to exclude downloads", 
     null,
     { ...baseArgs, hasDownload: false } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.hasDownload, false);
@@ -219,7 +225,7 @@ test("getSiteWideDiscussionList passes hasDownload=true to filter for downloads"
     null,
     { ...baseArgs, hasDownload: true } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.hasDownload, true);
@@ -237,7 +243,7 @@ test("getSiteWideDiscussionList sorts by new with sortOption=new", async () => {
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "new" } } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "new");
@@ -255,7 +261,7 @@ test("getSiteWideDiscussionList sorts by top with sortOption=top and time frame"
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "top", timeFrame: "month" } } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "top");
@@ -273,7 +279,7 @@ test("getSiteWideDiscussionList sorts by hot with sortOption=hot as default", as
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "hot" } } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "hot");
@@ -290,7 +296,7 @@ test("getSiteWideDiscussionList defaults to hot sort for unknown sort option", a
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "invalid" } } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "hot");
@@ -308,7 +314,7 @@ test("getSiteWideDiscussionList passes offset and limit from options", async () 
     null,
     { ...baseArgs, options: { ...baseArgs.options, offset: "50", limit: "25" } } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.offset, "50");
@@ -326,7 +332,7 @@ test("getSiteWideDiscussionList passes resultsOrder from options", async () => {
     null,
     { ...baseArgs, options: { ...baseArgs.options, resultsOrder: "asc" } } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.resultsOrder, "asc");
@@ -344,7 +350,7 @@ test("getSiteWideDiscussionList passes null when no user is logged in", async ()
     null,
     { ...baseArgs, loggedInUsername: undefined } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.loggedInUsername, null);
@@ -361,7 +367,7 @@ test("getSiteWideDiscussionList passes username when user is logged in", async (
     null,
     { ...baseArgs, loggedInUsername: "alice" } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   assert.equal(driver.runCalls[0].params.loggedInUsername, "alice");
@@ -382,7 +388,7 @@ test("getSiteWideDiscussionList returns discussions and aggregateCount", async (
     driver,
   });
 
-  const result = await resolver(null, baseArgs as any, createMockContext(), null);
+  const result = await resolver(null, baseArgs as any, createMockContext(), mockInfo);
 
   assert.ok(result.discussions);
   assert.equal(result.discussions.length, 1);
@@ -397,7 +403,7 @@ test("getSiteWideDiscussionList returns empty array and zero count when no resul
     driver,
   });
 
-  const result = await resolver(null, baseArgs as any, createMockContext(), null);
+  const result = await resolver(null, baseArgs as any, createMockContext(), mockInfo);
 
   assert.deepEqual(result.discussions, []);
   assert.equal(result.aggregateDiscussionCount, 0);
@@ -415,7 +421,7 @@ test("getSiteWideDiscussionList returns multiple discussions", async () => {
     driver,
   });
 
-  const result = await resolver(null, baseArgs as any, createMockContext(), null);
+  const result = await resolver(null, baseArgs as any, createMockContext(), mockInfo);
 
   assert.equal(result.discussions.length, 3);
   assert.equal(result.discussions[0].id, "d-1");
@@ -432,14 +438,14 @@ test("getSiteWideDiscussionList throws error with message when query fails", asy
       },
       close: async () => {},
     }),
-  };
+  } as unknown as Driver;
   const resolver = getSiteWideDiscussionListResolver({
     Discussion: {} as any,
     driver,
   });
 
   await assert.rejects(
-    () => resolver(null, baseArgs as any, createMockContext(), null),
+    () => resolver(null, baseArgs as any, createMockContext(), mockInfo),
     {
       message: /Failed to fetch discussions.*Database unavailable/,
     }
@@ -473,7 +479,7 @@ test("getSiteWideDiscussionList applies multiple filters together", async () => 
       },
     } as any,
     createMockContext(),
-    null
+    mockInfo
   );
 
   const params = driver.runCalls[0].params;

@@ -1,4 +1,12 @@
 import { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLContext } from '../types/context.js';
+import type {
+  CommentModel,
+  DiscussionModel,
+  EventModel,
+  IssueModel,
+  EventUpdateInput,
+} from '../ogm_types.js';
 import {
   createIssueActivityFeedItems,
   getAttributionFromContext,
@@ -7,10 +15,10 @@ import {
 
 type Resolver = (
   parent: unknown,
-  args: any,
-  context: any,
+  args: unknown,
+  context: GraphQLContext,
   info: GraphQLResolveInfo
-) => Promise<any>;
+) => Promise<{ nodesDeleted?: number } | undefined>;
 
 type AuthorInfo = {
   label: string | null;
@@ -29,7 +37,7 @@ const formatUserLabel = (input: {
 };
 
 const getDeleteAttribution = (input: {
-  context: any;
+  context: GraphQLContext;
   authorUsername: string | null;
 }) => {
   const { context, authorUsername } = input;
@@ -49,7 +57,7 @@ const getDeleteAttribution = (input: {
 };
 
 const getCommentAuthorInfo = async (
-  CommentModel: any,
+  CommentModel: CommentModel,
   commentId: string
 ): Promise<AuthorInfo> => {
   const comments = await CommentModel.find({
@@ -69,7 +77,10 @@ const getCommentAuthorInfo = async (
   });
 
   const comment = comments?.[0];
-  const author = comment?.CommentAuthor || null;
+  const author = (comment?.CommentAuthor || null) as {
+    username?: string | null;
+    displayName?: string | null;
+  } | null;
   const username = author?.username || null;
   const displayName = author?.displayName || null;
 
@@ -80,7 +91,7 @@ const getCommentAuthorInfo = async (
 };
 
 const getDiscussionAuthorInfo = async (
-  DiscussionModel: any,
+  DiscussionModel: DiscussionModel,
   discussionId: string
 ): Promise<AuthorInfo> => {
   const discussions = await DiscussionModel.find({
@@ -106,7 +117,7 @@ const getDiscussionAuthorInfo = async (
 };
 
 const getEventAuthorInfo = async (
-  EventModel: any,
+  EventModel: EventModel,
   eventId: string
 ): Promise<AuthorInfo> => {
   const events = await EventModel.find({
@@ -132,7 +143,7 @@ const getEventAuthorInfo = async (
 };
 
 const issueHasDeleteActivity = async (
-  IssueModel: any,
+  IssueModel: IssueModel,
   issueId: string
 ): Promise<boolean> => {
   try {
@@ -162,7 +173,7 @@ const recordDeleteClosure = async (input: {
   };
   actionDescription: string;
   authorInfo?: AuthorInfo | null;
-  context: any;
+  context: GraphQLContext;
 }) => {
   const { issueLookup, actionDescription, authorInfo, context } = input;
   const IssueModel = context?.ogm?.model('Issue');
@@ -229,7 +240,7 @@ const recordEditActivity = async (input: {
     eventId?: string;
   };
   actionDescription: string;
-  context: any;
+  context: GraphQLContext;
 }) => {
   const { issueLookup, actionDescription, context } = input;
   const IssueModel = context?.ogm?.model('Issue');
@@ -260,7 +271,7 @@ const issueActivityFeedMiddleware = {
       resolve: Resolver,
       parent: unknown,
       args: { where?: { id?: string } },
-      context: any,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const commentId = args?.where?.id;
@@ -283,7 +294,7 @@ const issueActivityFeedMiddleware = {
       resolve: Resolver,
       parent: unknown,
       args: { where?: { id?: string } },
-      context: any,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const discussionId = args?.where?.id;
@@ -306,7 +317,7 @@ const issueActivityFeedMiddleware = {
       resolve: Resolver,
       parent: unknown,
       args: { where?: { id?: string } },
-      context: any,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const eventId = args?.where?.id;
@@ -328,8 +339,8 @@ const issueActivityFeedMiddleware = {
     updateEvents: async (
       resolve: Resolver,
       parent: unknown,
-      args: { where?: { id?: string }; update?: Record<string, any> },
-      context: any,
+      args: { where?: { id?: string }; update?: EventUpdateInput },
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info);
@@ -348,7 +359,7 @@ const issueActivityFeedMiddleware = {
       resolve: Resolver,
       parent: unknown,
       args: { where?: { id?: string } },
-      context: any,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info);

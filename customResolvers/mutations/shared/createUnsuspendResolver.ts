@@ -1,4 +1,6 @@
 import { GraphQLError } from 'graphql'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../../types/context.js'
 import type {
   ChannelModel,
   IssueModel,
@@ -7,6 +9,8 @@ import type {
   EventModel,
   ServerConfigModel,
   IssueUpdateInput,
+  ChannelUpdateInput,
+  ServerConfigUpdateInput,
   UserModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
@@ -51,10 +55,10 @@ export function createUnsuspendResolver ({
   suspendedEntityName,
 }: CreateUnsuspendResolverOptions) {
   return async function unsuspendEntityResolver (
-    parent: any,
+    parent: unknown,
     args: Args,
-    context: any,
-    resolveInfo: any
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
   ) {
     const { issueId, explanation } = args
     const actionChannelName = process.env.SERVER_CONFIG_NAME || 'server'
@@ -155,7 +159,7 @@ export function createUnsuspendResolver ({
     })
 
     // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput: any = null
+    let channelUpdateInput: ChannelUpdateInput | ServerConfigUpdateInput | null = null
     if (relatedAccountType === 'User') {
       channelUpdateInput = {
         SuspendedUsers: [
@@ -199,12 +203,12 @@ export function createUnsuspendResolver ({
         if (scope === 'server') {
           await ServerConfig.update({
             where: { serverName: process.env.SERVER_CONFIG_NAME },
-            update: channelUpdateInput as any
+            update: channelUpdateInput as ServerConfigUpdateInput
           })
         } else {
           await Channel.update({
             where: { uniqueName: channelUniqueName },
-            update: channelUpdateInput as any
+            update: channelUpdateInput as ChannelUpdateInput
           })
         }
       } catch (err) {

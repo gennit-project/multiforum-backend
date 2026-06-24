@@ -1,9 +1,13 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { getSiteWideDiscussionsQuery } from "../cypher/cypherQueries.js";
 import { timeFrameOptions } from "./utils.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { DiscussionModel } from "../../ogm_types.js";
 
 type Input = {
-  Discussion: any;
-  driver: any;
+  Discussion: DiscussionModel;
+  driver: Driver;
 };
 
 enum timeFrameOptionKeys {
@@ -32,7 +36,7 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver, Discussion } = input;
 
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, loggedInUsername, options } = args;
     const { offset, limit, resultsOrder, sort, timeFrame } = options || {};
 
@@ -68,7 +72,7 @@ const getResolver = (input: Input) => {
           if (newRecord) {
             totalCount = newRecord.get("totalCount");
           }
-          let discussions = newDiscussionResult.records.map((record: any) => {
+          let discussions = newDiscussionResult.records.map((record: Neo4jRecord) => {
             return record.get("discussion");
           });
 
@@ -112,7 +116,7 @@ const getResolver = (input: Input) => {
             totalCount = topRecord.get("totalCount");
           }
           let topDiscussions = topDiscussionsResult.records.map(
-            (record: any) => record.get("discussion")
+            (record: Neo4jRecord) => record.get("discussion")
           );
 
           return {
@@ -148,7 +152,7 @@ const getResolver = (input: Input) => {
             totalCount = hotRecord.get("totalCount");
           }
           let hotDiscussions = hotDiscussionsResult.records.map(
-            (record: any) => record.get("discussion")
+            (record: Neo4jRecord) => record.get("discussion")
           );
 
           return {
@@ -156,9 +160,10 @@ const getResolver = (input: Input) => {
             aggregateDiscussionCount: totalCount,
           };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error getting discussions:", error);
-      throw new Error(`Failed to fetch discussions. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch discussions. ${message}`);
     } finally {
       session.close();
     }

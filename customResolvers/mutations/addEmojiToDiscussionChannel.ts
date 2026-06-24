@@ -1,5 +1,8 @@
 import { updateEmoji } from "./updateEmoji.js";
 import { assertDiscussionChannelEmojiEnabled } from "./channelPreferenceGuards.js";
+import type { DiscussionChannelModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type Args = {
   discussionChannelId: string;
@@ -8,13 +11,13 @@ type Args = {
   username: string;
 };
 
-type Input = { 
-  DiscussionChannel: any;
+type Input = {
+  DiscussionChannel: DiscussionChannelModel;
 };
 
 const getResolver = (input: Input) => {
   const { DiscussionChannel } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { discussionChannelId, emojiLabel, unicode, username } = args;
 
     if (!discussionChannelId || !emojiLabel || !unicode || !username) {

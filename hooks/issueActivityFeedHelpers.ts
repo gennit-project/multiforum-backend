@@ -1,4 +1,6 @@
-type IssueModel = any;
+import type { Driver } from "neo4j-driver";
+import type { IssueModel, ModerationActionCreateInput, IssueWhere } from "../ogm_types.js";
+import type { GraphQLContext } from "../types/context.js";
 
 type ActivityAttribution = {
   username?: string | null;
@@ -13,7 +15,7 @@ type RelatedIssueLookup = {
 
 type IssueActivityInput = {
   IssueModel: IssueModel;
-  driver?: any;
+  driver?: Driver;
   issueIds: string[];
   actionDescription: string;
   actionType?: string;
@@ -26,7 +28,7 @@ type IssueActivityInput = {
 
 import { notifyIssueSubscribers } from "../services/issueNotifications.js";
 
-export const getAttributionFromContext = (context: any): ActivityAttribution => {
+export const getAttributionFromContext = (context: GraphQLContext): ActivityAttribution => {
   return {
     username: context?.user?.username || null,
     modProfileName: context?.user?.data?.ModerationProfile?.displayName || null,
@@ -38,7 +40,7 @@ export const getIssueIdsForRelated = async (
   related: RelatedIssueLookup
 ): Promise<string[]> => {
   try {
-    const where: Record<string, string> = {};
+    const where: IssueWhere = {};
     if (related.discussionId) {
       where.relatedDiscussionId = related.discussionId;
     }
@@ -60,7 +62,9 @@ export const getIssueIdsForRelated = async (
       }`,
     });
 
-    return issues.map((issue: { id?: string }) => issue.id).filter(Boolean);
+    return issues
+      .map((issue: { id?: string }) => issue.id)
+      .filter((id): id is string => Boolean(id));
   } catch (error) {
     console.error('Error fetching related issues:', error);
     return [];
@@ -87,7 +91,7 @@ export const createIssueActivityFeedItems = async (
     return;
   }
 
-  const activityNode: Record<string, any> = {
+  const activityNode: ModerationActionCreateInput = {
     actionDescription,
     actionType,
   };

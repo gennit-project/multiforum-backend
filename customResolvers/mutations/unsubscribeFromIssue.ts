@@ -1,18 +1,28 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { IssueModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+
 type Args = {
   issueId: string;
 };
 
 type Input = {
-  Issue: any;
-  driver: any;
+  Issue: IssueModel;
+  driver: Driver;
 };
 
 const getResolver = (input: Input) => {
   const { Issue, driver } = input;
 
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    info: GraphQLResolveInfo
+  ) => {
     const { issueId } = args;
-    const { username } = context.user;
+    const { username } = context.user!;
 
     if (!username) {
       throw new Error("Authentication required");
@@ -48,9 +58,10 @@ const getResolver = (input: Input) => {
       });
 
       return result[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error unsubscribing from issue:", error);
-      throw new Error(`Failed to unsubscribe from issue: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to unsubscribe from issue: ${message}`);
     } finally {
       session.close();
     }

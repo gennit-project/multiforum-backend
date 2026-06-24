@@ -1,5 +1,7 @@
+import type { UserModel } from '../ogm_types.js';
+
 export type CreateInAppNotificationInput = {
-  UserModel: any;
+  UserModel: UserModel;
   username: string;
   text: string;
 };

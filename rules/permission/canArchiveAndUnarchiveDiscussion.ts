@@ -2,9 +2,17 @@ import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import { resolveChannelForModPermission } from "./resolveChannelForModPermission.js";
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
+
+interface CanArchiveAndUnarchiveDiscussionArgs {
+  channelUniqueName?: string;
+  issueId?: string;
+  where?: { id?: string };
+}
 
 export const canArchiveAndUnarchiveDiscussion = rule({ cache: "contextual" })(
-  async (parent: any, args: any, context: any, info: any) => {
+  async (parent: unknown, args: CanArchiveAndUnarchiveDiscussionArgs, context: GraphQLContext, info: GraphQLResolveInfo) => {
     let channelUniqueName = args.channelUniqueName;
     // Support both direct issueId arg and where.id from updateIssues mutation
     const issueId = args.issueId || args.where?.id;

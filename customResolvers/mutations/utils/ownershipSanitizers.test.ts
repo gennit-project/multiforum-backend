@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { AlbumImagesFieldInput } from "../../../ogm_types.js";
 import {
   sanitizeAlbumCreateInput,
   sanitizeImagesFieldInput,
@@ -62,7 +63,9 @@ test("sanitizeAlbumCreateInput preserves other album properties", () => {
   const result = sanitizeAlbumCreateInput(clientInput, "user");
 
   assert.deepEqual(result.imageOrder, ["img1", "img2", "img3"]);
-  assert.equal(result.someCustomField, "value");
+  // `someCustomField` is an arbitrary client field preserved by the spread but
+  // not part of the generated AlbumCreateInput, so read it through a record view.
+  assert.equal((result as Record<string, unknown>).someCustomField, "value");
 });
 
 test("sanitizeAlbumCreateInput sanitizes nested Images.create entries", () => {
@@ -91,7 +94,8 @@ test("sanitizeAlbumCreateInput sanitizes nested Images.create entries", () => {
 
   const result = sanitizeAlbumCreateInput(clientInput, "real-user");
 
-  assert.deepEqual(result.Images.create[0].node.Uploader, {
+  const imageNode = result.Images?.create?.[0]?.node;
+  assert.deepEqual(imageNode?.Uploader, {
     connect: {
       where: {
         node: {
@@ -100,8 +104,8 @@ test("sanitizeAlbumCreateInput sanitizes nested Images.create entries", () => {
       },
     },
   });
-  assert.equal(result.Images.create[0].node.url, "https://example.com/image.jpg");
-  assert.equal(result.Images.create[0].node.alt, "Test image");
+  assert.equal(imageNode?.url, "https://example.com/image.jpg");
+  assert.equal(imageNode?.alt, "Test image");
 });
 
 test("sanitizeAlbumCreateInput handles null/undefined input", () => {
@@ -141,11 +145,11 @@ test("sanitizeImagesFieldInput replaces Uploader in all create entries", () => {
 
   const result = sanitizeImagesFieldInput(imagesField, "legitimate-user");
 
-  assert.equal(result.create.length, 2);
-  assert.deepEqual(result.create[0].node.Uploader, {
+  assert.equal(result?.create?.length, 2);
+  assert.deepEqual(result?.create?.[0]?.node?.Uploader, {
     connect: { where: { node: { username: "legitimate-user" } } },
   });
-  assert.deepEqual(result.create[1].node.Uploader, {
+  assert.deepEqual(result?.create?.[1]?.node?.Uploader, {
     connect: { where: { node: { username: "legitimate-user" } } },
   });
 });
@@ -169,10 +173,11 @@ test("sanitizeImagesFieldInput preserves image properties while replacing Upload
 
   const result = sanitizeImagesFieldInput(imagesField, "correct-user");
 
-  assert.equal(result.create[0].node.url, "https://example.com/photo.jpg");
-  assert.equal(result.create[0].node.alt, "A photo");
-  assert.equal(result.create[0].node.caption, "My caption");
-  assert.equal(result.create[0].node.copyright, "CC-BY-4.0");
+  const node = result?.create?.[0]?.node;
+  assert.equal(node?.url, "https://example.com/photo.jpg");
+  assert.equal(node?.alt, "A photo");
+  assert.equal(node?.caption, "My caption");
+  assert.equal(node?.copyright, "CC-BY-4.0");
 });
 
 test("sanitizeImagesFieldInput handles missing create field", () => {
@@ -199,7 +204,7 @@ test("sanitizeImagesFieldInput handles entries without node property", () => {
 
   const result = sanitizeImagesFieldInput(imagesField, "user");
 
-  assert.deepEqual(result.create[0], { someOtherStructure: "value" });
+  assert.deepEqual(result?.create?.[0], { someOtherStructure: "value" });
 });
 
 test("sanitizeImagesFieldInput handles single object create (not array)", () => {
@@ -217,8 +222,8 @@ test("sanitizeImagesFieldInput handles single object create (not array)", () => 
   const result = sanitizeImagesFieldInput(imagesField, "real-user");
 
   // Should be converted to array
-  assert.ok(Array.isArray(result.create));
-  assert.deepEqual(result.create[0].node.Uploader, {
+  assert.ok(Array.isArray(result?.create));
+  assert.deepEqual(result?.create?.[0]?.node?.Uploader, {
     connect: { where: { node: { username: "real-user" } } },
   });
 });
@@ -234,7 +239,7 @@ test("sanitizeAlbumCreateNode delegates to sanitizeAlbumCreateInput", () => {
 
   const result = sanitizeAlbumCreateNode(node, "correct");
 
-  assert.deepEqual(result.Owner, {
+  assert.deepEqual(result?.Owner, {
     connect: { where: { node: { username: "correct" } } },
   });
 });
@@ -255,8 +260,8 @@ test("sanitizeAlbumUpdateNode strips Owner from update input", () => {
 
   const result = sanitizeAlbumUpdateNode(updateNode, "current-owner");
 
-  assert.equal(result.Owner, undefined);
-  assert.deepEqual(result.imageOrder, ["x", "y", "z"]);
+  assert.equal(result?.Owner, undefined);
+  assert.deepEqual(result?.imageOrder, ["x", "y", "z"]);
 });
 
 test("sanitizeAlbumUpdateNode sanitizes nested Images.create in updates", () => {
@@ -278,7 +283,11 @@ test("sanitizeAlbumUpdateNode sanitizes nested Images.create in updates", () => 
 
   const result = sanitizeAlbumUpdateNode(updateNode, "real-owner");
 
-  assert.deepEqual(result.Images.create[0].node.Uploader, {
+  // On the update path Images carries the create-field shape, which diverges
+  // from the array form on the generated AlbumUpdateInput, so view it as the
+  // generated AlbumImagesFieldInput.
+  const images = result?.Images as AlbumImagesFieldInput | undefined;
+  assert.deepEqual(images?.create?.[0]?.node?.Uploader, {
     connect: { where: { node: { username: "real-owner" } } },
   });
 });
@@ -296,6 +305,7 @@ test("sanitizeAlbumUpdateNode preserves non-ownership fields", () => {
 
   const result = sanitizeAlbumUpdateNode(updateNode, "user");
 
-  assert.deepEqual(result.imageOrder, ["1", "2", "3"]);
-  assert.equal(result.customField, "preserved");
+  assert.deepEqual(result?.imageOrder, ["1", "2", "3"]);
+  // Arbitrary client field preserved by the spread but not on AlbumUpdateInput.
+  assert.equal((result as Record<string, unknown>).customField, "preserved");
 });

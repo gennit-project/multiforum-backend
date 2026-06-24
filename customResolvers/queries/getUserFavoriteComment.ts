@@ -1,7 +1,10 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type Input = {
-  driver: any;
+  driver: Driver;
 };
 
 type Args = {
@@ -10,7 +13,7 @@ type Args = {
 
 const getResolver = (input: Input) => {
   const { driver } = input;
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { commentId } = args;
 
     context.user = await setUserDataOnContext({
@@ -40,9 +43,10 @@ const getResolver = (input: Input) => {
 
       const firstRecord = result.records[0];
       return firstRecord ? !!firstRecord.get("isFavorited") : false;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error checking favorite comment:", error);
-      throw new Error(`Failed to check favorite comment. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to check favorite comment. ${message}`);
     } finally {
       session.close();
     }

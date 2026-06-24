@@ -9,6 +9,9 @@ import type {
   CommentUpdateInput,
   CommentWhere,
 } from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import { getFinalCommentText } from "./reportDiscussion.js";
@@ -31,7 +34,7 @@ type Args = {
 type Input = {
   Issue: IssueModel;
   Comment: CommentModel;
-  driver: any;
+  driver: Driver;
 };
 
 type CommentAuthorForNotification =
@@ -105,7 +108,7 @@ const buildArchivedCommentUrl = ({
 
 const getResolver = (input: Input) => {
   const { Issue, Comment, driver } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { commentId, selectedForumRules, selectedServerRules, reportText } =
       args;
 

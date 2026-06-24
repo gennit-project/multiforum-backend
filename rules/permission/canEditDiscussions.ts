@@ -1,6 +1,7 @@
 import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type CanEditDiscussionsArgs = {
   where?: {
@@ -10,8 +11,12 @@ type CanEditDiscussionsArgs = {
   discussionId?: string;
 };
 
+type DiscussionChannelLookup = {
+  DiscussionChannels?: Array<{ channelUniqueName?: string | null }> | null;
+};
+
 export const canEditDiscussions = rule({ cache: "contextual" })(
-  async (parent: any, args: CanEditDiscussionsArgs, context: any) => {
+  async (parent: unknown, args: CanEditDiscussionsArgs, context: GraphQLContext) => {
     const discussionIds: string[] = [];
 
     if (args.discussionId) {
@@ -62,7 +67,9 @@ export const canEditDiscussions = rule({ cache: "contextual" })(
   }
 );
 
-export const collectDiscussionChannelConnections = (discussions: Array<any>) => {
+export const collectDiscussionChannelConnections = (
+  discussions: Array<DiscussionChannelLookup>
+) => {
   const channelConnections = new Set<string>();
 
   for (const discussion of discussions) {

@@ -1,7 +1,10 @@
 import type {
+  ServerConfig,
   ServerConfigUpdateInput,
   ServerConfigModel,
 } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 
 type Args = {
@@ -14,7 +17,7 @@ type Input = {
 
 const getResolver = (input: Input) => {
   const { ServerConfig } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { serverName } = args;
     if (!serverName) {
       throw new Error("All arguments (serverName) are required");
@@ -44,8 +47,7 @@ const getResolver = (input: Input) => {
       }`,
     });
 
-    // Note: Using type assertion until OGM types are regenerated
-    const serverConfig = serverConfigWithPendingInvite[0] as any;
+    const serverConfig: ServerConfig | undefined = serverConfigWithPendingInvite[0];
     if (!serverConfig?.PendingAdminInvites?.some(
       (invite: { username: string }) => invite.username === loggedInUsername
     )) {

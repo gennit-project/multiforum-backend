@@ -1,4 +1,5 @@
 import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
+import type { Ogm } from "../../types/context.js";
 
 type Args = {
   filename: string;
@@ -7,7 +8,7 @@ type Args = {
 };
 
 interface ValidationContext {
-  ogm: any;
+  ogm: Ogm;
 }
 
 type ChannelUploadPreferences = {
@@ -151,7 +152,7 @@ export const validateFile = async (
 };
 
 const createSignedStorageURL = () => {
-  return async (parent: any, args: Args, ctx: ValidationContext) => {
+  return async (parent: unknown, args: Args, ctx: ValidationContext) => {
     let { filename, contentType, channelConnections = [] } = args;
 
     if (!isUrlEncoded(filename)) {

@@ -1,6 +1,7 @@
 import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type CanEditEventsArgs = {
   where?: {
@@ -10,8 +11,12 @@ type CanEditEventsArgs = {
   eventId?: string;
 };
 
+type EventChannelLookup = {
+  EventChannels?: Array<{ channelUniqueName?: string | null }> | null;
+};
+
 export const canEditEvents = rule({ cache: "contextual" })(
-  async (parent: any, args: CanEditEventsArgs, context: any) => {
+  async (parent: unknown, args: CanEditEventsArgs, context: GraphQLContext) => {
     const eventIds: string[] = [];
 
     if (args.eventId) {
@@ -62,7 +67,9 @@ export const canEditEvents = rule({ cache: "contextual" })(
   }
 );
 
-export const collectEventChannelConnections = (events: Array<any>) => {
+export const collectEventChannelConnections = (
+  events: Array<EventChannelLookup>
+) => {
   const channelConnections = new Set<string>();
 
   for (const event of events) {

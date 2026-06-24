@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import {
   ChannelWhere,
@@ -31,7 +33,7 @@ type IsChannelOwnerInput = {
 };
 
 export const isChannelOwner = rule({ cache: "contextual" })(
-  async (parent: any, args: IsChannelOwnerInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IsChannelOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     console.log('🔐 isChannelOwner rule called with args:', JSON.stringify(args));
 
     // set user data
@@ -77,8 +79,8 @@ export const isChannelOwner = rule({ cache: "contextual" })(
       }
 
       // Try to get channel name from either DiscussionChannel or Channel
-      uniqueName = comment[0]?.DiscussionChannel?.channelUniqueName || 
-                  comment[0]?.Channel?.uniqueName;
+      uniqueName = comment[0]?.DiscussionChannel?.channelUniqueName ||
+                  comment[0]?.Channel?.uniqueName || "";
 
       if (!uniqueName) {
         throw new Error(ERROR_MESSAGES.channel.notFound);
@@ -103,7 +105,7 @@ export const isChannelOwner = rule({ cache: "contextual" })(
         return false;
       }
 
-      uniqueName = issue[0].channelUniqueName;
+      uniqueName = issue[0].channelUniqueName ?? "";
     }
 
     if (!uniqueName) {
@@ -136,7 +138,7 @@ export const isChannelOwner = rule({ cache: "contextual" })(
     const channelOwners = channel[0].Admins.map((admin) => admin.username);
 
     // Check if the user is in the list of channel owners.
-    if (!channelOwners.includes(username)) {
+    if (!channelOwners.includes(username ?? "")) {
       return false;  // Permission check - return false to allow OR to work
     }
 
@@ -152,7 +154,7 @@ type IsDiscussionOwnerInput = {
 };
 
 export const isDiscussionOwner = rule({ cache: "contextual" })(
-  async (parent: any, args: IsDiscussionOwnerInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IsDiscussionOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     let discussionId;
 
     const { where } = args;
@@ -213,7 +215,7 @@ type IsEventOwnerInput = {
 };
 
 export const isEventOwner = rule({ cache: "contextual" })(
-  async (parent: any, args: IsEventOwnerInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IsEventOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
 
     let eventId;
 
@@ -273,7 +275,7 @@ type IsCommentAuthorInput = {
 };
 
 export const isCommentAuthor = rule({ cache: "contextual" })(
-  async (parent: any, args: IsCommentAuthorInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IsCommentAuthorInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     console.log("isCommentAuthor rule");
     const { where } = args;
     const commentId  = where.id
@@ -357,7 +359,7 @@ interface IsAccountOwnerArgs {
 }
 // Check if the user is the owner of the account.
 export const isAccountOwner = rule({ cache: "contextual" })(
-  async (parent: any, args: IsAccountOwnerArgs, ctx: any, info: any) => {
+  async (parent: { username?: string } | undefined, args: IsAccountOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     // When accessing nested fields like FavoriteChannels, the username comes from the parent User object
     const username  = parent?.username || args.where?.username || args.username;
 
@@ -387,7 +389,7 @@ type IsCollectionOwnerArgs = {
 };
 
 export const isCollectionOwner = rule({ cache: "contextual" })(
-  async (parent: any, args: IsCollectionOwnerArgs, ctx: any, info: any) => {
+  async (parent: { id?: string } | undefined, args: IsCollectionOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     ctx.user = await setUserDataOnContext({
       context: ctx,
       getPermissionInfo: false,
@@ -464,7 +466,7 @@ type IsDiscussionChannelOwnerInput = {
 };
 
 export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
-  async (parent: any, args: IsDiscussionChannelOwnerInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IsDiscussionChannelOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     // Set user data
     ctx.user = await setUserDataOnContext({
       context: ctx,
@@ -522,7 +524,7 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
 
       if (channels && channels.length > 0) {
         const channelAdmins = channels[0].Admins.map((admin: User) => admin.username);
-        if (channelAdmins.includes(username)) {
+        if (channelAdmins.includes(username ?? "")) {
           return true;
         }
       }
@@ -540,7 +542,7 @@ type IsImageUploaderInput = {
 };
 
 export const isImageUploader = rule({ cache: "contextual" })(
-  async (parent: any, args: IsImageUploaderInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IsImageUploaderInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
     const imageId = where?.id;
 
@@ -608,7 +610,7 @@ type IsIssueAuthorInput = {
  * The issue author can be either a User or a ModerationProfile.
  */
 export const isIssueAuthor = rule({ cache: "contextual" })(
-  async (parent: any, args: IsIssueAuthorInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IsIssueAuthorInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
     const issueId = where?.id;
 
@@ -684,7 +686,7 @@ type IssueWithLocked = Issue & { locked?: boolean };
  * Locked issues cannot be modified by OPs (only by moderators).
  */
 export const issueIsNotLocked = rule({ cache: "contextual" })(
-  async (parent: any, args: IssueIsNotLockedInput, ctx: any, info: any) => {
+  async (parent: unknown, args: IssueIsNotLockedInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
     const issueId = where?.id;
     const ogm = ctx.ogm;
@@ -695,10 +697,10 @@ export const issueIsNotLocked = rule({ cache: "contextual" })(
 
     const IssueModel = ogm.model("Issue");
 
-    const issues: IssueWithLocked[] = await IssueModel.find({
+    const issues = (await IssueModel.find({
       where: { id: issueId },
       selectionSet: `{ locked }`,
-    });
+    })) as unknown as IssueWithLocked[];
 
     if (!issues || issues.length === 0) {
       throw new Error(ERROR_MESSAGES.issue.notFound);

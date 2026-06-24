@@ -1,6 +1,7 @@
 import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type CanEditCommentsArgs = {
   where?: {
@@ -10,8 +11,17 @@ type CanEditCommentsArgs = {
   commentId?: string;
 };
 
+type CommentChannelLookup = {
+  Channel?: { uniqueName?: string | null } | null;
+  DiscussionChannel?: { channelUniqueName?: string | null } | null;
+  Event?: {
+    EventChannels?: Array<{ channelUniqueName?: string | null }> | null;
+  } | null;
+  Issue?: { channelUniqueName?: string | null } | null;
+};
+
 export const canEditComments = rule({ cache: "contextual" })(
-  async (parent: any, args: CanEditCommentsArgs, context: any) => {
+  async (parent: unknown, args: CanEditCommentsArgs, context: GraphQLContext) => {
     const commentIds: string[] = [];
 
     if (args.commentId) {
@@ -65,7 +75,9 @@ export const canEditComments = rule({ cache: "contextual" })(
   }
 );
 
-export const collectCommentChannelConnections = (comments: Array<any>) => {
+export const collectCommentChannelConnections = (
+  comments: Array<CommentChannelLookup>
+) => {
   const channelConnections = new Set<string>();
 
   for (const comment of comments) {

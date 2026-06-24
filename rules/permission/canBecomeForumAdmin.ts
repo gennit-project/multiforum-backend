@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { channelHasZeroAdmins } from "./channelHasZeroAdmins.js";
 
@@ -34,10 +36,10 @@ export function evaluateCanBecomeForumAdmin(input: {
 
 export const canBecomeForumAdmin = rule({ cache: "contextual" })(
   async (
-    parent: any,
+    parent: unknown,
     args: CanBecomeForumAdminArgs,
-    context: any,
-    info: any
+    context: GraphQLContext,
+    info: GraphQLResolveInfo
   ) => {
     const { channelUniqueName } = args;
 
@@ -64,7 +66,7 @@ export const canBecomeForumAdmin = rule({ cache: "contextual" })(
 
     return evaluateCanBecomeForumAdmin({
       channelUniqueName,
-      username,
+      username: username ?? undefined,
       hasZeroAdmins,
     });
   }

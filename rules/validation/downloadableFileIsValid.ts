@@ -1,12 +1,14 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLRequest, Ogm } from "../../types/context.js";
 import {
   DownloadableFileCreateInput,
   DownloadableFileUpdateInput,
 } from "../../src/generated/graphql.js";
 
 interface ValidationContext {
-  ogm: any;
-  req: any;
+  ogm: Ogm;
+  req?: GraphQLRequest;
 }
 
 type CreateDownloadableFileArgs = { 
@@ -141,7 +143,7 @@ export const validateFileTypePermissions = async (
 };
 
 export const createDownloadableFileInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: CreateDownloadableFileArgs, ctx: ValidationContext, info: any) => {
+  async (parent: unknown, args: CreateDownloadableFileArgs, ctx: ValidationContext, info: GraphQLResolveInfo) => {
     if (!args.input || !args.input[0]) {
       return "Missing or empty input in args.";
     }
@@ -174,7 +176,7 @@ export const createDownloadableFileInputIsValid = rule({ cache: "contextual" })(
 );
 
 export const updateDownloadableFileInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: UpdateDownloadableFileArgs, ctx: ValidationContext, info: any) => {
+  async (parent: unknown, args: UpdateDownloadableFileArgs, ctx: ValidationContext, info: GraphQLResolveInfo) => {
     if (!args.update) {
       return "Missing update input in args.";
     }

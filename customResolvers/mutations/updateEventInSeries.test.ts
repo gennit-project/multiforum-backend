@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import getResolver from "./updateEventInSeries.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
+
+type GetResolverArg = Parameters<typeof getResolver>[0];
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
@@ -81,7 +85,7 @@ test("updateEventInSeries THIS_ONLY updates only the specified event", async () 
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as GetResolverArg);
 
   const result = await resolver(
     null,
@@ -92,8 +96,8 @@ test("updateEventInSeries THIS_ONLY updates only the specified event", async () 
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "testuser" } },
-    null
+    { user: { username: "testuser" } } as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(updateCalls.length, 1);
@@ -122,7 +126,7 @@ test("updateEventInSeries THIS_ONLY sets override flags for series-level changes
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as GetResolverArg);
 
   await resolver(
     null,
@@ -133,8 +137,8 @@ test("updateEventInSeries THIS_ONLY sets override flags for series-level changes
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "testuser" } },
-    null
+    { user: { username: "testuser" } } as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(updateCalls.length, 1);
@@ -167,7 +171,7 @@ test("updateEventInSeries THIS_AND_FUTURE updates this and future occurrences", 
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as GetResolverArg);
 
   await resolver(
     null,
@@ -178,8 +182,8 @@ test("updateEventInSeries THIS_AND_FUTURE updates this and future occurrences", 
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "testuser" } },
-    null
+    { user: { username: "testuser" } } as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   // Should update event-1, event-2, event-3 (indices 1, 2, 3)
@@ -216,7 +220,7 @@ test("updateEventInSeries ALL_IN_SERIES updates all occurrences", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as GetResolverArg);
 
   await resolver(
     null,
@@ -227,8 +231,8 @@ test("updateEventInSeries ALL_IN_SERIES updates all occurrences", async () => {
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "testuser" } },
-    null
+    { user: { username: "testuser" } } as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   // Should update all 4 events
@@ -257,7 +261,7 @@ test("updateEventInSeries throws error when event not found", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as GetResolverArg);
 
   await assert.rejects(
     resolver(
@@ -269,8 +273,8 @@ test("updateEventInSeries throws error when event not found", async () => {
         channelConnections: [],
         channelDisconnections: [],
       },
-      {},
-      null
+      {} as unknown as GraphQLContext,
+      null as unknown as GraphQLResolveInfo
     ),
     { message: /Event not found/ }
   );
@@ -288,7 +292,7 @@ test("updateEventInSeries throws error for invalid scope", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as GetResolverArg);
 
   await assert.rejects(
     resolver(
@@ -300,8 +304,8 @@ test("updateEventInSeries throws error for invalid scope", async () => {
         channelConnections: [],
         channelDisconnections: [],
       },
-      {},
-      null
+      {} as unknown as GraphQLContext,
+      null as unknown as GraphQLResolveInfo
     ),
     { message: /Invalid scope/ }
   );
@@ -336,7 +340,7 @@ test("updateEventInSeries handles standalone event without series", async () => 
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as GetResolverArg);
 
   // Even with ALL_IN_SERIES scope, should only update the single event
   await resolver(
@@ -348,8 +352,8 @@ test("updateEventInSeries handles standalone event without series", async () => 
       channelConnections: [],
       channelDisconnections: [],
     },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(updateCalls.length, 1);
@@ -370,7 +374,7 @@ test("updateEventInSeries handles channel connections", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as GetResolverArg);
 
   await resolver(
     null,
@@ -381,8 +385,8 @@ test("updateEventInSeries handles channel connections", async () => {
       channelConnections: ["channel-a", "channel-b"],
       channelDisconnections: [],
     },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   // Should have run 2 connection queries
@@ -403,7 +407,7 @@ test("updateEventInSeries handles channel disconnections", async () => {
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as GetResolverArg);
 
   await resolver(
     null,
@@ -414,8 +418,8 @@ test("updateEventInSeries handles channel disconnections", async () => {
       channelConnections: [],
       channelDisconnections: ["channel-x"],
     },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(sessions[0].runCalls.length, 1);
@@ -445,7 +449,7 @@ test("updateEventInSeries does not update series for occurrence-level only chang
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries, driver });
+  const resolver = getResolver({ Event, EventSeries, driver } as unknown as GetResolverArg);
 
   await resolver(
     null,
@@ -456,8 +460,8 @@ test("updateEventInSeries does not update series for occurrence-level only chang
       channelConnections: [],
       channelDisconnections: [],
     },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   // All events should be updated
@@ -481,7 +485,7 @@ test("updateEventInSeries THIS_ONLY does not set override flags for occurrence-l
     },
   };
 
-  const resolver = getResolver({ Event, EventSeries: {}, driver });
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as GetResolverArg);
 
   await resolver(
     null,
@@ -492,8 +496,8 @@ test("updateEventInSeries THIS_ONLY does not set override flags for occurrence-l
       channelConnections: [],
       channelDisconnections: [],
     },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   const update = updateCalls[0].update;

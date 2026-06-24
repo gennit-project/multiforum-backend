@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { GraphQLContext } from "../../types/context.js";
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 
 const futureDate = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
@@ -48,7 +49,7 @@ test("returns active server user suspension metadata", async () => {
           },
         ],
       }),
-    },
+    } as unknown as GraphQLContext,
     username: "alice",
   });
 
@@ -72,7 +73,7 @@ test("returns expired server mod suspensions for cleanup", async () => {
           },
         ],
       }),
-    },
+    } as unknown as GraphQLContext,
     modProfileName: "Mod Jane",
   });
 

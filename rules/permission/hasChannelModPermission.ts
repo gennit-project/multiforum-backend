@@ -1,8 +1,10 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
+import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import type { ModerationProfile } from "../../ogm_types.js";
 
 // Define the moderator permissions as an enum for type safety
 export enum ModChannelPermission {
@@ -24,7 +26,7 @@ export enum ModChannelPermission {
 type HasChannelModPermissionInput = {
   permission: ModChannelPermission;
   channelName: string;
-  context: any;
+  context: GraphQLContext;
 };
 
 export const hasChannelModPermission: (
@@ -205,7 +207,7 @@ export const hasChannelModPermission: (
   // look up if such a mod is listed in the Moderators
   // field on the Channel.
   else if (channelData.Moderators?.some(
-    (mod: any) => mod.displayName === modProfileName
+    (mod: ModerationProfile) => mod.displayName === modProfileName
   )) {
     roleToUse = channelData.ElevatedModRole;
     // if the channel doesn't have an elevated mod role,
@@ -260,7 +262,7 @@ export const hasChannelModPermission: (
 export async function checkChannelModPermissions(
   input: {
     channelConnections: string[];
-    context: any;
+    context: GraphQLContext;
     permissionCheck: ModChannelPermission;
   }
 ) {

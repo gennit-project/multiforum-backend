@@ -1,10 +1,17 @@
+import type { Driver } from 'neo4j-driver'
 import type {
+  ChannelModel,
+  CommentModel,
+  DiscussionModel,
   DownloadableFileModel,
+  EventModel,
+  IssueModel,
   PluginModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
-  ServerSecretModel
+  ServerSecretModel,
+  UserModel
 } from '../../ogm_types.js'
 
 // Base Models type for server-scoped triggers
@@ -36,7 +43,7 @@ export type EventPipeline = {
 export type PluginEdgeData = {
   properties: {
     enabled: boolean
-    settingsJson: any
+    settingsJson: unknown
   }
   node: {
     id: string
@@ -44,15 +51,15 @@ export type PluginEdgeData = {
     repoUrl: string
     tarballGsUri: string
     entryPath: string
-    manifest: any
-    settingsDefaults: any
-    uiSchema: any
+    manifest: unknown
+    settingsDefaults: unknown
+    uiSchema: unknown
     Plugin: {
       id: string
       name: string
       displayName: string
       description: string
-      metadata: any
+      metadata: unknown
     }
   }
 }
@@ -69,17 +76,17 @@ export type CommentTriggerArgs = {
   commentId: string
   event: string
   models: {
-    Channel: any
-    Comment: any
-    Discussion: any
-    Event: any
-    Issue: any
+    Channel: ChannelModel
+    Comment: CommentModel
+    Discussion: DiscussionModel
+    Event: EventModel
+    Issue: IssueModel
     PluginRun: PluginRunModel
     ServerConfig: ServerConfigModel
     ServerSecret: ServerSecretModel
-    User: any
+    User: UserModel
   }
-  driver?: any
+  driver?: Driver
 }
 
 // Arguments for channel trigger
@@ -88,8 +95,8 @@ export type ChannelTriggerArgs = {
   channelUniqueName: string
   event: string
   models: Models & {
-    Channel: any
-    Discussion: any
+    Channel: ChannelModel
+    Discussion: DiscussionModel
   }
 }
 

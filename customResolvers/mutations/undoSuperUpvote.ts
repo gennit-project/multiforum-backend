@@ -1,8 +1,17 @@
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
+import type {
+  CommentModel,
+  DiscussionChannelModel,
+  ScratchpadEntryModel,
+} from "../../ogm_types.js";
+
 type Input = {
-  Comment: any;
-  DiscussionChannel: any;
-  ScratchpadEntry: any;
-  driver: any;
+  Comment: CommentModel;
+  DiscussionChannel: DiscussionChannelModel;
+  ScratchpadEntry: ScratchpadEntryModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -13,7 +22,7 @@ type Args = {
 const undoSuperUpvoteResolver = (input: Input) => {
   const { Comment, DiscussionChannel, ScratchpadEntry, driver } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { sourceType, sourceId } = args;
 
     // Get logged in user from context
@@ -51,7 +60,7 @@ const undoSuperUpvoteResolver = (input: Input) => {
         }
 
         const comment = commentResult[0];
-        hasSuperUpvoted = comment.SuperUpvotedByUsers?.some((u: any) => u.username === loggedInUsername) || false;
+        hasSuperUpvoted = comment.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
       } else {
         // sourceType === 'discussion'
         const dcResult = await DiscussionChannel.find({
@@ -67,7 +76,7 @@ const undoSuperUpvoteResolver = (input: Input) => {
         }
 
         const dc = dcResult[0];
-        hasSuperUpvoted = dc.SuperUpvotedByUsers?.some((u: any) => u.username === loggedInUsername) || false;
+        hasSuperUpvoted = dc.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
       }
 
       if (!hasSuperUpvoted) {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import type { UserModel } from "../../ogm_types.js";
 
 class UserModelStub {
   public finds: any[] = [];
@@ -43,7 +44,7 @@ test("creates notification when missing", async () => {
   const suspendUntil = "2030-01-15T00:00:00.000Z";
 
   await createSuspensionNotification({
-    UserModel: userModel,
+    UserModel: userModel as unknown as UserModel,
     username: "alice",
     scopeName: "forum-1",
     scopeType: "channel",
@@ -71,7 +72,7 @@ test("does not duplicate notification", async () => {
   });
 
   await createSuspensionNotification({
-    UserModel: userModel,
+    UserModel: userModel as unknown as UserModel,
     username: "alice",
     scopeName: "forum-1",
     scopeType: "channel",
@@ -90,7 +91,7 @@ test("formats indefinite suspension message", async () => {
   const userModel = new UserModelStub();
 
   await createSuspensionNotification({
-    UserModel: userModel,
+    UserModel: userModel as unknown as UserModel,
     username: "mod-user",
     scopeName: "forum-2",
     scopeType: "channel",
@@ -114,7 +115,7 @@ test("skips notification when suspension-block preference is disabled", async ()
   });
 
   await createSuspensionNotification({
-    UserModel: userModel,
+    UserModel: userModel as unknown as UserModel,
     username: "alice",
     scopeName: "forum-1",
     scopeType: "channel",
@@ -131,7 +132,7 @@ test("formats server-scoped issue links", async () => {
   const userModel = new UserModelStub();
 
   await createSuspensionNotification({
-    UserModel: userModel,
+    UserModel: userModel as unknown as UserModel,
     username: "alice",
     scopeName: "main",
     scopeType: "server",

@@ -9,9 +9,11 @@ type RemoveEmojiInput = {
   username: string;
 }
 
+type EmojiData = Record<string, Record<string, string[]>>;
+
 export const updateEmoji = (emojiJSON: string, input: UpdateEmojiInput) => {
   const { emojiLabel, unicode, username } = input;
-  let emoji: Record<string, any> = {};
+  let emoji: EmojiData = {};
 
   // Parse the existing emoji JSON
   if (emojiJSON) {
@@ -35,7 +37,7 @@ export const updateEmoji = (emojiJSON: string, input: UpdateEmojiInput) => {
 
 export const removeEmoji = (emojiJSON: string, input: RemoveEmojiInput) => {
   const { emojiLabel, username } = input;
-  let emoji: Record<string, any> = {};
+  let emoji: EmojiData = {};
 
   if (emojiJSON) {
     emoji = JSON.parse(emojiJSON);

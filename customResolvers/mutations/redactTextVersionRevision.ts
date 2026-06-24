@@ -1,10 +1,12 @@
-import { GraphQLError } from 'graphql'
+import { GraphQLError, type GraphQLResolveInfo } from 'graphql'
+import type { Driver } from 'neo4j-driver'
 import type {
   TextVersion,
   TextVersionModel,
   TextVersionUpdateInput,
   TextVersionWhere
 } from '../../ogm_types.js'
+import type { GraphQLContext } from '../../types/context.js'
 import {
   checkChannelModPermissions,
   ModChannelPermission
@@ -37,7 +39,7 @@ type GetUserData = typeof setUserDataOnContext
 
 type Input = {
   TextVersion: TextVersionModel
-  driver: any
+  driver: Driver
   revisionType: RevisionType
   checkModPermissions?: CheckChannelModPermissions
   getServerMembership?: GetServerMembership
@@ -51,7 +53,7 @@ const revisionPermissionByType: Record<RevisionType, ModChannelPermission> = {
 }
 
 export const getRevisionRedactionTarget = async (input: {
-  driver: any
+  driver: Driver
   textVersionId: string
 }): Promise<RevisionRedactionTarget | null> => {
   const { driver, textVersionId } = input
@@ -124,7 +126,7 @@ export const getRevisionRedactionTarget = async (input: {
 }
 
 const getCurrentUser = async (input: {
-  context: any
+  context: GraphQLContext
   getUserData: GetUserData
 }): Promise<UserDataOnContext> => {
   const { context, getUserData } = input
@@ -142,7 +144,7 @@ const getCurrentUser = async (input: {
 }
 
 export const assertCanRedactRevision = async (input: {
-  context: any
+  context: GraphQLContext
   target: RevisionRedactionTarget
   revisionType: RevisionType
   checkModPermissions: CheckChannelModPermissions
@@ -214,10 +216,10 @@ const redactTextVersionRevision = (input: Input) => {
   } = input
 
   return async (
-    parent: any,
+    parent: unknown,
     args: Args,
-    context: any,
-    resolveInfo: any
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
   ): Promise<TextVersion> => {
     const { textVersionId } = args
 
