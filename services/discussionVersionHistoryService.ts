@@ -1,6 +1,112 @@
 import { execute, parse, subscribe } from 'graphql';
+import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
+
+export interface DiscussionUpdatePayload {
+  id: string;
+  title?: string | null;
+  body?: string | null;
+}
+
+export interface DiscussionPreviousValues {
+  title?: string | null;
+  body?: string | null;
+}
+
+/**
+ * Look up the username of a discussion's current Author. Returns null if the
+ * discussion or its author cannot be found.
+ */
+export const getDiscussionAuthorUsername = async (
+  ogm: OGMLike,
+  discussionId: string
+): Promise<string | null> => {
+  try {
+    const DiscussionModel = ogm.model('Discussion');
+    const discussions = await DiscussionModel.find({
+      where: { id: discussionId },
+      selectionSet: `{ Author { username } }`,
+    });
+    if (!discussions.length || !discussions[0].Author?.username) {
+      return null;
+    }
+    return discussions[0].Author.username;
+  } catch (error) {
+    console.error('Error getting current user username:', error);
+    return null;
+  }
+};
+
+/**
+ * Track a discussion's title change by saving the new title as a TextVersion
+ * connected to PastTitleVersions.
+ */
+export const trackDiscussionTitleVersion = (
+  ogm: OGMLike,
+  discussionId: string,
+  newTitle: string,
+  username: string
+): Promise<string | null> =>
+  trackTextVersion(ogm, {
+    body: newTitle,
+    username,
+    parentModelName: 'Discussion',
+    parentId: discussionId,
+    relationshipField: 'PastTitleVersions',
+  });
+
+/**
+ * Track a discussion's body change by saving the new body as a TextVersion
+ * connected to PastBodyVersions.
+ */
+export const trackDiscussionBodyVersion = (
+  ogm: OGMLike,
+  discussionId: string,
+  newBody: string,
+  username: string
+): Promise<string | null> =>
+  trackTextVersion(ogm, {
+    body: newBody,
+    username,
+    parentModelName: 'Discussion',
+    parentId: discussionId,
+    relationshipField: 'PastBodyVersions',
+  });
+
+/**
+ * Handle a single discussion update event: resolve the author, then record a
+ * version for whichever of title/body actually changed. This is the callable
+ * core of the subscription handler, extracted so it can be tested directly.
+ */
+export const handleDiscussionUpdateEvent = async (
+  ogm: OGMLike,
+  updatedDiscussion: DiscussionUpdatePayload,
+  previousValues: DiscussionPreviousValues | null | undefined
+): Promise<void> => {
+  const discussionId = updatedDiscussion.id;
+  const currentUsername = await getDiscussionAuthorUsername(ogm, discussionId);
+  if (!currentUsername) {
+    console.log('Could not determine current user, skipping version history');
+    return;
+  }
+
+  if (
+    previousValues?.title &&
+    previousValues.title !== updatedDiscussion.title &&
+    updatedDiscussion.title
+  ) {
+    await trackDiscussionTitleVersion(ogm, discussionId, updatedDiscussion.title, currentUsername);
+  }
+
+  if (
+    previousValues?.body &&
+    previousValues.body !== updatedDiscussion.body &&
+    updatedDiscussion.body
+  ) {
+    await trackDiscussionBodyVersion(ogm, discussionId, updatedDiscussion.body, currentUsername);
+  }
+};
 
 /**
  * Discussion Version History Service that listens to Discussion update events
@@ -93,36 +199,11 @@ export class DiscussionVersionHistoryService {
 
         const updatedDiscussion = result.data.discussionUpdated.updatedDiscussion;
         const previousValues = result.data.discussionUpdated.previousValues;
-        const discussionId = updatedDiscussion.id;
-        
-        console.log('Processing version history for updated discussion:', discussionId);
+
+        console.log('Processing version history for updated discussion:', updatedDiscussion.id);
 
         try {
-          // Get the current user who made the update
-          const currentUsername = await this.getCurrentUserUsername(discussionId);
-          
-          if (!currentUsername) {
-            console.log('Could not determine current user, skipping version history');
-            continue;
-          }
-
-          // Check if title has changed - save the NEW title as a version
-          if (previousValues?.title && previousValues.title !== updatedDiscussion.title) {
-            await this.trackTitleVersionHistory(
-              discussionId, 
-              updatedDiscussion.title,
-              currentUsername
-            );
-          }
-
-          // Check if body has changed - save the NEW body as a version
-          if (previousValues?.body && previousValues.body !== updatedDiscussion.body) {
-            await this.trackBodyVersionHistory(
-              discussionId, 
-              updatedDiscussion.body,
-              currentUsername
-            );
-          }
+          await handleDiscussionUpdateEvent(this.ogm, updatedDiscussion, previousValues);
         } catch (error) {
           console.error('Error processing discussion version history:', error);
           // Continue processing other events even if one fails
@@ -136,151 +217,6 @@ export class DiscussionVersionHistoryService {
         console.log('Restarting discussion version history service in 5 seconds...');
         setTimeout(() => this.start(), 5000);
       }
-    }
-  }
-
-  /**
-   * Get the current user who made the update from the Discussion's Author
-   */
-  private async getCurrentUserUsername(discussionId: string): Promise<string | null> {
-    try {
-      const DiscussionModel = this.ogm.model('Discussion');
-      const discussions = await DiscussionModel.find({
-        where: { id: discussionId },
-        selectionSet: `{
-          Author {
-            username
-          }
-        }`
-      });
-
-      if (!discussions.length || !discussions[0].Author?.username) {
-        return null;
-      }
-
-      return discussions[0].Author.username;
-    } catch (error) {
-      console.error('Error getting current user username:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Track title version history for a discussion
-   */
-  private async trackTitleVersionHistory(discussionId: string, newTitle: string, username: string) {
-    // Get the OGM models
-    const DiscussionModel = this.ogm.model('Discussion');
-    const TextVersionModel = this.ogm.model('TextVersion');
-    const UserModel = this.ogm.model('User');
-
-    console.log(`Tracking title version history for discussion ${discussionId} by user ${username}`);
-    console.log(`New title: "${newTitle}"`);
-
-    try {
-      // Skip tracking if content is null or empty
-      if (!newTitle) {
-        console.log('New title is empty, skipping version history');
-        return;
-      }
-
-      // Get user by username
-      const users = await UserModel.find({
-        where: { username },
-        selectionSet: `{ username }`
-      });
-
-      if (!users.length) {
-        console.log('User not found:', username);
-        return;
-      }
-
-      // Create new TextVersion for the new title
-      // The createdAt timestamp will be automatically set by @timestamp directive
-      const textVersionResult = await TextVersionModel.create({
-        input: [{
-          body: newTitle,
-          Author: {
-            connect: { where: { node: { username } } }
-          }
-        }]
-      });
-
-      if (!textVersionResult.textVersions.length) {
-        console.log('Failed to create TextVersion');
-        return;
-      }
-
-      const textVersionId = textVersionResult.textVersions[0].id;
-
-      console.log(`Successfully added title version history for discussion ${discussionId}`);
-    } catch (error) {
-      console.error('Error tracking title version history:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Track body version history for a discussion
-   */
-  private async trackBodyVersionHistory(discussionId: string, newBody: string, username: string) {
-    // Get the OGM models
-    const DiscussionModel = this.ogm.model('Discussion');
-    const TextVersionModel = this.ogm.model('TextVersion');
-    const UserModel = this.ogm.model('User');
-
-    console.log(`Tracking body version history for discussion ${discussionId} by user ${username}`);
-
-    try {
-      // Skip tracking if content is null or empty
-      if (!newBody) {
-        console.log('New body is empty, skipping version history');
-        return;
-      }
-
-      // Get user by username
-      const users = await UserModel.find({
-        where: { username },
-        selectionSet: `{ username }`
-      });
-
-      if (!users.length) {
-        console.log('User not found:', username);
-        return;
-      }
-
-      // Create new TextVersion for the new body
-      // The createdAt timestamp will be automatically set by @timestamp directive
-      const textVersionResult = await TextVersionModel.create({
-        input: [{
-          body: newBody,
-          Author: {
-            connect: { where: { node: { username } } }
-          }
-        }]
-      });
-
-      if (!textVersionResult.textVersions.length) {
-        console.log('Failed to create TextVersion');
-        return;
-      }
-
-      const textVersionId = textVersionResult.textVersions[0].id;
-
-
-      await DiscussionModel.update({
-        where: { id: discussionId },
-        update: {
-          PastBodyVersions: {
-            connect: [{ where: { id: textVersionId } }]
-          },
-        }
-      });
-
-      console.log(`Successfully added body version history for discussion ${discussionId}`);
-    } catch (error) {
-      console.error('Error tracking body version history:', error);
-      throw error;
     }
   }
 

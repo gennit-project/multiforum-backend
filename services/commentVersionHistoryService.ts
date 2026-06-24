@@ -1,6 +1,86 @@
 import { execute, parse, subscribe } from 'graphql';
+import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
+
+export interface CommentUpdatePayload {
+  id: string;
+  text?: string | null;
+}
+
+export interface CommentPreviousValues {
+  text?: string | null;
+}
+
+/**
+ * Look up the username of a comment's author. The author may be a User
+ * (username) or a ModerationProfile (displayName). Returns null if the comment
+ * or its author cannot be found.
+ */
+export const getCommentAuthorUsername = async (
+  ogm: OGMLike,
+  commentId: string
+): Promise<string | null> => {
+  const CommentModel = ogm.model('Comment');
+  const comments = await CommentModel.find({
+    where: { id: commentId },
+    selectionSet: `{
+      id
+      CommentAuthor {
+        ... on User { username }
+        ... on ModerationProfile { displayName }
+      }
+    }`,
+  });
+  if (!comments.length) {
+    return null;
+  }
+  const author = comments[0].CommentAuthor;
+  return author?.username || author?.displayName || null;
+};
+
+/**
+ * Track a comment's text change by saving the PREVIOUS text as a TextVersion
+ * connected to PastVersions (so the edit history preserves what was replaced).
+ */
+export const trackCommentTextVersion = (
+  ogm: OGMLike,
+  commentId: string,
+  previousText: string,
+  username: string
+): Promise<string | null> =>
+  trackTextVersion(ogm, {
+    body: previousText,
+    username,
+    parentModelName: 'Comment',
+    parentId: commentId,
+    relationshipField: 'PastVersions',
+  });
+
+/**
+ * Handle a single comment update event: resolve the author, then save the
+ * previous text as a version. Callable core of the subscription handler,
+ * extracted so it can be tested directly.
+ */
+export const handleCommentUpdateEvent = async (
+  ogm: OGMLike,
+  updatedComment: CommentUpdatePayload,
+  previousValues: CommentPreviousValues | null | undefined
+): Promise<void> => {
+  const previousText = previousValues?.text;
+  if (!previousText || previousText === updatedComment.text) {
+    // Nothing meaningful changed; no version to record.
+    return;
+  }
+
+  const username = await getCommentAuthorUsername(ogm, updatedComment.id);
+  if (!username) {
+    console.log('Could not determine username from comment author');
+    return;
+  }
+
+  await trackCommentTextVersion(ogm, updatedComment.id, previousText, username);
+};
 
 /**
  * Comment Version History Service that listens to Comment update events
@@ -95,41 +175,12 @@ export class CommentVersionHistoryService {
         }
 
         const updatedComment = result.data.commentUpdated.updatedComment;
-        const commentId = updatedComment.id;
-        
-        console.log('Processing version history for updated comment:', commentId);
+        const previousValues = result.data.commentUpdated.previousValues;
+
+        console.log('Processing version history for updated comment:', updatedComment.id);
 
         try {
-          // Fetch the updated comment's text directly from the database
-          const CommentModel = this.ogm.model('Comment');
-          const comments = await CommentModel.find({
-            where: { id: commentId },
-            selectionSet: `{
-              id
-              text
-              CommentAuthor {
-                ... on User {
-                  username
-                }
-                ... on ModerationProfile {
-                  displayName
-                }
-              }
-            }`
-          });
-
-          if (!comments.length) {
-            console.log('Comment not found in database');
-            continue;
-          }
-
-          const comment = comments[0];
-          const username = comment.CommentAuthor?.username || comment.CommentAuthor?.displayName;
-
-          if (!username) {
-            console.log('Could not determine username from comment author');
-            continue;
-          }
+          await handleCommentUpdateEvent(this.ogm, updatedComment, previousValues);
         } catch (error) {
           console.error('Error processing comment version history:', error);
           // Continue processing other events even if one fails
@@ -143,95 +194,6 @@ export class CommentVersionHistoryService {
         console.log('Restarting comment version history service in 5 seconds...');
         setTimeout(() => this.start(), 5000);
       }
-    }
-  }
-
-  /**
-   * Track text version history for a comment
-   */
-  private async trackTextVersionHistory(commentId: string, previousText: string, username: string) {
-    // Get the OGM models
-    const CommentModel = this.ogm.model('Comment');
-    const TextVersionModel = this.ogm.model('TextVersion');
-    const UserModel = this.ogm.model('User');
-
-    console.log(`Tracking text version history for comment ${commentId}`);
-
-    // Skip if previous text or username is missing
-    if (!previousText) {
-      console.log('Previous text is empty, skipping version history');
-      return;
-    }
-
-    if (!username) {
-      console.log('Username is missing, cannot track author of the change');
-      return;
-    }
-
-    try {
-      // Fetch the current comment to get current version data
-      const comments = await CommentModel.find({
-        where: { id: commentId },
-        selectionSet: `{
-          id
-          text
-          PastVersions {
-            id
-            body
-            createdAt
-          }
-        }`
-      });
-
-      if (!comments.length) {
-        console.log('Comment not found');
-        return;
-      }
-
-      const comment = comments[0];
-
-      // Get user by username
-      const users = await UserModel.find({
-        where: { username },
-        selectionSet: `{ username }`
-      });
-
-      if (!users.length) {
-        console.log(`User not found with username: ${username}`);
-        return;
-      }
-
-      // Create new TextVersion for previous text
-      // The createdAt timestamp will be automatically set by @timestamp directive
-      const textVersionResult = await TextVersionModel.create({
-        input: [{
-          body: previousText,
-          Author: {
-            connect: { where: { username } }
-          }
-        }]
-      });
-
-      if (!textVersionResult.textVersions.length) {
-        console.log('Failed to create TextVersion');
-        return;
-      }
-
-      const textVersionId = textVersionResult.textVersions[0].id;
-
-      await CommentModel.update({
-        where: { id: commentId },
-        update: {
-          PastVersions: {
-            connect: [{ where: { id: textVersionId } }]
-          },
-        }
-      });
-
-      console.log(`Successfully added text version history for comment ${commentId}`);
-    } catch (error) {
-      console.error('Error tracking text version history:', error);
-      throw error;
     }
   }
 

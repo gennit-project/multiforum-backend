@@ -1,7 +1,109 @@
 import { execute, parse, subscribe } from 'graphql';
-import type { TextVersionCreateInput } from "../src/generated/graphql.js";
+import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
+
+export interface WikiPageUpdatePayload {
+  id: string;
+  title?: string | null;
+  body?: string | null;
+  editReason?: string | null;
+}
+
+export interface WikiPagePreviousState {
+  title?: string | null;
+  body?: string | null;
+}
+
+/**
+ * Look up the username of a wikiPage's current VersionAuthor. Returns null if
+ * the wikiPage or its version author cannot be found.
+ */
+export const getWikiPageVersionAuthorUsername = async (
+  ogm: OGMLike,
+  wikiPageId: string
+): Promise<string | null> => {
+  try {
+    const WikiPageModel = ogm.model('WikiPage');
+    const wikiPages = await WikiPageModel.find({
+      where: { id: wikiPageId },
+      selectionSet: `{ VersionAuthor { username } }`,
+    });
+    if (!wikiPages.length || !wikiPages[0].VersionAuthor?.username) {
+      return null;
+    }
+    return wikiPages[0].VersionAuthor.username;
+  } catch (error) {
+    console.error('Error getting current user username:', error);
+    return null;
+  }
+};
+
+/**
+ * Track a wikiPage version by saving the given content as a TextVersion
+ * (with optional editReason) connected to PastVersions.
+ */
+export const trackWikiPageVersion = (
+  ogm: OGMLike,
+  wikiPageId: string,
+  content: string,
+  editReason: string | null | undefined,
+  username: string
+): Promise<string | null> =>
+  trackTextVersion(ogm, {
+    body: content,
+    editReason,
+    username,
+    parentModelName: 'WikiPage',
+    parentId: wikiPageId,
+    relationshipField: 'PastVersions',
+  });
+
+/**
+ * Handle a single wikiPage update event: resolve the version author, then
+ * record a version for whichever of title/body actually changed. Callable core
+ * of the subscription handler, extracted so it can be tested directly.
+ */
+export const handleWikiPageUpdateEvent = async (
+  ogm: OGMLike,
+  updatedWikiPage: WikiPageUpdatePayload,
+  previousState: WikiPagePreviousState | null | undefined
+): Promise<void> => {
+  const wikiPageId = updatedWikiPage.id;
+  const currentUsername = await getWikiPageVersionAuthorUsername(ogm, wikiPageId);
+  if (!currentUsername) {
+    console.log('Could not determine current user, skipping version history');
+    return;
+  }
+
+  if (
+    previousState?.title &&
+    previousState.title !== updatedWikiPage.title &&
+    updatedWikiPage.title
+  ) {
+    await trackWikiPageVersion(
+      ogm,
+      wikiPageId,
+      updatedWikiPage.title,
+      updatedWikiPage.editReason,
+      currentUsername
+    );
+  }
+
+  if (
+    previousState?.body &&
+    previousState.body !== updatedWikiPage.body &&
+    updatedWikiPage.body
+  ) {
+    await trackWikiPageVersion(
+      ogm,
+      wikiPageId,
+      updatedWikiPage.body,
+      updatedWikiPage.editReason,
+      currentUsername
+    );
+  }
+};
 
 /**
  * WikiPage Version History Service that listens to WikiPage update events
@@ -94,38 +196,11 @@ export class WikiPageVersionHistoryService {
 
         const updatedWikiPage = result.data.wikiPageUpdated.updatedWikiPage;
         const previousState = result.data.wikiPageUpdated.previousState;
-        const wikiPageId = updatedWikiPage.id;
-        
-        console.log('Processing version history for updated wikiPage:', wikiPageId);
+
+        console.log('Processing version history for updated wikiPage:', updatedWikiPage.id);
 
         try {
-          // Get the current user who made the update from the WikiPage's VersionAuthor
-          const currentUsername = await this.getCurrentUserUsername(wikiPageId);
-          
-          if (!currentUsername) {
-            console.log('Could not determine current user, skipping version history');
-            continue;
-          }
-
-          // Check if title has changed - save the NEW title as a version
-          if (previousState?.title && previousState.title !== updatedWikiPage.title) {
-            await this.trackVersionHistory(
-              wikiPageId, 
-              updatedWikiPage.title,
-              updatedWikiPage.editReason,
-              currentUsername
-            );
-          }
-
-          // Check if body has changed - save the NEW body as a version
-          if (previousState?.body && previousState.body !== updatedWikiPage.body) {
-            await this.trackVersionHistory(
-              wikiPageId, 
-              updatedWikiPage.body,
-              updatedWikiPage.editReason,
-              currentUsername
-            );
-          }
+          await handleWikiPageUpdateEvent(this.ogm, updatedWikiPage, previousState);
         } catch (error) {
           console.error('Error processing wikiPage version history:', error);
           // Continue processing other events even if one fails
@@ -139,112 +214,6 @@ export class WikiPageVersionHistoryService {
         console.log('Restarting wikiPage version history service in 5 seconds...');
         setTimeout(() => this.start(), 5000);
       }
-    }
-  }
-
-  /**
-   * Get the current user who made the update from the WikiPage's VersionAuthor
-   */
-  private async getCurrentUserUsername(wikiPageId: string): Promise<string | null> {
-    try {
-      const WikiPageModel = this.ogm.model('WikiPage');
-      const wikiPages = await WikiPageModel.find({
-        where: { id: wikiPageId },
-        selectionSet: `{
-          VersionAuthor {
-            username
-          }
-        }`
-      });
-
-      if (!wikiPages.length || !wikiPages[0].VersionAuthor?.username) {
-        return null;
-      }
-
-      return wikiPages[0].VersionAuthor.username;
-    } catch (error) {
-      console.error('Error getting current user username:', error);
-      return null;
-    }
-  }
-
-
-  /**
-   * Track version history for a wikiPage
-   */
-  private async trackVersionHistory(
-    wikiPageId: string,
-    content: string,
-    editReason: string | null | undefined,
-    username: string
-  ) {
-    // Get the OGM models
-    const WikiPageModel = this.ogm.model('WikiPage');
-    const TextVersionModel = this.ogm.model('TextVersion');
-    const UserModel = this.ogm.model('User');
-
-    console.log(`Tracking version history for wikiPage ${wikiPageId} by user ${username}`);
-
-    try {
-      // Skip tracking if content is null or empty
-      if (!content) {
-        console.log('Content is empty, skipping version history');
-        return;
-      }
-
-      // Get user by username
-      const users = await UserModel.find({
-        where: { username },
-        selectionSet: `{ username }`
-      });
-
-      if (!users.length) {
-        console.log('User not found:', username);
-        return;
-      }
-
-      // Create new TextVersion for the new content
-      // The createdAt timestamp will be automatically set by @timestamp directive
-      const textVersionInput: TextVersionCreateInput = {
-        body: content,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      };
-
-      if (editReason) {
-        textVersionInput.editReason = editReason;
-      }
-
-      const textVersionResult = await TextVersionModel.create({
-        input: [textVersionInput]
-      });
-
-      if (!textVersionResult.textVersions.length) {
-        console.log('Failed to create TextVersion');
-        return;
-      }
-
-      const textVersionId = textVersionResult.textVersions[0].id;
-
-      // Update wikiPage to connect the new TextVersion
-      await WikiPageModel.update({
-        where: { id: wikiPageId },
-        update: {
-          PastVersions: {
-            connect: [{ 
-              where: { 
-                node: { id: textVersionId } 
-              } 
-            }]
-          }
-        }
-      });
-
-      console.log(`Successfully added version history for wikiPage ${wikiPageId}`);
-    } catch (error) {
-      console.error('Error tracking version history:', error);
-      throw error;
     }
   }
 
