@@ -119,3 +119,28 @@ test("publicCollectionsContaining throws on an unsupported itemType", async () =
     /Unsupported itemType/i
   );
 });
+
+// --- getInstalledPlugins (registry fetch is best-effort; seed no registry to skip it) ---
+
+test("getInstalledPlugins lists installed plugin versions with their enabled state", async () => {
+  await run(
+    `CREATE (p:Plugin { id: 'p1', name: 'test-plugin', displayName: 'Test Plugin' })
+     CREATE (pv:PluginVersion { id: 'pv1', version: '1.0.0', entryPath: 'index.js', repoUrl: 'https://example.com/repo' })
+     CREATE (p)-[:HAS_VERSION]->(pv)
+     CREATE (sc:ServerConfig { serverName: 'test-server' })
+     CREATE (sc)-[:INSTALLED { enabled: true }]->(pv)`
+  );
+
+  const result = await env.resolvers.Query.getInstalledPlugins(null, {}, {});
+
+  assert.equal(result.length, 1);
+  assert.equal(result[0].plugin.name, "test-plugin");
+  assert.equal(result[0].version, "1.0.0");
+  assert.equal(result[0].enabled, true);
+});
+
+test("getInstalledPlugins returns empty when nothing is installed", async () => {
+  await run(`CREATE (:ServerConfig { serverName: 'test-server' })`);
+  const result = await env.resolvers.Query.getInstalledPlugins(null, {}, {});
+  assert.deepEqual(result, []);
+});
