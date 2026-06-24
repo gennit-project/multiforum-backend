@@ -131,6 +131,7 @@ WITH dc, d, author, serverRole, channelRole, tagsText,
      CASE WHEN coalesce(dc.weightedVotesCount, 0.0) < 0 THEN 0.0 ELSE coalesce(dc.weightedVotesCount, 0.0) END AS weightedVotesCount
 
 OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(c:Comment)
+WHERE c.isFeedbackComment IS NULL OR c.isFeedbackComment = false
 WITH dc, d, author, serverRole, channelRole, COLLECT(c) AS comments, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, totalCount,
      duration.between(dc.createdAt, datetime()).months +
      duration.between(dc.createdAt, datetime()).days / 30.0 AS ageInMonths
