@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server'
+import gql from 'graphql-tag'
 
 const typeDefinitions = gql`
   enum FilterMode {

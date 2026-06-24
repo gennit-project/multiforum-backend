@@ -1,5 +1,10 @@
 import { Neo4jGraphQL } from "@neo4j/graphql";
-import { ApolloServer } from "apollo-server";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@as-integrations/express5";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import express from "express";
+import http from "http";
+import cors from "cors";
 import { applyMiddleware } from "graphql-middleware";
 import typesDefinitions from "./typeDefs.js";
 import permissions from "./permissions.js";
@@ -216,65 +221,73 @@ async function initializeServer() {
       await neoSchema.assertIndexesAndConstraints();
     }
 
+    const app = express();
+    const httpServer = http.createServer(app);
+
     const server = new ApolloServer({
       persistedQueries: false,
       schema,
-      plugins: [errorHandlingPlugin],
-      context: async (input: any) => {
-        const { req } = input;
-        const queryString = `Query: ${req.body.query}`;
-        const isMutation = req.body.query?.trim().startsWith("mutation");
-
-        // Add this information to the context so it can be used by permission rules
-        req.isMutation = isMutation;
-
-        if (!queryString.includes("IntrospectionQuery")) {
-          console.log('📊 GraphQL Operation:', {
-            type: isMutation ? 'Mutation' : 'Query',
-            operationName: req.body.operationName || 'Anonymous',
-            query: req.body.query,
-            variables: req.body.variables
-          });
-
-          if (isMutation) {
-            const mutationName = extractMutationName(req.body.query);
-            const text = `Mutation: ${mutationName}\nVariables: ${JSON.stringify(req.body.variables, null, 2)}`;
-
-            // Send Slack notification
-            await sendSlackNotification(text);
-          }
-        }
-
-        return {
-          driver,
-          req,
-          ogm,
-        };
-      },
+      plugins: [
+        // Drains in-flight requests before the HTTP server shuts down.
+        ApolloServerPluginDrainHttpServer({ httpServer }),
+        errorHandlingPlugin,
+      ],
     });
-    
 
-    server.listen({
-      port,
-      cors: {
+    await server.start();
+
+    app.use(
+      "/",
+      cors<cors.CorsRequest>({
         origin: "*",
         credentials: true,
-      },
-    }).then(({ url }) => {
-      console.log(`🚀 Server ready at ${url}`);
-      console.log(`📊 GraphQL Playground available at ${url}`);
-      console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+      }),
+      express.json({ limit: "50mb" }),
+      expressMiddleware(server, {
+        context: async ({ req }) => {
+          const queryString = `Query: ${req.body.query}`;
+          const isMutation = req.body.query?.trim().startsWith("mutation");
 
-      // Start services with enhanced error handling
-      startBackgroundServices(schema, ogm);
-    }).catch(error => {
-      logCriticalError(error, {
-        service: 'Apollo Server',
-        port,
-        action: 'server.listen'
-      });
-      throw error;
-    });
+          // Add this information to the context so it can be used by permission rules
+          (req as any).isMutation = isMutation;
+
+          if (!queryString.includes("IntrospectionQuery")) {
+            console.log('📊 GraphQL Operation:', {
+              type: isMutation ? 'Mutation' : 'Query',
+              operationName: req.body.operationName || 'Anonymous',
+              query: req.body.query,
+              variables: req.body.variables
+            });
+
+            if (isMutation) {
+              const mutationName = extractMutationName(req.body.query);
+              const text = `Mutation: ${mutationName}\nVariables: ${JSON.stringify(req.body.variables, null, 2)}`;
+
+              // Send Slack notification
+              await sendSlackNotification(text);
+            }
+          }
+
+          return {
+            driver,
+            req,
+            ogm,
+          };
+        },
+      })
+    );
+
+    await new Promise<void>((resolve) =>
+      httpServer.listen({ port }, resolve)
+    );
+
+    const url = `http://localhost:${port}/`;
+    console.log(`🚀 Server ready at ${url}`);
+    console.log(`📊 GraphQL endpoint available at ${url}`);
+    console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+    // Start services with enhanced error handling
+    startBackgroundServices(schema, ogm);
   } catch (e) {
     console.error("💥 Failed to initialize server:", e);
     logCriticalError(e as Error, {

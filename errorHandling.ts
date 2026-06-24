@@ -231,7 +231,7 @@ export const errorHandlingPlugin = {
             logCriticalError(error, {
               operationName: request.operationName,
               variables: request.variables,
-              userId: requestContext.context?.user?.id
+              userId: requestContext.contextValue?.user?.id
             });
           }
         });
