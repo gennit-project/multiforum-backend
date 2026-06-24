@@ -113,42 +113,50 @@ WITH dc, d, author, serverRole, channelRole, tagsText,
 
 // Filter for logged-in user's upvote
 OPTIONAL MATCH (loggedInUser:User {username: loggedInUsername})-[:UPVOTED_DISCUSSION]->(dc)
-WITH dc, d, author, serverRole, channelRole, tagsText, 
-     CASE 
+// Filter for logged-in user's super upvote
+OPTIONAL MATCH (loggedInSuperUpvoter:User {username: loggedInUsername})-[:SUPER_UPVOTED_DISCUSSION]->(dc)
+WITH dc, d, author, serverRole, channelRole, tagsText,
+     CASE
          WHEN loggedInUsername = "" THEN []
          WHEN loggedInUser IS NOT NULL THEN [{username: loggedInUser.username}]
          ELSE []
      END AS loggedInUserUpvote,
+     CASE
+         WHEN loggedInUsername = "" THEN []
+         WHEN loggedInSuperUpvoter IS NOT NULL THEN [{username: loggedInSuperUpvoter.username}]
+         ELSE []
+     END AS loggedInUserSuperUpvote,
      totalUpvoters,
      totalCount,
      CASE WHEN coalesce(dc.weightedVotesCount, 0.0) < 0 THEN 0.0 ELSE coalesce(dc.weightedVotesCount, 0.0) END AS weightedVotesCount
 
 OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(c:Comment)
-WITH dc, d, author, serverRole, channelRole, COLLECT(c) AS comments, tagsText, loggedInUserUpvote, totalUpvoters, weightedVotesCount, totalCount,
-     duration.between(dc.createdAt, datetime()).months + 
+WHERE c.isFeedbackComment IS NULL OR c.isFeedbackComment = false
+WITH dc, d, author, serverRole, channelRole, COLLECT(c) AS comments, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, totalCount,
+     duration.between(dc.createdAt, datetime()).months +
      duration.between(dc.createdAt, datetime()).days / 30.0 AS ageInMonths
 
-WITH dc, d, author, serverRole, channelRole, tagsText, loggedInUserUpvote, totalUpvoters, weightedVotesCount, comments, totalCount,
+WITH dc, d, author, serverRole, channelRole, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, totalCount,
      10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
 
-WITH dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount,
+WITH dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount,
      COLLECT(DISTINCT serverRole) AS serverRoles, channelRole
 
-WITH dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, serverRoles, channelRole, totalCount
+WITH dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, serverRoles, channelRole, totalCount
 
-WITH dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount,
-     [role in serverRoles | {showAdminTag: role.showAdminTag}] AS serverRoles, 
+WITH dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount,
+     [role in serverRoles | {showAdminTag: role.showAdminTag}] AS serverRoles,
      [role in COLLECT(DISTINCT channelRole) | {showModTag: role.showModTag}] AS channelRoles
 
 // Sort based on individual elements, not the collection
-ORDER BY 
+ORDER BY
     CASE WHEN $sortOption = "new" THEN dc.createdAt END DESC,
     CASE WHEN $sortOption = "top" THEN weightedVotesCount END DESC,
     CASE WHEN $sortOption = "hot" THEN hotRank END DESC,
     dc.createdAt DESC
 
 // Apply pagination
-WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, serverRoles, channelRoles
+WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, serverRoles, channelRoles
 SKIP toInteger($offset)
 LIMIT toInteger($limit)
 
@@ -158,7 +166,7 @@ WHERE image.id IS NOT NULL
   AND (image.archived IS NULL OR image.archived = false)
   AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
 
-WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters,
+WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
      weightedVotesCount, comments, hotRank, serverRoles, channelRoles,
      album,
      [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
@@ -172,7 +180,7 @@ WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters,
 
 // Check if the logged-in user has favorited this discussion
 OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
-WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, totalUpvoters,
+WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
      weightedVotesCount, comments, hotRank, serverRoles, channelRoles, album, albumImages,
      CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
 
@@ -191,8 +199,9 @@ RETURN {
     },
     UpvotedByUsers: [up in loggedInUserUpvote | { username: up.username }],
     UpvotedByUsersAggregate: {
-        count: totalUpvoters 
+        count: totalUpvoters
     },
+    SuperUpvotedByUsers: [sup in loggedInUserSuperUpvote | { username: sup.username }],
     Discussion: {
         id: d.id,
         title: d.title,
