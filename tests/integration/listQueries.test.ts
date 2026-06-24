@@ -82,3 +82,40 @@ test("getSortedChannels filters by search input", async () => {
   assert.equal(result.channels.length, 1);
   assert.equal(result.channels[0].uniqueName, "cats");
 });
+
+// --- publicCollectionsContaining ---
+
+const seedImageInCollections = () =>
+  run(
+    `CREATE (owner:User { username: 'owner' })
+     CREATE (img:Image { id: 'img-1', scanStatus: 'PENDING' })
+     CREATE (pub:Collection { id: 'coll-pub', name: 'Public Set', visibility: 'PUBLIC', collectionType: 'IMAGES', itemOrder: [], createdAt: datetime(), updatedAt: datetime() })
+     CREATE (priv:Collection { id: 'coll-priv', name: 'Private Set', visibility: 'PRIVATE', collectionType: 'IMAGES', itemOrder: [], createdAt: datetime(), updatedAt: datetime() })
+     CREATE (pub)-[:CREATED_BY]->(owner)
+     CREATE (priv)-[:CREATED_BY]->(owner)
+     CREATE (pub)-[:CONTAINS_IMAGE]->(img)
+     CREATE (priv)-[:CONTAINS_IMAGE]->(img)`
+  );
+
+test("publicCollectionsContaining returns only PUBLIC collections with the image", async () => {
+  await seedImageInCollections();
+
+  const result = await env.resolvers.Query.publicCollectionsContaining(null, {
+    itemType: "IMAGE",
+    itemId: "img-1",
+  });
+
+  assert.equal(result.length, 1, "only the public collection should be returned");
+  assert.equal(result[0].id, "coll-pub");
+  assert.equal(result[0].visibility, "PUBLIC");
+});
+
+test("publicCollectionsContaining throws on an unsupported itemType", async () => {
+  await assert.rejects(
+    env.resolvers.Query.publicCollectionsContaining(null, {
+      itemType: "BOGUS",
+      itemId: "x",
+    }),
+    /Unsupported itemType/i
+  );
+});
