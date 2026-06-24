@@ -65,7 +65,7 @@ const getResolver = (input: Input) => {
 
     try {
       const response = await Album.create({
-        input: sanitizedInputs as unknown as AlbumCreateInput[],
+        input: sanitizedInputs,
         selectionSet: `{ albums ${selectionSet} }`,
       });
 
