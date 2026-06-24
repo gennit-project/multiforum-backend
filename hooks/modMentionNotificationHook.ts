@@ -66,7 +66,7 @@ const resolveModProfiles = async (
   try {
     const result = await session.run(
       `
-      MATCH (mp:ModerationProfile)-[:MODERATION_PROFILE_OF]->(u:User)
+      MATCH (u:User)-[:MODERATION_PROFILE]->(mp:ModerationProfile)
       WHERE mp.displayName IN $modProfileNames
       RETURN mp.displayName as displayName, u.username as username, u.notifyWhenTagged as notifyWhenTagged
       `,
