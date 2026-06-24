@@ -19,6 +19,10 @@ import getCustomResolvers from "../../customResolvers.js";
 let container: StartedNeo4jContainer | undefined;
 let driver: Driver | undefined;
 
+// See neo4jHarness.ts: when TESTCONTAINERS_REUSE_ENABLE=true, all integration
+// files share one Neo4j container instead of each starting its own (~30-40s).
+const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
+
 export interface ImageModEnv {
   driver: Driver;
   ogm: any;
@@ -26,7 +30,9 @@ export interface ImageModEnv {
 }
 
 export async function startImageModEnv(): Promise<ImageModEnv> {
-  container = await new Neo4jContainer("neo4j:5-community").withApoc().start();
+  let builder = new Neo4jContainer("neo4j:5-community").withApoc();
+  if (REUSE) builder = builder.withReuse();
+  container = await builder.start();
   process.env.NEO4J_URI = container.getBoltUri();
   process.env.NEO4J_USER = container.getUsername();
   process.env.NEO4J_PASSWORD = container.getPassword();
@@ -45,7 +51,8 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
 
 export async function stopImageModEnv(): Promise<void> {
   await driver?.close();
-  await container?.stop();
+  // With reuse the container is shared — never stop it here (see neo4jHarness).
+  if (!REUSE) await container?.stop();
   driver = undefined;
   container = undefined;
 }

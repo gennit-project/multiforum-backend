@@ -18,10 +18,19 @@ const NEO4J_IMAGE = process.env.NEO4J_TEST_IMAGE || "neo4j:5-community";
 let container: StartedNeo4jContainer | undefined;
 let driver: Driver | undefined;
 
+// When TESTCONTAINERS_REUSE_ENABLE=true, every integration test file shares a
+// single Neo4j container (identical config => same reuse hash) instead of each
+// starting its own. A Neo4j+APOC start is ~30-40s; with ~26 files that's the
+// bulk of the suite's wall time. Tests run serially and reset the graph in
+// beforeEach, so sharing one container is safe.
+const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
+
 export async function startNeo4j(): Promise<Driver> {
   // Enable APOC — the app's OGM-generated queries (e.g. suspension date
   // formatting) depend on apoc.* procedures.
-  container = await new Neo4jContainer(NEO4J_IMAGE).withApoc().start();
+  let builder = new Neo4jContainer(NEO4J_IMAGE).withApoc();
+  if (REUSE) builder = builder.withReuse();
+  container = await builder.start();
   driver = neo4j.driver(
     container.getBoltUri(),
     neo4j.auth.basic(container.getUsername(), container.getPassword())
@@ -33,7 +42,10 @@ export async function startNeo4j(): Promise<Driver> {
 
 export async function stopNeo4j(): Promise<void> {
   await driver?.close();
-  await container?.stop();
+  // With reuse, the container is shared across files — never stop it here, or
+  // the first file to finish would tear it down for the others. It is left
+  // running (Ryuk skips reusable containers); CI reaps it with the runner.
+  if (!REUSE) await container?.stop();
   driver = undefined;
   container = undefined;
 }
