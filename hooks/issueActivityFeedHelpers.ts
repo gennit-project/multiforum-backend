@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import type { IssueModel } from "../ogm_types.js";
+import type { IssueModel, ModerationActionCreateInput } from "../ogm_types.js";
 import type { GraphQLContext } from "../types/context.js";
 
 type ActivityAttribution = {
@@ -91,7 +91,7 @@ export const createIssueActivityFeedItems = async (
     return;
   }
 
-  const activityNode: Record<string, unknown> = {
+  const activityNode: ModerationActionCreateInput = {
     actionDescription,
     actionType,
   };

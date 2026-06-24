@@ -1,6 +1,6 @@
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
-import type { PluginRunModel } from '../../ogm_types.js'
+import type { PluginRunModel, PluginRunWhere, PluginRunOptions } from '../../ogm_types.js'
 
 type Input = {
   PluginRun: PluginRunModel
@@ -22,10 +22,10 @@ const getResolver = (input: Input) => {
           { targetId: downloadableFileId },
           { targetType: 'DownloadableFile' }
         ]
-      } as any),
+      } as unknown as PluginRunWhere),
       options: ({
         sort: [{ createdAt: 'DESC' }]
-      } as any),
+      } as unknown as PluginRunOptions),
       selectionSet: `{
         id
         pluginId

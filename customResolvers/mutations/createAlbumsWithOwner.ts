@@ -2,10 +2,10 @@ import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateInput } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { AlbumModel, UserModel } from "../../ogm_types.js";
+import type { AlbumCreateInput, AlbumModel, UserModel } from "../../ogm_types.js";
 
 type Args = {
-  input: Record<string, unknown>[];
+  input: AlbumCreateInput[];
 };
 
 type Input = {
@@ -65,7 +65,7 @@ const getResolver = (input: Input) => {
 
     try {
       const response = await Album.create({
-        input: sanitizedInputs,
+        input: sanitizedInputs as unknown as AlbumCreateInput[],
         selectionSet: `{ albums ${selectionSet} }`,
       });
 

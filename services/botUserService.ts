@@ -1,4 +1,4 @@
-import type { ChannelModel, CommentCreateInput, CommentModel, UserModel } from '../ogm_types.js'
+import type { ChannelModel, CommentCreateInput, CommentModel, UserCreateInput, UserModel } from '../ogm_types.js'
 
 type BotProfile = {
   id: string
@@ -89,7 +89,7 @@ export const ensureBotUserForChannel = async (input: {
               }
             }
           }
-        } as any)
+        } as unknown as UserCreateInput)
       ]
     })
     user = created.users[0]

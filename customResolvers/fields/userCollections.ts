@@ -2,6 +2,8 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext, Ogm } from "../../types/context.js";
 import type { CollectionOptions } from "../../src/generated/graphql.js";
+import type { CollectionWhere } from "../../ogm_types.js";
+import { CollectionVisibility } from "../../ogm_types.js";
 
 type UserCollectionsArgs = {
   ogm: Ogm;
@@ -14,7 +16,7 @@ type UserCollectionsArgs = {
  * - Respects additional where filters passed from GraphQL queries (e.g., filtering by item relationships)
  */
 type CollectionsArgs = {
-  where?: Record<string, unknown>;
+  where?: CollectionWhere;
   options?: { sort?: unknown[]; [key: string]: unknown };
 };
 
@@ -44,7 +46,7 @@ export default function ({ ogm }: UserCollectionsArgs) {
     const Collection = ogm.model("Collection");
 
     // Build the filter starting with CreatedBy
-    const filter: Record<string, unknown> = {
+    const filter: CollectionWhere = {
       CreatedBy: {
         username: profileUsername
       }
@@ -59,7 +61,7 @@ export default function ({ ogm }: UserCollectionsArgs) {
     // If not viewing own profile, only show PUBLIC collections
     // This takes precedence over any visibility filter in args.where
     if (!isOwnProfile) {
-      filter.visibility = "PUBLIC";
+      filter.visibility = CollectionVisibility.Public;
     }
 
     // Merge incoming options with defaults

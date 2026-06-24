@@ -6,6 +6,7 @@ import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput } from '../../ogm_types.js'
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -183,7 +184,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
             event
           }),
           updatedAt: new Date().toISOString()
-        } as any)
+        } as unknown as PluginRunCreateInput)
       ]
     })
 
@@ -212,7 +213,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped'
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -239,7 +240,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -257,7 +258,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
     // Update status to RUNNING
     await PluginRun.update({
       where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as any)
+      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
 
     const runStart = performance.now()
@@ -360,7 +361,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
             logs,
             result
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       // Check if we should stop the pipeline
@@ -399,7 +400,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
             logs,
             flags
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       // Check if we should stop the pipeline

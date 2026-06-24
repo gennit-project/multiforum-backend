@@ -9,6 +9,8 @@ import type {
   EventModel,
   ServerConfigModel,
   IssueUpdateInput,
+  ChannelUpdateInput,
+  ServerConfigUpdateInput,
   UserModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
@@ -157,7 +159,7 @@ export function createUnsuspendResolver ({
     })
 
     // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput: Record<string, unknown> | null = null
+    let channelUpdateInput: ChannelUpdateInput | ServerConfigUpdateInput | null = null
     if (relatedAccountType === 'User') {
       channelUpdateInput = {
         SuspendedUsers: [
@@ -201,12 +203,12 @@ export function createUnsuspendResolver ({
         if (scope === 'server') {
           await ServerConfig.update({
             where: { serverName: process.env.SERVER_CONFIG_NAME },
-            update: channelUpdateInput as any
+            update: channelUpdateInput as ServerConfigUpdateInput
           })
         } else {
           await Channel.update({
             where: { uniqueName: channelUniqueName },
-            update: channelUpdateInput as any
+            update: channelUpdateInput as ChannelUpdateInput
           })
         }
       } catch (err) {

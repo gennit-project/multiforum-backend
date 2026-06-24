@@ -1,7 +1,11 @@
 import type {
   PluginModel,
   PluginVersionModel,
-  ServerConfigModel
+  ServerConfigModel,
+  PluginCreateInput,
+  PluginUpdateInput,
+  PluginVersionCreateInput,
+  PluginVersionUpdateInput
 } from '../../ogm_types.js'
 import { Storage } from '@google-cloud/storage'
 import type { GraphQLResolveInfo } from 'graphql'
@@ -247,7 +251,7 @@ for (const registryPlugin of registryData.plugins) {
               license: pluginUpdatePayload.license,
               tags: pluginUpdatePayload.tags,
               metadata: pluginUpdatePayload.metadata
-            } as any)
+            } as unknown as PluginCreateInput)
           ]
         })
         pluginRecord = createResult.plugins[0]
@@ -263,7 +267,7 @@ for (const registryPlugin of registryData.plugins) {
             license: pluginUpdatePayload.license,
             tags: pluginUpdatePayload.tags,
             metadata: pluginUpdatePayload.metadata
-          } as any)
+          } as unknown as PluginUpdateInput)
         })
       }
 
@@ -311,7 +315,7 @@ for (const registryPlugin of registryData.plugins) {
                   where: { node: { id: pluginRecord!.id } }
                 }
               }
-            } as any)
+            } as unknown as PluginVersionCreateInput)
           ]
         })
       } else {
@@ -331,7 +335,7 @@ for (const registryPlugin of registryData.plugins) {
             uiSchema,
             documentationPath: artifacts.readmePath ?? null,
             readmeMarkdown: artifacts.readmeMarkdown ?? null
-          } as any),
+          } as unknown as PluginVersionUpdateInput),
           connect: {
             Plugin: {
               where: { node: { id: pluginRecord!.id } }

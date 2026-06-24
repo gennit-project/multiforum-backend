@@ -1,12 +1,10 @@
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { ImageModel, UserModel } from "../../ogm_types.js";
-
-type ImageInput = Record<string, unknown> & { Uploader?: unknown };
+import type { ImageCreateInput, ImageModel, UserModel } from "../../ogm_types.js";
 
 type Args = {
-  input: ImageInput[];
+  input: ImageCreateInput[];
 };
 
 type Input = {
@@ -62,7 +60,7 @@ const getResolver = (input: Input) => {
     }
 
     const sanitizedInputs = (imageInputs || []).map((imageInput) => {
-      const { Uploader, ...rest } = imageInput || {};
+      const { Uploader, ...rest } = imageInput || ({} as ImageCreateInput);
       return {
         ...rest,
         Uploader: {
@@ -79,7 +77,7 @@ const getResolver = (input: Input) => {
 
     try {
       const response = await Image.create({
-        input: sanitizedInputs,
+        input: sanitizedInputs as unknown as ImageCreateInput[],
         selectionSet: `{ images ${selectionSet} }`,
       });
 

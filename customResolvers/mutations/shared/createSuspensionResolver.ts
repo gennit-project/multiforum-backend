@@ -9,6 +9,8 @@ import type {
   EventModel,
   ServerConfigModel,
   IssueUpdateInput,
+  ChannelUpdateInput,
+  ServerConfigUpdateInput,
   TextVersionModel,
   UserModel,
   WikiPageModel
@@ -180,7 +182,7 @@ export function createSuspensionResolver ({
     })
 
     // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput: Record<string, unknown> | null = null
+    let channelUpdateInput: ChannelUpdateInput | ServerConfigUpdateInput | null = null
     if (relatedAccountType === 'User') {
       channelUpdateInput = {
         SuspendedUsers: [
@@ -265,7 +267,7 @@ export function createSuspensionResolver ({
         if (scope === 'server') {
           const serverData = await ServerConfig.update({
             where: { serverName: process.env.SERVER_CONFIG_NAME },
-            update: channelUpdateInput as any,
+            update: channelUpdateInput as ServerConfigUpdateInput,
             selectionSet: `{
               serverConfigs {
                 serverName
@@ -280,7 +282,7 @@ export function createSuspensionResolver ({
         } else {
           const channelData = await Channel.update({
             where: { uniqueName: channelUniqueName },
-            update: channelUpdateInput as any,
+            update: channelUpdateInput as ChannelUpdateInput,
             selectionSet: `{
               channels {
                 uniqueName

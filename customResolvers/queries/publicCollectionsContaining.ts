@@ -1,13 +1,14 @@
 import type { Driver } from "neo4j-driver";
 import type { Ogm } from "../../types/context.js";
 import { SortDirection } from "../../src/generated/graphql.js";
+import type { CollectionWhere } from "../../ogm_types.js";
 
 type Input = {
   driver: Driver;
   ogm: Ogm;
 };
 
-const itemTypeWhereMap: Record<string, Record<string, unknown>> = {
+const itemTypeWhereMap: Record<string, CollectionWhere> = {
   DISCUSSION: { Discussions_SOME: { id: undefined } },
   COMMENT: { Comments_SOME: { id: undefined } },
   DOWNLOAD: { Downloads_SOME: { id: undefined, hasDownload: true } },

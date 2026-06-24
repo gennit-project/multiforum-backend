@@ -65,9 +65,9 @@ function getSeriesLevelUpdates(
   eventUpdateInput: EventUpdateInput
 ): Partial<EventUpdateInput> {
   const seriesUpdates: Partial<EventUpdateInput> = {};
-  for (const field of SERIES_LEVEL_FIELDS) {
+  for (const field of SERIES_LEVEL_FIELDS as (keyof EventUpdateInput)[]) {
     if (field in eventUpdateInput) {
-      (seriesUpdates as any)[field] = (eventUpdateInput as any)[field];
+      seriesUpdates[field] = eventUpdateInput[field] as never;
     }
   }
   return seriesUpdates;
@@ -80,9 +80,9 @@ function getOccurrenceLevelUpdates(
   eventUpdateInput: EventUpdateInput
 ): Partial<EventUpdateInput> {
   const occurrenceUpdates: Partial<EventUpdateInput> = {};
-  for (const field of OCCURRENCE_LEVEL_FIELDS) {
+  for (const field of OCCURRENCE_LEVEL_FIELDS as (keyof EventUpdateInput)[]) {
     if (field in eventUpdateInput) {
-      (occurrenceUpdates as any)[field] = (eventUpdateInput as any)[field];
+      occurrenceUpdates[field] = eventUpdateInput[field] as never;
     }
   }
   return occurrenceUpdates;

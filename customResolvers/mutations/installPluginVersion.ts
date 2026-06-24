@@ -3,7 +3,11 @@ import { Storage } from '@google-cloud/storage'
 import type {
   PluginModel,
   PluginVersionModel,
-  ServerConfigModel
+  ServerConfigModel,
+  PluginCreateInput,
+  PluginUpdateInput,
+  PluginVersionCreateInput,
+  PluginVersionUpdateInput
 } from '../../ogm_types.js'
 import type { GraphQLResolveInfo } from 'graphql'
 import { parseManifestFromTarball } from './shared/pluginManifest.js'
@@ -245,7 +249,7 @@ const getResolver = (input: Input) => {
               license: pluginUpdatePayload.license,
               tags: pluginUpdatePayload.tags,
               metadata: pluginUpdatePayload.metadata
-            } as any)
+            } as unknown as PluginCreateInput)
           ]
         })
         pluginRecord = createResult.plugins[0]
@@ -261,7 +265,7 @@ const getResolver = (input: Input) => {
             license: pluginUpdatePayload.license,
             tags: pluginUpdatePayload.tags,
             metadata: pluginUpdatePayload.metadata
-          } as any)
+          } as unknown as PluginUpdateInput)
         })
       }
 
@@ -297,7 +301,7 @@ const getResolver = (input: Input) => {
                   where: { node: { id: pluginRecord!.id } }
                 }
               }
-            } as any)
+            } as unknown as PluginVersionCreateInput)
           ]
         })
         pluginVersion = createResult.pluginVersions[0]
@@ -314,7 +318,7 @@ const getResolver = (input: Input) => {
             uiSchema,
             documentationPath,
             readmeMarkdown
-          } as any),
+          } as unknown as PluginVersionUpdateInput),
           connect: {
             Plugin: {
               where: { node: { id: pluginRecord!.id } }

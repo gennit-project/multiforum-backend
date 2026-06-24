@@ -10,6 +10,7 @@ import { buildBotInvocationContext, collectParentCommentThread } from './buildBo
 import { createPromptDebugLogger } from './promptDebug.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import type { Ogm } from '../../types/context.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput } from '../../ogm_types.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -304,7 +305,7 @@ export const triggerPluginRunsForComment = async ({
             channelUniqueName
           }),
           updatedAt: new Date().toISOString()
-        } as any)
+        } as PluginRunCreateInput)
       ]
     })
 
@@ -331,7 +332,7 @@ export const triggerPluginRunsForComment = async ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped'
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -357,7 +358,7 @@ export const triggerPluginRunsForComment = async ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const skipped = await PluginRun.find({
@@ -374,7 +375,7 @@ export const triggerPluginRunsForComment = async ({
 
     await PluginRun.update({
       where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as any)
+      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
 
     const runStart = performance.now()
@@ -637,7 +638,7 @@ export const triggerPluginRunsForComment = async ({
             logs,
             result
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
@@ -675,7 +676,7 @@ export const triggerPluginRunsForComment = async ({
             logs,
             flags
           })
-        } as any)
+        } as PluginRunUpdateInput)
       })
 
       const updated = await PluginRun.find({
