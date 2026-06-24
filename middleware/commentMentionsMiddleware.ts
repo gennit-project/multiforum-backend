@@ -1,13 +1,14 @@
 import { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../types/context.js'
+import type { CommentCreateInput } from '../ogm_types.js'
 import { parseBotMentions } from '../utils/botMentionParser.js'
 
 interface CreateCommentsArgs {
-  input?: Record<string, unknown>[]
+  input?: CommentCreateInput[]
   [key: string]: unknown
 }
 
-const isDiscussionCommentInput = (input: Record<string, unknown> | null | undefined): boolean => {
+const isDiscussionCommentInput = (input: CommentCreateInput | null | undefined): boolean => {
   if (!input || typeof input !== 'object') return false
   if (!input.DiscussionChannel) return false
   if (input.isFeedbackComment) return false
@@ -26,7 +27,7 @@ const commentMentionsMiddleware = {
       info: GraphQLResolveInfo
     ) => {
       if (Array.isArray(args?.input)) {
-        args.input = args.input.map((input: Record<string, unknown>) => {
+        args.input = args.input.map((input: CommentCreateInput) => {
           if (input?.botMentions !== undefined) {
             return input
           }

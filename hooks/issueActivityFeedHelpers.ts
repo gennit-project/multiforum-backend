@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import type { IssueModel, ModerationActionCreateInput } from "../ogm_types.js";
+import type { IssueModel, ModerationActionCreateInput, IssueWhere } from "../ogm_types.js";
 import type { GraphQLContext } from "../types/context.js";
 
 type ActivityAttribution = {
@@ -40,7 +40,7 @@ export const getIssueIdsForRelated = async (
   related: RelatedIssueLookup
 ): Promise<string[]> => {
   try {
-    const where: Record<string, string> = {};
+    const where: IssueWhere = {};
     if (related.discussionId) {
       where.relatedDiscussionId = related.discussionId;
     }

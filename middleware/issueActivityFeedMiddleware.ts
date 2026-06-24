@@ -5,6 +5,7 @@ import type {
   DiscussionModel,
   EventModel,
   IssueModel,
+  EventUpdateInput,
 } from '../ogm_types.js';
 import {
   createIssueActivityFeedItems,
@@ -338,7 +339,7 @@ const issueActivityFeedMiddleware = {
     updateEvents: async (
       resolve: Resolver,
       parent: unknown,
-      args: { where?: { id?: string }; update?: Record<string, unknown> },
+      args: { where?: { id?: string }; update?: EventUpdateInput },
       context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {

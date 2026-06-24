@@ -65,9 +65,8 @@ const getResolver = (input: Input) => {
         throw new Error(`Plugin ${pluginId} version ${version} not found`)
       }
 
-      const pluginData = plugin as Record<string, unknown>
-      const pluginVersionData = pluginVersion as Record<string, unknown>
-      const manifest = (pluginVersionData.manifest as Record<string, unknown>) || {}
+      // `manifest` is a JSON scalar, so it's still read as a dynamic record.
+      const manifest = (pluginVersion.manifest as Record<string, unknown>) || {}
       const manifestSecrets = Array.isArray(manifest.secrets) ? manifest.secrets : []
       const requiredServerSecrets = manifestSecrets.filter((secret: { scope?: string; required?: boolean }) => secret && secret.scope === 'server' && secret.required !== false)
 
@@ -155,26 +154,26 @@ const getResolver = (input: Input) => {
 
       return {
         plugin: {
-          id: pluginData.id,
-          name: pluginData.name,
-          displayName: pluginData.displayName,
-          description: pluginData.description,
-          authorName: pluginData.authorName,
-          authorUrl: pluginData.authorUrl,
-          homepage: pluginData.homepage,
-          license: pluginData.license,
-          tags: pluginData.tags || [],
-          metadata: pluginData.metadata || null
+          id: plugin.id,
+          name: plugin.name,
+          displayName: plugin.displayName,
+          description: plugin.description,
+          authorName: plugin.authorName,
+          authorUrl: plugin.authorUrl,
+          homepage: plugin.homepage,
+          license: plugin.license,
+          tags: plugin.tags || [],
+          metadata: plugin.metadata || null
         },
         version,
         scope: 'SERVER',
         enabled,
         settingsJson,
         manifest: manifest || null,
-        settingsDefaults: pluginVersionData.settingsDefaults || null,
-        uiSchema: pluginVersionData.uiSchema || null,
-        documentationPath: pluginVersionData.documentationPath || null,
-        readmeMarkdown: pluginVersionData.readmeMarkdown || null
+        settingsDefaults: pluginVersion.settingsDefaults || null,
+        uiSchema: pluginVersion.uiSchema || null,
+        documentationPath: pluginVersion.documentationPath || null,
+        readmeMarkdown: pluginVersion.readmeMarkdown || null
       }
 
     } catch (error: unknown) {

@@ -1,12 +1,13 @@
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
+import type { ChannelCreateInput } from '../ogm_types.js';
 import {
   setUserDataOnContext,
   type AuthContextForUserLookup,
 } from '../rules/permission/userDataHelperFunctions.js';
 
 interface CreateChannelsArgs {
-  input?: Record<string, unknown>[];
+  input?: ChannelCreateInput[];
   [key: string]: unknown;
 }
 
