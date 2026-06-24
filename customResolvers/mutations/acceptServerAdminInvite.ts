@@ -1,4 +1,5 @@
 import type {
+  ServerConfig,
   ServerConfigUpdateInput,
   ServerConfigModel,
 } from "../../ogm_types.js";
@@ -46,8 +47,7 @@ const getResolver = (input: Input) => {
       }`,
     });
 
-    // Note: Using type assertion until OGM types are regenerated
-    const serverConfig = serverConfigWithPendingInvite[0] as any;
+    const serverConfig: ServerConfig | undefined = serverConfigWithPendingInvite[0];
     if (!serverConfig?.PendingAdminInvites?.some(
       (invite: { username: string }) => invite.username === loggedInUsername
     )) {

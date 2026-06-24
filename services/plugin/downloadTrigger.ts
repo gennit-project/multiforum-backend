@@ -6,7 +6,7 @@ import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
-import type { PluginRunCreateInput, PluginRunUpdateInput } from '../../ogm_types.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -51,7 +51,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
   }
 
   const downloadableFile = files[0]
-  const fileData = downloadableFile as any
+  // The runtime schema exposes a singular `Discussion` on DownloadableFile that
+  // the generated DownloadableFile type doesn't model yet, so extend the
+  // generated type with that queried field.
+  const fileData = downloadableFile as DownloadableFileType & {
+    Discussion?: DiscussionType | null
+  }
   const discussionChannel = fileData.Discussion?.DiscussionChannels?.[0] || null
   const channelId = discussionChannel?.channelUniqueName || null
   const channelNode = discussionChannel?.Channel || null
@@ -88,15 +93,19 @@ export const triggerPluginRunsForDownloadableFile = async ({
     }`
   })
 
-  const serverConfig = serverConfigs[0] as any
+  const serverConfig: ServerConfigType | undefined = serverConfigs[0]
   if (!serverConfig) {
     return []
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
-  // Build version-aware plugin map (pluginName -> sorted array of versions)
-  const pluginVersionsMap = buildPluginVersionMaps(edges)
+  // Build version-aware plugin map (pluginName -> sorted array of versions).
+  // The generated relationship edge type is cast to the plugin layer's
+  // structurally-compatible PluginEdgeData at this consumer boundary.
+  const pluginVersionsMap = buildPluginVersionMaps(
+    edges as unknown as PluginEdgeData[]
+  )
 
   // Check if there's a pipeline defined for this event
   const pipelines: EventPipeline[] = serverConfig.pluginPipelines || []

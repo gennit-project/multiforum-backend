@@ -228,7 +228,7 @@ export async function getActiveSuspension(
       (username
         ? (channel.SuspendedUsers || []).filter((s: Suspension) => {
             const suspensionUsername =
-              s.username || (s as any)?.SuspendedUser?.username;
+              s.username || s.SuspendedUser?.username;
             return suspensionUsername === username;
           })
         : []) ?? [];
@@ -237,7 +237,7 @@ export async function getActiveSuspension(
       (modProfileName
         ? (channel.SuspendedMods || []).filter((s: Suspension) => {
             const suspensionDisplayName =
-              (s as any).modProfileName || (s as any)?.SuspendedMod?.displayName;
+              s.modProfileName || s.SuspendedMod?.displayName;
             return suspensionDisplayName === modProfileName;
           })
         : []) ?? [];
@@ -270,9 +270,9 @@ export async function getActiveSuspension(
     activeSuspension,
     isSuspended: !!activeSuspension,
     relatedIssueId:
-      (activeSuspension as any)?.RelatedIssue?.id || null,
+      activeSuspension?.RelatedIssue?.id || null,
     relatedIssueNumber:
-      (activeSuspension as any)?.RelatedIssue?.issueNumber || null,
+      activeSuspension?.RelatedIssue?.issueNumber || null,
     expiredUserSuspensions,
     expiredModSuspensions,
     suspendedEntity,

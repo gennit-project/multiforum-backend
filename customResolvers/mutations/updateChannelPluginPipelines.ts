@@ -1,4 +1,4 @@
-import type { ChannelModel, ServerConfigModel, UserModel } from '../../ogm_types.js'
+import type { Channel, ChannelModel, ServerConfigModel, UserModel } from '../../ogm_types.js'
 import {
   buildBotUsername,
   getBotNameFromSettings,
@@ -112,7 +112,7 @@ const getResolver = (input: Input) => {
       throw new Error(`Channel "${channelUniqueName}" not found`)
     }
 
-    const channel = existingChannels[0] as any
+    const channel: Channel = existingChannels[0]
 
     // Update the pluginPipelines JSON field (serialized as string for Neo4j)
     await Channel.update({

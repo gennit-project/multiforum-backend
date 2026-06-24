@@ -10,7 +10,7 @@ import { buildBotInvocationContext, collectParentCommentThread } from './buildBo
 import { createPromptDebugLogger } from './promptDebug.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import type { Ogm } from '../../types/context.js'
-import type { PluginRunCreateInput, PluginRunUpdateInput } from '../../ogm_types.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Comment, ServerConfig } from '../../ogm_types.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -83,7 +83,18 @@ export const triggerPluginRunsForComment = async ({
     throw new Error(`Comment "${commentId}" not found`)
   }
 
-  const comment = comments[0] as any
+  // The selectionSet flattens CommentAuthor's inline-fragment fields (User and
+  // ModerationProfile branches) into a single accessor shape that the generated
+  // `Comment.CommentAuthor` union (User | ModerationProfile) doesn't model, so
+  // intersect the generated type with the queried author shape.
+  const comment = comments[0] as Comment & {
+    CommentAuthor?: {
+      username?: string | null
+      displayName?: string | null
+      isBot?: boolean | null
+      User?: { username?: string | null } | null
+    } | null
+  }
   const discussionChannel = comment.DiscussionChannel || null
   const isDiscussionComment =
     Boolean(discussionChannel?.id) &&
@@ -132,7 +143,7 @@ export const triggerPluginRunsForComment = async ({
       }
     }`
   })
-  const channel = channels[0] as any
+  const channel: Channel = channels[0]
   const parentComments = await collectParentCommentThread({
     Comment,
     parentCommentId: comment.ParentComment?.id || null
@@ -181,7 +192,7 @@ export const triggerPluginRunsForComment = async ({
     }`
   })
 
-  const serverConfig = serverConfigs[0] as any
+  const serverConfig: ServerConfig | undefined = serverConfigs[0]
   if (!serverConfig) {
     return []
   }
@@ -189,7 +200,7 @@ export const triggerPluginRunsForComment = async ({
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
   // Build version-aware plugin map (pluginName -> sorted array of versions)
-  const pluginVersionsMap = buildPluginVersionMaps(edges)
+  const pluginVersionsMap = buildPluginVersionMaps(edges as unknown as PluginEdgeData[])
 
   // Check channel pipelines first, then fall back to server pipelines
   const channelPipelines = parseStoredPipelines(channel?.pluginPipelines)
