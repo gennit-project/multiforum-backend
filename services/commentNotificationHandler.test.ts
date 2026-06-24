@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CommentNotificationService } from "./commentNotificationService.js";
+import {
+  createBatchNotifications,
+  createNotificationsForUsers,
+} from "./commentNotificationHandler.js";
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
@@ -61,10 +64,9 @@ test("createBatchNotifications stores notificationType on subscription notificat
       };
     },
   };
-  const service = new CommentNotificationService({}, ogm, driver) as any;
 
-  await service.createBatchNotifications(
-    driver,
+  await createBatchNotifications(
+    { ogm, driver },
     "alice commented",
     "bob",
     "DiscussionChannel",
@@ -80,10 +82,9 @@ test("createBatchNotifications stores notificationType on subscription notificat
 
 test("createNotificationsForUsers stores notificationType on direct notifications", async () => {
   const { driver, sessions } = buildDriver();
-  const service = new CommentNotificationService({}, { model() {} }, driver) as any;
 
-  await service.createNotificationsForUsers(
-    driver,
+  await createNotificationsForUsers(
+    { ogm: { model() {} }, driver },
     [{ username: "alice", email: null }],
     "bob replied",
     undefined,
