@@ -15,3 +15,9 @@ ts_emitted
 coverage
 .nyc_output
 listical-dev-gcp.json
+
+# Code-generated type files — produced by `npm run codegen` at build time
+# (see build_scripts/generateTypes.ts). No longer tracked.
+ogm_types.ts
+src/generated/
+schema.introspection.json

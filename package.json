@@ -13,10 +13,11 @@
     "coverage": "c8 node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
     "coverage:integration": "c8 node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
     "prepare": "husky install",
-    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen": "node --loader ts-node/esm build_scripts/generateTypes.ts",
     "tsc": "tsc",
     "logSchema": "node build_scripts/logSchema.js",
-    "build": "tsc && node build_scripts/copyCypherFiles.js",
+    "build": "npm run codegen && tsc && node build_scripts/copyCypherFiles.js",
+    "heroku-postbuild": "npm run build",
     "start": "node ./ts_emitted/index.js"
   },
   "keywords": [],

@@ -21,7 +21,6 @@ import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
 import path from "path";
 import dotenv from "dotenv";
-import pkg from "@neo4j/graphql-ogm";
 import getCustomResolvers from "./customResolvers.js";
 import { fileURLToPath } from "url";
 import axios from "axios";
@@ -33,7 +32,6 @@ import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistory
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const { generate } = pkg;
 
 dotenv.config();
 
@@ -184,20 +182,6 @@ async function initializeServer() {
       await driver.session().run(ensureUniqueIssueEventPerChannel);
       await driver.session().run(ensureUniqueIssueCommentPerChannel);
       await driver.session().run(ensureUniqueIssueWikiRevisionPerChannel);
-    }
-
-    if (process.env.GENERATE_OGM_TYPES === "true") {
-      // Generate to the source directory (not ts_emitted) with correct filename
-      const sourceDir = path.resolve(__dirname, "..");
-      const outFile = path.join(sourceDir, "ogm_types.ts");
-
-      await generate({
-        ogm,
-        outFile,
-      });
-
-      console.log(`Generated OGM types at ${outFile}`);
-      process.exit(1);
     }
 
     let schema = await neoSchema.getSchema();
