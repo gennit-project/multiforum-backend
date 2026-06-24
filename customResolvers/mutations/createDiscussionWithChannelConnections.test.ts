@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test, { beforeEach, afterEach } from "node:test";
 import jwt from "jsonwebtoken";
+import type { Driver } from "neo4j-driver";
+import type { DiscussionModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 import { createDiscussionsFromInput } from "./createDiscussionWithChannelConnections.js";
 
 // Store original env value
@@ -64,7 +67,7 @@ class SessionStub {
 
 const createDriver = (session: SessionStub) => ({
   session: () => session,
-});
+} as unknown as Driver);
 
 const createContext = (username: string = "testuser") => ({
   req: {
@@ -88,7 +91,7 @@ const createContext = (username: string = "testuser") => ({
       throw new Error(`Unexpected model lookup: ${name}`);
     },
   },
-});
+} as unknown as GraphQLContext);
 
 test("createDiscussionWithChannelConnections", async (t) => {
   // Enable mock auth for tests that use JWT context
@@ -111,7 +114,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     const result = await createDiscussionsFromInput(
-      discussionModel,
+      discussionModel as unknown as DiscussionModel,
       driver,
       [
         {
@@ -136,7 +139,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     const result = await createDiscussionsFromInput(
-      discussionModel,
+      discussionModel as unknown as DiscussionModel,
       driver,
       [
         {
@@ -163,7 +166,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
 
     await assert.rejects(
       async () => {
-        await createDiscussionsFromInput(discussionModel, driver, []);
+        await createDiscussionsFromInput(discussionModel as unknown as DiscussionModel, driver, []);
       },
       {
         message: "Input cannot be empty",
@@ -179,7 +182,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     await assert.rejects(
       async () => {
         await createDiscussionsFromInput(
-          discussionModel,
+          discussionModel as unknown as DiscussionModel,
           driver,
           [
             {
@@ -206,7 +209,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
 
     // Should not throw, should skip the duplicate
     const result = await createDiscussionsFromInput(
-      discussionModel,
+      discussionModel as unknown as DiscussionModel,
       driver,
       [
         {
@@ -229,7 +232,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     await createDiscussionsFromInput(
-      discussionModel,
+      discussionModel as unknown as DiscussionModel,
       driver,
       [
         {
@@ -268,7 +271,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const context = createContext("albumuser");
 
     await createDiscussionsFromInput(
-      discussionModel,
+      discussionModel as unknown as DiscussionModel,
       driver,
       [
         {
@@ -300,7 +303,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     await assert.rejects(
       async () => {
         await createDiscussionsFromInput(
-          discussionModel,
+          discussionModel as unknown as DiscussionModel,
           driver,
           [
             {
@@ -331,7 +334,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     const result = await createDiscussionsFromInput(
-      discussionModel,
+      discussionModel as unknown as DiscussionModel,
       driver,
       [
         {

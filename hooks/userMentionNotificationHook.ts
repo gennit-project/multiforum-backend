@@ -15,6 +15,8 @@ import {
   createCommentMentionNotificationEmail,
   createDiscussionMentionNotificationEmail,
 } from '../customResolvers/mutations/shared/emailUtils.js';
+import type { GraphQLContext } from '../types/context.js';
+import type { Record as Neo4jRecord } from 'neo4j-driver';
 
 // Re-export for consumers
 export { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
@@ -32,7 +34,7 @@ export {
 type MentionContext = MentionContextComment | MentionContextDiscussion;
 
 type NotifyMentionsInput = {
-  context: any;
+  context: GraphQLContext;
   mentionContext: MentionContext;
   previousText?: string | null;
   nextText?: string | null;
@@ -58,7 +60,7 @@ export const notifyDiscussionMentions = async ({
   nextText,
   dependencies,
 }: {
-  context: any;
+  context: GraphQLContext;
   discussion: DiscussionSnapshot;
   previousText?: string | null;
   nextText?: string | null;
@@ -82,7 +84,7 @@ export const notifyCommentMentions = async ({
   nextText,
   dependencies,
 }: {
-  context: any;
+  context: GraphQLContext;
   comment: CommentSnapshot;
   previousText?: string | null;
   nextText?: string | null;
@@ -99,7 +101,7 @@ export const notifyCommentMentions = async ({
 };
 
 const resolveMentionedUsers = async (
-  context: any,
+  context: GraphQLContext,
   usernames: string[]
 ): Promise<MentionedUser[]> => {
   if (!usernames.length) return [];
@@ -119,7 +121,7 @@ const resolveMentionedUsers = async (
       }`,
     });
 
-    return users.map((user: any) => ({
+    return users.map((user) => ({
       username: user.username,
       notifyWhenTagged: Boolean(user.notifyWhenTagged),
       email: user.Email?.address || null,
@@ -138,7 +140,7 @@ const resolveMentionedUsers = async (
         `,
         { usernames: normalized }
       );
-      return result.records.map((record: any) => ({
+      return result.records.map((record: Neo4jRecord) => ({
         username: record.get('username'),
         notifyWhenTagged: Boolean(record.get('notifyWhenTagged')),
         email: record.get('email') || null,

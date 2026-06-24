@@ -1,9 +1,13 @@
+import type { Driver } from "neo4j-driver";
+import type { Ogm } from "../../types/context.js";
+import { SortDirection } from "../../src/generated/graphql.js";
+
 type Input = {
-  driver: any;
-  ogm: any;
+  driver: Driver;
+  ogm: Ogm;
 };
 
-const itemTypeWhereMap: Record<string, any> = {
+const itemTypeWhereMap: Record<string, Record<string, unknown>> = {
   DISCUSSION: { Discussions_SOME: { id: undefined } },
   COMMENT: { Comments_SOME: { id: undefined } },
   DOWNLOAD: { Downloads_SOME: { id: undefined, hasDownload: true } },
@@ -72,7 +76,7 @@ const selectionSet = `
 `;
 
 const publicCollectionsContaining = ({ ogm }: Input) => {
-  return async (_parent: any, args: any) => {
+  return async (_parent: unknown, args: { itemId: string; itemType: string }) => {
     const { itemId, itemType } = args;
     const whereTemplate = itemTypeWhereMap[itemType];
 
@@ -97,7 +101,7 @@ const publicCollectionsContaining = ({ ogm }: Input) => {
           visibility: "PUBLIC",
           ...where,
         },
-        options: { sort: [{ createdAt: "DESC" }] },
+        options: { sort: [{ createdAt: SortDirection.Desc }] },
         selectionSet,
       });
 

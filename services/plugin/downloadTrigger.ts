@@ -152,7 +152,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
     return []
   }
 
-  const runs: any[] = []
+  const runs: unknown[] = []
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
@@ -262,7 +262,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
 
     const runStart = performance.now()
     const logs: string[] = []
-    const flags: any[] = []
+    const flags: unknown[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -281,7 +281,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
         try {
           decryptedSecrets[secret.key] = decryptSecret(secret.ciphertext)
         } catch (error) {
-          logs.push(`Failed to decrypt secret ${secret.key}: ${(error as any).message}`)
+          logs.push(`Failed to decrypt secret ${secret.key}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
@@ -297,12 +297,12 @@ export const triggerPluginRunsForDownloadableFile = async ({
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: any[]) => {
+        log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
           console.log(`[Plugin:${pluginId}]`, message)
         },
-        storeFlag: async (flag: any) => {
+        storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
         logPromptDebug: createPromptDebugLogger({
@@ -383,7 +383,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
     } catch (error) {
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
-      const message = (error as any).message || 'Plugin execution failed'
+      const message = (error instanceof Error ? error.message : '') || 'Plugin execution failed'
 
       previousStatus = 'FAILED'
 

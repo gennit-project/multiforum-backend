@@ -1,4 +1,6 @@
 import { GraphQLError } from 'graphql'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../../types/context.js'
 import type {
   ChannelModel,
   IssueModel,
@@ -58,10 +60,10 @@ export function createSuspensionResolver ({
   suspendedEntityName,
 }: CreateSuspensionResolverOptions) {
   return async function suspendEntityResolver (
-    parent: any,
+    parent: unknown,
     args: Args,
-    context: any,
-    resolveInfo: any
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
   ) {
     const { issueId, suspendUntil, suspendIndefinitely, explanation } = args
     const actionChannelName = process.env.SERVER_CONFIG_NAME || 'server'
@@ -178,7 +180,7 @@ export function createSuspensionResolver ({
     })
 
     // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput: any = null
+    let channelUpdateInput: Record<string, unknown> | null = null
     if (relatedAccountType === 'User') {
       channelUpdateInput = {
         SuspendedUsers: [

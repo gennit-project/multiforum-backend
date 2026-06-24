@@ -6,7 +6,22 @@ import { promises as fs } from 'fs'
 import tar from 'tar-stream'
 import zlib from 'zlib'
 
-export const pluginModuleCache = new Map<string, any>()
+// Shape of the value a plugin's handleEvent resolves to.
+export type PluginRunResult = {
+  success?: boolean
+  error?: string
+  result?: { message?: string } & Record<string, unknown>
+} & Record<string, unknown>
+
+// A constructed plugin instance exposes a handleEvent method.
+export type PluginInstance = {
+  handleEvent: (envelope: unknown) => Promise<PluginRunResult>
+}
+
+// A loaded plugin implementation is a constructor invoked as `new PluginClass(context)`.
+export type PluginConstructor = new (...args: unknown[]) => PluginInstance
+
+export const pluginModuleCache = new Map<string, PluginConstructor>()
 export const tarballCache = new Map<string, Buffer>()
 
 export const downloadTarball = async (tarballUrl: string): Promise<Buffer> => {
@@ -77,10 +92,10 @@ export const extractTarballToTempDir = async (tarballBytes: Buffer): Promise<str
   return tempDir
 }
 
-export const loadPluginImplementation = async (tarballUrl: string, entryPath: string): Promise<any> => {
+export const loadPluginImplementation = async (tarballUrl: string, entryPath: string): Promise<PluginConstructor> => {
   const cacheKey = `${tarballUrl}:${entryPath}`
   if (pluginModuleCache.has(cacheKey)) {
-    return pluginModuleCache.get(cacheKey)
+    return pluginModuleCache.get(cacheKey) as PluginConstructor
   }
 
   const tarballBytes = await downloadTarball(tarballUrl)
@@ -90,7 +105,7 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
 
   try {
     const moduleUrl = pathToFileURL(absoluteEntryPath).href
-    const importedModule = await import(moduleUrl)
+    const importedModule = (await import(moduleUrl)) as Record<string, unknown>
 
     // Debug: Log what the module exports
     console.log(`[PluginLoader] Module keys for ${entryPath}:`, Object.keys(importedModule))
@@ -98,28 +113,29 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
     console.log(`[PluginLoader] Default export type:`, typeof importedModule.default)
 
     // Try to find the plugin class in various export formats
-    let PluginClass = importedModule.default
+    let PluginClass: unknown = importedModule.default
 
     // If default is an object (not a function), look inside it for the class
     if (PluginClass && typeof PluginClass === 'object' && typeof PluginClass !== 'function') {
-      console.log(`[PluginLoader] Default is an object with keys:`, Object.keys(PluginClass))
+      const defaultObject = PluginClass as Record<string, unknown>
+      console.log(`[PluginLoader] Default is an object with keys:`, Object.keys(defaultObject))
 
       // Look for common property names that might hold the class
       const possibleNames = ['Plugin', 'default', 'ChatGPTBotProfiles', 'BetaReaderBot']
       for (const name of possibleNames) {
-        if (typeof PluginClass[name] === 'function') {
+        if (typeof defaultObject[name] === 'function') {
           console.log(`[PluginLoader] Found plugin class inside default.${name}`)
-          PluginClass = PluginClass[name]
+          PluginClass = defaultObject[name]
           break
         }
       }
 
       // If still not a function, try the first function property in the default object
       if (typeof PluginClass !== 'function') {
-        for (const key of Object.keys(PluginClass)) {
-          if (typeof PluginClass[key] === 'function') {
+        for (const key of Object.keys(defaultObject)) {
+          if (typeof defaultObject[key] === 'function') {
             console.log(`[PluginLoader] Found plugin class inside default.${key}`)
-            PluginClass = PluginClass[key]
+            PluginClass = defaultObject[key]
             break
           }
         }
@@ -150,11 +166,13 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
     }
 
     if (typeof PluginClass !== 'function') {
-      throw new Error(`Plugin module does not export a constructor. Module exports: ${Object.keys(importedModule).join(', ')}. Default export keys: ${importedModule.default ? Object.keys(importedModule.default).join(', ') : 'N/A'}`)
+      const defaultExport = importedModule.default
+      throw new Error(`Plugin module does not export a constructor. Module exports: ${Object.keys(importedModule).join(', ')}. Default export keys: ${defaultExport ? Object.keys(defaultExport as Record<string, unknown>).join(', ') : 'N/A'}`)
     }
 
-    pluginModuleCache.set(cacheKey, PluginClass)
-    return PluginClass
+    const resolvedPluginClass = PluginClass as unknown as PluginConstructor
+    pluginModuleCache.set(cacheKey, resolvedPluginClass)
+    return resolvedPluginClass
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true })
   }

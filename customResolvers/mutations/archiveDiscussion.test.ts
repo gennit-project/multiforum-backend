@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
 import archiveDiscussionResolver from "./archiveDiscussion.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
 
 type FindArgs = {
   where?: Record<string, unknown>;
@@ -68,7 +71,7 @@ const createDriver = () => ({
   }),
 });
 
-const createContext = (userModel: ModelStub) => ({
+const createContext = (userModel: ModelStub): GraphQLContext => (({
   req: {
     headers: {
       authorization: `Bearer ${jwt.sign(
@@ -89,7 +92,7 @@ const createContext = (userModel: ModelStub) => ({
     },
   },
   driver: createDriver(),
-});
+}) as unknown as GraphQLContext);
 
 const createUserModel = () =>
   new ModelStub(({ where }) => {
@@ -145,7 +148,7 @@ test("archiveDiscussion creates an issue, archives the discussion channel, and l
     Issue: Issue as any,
     Discussion: Discussion as any,
     DiscussionChannel: DiscussionChannel as any,
-    driver: createDriver(),
+    driver: createDriver() as unknown as Driver,
   });
 
   const result = await resolver(
@@ -158,7 +161,7 @@ test("archiveDiscussion creates an issue, archives the discussion channel, and l
       channelUniqueName: "cats",
     },
     createContext(createUserModel()),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(result?.id, "issue-1");
@@ -224,7 +227,7 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
     Issue: Issue as any,
     Discussion: Discussion as any,
     DiscussionChannel: DiscussionChannel as any,
-    driver: createDriver(),
+    driver: createDriver() as unknown as Driver,
   });
 
   await resolver(
@@ -237,7 +240,7 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
       channelUniqueName: "cats",
     },
     createContext(createUserModel()),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(Issue.createCalls.length, 0);

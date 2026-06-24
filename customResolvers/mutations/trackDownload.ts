@@ -1,8 +1,10 @@
 import { GraphQLError } from 'graphql'
+import type { Driver } from 'neo4j-driver'
 import {
   setUserDataOnContext,
   type UserDataOnContext
 } from '../../rules/permission/userDataHelperFunctions.js'
+import type { GraphQLContext } from '../../types/context.js'
 
 type Args = {
   downloadableFileId: string
@@ -12,7 +14,7 @@ type Args = {
 type GetUserData = typeof setUserDataOnContext
 
 type Input = {
-  driver: any
+  driver: Driver
   getUserData?: GetUserData
 }
 
@@ -27,7 +29,7 @@ const toNumber = (value: Neo4jCount) => {
 }
 
 const getCurrentUser = async (input: {
-  context: any
+  context: GraphQLContext
   getUserData: GetUserData
 }): Promise<UserDataOnContext> => {
   const { context, getUserData } = input
@@ -48,7 +50,7 @@ const trackDownload = ({
   driver,
   getUserData = setUserDataOnContext
 }: Input) => {
-  return async (_parent: any, args: Args, context: any) => {
+  return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { downloadableFileId, discussionId } = args
 
     if (!downloadableFileId) {

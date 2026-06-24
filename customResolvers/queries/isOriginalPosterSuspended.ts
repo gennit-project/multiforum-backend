@@ -1,3 +1,5 @@
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../types/context.js'
 import type {
   IssueModel,
   CommentModel,
@@ -21,7 +23,7 @@ type Input = {
 
 export default function getResolver (input: Input) {
   const { Issue, Event, Comment, Discussion, User } = input
-  return async (parent: any, args: any, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: { issueId: string }, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { issueId } = args
     if (!issueId) {
       throw new Error('All arguments (issueId) are required')

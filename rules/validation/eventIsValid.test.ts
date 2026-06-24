@@ -9,6 +9,7 @@ import {
   MAX_CHARS_IN_EVENT_DESCRIPTION,
 } from "./constants.js";
 import { makeOgm } from "../../tests/fixtures/index.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 // --- validateEventInput (pure) ---
 
@@ -86,12 +87,16 @@ const channelOgm = (channels: Record<string, { eventsEnabled?: boolean }>) =>
   }).ogm;
 
 test("passes when events are enabled in every channel", async () => {
-  const ctx = { ogm: channelOgm({ cats: { eventsEnabled: true }, dogs: {} }) };
+  const ctx = {
+    ogm: channelOgm({ cats: { eventsEnabled: true }, dogs: {} }),
+  } as unknown as GraphQLContext;
   assert.equal(await validateEventChannelsEnabled(["cats", "dogs"], ctx), true);
 });
 
 test("fails when a channel is not found", async () => {
-  const ctx = { ogm: channelOgm({ cats: { eventsEnabled: true } }) };
+  const ctx = {
+    ogm: channelOgm({ cats: { eventsEnabled: true } }),
+  } as unknown as GraphQLContext;
   assert.equal(
     await validateEventChannelsEnabled(["ghost"], ctx),
     "Channel 'ghost' not found."
@@ -99,7 +104,9 @@ test("fails when a channel is not found", async () => {
 });
 
 test("fails when events are disabled in a channel", async () => {
-  const ctx = { ogm: channelOgm({ cats: { eventsEnabled: false } }) };
+  const ctx = {
+    ogm: channelOgm({ cats: { eventsEnabled: false } }),
+  } as unknown as GraphQLContext;
   assert.equal(
     await validateEventChannelsEnabled(["cats"], ctx),
     "Events are disabled in channel 'cats'."

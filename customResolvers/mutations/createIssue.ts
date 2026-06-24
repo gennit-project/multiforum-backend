@@ -1,4 +1,5 @@
 import type { IssueCreateInput, IssueModel } from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
 import { GraphQLError } from "graphql";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 
@@ -8,12 +9,12 @@ type Args = {
 
 type Input = {
   Issue: IssueModel;
-  driver: any;
+  driver: Driver;
 };
 
 const getResolver = (input: Input) => {
   const { Issue, driver } = input;
-  return async (_parent: any, args: Args) => {
+  return async (_parent: unknown, args: Args) => {
     const { input: issueInput } = args;
     const channelUniqueName = issueInput.channelUniqueName;
 
@@ -43,7 +44,7 @@ const getResolver = (input: Input) => {
         throw new GraphQLError("Error creating issue");
       }
       return issue;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating issue with number", error);
       throw new GraphQLError("Error creating issue");
     }

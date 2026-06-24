@@ -1,5 +1,9 @@
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
 import { createEventChannelQuery } from "../cypher/cypherQueries.js";
 import { EventCreateInput } from "../../src/generated/graphql.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { EventModel } from "../../ogm_types.js";
 
 type EventCreateInputWithChannels = {
   eventCreateInput: EventCreateInput;
@@ -11,8 +15,8 @@ type Args = {
 };
 
 type Input = {
-  Event: any;
-  driver: any;
+  Event: EventModel;
+  driver: Driver;
 };
 
 const selectionSet = `
@@ -67,17 +71,17 @@ const selectionSet = `
  * Function to create events from an input array.
  */
 export const createEventsFromInput = async (
-  Event: any,
-  driver: any,
+  Event: EventModel,
+  driver: Driver,
   input: EventCreateInputWithChannels[],
-  context: any
-): Promise<any[]> => {
+  context: GraphQLContext
+): Promise<unknown[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
 
   const session = driver.session();
-  const events: any[] = [];
+  const events: unknown[] = [];
 
   try {
     for (const { eventCreateInput, channelConnections } of input) {
@@ -103,8 +107,9 @@ export const createEventsFromInput = async (
               channelUniqueName,
               poster: context.user?.username,
             });
-          } catch (error: any) {
-            if (error.message.includes("Constraint validation failed")) {
+          } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            if (message.includes("Constraint validation failed")) {
               console.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
               continue;
             } else {
@@ -122,23 +127,26 @@ export const createEventsFromInput = async (
         });
 
         events.push(fetchedEvent[0]);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as { message?: string; code?: string; stack?: string; neo4jError?: unknown };
+        const message = error instanceof Error ? error.message : String(error);
         console.warn("Event creation error details:", {
-          message: error.message,
-          code: error.code,
-          details: error.stack,
-          neo4jError: error.neo4jError,
+          message: err.message,
+          code: err.code,
+          details: err.stack,
+          neo4jError: err.neo4jError,
           fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
         });
-        if (error.message.includes("Constraint validation failed")) {
+        if (message.includes("Constraint validation failed")) {
           console.warn("Constraint validation details:");
           console.log('Input:', JSON.stringify(eventCreateInput, null, 2));
           continue;
         }
       }
     }
-  } catch (error: any) {
-    console.error("Unexpected error during event creation:", error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Unexpected error during event creation:", message);
   } finally {
     session.close();
   }
@@ -152,16 +160,17 @@ export const createEventsFromInput = async (
 const getResolver = (input: Input) => {
   const { Event, driver } = input;
 
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input } = args;
 
     try {
       // Use the extracted function to create events
       const events = await createEventsFromInput(Event, driver, input, context);
       return events;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      throw new Error(`An error occurred while creating events: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`An error occurred while creating events: ${message}`);
     }
   };
 };

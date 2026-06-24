@@ -1,7 +1,12 @@
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
+import type { EventModel, EventSeriesModel } from "../../ogm_types.js";
+
 type Input = {
-  Event: any;
-  EventSeries: any;
-  driver: any;
+  Event: EventModel;
+  EventSeries: EventSeriesModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -12,7 +17,7 @@ type Args = {
 const getResolver = (input: Input) => {
   const { Event, EventSeries, driver } = input;
 
-  return async (_parent: any, args: Args, _context: any, _info: any) => {
+  return async (_parent: unknown, args: Args, _context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const { eventId, scope } = args;
 
     const session = driver.session();
@@ -67,7 +72,7 @@ const getResolver = (input: Input) => {
             // Get all events with occurrenceIndex >= this event's index
             const currentIndex = existingEvent.occurrenceIndex || 0;
             const futureOccurrences = eventSeries.Occurrences.filter(
-              (occ: any) => (occ.occurrenceIndex || 0) >= currentIndex
+              (occ: { id: string; occurrenceIndex?: number | null }) => (occ.occurrenceIndex || 0) >= currentIndex
             );
 
             // Delete all future events
@@ -122,9 +127,10 @@ const getResolver = (input: Input) => {
         deletedCount,
         message: `Successfully deleted ${deletedCount} event(s)`,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting event in series:", error);
-      throw new Error(`Failed to delete event in series. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to delete event in series. ${message}`);
     } finally {
       await session.close();
     }

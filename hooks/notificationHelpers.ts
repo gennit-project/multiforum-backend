@@ -1,5 +1,7 @@
+import type { UserModel } from '../ogm_types.js';
+
 type CreateInAppNotificationInput = {
-  UserModel: any;
+  UserModel: UserModel;
   username: string;
   text: string;
   notificationType?: string; // "feedback", "mention", "reply", "moderation", "scratchpad", etc.

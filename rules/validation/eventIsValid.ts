@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import { CanCreateEventArgs, SingleEventInput } from "../rules";
 import {
   MAX_CHARS_IN_EVENT_DESCRIPTION,
@@ -13,7 +15,7 @@ type EventInput = {
 
 export const validateEventChannelsEnabled = async (
   channelConnections: string[],
-  ctx: any
+  ctx: GraphQLContext
 ): Promise<true | string> => {
   const Channel = ctx.ogm.model("Channel");
 
@@ -83,7 +85,7 @@ export const validateEventInput = (
 };
 
 export const createEventInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: CanCreateEventArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanCreateEventArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.input) {
       return "Missing input in args.";
     }
@@ -118,7 +120,7 @@ type CanUpdateEventArgs = {
 };
 
 export const updateEventInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: CanUpdateEventArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanUpdateEventArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.eventUpdateInput) {
       throw new Error("Missing eventUpdateInput in args.");
     }

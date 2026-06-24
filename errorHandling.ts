@@ -4,21 +4,28 @@
  */
 
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import type { SourceLocation } from 'graphql';
+
+interface ErrorRequest {
+  headers?: Record<string, string | string[] | undefined>;
+  ip?: string;
+  connection?: { remoteAddress?: string };
+}
 
 interface ErrorContext {
-  req?: any;
+  req?: ErrorRequest;
   operationName?: string;
-  variables?: Record<string, any>;
+  variables?: Record<string, unknown>;
   query?: string;
 }
 
 interface EnhancedError extends Error {
-  locations?: any;
-  path?: any;
+  locations?: ReadonlyArray<SourceLocation>;
+  path?: ReadonlyArray<string | number>;
   extensions?: {
     code?: string;
-    exception?: any;
-    [key: string]: any;
+    exception?: unknown;
+    [key: string]: unknown;
   };
   originalError?: Error;
 }
@@ -155,7 +162,7 @@ function isPermissionError(errorCode: string): boolean {
 /**
  * Sanitize variables to remove sensitive information
  */
-function sanitizeVariables(variables: Record<string, any>): Record<string, any> {
+function sanitizeVariables(variables: Record<string, unknown>): Record<string, unknown> {
   const sensitiveKeys = ['password', 'token', 'secret', 'key', 'auth'];
   const sanitized = { ...variables };
   
@@ -171,17 +178,17 @@ function sanitizeVariables(variables: Record<string, any>): Record<string, any> 
 /**
  * Sanitize exception details
  */
-function sanitizeException(exception: any): any {
+function sanitizeException(exception: unknown): unknown {
   if (!exception) return exception;
-  
+
   // Remove sensitive stack traces in production
   if (process.env.NODE_ENV === 'production') {
     return {
-      ...exception,
+      ...(exception as Record<string, unknown>),
       stacktrace: '[REDACTED IN PRODUCTION]'
     };
   }
-  
+
   return exception;
 }
 
@@ -196,7 +203,7 @@ function truncateQuery(query: string, maxLength: number = 1000): string {
 /**
  * Log critical errors for monitoring
  */
-export function logCriticalError(error: Error, context?: any): void {
+export function logCriticalError(error: Error, context?: Record<string, unknown>): void {
   console.error('🔥 CRITICAL ERROR:', {
     timestamp: new Date().toISOString(),
     message: error.message,
@@ -211,12 +218,23 @@ export function logCriticalError(error: Error, context?: any): void {
 /**
  * Plugin for Apollo Server to enhance error handling
  */
+interface ErrorHandlingRequestContext {
+  request: {
+    operationName?: string;
+    variables?: Record<string, unknown>;
+    query?: string;
+    http?: { req?: ErrorRequest };
+  };
+  errors: ReadonlyArray<EnhancedError>;
+  contextValue?: { user?: { id?: string } };
+}
+
 export const errorHandlingPlugin = {
   requestDidStart() {
     return Promise.resolve({
-      async didEncounterErrors(requestContext: any) {
+      async didEncounterErrors(requestContext: ErrorHandlingRequestContext) {
         const { request, errors } = requestContext;
-        
+
         errors.forEach((error: EnhancedError) => {
           // Format error with context
           formatGraphQLError(error, {

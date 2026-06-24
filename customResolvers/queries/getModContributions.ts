@@ -1,9 +1,11 @@
 import { getModContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { ModerationProfileModel } from "../../ogm_types.js";
 
 interface Input {
-  ModerationProfile: any;
-  driver: any;
+  ModerationProfile: ModerationProfileModel;
+  driver: Driver;
 }
 
 interface Args {
@@ -16,7 +18,7 @@ interface Args {
 const getModContributionsResolver = (input: Input) => {
   const { driver, ModerationProfile } = input;
 
-  return async (_parent: any, args: Args) => {
+  return async (_parent: unknown, args: Args) => {
     const { displayName, year, startDate, endDate } = args;
     const session = driver.session({ defaultAccessMode: 'READ' });
 
@@ -45,7 +47,7 @@ const getModContributionsResolver = (input: Input) => {
       });
 
       const contributions = result.records
-        .map((record: any) => {
+        .map((record: Neo4jRecord) => {
           const date = record.get('date');
           if (!date) {
             return null;
@@ -58,13 +60,14 @@ const getModContributionsResolver = (input: Input) => {
             activities: record.get('activities'),
           };
         })
-        .filter((contribution: any) => contribution !== null);
+        .filter((contribution) => contribution !== null);
 
       return contributions;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching mod contributions:", error);
+      const message = error instanceof Error ? error.message : String(error);
       throw new Error(
-        `Failed to fetch contributions for mod ${displayName}: ${error.message}`
+        `Failed to fetch contributions for mod ${displayName}: ${message}`
       );
     } finally {
       await session.close();

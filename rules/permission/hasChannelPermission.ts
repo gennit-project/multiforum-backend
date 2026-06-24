@@ -1,6 +1,7 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { ChannelRole } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
@@ -8,7 +9,7 @@ import { createSuspensionNotification } from "./suspensionNotification.js";
 type HasChannelPermissionInput = {
   permission: keyof ChannelRole;
   channelName: string;
-  context: any;
+  context: GraphQLContext;
 };
 
 export const hasChannelPermission: (
@@ -72,7 +73,7 @@ export const hasChannelPermission: (
   const channelData = channel[0];
 
   // Check if user is admin/owner - if so, grant all permissions
-  if (channelData.Admins?.some((admin: any) => admin.username === username)) {
+  if (channelData.Admins?.some((admin: { username: string }) => admin.username === username)) {
     return true;
   }
 
@@ -81,7 +82,7 @@ export const hasChannelPermission: (
     ogm: context.ogm,
     driver: context.driver,
     channelUniqueName: channelName,
-    username,
+    username: username ?? undefined,
   });
 
   // Clean up any expired suspensions (fire-and-forget, don't block on result)
@@ -149,7 +150,7 @@ export const hasChannelPermission: (
     return new Error(ERROR_MESSAGES.channel.noChannelPermission);
   }
 
-  if (roleToUse[permission] === true) {
+  if ((roleToUse as ChannelRole)[permission] === true) {
     return true;
   }
 
@@ -179,7 +180,7 @@ export const hasChannelPermission: (
 
 type CheckChannelPermissionInput = {
   channelConnections: string[];
-  context: any;
+  context: GraphQLContext;
   permissionCheck: keyof ChannelRole;
 };
 

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import getResolver from "./createEventSeriesWithChannelConnections.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
@@ -74,12 +75,12 @@ test("createEventSeriesWithChannelConnections creates series with occurrences", 
   const Event = {};
   const Tag = {};
 
-  const resolver = getResolver({ EventSeries, Event, Tag, driver });
+  const resolver = getResolver({ EventSeries, Event, Tag, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { input: baseSeriesInput },
-    { user: { username: "testuser" } }
+    { user: { username: "testuser" } } as unknown as GraphQLContext
   );
 
   assert.equal(result.id, "series-1");
@@ -103,13 +104,13 @@ test("createEventSeriesWithChannelConnections throws error when no channels prov
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
     resolver(
       null,
       { input: { ...baseSeriesInput, channelConnections: [] } },
-      { user: { username: "testuser" } }
+      { user: { username: "testuser" } } as unknown as GraphQLContext
     ),
     { message: "At least one channel connection is required" }
   );
@@ -127,13 +128,13 @@ test("createEventSeriesWithChannelConnections throws error when no occurrences p
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
     resolver(
       null,
       { input: { ...baseSeriesInput, occurrences: [] } },
-      { user: { username: "testuser" } }
+      { user: { username: "testuser" } } as unknown as GraphQLContext
     ),
     { message: "At least one occurrence is required" }
   );
@@ -175,17 +176,18 @@ test("createEventSeriesWithChannelConnections handles repeat pattern", async () 
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { input: inputWithPattern },
-    { user: { username: "testuser" } }
+    { user: { username: "testuser" } } as unknown as GraphQLContext
   );
 
-  assert.equal(result.repeatPattern.type, "WEEKLY");
-  assert.equal(result.repeatPattern.endType, "AFTER_COUNT");
-  assert.equal(result.repeatPattern.endCount, 4);
+  const typedResult = result as { repeatPattern: { type: string; endType: string; endCount: number } };
+  assert.equal(typedResult.repeatPattern.type, "WEEKLY");
+  assert.equal(typedResult.repeatPattern.endType, "AFTER_COUNT");
+  assert.equal(typedResult.repeatPattern.endCount, 4);
 
   // Verify repeat pattern was passed to create
   const createInput = createCalls[0].input[0];
@@ -217,12 +219,12 @@ test("createEventSeriesWithChannelConnections connects tags", async () => {
     tags: ["meetup", "community"],
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
     { input: inputWithTags },
-    { user: { username: "testuser" } }
+    { user: { username: "testuser" } } as unknown as GraphQLContext
   );
 
   assert.equal(result.Tags.length, 2);
@@ -254,12 +256,12 @@ test("createEventSeriesWithChannelConnections handles location coordinates", asy
     longitude: -112.074,
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await resolver(
     null,
     { input: inputWithCoords },
-    { user: { username: "testuser" } }
+    { user: { username: "testuser" } } as unknown as GraphQLContext
   );
 
   // Verify location was passed to create
@@ -302,13 +304,13 @@ test("createEventSeriesWithChannelConnections skips duplicate EventChannel grace
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver: customDriver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver: customDriver } as unknown as Parameters<typeof getResolver>[0]);
 
   // Should not throw despite constraint violation on second EventChannel
   const result = await resolver(
     null,
     { input: baseSeriesInput },
-    { user: { username: "testuser" } }
+    { user: { username: "testuser" } } as unknown as GraphQLContext
   );
 
   assert.equal(result.id, "series-1");
@@ -328,12 +330,12 @@ test("createEventSeriesWithChannelConnections sets occurrence index correctly", 
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await resolver(
     null,
     { input: baseSeriesInput },
-    { user: { username: "testuser" } }
+    { user: { username: "testuser" } } as unknown as GraphQLContext
   );
 
   const createInput = createCalls[0].input[0];
@@ -357,12 +359,12 @@ test("createEventSeriesWithChannelConnections sets startTimeDayOfWeek and startT
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver });
+  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await resolver(
     null,
     { input: baseSeriesInput },
-    { user: { username: "testuser" } }
+    { user: { username: "testuser" } } as unknown as GraphQLContext
   );
 
   const createInput = createCalls[0].input[0];

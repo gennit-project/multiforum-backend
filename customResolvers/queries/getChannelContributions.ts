@@ -1,9 +1,12 @@
 import { getChannelContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
+import type { Driver } from "neo4j-driver";
+import type { Record as Neo4jRecord } from "neo4j-driver";
+import type { ChannelModel } from "../../ogm_types.js";
 
 interface Input {
-  Channel: any;
-  driver: any;
+  Channel: ChannelModel;
+  driver: Driver;
 }
 
 interface Args {
@@ -17,7 +20,7 @@ interface Args {
 const getChannelContributionsResolver = (input: Input) => {
   const { driver, Channel } = input;
 
-  return async (_parent: any, args: Args) => {
+  return async (_parent: unknown, args: Args) => {
     const { channelUniqueName, year, startDate, endDate, limit } = args;
     const session = driver.session({ defaultAccessMode: 'READ' });
 
@@ -92,7 +95,7 @@ const getChannelContributionsResolver = (input: Input) => {
       `;
       const debug5 = await session.run(debugQuery5, { channelUniqueName });
       console.log('Debug 5 - Sample Discussion createdAt values:');
-      debug5.records.forEach((r: any) => {
+      debug5.records.forEach((r: Neo4jRecord) => {
         console.log('  - Raw:', r.get('createdAt'));
         console.log('    Date:', r.get('dateOnly'));
         console.log('    String:', r.get('createdAtString'));
@@ -129,7 +132,7 @@ const getChannelContributionsResolver = (input: Input) => {
         endDate: effectiveEndDate
       });
       console.log('Debug 7 - Date comparisons:');
-      debug7.records.forEach((r: any) => {
+      debug7.records.forEach((r: Neo4jRecord) => {
         console.log('  Discussion:', r.get('discussionDate'), 'Start:', r.get('startDate'), 'End:', r.get('endDate'));
         console.log('    After start?', r.get('afterStart'), 'Before end?', r.get('beforeEnd'));
       });
@@ -144,7 +147,7 @@ const getChannelContributionsResolver = (input: Input) => {
       console.log('Query returned', result.records.length, 'records');
 
       // Map results to UserContributionData format
-      const contributions = result.records.map((record: any) => {
+      const contributions = result.records.map((record: Neo4jRecord) => {
         const dayData = record.get('dayData');
 
         // Log the dayData to debug null date issue
@@ -152,7 +155,7 @@ const getChannelContributionsResolver = (input: Input) => {
 
         // Filter out any dayData entries with null dates
         const validDayData = Array.isArray(dayData)
-          ? dayData.filter((day: any) => day && day.date != null)
+          ? dayData.filter((day: { date?: unknown } | null) => day && day.date != null)
           : [];
 
         return {
@@ -168,9 +171,10 @@ const getChannelContributionsResolver = (input: Input) => {
 
       return contributions;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching channel contributions:", error);
-      throw new Error(`Failed to fetch contributions for channel ${channelUniqueName}: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch contributions for channel ${channelUniqueName}: ${message}`);
     } finally {
       await session.close();
     }

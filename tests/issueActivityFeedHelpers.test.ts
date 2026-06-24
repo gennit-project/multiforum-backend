@@ -5,6 +5,8 @@ import {
   getAttributionFromContext,
   getIssueIdsForRelated,
 } from '../hooks/issueActivityFeedHelpers.js';
+import type { GraphQLContext } from '../types/context.js';
+import type { IssueModel } from '../ogm_types.js';
 
 test('getAttributionFromContext returns username and mod profile name', () => {
   const context = {
@@ -18,7 +20,7 @@ test('getAttributionFromContext returns username and mod profile name', () => {
     },
   };
 
-  const attribution = getAttributionFromContext(context);
+  const attribution = getAttributionFromContext(context as unknown as GraphQLContext);
   assert.equal(attribution.username, 'alice');
   assert.equal(attribution.modProfileName, 'mod-alice');
 });
@@ -32,7 +34,7 @@ test('getIssueIdsForRelated builds where clause and returns ids', async () => {
     },
   };
 
-  const issueIds = await getIssueIdsForRelated(IssueModel, {
+  const issueIds = await getIssueIdsForRelated(IssueModel as unknown as IssueModel, {
     commentId: 'comment-123',
   });
 
@@ -49,7 +51,7 @@ test('createIssueActivityFeedItems connects revision and comment when provided',
   };
 
   await createIssueActivityFeedItems({
-    IssueModel,
+    IssueModel: IssueModel as unknown as IssueModel,
     issueIds: ['issue-1'],
     actionDescription: 'deleted the comment',
     actionType: 'delete',

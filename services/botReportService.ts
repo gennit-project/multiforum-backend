@@ -1,3 +1,4 @@
+import type { Driver } from 'neo4j-driver'
 import type {
   ChannelModel,
   CommentModel,
@@ -49,7 +50,7 @@ type Models = {
  */
 export const createBotReport = async (input: {
   models: Models
-  driver: any
+  driver: Driver
   channelUniqueName: string
   reportInput: ReportContentAsBotInput
 }): Promise<ReportContentAsBotResult> => {

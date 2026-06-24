@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql'
+import type { Driver } from 'neo4j-driver'
 import {
   checkChannelModPermissions,
   ModChannelPermission
@@ -8,6 +9,7 @@ import {
   setUserDataOnContext,
   type UserDataOnContext
 } from '../../rules/permission/userDataHelperFunctions.js'
+import type { GraphQLContext } from '../../types/context.js'
 
 type SupportSettingsInput = {
   attributionOverride?: string | null
@@ -33,7 +35,7 @@ type GetServerMembership = typeof getServerScopedMembership
 type GetUserData = typeof setUserDataOnContext
 
 type Input = {
-  driver: any
+  driver: Driver
   checkModPermissions?: CheckChannelModPermissions
   getServerMembership?: GetServerMembership
   getUserData?: GetUserData
@@ -63,7 +65,7 @@ export const validateSupportSettings = (input: SupportSettingsInput) => {
 }
 
 const getCurrentUser = async (input: {
-  context: any
+  context: GraphQLContext
   getUserData: GetUserData
 }): Promise<UserDataOnContext> => {
   const { context, getUserData } = input
@@ -81,7 +83,7 @@ const getCurrentUser = async (input: {
 }
 
 const getSupportTarget = async (input: {
-  driver: any
+  driver: Driver
   downloadableFileId: string
   discussionId: string
 }): Promise<DownloadableFileSupportTarget | null> => {
@@ -117,7 +119,7 @@ const getSupportTarget = async (input: {
 }
 
 const assertCanUpdateSupportSettings = async (input: {
-  context: any
+  context: GraphQLContext
   target: DownloadableFileSupportTarget
   checkModPermissions: CheckChannelModPermissions
   getServerMembership: GetServerMembership
@@ -172,7 +174,7 @@ const updateDownloadableFileSupportSettings = ({
   getServerMembership = getServerScopedMembership,
   getUserData = setUserDataOnContext
 }: Input) => {
-  return async (_parent: any, args: Args, context: any) => {
+  return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { downloadableFileId, discussionId, input } = args
 
     if (!downloadableFileId) {

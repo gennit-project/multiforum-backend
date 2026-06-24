@@ -1,4 +1,6 @@
 import { sendEmail } from "../../services/mail/index.js";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 
 type Args = {
   contactEmail: string;
@@ -61,7 +63,12 @@ const convertMarkdownToHtml = (text: string): string => {
  * Main resolver for sending bug reports
  */
 const getSendBugReportResolver = () => {
-  return async (_parent: any, args: Args, _context: any, _resolveInfo: any) => {
+  return async (
+    _parent: unknown,
+    args: Args,
+    _context: GraphQLContext,
+    _resolveInfo: GraphQLResolveInfo
+  ) => {
     const { contactEmail, username, text, subject } = args;
 
     try {
@@ -111,10 +118,11 @@ ${username ? `<p><strong>Username:</strong> ${username}</p>` : ''}
 
       console.log("Sending bug report email to", process.env.SUPPORT_EMAIL);
       return emailSent;
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Error sending bug report email:", e);
+      const message = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `An error occurred while sending the bug report: ${e?.message}`
+        `An error occurred while sending the bug report: ${message}`
       );
     }
   };

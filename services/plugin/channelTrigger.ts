@@ -78,7 +78,7 @@ export const triggerChannelPluginPipeline = async ({
   const eventPipeline = channelPipelines.find(p => p.event === event)
 
   // Build a map of channel-level plugin settings by plugin name
-  const channelPluginSettingsMap = new Map<string, any>()
+  const channelPluginSettingsMap = new Map<string, unknown>()
   if (channel?.EnabledPluginsConnection?.edges) {
     for (const edge of channel.EnabledPluginsConnection.edges) {
       const pluginName = edge.node?.Plugin?.name
@@ -185,7 +185,7 @@ export const triggerChannelPluginPipeline = async ({
   }
 
   const pipelineId = generatePipelineId()
-  const runs: any[] = []
+  const runs: unknown[] = []
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
@@ -296,7 +296,7 @@ export const triggerChannelPluginPipeline = async ({
 
     const runStart = performance.now()
     const logs: string[] = []
-    const flags: any[] = []
+    const flags: unknown[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -315,12 +315,12 @@ export const triggerChannelPluginPipeline = async ({
         try {
           decryptedSecrets[secret.key] = decryptSecret(secret.ciphertext)
         } catch (error) {
-          logs.push(`Failed to decrypt secret ${secret.key}: ${(error as any).message}`)
+          logs.push(`Failed to decrypt secret ${secret.key}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
       // Parse settings if they are JSON strings
-      const parseIfString = (value: any): any => {
+      const parseIfString = (value: unknown): Record<string, unknown> => {
         if (typeof value === 'string') {
           try {
             return JSON.parse(value)
@@ -328,7 +328,7 @@ export const triggerChannelPluginPipeline = async ({
             return {}
           }
         }
-        return value || {}
+        return (value as Record<string, unknown>) || {}
       }
 
       // Merge settings: defaults < server < channel (channel takes highest precedence)
@@ -351,14 +351,21 @@ export const triggerChannelPluginPipeline = async ({
       const channelContext = {
         uniqueName: channel.uniqueName,
         displayName: channel.displayName,
-        tags: (channel.Tags || []).map((t: any) => t.text),
-        filterGroups: (channel.FilterGroups || []).map((fg: any) => ({
+        tags: (channel.Tags || []).map((t: { text: string }) => t.text),
+        filterGroups: (channel.FilterGroups || []).map((fg: {
+          id: string
+          key: string
+          displayName: string
+          mode: string
+          order: number
+          options?: Array<{ id: string; value: string; displayName: string; order: number }>
+        }) => ({
           id: fg.id,
           key: fg.key,
           displayName: fg.displayName,
           mode: fg.mode,
           order: fg.order,
-          options: (fg.options || []).map((opt: any) => ({
+          options: (fg.options || []).map((opt: { id: string; value: string; displayName: string; order: number }) => ({
             id: opt.id,
             value: opt.value,
             displayName: opt.displayName,
@@ -374,12 +381,12 @@ export const triggerChannelPluginPipeline = async ({
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: any[]) => {
+        log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
           console.log(`[Plugin:${pluginId}:${channelUniqueName}]`, message)
         },
-        storeFlag: async (flag: any) => {
+        storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
         logPromptDebug: createPromptDebugLogger({
@@ -463,7 +470,7 @@ export const triggerChannelPluginPipeline = async ({
     } catch (error) {
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
-      const message = (error as any).message || 'Plugin execution failed'
+      const message = (error instanceof Error ? error.message : '') || 'Plugin execution failed'
 
       previousStatus = 'FAILED'
 

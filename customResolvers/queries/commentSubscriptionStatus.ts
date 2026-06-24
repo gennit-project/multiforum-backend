@@ -1,13 +1,15 @@
+import type { Session } from "neo4j-driver";
+
 type CommentWithSubscriptions = {
   id?: string | null;
   SubscribedToNotifications?: Array<{ username: string }>;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type Input = {
   comments: CommentWithSubscriptions[];
   loggedInUsername: string | null;
-  session: any;
+  session: Session;
 };
 
 export const populateCommentSubscriptionStatus = async ({

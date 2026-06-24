@@ -7,6 +7,13 @@ import {
   sanitizeAlbumUpdateNode,
 } from "./ownershipSanitizers.js";
 
+// The sanitizers return `unknown`; cast results to this self-referential
+// indexable shape so the tests can read the nested properties they assert
+// on at any depth without resorting to `any`.
+interface SanitizedRecord {
+  [key: string]: SanitizedRecord;
+}
+
 // sanitizeAlbumCreateInput tests
 test("sanitizeAlbumCreateInput replaces client-provided Owner with server username", () => {
   const clientInput = {
@@ -22,7 +29,7 @@ test("sanitizeAlbumCreateInput replaces client-provided Owner with server userna
     },
   };
 
-  const result = sanitizeAlbumCreateInput(clientInput, "actual-user");
+  const result = sanitizeAlbumCreateInput(clientInput, "actual-user") as SanitizedRecord;
 
   assert.deepEqual(result.Owner, {
     connect: {
@@ -40,7 +47,7 @@ test("sanitizeAlbumCreateInput sets Owner when client omits it", () => {
     imageOrder: ["img1", "img2"],
   };
 
-  const result = sanitizeAlbumCreateInput(clientInput, "logged-in-user");
+  const result = sanitizeAlbumCreateInput(clientInput, "logged-in-user") as SanitizedRecord;
 
   assert.deepEqual(result.Owner, {
     connect: {
@@ -59,7 +66,7 @@ test("sanitizeAlbumCreateInput preserves other album properties", () => {
     someCustomField: "value",
   };
 
-  const result = sanitizeAlbumCreateInput(clientInput, "user");
+  const result = sanitizeAlbumCreateInput(clientInput, "user") as SanitizedRecord;
 
   assert.deepEqual(result.imageOrder, ["img1", "img2", "img3"]);
   assert.equal(result.someCustomField, "value");
@@ -89,7 +96,7 @@ test("sanitizeAlbumCreateInput sanitizes nested Images.create entries", () => {
     },
   };
 
-  const result = sanitizeAlbumCreateInput(clientInput, "real-user");
+  const result = sanitizeAlbumCreateInput(clientInput, "real-user") as SanitizedRecord;
 
   assert.deepEqual(result.Images.create[0].node.Uploader, {
     connect: {
@@ -139,7 +146,7 @@ test("sanitizeImagesFieldInput replaces Uploader in all create entries", () => {
     ],
   };
 
-  const result = sanitizeImagesFieldInput(imagesField, "legitimate-user");
+  const result = sanitizeImagesFieldInput(imagesField, "legitimate-user") as SanitizedRecord;
 
   assert.equal(result.create.length, 2);
   assert.deepEqual(result.create[0].node.Uploader, {
@@ -167,7 +174,7 @@ test("sanitizeImagesFieldInput preserves image properties while replacing Upload
     ],
   };
 
-  const result = sanitizeImagesFieldInput(imagesField, "correct-user");
+  const result = sanitizeImagesFieldInput(imagesField, "correct-user") as SanitizedRecord;
 
   assert.equal(result.create[0].node.url, "https://example.com/photo.jpg");
   assert.equal(result.create[0].node.alt, "A photo");
@@ -197,7 +204,7 @@ test("sanitizeImagesFieldInput handles entries without node property", () => {
     ],
   };
 
-  const result = sanitizeImagesFieldInput(imagesField, "user");
+  const result = sanitizeImagesFieldInput(imagesField, "user") as SanitizedRecord;
 
   assert.deepEqual(result.create[0], { someOtherStructure: "value" });
 });
@@ -214,7 +221,7 @@ test("sanitizeImagesFieldInput handles single object create (not array)", () => 
     },
   };
 
-  const result = sanitizeImagesFieldInput(imagesField, "real-user");
+  const result = sanitizeImagesFieldInput(imagesField, "real-user") as SanitizedRecord;
 
   // Should be converted to array
   assert.ok(Array.isArray(result.create));
@@ -232,7 +239,7 @@ test("sanitizeAlbumCreateNode delegates to sanitizeAlbumCreateInput", () => {
     },
   };
 
-  const result = sanitizeAlbumCreateNode(node, "correct");
+  const result = sanitizeAlbumCreateNode(node, "correct") as SanitizedRecord;
 
   assert.deepEqual(result.Owner, {
     connect: { where: { node: { username: "correct" } } },
@@ -253,7 +260,7 @@ test("sanitizeAlbumUpdateNode strips Owner from update input", () => {
     },
   };
 
-  const result = sanitizeAlbumUpdateNode(updateNode, "current-owner");
+  const result = sanitizeAlbumUpdateNode(updateNode, "current-owner") as SanitizedRecord;
 
   assert.equal(result.Owner, undefined);
   assert.deepEqual(result.imageOrder, ["x", "y", "z"]);
@@ -276,7 +283,7 @@ test("sanitizeAlbumUpdateNode sanitizes nested Images.create in updates", () => 
     },
   };
 
-  const result = sanitizeAlbumUpdateNode(updateNode, "real-owner");
+  const result = sanitizeAlbumUpdateNode(updateNode, "real-owner") as SanitizedRecord;
 
   assert.deepEqual(result.Images.create[0].node.Uploader, {
     connect: { where: { node: { username: "real-owner" } } },
@@ -294,7 +301,7 @@ test("sanitizeAlbumUpdateNode preserves non-ownership fields", () => {
     customField: "preserved",
   };
 
-  const result = sanitizeAlbumUpdateNode(updateNode, "user");
+  const result = sanitizeAlbumUpdateNode(updateNode, "user") as SanitizedRecord;
 
   assert.deepEqual(result.imageOrder, ["1", "2", "3"]);
   assert.equal(result.customField, "preserved");

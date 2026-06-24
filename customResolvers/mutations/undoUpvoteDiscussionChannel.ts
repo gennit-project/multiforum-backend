@@ -1,13 +1,17 @@
 import { User } from "../../src/generated/graphql";
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { DiscussionChannelModel, UserModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 import {
   discussionChannelIsUpvotedByUserQuery,
 } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
 
 type Input = {
-  DiscussionChannel: any;
-  User: any;
-  driver: any;
+  DiscussionChannel: DiscussionChannelModel;
+  User: UserModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -18,7 +22,12 @@ type Args = {
 const undoUpvoteDiscussionChannelResolver = (input: Input) => {
   const { DiscussionChannel, User, driver } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const { discussionChannelId, username } = args;
 
     if (!discussionChannelId || !username) {
@@ -138,7 +147,7 @@ const undoUpvoteDiscussionChannelResolver = (input: Input) => {
       return {
         id: discussionChannelId,
         weightedVotesCount:
-          discussionChannel.weightedVotesCount - 1 - weightedVoteBonus,
+          (discussionChannel.weightedVotesCount ?? 0) - 1 - weightedVoteBonus,
         UpvotedByUsers: existingUpvotedByUsers.filter(
           (user: User) => user.username !== username
         ),

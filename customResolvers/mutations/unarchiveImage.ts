@@ -10,6 +10,8 @@ import type {
 } from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 
 type Args = {
@@ -99,7 +101,12 @@ const getModerationActionCreateInput = (input: {
 
 const getResolver = (input: Input) => {
   const { Issue, Image } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const { imageId, explanation, channelUniqueName } = args;
 
     if (!imageId) {

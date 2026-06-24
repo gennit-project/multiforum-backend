@@ -1,6 +1,10 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { getDiscussionChannelsQuery } from "../cypher/cypherQueries.js";
 import { timeFrameOptions } from "./utils.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { DiscussionChannelModel } from "../../ogm_types.js";
 
 enum timeFrameOptionKeys {
   year = "year",
@@ -10,8 +14,8 @@ enum timeFrameOptionKeys {
 }
 
 type Input = {
-  DiscussionChannel: any;
-  driver: any;
+  DiscussionChannel: DiscussionChannelModel;
+  driver: Driver;
 };
 
 type LabelFilter = {
@@ -37,7 +41,7 @@ type Args = {
 
 const getResolver = (input: Input) => {
   const { driver } = input;
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, options, selectedTags, searchInput, showArchived, showUnanswered, hasDownload, labelFilters } = args;
     const { offset, limit, sort, timeFrame } = options || {};
     // Set loggedInUsername to null explicitly if not present
@@ -81,7 +85,7 @@ const getResolver = (input: Input) => {
           );
 
           const newDiscussionChannels = newDiscussionChannelsResult.records.map(
-            (record: any) => {
+            (record: Neo4jRecord) => {
               return record.get("DiscussionChannel");
             }
           );
@@ -112,7 +116,7 @@ const getResolver = (input: Input) => {
           );
 
           const topDiscussionChannels = topDiscussionChannelsResult.records.map(
-            (record: any) => {
+            (record: Neo4jRecord) => {
               return record.get("DiscussionChannel");
             }
           );
@@ -137,7 +141,7 @@ const getResolver = (input: Input) => {
           );
 
           const hotDiscussionChannels = hotDiscussionChannelsResult.records.map(
-            (record: any) => {
+            (record: Neo4jRecord) => {
               return record.get("DiscussionChannel");
             }
           );
@@ -152,10 +156,11 @@ const getResolver = (input: Input) => {
             aggregateDiscussionChannelsCount: aggregateCount,
           };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error getting discussionChannels:", error);
+      const message = error instanceof Error ? error.message : String(error);
       throw new Error(
-        `Failed to fetch discussionChannels in channel. ${error.message}`
+        `Failed to fetch discussionChannels in channel. ${message}`
       );
     } finally {
       session.close();

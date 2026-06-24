@@ -6,8 +6,12 @@
 
 // Import the handler function that contains the version history logic
 import { commentVersionHistoryHandler } from "../hooks/commentVersionHistoryHook.js";
-import { notifyCommentMentions } from "../hooks/userMentionNotificationHook.js";
+import {
+  notifyCommentMentions,
+  type CommentSnapshot,
+} from "../hooks/userMentionNotificationHook.js";
 import { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLContext } from "../types/context.js";
 
 // Define types for the middleware
 interface UpdateCommentsArgs {
@@ -16,15 +20,9 @@ interface UpdateCommentsArgs {
   };
   update?: {
     text?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
-}
-
-interface Context {
-  ogm: any;
-  driver: any;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Define the middleware
@@ -32,10 +30,10 @@ const commentVersionHistoryMiddleware = {
   Mutation: {
     // Apply to the auto-generated updateComments mutation
     updateComments: async (
-      resolve: (parent: unknown, args: UpdateCommentsArgs, context: Context, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (parent: unknown, args: UpdateCommentsArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<unknown>,
       parent: unknown,
       args: UpdateCommentsArgs,
-      context: Context,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       // Extract the parameters that we need for version history tracking
@@ -43,8 +41,8 @@ const commentVersionHistoryMiddleware = {
       if (!update) {
         return resolve(parent, args, context, info);
       }
-      let commentSnapshot = null;
-      
+      let commentSnapshot: CommentSnapshot | null = null;
+
       // Check if text is being updated
       if (update.text !== undefined) {
         const commentId = where?.id;
@@ -89,7 +87,7 @@ const commentVersionHistoryMiddleware = {
               }
             }`,
           });
-          commentSnapshot = comments[0] ?? null;
+          commentSnapshot = (comments[0] as unknown as CommentSnapshot) ?? null;
         }
       }
 

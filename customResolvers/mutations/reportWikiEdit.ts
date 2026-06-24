@@ -1,4 +1,7 @@
 import { GraphQLError } from 'graphql'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { Driver } from 'neo4j-driver'
+import type { GraphQLContext } from '../../types/context.js'
 import type {
   IssueCreateInput,
   IssueModel,
@@ -29,13 +32,18 @@ type Input = {
   Issue: IssueModel
   WikiPage: WikiPageModel
   TextVersion: TextVersionModel
-  driver: any
+  driver: Driver
 }
 
 const getResolver = (input: Input) => {
   const { Issue, WikiPage, TextVersion, driver } = input
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const {
       wikiPageId,
       wikiRevisionId,

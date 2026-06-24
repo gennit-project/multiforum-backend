@@ -23,7 +23,7 @@ const createContext = ({
       throw new Error(`Unexpected model lookup: ${name}`);
     },
   },
-});
+}) as unknown as Parameters<typeof validateFile>[3];
 
 test("image upload validation rejects disabled image upload channels", async () => {
   await assert.rejects(

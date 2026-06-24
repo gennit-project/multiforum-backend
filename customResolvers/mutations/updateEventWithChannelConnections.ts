@@ -1,12 +1,16 @@
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
 import { updateEventChannelQuery, severConnectionBetweenEventAndChannelQuery } from "../cypher/cypherQueries.js";
 import { EventWhere, EventUpdateInput } from "../../src/generated/graphql";
 import { sendBatchEmails } from "../../services/mail/index.js";
 import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { EventModel } from "../../ogm_types.js";
 
 type Input = {
-  Event: any;
-  driver: any;
+  Event: EventModel;
+  driver: Driver;
   dependencies?: {
     sendBatchEmails?: typeof sendBatchEmails;
     createEventUpdateNotificationEmail?: typeof createEventUpdateNotificationEmail;
@@ -21,6 +25,11 @@ type Args = {
   channelDisconnections: string[];
 };
 
+type NotifiableUser = {
+  username: string;
+  Email?: { address: string } | null;
+};
+
 const getResolver = (input: Input) => {
   const { Event, driver, dependencies } = input;
   const sendBatchEmailsFn = dependencies?.sendBatchEmails || sendBatchEmails;
@@ -30,7 +39,7 @@ const getResolver = (input: Input) => {
   const buildEventUpdateNotificationPayloadFn =
     dependencies?.buildEventUpdateNotificationPayload ||
     buildEventUpdateNotificationPayload;
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const {
       where,
       eventUpdateInput,
@@ -166,7 +175,7 @@ const getResolver = (input: Input) => {
       if (eventUpdateNotification) {
         const actorUsername = context.user?.username || null;
         const usersToNotify = (updatedEvent.SubscribedToEventUpdates || []).filter(
-          (user: any) => user.username !== actorUsername
+          (user: NotifiableUser) => user.username !== actorUsername
         );
         const emailContent = createEventUpdateNotificationEmailFn(
           updatedEvent.title,
@@ -176,9 +185,9 @@ const getResolver = (input: Input) => {
         );
 
         const emailRecipients = usersToNotify
-          .filter((user: any) => user.Email?.address)
-          .map((user: any) => ({
-            to: user.Email.address,
+          .filter((user: NotifiableUser) => user.Email?.address)
+          .map((user: NotifiableUser) => ({
+            to: user.Email!.address,
             subject: emailContent.subject,
             text: emailContent.plainText,
             html: emailContent.html,
@@ -203,7 +212,7 @@ const getResolver = (input: Input) => {
             CREATE (user)-[:HAS_NOTIFICATION]->(notification)
             `,
             {
-              usernames: usersToNotify.map((user: any) => user.username),
+              usernames: usersToNotify.map((user: NotifiableUser) => user.username),
               notificationText: eventUpdateNotification.notificationText,
             }
           );
@@ -212,9 +221,10 @@ const getResolver = (input: Input) => {
       }
 
       return updatedEvent;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating event:", error);
-      throw new Error(`Failed to update event. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to update event. ${message}`);
     } finally {
       await session.close();
     }

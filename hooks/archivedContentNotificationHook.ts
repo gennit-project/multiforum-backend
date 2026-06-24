@@ -1,12 +1,14 @@
 import { createInAppNotification } from './notificationHelpers.js';
+import type { Driver } from 'neo4j-driver';
+import type { Ogm } from '../types/context.js';
 
 type ContentType = 'comment' | 'discussion' | 'event' | 'image';
 
 type ArchivedContentNotificationParams = {
   /** OGM context with models */
   context: {
-    ogm: any;
-    driver?: any;
+    ogm: Ogm;
+    driver?: Driver;
   };
   /** Type of content that was archived */
   contentType: ContentType;

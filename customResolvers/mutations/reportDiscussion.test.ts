@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
+import type { Driver } from "neo4j-driver";
 import reportDiscussionResolver from "./reportDiscussion.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type FindArgs = {
   where?: Record<string, unknown>;
@@ -66,7 +69,7 @@ const createDriver = () => ({
     }),
     close: async () => {},
   }),
-});
+}) as unknown as Driver;
 
 const createUserModel = () =>
   new ModelStub(({ where }) => {
@@ -116,7 +119,7 @@ const createContext = (models?: { channelModel?: ModelStub }) => ({
     },
   },
   driver: createDriver(),
-});
+}) as unknown as GraphQLContext;
 
 test("reportDiscussion creates an issue and reopens it with a report activity item", async () => {
   process.env.PLAYWRIGHT_MOCK_AUTH = "true";
@@ -145,7 +148,7 @@ test("reportDiscussion creates an issue and reopens it with a report activity it
       channelUniqueName: "cats",
     },
     createContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(result?.id, "issue-1");
@@ -198,7 +201,7 @@ test("reportDiscussion reuses existing issues and preserves server-rule flagging
       channelUniqueName: "cats",
     },
     createContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(Issue.createCalls.length, 0);
@@ -235,7 +238,7 @@ test("reportDiscussion omits the channel connection when the channel is missing"
       channelUniqueName: "missing-channel",
     },
     createContext({ channelModel: new ModelStub(() => []) }),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(Issue.createCalls[0].input[0].Channel, undefined);

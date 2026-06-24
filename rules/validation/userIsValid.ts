@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import {
   UserCreateInput,
   UserUpdateInput,
@@ -47,7 +49,7 @@ export const validateUserInput = (input: UserInput): true | string => {
 
 type CreateUserInput = { input: UserCreateInput[] };
 export const createUserInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: CreateUserInput, ctx: any, info: any) => {
+  async (parent: unknown, args: CreateUserInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.input || !args.input[0]) {
       return "Missing or empty input in args.";
     }
@@ -60,7 +62,7 @@ export const createUserInputIsValid = rule({ cache: "contextual" })(
 
 type UpdateUserInput = { update: UserUpdateInput };
 export const updateUserInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: UpdateUserInput, ctx: any, info: any) => {
+  async (parent: unknown, args: UpdateUserInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.update) {
       return "Missing update input in args.";
     }

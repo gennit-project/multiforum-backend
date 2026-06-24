@@ -2,6 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createDownloadableFileUrlResolver } from "./downloadableFileUrl.js";
 
+type ResolverContext = Parameters<
+  ReturnType<typeof createDownloadableFileUrlResolver>
+>[2];
+
 const baseContext = {
   ogm: {},
   req: {
@@ -20,7 +24,7 @@ test("returns an empty string when the request is anonymous", async () => {
   const result = await resolver(
     { url: "https://example.com/file.zip" },
     {},
-    { ...baseContext }
+    { ...baseContext } as unknown as ResolverContext
   );
 
   assert.equal(result, "");
@@ -34,7 +38,7 @@ test("returns an empty string when the request has a JWT error", async () => {
   const result = await resolver(
     { url: "https://example.com/file.zip" },
     {},
-    { ...baseContext, jwtError: new Error("expired") }
+    { ...baseContext, jwtError: new Error("expired") } as unknown as ResolverContext
   );
 
   assert.equal(result, "");
@@ -51,7 +55,7 @@ test("returns the file URL for authenticated requests", async () => {
   const result = await resolver(
     { url: "https://example.com/file.zip" },
     {},
-    { ...baseContext }
+    { ...baseContext } as unknown as ResolverContext
   );
 
   assert.equal(result, "https://example.com/file.zip");
@@ -80,7 +84,7 @@ test("reuses context.user when it is already available", async () => {
         email_verified: true,
         data: null,
       },
-    }
+    } as unknown as ResolverContext
   );
 
   assert.equal(result, "https://example.com/file.zip");

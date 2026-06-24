@@ -27,6 +27,9 @@ import {
   DiscussionCreateInputWithChannels,
   EventCreateInputWithChannels,
 } from "../../src/generated/graphql";
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLContext } from "../../types/context.js";
 
 type NewUserInput = {
   emailAddress: string;
@@ -48,7 +51,7 @@ type Args = {
 };
 
 type Input = {
-  driver: any;
+  driver: Driver;
   Channel: ChannelModel;
   Comment: CommentModel;
   User: UserModel;
@@ -79,7 +82,12 @@ const seedDataForCypressTestsResolver = (input: Input) => {
     ServerConfig,
   } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const {
       channels,
       users,
@@ -155,10 +163,11 @@ const seedDataForCypressTestsResolver = (input: Input) => {
           }
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating server configuration:", error);
+      const message = error instanceof Error ? error.message : String(error);
       throw new Error(
-        `Failed to update server configurations: ${error.message}`
+        `Failed to update server configurations: ${message}`
       );
     } finally {
       session.close();

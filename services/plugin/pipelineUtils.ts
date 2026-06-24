@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import type { PipelineStep, EventPipeline } from './types.js'
+import type { PipelineStep, EventPipeline, PluginEdgeData } from './types.js'
 
 export const generatePipelineId = (): string => {
   return `pipeline-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`
@@ -26,7 +26,7 @@ export const shouldRunStep = (
   return true
 }
 
-export const mergeSettings = (defaults: any, overrides: any): any => {
+export const mergeSettings = (defaults: unknown, overrides: unknown): unknown => {
   if (overrides === null || overrides === undefined) {
     return defaults
   }
@@ -35,10 +35,12 @@ export const mergeSettings = (defaults: any, overrides: any): any => {
     return overrides
   }
 
-  if (typeof defaults === 'object' && defaults !== null && typeof overrides === 'object' && overrides !== null) {
-    const output: Record<string, any> = { ...defaults }
-    Object.keys(overrides).forEach(key => {
-      output[key] = mergeSettings(defaults ? defaults[key] : undefined, overrides[key])
+  if (typeof defaults === 'object' && defaults !== null && !Array.isArray(defaults) && typeof overrides === 'object' && overrides !== null && !Array.isArray(overrides)) {
+    const defaultsRecord = defaults as Record<string, unknown>
+    const overridesRecord = overrides as Record<string, unknown>
+    const output: Record<string, unknown> = { ...defaultsRecord }
+    Object.keys(overridesRecord).forEach(key => {
+      output[key] = mergeSettings(defaultsRecord[key], overridesRecord[key])
     })
     return output
   }
@@ -46,7 +48,7 @@ export const mergeSettings = (defaults: any, overrides: any): any => {
   return overrides
 }
 
-export const getAttachmentUrls = (downloadableFile: any): string[] => {
+export const getAttachmentUrls = (downloadableFile: { url?: string | null }): string[] => {
   const urls: string[] = []
   if (downloadableFile.url) {
     urls.push(downloadableFile.url)
@@ -54,7 +56,7 @@ export const getAttachmentUrls = (downloadableFile: any): string[] => {
   return urls
 }
 
-export const parseStoredPipelines = (stored: any): EventPipeline[] => {
+export const parseStoredPipelines = (stored: unknown): EventPipeline[] => {
   if (!stored) return []
   if (typeof stored === 'string') {
     try {
@@ -66,7 +68,7 @@ export const parseStoredPipelines = (stored: any): EventPipeline[] => {
   return Array.isArray(stored) ? stored : []
 }
 
-export const parseManifest = (manifest: any): Record<string, any> => {
+export const parseManifest = (manifest: unknown): Record<string, unknown> => {
   if (!manifest) return {}
   if (typeof manifest === 'string') {
     try {
@@ -75,7 +77,7 @@ export const parseManifest = (manifest: any): Record<string, any> => {
       return {}
     }
   }
-  return manifest
+  return manifest as Record<string, unknown>
 }
 
 /**
@@ -102,12 +104,12 @@ export const compareVersions = (v1: string, v2: string): number => {
  * Key format: "pluginName" -> array of all enabled versions
  * Returns both the multi-version map and a convenience map for latest versions.
  */
-export const buildPluginVersionMaps = (edges: any[]) => {
+export const buildPluginVersionMaps = (edges: PluginEdgeData[]) => {
   // Map of pluginName -> array of {version, edgeData} sorted by version desc
-  const pluginVersionsMap = new Map<string, Array<{ version: string; edgeData: any }>>()
+  const pluginVersionsMap = new Map<string, Array<{ version: string; edgeData: PluginEdgeData }>>()
 
   for (const edge of edges) {
-    const edgeData = edge as any
+    const edgeData = edge
     if (edgeData.properties?.enabled && edgeData.node?.Plugin?.name) {
       const pluginName = edgeData.node.Plugin.name
       const version = edgeData.node.version
@@ -133,10 +135,10 @@ export const buildPluginVersionMaps = (edges: any[]) => {
  * Otherwise, use the latest enabled version.
  */
 export const getPluginForStep = (
-  pluginVersionsMap: Map<string, Array<{ version: string; edgeData: any }>>,
+  pluginVersionsMap: Map<string, Array<{ version: string; edgeData: PluginEdgeData }>>,
   pluginId: string,
   requestedVersion?: string
-): { edgeData: any; version: string } | null => {
+): { edgeData: PluginEdgeData; version: string } | null => {
   const versions = pluginVersionsMap.get(pluginId)
   if (!versions || versions.length === 0) {
     return null

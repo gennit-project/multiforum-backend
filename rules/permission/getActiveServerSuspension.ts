@@ -1,7 +1,8 @@
 import type { Suspension } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type ActiveServerSuspensionInput = {
-  context: any;
+  context: GraphQLContext;
   username?: string;
   modProfileName?: string;
 };
@@ -102,7 +103,7 @@ export const isExpiredServerSuspension = (suspension: Suspension, now: Date) => 
 };
 
 async function fetchTargetedServerSuspensions(params: {
-  context: any;
+  context: GraphQLContext;
   username?: string;
   modProfileName?: string;
 }) {
@@ -126,10 +127,10 @@ async function fetchTargetedServerSuspensions(params: {
     ]);
 
     return {
-      userSuspensions: userResult.records.map((record: any) =>
+      userSuspensions: userResult.records.map((record: { get(key: string): unknown }) =>
         normalizeValue(record.get("suspension"))
       ),
-      modSuspensions: modResult.records.map((record: any) =>
+      modSuspensions: modResult.records.map((record: { get(key: string): unknown }) =>
         normalizeValue(record.get("suspension"))
       ),
     };

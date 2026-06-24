@@ -54,7 +54,7 @@ test("wiki page revision history copies the replaced version's edit reason", asy
         editReason: "New edit reason",
       },
     },
-  });
+  } as unknown as Parameters<typeof wikiPageVersionHistoryHandler>[0]);
 
   assert.equal(createdTextVersions.length, 1);
   assert.deepEqual(createdTextVersions[0].input[0], {

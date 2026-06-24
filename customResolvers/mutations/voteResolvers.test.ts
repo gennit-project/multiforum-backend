@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import upvoteCommentResolver from "./upvoteComment.js";
 import undoUpvoteCommentResolver from "./undoUpvoteComment.js";
 import upvoteDiscussionChannelResolver from "./upvoteDiscussionChannel.js";
@@ -62,14 +65,14 @@ const runUpvoteComment = async ({
   const resolver = upvoteCommentResolver({
     Comment: Comment as any,
     User: User as any,
-    driver,
+    driver: driver as unknown as Driver,
   });
 
   const result = await resolver(
     null,
     { commentId: "comment-1", username: "voter" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   return { result, calls, Comment, User };
@@ -100,14 +103,14 @@ const runUndoUpvoteComment = async ({
   const resolver = undoUpvoteCommentResolver({
     Comment: Comment as any,
     User: User as any,
-    driver,
+    driver: driver as unknown as Driver,
   });
 
   const result = await resolver(
     null,
     { commentId: "comment-1", username: "voter" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   return { result, calls, Comment, User };
@@ -138,14 +141,14 @@ const runUpvoteDiscussionChannel = async ({
   const resolver = upvoteDiscussionChannelResolver({
     DiscussionChannel: DiscussionChannel as any,
     User: User as any,
-    driver,
+    driver: driver as unknown as Driver,
   });
 
   const result = await resolver(
     null,
     { discussionChannelId: "discussion-channel-1", username: "voter" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   return { result, calls, DiscussionChannel, User };
@@ -176,14 +179,14 @@ const runUndoUpvoteDiscussionChannel = async ({
   const resolver = undoUpvoteDiscussionChannelResolver({
     DiscussionChannel: DiscussionChannel as any,
     User: User as any,
-    driver,
+    driver: driver as unknown as Driver,
   });
 
   const result = await resolver(
     null,
     { discussionChannelId: "discussion-channel-1", username: "voter" },
-    {},
-    null
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   return { result, calls, DiscussionChannel, User };

@@ -1,13 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
+import type { Session } from "neo4j-driver";
 
 test("populateCommentSubscriptionStatus defaults to an empty array when logged out", async () => {
   const session = {
     async run() {
       throw new Error("session.run should not be called");
     },
-  };
+  } as unknown as Session;
 
   const comments = await populateCommentSubscriptionStatus({
     comments: [{ id: "comment-1", text: "Hello" }],
@@ -41,7 +42,7 @@ test("populateCommentSubscriptionStatus marks only comments watched by the curre
         ],
       };
     },
-  };
+  } as unknown as Session;
 
   const comments = await populateCommentSubscriptionStatus({
     comments: [

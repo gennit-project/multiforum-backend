@@ -36,6 +36,9 @@ import createSignedStorageURL from "./customResolvers/mutations/createSignedStor
 import safetyCheck from "./customResolvers/queries/safetyCheck.js";
 
 import { ModelMap } from "./ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "./types/context.js";
 import getCreateEmailAndUserResolver from "./customResolvers/mutations/createEmailAndUser.js";
 import dropDataForCypressTestsResolver from "./customResolvers/mutations/dropDataForCypressTests.js";
 import seedDataForCypressTestsResolver from "./customResolvers/mutations/seedDataForCypressTests.js";
@@ -132,7 +135,7 @@ import emptyArrayFallback from './customResolvers/fields/emptyArrayFallback.js';
 
 const { OGM } = pkg;
 
-export default function (driver: any) {
+export default function (driver: Driver) {
   const ogm = new OGM<ModelMap>({
     typeDefs,
     driver,
@@ -173,24 +176,26 @@ export default function (driver: any) {
   const resolvers = {
     JSON: GraphQLJSON,
     CommentAuthor: {
-      __resolveType(obj: any, context: any, info: any) {
-        if (obj.username) {
+      __resolveType(obj: unknown, context: GraphQLContext, info: GraphQLResolveInfo) {
+        const author = obj as { username?: string; displayName?: string };
+        if (author.username) {
           return "User";
         }
         // Both user and mod profiles have this field so the order matters.
-        if (obj.displayName) {
+        if (author.displayName) {
           return "ModerationProfile";
         }
         return "User";
       },
     },
     IssueAuthor: {
-      __resolveType(obj: any, context: any, info: any) {
-        if (obj.username) {
+      __resolveType(obj: unknown, context: GraphQLContext, info: GraphQLResolveInfo) {
+        const author = obj as { username?: string; displayName?: string };
+        if (author.username) {
           return "User";
         }
         // Both user and mod profiles have this field so the order matters.
-        if (obj.displayName) {
+        if (author.displayName) {
           return "ModerationProfile";
         }
         return "User";
@@ -213,7 +218,8 @@ export default function (driver: any) {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
     },
     ScratchpadEntry: {
-      superUpvotedByUsers: (parent: any) => parent.superUpvotedByUsers || [],
+      superUpvotedByUsers: (parent: { superUpvotedByUsers?: unknown[] }) =>
+        parent.superUpvotedByUsers || [],
     },
     Album: {
       Images: emptyArrayFallback('Images'),

@@ -1,7 +1,13 @@
 import { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../types/context.js'
 import { parseBotMentions } from '../utils/botMentionParser.js'
 
-const isDiscussionCommentInput = (input: any): boolean => {
+interface CreateCommentsArgs {
+  input?: Record<string, unknown>[]
+  [key: string]: unknown
+}
+
+const isDiscussionCommentInput = (input: Record<string, unknown> | null | undefined): boolean => {
   if (!input || typeof input !== 'object') return false
   if (!input.DiscussionChannel) return false
   if (input.isFeedbackComment) return false
@@ -13,14 +19,14 @@ const isDiscussionCommentInput = (input: any): boolean => {
 const commentMentionsMiddleware = {
   Mutation: {
     createComments: async (
-      resolve: (parent: unknown, args: any, context: any, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (parent: unknown, args: CreateCommentsArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<unknown>,
       parent: unknown,
-      args: any,
-      context: any,
+      args: CreateCommentsArgs,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       if (Array.isArray(args?.input)) {
-        args.input = args.input.map((input: any) => {
+        args.input = args.input.map((input: Record<string, unknown>) => {
           if (input?.botMentions !== undefined) {
             return input
           }
@@ -32,7 +38,7 @@ const commentMentionsMiddleware = {
             }
           }
 
-          const mentions = parseBotMentions(input?.text || '')
+          const mentions = parseBotMentions((input?.text as string | null | undefined) || '')
           return {
             ...input,
             botMentions: mentions.length ? JSON.stringify(mentions) : null

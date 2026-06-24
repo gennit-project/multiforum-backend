@@ -2,6 +2,8 @@ import type {
   ChannelUpdateInput,
   ChannelModel,
 } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { channelHasZeroAdmins } from "../../rules/permission/channelHasZeroAdmins.js";
 
@@ -15,7 +17,7 @@ type Input = {
 
 const getResolver = (input: Input) => {
   const { Channel } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName } = args;
     if (!channelUniqueName) {
       throw new Error("channelUniqueName is required");
@@ -60,7 +62,7 @@ const getResolver = (input: Input) => {
     }
 
     const isAlreadyAdmin = currentChannel[0].Admins?.some(
-      (admin: any) => admin.username === loggedInUsername
+      (admin: { username: string }) => admin.username === loggedInUsername
     );
 
     if (isAlreadyAdmin) {

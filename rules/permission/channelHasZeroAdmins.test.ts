@@ -2,10 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { channelHasZeroAdmins } from "./channelHasZeroAdmins.js";
 import { makeOgm } from "../../tests/fixtures/index.js";
+import type { GraphQLContext } from "../../types/context.js";
 
-const contextWith = (find: (...args: any[]) => Promise<any>) => ({
-  ogm: makeOgm({ Channel: { find } }).ogm,
-});
+const contextWith = (find: (...args: any[]) => Promise<any>) =>
+  ({
+    ogm: makeOgm({ Channel: { find } }).ogm,
+  }) as unknown as GraphQLContext;
 
 test("returns true when the channel has no admins", async () => {
   const context = contextWith(async () => [{ Admins: [] }]);

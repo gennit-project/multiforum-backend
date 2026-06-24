@@ -1,18 +1,28 @@
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { DiscussionChannelModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+
 type Args = {
   discussionChannelId: string;
 };
 
 type Input = {
-  DiscussionChannel: any;
-  driver: any;
+  DiscussionChannel: DiscussionChannelModel;
+  driver: Driver;
 };
 
 const getResolver = (input: Input) => {
   const { DiscussionChannel, driver } = input;
 
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    info: GraphQLResolveInfo
+  ) => {
     const { discussionChannelId } = args;
-    const { username } = context.user;
+    const { username } = context.user!;
 
     console.log('=== DEBUG: subscribeToDiscussionChannel called with:', {
       discussionChannelId,
@@ -69,9 +79,10 @@ const getResolver = (input: Input) => {
       });
       
       return result[0];
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('=== DEBUG ERROR: Error subscribing to discussion channel:', error);
-      throw new Error(`Failed to subscribe to discussion channel: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to subscribe to discussion channel: ${message}`);
     } finally {
       session.close();
     }

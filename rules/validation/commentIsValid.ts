@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import { CommentCreateInput, CommentUpdateInput } from "../../src/generated/graphql.js";
 import { MAX_CHARS_IN_COMMENT_TEXT } from "./constants.js";
 
@@ -52,7 +54,7 @@ type CreateCommentInput = { input: CommentCreateInput[] };
 
 export const validateFeedbackEnabled = async (
   createCommentInput: CommentCreateInput,
-  ctx: any
+  ctx: GraphQLContext
 ): Promise<true | string> => {
   const isFeedbackComment = !!(
     createCommentInput.GivesFeedbackOnEvent ||
@@ -92,7 +94,7 @@ export const validateFeedbackEnabled = async (
 };
 
 export const createCommentInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: CreateCommentInput, ctx: any, info: any) => {
+  async (parent: unknown, args: CreateCommentInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.input || !args.input[0] || !args.input[0]) {
       return "Missing or empty input in args.";
     }
@@ -115,7 +117,7 @@ export const createCommentInputIsValid = rule({ cache: "contextual" })(
 
 type UpdateCommentInput = { update: CommentUpdateInput };
 export const updateCommentInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: UpdateCommentInput, ctx: any, info: any) => {
+  async (parent: unknown, args: UpdateCommentInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.update) {
       return "Missing update input in args.";
     }

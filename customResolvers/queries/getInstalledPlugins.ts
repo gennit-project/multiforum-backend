@@ -1,4 +1,6 @@
 import { Storage } from '@google-cloud/storage'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../types/context.js'
 import type {
   ServerConfigModel
 } from '../../ogm_types.js'
@@ -19,6 +21,34 @@ type RegistryPlugin = {
 type PluginRegistry = {
   updatedAt: string
   plugins: RegistryPlugin[]
+}
+
+type PluginEdge = {
+  properties?: {
+    enabled?: boolean
+    settingsJson?: string | Record<string, unknown>
+  }
+  node?: {
+    version?: string
+    manifest?: string | Record<string, unknown> | null
+    settingsDefaults?: string | Record<string, unknown> | null
+    uiSchema?: string | Record<string, unknown> | null
+    documentationPath?: string | null
+    readmeMarkdown?: string | null
+    Plugin?: {
+      id?: string
+      name?: string
+      displayName?: string
+      description?: string
+      authorName?: string
+      authorUrl?: string
+      homepage?: string
+      license?: string
+      tags?: string[]
+      metadata?: unknown
+    }
+    [key: string]: unknown
+  }
 }
 
 /**
@@ -62,7 +92,7 @@ function findLatestVersion(versions: string[]): string | null {
 const getResolver = (input: Input) => {
   const { ServerConfig } = input
 
-  return async (_parent: any, _args: any, _context: any, _resolveInfo: any) => {
+  return async (_parent: unknown, _args: unknown, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     try {
       // Get server config with installed plugins using Connection pattern
       // This gives us access to relationship properties (enabled, settingsJson)
@@ -110,7 +140,10 @@ const getResolver = (input: Input) => {
         return []
       }
 
-      const serverConfig = serverConfigs[0] as any
+      const serverConfig = serverConfigs[0] as {
+        pluginRegistries?: string[]
+        InstalledVersionsConnection?: { edges?: PluginEdge[] }
+      }
       const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
       if (!edges.length) {
@@ -142,7 +175,7 @@ const getResolver = (input: Input) => {
           }
         } catch (error) {
           // Registry fetch failed - continue without version comparison
-          console.warn('Failed to fetch plugin registry for version comparison:', (error as any).message)
+          console.warn('Failed to fetch plugin registry for version comparison:', error instanceof Error ? error.message : String(error))
         }
       }
 
@@ -155,7 +188,7 @@ const getResolver = (input: Input) => {
         }
       }
 
-      const installedPlugins = edges.map((edgeData: any) => {
+      const installedPlugins = edges.map((edgeData: PluginEdge) => {
         const edgeProps = edgeData.properties || {}
         const node = edgeData.node || {}
         const pluginData = node.Plugin || {}
@@ -163,10 +196,10 @@ const getResolver = (input: Input) => {
         const installedVersion = node.version
 
         // Get version info from registry
-        const availableVersions = registryVersionsMap.get(pluginName) || []
+        const availableVersions = registryVersionsMap.get(pluginName ?? "") || []
         const latestVersion = findLatestVersion(availableVersions)
         const hasUpdate = latestVersion
-          ? compareVersions(latestVersion, installedVersion) > 0
+          ? compareVersions(latestVersion, installedVersion ?? "") > 0
           : false
 
         return {
@@ -206,7 +239,7 @@ const getResolver = (input: Input) => {
 
     } catch (error) {
       console.error('Error in getInstalledPlugins resolver:', error)
-      throw new Error(`Failed to get installed plugins: ${(error as any).message}`)
+      throw new Error(`Failed to get installed plugins: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 }

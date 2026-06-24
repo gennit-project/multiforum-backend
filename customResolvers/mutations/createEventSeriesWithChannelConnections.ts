@@ -1,4 +1,7 @@
+import type { Driver } from "neo4j-driver";
 import { createEventChannelQuery } from "../cypher/cypherQueries.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { EventSeriesModel, EventModel, TagModel } from "../../ogm_types.js";
 
 type DateOccurrence = {
   startTime: string;
@@ -40,10 +43,10 @@ type Args = {
 };
 
 type Input = {
-  EventSeries: any;
-  Event: any;
-  Tag: any;
-  driver: any;
+  EventSeries: EventSeriesModel;
+  Event: EventModel;
+  Tag: TagModel;
+  driver: Driver;
 };
 
 const eventSeriesSelectionSet = `
@@ -158,7 +161,7 @@ const getHourOfDay = (isoDateString: string): number => {
 const getResolver = (input: Input) => {
   const { EventSeries, Event, Tag, driver } = input;
 
-  return async (parent: any, args: Args, context: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext) => {
     const { input: seriesInput } = args;
 
     if (!seriesInput.channelConnections || seriesInput.channelConnections.length === 0) {
@@ -291,8 +294,9 @@ const getResolver = (input: Input) => {
               channelUniqueName,
               poster: context.user?.username,
             });
-          } catch (error: any) {
-            if (error.message.includes("Constraint validation failed")) {
+          } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            if (message.includes("Constraint validation failed")) {
               console.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
               continue;
             } else {
@@ -311,9 +315,10 @@ const getResolver = (input: Input) => {
       });
 
       return fetchedEventSeries[0];
-    } catch (error: any) {
-      console.error("Error creating event series:", error.message);
-      throw new Error(`Failed to create event series: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Error creating event series:", message);
+      throw new Error(`Failed to create event series: ${message}`);
     } finally {
       session.close();
     }

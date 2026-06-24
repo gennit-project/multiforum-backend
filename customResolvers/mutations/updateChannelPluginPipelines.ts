@@ -41,7 +41,7 @@ const validateChannelEvents = (pipelines: EventPipelineInput[]): string | null =
   return null
 }
 
-const parseSettingsJson = (settingsJson: any) => {
+const parseSettingsJson = (settingsJson: unknown) => {
   if (!settingsJson || typeof settingsJson !== 'string') {
     return settingsJson || {}
   }
@@ -57,9 +57,9 @@ const getResolver = (input: Input) => {
   const syncBotsForChannel = input.syncBotsForChannel || syncBotUsersForChannelProfiles
   const getProfiles = input.getProfiles || getProfilesFromSettings
   const getBotName = input.getBotName || getBotNameFromSettings
-  const isBotPlugin = (plugin: any) => {
+  const isBotPlugin = (plugin: { tags?: unknown } | null | undefined) => {
     const tags = Array.isArray(plugin?.tags) ? plugin.tags : []
-    return tags.some((tag: any) => String(tag).toLowerCase() === 'bots' || String(tag).toLowerCase() === 'bot')
+    return tags.some((tag: unknown) => String(tag).toLowerCase() === 'bots' || String(tag).toLowerCase() === 'bot')
   }
 
   return async (_parent: unknown, args: Args, _context: unknown, _resolveInfo: unknown) => {
@@ -150,7 +150,7 @@ const getResolver = (input: Input) => {
       const serverEdges = serverConfig?.InstalledVersionsConnection?.edges || []
 
       // Build a map of server-level settings by plugin name
-      const serverSettingsMap = new Map<string, any>()
+      const serverSettingsMap = new Map<string, { settingsJson: unknown; settingsDefaults: unknown }>()
       for (const edge of serverEdges) {
         const pluginName = edge.node?.Plugin?.name
         if (pluginName && edge.properties?.enabled) {
@@ -215,7 +215,7 @@ const getResolver = (input: Input) => {
       }
 
       // Disconnect any bot users that are NOT in the desired set
-      const currentBots = (channel.Bots || []).map((bot: any) => bot.username)
+      const currentBots = (channel.Bots || []).map((bot: { username: string }) => bot.username)
       const botsToDisconnect = currentBots.filter(
         (username: string) => username.startsWith('bot-') && !allDesiredBotUsernames.has(username)
       )
@@ -248,10 +248,10 @@ const getResolver = (input: Input) => {
           }
         })
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.warn(
         `Failed to sync bot users for channel ${channelUniqueName}:`,
-        (error as any)?.message || error
+        (error instanceof Error ? error.message : undefined) || error
       )
     }
 

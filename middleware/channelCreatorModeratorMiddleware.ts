@@ -1,37 +1,30 @@
 import { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLContext } from '../types/context.js';
 import {
   setUserDataOnContext,
   type AuthContextForUserLookup,
 } from '../rules/permission/userDataHelperFunctions.js';
 
 interface CreateChannelsArgs {
-  input?: any[];
-  [key: string]: any;
-}
-
-interface Context {
-  ogm: any;
-  driver: any;
-  req?: any;
-  jwtError?: any;
-  [key: string]: any;
+  input?: Record<string, unknown>[];
+  [key: string]: unknown;
 }
 
 interface CreateChannelsResult {
   channels?: Array<{
     uniqueName: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }>;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const channelCreatorModeratorMiddleware = {
   Mutation: {
     createChannels: async (
-      resolve: (parent: unknown, args: CreateChannelsArgs, context: Context, info: GraphQLResolveInfo) => Promise<CreateChannelsResult>,
+      resolve: (parent: unknown, args: CreateChannelsArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<CreateChannelsResult>,
       parent: unknown,
       args: CreateChannelsArgs,
-      context: Context,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ): Promise<CreateChannelsResult> => {
       // 1. Execute original resolver to create the channel(s)
@@ -104,7 +97,7 @@ const channelCreatorModeratorMiddleware = {
             // Log the error but don't fail the channel creation
             console.error(
               `❌ Failed to add creator as moderator for channel ${channel.uniqueName}:`,
-              (error as any)?.message || error
+              error instanceof Error ? error.message : error
             );
           }
         }
@@ -112,7 +105,7 @@ const channelCreatorModeratorMiddleware = {
         // Log the error but don't fail the channel creation
         console.warn(
           '⚠️ Failed to add creator as moderator:',
-          (error as any)?.message || error
+          error instanceof Error ? error.message : error
         );
       }
 

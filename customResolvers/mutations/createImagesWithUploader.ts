@@ -1,13 +1,17 @@
-import { GraphQLError } from "graphql";
+import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { ImageModel, UserModel } from "../../ogm_types.js";
+
+type ImageInput = Record<string, unknown> & { Uploader?: unknown };
 
 type Args = {
-  input: any[];
+  input: ImageInput[];
 };
 
 type Input = {
-  Image: any;
-  User: any;
+  Image: ImageModel;
+  User: UserModel;
 };
 
 const selectionSet = `
@@ -34,7 +38,7 @@ const selectionSet = `
 const getResolver = (input: Input) => {
   const { Image, User } = input;
 
-  return async (parent: any, args: Args, context: any, info: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input: imageInputs } = args;
 
     context.user = await setUserDataOnContext({
@@ -80,9 +84,10 @@ const getResolver = (input: Input) => {
       });
 
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating images:", error);
-      throw new GraphQLError(`Failed to create images: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new GraphQLError(`Failed to create images: ${message}`);
     }
   };
 };

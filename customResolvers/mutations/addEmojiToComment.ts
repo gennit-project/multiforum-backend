@@ -1,5 +1,8 @@
 import { updateEmoji } from "./updateEmoji.js";
 import { assertCommentEmojiEnabled } from "./channelPreferenceGuards.js";
+import type { CommentModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type Args = {
   commentId: string;
@@ -8,13 +11,13 @@ type Args = {
   username: string;
 };
 
-type Input = { 
-  Comment: any;
+type Input = {
+  Comment: CommentModel;
 };
 
 const getResolver = (input: Input) => {
   const { Comment } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { commentId, emojiLabel, unicode, username } = args;
 
     if (!commentId || !emojiLabel || !unicode || !username) {

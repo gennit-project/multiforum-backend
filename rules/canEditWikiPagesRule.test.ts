@@ -6,6 +6,7 @@ import {
   evaluateCanEditWikiPagesRule,
 } from "./rules.js";
 import { ModChannelPermission } from "./permission/hasChannelModPermission.js";
+import type { GraphQLContext } from "../types/context.js";
 
 type BuildOgmInput = {
   defaultCanUpdateChannel?: boolean;
@@ -109,14 +110,15 @@ const buildOgm = ({
   },
 });
 
-const buildContext = (input: BuildOgmInput = {}) => ({
-  ogm: buildOgm(input),
-  req: { headers: {} },
-  user: {
-    username: "wiki-author",
-    data: {},
-  },
-});
+const buildContext = (input: BuildOgmInput = {}) =>
+  ({
+    ogm: buildOgm(input),
+    req: { headers: {} },
+    user: {
+      username: "wiki-author",
+      data: {},
+    },
+  } as unknown as GraphQLContext);
 
 test("allows wiki page updates when the channel role can update the channel", async () => {
   const ctx = buildContext({

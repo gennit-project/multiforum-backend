@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { Driver } from "neo4j-driver";
 import getResolver from "./updateEventWithChannelConnections.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { EventModel } from "../../ogm_types.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
@@ -88,8 +92,8 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
   };
 
   const resolver = getResolver({
-    Event,
-    driver,
+    Event: Event as unknown as EventModel,
+    driver: driver as unknown as Driver,
     dependencies: {
       buildEventUpdateNotificationPayload() {
         return {
@@ -121,8 +125,8 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "editor" } },
-    null
+    { user: { username: "editor" } } as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(updateCalls.length, 1);
@@ -158,8 +162,8 @@ test("updateEventWithChannelConnections skips notifications when no meaningful e
   };
 
   const resolver = getResolver({
-    Event,
-    driver,
+    Event: Event as unknown as EventModel,
+    driver: driver as unknown as Driver,
     dependencies: {
       buildEventUpdateNotificationPayload() {
         return null;
@@ -182,8 +186,8 @@ test("updateEventWithChannelConnections skips notifications when no meaningful e
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "editor" } },
-    null
+    { user: { username: "editor" } } as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.deepEqual(sendBatchEmailsCalls, []);

@@ -1,3 +1,5 @@
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
 import { EventUpdateInput } from "../../src/generated/graphql.js";
 import {
   updateEventChannelQuery,
@@ -6,11 +8,13 @@ import {
 import { sendBatchEmails } from "../../services/mail/index.js";
 import { createSeriesUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { EventModel, EventSeriesModel } from "../../ogm_types.js";
 
 type Input = {
-  Event: any;
-  EventSeries: any;
-  driver: any;
+  Event: EventModel;
+  EventSeries: EventSeriesModel;
+  driver: Driver;
   dependencies?: {
     sendBatchEmails?: typeof sendBatchEmails;
     createSeriesUpdateNotificationEmail?: typeof createSeriesUpdateNotificationEmail;
@@ -24,6 +28,11 @@ type Args = {
   eventUpdateInput: EventUpdateInput;
   channelConnections: string[];
   channelDisconnections: string[];
+};
+
+type NotifiableUser = {
+  username: string;
+  Email?: { address: string } | null;
 };
 
 // Fields that are shared at the series level (updating these affects series template)
@@ -89,7 +98,7 @@ const getResolver = (input: Input) => {
     dependencies?.buildEventUpdateNotificationPayload ||
     buildEventUpdateNotificationPayload;
 
-  return async (_parent: any, args: Args, context: any, _info: any) => {
+  return async (_parent: unknown, args: Args, context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const {
       eventId,
       scope,
@@ -171,7 +180,7 @@ const getResolver = (input: Input) => {
             // Get all events with occurrenceIndex >= this event's index
             const currentIndex = existingEvent.occurrenceIndex || 0;
             const futureOccurrences = eventSeries.Occurrences.filter(
-              (occ: any) => (occ.occurrenceIndex || 0) >= currentIndex
+              (occ: { id: string; occurrenceIndex?: number | null }) => (occ.occurrenceIndex || 0) >= currentIndex
             );
 
             // Update all future events
@@ -308,7 +317,7 @@ const getResolver = (input: Input) => {
         if (eventSeries && scope === "THIS_AND_FUTURE") {
           const currentIndex = existingEvent.occurrenceIndex || 0;
           affectedCount = eventSeries.Occurrences.filter(
-            (occ: any) => (occ.occurrenceIndex || 0) >= currentIndex
+            (occ: { occurrenceIndex?: number | null }) => (occ.occurrenceIndex || 0) >= currentIndex
           ).length;
         } else if (eventSeries && scope === "ALL_IN_SERIES") {
           affectedCount = eventSeries.Occurrences.length;
@@ -316,7 +325,7 @@ const getResolver = (input: Input) => {
 
         // Get subscribers excluding the actor
         const usersToNotify = (updatedEvent.SubscribedToEventUpdates || []).filter(
-          (user: any) => user.username !== actorUsername
+          (user: NotifiableUser) => user.username !== actorUsername
         );
 
         if (usersToNotify.length > 0) {
@@ -330,9 +339,9 @@ const getResolver = (input: Input) => {
           );
 
           const emailRecipients = usersToNotify
-            .filter((user: any) => user.Email?.address)
-            .map((user: any) => ({
-              to: user.Email.address,
+            .filter((user: NotifiableUser) => user.Email?.address)
+            .map((user: NotifiableUser) => ({
+              to: user.Email!.address,
               subject: emailContent.subject,
               text: emailContent.plainText,
               html: emailContent.html,
@@ -364,7 +373,7 @@ const getResolver = (input: Input) => {
               CREATE (user)-[:HAS_NOTIFICATION]->(notification)
               `,
               {
-                usernames: usersToNotify.map((user: any) => user.username),
+                usernames: usersToNotify.map((user: NotifiableUser) => user.username),
                 notificationText: `${updatedEvent.title} was updated${scopeText}.`,
               }
             );
@@ -375,9 +384,10 @@ const getResolver = (input: Input) => {
       }
 
       return updatedEvent;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating event in series:", error);
-      throw new Error(`Failed to update event in series. ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to update event in series. ${message}`);
     } finally {
       await session.close();
     }

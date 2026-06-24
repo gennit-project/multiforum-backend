@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { mergeSettings } from "./pipelineUtils.js";
 
+// mergeSettings returns `unknown`; cast results to this self-referential
+// indexable shape so the tests can read nested properties without `any`.
+interface MergedSettings {
+  [key: string]: MergedSettings;
+}
+
 // Helper function that mirrors the logic in commentTrigger.ts and channelTrigger.ts
 const parseIfString = (value: any): any => {
   if (typeof value === 'string') {
@@ -53,7 +59,7 @@ async function testMergeSettingsPreservesServerWhenChannelOverrides() {
   const channelOverrides = {
     channel: { overrideProfiles: true, botName: "test-bot", defaultProfileId: "test" }
   };
-  const result = mergeSettings(defaults, channelOverrides);
+  const result = mergeSettings(defaults, channelOverrides) as MergedSettings;
 
   assert.equal(result.server.botName, "chatgpt-bot", "Server settings should be preserved");
   assert.equal(result.server.model, "gpt-4o-mini", "Server model should be preserved");
@@ -175,7 +181,7 @@ async function testFullSettingsMergeFlow() {
   const result = mergeSettings(
     mergeSettings(settingsDefaults, serverSettings),
     channelSettingsWrapped
-  );
+  ) as MergedSettings;
 
   // Server settings should be preserved
   assert.equal(result.server.botName, "chatgpt-bot", "Server botName should be preserved");
@@ -201,7 +207,7 @@ async function testFullSettingsMergeFlowWithServerOverrides() {
   const result = mergeSettings(
     mergeSettings(settingsDefaults, serverSettings),
     channelSettingsWrapped
-  );
+  ) as MergedSettings;
 
   // Server settings should be merged (server overrides defaults)
   assert.equal(result.server.botName, "default-bot", "Server botName from defaults");
@@ -224,7 +230,7 @@ async function testSettingsMergeWithNoChannelOverrides() {
   const result = mergeSettings(
     mergeSettings(settingsDefaults, serverSettings),
     channelSettingsWrapped
-  );
+  ) as MergedSettings;
 
   // Should just use defaults when no overrides
   assert.equal(result.server.botName, "chatgpt-bot", "Server botName should be from defaults");

@@ -1,4 +1,6 @@
 import { createInAppNotification } from './notificationHelpers.js';
+import type { GraphQLContext } from '../types/context.js';
+import type { Record as Neo4jRecord } from 'neo4j-driver';
 
 // Regex to match /m/modProfileName mentions
 const MOD_MENTION_REGEX = /\/m\/([a-zA-Z0-9_-]+)/g;
@@ -18,7 +20,7 @@ type ModMentionContext = {
 };
 
 type NotifyModMentionsInput = {
-  context: any;
+  context: GraphQLContext;
   mentionContext: ModMentionContext;
   previousText?: string | null;
   nextText?: string | null;
@@ -54,7 +56,7 @@ export const getNewModMentions = (
  * Resolve mod profile names to their associated user accounts
  */
 const resolveModProfiles = async (
-  context: any,
+  context: GraphQLContext,
   modProfileNames: string[]
 ): Promise<Array<{ displayName: string; username: string; notifyWhenTagged: boolean }>> => {
   if (!modProfileNames.length) return [];
@@ -73,7 +75,7 @@ const resolveModProfiles = async (
       { modProfileNames }
     );
 
-    return result.records.map((record: any) => ({
+    return result.records.map((record: Neo4jRecord) => ({
       displayName: record.get('displayName'),
       username: record.get('username'),
       notifyWhenTagged: Boolean(record.get('notifyWhenTagged')),

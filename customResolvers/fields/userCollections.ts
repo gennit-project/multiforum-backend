@@ -1,7 +1,10 @@
+import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import type { GraphQLContext, Ogm } from "../../types/context.js";
+import type { CollectionOptions } from "../../src/generated/graphql.js";
 
 type UserCollectionsArgs = {
-  ogm: any;
+  ogm: Ogm;
 };
 
 /**
@@ -10,8 +13,18 @@ type UserCollectionsArgs = {
  * - If requester is NOT the account owner: return only PUBLIC collections
  * - Respects additional where filters passed from GraphQL queries (e.g., filtering by item relationships)
  */
+type CollectionsArgs = {
+  where?: Record<string, unknown>;
+  options?: { sort?: unknown[]; [key: string]: unknown };
+};
+
 export default function ({ ogm }: UserCollectionsArgs) {
-  return async (parent: any, args: any, context: any, info: any) => {
+  return async (
+    parent: { username: string },
+    args: CollectionsArgs,
+    context: GraphQLContext,
+    info: GraphQLResolveInfo
+  ) => {
     const { req } = context;
 
     // Get the username of the user whose collections we're viewing
@@ -31,7 +44,7 @@ export default function ({ ogm }: UserCollectionsArgs) {
     const Collection = ogm.model("Collection");
 
     // Build the filter starting with CreatedBy
-    const filter: any = {
+    const filter: Record<string, unknown> = {
       CreatedBy: {
         username: profileUsername
       }
@@ -91,7 +104,7 @@ export default function ({ ogm }: UserCollectionsArgs) {
           url
         }
       }`,
-      options
+      options: options as CollectionOptions
     });
 
     return collections;

@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
 import archiveEventResolver from "./archiveEvent.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLResolveInfo } from "graphql";
 
 type FindArgs = {
   where?: Record<string, unknown>;
@@ -128,7 +131,7 @@ const createContext = ({
   userModel: ModelStub;
   channelModel?: ModelStub;
   serverConfigModel?: ModelStub;
-}) => ({
+}): GraphQLContext => (({
   req: {
     headers: {
       authorization: `Bearer ${jwt.sign(
@@ -155,7 +158,7 @@ const createContext = ({
     },
   },
   driver: createDriver(),
-});
+}) as unknown as GraphQLContext);
 
 test("archiveEvent creates an issue, archives the event channel, and links the issue", async () => {
   process.env.PLAYWRIGHT_MOCK_AUTH = "true";
@@ -196,7 +199,7 @@ test("archiveEvent creates an issue, archives the event channel, and links the i
     Issue: Issue as any,
     Event: Event as any,
     EventChannel: EventChannel as any,
-    driver: createDriver(),
+    driver: createDriver() as unknown as Driver,
   });
 
   const result = await resolver(
@@ -209,7 +212,7 @@ test("archiveEvent creates an issue, archives the event channel, and links the i
       channelUniqueName: "cats",
     },
     createContext({ userModel: createUserModel() }),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(result?.id, "issue-1");
@@ -271,7 +274,7 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
     Issue: Issue as any,
     Event: Event as any,
     EventChannel: EventChannel as any,
-    driver: createDriver(),
+    driver: createDriver() as unknown as Driver,
   });
 
   await resolver(
@@ -284,7 +287,7 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
       channelUniqueName: "cats",
     },
     createContext({ userModel: createUserModel() }),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(Issue.createCalls.length, 0);

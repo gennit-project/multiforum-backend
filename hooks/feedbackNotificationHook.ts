@@ -1,4 +1,5 @@
 import { createInAppNotification } from './notificationHelpers.js';
+import type { GraphQLContext } from '../types/context.js';
 
 type FeedbackContext = {
   feedbackCommentId: string;
@@ -12,7 +13,7 @@ type FeedbackContext = {
 };
 
 type NotifyFeedbackInput = {
-  context: any;
+  context: GraphQLContext;
   feedbackContext: FeedbackContext;
   targetAuthorUsername: string;
 };

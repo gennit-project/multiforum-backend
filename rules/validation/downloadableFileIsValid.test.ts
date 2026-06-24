@@ -6,6 +6,8 @@ import {
 } from "./downloadableFileIsValid.js";
 import { makeOgm } from "../../tests/fixtures/index.js";
 
+type ValidationCtx = Parameters<typeof validateDownloadChannelsEnabled>[1];
+
 type ChannelStub = {
   downloadsEnabled?: boolean;
   allowedFileTypes?: string[];
@@ -29,7 +31,7 @@ const ctxWith = (opts: {
     },
   }).ogm,
   req: {},
-});
+} as unknown as ValidationCtx);
 
 // --- validateDownloadChannelsEnabled ---
 

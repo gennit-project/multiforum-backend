@@ -1,11 +1,20 @@
+import type { Driver } from 'neo4j-driver';
+import type { GraphQLResolveInfo } from 'graphql';
 import { createInAppNotification } from '../../hooks/notificationHelpers.js';
+import type { GraphQLContext } from '../../types/context.js';
+import type {
+  ScratchpadEntryModel,
+  CommentModel,
+  DiscussionChannelModel,
+  UserModel,
+} from '../../ogm_types.js';
 
 type Input = {
-  ScratchpadEntry: any;
-  Comment: any;
-  DiscussionChannel: any;
-  User: any;
-  driver: any;
+  ScratchpadEntry: ScratchpadEntryModel;
+  Comment: CommentModel;
+  DiscussionChannel: DiscussionChannelModel;
+  User: UserModel;
+  driver: Driver;
 };
 
 type Args = {
@@ -21,7 +30,7 @@ const MAX_TEXT_LENGTH = 500;
 const createScratchpadEntryResolver = (input: Input) => {
   const { ScratchpadEntry, Comment, DiscussionChannel, User, driver } = input;
 
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { recipientUsername, text, sourceType, sourceId, sourceChannelUniqueName } = args;
 
     // Get logged in user from context
@@ -83,8 +92,8 @@ const createScratchpadEntryResolver = (input: Input) => {
         }
 
         const comment = commentResult[0];
-        hasUpvoted = comment.UpvotedByUsers?.some((u: any) => u.username === loggedInUsername) || false;
-        hasSuperUpvoted = comment.SuperUpvotedByUsers?.some((u: any) => u.username === loggedInUsername) || false;
+        hasUpvoted = comment.UpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
+        hasSuperUpvoted = comment.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
       } else {
         // sourceType === 'discussion'
         const dcResult = await DiscussionChannel.find({
@@ -101,8 +110,8 @@ const createScratchpadEntryResolver = (input: Input) => {
         }
 
         const dc = dcResult[0];
-        hasUpvoted = dc.UpvotedByUsers?.some((u: any) => u.username === loggedInUsername) || false;
-        hasSuperUpvoted = dc.SuperUpvotedByUsers?.some((u: any) => u.username === loggedInUsername) || false;
+        hasUpvoted = dc.UpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
+        hasSuperUpvoted = dc.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
       }
 
       if (!hasUpvoted) {
@@ -171,7 +180,7 @@ const createScratchpadEntryResolver = (input: Input) => {
       await tx.commit();
 
       // Fetch the updated SuperUpvotedByUsers for cache update
-      let superUpvotedByUsers: any[] = [];
+      let superUpvotedByUsers: Array<{ username: string }> = [];
       if (sourceType === 'comment') {
         const result = await Comment.find({
           where: { id: sourceId },

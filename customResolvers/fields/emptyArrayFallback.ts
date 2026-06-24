@@ -11,14 +11,14 @@
  * @returns A resolver function that returns the field value or an empty array
  */
 export default function emptyArrayFallback(fieldName: string) {
-  return (parent: any) => {
+  return (parent: Record<string, unknown> | null | undefined) => {
     const value = parent?.[fieldName];
 
     // If the value is an array (even empty), return it directly
     // This ensures pre-populated data from Cypher queries is used
     if (Array.isArray(value)) {
       // Filter out null values that might come from Cypher COLLECT with CASE WHEN
-      return value.filter((item: any) => item !== null);
+      return value.filter((item: unknown) => item !== null);
     }
 
     // Fallback to empty array for null/undefined

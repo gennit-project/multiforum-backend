@@ -214,6 +214,6 @@ export async function resolveIssueTarget({
     relatedAccountName: originalPosterData.username,
     relatedAccountType: 'User',
     username: originalPosterData.username,
-    isBot: (originalPosterData as any).isBot ?? false,
+    isBot: originalPosterData.isBot ?? false,
   }
 }

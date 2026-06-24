@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import createAlbumsWithOwnerResolver from "./createAlbumsWithOwner.js";
 
 // Enable mock auth for tests
 process.env.PLAYWRIGHT_MOCK_AUTH = "true";
+
+const mockInfo = null as unknown as GraphQLResolveInfo;
 
 class ModelStub {
   findCalls: any[] = [];
@@ -60,7 +64,7 @@ const createMockContext = (username: string | null = null) => ({
       throw new Error(`Unexpected model lookup: ${name}`);
     },
   },
-});
+} as unknown as GraphQLContext);
 
 // Logged-out rejection tests
 test("createAlbumsWithOwner rejects when user is not logged in", async () => {
@@ -78,7 +82,7 @@ test("createAlbumsWithOwner rejects when user is not logged in", async () => {
         null,
         { input: [{ imageOrder: [] }] },
         createMockContext(null),
-        null
+        mockInfo
       ),
     {
       message: "You must be logged in to create albums.",
@@ -105,7 +109,7 @@ test("createAlbumsWithOwner rejects when user not found in database", async () =
         null,
         { input: [{ imageOrder: [] }] },
         createMockContext("ghost-user"),
-        null
+        mockInfo
       ),
     {
       message: "Could not find the album owner.",
@@ -159,7 +163,7 @@ test("createAlbumsWithOwner replaces client-provided Owner with server username"
       ],
     },
     createMockContext("real-user"),
-    null
+    mockInfo
   );
 
   assert.equal(Album.createCalls.length, 1);
@@ -209,7 +213,7 @@ test("createAlbumsWithOwner sets Owner when client omits it", async () => {
       ],
     },
     createMockContext("alice"),
-    null
+    mockInfo
   );
 
   const createInput = Album.createCalls[0].input[0];
@@ -277,7 +281,7 @@ test("createAlbumsWithOwner sanitizes nested Images.create Uploader", async () =
       ],
     },
     createMockContext("bob"),
-    null
+    mockInfo
   );
 
   const createInput = Album.createCalls[0].input[0];
@@ -338,7 +342,7 @@ test("createAlbumsWithOwner sanitizes multiple nested images", async () => {
       ],
     },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   const createInput = Album.createCalls[0].input[0];
@@ -381,7 +385,7 @@ test("createAlbumsWithOwner sanitizes multiple albums in a single request", asyn
       ],
     },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   const inputs = Album.createCalls[0].input;
@@ -420,7 +424,7 @@ test("createAlbumsWithOwner returns the created albums", async () => {
     null,
     { input: [{ imageOrder: ["img1"] }] },
     createMockContext("creator"),
-    null
+    mockInfo
   );
 
   assert.deepEqual(result, expectedResponse);
@@ -447,7 +451,7 @@ test("createAlbumsWithOwner wraps Album.create errors", async () => {
         null,
         { input: [{ imageOrder: [] }] },
         createMockContext("user"),
-        null
+        mockInfo
       ),
     {
       message: /Failed to create albums.*Database constraint violation/,
@@ -472,7 +476,7 @@ test("createAlbumsWithOwner handles empty input array", async () => {
     null,
     { input: [] },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   assert.deepEqual(result, { albums: [] });

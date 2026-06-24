@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../types/context.js";
 import { ERROR_MESSAGES } from "./errorMessages.js";
 import { isAuthenticatedAndVerified, isAuthenticated } from "./permission/userDataHelperFunctions.js";
 import { hasServerPermission } from "./permission/hasServerPermission.js";
@@ -68,7 +70,7 @@ import {
 import { updateUserInputIsValid } from "./validation/userIsValid.js";
 import { getServerScopedMembership } from "./permission/getServerScopedMembership.js";
 
-export async function evaluateCanCreateChannelRule(ctx: any) {
+export async function evaluateCanCreateChannelRule(ctx: GraphQLContext) {
   const hasPermissionToCreateChannels = await hasServerPermission(
     "canCreateChannel",
     ctx
@@ -82,7 +84,7 @@ export async function evaluateCanCreateChannelRule(ctx: any) {
 }
 
 const canCreateChannel = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) =>
+  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) =>
     evaluateCanCreateChannelRule(ctx)
 );
 
@@ -101,7 +103,7 @@ export type CanUpdateDiscussionArgs = {
 };
 
 export const canCreateDiscussion = rule({ cache: "contextual" })(
-  async (parent: any, args: CanCreateDiscussionArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanCreateDiscussionArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const inputItems = args.input;
     for (let i = 0; i < inputItems.length; i++) {
       const item = inputItems[i];
@@ -131,7 +133,7 @@ export type CanCreateEventArgs = {
 };
 
 export const canCreateEvent = rule({ cache: "contextual" })(
-  async (parent: any, args: CanCreateEventArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanCreateEventArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const dedupedChannelConnections = args.input.map((item) => item.channelConnections);
     const channelConnections = [...new Set(dedupedChannelConnections)];
     const flattenedChannelConnections = channelConnections.flat();
@@ -149,7 +151,7 @@ type CanCreateCommentArgs = {
 };
 
 export const canCreateComment = rule({ cache: "contextual" })(
-  async (parent: any, args: CanCreateCommentArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanCreateCommentArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input } = args;
     const firstItemInInput = input[0];
 
@@ -306,14 +308,14 @@ export const canCreateComment = rule({ cache: "contextual" })(
 );
 
 const isAdmin = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) => {
+  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const membership = await getServerScopedMembership(ctx);
     return membership.isServerAdmin;
   }
 );
 
 const canUploadFile = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) => {
+  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const permissionResult = await hasServerPermission(
       "canUploadFile",
       ctx
@@ -372,14 +374,14 @@ function hasWikiPageWhere(where?: WikiPageWhere | null) {
   return !!where && Object.keys(where).length > 0;
 }
 
-async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: any) {
+async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: GraphQLContext) {
   if (!hasWikiPageWhere(where)) {
     return [];
   }
 
   const WikiPage = ctx.ogm.model("WikiPage");
   return (await WikiPage.find({
-    where,
+    where: where ?? undefined,
     selectionSet: `{
       id
       channelUniqueName
@@ -405,7 +407,7 @@ function collectWikiPageChannelNames(wikiPages: WikiPageLookup[]) {
 
 async function getWikiPageChannelNamesByWhere(
   args: WikiPageMutationArgs,
-  ctx: any
+  ctx: GraphQLContext
 ) {
   const channelNames = new Set<string>();
   const where = args?.where || null;
@@ -456,7 +458,7 @@ function getChildPageCreateChannelNames(
 
 async function validateWikiChannelsEnabled(
   channelConnections: string[],
-  ctx: any
+  ctx: GraphQLContext
 ) {
   const Channel = ctx.ogm.model("Channel");
   const channelNames = Array.from(new Set(channelConnections.filter(Boolean)));
@@ -481,7 +483,7 @@ async function validateWikiChannelsEnabled(
 
 export async function evaluateCanEditWikiPagesRule(
   args: WikiPageMutationArgs,
-  ctx: any
+  ctx: GraphQLContext
 ) {
   const whereChannelNames = await getWikiPageChannelNamesByWhere(args, ctx);
   const createdChildChannelNames = getChildPageCreateChannelNames(
@@ -513,7 +515,7 @@ export async function evaluateCanEditWikiPagesRule(
 
 export async function evaluateCanEditWikiHomePageRule(
   args: MutationUpdateChannelsArgs,
-  ctx: any
+  ctx: GraphQLContext
 ) {
   const wikiHomePageUpdate = args?.update?.WikiHomePage;
 
@@ -550,7 +552,7 @@ export async function evaluateCanEditWikiHomePageRule(
 
 export async function evaluateCanDeleteWikiPagesRule(
   args: MutationDeleteWikiPagesArgs,
-  ctx: any,
+  ctx: GraphQLContext,
   checkModPermissions = checkChannelModPermissions
 ) {
   if (!hasWikiPageWhere(args?.where || null)) {
@@ -606,17 +608,17 @@ export async function evaluateCanDeleteWikiPagesRule(
 }
 
 const canEditWikiPages = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) =>
+  async (parent: unknown, args: WikiPageMutationArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) =>
     evaluateCanEditWikiPagesRule(args, ctx)
 );
 
 const canDeleteWikiPages = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) =>
+  async (parent: unknown, args: MutationDeleteWikiPagesArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) =>
     evaluateCanDeleteWikiPagesRule(args, ctx)
 );
 
 const canEditWikiHomePage = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) =>
+  async (parent: unknown, args: MutationUpdateChannelsArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) =>
     evaluateCanEditWikiHomePageRule(args, ctx)
 );
 
@@ -626,7 +628,7 @@ type CanUpvoteCommentArgs = {
 };
 
 const canUpvoteComment = rule({ cache: "contextual" })(
-  async (parent: any, args: CanUpvoteCommentArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanUpvoteCommentArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const CommentModel = ctx.ogm.model("Comment");
 
     const { commentId, username } = args;
@@ -689,10 +691,10 @@ type CanUpvoteDiscussionChannelArgs = {
 
 const canUpvoteDiscussion = rule({ cache: "contextual" })(
   async (
-    parent: any,
+    parent: unknown,
     args: CanUpvoteDiscussionChannelArgs,
-    ctx: any,
-    info: any
+    ctx: GraphQLContext,
+    info: GraphQLResolveInfo
   ) => {
     const DiscussionChannelModel = ctx.ogm.model("DiscussionChannel");
 
@@ -742,7 +744,7 @@ const canUpvoteDiscussion = rule({ cache: "contextual" })(
 );
 
 const canGiveFeedback = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) => {
+  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const permissionResult = await hasServerModPermission(
       "canGiveFeedback",
       ctx
@@ -761,7 +763,7 @@ const canGiveFeedback = rule({ cache: "contextual" })(
 );
 
 const canReportContent = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) => {
+  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     // Placeholder rule for now
 
     return true;
@@ -769,7 +771,7 @@ const canReportContent = rule({ cache: "contextual" })(
 );
 
 const issueIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: any, ctx: any, info: any) => {
+  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     return true;
   }
 );

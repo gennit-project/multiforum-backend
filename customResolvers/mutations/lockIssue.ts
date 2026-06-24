@@ -4,6 +4,8 @@ import type {
   IssueUpdateInput,
   ModerationActionCreateInput,
 } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
@@ -19,7 +21,7 @@ type Input = {
 
 const getResolver = (input: Input) => {
   const { Issue } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { issueId, reason } = args;
 
     if (!issueId) {

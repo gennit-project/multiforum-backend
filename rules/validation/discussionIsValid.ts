@@ -1,4 +1,6 @@
 import { rule } from "graphql-shield";
+import type { GraphQLResolveInfo } from "graphql";
+import type { GraphQLContext } from "../../types/context.js";
 import {
   CanCreateDiscussionArgs,
   CreateDiscussionItem,
@@ -55,7 +57,7 @@ function getDownloadableFileIds(discussionCreateInput: any) {
   return fieldInputs.flatMap(
     (fieldInput) =>
       fieldInput?.connect
-        ?.map((connection: any) => connection?.where?.node?.id)
+        ?.map((connection: { where?: { node?: { id?: string } } }) => connection?.where?.node?.id)
         .filter((id: unknown): id is string => typeof id === "string") || []
   );
 }
@@ -91,7 +93,7 @@ export function albumInputCreatesOrConnectsImages(albumInput: any) {
 
 async function validateImageUploadsEnabled(
   channelConnections: string[],
-  ctx: any
+  ctx: GraphQLContext
 ) {
   const Channel = ctx.ogm.model("Channel");
 
@@ -121,7 +123,7 @@ async function validateImageUploadsEnabled(
   return true;
 }
 
-async function getDiscussionChannelNamesByWhere(where: any, ctx: any) {
+async function getDiscussionChannelNamesByWhere(where: any, ctx: GraphQLContext) {
   if (!where || Object.keys(where).length === 0) {
     return [];
   }
@@ -138,9 +140,10 @@ async function getDiscussionChannelNamesByWhere(where: any, ctx: any) {
 
   return (
     discussions?.flatMap(
-      (discussion: any) =>
+      (discussion: { DiscussionChannels?: Array<{ channelUniqueName?: string | null }> | null }) =>
         discussion?.DiscussionChannels?.map(
-          (discussionChannel: any) => discussionChannel?.channelUniqueName
+          (discussionChannel: { channelUniqueName?: string | null }) =>
+            discussionChannel?.channelUniqueName
         ) || []
     ) || []
   ).filter(
@@ -159,7 +162,7 @@ export async function validateDiscussionImagePreferences(
     channelConnections?: string[];
     where?: any;
   },
-  ctx: any
+  ctx: GraphQLContext
 ) {
   if (!albumInputCreatesOrConnectsImages(discussionInput?.Album)) {
     return true;
@@ -178,7 +181,7 @@ export async function validateDiscussionImagePreferences(
 
 export async function validateDiscussionDownloadPreferences(
   item: CreateDiscussionItem,
-  ctx: any
+  ctx: GraphQLContext
 ) {
   const { discussionCreateInput, channelConnections } = item;
   const downloadableFileIds = getDownloadableFileIds(discussionCreateInput);
@@ -231,7 +234,7 @@ export async function validateDiscussionDownloadPreferences(
 }
 
 export const createDiscussionInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: CanCreateDiscussionArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanCreateDiscussionArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.input) {
       return "Missing input in args.";
     }
@@ -273,7 +276,7 @@ export const createDiscussionInputIsValid = rule({ cache: "contextual" })(
 );
 
 export const updateDiscussionInputIsValid = rule({ cache: "contextual" })(
-  async (parent: any, args: CanUpdateDiscussionArgs, ctx: any, info: any) => {
+  async (parent: unknown, args: CanUpdateDiscussionArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const discussionUpdateInput =
       args.discussionUpdateInput || (args as any).update;
 

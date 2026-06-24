@@ -8,6 +8,9 @@ import type {
 } from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
+import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLContext } from "../../types/context.js";
 import getNextServerIssueNumber from "./utils/getNextServerIssueNumber.js";
 
 type Args = {
@@ -19,7 +22,7 @@ type Args = {
 type Input = {
   Issue: IssueModel;
   User: UserModel;
-  driver: any;
+  driver: Driver;
 };
 
 const getFinalCommentText = (input: {
@@ -98,7 +101,12 @@ const getModerationActionCreateInput = (input: {
 
 const getResolver = (input: Input) => {
   const { Issue, User, driver } = input;
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const { username, reportText, selectedServerRules } = args;
 
     if (!username) {

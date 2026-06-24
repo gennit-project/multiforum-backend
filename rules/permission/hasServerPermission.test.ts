@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import type { GraphQLContext } from "../../types/context.js";
 import {
   evaluateServerPermission,
   hasServerPermission,
@@ -119,8 +120,8 @@ async function testHasServerPermissionCachesRequestLookups() {
     },
   };
 
-  await hasServerPermission("canCreateChannel", context);
-  await hasServerPermission("canCreateChannel", context);
+  await hasServerPermission("canCreateChannel", context as unknown as GraphQLContext);
+  await hasServerPermission("canCreateChannel", context as unknown as GraphQLContext);
 
   assert.deepEqual({
     suspensionQueryCalls,

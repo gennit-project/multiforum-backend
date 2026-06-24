@@ -9,8 +9,12 @@ import {
   discussionEditNotificationHandler,
   discussionVersionHistoryHandler,
 } from "../hooks/discussionVersionHistoryHook.js";
-import { notifyDiscussionMentions } from "../hooks/userMentionNotificationHook.js";
+import {
+  notifyDiscussionMentions,
+  type DiscussionSnapshot,
+} from "../hooks/userMentionNotificationHook.js";
 import { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLContext } from "../types/context.js";
 
 // Define types for the middleware
 interface UpdateDiscussionsArgs {
@@ -20,9 +24,9 @@ interface UpdateDiscussionsArgs {
   update?: {
     title?: string;
     body?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 interface UpdateDiscussionWithChannelConnectionsArgs {
   where?: {
@@ -31,15 +35,9 @@ interface UpdateDiscussionWithChannelConnectionsArgs {
   discussionUpdateInput?: {
     title?: string;
     body?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
-}
-
-interface Context {
-  ogm: any;
-  driver: any;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Define the middleware
@@ -47,10 +45,10 @@ const discussionVersionHistoryMiddleware = {
   Mutation: {
     // Apply to the auto-generated updateDiscussions mutation
     updateDiscussions: async (
-      resolve: (parent: unknown, args: UpdateDiscussionsArgs, context: Context, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (parent: unknown, args: UpdateDiscussionsArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<unknown>,
       parent: unknown,
       args: UpdateDiscussionsArgs,
-      context: Context,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       // Extract the parameters that we need for version history tracking
@@ -59,8 +57,8 @@ const discussionVersionHistoryMiddleware = {
         return resolve(parent, args, context, info);
       }
       const discussionId = where?.id;
-      let discussionSnapshot = null;
-      
+      let discussionSnapshot: DiscussionSnapshot | null = null;
+
       // Check if title or body is being updated
       if (update.title !== undefined || update.body !== undefined) {
         if (discussionId) {
@@ -92,7 +90,7 @@ const discussionVersionHistoryMiddleware = {
               }
             }`,
           });
-          discussionSnapshot = discussions[0] ?? null;
+          discussionSnapshot = (discussions[0] as unknown as DiscussionSnapshot) ?? null;
         }
 
         if (discussionSnapshot) {
@@ -129,10 +127,10 @@ const discussionVersionHistoryMiddleware = {
       return result;
     },
     updateDiscussionWithChannelConnections: async (
-      resolve: (parent: unknown, args: UpdateDiscussionWithChannelConnectionsArgs, context: Context, info: GraphQLResolveInfo) => Promise<any>,
+      resolve: (parent: unknown, args: UpdateDiscussionWithChannelConnectionsArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<unknown>,
       parent: unknown,
       args: UpdateDiscussionWithChannelConnectionsArgs,
-      context: Context,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const { where, discussionUpdateInput } = args;
@@ -140,7 +138,7 @@ const discussionVersionHistoryMiddleware = {
         return resolve(parent, args, context, info);
       }
       const discussionId = where?.id;
-      let discussionSnapshot = null;
+      let discussionSnapshot: DiscussionSnapshot | null = null;
 
       const isTitleUpdated = discussionUpdateInput.title !== undefined;
       const isBodyUpdated = discussionUpdateInput.body !== undefined;
@@ -162,7 +160,7 @@ const discussionVersionHistoryMiddleware = {
             }
           }`,
         });
-        discussionSnapshot = discussions[0] ?? null;
+        discussionSnapshot = (discussions[0] as unknown as DiscussionSnapshot) ?? null;
       }
 
       const result = await resolve(parent, args, context, info);

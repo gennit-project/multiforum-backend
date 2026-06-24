@@ -4,10 +4,12 @@ import type {
   Suspension,
   ChannelModel,
 } from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import type { Ogm } from "../../types/context.js";
 
 type ActiveSuspensionInput = {
-  ogm: any;
-  driver?: any;
+  ogm: Ogm;
+  driver?: Driver;
   channelUniqueName: string;
   username?: string;
   modProfileName?: string;
@@ -118,7 +120,7 @@ const MOD_SUSPENSION_QUERY = `
 `;
 
 const fetchTargetedSuspensions = async (params: {
-  driver: any;
+  driver: Driver;
   channelUniqueName: string;
   username?: string;
   modProfileName?: string;
@@ -146,10 +148,10 @@ const fetchTargetedSuspensions = async (params: {
     ]);
 
     return {
-      userSuspensions: userResult.records.map((record: any) =>
+      userSuspensions: userResult.records.map((record: { get(key: string): unknown }) =>
         normalizeValue(record.get("suspension"))
       ),
-      modSuspensions: modResult.records.map((record: any) =>
+      modSuspensions: modResult.records.map((record: { get(key: string): unknown }) =>
         normalizeValue(record.get("suspension"))
       ),
     };

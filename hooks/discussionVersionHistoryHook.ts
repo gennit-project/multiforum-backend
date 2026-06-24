@@ -5,6 +5,33 @@ import {
   getIssueIdsForRelated,
 } from './issueActivityFeedHelpers.js';
 import { createInAppNotification } from './notificationHelpers.js';
+import type { GraphQLContext } from '../types/context.js';
+import type {
+  DiscussionModel,
+  DiscussionUpdateInput,
+  TextVersionModel,
+  UserModel,
+} from '../ogm_types.js';
+
+type DiscussionSnapshot = {
+  id?: string;
+  title?: string | null;
+  body?: string | null;
+  Author?: { username?: string | null } | null;
+  BodyLastEditedBy?: { username?: string | null } | null;
+  DiscussionChannels?: Array<{ channelUniqueName?: string | null }> | null;
+  PastTitleVersions?: Array<{ id?: string; body?: string | null; createdAt?: string | null }> | null;
+  PastBodyVersions?: Array<{ id?: string; body?: string | null; createdAt?: string | null }> | null;
+};
+
+type DiscussionVersionHistoryHandlerInput = {
+  context: GraphQLContext;
+  params: {
+    where?: { id?: string | null };
+    update?: { title?: string | null; body?: string | null } | null;
+  };
+  discussionSnapshot?: DiscussionSnapshot | null;
+};
 
 /**
  * Hook to track discussion version history when a discussion is updated
@@ -14,7 +41,7 @@ export const discussionVersionHistoryHandler = async ({
   context,
   params,
   discussionSnapshot,
-}: any) => {
+}: DiscussionVersionHistoryHandlerInput) => {
   try {
     console.log('Discussion version history hook running...');
     
@@ -50,7 +77,7 @@ export const discussionVersionHistoryHandler = async ({
     const IssueModel = ogm.model('Issue');
     
     // Fetch the current discussion to get current values before update
-    let discussion = discussionSnapshot;
+    let discussion: DiscussionSnapshot | null | undefined = discussionSnapshot;
 
     if (!discussion) {
       const discussions = await DiscussionModel.find({
@@ -86,7 +113,7 @@ export const discussionVersionHistoryHandler = async ({
         return;
       }
 
-      discussion = discussions[0];
+      discussion = discussions[0] as DiscussionSnapshot;
     }
 
     // The editor making this change (for updating BodyLastEditedBy after)
@@ -110,7 +137,7 @@ export const discussionVersionHistoryHandler = async ({
     if (isTitleUpdated && update.title !== discussion.title) {
       const titleRevisionId = await trackTitleVersionHistory(
         discussionId,
-        discussion.title,
+        discussion.title ?? '',
         titleEditor,
         DiscussionModel,
         TextVersionModel,
@@ -187,7 +214,7 @@ export const discussionEditNotificationHandler = async ({
   context,
   params,
   discussionSnapshot,
-}: any) => {
+}: DiscussionVersionHistoryHandlerInput) => {
   try {
     const { where, update } = params;
     const discussionId = where?.id;
@@ -243,9 +270,9 @@ async function trackTitleVersionHistory(
   discussionId: string,
   previousTitle: string,
   username: string,
-  DiscussionModel: any,
-  TextVersionModel: any,
-  UserModel: any
+  DiscussionModel: DiscussionModel,
+  TextVersionModel: TextVersionModel,
+  UserModel: UserModel
 ): Promise<string | null> {
   console.log(`Tracking title version history for discussion ${discussionId}`);
   console.log(`Previous title: "${previousTitle}"`);
@@ -298,13 +325,13 @@ async function trackTitleVersionHistory(
       where: { id: discussionId },
       update: {
         PastTitleVersions: {
-          connect: [{ 
-            where: { 
-              node: { id: textVersionId } 
-            } 
+          connect: [{
+            where: {
+              node: { id: textVersionId }
+            }
           }]
         }
-      }
+      } as unknown as DiscussionUpdateInput
     });
 
     console.log(`Successfully added title version history for discussion ${discussionId}`);
@@ -320,11 +347,11 @@ async function trackTitleVersionHistory(
  */
 async function trackBodyVersionHistory(
   discussionId: string,
-  previousBody: string,
+  previousBody: string | null | undefined,
   username: string,
-  DiscussionModel: any,
-  TextVersionModel: any,
-  UserModel: any
+  DiscussionModel: DiscussionModel,
+  TextVersionModel: TextVersionModel,
+  UserModel: UserModel
 ): Promise<string | null> {
   console.log(`Tracking body version history for discussion ${discussionId}`);
 
@@ -381,13 +408,13 @@ async function trackBodyVersionHistory(
       where: { id: discussionId },
       update: {
         PastBodyVersions: {
-          connect: [{ 
-            where: { 
-              node: { id: textVersionId } 
-            } 
+          connect: [{
+            where: {
+              node: { id: textVersionId }
+            }
           }]
         }
-      }
+      } as unknown as DiscussionUpdateInput
     });
 
     console.log(`Successfully added body version history for discussion ${discussionId}`);

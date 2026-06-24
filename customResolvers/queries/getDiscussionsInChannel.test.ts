@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import getDiscussionsInChannelResolver from "./getDiscussionsInChannel.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type SessionRunCall = {
   query: string;
@@ -26,12 +28,13 @@ const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
   };
 };
 
-const createMockContext = (username: string | null = null) => ({
-  req: {
-    headers: {},
-  },
-  user: username ? { username } : null,
-});
+const createMockContext = (username: string | null = null) =>
+  ({
+    req: {
+      headers: {},
+    },
+    user: username ? { username } : null,
+  } as unknown as GraphQLContext);
 
 const baseArgs = {
   channelUniqueName: "test-channel",
@@ -53,11 +56,11 @@ const baseArgs = {
 test("getDiscussionsInChannel passes empty search input when not provided", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
-  await resolver(null, { ...baseArgs, searchInput: "" } as any, createMockContext(), null);
+  await resolver(null, { ...baseArgs, searchInput: "" } as any, createMockContext(), null as unknown as GraphQLResolveInfo);
 
   assert.equal(driver.runCalls.length, 1);
   assert.equal(driver.runCalls[0].params.searchInput, "");
@@ -68,15 +71,15 @@ test("getDiscussionsInChannel passes empty search input when not provided", asyn
 test("getDiscussionsInChannel passes search input with regex pattern for title and body", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, searchInput: "test query" } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.searchInput, "test query");
@@ -88,11 +91,11 @@ test("getDiscussionsInChannel passes search input with regex pattern for title a
 test("getDiscussionsInChannel passes empty array when no tags selected", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
-  await resolver(null, { ...baseArgs, selectedTags: [] } as any, createMockContext(), null);
+  await resolver(null, { ...baseArgs, selectedTags: [] } as any, createMockContext(), null as unknown as GraphQLResolveInfo);
 
   assert.deepEqual(driver.runCalls[0].params.selectedTags, []);
 });
@@ -100,16 +103,16 @@ test("getDiscussionsInChannel passes empty array when no tags selected", async (
 test("getDiscussionsInChannel passes selected tags to query", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   const tags = ["javascript", "typescript", "nodejs"];
   await resolver(
     null,
     { ...baseArgs, selectedTags: tags } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.deepEqual(driver.runCalls[0].params.selectedTags, tags);
@@ -119,15 +122,15 @@ test("getDiscussionsInChannel passes selected tags to query", async () => {
 test("getDiscussionsInChannel passes showArchived=false to exclude archived discussions", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, showArchived: false } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.showArchived, false);
@@ -136,15 +139,15 @@ test("getDiscussionsInChannel passes showArchived=false to exclude archived disc
 test("getDiscussionsInChannel passes showArchived=true to include archived discussions", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, showArchived: true } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.showArchived, true);
@@ -154,11 +157,11 @@ test("getDiscussionsInChannel passes showArchived=true to include archived discu
 test("getDiscussionsInChannel passes showUnanswered=false by default", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
-  await resolver(null, baseArgs as any, createMockContext(), null);
+  await resolver(null, baseArgs as any, createMockContext(), null as unknown as GraphQLResolveInfo);
 
   assert.equal(driver.runCalls[0].params.showUnanswered, false);
 });
@@ -166,15 +169,15 @@ test("getDiscussionsInChannel passes showUnanswered=false by default", async () 
 test("getDiscussionsInChannel passes showUnanswered=true to filter for unanswered discussions", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, showUnanswered: true } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.showUnanswered, true);
@@ -184,11 +187,11 @@ test("getDiscussionsInChannel passes showUnanswered=true to filter for unanswere
 test("getDiscussionsInChannel passes hasDownload=null when not specified", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
-  await resolver(null, { ...baseArgs, hasDownload: null } as any, createMockContext(), null);
+  await resolver(null, { ...baseArgs, hasDownload: null } as any, createMockContext(), null as unknown as GraphQLResolveInfo);
 
   assert.equal(driver.runCalls[0].params.hasDownload, null);
 });
@@ -196,15 +199,15 @@ test("getDiscussionsInChannel passes hasDownload=null when not specified", async
 test("getDiscussionsInChannel passes hasDownload=true to filter for downloads", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, hasDownload: true } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.hasDownload, true);
@@ -213,15 +216,15 @@ test("getDiscussionsInChannel passes hasDownload=true to filter for downloads", 
 test("getDiscussionsInChannel passes hasDownload=false to exclude downloads", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, hasDownload: false } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.hasDownload, false);
@@ -231,11 +234,11 @@ test("getDiscussionsInChannel passes hasDownload=false to exclude downloads", as
 test("getDiscussionsInChannel passes empty array when no label filters specified", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
-  await resolver(null, { ...baseArgs, labelFilters: [] } as any, createMockContext(), null);
+  await resolver(null, { ...baseArgs, labelFilters: [] } as any, createMockContext(), null as unknown as GraphQLResolveInfo);
 
   assert.deepEqual(driver.runCalls[0].params.labelFilters, []);
 });
@@ -243,9 +246,9 @@ test("getDiscussionsInChannel passes empty array when no label filters specified
 test("getDiscussionsInChannel passes label filters to query", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   const labelFilters = [
     { groupKey: "status", values: ["open", "in-progress"] },
@@ -255,7 +258,7 @@ test("getDiscussionsInChannel passes label filters to query", async () => {
     null,
     { ...baseArgs, labelFilters } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.deepEqual(driver.runCalls[0].params.labelFilters, labelFilters);
@@ -265,15 +268,15 @@ test("getDiscussionsInChannel passes label filters to query", async () => {
 test("getDiscussionsInChannel sorts by new with sortOption=new", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "new" } } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "new");
@@ -283,15 +286,15 @@ test("getDiscussionsInChannel sorts by new with sortOption=new", async () => {
 test("getDiscussionsInChannel sorts by top with sortOption=top and time frame", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "top", timeFrame: "month" } } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "top");
@@ -301,15 +304,15 @@ test("getDiscussionsInChannel sorts by top with sortOption=top and time frame", 
 test("getDiscussionsInChannel sorts by hot with sortOption=hot as default", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "hot" } } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "hot");
@@ -318,15 +321,15 @@ test("getDiscussionsInChannel sorts by hot with sortOption=hot as default", asyn
 test("getDiscussionsInChannel defaults to hot sort for unknown sort option", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, options: { ...baseArgs.options, sort: "unknown" } } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "hot");
@@ -336,15 +339,15 @@ test("getDiscussionsInChannel defaults to hot sort for unknown sort option", asy
 test("getDiscussionsInChannel passes offset and limit from options", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, options: { ...baseArgs.options, offset: "20", limit: "50" } } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.offset, 20);
@@ -355,15 +358,15 @@ test("getDiscussionsInChannel passes offset and limit from options", async () =>
 test("getDiscussionsInChannel passes channel unique name to query", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await resolver(
     null,
     { ...baseArgs, channelUniqueName: "my-channel" } as any,
     createMockContext(),
-    null
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(driver.runCalls[0].params.channelUniqueName, "my-channel");
@@ -380,11 +383,11 @@ test("getDiscussionsInChannel returns discussionChannels and aggregateCount", as
     { DiscussionChannel: mockDiscussionChannel, totalCount: 42 },
   ]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
-  const result = await resolver(null, baseArgs as any, createMockContext(), null);
+  const result = await resolver(null, baseArgs as any, createMockContext(), null as unknown as GraphQLResolveInfo);
 
   assert.ok(result.discussionChannels);
   assert.equal(result.discussionChannels.length, 1);
@@ -395,11 +398,11 @@ test("getDiscussionsInChannel returns discussionChannels and aggregateCount", as
 test("getDiscussionsInChannel returns empty array and zero count when no results", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
-  const result = await resolver(null, baseArgs as any, createMockContext(), null);
+  const result = await resolver(null, baseArgs as any, createMockContext(), null as unknown as GraphQLResolveInfo);
 
   assert.deepEqual(result.discussionChannels, []);
   assert.equal(result.aggregateDiscussionChannelsCount, 0);
@@ -416,12 +419,12 @@ test("getDiscussionsInChannel throws error with message when query fails", async
     }),
   };
   const resolver = getDiscussionsInChannelResolver({
-    DiscussionChannel: {} as any,
+    DiscussionChannel: {},
     driver,
-  });
+  } as unknown as Parameters<typeof getDiscussionsInChannelResolver>[0]);
 
   await assert.rejects(
-    () => resolver(null, baseArgs as any, createMockContext(), null),
+    () => resolver(null, baseArgs as any, createMockContext(), null as unknown as GraphQLResolveInfo),
     {
       message: /Failed to fetch discussionChannels in channel.*Database connection failed/,
     }

@@ -1,5 +1,9 @@
 import { GraphQLResolveInfo } from 'graphql';
-import { notifyCommentMentions } from '../hooks/userMentionNotificationHook.js';
+import type { GraphQLContext } from '../types/context.js';
+import {
+  notifyCommentMentions,
+  type CommentSnapshot,
+} from '../hooks/userMentionNotificationHook.js';
 
 const COMMENT_SELECTION_SET = `{
   id
@@ -38,13 +42,13 @@ const commentUserMentionsMiddleware = {
     createComments: async (
       resolve: (
         parent: unknown,
-        args: any,
-        context: any,
+        args: unknown,
+        context: GraphQLContext,
         info: GraphQLResolveInfo
-      ) => Promise<any>,
+      ) => Promise<{ comments?: { id?: string }[] } | undefined>,
       parent: unknown,
-      args: any,
-      context: any,
+      args: unknown,
+      context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info);
@@ -67,7 +71,7 @@ const commentUserMentionsMiddleware = {
           });
 
           if (!comments.length) continue;
-          const comment = comments[0];
+          const comment = comments[0] as unknown as CommentSnapshot;
 
           await notifyCommentMentions({
             context,
@@ -79,7 +83,7 @@ const commentUserMentionsMiddleware = {
       } catch (error) {
         console.warn(
           'Comment user mention notification failed:',
-          (error as any)?.message || error
+          error instanceof Error ? error.message : error
         );
       }
 

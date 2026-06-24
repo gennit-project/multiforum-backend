@@ -4,6 +4,7 @@ import {
   notifyCommentMentions,
   notifyDiscussionMentions,
 } from "./userMentionNotificationHook.js";
+import type { GraphQLContext } from "../types/context.js";
 
 const buildContext = (users: any[]) => {
   const createdNotifications: Array<{ username: string; text: string }> = [];
@@ -20,7 +21,7 @@ const buildContext = (users: any[]) => {
           };
         },
       },
-    },
+    } as unknown as GraphQLContext,
     createdNotifications,
   };
 };

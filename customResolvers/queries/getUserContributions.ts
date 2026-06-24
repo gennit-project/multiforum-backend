@@ -1,9 +1,11 @@
 import { getUserContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { UserModel } from "../../ogm_types.js";
 
 interface Input {
-  User: any;
-  driver: any;
+  User: UserModel;
+  driver: Driver;
 }
 
 interface Args {
@@ -16,7 +18,7 @@ interface Args {
 const getUserContributionsResolver = (input: Input) => {
   const { driver, User } = input;
 
-  return async (_parent: any, args: Args) => {
+  return async (_parent: unknown, args: Args) => {
     const { username, year, startDate, endDate } = args;
     const session = driver.session({ defaultAccessMode: 'READ' });
 
@@ -49,7 +51,7 @@ const getUserContributionsResolver = (input: Input) => {
 
       // Simplified mapping of results - return a flat array as is
       const contributions = result.records
-        .map((record: any) => {
+        .map((record: Neo4jRecord) => {
           const date = record.get('date');
           // Filter out any records with null dates
           if (!date) {
@@ -61,13 +63,14 @@ const getUserContributionsResolver = (input: Input) => {
             activities: record.get('activities'),
           };
         })
-        .filter((contribution: any) => contribution !== null);
+        .filter((contribution) => contribution !== null);
 
       return contributions;
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching user contributions:", error);
-      throw new Error(`Failed to fetch contributions for user ${username}: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to fetch contributions for user ${username}: ${message}`);
     } finally {
       await session.close();
     }

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
 import archiveCommentResolver from "./archiveComment.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
 
 type FindArgs = {
   where?: Record<string, unknown>;
@@ -149,7 +151,7 @@ test("archiveComment creates an issue, closes it, archives the comment, and link
   const resolver = archiveCommentResolver({
     Issue: Issue as any,
     Comment: Comment as any,
-    driver: createDriver(),
+    driver: createDriver() as unknown as Parameters<typeof archiveCommentResolver>[0]["driver"],
   });
 
   const result = await resolver(
@@ -160,8 +162,8 @@ test("archiveComment creates an issue, closes it, archives the comment, and link
       selectedServerRules: [],
       reportText: "Archiving this comment.",
     },
-    createContext(createUserModel()),
-    null
+    createContext(createUserModel()) as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(result?.id, "issue-1");
@@ -209,7 +211,7 @@ test("archiveComment reuses an existing comment issue and preserves server-rule 
   const resolver = archiveCommentResolver({
     Issue: Issue as any,
     Comment: Comment as any,
-    driver: createDriver(),
+    driver: createDriver() as unknown as Parameters<typeof archiveCommentResolver>[0]["driver"],
   });
 
   await resolver(
@@ -220,8 +222,8 @@ test("archiveComment reuses an existing comment issue and preserves server-rule 
       selectedServerRules: [],
       reportText: "Archiving this comment.",
     },
-    createContext(createUserModel()),
-    null
+    createContext(createUserModel()) as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
   );
 
   assert.equal(Issue.createCalls.length, 0);

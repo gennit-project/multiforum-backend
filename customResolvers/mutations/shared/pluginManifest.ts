@@ -3,11 +3,19 @@ import path from 'path'
 import tar from 'tar-stream'
 import zlib from 'zlib'
 
+type ManifestData = {
+  id: string
+  version: string
+  entry?: string
+  documentation?: { readmePath?: string }
+  [key: string]: unknown
+}
+
 export type ManifestArtifacts = {
   id: string
   version: string
   entryPath: string
-  manifest: any
+  manifest: ManifestData
   readmePath?: string
   readmeMarkdown?: string
 }
@@ -80,11 +88,11 @@ export async function parseManifestFromTarball(tarballBytes: Buffer): Promise<Ma
         return reject(new Error('Tarball missing plugin.json'))
       }
 
-      let manifestData: any
+      let manifestData: ManifestData
       try {
         manifestData = JSON.parse(manifestEntry[1])
       } catch (error) {
-        return reject(new Error(`Invalid plugin.json: ${(error as any).message}`))
+        return reject(new Error(`Invalid plugin.json: ${error instanceof Error ? error.message : String(error)}`))
       }
 
       const { path: readmePath, markdown: readmeMarkdown } = findBestReadme(

@@ -1,6 +1,8 @@
 import type {
   ServerSecretModel
 } from '../../ogm_types.js'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../types/context.js'
 import { encryptSecret } from '../../services/plugin/encryption.js'
 
 type Input = {
@@ -16,7 +18,12 @@ type Args = {
 const getResolver = (input: Input) => {
   const { ServerSecret } = input
 
-  return async (_parent: any, args: Args, _context: any, _resolveInfo: any) => {
+  return async (
+    _parent: unknown,
+    args: Args,
+    _context: GraphQLContext,
+    _resolveInfo: GraphQLResolveInfo
+  ) => {
     const { pluginId, key, value } = args
 
     try {
@@ -60,9 +67,10 @@ const getResolver = (input: Input) => {
       }
 
       return true
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error in setServerPluginSecret resolver:', error)
-      throw new Error(`Failed to set server plugin secret: ${(error as any).message}`)
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to set server plugin secret: ${message}`)
     }
   }
 }

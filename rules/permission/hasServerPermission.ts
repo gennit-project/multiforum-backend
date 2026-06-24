@@ -1,6 +1,7 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { ServerRole } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
@@ -62,7 +63,7 @@ export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
 
 export const hasServerPermission: (
   permission: keyof ServerRole,
-  context: any
+  context: GraphQLContext
 ) => Promise<Error | boolean> = async (permission, context) => {
   const User = context.ogm.model("User");
   // 1. Check for server roles on the user object.

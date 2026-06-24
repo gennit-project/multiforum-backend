@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
 import createImageWithUploaderResolver from "./createImageWithUploader.js";
+import type { GraphQLContext } from "../../types/context.js";
+import type { GraphQLResolveInfo } from "graphql";
+
+// The resolver's 4th argument is GraphQLResolveInfo; the tests don't use it,
+// so pass a null cast to the real type instead of an untyped null.
+const mockInfo = null as unknown as GraphQLResolveInfo;
 
 // Enable mock auth for tests
 process.env.PLAYWRIGHT_MOCK_AUTH = "true";
@@ -41,26 +47,27 @@ const createUserOgmModel = (username: string | null) =>
     return [];
   });
 
-const createMockContext = (username: string | null = null) => ({
-  req: {
-    headers: username
-      ? {
-          authorization: `Bearer ${jwt.sign(
-            { email: `${username}@example.com`, username },
-            "test-secret"
-          )}`,
-        }
-      : {},
-  },
-  ogm: {
-    model: (name: string) => {
-      if (name === "User") {
-        return createUserOgmModel(username);
-      }
-      throw new Error(`Unexpected model lookup: ${name}`);
+const createMockContext = (username: string | null = null) =>
+  ({
+    req: {
+      headers: username
+        ? {
+            authorization: `Bearer ${jwt.sign(
+              { email: `${username}@example.com`, username },
+              "test-secret"
+            )}`,
+          }
+        : {},
     },
-  },
-});
+    ogm: {
+      model: (name: string) => {
+        if (name === "User") {
+          return createUserOgmModel(username);
+        }
+        throw new Error(`Unexpected model lookup: ${name}`);
+      },
+    },
+  } as unknown as GraphQLContext);
 
 // Logged-out rejection tests
 test("createImageWithUploader rejects when user is not logged in", async () => {
@@ -78,7 +85,7 @@ test("createImageWithUploader rejects when user is not logged in", async () => {
         null,
         { input: { url: "https://example.com/image.jpg" } },
         createMockContext(null),
-        null
+        mockInfo
       ),
     {
       message: "You must be logged in to upload images.",
@@ -105,7 +112,7 @@ test("createImageWithUploader rejects when user not found in database", async ()
         null,
         { input: { url: "https://example.com/image.jpg" } },
         createMockContext("deleted-user"),
-        null
+        mockInfo
       ),
     {
       message: "Could not find the original uploader of this image.",
@@ -147,7 +154,7 @@ test("createImageWithUploader sets Uploader to logged-in user", async () => {
       },
     },
     createMockContext("alice"),
-    null
+    mockInfo
   );
 
   assert.equal(Image.createCalls.length, 1);
@@ -197,7 +204,7 @@ test("createImageWithUploader ignores any client-provided Uploader field", async
       },
     },
     createMockContext("real-user"),
-    null
+    mockInfo
   );
 
   const createInput = Image.createCalls[0].input[0];
@@ -246,7 +253,7 @@ test("createImageWithUploader preserves all image properties", async () => {
       },
     },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   const createInput = Image.createCalls[0].input[0];
@@ -291,7 +298,7 @@ test("createImageWithUploader connects to album when albumId provided", async ()
       },
     },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   const createInput = Image.createCalls[0].input[0];
@@ -337,7 +344,7 @@ test("createImageWithUploader does not connect album when albumId not provided",
       },
     },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   const createInput = Image.createCalls[0].input[0];
@@ -374,7 +381,7 @@ test("createImageWithUploader handles empty string albumId as no album", async (
       },
     },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   const createInput = Image.createCalls[0].input[0];
@@ -422,7 +429,7 @@ test("createImageWithUploader returns the created image", async () => {
       },
     },
     createMockContext("photographer"),
-    null
+    mockInfo
   );
 
   assert.deepEqual(result, expectedImage);
@@ -449,7 +456,7 @@ test("createImageWithUploader wraps Image.create errors", async () => {
         null,
         { input: { url: "https://example.com/image.jpg" } },
         createMockContext("user"),
-        null
+        mockInfo
       ),
     {
       message: /Failed to create image.*Storage service unavailable/,
@@ -475,7 +482,7 @@ test("createImageWithUploader throws when no image is created", async () => {
         null,
         { input: { url: "https://example.com/image.jpg" } },
         createMockContext("user"),
-        null
+        mockInfo
       ),
     {
       message: /Failed to create image/,
@@ -512,7 +519,7 @@ test("createImageWithUploader works with only url provided", async () => {
       },
     },
     createMockContext("user"),
-    null
+    mockInfo
   );
 
   assert.equal(result.id, "img-1");

@@ -10,6 +10,9 @@ import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunct
 import { GraphQLError } from 'graphql'
 import { getFinalCommentText } from './reportDiscussion.js'
 import { DateTime } from 'luxon'
+import type { Driver } from 'neo4j-driver'
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../types/context.js'
 import getNextIssueNumber from './utils/getNextIssueNumber.js'
 
 type Args = {
@@ -23,7 +26,7 @@ type Args = {
 type Input = {
   Issue: IssueModel
   Comment: CommentModel
-  driver: any
+  driver: Driver
 }
 
 type IssueCommentAuthor =
@@ -260,7 +263,12 @@ export const getRelatedIssueAccountFields = (
 
 const getResolver = (input: Input) => {
   const { Issue, Comment, driver } = input
-  return async (parent: any, args: Args, context: any, resolveInfo: any) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo
+  ) => {
     const {
       commentId,
       reportText,

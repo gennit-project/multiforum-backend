@@ -8,6 +8,7 @@
 
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import type { GraphQLContext } from "../../types/context.js";
 import { commentVersionHistoryHandler } from "../../hooks/commentVersionHistoryHook.js";
 import {
   discussionVersionHistoryHandler,
@@ -39,11 +40,12 @@ beforeEach(async () => {
 
 // context shaped like the mutation middleware builds: ogm + driver + the
 // authenticated editor on context.user.
-const editorCtx = (username: string) => ({
-  ogm: env.ogm,
-  driver: env.driver,
-  user: { username },
-});
+const editorCtx = (username: string) =>
+  ({
+    ogm: env.ogm,
+    driver: env.driver,
+    user: { username },
+  }) as unknown as GraphQLContext;
 
 const notificationsFor = (username: string) =>
   run(

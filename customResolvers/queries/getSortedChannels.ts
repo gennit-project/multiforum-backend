@@ -1,5 +1,16 @@
+import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { GraphQLContext } from "../../types/context.js";
+
 type Input = {
-  driver: any;
+  driver: Driver;
+};
+
+type Args = {
+  limit?: string;
+  offset?: string;
+  tags?: string[];
+  searchInput?: string;
+  countDownloads?: boolean | null;
 };
 
 const DEFAULT_LIMIT = "25";
@@ -8,7 +19,7 @@ const DEFAULT_OFFSET = "0";
 const getSortedChannelsResolver = (input: Input) => {
   const { driver } = input;
 
-  return async (_parent: any, args: any, _context: any) => {
+  return async (_parent: unknown, args: Args, _context: GraphQLContext) => {
     const limit = args.limit || DEFAULT_LIMIT;
     const offset = args.offset || DEFAULT_OFFSET;
     const tags = args.tags || [];
@@ -84,7 +95,7 @@ const getSortedChannelsResolver = (input: Input) => {
         }
       );
 
-      const channels = result.records.map((record: any) =>
+      const channels = result.records.map((record: Neo4jRecord) =>
         record.get("channel")
       );
 

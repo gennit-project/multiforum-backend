@@ -1,3 +1,5 @@
+import type { GraphQLResolveInfo } from 'graphql'
+import type { GraphQLContext } from '../../types/context.js'
 import type { PluginRunModel } from '../../ogm_types.js'
 
 type Input = {
@@ -11,7 +13,7 @@ type Args = {
 const getResolver = (input: Input) => {
   const { PluginRun } = input
 
-  return async (_parent: any, args: Args, _context: any, _info: any) => {
+  return async (_parent: unknown, args: Args, _context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const { downloadableFileId } = args
 
     const runs = await PluginRun.find({

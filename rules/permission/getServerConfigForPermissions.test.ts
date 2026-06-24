@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import type { GraphQLContext } from "../../types/context.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 
 async function testCachesServerConfigWithinRequest() {
@@ -30,8 +31,8 @@ async function testCachesServerConfigWithinRequest() {
     },
   };
 
-  await getServerConfigForPermissions(context);
-  await getServerConfigForPermissions(context);
+  await getServerConfigForPermissions(context as unknown as GraphQLContext);
+  await getServerConfigForPermissions(context as unknown as GraphQLContext);
 
   assert.equal(findCalls, 1);
 }

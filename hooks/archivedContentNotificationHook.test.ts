@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { notifyArchivedContentAuthor } from './archivedContentNotificationHook.js';
 
+type NotifyContext = Parameters<typeof notifyArchivedContentAuthor>[0]['context'];
+
 const buildMockUserModel = (users: any[], createdNotifications: any[]) => ({
   async find({ where }: { where: { username: string } }) {
     return users.filter((u) => u.username === where.username);
@@ -29,7 +31,7 @@ test('notifyArchivedContentAuthor sends notification to content author', async (
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as NotifyContext;
 
   const result = await notifyArchivedContentAuthor({
     context,
@@ -60,7 +62,7 @@ test('notifyArchivedContentAuthor does not notify if author is the moderator', a
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as NotifyContext;
 
   const result = await notifyArchivedContentAuthor({
     context,
@@ -85,7 +87,7 @@ test('notifyArchivedContentAuthor returns false if user not found', async () => 
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as NotifyContext;
 
   const result = await notifyArchivedContentAuthor({
     context,
@@ -109,7 +111,7 @@ test('notifyArchivedContentAuthor uses "post" for discussion content type', asyn
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as NotifyContext;
 
   await notifyArchivedContentAuthor({
     context,
@@ -132,7 +134,7 @@ test('notifyArchivedContentAuthor includes issue link for appeal', async () => {
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
-  };
+  } as unknown as NotifyContext;
 
   await notifyArchivedContentAuthor({
     context,
