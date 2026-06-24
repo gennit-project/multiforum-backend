@@ -1,5 +1,6 @@
 import { execute, parse, subscribe } from 'graphql';
 import { handleCommentCreatedNotification } from './commentNotificationHandler.js';
+import { logger } from "../logger.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -18,7 +19,7 @@ export class CommentNotificationService {
     this.schema = schema;
     this.ogm = ogm;
     this.driver = driver;
-    console.log('Comment notification service initialized');
+    logger.info('Comment notification service initialized');
   }
 
   /**
@@ -26,12 +27,12 @@ export class CommentNotificationService {
    */
   async start() {
     if (this.isRunning) {
-      console.log('Comment notification service is already running');
+      logger.info('Comment notification service is already running');
       return;
     }
 
     try {
-      console.log('Starting comment notification service...');
+      logger.info('Starting comment notification service...');
       this.isRunning = true;
 
       // Define the subscription query to listen for comment creation events
@@ -69,14 +70,14 @@ export class CommentNotificationService {
 
         // Start processing comment events
         this.processCommentEvents();
-        console.log('=== DEBUG: Comment notification service started successfully');
+        logger.info('=== DEBUG: Comment notification service started successfully');
       } else {
         // If not an AsyncIterator, it's an error result
-        console.error('=== DEBUG ERROR: Subscription failed:', result);
+        logger.error('=== DEBUG ERROR: Subscription failed:', result);
         this.isRunning = false;
       }
     } catch (error) {
-      console.error('Error starting comment notification service:', error);
+      logger.error('Error starting comment notification service:', error);
       this.isRunning = false;
     }
   }
@@ -91,14 +92,14 @@ export class CommentNotificationService {
       // Process each comment event as it arrives
       for await (const result of this.subscriptionIterator) {
         if (!result.data?.commentCreated?.createdComment) {
-          console.log('Received invalid comment event:', result);
+          logger.info('Received invalid comment event:', result);
           continue;
         }
 
         const commentBasicInfo = result.data.commentCreated.createdComment;
         const commentId = commentBasicInfo.id;
 
-        console.log('Processing notification for newly created comment:', commentId);
+        logger.info('Processing notification for newly created comment:', commentId);
 
         try {
           await handleCommentCreatedNotification(
@@ -106,16 +107,16 @@ export class CommentNotificationService {
             commentId
           );
         } catch (error) {
-          console.error('Error processing comment notification:', error);
+          logger.error('Error processing comment notification:', error);
           // Continue processing other events even if one fails
         }
       }
     } catch (error) {
-      console.error('Error in comment event processing:', error);
+      logger.error('Error in comment event processing:', error);
       
       // If the subscription fails, wait and restart
       if (this.isRunning) {
-        console.log('Restarting comment notification service in 5 seconds...');
+        logger.info('Restarting comment notification service in 5 seconds...');
         setTimeout(() => this.start(), 5000);
       }
     }
@@ -125,7 +126,7 @@ export class CommentNotificationService {
    * Stop the comment notification service
    */
   stop() {
-    console.log('Stopping comment notification service');
+    logger.info('Stopping comment notification service');
     this.isRunning = false;
 
     // Clear the subscription iterator

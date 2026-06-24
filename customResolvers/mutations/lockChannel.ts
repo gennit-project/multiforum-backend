@@ -11,6 +11,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import getNextServerIssueNumber from "./utils/getNextServerIssueNumber.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   channelUniqueName: string;
@@ -139,7 +140,7 @@ const getResolver = (input: Input) => {
             throw new GraphQLError("Error creating issue for channel lock");
           }
         } catch (error) {
-          console.error("Error creating issue for channel lock:", error);
+          logger.error("Error creating issue for channel lock:", error);
           throw new GraphQLError(
             `Error creating issue: ${(error as Error)?.message || "unknown error"}`
           );
@@ -210,7 +211,7 @@ const getResolver = (input: Input) => {
         update: issueUpdateInput,
       });
     } catch (error) {
-      console.error("Error updating issue with lock action:", error);
+      logger.error("Error updating issue with lock action:", error);
       // Continue even if issue update fails - the channel lock is more important
     }
 
@@ -278,19 +279,19 @@ const getResolver = (input: Input) => {
             }
           );
         } catch (notifyError) {
-          console.error("Error notifying channel admins:", notifyError);
+          logger.error("Error notifying channel admins:", notifyError);
           // Don't fail the mutation if notifications fail
         } finally {
           await session.close();
         }
       }
 
-      console.log(
+      logger.info(
         `✅ Channel ${channelUniqueName} locked by ${loggedInModName}`
       );
       return updatedChannel;
     } catch (error) {
-      console.error("Error locking channel:", error);
+      logger.error("Error locking channel:", error);
       throw new GraphQLError("Error locking channel");
     }
   };

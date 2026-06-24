@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import type { Driver } from "neo4j-driver";
 import type { Record as Neo4jRecord } from "neo4j-driver";
 import type { ChannelModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 interface Input {
   Channel: ChannelModel;
@@ -45,7 +46,7 @@ const getChannelContributionsResolver = (input: Input) => {
         : (endDate || DateTime.now().toISODate());
 
       // Execute optimized Cypher query
-      console.log('Query parameters:', {
+      logger.info('Query parameters:', {
         channelUniqueName,
         startDate: effectiveStartDate,
         endDate: effectiveEndDate,
@@ -55,7 +56,7 @@ const getChannelContributionsResolver = (input: Input) => {
       // Debug: Test each step of the query
       const debugQuery1 = `MATCH (channel:Channel {uniqueName: $channelUniqueName}) RETURN channel.uniqueName`;
       const debug1 = await session.run(debugQuery1, { channelUniqueName });
-      console.log('Debug 1 - Channel found:', debug1.records.length > 0);
+      logger.info('Debug 1 - Channel found:', debug1.records.length > 0);
 
       const debugQuery2 = `
         MATCH (channel:Channel {uniqueName: $channelUniqueName})
@@ -63,7 +64,7 @@ const getChannelContributionsResolver = (input: Input) => {
         RETURN count(dc) as dcCount
       `;
       const debug2 = await session.run(debugQuery2, { channelUniqueName });
-      console.log('Debug 2 - DiscussionChannels found:', debug2.records[0]?.get('dcCount').toNumber());
+      logger.info('Debug 2 - DiscussionChannels found:', debug2.records[0]?.get('dcCount').toNumber());
 
       const debugQuery3 = `
         MATCH (channel:Channel {uniqueName: $channelUniqueName})
@@ -72,7 +73,7 @@ const getChannelContributionsResolver = (input: Input) => {
         RETURN count(d) as discussionCount
       `;
       const debug3 = await session.run(debugQuery3, { channelUniqueName });
-      console.log('Debug 3 - Discussions found via DiscussionChannel:', debug3.records[0]?.get('discussionCount').toNumber());
+      logger.info('Debug 3 - Discussions found via DiscussionChannel:', debug3.records[0]?.get('discussionCount').toNumber());
 
       const debugQuery4 = `
         MATCH (channel:Channel {uniqueName: $channelUniqueName})
@@ -82,7 +83,7 @@ const getChannelContributionsResolver = (input: Input) => {
         RETURN count(u) as userCount
       `;
       const debug4 = await session.run(debugQuery4, { channelUniqueName });
-      console.log('Debug 4 - Users found:', debug4.records[0]?.get('userCount').toNumber());
+      logger.info('Debug 4 - Users found:', debug4.records[0]?.get('userCount').toNumber());
 
       const debugQuery5 = `
         MATCH (channel:Channel {uniqueName: $channelUniqueName})
@@ -94,11 +95,11 @@ const getChannelContributionsResolver = (input: Input) => {
         LIMIT 5
       `;
       const debug5 = await session.run(debugQuery5, { channelUniqueName });
-      console.log('Debug 5 - Sample Discussion createdAt values:');
+      logger.info('Debug 5 - Sample Discussion createdAt values:');
       debug5.records.forEach((r: Neo4jRecord) => {
-        console.log('  - Raw:', r.get('createdAt'));
-        console.log('    Date:', r.get('dateOnly'));
-        console.log('    String:', r.get('createdAtString'));
+        logger.info('  - Raw:', r.get('createdAt'));
+        logger.info('    Date:', r.get('dateOnly'));
+        logger.info('    String:', r.get('createdAtString'));
       });
 
       const debugQuery6 = `
@@ -109,11 +110,11 @@ const getChannelContributionsResolver = (input: Input) => {
         startDate: effectiveStartDate,
         endDate: effectiveEndDate
       });
-      console.log('Debug 6 - Date parsing:');
-      console.log('  Start date string:', effectiveStartDate);
-      console.log('  Parsed start:', debug6.records[0]?.get('parsedStartDate'));
-      console.log('  End date string:', effectiveEndDate);
-      console.log('  Parsed end:', debug6.records[0]?.get('parsedEndDate'));
+      logger.info('Debug 6 - Date parsing:');
+      logger.info('  Start date string:', effectiveStartDate);
+      logger.info('  Parsed start:', debug6.records[0]?.get('parsedStartDate'));
+      logger.info('  End date string:', effectiveEndDate);
+      logger.info('  Parsed end:', debug6.records[0]?.get('parsedEndDate'));
 
       const debugQuery7 = `
         MATCH (channel:Channel {uniqueName: $channelUniqueName})
@@ -131,10 +132,10 @@ const getChannelContributionsResolver = (input: Input) => {
         startDate: effectiveStartDate,
         endDate: effectiveEndDate
       });
-      console.log('Debug 7 - Date comparisons:');
+      logger.info('Debug 7 - Date comparisons:');
       debug7.records.forEach((r: Neo4jRecord) => {
-        console.log('  Discussion:', r.get('discussionDate'), 'Start:', r.get('startDate'), 'End:', r.get('endDate'));
-        console.log('    After start?', r.get('afterStart'), 'Before end?', r.get('beforeEnd'));
+        logger.info('  Discussion:', r.get('discussionDate'), 'Start:', r.get('startDate'), 'End:', r.get('endDate'));
+        logger.info('    After start?', r.get('afterStart'), 'Before end?', r.get('beforeEnd'));
       });
 
       const result = await session.run(getChannelContributionsQuery, {
@@ -144,14 +145,14 @@ const getChannelContributionsResolver = (input: Input) => {
         limit: parseInt(String(limit || 10), 10),
       });
 
-      console.log('Query returned', result.records.length, 'records');
+      logger.info('Query returned', result.records.length, 'records');
 
       // Map results to UserContributionData format
       const contributions = result.records.map((record: Neo4jRecord) => {
         const dayData = record.get('dayData');
 
         // Log the dayData to debug null date issue
-        console.log('Raw dayData:', JSON.stringify(dayData, null, 2));
+        logger.info('Raw dayData:', JSON.stringify(dayData, null, 2));
 
         // Filter out any dayData entries with null dates
         const validDayData = Array.isArray(dayData)
@@ -172,7 +173,7 @@ const getChannelContributionsResolver = (input: Input) => {
       return contributions;
 
     } catch (error: unknown) {
-      console.error("Error fetching channel contributions:", error);
+      logger.error("Error fetching channel contributions:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch contributions for channel ${channelUniqueName}: ${message}`);
     } finally {

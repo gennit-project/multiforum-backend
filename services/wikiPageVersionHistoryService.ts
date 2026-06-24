@@ -1,5 +1,6 @@
 import { execute, parse, subscribe } from 'graphql';
 import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
+import { logger } from "../logger.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -34,7 +35,7 @@ export const getWikiPageVersionAuthorUsername = async (
     }
     return wikiPages[0].VersionAuthor.username;
   } catch (error) {
-    console.error('Error getting current user username:', error);
+    logger.error('Error getting current user username:', error);
     return null;
   }
 };
@@ -72,7 +73,7 @@ export const handleWikiPageUpdateEvent = async (
   const wikiPageId = updatedWikiPage.id;
   const currentUsername = await getWikiPageVersionAuthorUsername(ogm, wikiPageId);
   if (!currentUsername) {
-    console.log('Could not determine current user, skipping version history');
+    logger.info('Could not determine current user, skipping version history');
     return;
   }
 
@@ -118,7 +119,7 @@ export class WikiPageVersionHistoryService {
   constructor(schema: any, ogm: any) {
     this.schema = schema;
     this.ogm = ogm;
-    console.log('WikiPage version history service initialized');
+    logger.info('WikiPage version history service initialized');
   }
 
   /**
@@ -126,12 +127,12 @@ export class WikiPageVersionHistoryService {
    */
   async start() {
     if (this.isRunning) {
-      console.log('WikiPage version history service is already running');
+      logger.info('WikiPage version history service is already running');
       return;
     }
 
     try {
-      console.log('Starting wikiPage version history service...');
+      logger.info('Starting wikiPage version history service...');
       this.isRunning = true;
 
       // Define the subscription query to listen for wikiPage update events
@@ -168,14 +169,14 @@ export class WikiPageVersionHistoryService {
 
         // Start processing wikiPage update events
         this.processWikiPageUpdateEvents();
-        console.log('WikiPage version history service started');
+        logger.info('WikiPage version history service started');
       } else {
         // If not an AsyncIterator, it's an error result
-        console.error('Subscription failed:', result);
+        logger.error('Subscription failed:', result);
         this.isRunning = false;
       }
     } catch (error) {
-      console.error('Error starting wikiPage version history service:', error);
+      logger.error('Error starting wikiPage version history service:', error);
       this.isRunning = false;
     }
   }
@@ -190,28 +191,28 @@ export class WikiPageVersionHistoryService {
       // Process each wikiPage update event as it arrives
       for await (const result of this.subscriptionIterator) {
         if (!result.data?.wikiPageUpdated) {
-          console.log('Received invalid wikiPage update event:', result);
+          logger.info('Received invalid wikiPage update event:', result);
           continue;
         }
 
         const updatedWikiPage = result.data.wikiPageUpdated.updatedWikiPage;
         const previousState = result.data.wikiPageUpdated.previousState;
 
-        console.log('Processing version history for updated wikiPage:', updatedWikiPage.id);
+        logger.info('Processing version history for updated wikiPage:', updatedWikiPage.id);
 
         try {
           await handleWikiPageUpdateEvent(this.ogm, updatedWikiPage, previousState);
         } catch (error) {
-          console.error('Error processing wikiPage version history:', error);
+          logger.error('Error processing wikiPage version history:', error);
           // Continue processing other events even if one fails
         }
       }
     } catch (error) {
-      console.error('Error in wikiPage update event processing:', error);
+      logger.error('Error in wikiPage update event processing:', error);
       
       // If the subscription fails, wait and restart
       if (this.isRunning) {
-        console.log('Restarting wikiPage version history service in 5 seconds...');
+        logger.info('Restarting wikiPage version history service in 5 seconds...');
         setTimeout(() => this.start(), 5000);
       }
     }
@@ -221,7 +222,7 @@ export class WikiPageVersionHistoryService {
    * Stop the wikiPage version history service
    */
   stop() {
-    console.log('Stopping wikiPage version history service');
+    logger.info('Stopping wikiPage version history service');
     this.isRunning = false;
 
     // Clear the subscription iterator

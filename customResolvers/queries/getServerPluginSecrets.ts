@@ -1,5 +1,6 @@
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
+import { logger } from "../../logger.js";
 import type {
   ServerSecretModel
 } from '../../ogm_types.js'
@@ -41,7 +42,7 @@ const getResolver = (input: Input) => {
       }))
 
     } catch (error) {
-      console.error('Error in getServerPluginSecrets resolver:', error)
+      logger.error('Error in getServerPluginSecrets resolver:', error)
       throw new Error(`Failed to get server plugin secrets: ${error instanceof Error ? error.message : String(error)}`)
     }
   }

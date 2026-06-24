@@ -1,5 +1,6 @@
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { getSiteWideWikiPagesQuery } from "../cypher/cypherQueries.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
@@ -55,7 +56,7 @@ const getResolver = (input: Input) => {
         aggregateWikiPageCount: totalCount,
       };
     } catch (error: unknown) {
-      console.error("Error getting wiki pages:", error);
+      logger.error("Error getting wiki pages:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch wiki pages. ${message}`);
     } finally {

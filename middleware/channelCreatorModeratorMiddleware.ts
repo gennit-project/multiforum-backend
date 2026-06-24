@@ -1,6 +1,7 @@
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
 import type { ChannelCreateInput } from '../ogm_types.js';
+import { logger } from "../logger.js";
 import {
   setUserDataOnContext,
   type AuthContextForUserLookup,
@@ -39,7 +40,7 @@ const channelCreatorModeratorMiddleware = {
         });
 
         if (!userData?.username) {
-          console.warn('⚠️ No logged-in user found for channel creation, skipping moderator assignment');
+          logger.warn('⚠️ No logged-in user found for channel creation, skipping moderator assignment');
           return result;
         }
 
@@ -56,7 +57,7 @@ const channelCreatorModeratorMiddleware = {
         const displayName = userWithProfile[0]?.ModerationProfile?.displayName;
 
         if (!displayName) {
-          console.warn(`⚠️ User ${userData.username} has no ModerationProfile, skipping moderator assignment`);
+          logger.warn(`⚠️ User ${userData.username} has no ModerationProfile, skipping moderator assignment`);
           return result;
         }
 
@@ -93,10 +94,10 @@ const channelCreatorModeratorMiddleware = {
               },
             });
 
-            console.log(`✅ Added creator ${displayName} as moderator of channel ${channel.uniqueName}`);
+            logger.info(`✅ Added creator ${displayName} as moderator of channel ${channel.uniqueName}`);
           } catch (error) {
             // Log the error but don't fail the channel creation
-            console.error(
+            logger.error(
               `❌ Failed to add creator as moderator for channel ${channel.uniqueName}:`,
               error instanceof Error ? error.message : error
             );
@@ -104,7 +105,7 @@ const channelCreatorModeratorMiddleware = {
         }
       } catch (error) {
         // Log the error but don't fail the channel creation
-        console.warn(
+        logger.warn(
           '⚠️ Failed to add creator as moderator:',
           error instanceof Error ? error.message : error
         );

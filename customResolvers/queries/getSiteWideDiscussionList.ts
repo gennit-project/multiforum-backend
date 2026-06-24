@@ -4,6 +4,7 @@ import { getSiteWideDiscussionsQuery } from "../cypher/cypherQueries.js";
 import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   Discussion: DiscussionModel;
@@ -161,7 +162,7 @@ const getResolver = (input: Input) => {
           };
       }
     } catch (error: unknown) {
-      console.error("Error getting discussions:", error);
+      logger.error("Error getting discussions:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch discussions. ${message}`);
     } finally {

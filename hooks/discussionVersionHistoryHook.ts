@@ -6,6 +6,7 @@ import {
 } from './issueActivityFeedHelpers.js';
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
+import { logger } from "../logger.js";
 import type {
   DiscussionModel,
   DiscussionUpdateInput,
@@ -43,7 +44,7 @@ export const discussionVersionHistoryHandler = async ({
   discussionSnapshot,
 }: DiscussionVersionHistoryHandlerInput) => {
   try {
-    console.log('Discussion version history hook running...');
+    logger.info('Discussion version history hook running...');
     
     // Extract parameters from the update operation
     const { where, update } = params;
@@ -51,7 +52,7 @@ export const discussionVersionHistoryHandler = async ({
     
     // Make sure we have a discussion ID and update data
     if (!discussionId || !update) {
-      console.log('Missing discussion ID or update data');
+      logger.info('Missing discussion ID or update data');
       return;
     }
     
@@ -63,11 +64,11 @@ export const discussionVersionHistoryHandler = async ({
     
     // If neither title nor body is being updated, skip version tracking
     if (!isTitleUpdated && !isBodyUpdated) {
-      console.log('No title or body updates detected, skipping version history');
+      logger.info('No title or body updates detected, skipping version history');
       return;
     }
     
-    console.log('Processing version history for discussion:', discussionId);
+    logger.info('Processing version history for discussion:', discussionId);
     
     // Access OGM models
     const { ogm } = context;
@@ -109,7 +110,7 @@ export const discussionVersionHistoryHandler = async ({
       });
 
       if (!discussions.length) {
-        console.log('Discussion not found');
+        logger.info('Discussion not found');
         return;
       }
 
@@ -127,7 +128,7 @@ export const discussionVersionHistoryHandler = async ({
     const titleEditor = editorUsername || discussion.Author?.username;
 
     if (!titleEditor) {
-      console.log('Author username not found');
+      logger.info('Author username not found');
       return;
     }
 
@@ -205,7 +206,7 @@ export const discussionVersionHistoryHandler = async ({
       });
     }
   } catch (error) {
-    console.error('Error in discussion version history hook:', error);
+    logger.error('Error in discussion version history hook:', error);
     // Don't re-throw the error, so we don't affect the mutation
   }
 };
@@ -259,7 +260,7 @@ export const discussionEditNotificationHandler = async ({
       text: notificationText,
     });
   } catch (error) {
-    console.error('Error in discussion edit notification hook:', error);
+    logger.error('Error in discussion edit notification hook:', error);
   }
 };
 
@@ -274,8 +275,8 @@ async function trackTitleVersionHistory(
   TextVersionModel: TextVersionModel,
   UserModel: UserModel
 ): Promise<string | null> {
-  console.log(`Tracking title version history for discussion ${discussionId}`);
-  console.log(`Previous title: "${previousTitle}"`);
+  logger.info(`Tracking title version history for discussion ${discussionId}`);
+  logger.info(`Previous title: "${previousTitle}"`);
 
   try {
     // Get user by username
@@ -285,7 +286,7 @@ async function trackTitleVersionHistory(
     });
 
     if (!users.length) {
-      console.log('User not found');
+      logger.info('User not found');
       return null;
     }
 
@@ -301,7 +302,7 @@ async function trackTitleVersionHistory(
     });
 
     if (!textVersionResult.textVersions.length) {
-      console.log('Failed to create TextVersion');
+      logger.info('Failed to create TextVersion');
       return null;
     }
 
@@ -316,7 +317,7 @@ async function trackTitleVersionHistory(
     });
 
     if (!discussions.length) {
-      console.log('Discussion not found when updating version order');
+      logger.info('Discussion not found when updating version order');
       return null;
     }
     
@@ -334,10 +335,10 @@ async function trackTitleVersionHistory(
       } as unknown as DiscussionUpdateInput
     });
 
-    console.log(`Successfully added title version history for discussion ${discussionId}`);
+    logger.info(`Successfully added title version history for discussion ${discussionId}`);
     return textVersionId;
   } catch (error) {
-    console.error('Error tracking title version history:', error);
+    logger.error('Error tracking title version history:', error);
     return null;
   }
 }
@@ -353,7 +354,7 @@ async function trackBodyVersionHistory(
   TextVersionModel: TextVersionModel,
   UserModel: UserModel
 ): Promise<string | null> {
-  console.log(`Tracking body version history for discussion ${discussionId}`);
+  logger.info(`Tracking body version history for discussion ${discussionId}`);
 
   try {
     // Normalize null/undefined to empty string - we want to track edits
@@ -368,7 +369,7 @@ async function trackBodyVersionHistory(
     });
 
     if (!users.length) {
-      console.log('User not found');
+      logger.info('User not found');
       return null;
     }
 
@@ -384,7 +385,7 @@ async function trackBodyVersionHistory(
     });
 
     if (!textVersionResult.textVersions.length) {
-      console.log('Failed to create TextVersion');
+      logger.info('Failed to create TextVersion');
       return null;
     }
 
@@ -399,7 +400,7 @@ async function trackBodyVersionHistory(
     });
 
     if (!discussions.length) {
-      console.log('Discussion not found when updating version order');
+      logger.info('Discussion not found when updating version order');
       return null;
     }
 
@@ -417,10 +418,10 @@ async function trackBodyVersionHistory(
       } as unknown as DiscussionUpdateInput
     });
 
-    console.log(`Successfully added body version history for discussion ${discussionId}`);
+    logger.info(`Successfully added body version history for discussion ${discussionId}`);
     return textVersionId;
   } catch (error) {
-    console.error('Error tracking body version history:', error);
+    logger.error('Error tracking body version history:', error);
     return null;
   }
 }

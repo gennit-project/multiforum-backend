@@ -1,5 +1,6 @@
 import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
 import type { Ogm } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   filename: string;
@@ -101,7 +102,7 @@ export const validateFileType = async (
     if (error instanceof Error) {
       throw error;
     }
-    console.error("Error validating file type:", error);
+    logger.error("Error validating file type:", error);
     throw new Error("Failed to validate file type permissions");
   }
 };
@@ -183,7 +184,7 @@ const createSignedStorageURL = () => {
       .getSignedUrl(options);
 
     if (!url) {
-      console.error("No URL returned from getSignedUrl method");
+      logger.error("No URL returned from getSignedUrl method");
       return { url: "" };
     }
 

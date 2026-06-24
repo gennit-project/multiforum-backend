@@ -1,3 +1,4 @@
+import { logger } from "../../logger.js";
 type PromptDebugInput = {
   prompt: string
   context?: unknown
@@ -28,7 +29,7 @@ export const createPromptDebugLogger = ({
     const message = `[PromptDebug:${pluginId}${scopeSuffix}] ${serialized}`
 
     logs.push(message)
-    console.log(message)
+    logger.info(message)
 
     return serialized
   }

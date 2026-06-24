@@ -1,5 +1,6 @@
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
@@ -106,7 +107,7 @@ const getSortedChannelsResolver = (input: Input) => {
 
       return { channels, aggregateChannelCount };
     } catch (error) {
-      console.error("Error fetching sorted channels:", error);
+      logger.error("Error fetching sorted channels:", error);
       throw new Error("Failed to fetch sorted channels");
     } finally {
       await session.close();

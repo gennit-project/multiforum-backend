@@ -1,5 +1,6 @@
 import { execute, parse, subscribe } from 'graphql';
 import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
+import { logger } from "../logger.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -75,7 +76,7 @@ export const handleCommentUpdateEvent = async (
 
   const username = await getCommentAuthorUsername(ogm, updatedComment.id);
   if (!username) {
-    console.log('Could not determine username from comment author');
+    logger.info('Could not determine username from comment author');
     return;
   }
 
@@ -95,7 +96,7 @@ export class CommentVersionHistoryService {
   constructor(schema: any, ogm: any) {
     this.schema = schema;
     this.ogm = ogm;
-    console.log('Comment version history service initialized');
+    logger.info('Comment version history service initialized');
   }
 
   /**
@@ -103,12 +104,12 @@ export class CommentVersionHistoryService {
    */
   async start() {
     if (this.isRunning) {
-      console.log('Comment version history service is already running');
+      logger.info('Comment version history service is already running');
       return;
     }
 
     try {
-      console.log('Starting comment version history service...');
+      logger.info('Starting comment version history service...');
       this.isRunning = true;
 
       // Define the subscription query to listen for comment update events
@@ -148,14 +149,14 @@ export class CommentVersionHistoryService {
 
         // Start processing comment update events
         this.processCommentUpdateEvents();
-        console.log('Comment version history service started');
+        logger.info('Comment version history service started');
       } else {
         // If not an AsyncIterator, it's an error result
-        console.error('Subscription failed:', result);
+        logger.error('Subscription failed:', result);
         this.isRunning = false;
       }
     } catch (error) {
-      console.error('Error starting comment version history service:', error);
+      logger.error('Error starting comment version history service:', error);
       this.isRunning = false;
     }
   }
@@ -170,28 +171,28 @@ export class CommentVersionHistoryService {
       // Process each comment update event as it arrives
       for await (const result of this.subscriptionIterator) {
         if (!result.data?.commentUpdated) {
-          console.log('Received invalid comment update event:', result);
+          logger.info('Received invalid comment update event:', result);
           continue;
         }
 
         const updatedComment = result.data.commentUpdated.updatedComment;
         const previousValues = result.data.commentUpdated.previousValues;
 
-        console.log('Processing version history for updated comment:', updatedComment.id);
+        logger.info('Processing version history for updated comment:', updatedComment.id);
 
         try {
           await handleCommentUpdateEvent(this.ogm, updatedComment, previousValues);
         } catch (error) {
-          console.error('Error processing comment version history:', error);
+          logger.error('Error processing comment version history:', error);
           // Continue processing other events even if one fails
         }
       }
     } catch (error) {
-      console.error('Error in comment update event processing:', error);
+      logger.error('Error in comment update event processing:', error);
       
       // If the subscription fails, wait and restart
       if (this.isRunning) {
-        console.log('Restarting comment version history service in 5 seconds...');
+        logger.info('Restarting comment version history service in 5 seconds...');
         setTimeout(() => this.start(), 5000);
       }
     }
@@ -201,7 +202,7 @@ export class CommentVersionHistoryService {
    * Stop the comment version history service
    */
   stop() {
-    console.log('Stopping comment version history service');
+    logger.info('Stopping comment version history service');
     this.isRunning = false;
 
     // Clear the subscription iterator

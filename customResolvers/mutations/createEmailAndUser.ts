@@ -3,6 +3,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { generateSlug } from "random-word-slugs";
 import { validateUserInput } from "../../rules/validation/userIsValid.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   emailAddress: string;
@@ -141,7 +142,7 @@ const getCreateEmailAndUserResolver = (input: Input) => {
       const newUser = await createUsersWithEmails(User, Email, emailAddress, username);
       return newUser;
     } catch (e: unknown) {
-      console.error(e);
+      logger.error(e);
       const message = e instanceof Error ? e.message : String(e);
       throw new Error(
         `An error occurred while creating the user and linking the email: ${message}`

@@ -30,6 +30,7 @@ import {
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type NewUserInput = {
   emailAddress: string;
@@ -164,7 +165,7 @@ const seedDataForCypressTestsResolver = (input: Input) => {
         },
       });
     } catch (error: unknown) {
-      console.error("Error updating server configuration:", error);
+      logger.error("Error updating server configuration:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(
         `Failed to update server configurations: ${message}`

@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
+import { logger } from "../logger.js";
 import {
   notifyCommentMentions,
   type CommentSnapshot,
@@ -81,7 +82,7 @@ const commentUserMentionsMiddleware = {
           });
         }
       } catch (error) {
-        console.warn(
+        logger.warn(
           'Comment user mention notification failed:',
           error instanceof Error ? error.message : error
         );

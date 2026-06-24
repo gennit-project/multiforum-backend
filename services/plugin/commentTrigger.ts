@@ -11,6 +11,7 @@ import { createPromptDebugLogger } from './promptDebug.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import type { Ogm } from '../../types/context.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Comment, ServerConfig } from '../../ogm_types.js'
+import { logger } from "../../logger.js";
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -225,7 +226,7 @@ export const triggerPluginRunsForComment = async ({
     }
   }
 
-  console.log('[Plugin] Pipeline check:', {
+  logger.info('[Plugin] Pipeline check:', {
     event,
     channelUniqueName,
     channelPipelinesCount: channelPipelines.length,
@@ -243,14 +244,14 @@ export const triggerPluginRunsForComment = async ({
     eventPipeline.steps.forEach((step, index) => {
       // Get plugin for step, respecting version specification
       const pluginMatch = getPluginForStep(pluginVersionsMap, step.pluginId, step.version)
-      console.log(`[Plugin] Step ${index}: pluginId="${step.pluginId}", requestedVersion="${step.version || 'latest'}", found=${!!pluginMatch}${pluginMatch ? `, resolvedVersion="${pluginMatch.version}"` : ''}`)
+      logger.info(`[Plugin] Step ${index}: pluginId="${step.pluginId}", requestedVersion="${step.version || 'latest'}", found=${!!pluginMatch}${pluginMatch ? `, resolvedVersion="${pluginMatch.version}"` : ''}`)
 
       if (pluginMatch) {
         const { edgeData, version } = pluginMatch
         const manifest = parseManifest(edgeData.node.manifest)
         const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
         const eventMatch = manifestEvents.includes(event)
-        console.log(`[Plugin] Step ${index}: version=${version}, manifestEvents=${JSON.stringify(manifestEvents)}, eventMatch=${eventMatch}`)
+        logger.info(`[Plugin] Step ${index}: version=${version}, manifestEvents=${JSON.stringify(manifestEvents)}, eventMatch=${eventMatch}`)
         if (eventMatch) {
           pluginsToRun.push({
             pluginId: step.pluginId,
@@ -452,7 +453,7 @@ export const triggerPluginRunsForComment = async ({
         log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
-          console.log(`[Plugin:${pluginId}]`, message)
+          logger.info(`[Plugin:${pluginId}]`, message)
         },
         storeFlag: async (flag: unknown) => {
           flags.push(flag)

@@ -1,6 +1,7 @@
 import type { ChannelUpdateInput, ChannelModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+import { logger } from "../../logger.js";
 
 type Args = {
   inviteeUsername: string;
@@ -48,7 +49,7 @@ const getResolver = (input: Input) => {
       }
       return true;
     } catch (e) {
-      console.error("Error updating channel:", e);
+      logger.error("Error updating channel:", e);
       return false;
     }    
   };

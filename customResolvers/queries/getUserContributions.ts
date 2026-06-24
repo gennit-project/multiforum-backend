@@ -2,6 +2,7 @@ import { getUserContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import type { UserModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 interface Input {
   User: UserModel;
@@ -68,7 +69,7 @@ const getUserContributionsResolver = (input: Input) => {
       return contributions;
 
     } catch (error: unknown) {
-      console.error("Error fetching user contributions:", error);
+      logger.error("Error fetching user contributions:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch contributions for user ${username}: ${message}`);
     } finally {

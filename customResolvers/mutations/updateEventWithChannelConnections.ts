@@ -7,6 +7,7 @@ import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   Event: EventModel;
@@ -222,7 +223,7 @@ const getResolver = (input: Input) => {
 
       return updatedEvent;
     } catch (error: unknown) {
-      console.error("Error updating event:", error);
+      logger.error("Error updating event:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to update event. ${message}`);
     } finally {

@@ -3,6 +3,7 @@ import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunct
 import { ERROR_MESSAGES } from '../../rules/errorMessages.js';
 import type { GraphQLContext } from '../../types/context.js';
 import type { ImageModel, UserModel } from '../../ogm_types.js';
+import { logger } from "../../logger.js";
 
 // Input type for image creation (excluding Uploader since we set it automatically)
 type ImageInput = {
@@ -122,7 +123,7 @@ const getResolver = (input: Input) => {
 
       return createdImage;
     } catch (error: unknown) {
-      console.error('Error creating image:', error);
+      logger.error('Error creating image:', error);
       const message = error instanceof Error ? error.message : String(error);
       throw new GraphQLError(`Failed to create image: ${message}`);
     }

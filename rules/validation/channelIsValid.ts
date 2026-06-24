@@ -1,6 +1,7 @@
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 import {
   ChannelCreateInput,
   ChannelUpdateInput,
@@ -67,7 +68,7 @@ export const validateChannelInput = (input: ChannelInput): true | string => {
       return "The rules must be a valid JSON array.";
     }
   }
-  console.log("channel input is valid");
+  logger.info("channel input is valid");
 
   return true;
 };
@@ -88,7 +89,7 @@ export const createChannelInputIsValid = rule({ cache: "contextual" })(
 type UpdateChannelInput = { update: ChannelUpdateInput };
 export const updateChannelInputIsValid = rule({ cache: "contextual" })(
   async (parent: unknown, args: UpdateChannelInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    console.log("checking if update channel input is valid", args);
+    logger.info("checking if update channel input is valid", args);
     if (!args.update) {
       return "Missing update input in args.";
     }

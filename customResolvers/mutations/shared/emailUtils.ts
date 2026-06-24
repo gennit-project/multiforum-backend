@@ -1,6 +1,7 @@
 import type { UserModel } from "../../../ogm_types.js";
 import { sendEmail } from "../../../services/mail/index.js";
 import { renderEmailMarkdownToHtml } from "../../../services/renderEmailMarkdown.js";
+import { logger } from "../../../logger.js";
 
 // Types for email content
 export type EmailContent = {
@@ -63,7 +64,7 @@ export const sendEmailToUser = async (
       html: emailContent.html,
     });
 
-    console.log("Sending email to", user.Email.address);
+    logger.info("Sending email to", user.Email.address);
     if (!emailSent) {
       return false;
     }
@@ -99,7 +100,7 @@ export const sendEmailToUser = async (
 
     return true;
   } catch (e) {
-    console.error("Error sending email:", e);
+    logger.error("Error sending email:", e);
     return false;
   }
 };

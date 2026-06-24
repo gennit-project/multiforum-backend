@@ -6,6 +6,7 @@ import type {
 import { sendEmailToUser, EmailContent } from "./shared/emailUtils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+import { logger } from "../../logger.js";
 
 type Args = {
   inviteeUsername: string;
@@ -92,7 +93,7 @@ ${process.env.FRONTEND_URL}/admin/accept-mod-invite
 
       return emailSent;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return false;
     }
   };

@@ -2,6 +2,7 @@ import type { IssueCreateInput, IssueModel } from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
 import { GraphQLError } from "graphql";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   input: IssueCreateInput;
@@ -45,7 +46,7 @@ const getResolver = (input: Input) => {
       }
       return issue;
     } catch (error: unknown) {
-      console.error("Error creating issue with number", error);
+      logger.error("Error creating issue with number", error);
       throw new GraphQLError("Error creating issue");
     }
   };

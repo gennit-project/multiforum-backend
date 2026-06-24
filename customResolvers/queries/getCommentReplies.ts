@@ -5,6 +5,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { CommentModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   Comment: CommentModel;
@@ -79,7 +80,7 @@ const getResolver = (input: Input) => {
         aggregateChildCommentCount: aggregateCount || 0,
       };
     } catch (error: unknown) {
-      console.error("Error getting comment section:", error);
+      logger.error("Error getting comment section:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch comment section. ${message}`);
     } finally {

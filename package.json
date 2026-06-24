@@ -12,8 +12,9 @@
     "test:integration": "TESTCONTAINERS_REUSE_ENABLE=true node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
     "coverage": "c8 node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
     "coverage:integration": "TESTCONTAINERS_REUSE_ENABLE=true c8 node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
-    "prepare": "husky install",
+    "prepare": "husky",
     "codegen": "node --loader ts-node/esm build_scripts/generateTypes.ts",
+    "lint": "eslint .",
     "tsc": "tsc",
     "logSchema": "node build_scripts/logSchema.js",
     "build": "npm run codegen && tsc && node build_scripts/copyCypherFiles.js",
@@ -67,10 +68,12 @@
     "@types/node": "^25.6.0",
     "c8": "^11.0.0",
     "concurrently": "^9.2.1",
+    "eslint": "^9.39.4",
     "husky": "^9.1.7",
     "testcontainers": "^12.0.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.62.0"
   },
   "overrides": {
     "whatwg-url": "^11.0.0",

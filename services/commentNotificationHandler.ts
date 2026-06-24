@@ -22,6 +22,7 @@ import { notifyFeedback } from "../hooks/feedbackNotificationHook.js";
 import { notifyModMentions } from "../hooks/modMentionNotificationHook.js";
 import { notifyCommentMentions } from "../hooks/userMentionNotificationHook.js";
 import { appendNotificationFooter } from "../utils/notificationFooter.js";
+import { logger } from "../logger.js";
 
 export interface NotificationDeps {
   ogm: any;
@@ -175,7 +176,7 @@ export const sendNotificationEmails = async (
 
     await sendBatchEmails(emailsToSend);
   } catch (error) {
-    console.error("Failed to send notification emails:", error);
+    logger.error("Failed to send notification emails:", error);
     // Don't throw - continue with in-app notifications even if emails fail.
   }
 };
@@ -211,7 +212,7 @@ export const createBatchNotifications = async (
     });
 
     if (!entityResults || !entityResults.length) {
-      console.error("Entity not found for notifications:", { entityType, entityId });
+      logger.error("Entity not found for notifications:", { entityType, entityId });
       return 0;
     }
 
@@ -258,7 +259,7 @@ export const createBatchNotifications = async (
 
     return result.records[0]?.get("notificationsCreated")?.toNumber() || 0;
   } catch (error) {
-    console.error("Error in createBatchNotifications:", error);
+    logger.error("Error in createBatchNotifications:", error);
     throw error;
   } finally {
     session.close();
@@ -347,7 +348,7 @@ export const processDiscussionCommentNotification = async (
   );
 
   if (!deps.driver) {
-    console.error("Driver not available for batch notifications");
+    logger.error("Driver not available for batch notifications");
     return;
   }
 
@@ -399,7 +400,7 @@ export const processEventCommentNotification = async (
   );
 
   if (!deps.driver) {
-    console.error("Driver not available for batch notifications");
+    logger.error("Driver not available for batch notifications");
     return;
   }
 
@@ -449,7 +450,7 @@ export const processCommentReplyNotification = async (
     contentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/events/${event?.id}`;
     commentPermalinkUrl = `${contentUrl}/comments/${parentCommentId}`;
   } else {
-    console.log("No content reference found for comment reply");
+    logger.info("No content reference found for comment reply");
     return;
   }
 
@@ -477,7 +478,7 @@ export const processCommentReplyNotification = async (
   }
 
   if (!deps.driver) {
-    console.error("Driver not available for batch notifications");
+    logger.error("Driver not available for batch notifications");
     return;
   }
 
@@ -551,7 +552,7 @@ export const processFeedbackNotification = async (
       targetAuthorUsername,
     });
   } catch (error) {
-    console.error("Error processing feedback notification:", error);
+    logger.error("Error processing feedback notification:", error);
   }
 };
 
@@ -588,7 +589,7 @@ export const processModMentionNotifications = async (
       nextText: fullComment.text,
     });
   } catch (error) {
-    console.error("Error processing mod mention notifications:", error);
+    logger.error("Error processing mod mention notifications:", error);
   }
 };
 
@@ -614,7 +615,7 @@ export const processUserMentionNotifications = async (
       nextText: fullComment.text,
     });
   } catch (error) {
-    console.error("Error processing user mention notifications:", error);
+    logger.error("Error processing user mention notifications:", error);
   }
 };
 
@@ -635,7 +636,7 @@ export const handleCommentCreatedNotification = async (
   });
 
   if (!fullComments || !fullComments.length) {
-    console.error("Could not find comment details for ID:", commentId);
+    logger.error("Could not find comment details for ID:", commentId);
     return;
   }
 

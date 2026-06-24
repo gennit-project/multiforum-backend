@@ -12,6 +12,7 @@ import type {
 import jwksClient from "jwks-rsa";
 import axios from "axios";
 import NodeCache from "node-cache";
+import { logger } from "../../logger.js";
 
 type CachedUserInfo = {
   email: string | null;
@@ -64,9 +65,9 @@ const getKey: GetPublicKeyOrSecret = (header: JwtHeader, callback: SigningKeyCal
     const jwksClientInstance = getJwksClient(); // Lazily initialize the JWKS client
     jwksClientInstance.getSigningKey(header.kid, (err: Error | null, key?: jwksClient.SigningKey) => {
       if (err) {
-        console.error("Error retrieving signing key:", err);
+        logger.error("Error retrieving signing key:", err);
         if ((err as NodeJS.ErrnoException).code === "ENOTFOUND") {
-          console.error(
+          logger.error(
             `DNS resolution failed for domain: ${process.env.AUTH0_DOMAIN}`
           );
         }
@@ -76,7 +77,7 @@ const getKey: GetPublicKeyOrSecret = (header: JwtHeader, callback: SigningKeyCal
       callback(null, signingKey);
     });
   } catch (error) {
-    console.error("Error initializing JWKS client or retrieving key:", error);
+    logger.error("Error initializing JWKS client or retrieving key:", error);
     return callback(error instanceof Error ? error : new Error(String(error)), undefined);
   }
 };
@@ -98,7 +99,7 @@ export const getModProfileNameFromUsername = async (
     });
     return userData[0]?.ModerationProfile?.displayName;
   } catch (error) {
-    console.error("Error fetching mod profile name:", error);
+    logger.error("Error fetching mod profile name:", error);
     return null;
   }
 }
@@ -119,7 +120,7 @@ export const getUserFromEmail = async (
     });
     return emailDataWithUser[0]?.User?.username;
   } catch (error) {
-    console.error("Error fetching user from database:", error);
+    logger.error("Error fetching user from database:", error);
     return null;
   }
 };
@@ -192,11 +193,11 @@ export const setUserDataOnContext = async (
           resolve(decoded);
           return;
         } 
-        console.error("JWT Verification Error:", err);
+        logger.error("JWT Verification Error:", err);
         
         // Check if this is a mutation to determine how to handle the error
         const isMutation = context.req?.isMutation === true;
-        console.log("🔍 JWT Error Debug:", {
+        logger.info("🔍 JWT Error Debug:", {
           errorName: err.name,
           isMutation,
           requestBody: context.req?.body?.query?.substring(0, 100)
@@ -206,24 +207,24 @@ export const setUserDataOnContext = async (
           const errorMessage = ERROR_MESSAGES.channel.tokenExpired || "Your session has expired. Please sign in again.";
           if (isMutation) {
             // For mutations, throw the error immediately
-            console.log("🚨 Rejecting JWT promise for mutation with expired token");
+            logger.info("🚨 Rejecting JWT promise for mutation with expired token");
             reject(new Error(errorMessage));
             return;
           } else {
             // For queries, store the error on context and let the rules handle it
-            console.log("📝 Setting JWT error on context for query");
+            logger.info("📝 Setting JWT error on context for query");
             context.jwtError = new Error(errorMessage);
           }
         } else {
           const errorMessage = ERROR_MESSAGES.channel.invalidToken || "Your authentication token is invalid. Please sign in again.";
           if (isMutation) {
             // For mutations, throw the error immediately
-            console.log("🚨 Rejecting JWT promise for mutation with invalid token");
+            logger.info("🚨 Rejecting JWT promise for mutation with invalid token");
             reject(new Error(errorMessage));
             return;
           } else {
             // For queries, store the error on context and let the rules handle it
-            console.log("📝 Setting JWT error on context for query");
+            logger.info("📝 Setting JWT error on context for query");
             context.jwtError = new Error(errorMessage);
           }
         }
@@ -273,7 +274,7 @@ export const setUserDataOnContext = async (
             );
             email = userInfoResponse?.data?.email;
           } catch (error) {
-            console.error("Error fetching email from Auth0 userinfo:", error);
+            logger.error("Error fetching email from Auth0 userinfo:", error);
           }
 
           // Cache the userinfo response
@@ -281,7 +282,7 @@ export const setUserDataOnContext = async (
           userInfoCache.set(token, userInfoToCache);
         }
       }  else {
-        console.error("Token audience is unrecognized.");
+        logger.error("Token audience is unrecognized.");
       }
 
       // Get the username from the email by calling getUserFromEmail
@@ -371,20 +372,20 @@ export const isAuthenticated = rule({ cache: "contextual" })(
       context.req.isMutation = isMutation;
     }
 
-    console.log("🔐 isAuthenticated rule called for:", context.req?.body?.operationName);
+    logger.info("🔐 isAuthenticated rule called for:", context.req?.body?.operationName);
     try {
       // Set user data on context - this may throw for mutations with JWT errors
       context.user = await setUserDataOnContext({
         context,
         getPermissionInfo: false,
       });
-      console.log("✅ setUserDataOnContext completed successfully");
+      logger.info("✅ setUserDataOnContext completed successfully");
     } catch (error) {
       // JWT errors for mutations are thrown from setUserDataOnContext
-      console.log("🚨 isAuthenticated rule caught error from setUserDataOnContext:", (error as Error).message);
+      logger.info("🚨 isAuthenticated rule caught error from setUserDataOnContext:", (error as Error).message);
       throw error;
     }
-    console.log("🔍 isAuthenticated debug:", {
+    logger.info("🔍 isAuthenticated debug:", {
       isMutation,
       hasUsername: !!context.user?.username,
       hasJwtError: !!context.jwtError
@@ -392,23 +393,23 @@ export const isAuthenticated = rule({ cache: "contextual" })(
     
     // For queries, check if there was a JWT error
     if (context.jwtError && !isMutation) {
-      console.log("📝 Returning false for query with JWT error");
+      logger.info("📝 Returning false for query with JWT error");
       return false;
     }
     
     if (!context.user?.username) {
       // Only throw authentication errors for mutations
       if (isMutation) {
-        console.log("🚨 Throwing not authenticated error for mutation");
+        logger.info("🚨 Throwing not authenticated error for mutation");
         throw new Error(ERROR_MESSAGES.channel.notAuthenticated);
       } else {
         // For queries, just return false without throwing an error
-        console.log("📝 Returning false for query without username");
+        logger.info("📝 Returning false for query without username");
         return false;
       }
     }
     
-    console.log("✅ isAuthenticated rule passed");
+    logger.info("✅ isAuthenticated rule passed");
     return true;
   }
 );

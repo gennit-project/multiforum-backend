@@ -6,6 +6,7 @@ import type {
   ServerSecretModel
 } from '../../ogm_types.js'
 import type { GraphQLContext } from '../../types/context.js'
+import { logger } from "../../logger.js";
 
 type Input = {
   Plugin: PluginModel
@@ -177,7 +178,7 @@ const getResolver = (input: Input) => {
       }
 
     } catch (error: unknown) {
-      console.error('Error in enableServerPlugin resolver:', error)
+      logger.error('Error in enableServerPlugin resolver:', error)
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(`Failed to ${enabled ? 'enable' : 'disable'} plugin: ${message}`)
     }

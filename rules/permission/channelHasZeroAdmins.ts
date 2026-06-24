@@ -1,5 +1,6 @@
 import { ChannelModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type CheckZeroAdminsInput = {
   channelName: string;
@@ -32,7 +33,7 @@ export const channelHasZeroAdmins = async (input: CheckZeroAdminsInput): Promise
     
     return admins.length === 0;
   } catch (error) {
-    console.error("Error checking if channel has zero admins:", error);
+    logger.error("Error checking if channel has zero admins:", error);
     return false;
   }
 };

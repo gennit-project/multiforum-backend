@@ -1,6 +1,7 @@
 import type { ChannelUpdateInput, ChannelModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+import { logger } from "../../logger.js";
 
 type Args = {
   username: string;
@@ -50,7 +51,7 @@ const getResolver = (input: Input) => {
       }
       return true;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return false;
     }
   };

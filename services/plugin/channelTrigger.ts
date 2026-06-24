@@ -7,6 +7,7 @@ import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMap
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
+import { logger } from "../../logger.js";
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
 
@@ -394,7 +395,7 @@ export const triggerChannelPluginPipeline = async ({
         log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
-          console.log(`[Plugin:${pluginId}:${channelUniqueName}]`, message)
+          logger.info(`[Plugin:${pluginId}:${channelUniqueName}]`, message)
         },
         storeFlag: async (flag: unknown) => {
           flags.push(flag)

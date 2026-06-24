@@ -27,6 +27,7 @@ type IssueActivityInput = {
 };
 
 import { notifyIssueSubscribers } from "../services/issueNotifications.js";
+import { logger } from "../logger.js";
 
 export const getAttributionFromContext = (context: GraphQLContext): ActivityAttribution => {
   return {
@@ -66,7 +67,7 @@ export const getIssueIdsForRelated = async (
       .map((issue: { id?: string }) => issue.id)
       .filter((id): id is string => Boolean(id));
   } catch (error) {
-    console.error('Error fetching related issues:', error);
+    logger.error('Error fetching related issues:', error);
     return [];
   }
 };
@@ -173,7 +174,7 @@ export const createIssueActivityFeedItems = async (
         });
       }
     } catch (error) {
-      console.error('Error creating issue activity feed item:', error);
+      logger.error('Error creating issue activity feed item:', error);
     }
   }
 };

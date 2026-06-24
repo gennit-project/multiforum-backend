@@ -7,6 +7,7 @@ import {
   discussionChannelIsUpvotedByUserQuery,
 } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   DiscussionChannel: DiscussionChannelModel;
@@ -160,16 +161,16 @@ const undoUpvoteDiscussionChannelResolver = (input: Input) => {
         try {
           await tx.rollback();
         } catch (rollbackError) {
-          console.error("Failed to rollback transaction", rollbackError);
+          logger.error("Failed to rollback transaction", rollbackError);
         }
       }
-      console.error(e);
+      logger.error(e);
     } finally {
       if (session) {
         try {
           session.close();
         } catch (sessionCloseError) {
-          console.error("Failed to close session", sessionCloseError);
+          logger.error("Failed to close session", sessionCloseError);
         }
       }
     }

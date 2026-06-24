@@ -1,3 +1,4 @@
+import { logger } from "../../logger.js";
 import type {
   ServerConfigUpdateInput,
   ServerConfigModel,
@@ -51,7 +52,7 @@ const getResolver = (input: Input) => {
       }
       return true;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return false;
     }
   };

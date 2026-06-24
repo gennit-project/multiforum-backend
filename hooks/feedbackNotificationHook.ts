@@ -1,5 +1,6 @@
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
+import { logger } from "../logger.js";
 
 type FeedbackContext = {
   feedbackCommentId: string;
@@ -30,7 +31,7 @@ export const notifyFeedback = async ({
   try {
     const UserModel = context?.ogm?.model('User');
     if (!UserModel) {
-      console.error('UserModel not available for feedback notification');
+      logger.error('UserModel not available for feedback notification');
       return;
     }
 
@@ -72,7 +73,7 @@ export const notifyFeedback = async ({
       notificationType: 'feedback',
     });
   } catch (error) {
-    console.error('Error sending feedback notification:', error);
+    logger.error('Error sending feedback notification:', error);
   }
 };
 

@@ -5,6 +5,7 @@ import { getActiveSuspension } from "./getActiveSuspension.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
 import type { ModerationProfile } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 // Define the moderator permissions as an enum for type safety
 export enum ModChannelPermission {
@@ -190,7 +191,7 @@ export const hasChannelModPermission: (
       expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
       expiredModSuspensions: suspensionInfo.expiredModSuspensions,
     }).catch((error) => {
-      console.error("Failed to disconnect expired suspensions", error);
+      logger.error("Failed to disconnect expired suspensions", error);
     });
   }
 
@@ -252,7 +253,7 @@ export const hasChannelModPermission: (
         actorType: "mod",
       });
     } catch (error) {
-      console.error("Failed to create suspension notification for mod", error);
+      logger.error("Failed to create suspension notification for mod", error);
     }
   }
   return new Error(ERROR_MESSAGES.channel.noModPermission);

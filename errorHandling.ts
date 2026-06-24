@@ -5,6 +5,7 @@
 
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import type { SourceLocation } from 'graphql';
+import { logger } from "./logger.js";
 
 interface ErrorRequest {
   headers?: Record<string, string | string[] | undefined>;
@@ -50,7 +51,7 @@ export function formatGraphQLError(error: EnhancedError, context?: ErrorContext)
   const errorId = `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   // Comprehensive error logging
-  console.error('🚨 GraphQL Error Details:', {
+  logger.error('🚨 GraphQL Error Details:', {
     errorId,
     timestamp,
     message,
@@ -71,11 +72,11 @@ export function formatGraphQLError(error: EnhancedError, context?: ErrorContext)
 
   // Log the full query for validation errors (most common debugging need)
   if (isValidationError(errorCode) && context?.query) {
-    console.error('📝 Full Query that caused validation error:');
-    console.error(context.query);
+    logger.error('📝 Full Query that caused validation error:');
+    logger.error(context.query);
     if (context.variables) {
-      console.error('📝 Variables:');
-      console.error(JSON.stringify(context.variables, null, 2));
+      logger.error('📝 Variables:');
+      logger.error(JSON.stringify(context.variables, null, 2));
     }
   }
 
@@ -204,7 +205,7 @@ function truncateQuery(query: string, maxLength: number = 1000): string {
  * Log critical errors for monitoring
  */
 export function logCriticalError(error: Error, context?: Record<string, unknown>): void {
-  console.error('🔥 CRITICAL ERROR:', {
+  logger.error('🔥 CRITICAL ERROR:', {
     timestamp: new Date().toISOString(),
     message: error.message,
     stack: error.stack,

@@ -12,6 +12,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import getNextServerIssueNumber from "./utils/getNextServerIssueNumber.js";
+import { logger } from "../../logger.js";
 
 type ChannelImageType = "ICON" | "BANNER";
 
@@ -252,7 +253,7 @@ const getResolver = (input: Input) => {
         }
         existingIssueId = issueId;
       } catch (error) {
-        console.error("Error creating channel image report issue:", error);
+        logger.error("Error creating channel image report issue:", error);
         throw new GraphQLError(
           `Error creating issue: ${(error as Error)?.message || "unknown error"}`
         );
@@ -306,7 +307,7 @@ const getResolver = (input: Input) => {
       }
       return updateResult.issues[0];
     } catch (error) {
-      console.error("Error updating channel image report issue:", error);
+      logger.error("Error updating channel image report issue:", error);
       throw new GraphQLError("Error updating issue");
     }
   };

@@ -9,6 +9,7 @@ import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   channelUniqueName: string;
@@ -159,7 +160,7 @@ const getResolver = (input: Input) => {
           update: issueUpdateInput,
         });
       } catch (error) {
-        console.error("Error updating issue with unlock action:", error);
+        logger.error("Error updating issue with unlock action:", error);
         // Continue even if issue update fails - the channel unlock is more important
       }
     }
@@ -228,19 +229,19 @@ const getResolver = (input: Input) => {
             }
           );
         } catch (notifyError) {
-          console.error("Error notifying channel admins:", notifyError);
+          logger.error("Error notifying channel admins:", notifyError);
           // Don't fail the mutation if notifications fail
         } finally {
           await session.close();
         }
       }
 
-      console.log(
+      logger.info(
         `✅ Channel ${channelUniqueName} unlocked by ${loggedInModName}`
       );
       return updatedChannel;
     } catch (error) {
-      console.error("Error unlocking channel:", error);
+      logger.error("Error unlocking channel:", error);
       throw new GraphQLError("Error unlocking channel");
     }
   };

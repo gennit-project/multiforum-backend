@@ -1,6 +1,7 @@
 import type { Driver } from "neo4j-driver";
 import type { EventModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   eventId: string;
@@ -48,7 +49,7 @@ const getResolver = (input: Input) => {
 
       return result[0];
     } catch (error: unknown) {
-      console.error("Error subscribing to event updates:", error);
+      logger.error("Error subscribing to event updates:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to subscribe to event updates: ${message}`);
     } finally {

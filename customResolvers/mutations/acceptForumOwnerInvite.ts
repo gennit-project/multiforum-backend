@@ -5,6 +5,7 @@ import type {
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { logger } from "../../logger.js";
 type Args = {
   channelUniqueName: string;
 };
@@ -102,7 +103,7 @@ const getResolver = (input: Input) => {
       }
       return true;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return false;
     }
   };

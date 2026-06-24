@@ -14,6 +14,7 @@ import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
 import { getModerationActionCreateInput } from './reportComment.js'
 import { notifyIssueSubscribers } from '../../services/issueNotifications.js'
+import { logger } from "../../logger.js";
 
 type Args = {
   commentId: string
@@ -133,7 +134,7 @@ const getResolver = (input: Input) => {
         actionDescription: 'Un-archived the comment',
         issueId: existingIssueId
       })
-    console.log(
+    logger.info(
       'unarchiveModActionCreateInput',
       JSON.stringify(unarchiveModActionCreateInput)
     )
@@ -147,7 +148,7 @@ const getResolver = (input: Input) => {
         actionDescription: 'Closed the issue',
         issueId: existingIssueId
       })
-    console.log(
+    logger.info(
       'closeIssueModActionCreateInput',
       JSON.stringify(closeIssueModActionCreateInput)
     )
@@ -202,7 +203,7 @@ const getResolver = (input: Input) => {
           }
         }`
       })
-      console.log('issueData', JSON.stringify(issueData))
+      logger.info('issueData', JSON.stringify(issueData))
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
         throw new GraphQLError('Error updating issue')

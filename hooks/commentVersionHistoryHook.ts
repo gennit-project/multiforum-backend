@@ -13,6 +13,7 @@ import type {
 } from '../ogm_types.js';
 import type { TextVersionCreateInput } from '../src/generated/graphql.js';
 import type { CommentSnapshot } from '../utils/buildCommentMentionContext.js';
+import { logger } from "../logger.js";
 
 type VersionHistoryHandlerInput = {
   context: GraphQLContext;
@@ -30,7 +31,7 @@ export const commentVersionHistoryHandler = async ({
   commentSnapshot,
 }: VersionHistoryHandlerInput) => {
   try {
-    console.log('Comment version history hook running...');
+    logger.info('Comment version history hook running...');
     
     // Extract parameters from the update operation
     const { where, update } = params;
@@ -38,7 +39,7 @@ export const commentVersionHistoryHandler = async ({
     
     // Make sure we have a comment ID and update data
     if (!commentId || !update) {
-      console.log('Missing comment ID or update data');
+      logger.info('Missing comment ID or update data');
       return;
     }
     
@@ -47,11 +48,11 @@ export const commentVersionHistoryHandler = async ({
     
     // If text is not being updated, skip version tracking
     if (!isTextUpdated) {
-      console.log('No text updates detected, skipping version history');
+      logger.info('No text updates detected, skipping version history');
       return;
     }
     
-    console.log('Processing version history for comment:', commentId);
+    logger.info('Processing version history for comment:', commentId);
     
     // Access OGM models
     const { ogm } = context;
@@ -104,7 +105,7 @@ export const commentVersionHistoryHandler = async ({
       });
 
       if (!comments.length) {
-        console.log('Comment not found');
+        logger.info('Comment not found');
         return;
       }
 
@@ -114,7 +115,7 @@ export const commentVersionHistoryHandler = async ({
     // Get the username from CommentAuthor which can be either User or ModerationProfile
     const commentAuthor = comment.CommentAuthor;
     if (!commentAuthor) {
-      console.log('Comment author information not found');
+      logger.info('Comment author information not found');
       return;
     }
 
@@ -187,10 +188,10 @@ export const commentVersionHistoryHandler = async ({
         commentId,
       });
     } else {
-      console.log('No text changes to track or current text is empty');
+      logger.info('No text changes to track or current text is empty');
     }
   } catch (error) {
-    console.error('Error in comment version history hook:', error);
+    logger.error('Error in comment version history hook:', error);
     // Don't re-throw the error, so we don't affect the mutation
   }
 };
@@ -206,14 +207,14 @@ async function trackTextVersionHistory(
   TextVersionModel: TextVersionModel,
   UserModel: UserModel
 ) {
-  console.log(
+  logger.info(
     `Tracking text version history for comment ${commentId} by user ${username ?? '[unknown]'}`
   );
 
   try {
     // Skip tracking if new text is null or empty
     if (!newText) {
-      console.log('New text is empty, skipping version history');
+      logger.info('New text is empty, skipping version history');
       return;
     }
 
@@ -241,7 +242,7 @@ async function trackTextVersionHistory(
     });
 
     if (!textVersionResult.textVersions.length) {
-      console.log('Failed to create TextVersion');
+      logger.info('Failed to create TextVersion');
       return;
     }
 
@@ -256,7 +257,7 @@ async function trackTextVersionHistory(
     });
 
     if (!comments.length) {
-      console.log('Comment not found when updating version order');
+      logger.info('Comment not found when updating version order');
       return;
     }
 
@@ -275,8 +276,8 @@ async function trackTextVersionHistory(
       } as unknown as CommentUpdateInput
     });
 
-    console.log(`Successfully added text version history for comment ${commentId}`);
+    logger.info(`Successfully added text version history for comment ${commentId}`);
   } catch (error) {
-    console.error('Error tracking text version history:', error);
+    logger.error('Error tracking text version history:', error);
   }
 }

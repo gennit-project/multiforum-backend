@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
+import { logger } from "../logger.js";
 import {
   notifyDiscussionMentions,
   type DiscussionSnapshot,
@@ -69,7 +70,7 @@ const discussionMentionsMiddleware = {
         const createdDiscussions = result?.discussions || [];
         await processCreatedDiscussions(context, createdDiscussions);
       } catch (error) {
-        console.warn(
+        logger.warn(
           'Discussion user mention notification failed:',
           error instanceof Error ? error.message : error
         );
@@ -97,7 +98,7 @@ const discussionMentionsMiddleware = {
           : result?.discussions || [];
         await processCreatedDiscussions(context, createdDiscussions);
       } catch (error) {
-        console.warn(
+        logger.warn(
           'Discussion user mention notification failed:',
           error instanceof Error ? error.message : error
         );

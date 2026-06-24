@@ -7,6 +7,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 const eventSelectionSet = `
   {
@@ -95,7 +96,7 @@ const getResolver = (input: Input) => {
         Comments: comments,
       };
     } catch (error: unknown) {
-      console.error("Error getting comment section:", error);
+      logger.error("Error getting comment section:", error);
       return {
         Event: null,
         Comments: []

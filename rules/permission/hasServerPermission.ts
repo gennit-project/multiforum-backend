@@ -6,6 +6,7 @@ import { getServerConfigForPermissions } from "./getServerConfigForPermissions.j
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import { logger } from "../../logger.js";
 
 type EvaluateServerPermissionInput = {
   permission: keyof ServerRole;
@@ -97,7 +98,7 @@ export const hasServerPermission: (
         expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
         expiredModSuspensions: suspensionInfo.expiredModSuspensions,
       }).catch((error) => {
-        console.error("Failed to disconnect expired server suspensions", error);
+        logger.error("Failed to disconnect expired server suspensions", error);
       });
     }
   }
@@ -137,7 +138,7 @@ export const hasServerPermission: (
         actorType: "user",
       });
     } catch (error) {
-      console.error("Failed to create server suspension notification", error);
+      logger.error("Failed to create server suspension notification", error);
     }
   }
 

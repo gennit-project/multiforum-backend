@@ -18,6 +18,7 @@ import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import getNextServerIssueNumber from "./utils/getNextServerIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   imageId: string;
@@ -301,7 +302,7 @@ const getResolver = (input: Input) => {
         existingIssueId = issueId;
         existingIssue = createResult.issues[0];
       } catch (error) {
-        console.error("Error creating image archive issue:", error);
+        logger.error("Error creating image archive issue:", error);
         throw new GraphQLError(
           `Error creating issue: ${(error as Error)?.message || "unknown error"}`
         );
@@ -400,7 +401,7 @@ const getResolver = (input: Input) => {
         commentText: finalCommentText,
       });
     } catch (error) {
-      console.error("Error updating issue:", error);
+      logger.error("Error updating issue:", error);
       throw new GraphQLError("Error updating issue");
     }
 
@@ -458,7 +459,7 @@ const getResolver = (input: Input) => {
 
       return existingIssue;
     } catch (error) {
-      console.error("Error updating image:", error);
+      logger.error("Error updating image:", error);
       throw new GraphQLError("Error updating image");
     }
   };

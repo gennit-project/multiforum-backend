@@ -2,6 +2,7 @@ import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel, EventSeriesModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   Event: EventModel;
@@ -128,7 +129,7 @@ const getResolver = (input: Input) => {
         message: `Successfully deleted ${deletedCount} event(s)`,
       };
     } catch (error: unknown) {
-      console.error("Error deleting event in series:", error);
+      logger.error("Error deleting event in series:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to delete event in series. ${message}`);
     } finally {

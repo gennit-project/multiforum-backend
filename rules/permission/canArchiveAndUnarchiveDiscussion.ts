@@ -4,6 +4,7 @@ import { resolveChannelForModPermission } from "./resolveChannelForModPermission
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 interface CanArchiveAndUnarchiveDiscussionArgs {
   channelUniqueName?: string;
@@ -17,9 +18,9 @@ export const canArchiveAndUnarchiveDiscussion = rule({ cache: "contextual" })(
     // Support both direct issueId arg and where.id from updateIssues mutation
     const issueId = args.issueId || args.where?.id;
 
-    console.log('can archive and unarchive discussion');
-    console.log("channelUniqueName", channelUniqueName);
-    console.log("issueId", issueId);
+    logger.info('can archive and unarchive discussion');
+    logger.info("channelUniqueName", channelUniqueName);
+    logger.info("issueId", issueId);
 
     // If channelUniqueName is not provided, look it up from the issue.
     let issue;

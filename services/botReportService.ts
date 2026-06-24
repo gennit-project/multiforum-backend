@@ -18,6 +18,7 @@ import {
 } from '../customResolvers/mutations/reportComment.js'
 import { getFinalCommentText } from '../customResolvers/mutations/reportDiscussion.js'
 import getNextIssueNumber from '../customResolvers/mutations/utils/getNextIssueNumber.js'
+import { logger } from "../logger.js";
 
 type ReportContentAsBotInput = {
   contentType: 'comment' | 'discussion' | 'event'
@@ -237,7 +238,7 @@ export const createBotReport = async (input: {
       }
       existingIssueId = issueId
     } catch (error) {
-      console.error('Error creating issue:', error)
+      logger.error('Error creating issue:', error)
       throw new Error(`Error creating issue: ${(error as Error)?.message || 'unknown error'}`)
     }
   }
@@ -303,7 +304,7 @@ export const createBotReport = async (input: {
       issueNumber: issue.issueNumber ?? 0
     }
   } catch (error) {
-    console.error('Error updating issue:', error)
+    logger.error('Error updating issue:', error)
     throw new Error(`Error updating issue: ${(error as Error)?.message || 'unknown error'}`)
   }
 }

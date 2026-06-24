@@ -6,6 +6,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { channelHasZeroAdmins } from "../../rules/permission/channelHasZeroAdmins.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   channelUniqueName: string;
@@ -99,7 +100,7 @@ const getResolver = (input: Input) => {
 
       return true;
     } catch (e) {
-      console.error("Error in becomeForumAdmin:", e);
+      logger.error("Error in becomeForumAdmin:", e);
       throw new Error("Failed to become forum admin");
     }
   };

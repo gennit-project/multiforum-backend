@@ -7,6 +7,7 @@ import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import { logger } from "../../logger.js";
 
 export const hasServerModPermission: (
   permission: keyof ModServerRole,
@@ -46,7 +47,7 @@ export const hasServerModPermission: (
       expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
       expiredModSuspensions: suspensionInfo.expiredModSuspensions,
     }).catch((error) => {
-      console.error("Failed to disconnect expired server suspensions", error);
+      logger.error("Failed to disconnect expired server suspensions", error);
     });
   }
 
@@ -93,7 +94,7 @@ export const hasServerModPermission: (
         actorType: "mod",
       });
     } catch (error) {
-      console.error("Failed to create server mod suspension notification", error);
+      logger.error("Failed to create server mod suspension notification", error);
     }
   }
 

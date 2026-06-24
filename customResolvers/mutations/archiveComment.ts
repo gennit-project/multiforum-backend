@@ -23,6 +23,7 @@ import {
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   commentId: string;
@@ -272,7 +273,7 @@ const getResolver = (input: Input) => {
         existingIssue = issueData.issues[0];
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error("Error creating issue for archiveComment:", errorMessage, error);
+        logger.error("Error creating issue for archiveComment:", errorMessage, error);
         throw new GraphQLError(`Failed to create issue for archived comment: ${errorMessage}`);
       }
     }

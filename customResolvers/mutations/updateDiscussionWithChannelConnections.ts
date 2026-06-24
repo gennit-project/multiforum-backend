@@ -7,6 +7,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   Discussion: DiscussionModel;
@@ -184,7 +185,7 @@ const getResolver = (input: Input) => {
 
       return result[0];
     } catch (error: unknown) {
-      console.error("Error updating discussion:", error);
+      logger.error("Error updating discussion:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to update discussion. ${message}`);
     }

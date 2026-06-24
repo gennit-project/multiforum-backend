@@ -1,6 +1,7 @@
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
 import type { Record as Neo4jRecord } from 'neo4j-driver';
+import { logger } from "../logger.js";
 
 // Regex to match /m/modProfileName mentions
 const MOD_MENTION_REGEX = /\/m\/([a-zA-Z0-9_-]+)/g;
@@ -196,6 +197,6 @@ export const notifyModMentions = async ({
       });
     }
   } catch (error) {
-    console.error('Error sending mod mention notifications:', error);
+    logger.error('Error sending mod mention notifications:', error);
   }
 };
