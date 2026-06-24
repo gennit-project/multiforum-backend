@@ -63,7 +63,7 @@ WHERE date(datetime(event.createdAt)) >= startDate AND date(datetime(event.creat
 OPTIONAL MATCH (event)<-[:POSTED_BY]-(eventPoster:User)
 OPTIONAL MATCH (event)<-[:POSTED_IN_CHANNEL]-(eventChannel:EventChannel)
 OPTIONAL MATCH (eventChannel)-[:POSTED_IN_CHANNEL]->(eventChannelNode:Channel)
-WITH comments, discussions, collect({
+WITH u, startDate, endDate, comments, discussions, collect({
   id: event.id,
   title: COALESCE(event.title, ""),
   createdAt: toString(event.createdAt),
