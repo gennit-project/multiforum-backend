@@ -4,6 +4,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { DiscussionChannelModel, UserModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   DiscussionChannel: DiscussionChannelModel;
@@ -154,16 +155,16 @@ const upvoteDiscussionChannelResolver = (input: Input) => {
         try {
           await tx.rollback();
         } catch (rollbackError) {
-          console.error("Failed to rollback transaction", rollbackError);
+          logger.error("Failed to rollback transaction", rollbackError);
         }
       }
-      console.error(e);
+      logger.error(e);
     } finally {
       if (session) {
         try {
           session.close();
         } catch (sessionCloseError) {
-          console.error("Failed to close session", sessionCloseError);
+          logger.error("Failed to close session", sessionCloseError);
         }
       }
     }

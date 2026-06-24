@@ -1,5 +1,6 @@
 import { execute, parse, subscribe } from 'graphql';
 import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
+import { logger } from "../logger.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -33,7 +34,7 @@ export const getDiscussionAuthorUsername = async (
     }
     return discussions[0].Author.username;
   } catch (error) {
-    console.error('Error getting current user username:', error);
+    logger.error('Error getting current user username:', error);
     return null;
   }
 };
@@ -87,7 +88,7 @@ export const handleDiscussionUpdateEvent = async (
   const discussionId = updatedDiscussion.id;
   const currentUsername = await getDiscussionAuthorUsername(ogm, discussionId);
   if (!currentUsername) {
-    console.log('Could not determine current user, skipping version history');
+    logger.info('Could not determine current user, skipping version history');
     return;
   }
 
@@ -121,7 +122,7 @@ export class DiscussionVersionHistoryService {
   constructor(schema: any, ogm: any) {
     this.schema = schema;
     this.ogm = ogm;
-    console.log('Discussion version history service initialized');
+    logger.info('Discussion version history service initialized');
   }
 
   /**
@@ -129,12 +130,12 @@ export class DiscussionVersionHistoryService {
    */
   async start() {
     if (this.isRunning) {
-      console.log('Discussion version history service is already running');
+      logger.info('Discussion version history service is already running');
       return;
     }
 
     try {
-      console.log('Starting discussion version history service...');
+      logger.info('Starting discussion version history service...');
       this.isRunning = true;
 
       // Define the subscription query to listen for discussion update events
@@ -171,14 +172,14 @@ export class DiscussionVersionHistoryService {
 
         // Start processing discussion update events
         this.processDiscussionUpdateEvents();
-        console.log('Discussion version history service started');
+        logger.info('Discussion version history service started');
       } else {
         // If not an AsyncIterator, it's an error result
-        console.error('Subscription failed:', result);
+        logger.error('Subscription failed:', result);
         this.isRunning = false;
       }
     } catch (error) {
-      console.error('Error starting discussion version history service:', error);
+      logger.error('Error starting discussion version history service:', error);
       this.isRunning = false;
     }
   }
@@ -193,28 +194,28 @@ export class DiscussionVersionHistoryService {
       // Process each discussion update event as it arrives
       for await (const result of this.subscriptionIterator) {
         if (!result.data?.discussionUpdated) {
-          console.log('Received invalid discussion update event:', result);
+          logger.info('Received invalid discussion update event:', result);
           continue;
         }
 
         const updatedDiscussion = result.data.discussionUpdated.updatedDiscussion;
         const previousValues = result.data.discussionUpdated.previousValues;
 
-        console.log('Processing version history for updated discussion:', updatedDiscussion.id);
+        logger.info('Processing version history for updated discussion:', updatedDiscussion.id);
 
         try {
           await handleDiscussionUpdateEvent(this.ogm, updatedDiscussion, previousValues);
         } catch (error) {
-          console.error('Error processing discussion version history:', error);
+          logger.error('Error processing discussion version history:', error);
           // Continue processing other events even if one fails
         }
       }
     } catch (error) {
-      console.error('Error in discussion update event processing:', error);
+      logger.error('Error in discussion update event processing:', error);
       
       // If the subscription fails, wait and restart
       if (this.isRunning) {
-        console.log('Restarting discussion version history service in 5 seconds...');
+        logger.info('Restarting discussion version history service in 5 seconds...');
         setTimeout(() => this.start(), 5000);
       }
     }
@@ -224,7 +225,7 @@ export class DiscussionVersionHistoryService {
    * Stop the discussion version history service
    */
   stop() {
-    console.log('Stopping discussion version history service');
+    logger.info('Stopping discussion version history service');
     this.isRunning = false;
 
     // Clear the subscription iterator

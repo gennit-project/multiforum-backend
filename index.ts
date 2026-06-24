@@ -40,20 +40,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config();
 
 import neo4j, { Driver } from "neo4j-driver";
+import { randomUUID } from "node:crypto";
+import { logger, runWithContext, enrichContext } from "./logger.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`🔌 Attempting to connect to Neo4j (Attempt ${attempt}/${maxRetries})...`);
+      logger.info(`🔌 Attempting to connect to Neo4j (Attempt ${attempt}/${maxRetries})...`);
       const session = driver.session();
       await session.run("RETURN 1");
-      console.log("✅ Connected to Neo4j!");
+      logger.info("✅ Connected to Neo4j!");
       session.close();
       return; // Exit loop on successful connection
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
-      console.error(`❌ Neo4j connection attempt ${attempt} failed:`, {
+      logger.error(`❌ Neo4j connection attempt ${attempt} failed:`, {
         attempt,
         maxRetries,
         error: errorMessage,
@@ -70,7 +72,7 @@ async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDel
         });
         throw criticalError;
       }
-      console.log(`⏳ Retrying in ${retryDelay / 1000} seconds...`);
+      logger.info(`⏳ Retrying in ${retryDelay / 1000} seconds...`);
       await new Promise((resolve) => setTimeout(resolve, retryDelay));
     }
   }
@@ -85,16 +87,16 @@ if (process.env.GOOGLE_CREDENTIALS_BASE64) {
 
 const sendSlackNotification = async (text: string) => {
   if (!process.env.SLACK_WEBHOOK_URL) {
-    console.error("SLACK_WEBHOOK_URL environment variable is not set");
+    logger.error("SLACK_WEBHOOK_URL environment variable is not set");
     return;
   }
   try {
     await axios.post(process.env.SLACK_WEBHOOK_URL, {
       text: text,
     });
-    console.log("Slack notification sent successfully");
+    logger.info("Slack notification sent successfully");
   } catch (error) {
-    console.error("Error sending Slack notification:", error);
+    logger.error("Error sending Slack notification:", error);
   }
 };
 
@@ -167,14 +169,14 @@ REQUIRE (i.channelUniqueName, i.relatedWikiPageId, i.relatedWikiRevisionId) IS U
 
 async function initializeServer() {
   try {
-    console.log("🚀 Initializing server...");
+    logger.info("🚀 Initializing server...");
 
     await connectToNeo4jWithRetry(driver);
 
     const session = driver.session();
     const result = await session.run("CALL dbms.components()");
     const edition = result.records[0].get("edition");
-    console.log(`✅ Connected to Neo4j Edition: ${edition}`);
+    logger.info(`✅ Connected to Neo4j Edition: ${edition}`);
     session.close();
 
     if (edition === "enterprise") {
@@ -227,6 +229,12 @@ async function initializeServer() {
 
     await server.start();
 
+    // Bind a correlation id to every request so all log lines emitted while
+    // handling it can be traced back to the same operation.
+    app.use((req, _res, next) => {
+      runWithContext({ requestId: randomUUID() }, () => next());
+    });
+
     app.use(
       "/",
       cors<cors.CorsRequest>({
@@ -242,8 +250,10 @@ async function initializeServer() {
           // Add this information to the context so it can be used by permission rules
           (req as GraphQLRequest).isMutation = isMutation;
 
+          enrichContext({ operationName: req.body.operationName || undefined });
+
           if (!queryString.includes("IntrospectionQuery")) {
-            console.log('📊 GraphQL Operation:', {
+            logger.info('📊 GraphQL Operation:', {
               type: isMutation ? 'Mutation' : 'Query',
               operationName: req.body.operationName || 'Anonymous',
               query: req.body.query,
@@ -273,14 +283,14 @@ async function initializeServer() {
     );
 
     const url = `http://localhost:${port}/`;
-    console.log(`🚀 Server ready at ${url}`);
-    console.log(`📊 GraphQL endpoint available at ${url}`);
-    console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`🚀 Server ready at ${url}`);
+    logger.info(`📊 GraphQL endpoint available at ${url}`);
+    logger.info(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
 
     // Start services with enhanced error handling
     startBackgroundServices(schema, ogm);
   } catch (e) {
-    console.error("💥 Failed to initialize server:", e);
+    logger.error("💥 Failed to initialize server:", e);
     logCriticalError(e as Error, {
       service: 'Server Initialization',
       step: 'initializeServer'
@@ -318,12 +328,12 @@ async function startBackgroundServices(schema: GraphQLSchema, ogm: Ogm) {
 
   for (const { name, service, critical } of services) {
     try {
-      console.log(`🔄 Starting ${name}...`);
+      logger.info(`🔄 Starting ${name}...`);
       const serviceInstance = service();
       await serviceInstance.start();
-      console.log(`✅ ${name} started successfully`);
+      logger.info(`✅ ${name} started successfully`);
     } catch (error) {
-      console.error(`❌ Failed to start ${name}:`, error);
+      logger.error(`❌ Failed to start ${name}:`, error);
       
       if (critical) {
         logCriticalError(error as Error, {
@@ -333,7 +343,7 @@ async function startBackgroundServices(schema: GraphQLSchema, ogm: Ogm) {
         throw error; // Stop server if critical service fails
       } else {
         // Log non-critical service failures but continue
-        console.warn(`⚠️  ${name} failed to start but server will continue`);
+        logger.warn(`⚠️  ${name} failed to start but server will continue`);
       }
     }
   }

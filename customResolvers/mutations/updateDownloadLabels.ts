@@ -14,6 +14,7 @@ type LabelChangeHistoryModel = {
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   discussionId: string;
@@ -319,7 +320,7 @@ const getResolver = (input: Input) => {
         });
       }
     } catch (error) {
-      console.error("Error creating label change history:", error);
+      logger.error("Error creating label change history:", error);
       // Don't fail the label update if history creation fails
     }
 
@@ -348,7 +349,7 @@ const getResolver = (input: Input) => {
           input: [moderationActionInput],
         });
       } catch (error) {
-        console.error("Error creating moderation action:", error);
+        logger.error("Error creating moderation action:", error);
         // Don't fail the label update if moderation action creation fails
       }
     }

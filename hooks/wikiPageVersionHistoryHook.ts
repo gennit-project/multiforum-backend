@@ -1,5 +1,6 @@
 import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
+import { logger } from "../logger.js";
 import type {
   WikiPageModel,
   WikiPageUpdateInput,
@@ -21,7 +22,7 @@ type WikiPageVersionHistoryHandlerInput = {
  */
 export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPageVersionHistoryHandlerInput) => {
   try {
-    console.log('WikiPage version history hook running...');
+    logger.info('WikiPage version history hook running...');
     
     // Extract parameters from the update operation
     const { where, update } = params;
@@ -29,7 +30,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
     
     // Make sure we have a wikiPage ID and update data
     if (!wikiPageId || !update) {
-      console.log('Missing wikiPage ID or update data');
+      logger.info('Missing wikiPage ID or update data');
       return;
     }
     
@@ -39,11 +40,11 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
     
     // If neither title nor body is being updated, skip version tracking
     if (!isTitleUpdated && !isBodyUpdated) {
-      console.log('No title or body updates detected, skipping version history');
+      logger.info('No title or body updates detected, skipping version history');
       return;
     }
     
-    console.log('Processing version history for wikiPage:', wikiPageId);
+    logger.info('Processing version history for wikiPage:', wikiPageId);
     
     // Access OGM models
     const { ogm } = context;
@@ -71,7 +72,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
     });
 
     if (!wikiPages.length) {
-      console.log('WikiPage not found');
+      logger.info('WikiPage not found');
       return;
     }
 
@@ -79,7 +80,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
     const username = wikiPage.VersionAuthor?.username;
     
     if (!username) {
-      console.log('Author username not found');
+      logger.info('Author username not found');
       return;
     }
     
@@ -109,7 +110,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
       );
     }
   } catch (error) {
-    console.error('Error in wikiPage version history hook:', error);
+    logger.error('Error in wikiPage version history hook:', error);
     // Don't re-throw the error, so we don't affect the mutation
   }
 };
@@ -126,12 +127,12 @@ async function trackVersionHistory(
   TextVersionModel: TextVersionModel,
   UserModel: UserModel
 ) {
-  console.log(`Tracking version history for wikiPage ${wikiPageId}`);
+  logger.info(`Tracking version history for wikiPage ${wikiPageId}`);
 
   try {
     // Skip tracking if previous content is null or empty
     if (!previousContent) {
-      console.log('Previous content is empty, skipping version history');
+      logger.info('Previous content is empty, skipping version history');
       return;
     }
 
@@ -142,7 +143,7 @@ async function trackVersionHistory(
     });
 
     if (!users.length) {
-      console.log('User not found');
+      logger.info('User not found');
       return;
     }
 
@@ -164,7 +165,7 @@ async function trackVersionHistory(
     });
 
     if (!textVersionResult.textVersions.length) {
-      console.log('Failed to create TextVersion');
+      logger.info('Failed to create TextVersion');
       return;
     }
 
@@ -179,7 +180,7 @@ async function trackVersionHistory(
     });
 
     if (!wikiPages.length) {
-      console.log('WikiPage not found when updating version history');
+      logger.info('WikiPage not found when updating version history');
       return;
     }
 
@@ -197,8 +198,8 @@ async function trackVersionHistory(
       } as unknown as WikiPageUpdateInput
     });
 
-    console.log(`Successfully added version history for wikiPage ${wikiPageId}`);
+    logger.info(`Successfully added version history for wikiPage ${wikiPageId}`);
   } catch (error) {
-    console.error('Error tracking version history:', error);
+    logger.error('Error tracking version history:', error);
   }
 }

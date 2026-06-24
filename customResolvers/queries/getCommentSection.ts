@@ -8,6 +8,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionChannelModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 const discussionChannelSelectionSet = `
 {
@@ -199,7 +200,7 @@ const getResolver = (input: Input) => {
         Comments: commentsResult
       }
     } catch (error: unknown) {
-      console.error('Error getting comment section:', error)
+      logger.error('Error getting comment section:', error)
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(`Failed to fetch comment section. ${message}`)
     } finally {

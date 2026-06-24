@@ -2,6 +2,7 @@ import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { ImageCreateInput, ImageModel, UserModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   input: ImageCreateInput[];
@@ -83,7 +84,7 @@ const getResolver = (input: Input) => {
 
       return response;
     } catch (error: unknown) {
-      console.error("Error creating images:", error);
+      logger.error("Error creating images:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new GraphQLError(`Failed to create images: ${message}`);
     }

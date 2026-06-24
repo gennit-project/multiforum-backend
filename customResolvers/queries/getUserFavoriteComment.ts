@@ -2,6 +2,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
@@ -44,7 +45,7 @@ const getResolver = (input: Input) => {
       const firstRecord = result.records[0];
       return firstRecord ? !!firstRecord.get("isFavorited") : false;
     } catch (error: unknown) {
-      console.error("Error checking favorite comment:", error);
+      logger.error("Error checking favorite comment:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to check favorite comment. ${message}`);
     } finally {

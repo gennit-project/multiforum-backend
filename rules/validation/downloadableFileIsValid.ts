@@ -1,6 +1,7 @@
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLRequest, Ogm } from "../../types/context.js";
+import { logger } from "../../logger.js";
 import {
   DownloadableFileCreateInput,
   DownloadableFileUpdateInput,
@@ -137,7 +138,7 @@ export const validateFileTypePermissions = async (
 
     return true;
   } catch (error) {
-    console.error("Error validating file type permissions:", error);
+    logger.error("Error validating file type permissions:", error);
     return "Failed to validate file type permissions";
   }
 };
@@ -226,7 +227,7 @@ export const updateDownloadableFileInputIsValid = rule({ cache: "contextual" })(
 
       return true;
     } catch (error) {
-      console.error("Error validating downloadable file update:", error);
+      logger.error("Error validating downloadable file update:", error);
       return "Failed to validate file update";
     }
   }

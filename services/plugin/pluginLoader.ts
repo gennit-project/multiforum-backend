@@ -5,6 +5,7 @@ import { pathToFileURL } from 'url'
 import { promises as fs } from 'fs'
 import tar from 'tar-stream'
 import zlib from 'zlib'
+import { logger } from "../../logger.js";
 
 // Shape of the value a plugin's handleEvent resolves to.
 export type PluginRunResult = {
@@ -108,9 +109,9 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
     const importedModule = (await import(moduleUrl)) as Record<string, unknown>
 
     // Debug: Log what the module exports
-    console.log(`[PluginLoader] Module keys for ${entryPath}:`, Object.keys(importedModule))
-    console.log(`[PluginLoader] Has default export:`, !!importedModule.default)
-    console.log(`[PluginLoader] Default export type:`, typeof importedModule.default)
+    logger.info(`[PluginLoader] Module keys for ${entryPath}:`, Object.keys(importedModule))
+    logger.info(`[PluginLoader] Has default export:`, !!importedModule.default)
+    logger.info(`[PluginLoader] Default export type:`, typeof importedModule.default)
 
     // Try to find the plugin class in various export formats
     let PluginClass: unknown = importedModule.default
@@ -118,13 +119,13 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
     // If default is an object (not a function), look inside it for the class
     if (PluginClass && typeof PluginClass === 'object' && typeof PluginClass !== 'function') {
       const defaultObject = PluginClass as Record<string, unknown>
-      console.log(`[PluginLoader] Default is an object with keys:`, Object.keys(defaultObject))
+      logger.info(`[PluginLoader] Default is an object with keys:`, Object.keys(defaultObject))
 
       // Look for common property names that might hold the class
       const possibleNames = ['Plugin', 'default', 'ChatGPTBotProfiles', 'BetaReaderBot']
       for (const name of possibleNames) {
         if (typeof defaultObject[name] === 'function') {
-          console.log(`[PluginLoader] Found plugin class inside default.${name}`)
+          logger.info(`[PluginLoader] Found plugin class inside default.${name}`)
           PluginClass = defaultObject[name]
           break
         }
@@ -134,7 +135,7 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
       if (typeof PluginClass !== 'function') {
         for (const key of Object.keys(defaultObject)) {
           if (typeof defaultObject[key] === 'function') {
-            console.log(`[PluginLoader] Found plugin class inside default.${key}`)
+            logger.info(`[PluginLoader] Found plugin class inside default.${key}`)
             PluginClass = defaultObject[key]
             break
           }
@@ -148,7 +149,7 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
       for (const name of possibleNames) {
         if (typeof importedModule[name] === 'function') {
           PluginClass = importedModule[name]
-          console.log(`[PluginLoader] Found plugin class at named export: ${name}`)
+          logger.info(`[PluginLoader] Found plugin class at named export: ${name}`)
           break
         }
       }
@@ -158,7 +159,7 @@ export const loadPluginImplementation = async (tarballUrl: string, entryPath: st
         for (const key of Object.keys(importedModule)) {
           if (typeof importedModule[key] === 'function') {
             PluginClass = importedModule[key]
-            console.log(`[PluginLoader] Found plugin class at named export: ${key}`)
+            logger.info(`[PluginLoader] Found plugin class at named export: ${key}`)
             break
           }
         }

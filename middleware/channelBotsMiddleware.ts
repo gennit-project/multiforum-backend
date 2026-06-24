@@ -7,6 +7,7 @@ import {
 } from '../services/botUserService.js';
 import { mergeSettings } from '../services/plugin/pipelineUtils.js';
 import type { GraphQLContext } from '../types/context.js';
+import { logger } from "../logger.js";
 
 interface UpdateChannelsArgs {
   where?: { uniqueName?: string; [key: string]: unknown };
@@ -191,7 +192,7 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
         channelSettingsWrapped
       );
 
-      console.log('🧩 Bot plugin settings (channel middleware)', {
+      logger.info('🧩 Bot plugin settings (channel middleware)', {
         channelUniqueName,
         pluginName,
         settingsDefaults: JSON.stringify(settingsDefaults || null),
@@ -202,7 +203,7 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
 
       const botName = getBotNameFromSettings(mergedSettings);
       if (!botName) {
-        console.warn('⚠️ Bot plugin has no botName in merged settings', {
+        logger.warn('⚠️ Bot plugin has no botName in merged settings', {
           channelUniqueName,
           pluginName,
           mergedSettings: JSON.stringify(mergedSettings || null)
@@ -238,7 +239,7 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
     );
 
     if (botsToDisconnect.length > 0) {
-      console.log('🧹 Marking orphaned bots as deprecated and disconnecting from channel', {
+      logger.info('🧹 Marking orphaned bots as deprecated and disconnecting from channel', {
         channelUniqueName,
         botsToDisconnect,
         desiredBots: Array.from(allDesiredBotUsernames)
@@ -266,7 +267,7 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
       });
     }
   } catch (error) {
-    console.warn(
+    logger.warn(
       'Failed to sync bot users after channel plugin update:',
       error instanceof Error ? error.message : error
     );

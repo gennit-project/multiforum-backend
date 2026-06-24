@@ -3,6 +3,7 @@ import { assertCommentEmojiEnabled } from "./channelPreferenceGuards.js";
 import type { CommentModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+import { logger } from "../../logger.js";
 
 type Args = {
   commentId: string;
@@ -48,7 +49,7 @@ const getResolver = (input: Input) => {
         emoji: updatedEmojiJSON,
       };
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       throw e;
     }
   };

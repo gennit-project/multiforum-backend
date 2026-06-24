@@ -13,6 +13,7 @@ import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import getNextServerIssueNumber from "./utils/getNextServerIssueNumber.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   imageId: string;
@@ -302,7 +303,7 @@ const getResolver = (input: Input) => {
         }
         existingIssueId = issueId;
       } catch (error) {
-        console.error("Error creating image report issue:", error);
+        logger.error("Error creating image report issue:", error);
         throw new GraphQLError(
           `Error creating issue: ${(error as Error)?.message || "unknown error"}`
         );
@@ -363,7 +364,7 @@ const getResolver = (input: Input) => {
       }
       return updateResult.issues[0];
     } catch (error) {
-      console.error("Error updating image report issue:", error);
+      logger.error("Error updating image report issue:", error);
       throw new GraphQLError("Error updating issue");
     }
   };

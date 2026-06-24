@@ -1,5 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
+import { logger } from "../logger.js";
 import type {
   CommentModel,
   DiscussionModel,
@@ -160,7 +161,7 @@ const issueHasDeleteActivity = async (
     });
     return existing.length > 0;
   } catch (error) {
-    console.error('Error checking issue delete activity:', error);
+    logger.error('Error checking issue delete activity:', error);
     return false;
   }
 };
@@ -200,7 +201,7 @@ const recordDeleteClosure = async (input: {
         },
       });
     } catch (error) {
-      console.error('Error closing issue after deletion:', error);
+      logger.error('Error closing issue after deletion:', error);
     }
 
     const hasDeleteActivity = await issueHasDeleteActivity(IssueModel, issueId);

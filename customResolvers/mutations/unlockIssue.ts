@@ -9,6 +9,7 @@ import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   issueId: string;
@@ -193,10 +194,10 @@ const getResolver = (input: Input) => {
         commentText: reason || null,
       });
 
-      console.log(`✅ Issue ${existingIssue.issueNumber} unlocked by ${loggedInModName}`);
+      logger.info(`✅ Issue ${existingIssue.issueNumber} unlocked by ${loggedInModName}`);
       return updatedIssue;
     } catch (error) {
-      console.error("Error unlocking issue:", error);
+      logger.error("Error unlocking issue:", error);
       throw new GraphQLError("Error unlocking issue");
     }
   };

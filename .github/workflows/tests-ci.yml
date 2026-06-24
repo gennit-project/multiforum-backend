@@ -30,6 +30,9 @@ jobs:
       - name: Generate GraphQL/OGM types
         run: npm run codegen
 
+      - name: Lint (enforces no console.* in runtime code)
+        run: npm run lint
+
       - name: Run TypeScript type checking
         run: npm run tsc
 

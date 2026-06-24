@@ -12,6 +12,7 @@ import type {
 import type { GraphQLResolveInfo } from 'graphql'
 import { parseManifestFromTarball } from './shared/pluginManifest.js'
 import type { GraphQLContext } from '../../types/context.js'
+import { logger } from "../../logger.js";
 
 type RegistryPlugin = {
   id: string
@@ -61,7 +62,7 @@ const getResolver = (input: Input) => {
       if (!registryUrl) {
         throw new Error('No plugin registry URL configured')
       }
-      console.log('Using plugin registry URL:', registryUrl)
+      logger.info('Using plugin registry URL:', registryUrl)
 
       // 2. Fetch and find plugin version in registry
       let registryData: PluginRegistry
@@ -144,7 +145,7 @@ const getResolver = (input: Input) => {
 
       if (existingDbVersions.length > 0) {
         const dbVersion = existingDbVersions[0]
-        console.log(`Found existing version in database: ${pluginSlug}@${version}`)
+        logger.info(`Found existing version in database: ${pluginSlug}@${version}`)
         // Use database URL but always use registry hash for verification
         registryVersion = {
           version: dbVersion.version,
@@ -155,10 +156,10 @@ const getResolver = (input: Input) => {
         registryVersion = registryVersionData
       }
 
-      console.log('Using version data:', JSON.stringify(registryVersion, null, 2))
+      logger.info('Using version data:', JSON.stringify(registryVersion, null, 2))
 
       // 3. Download and verify tarball integrity
-      console.log(`Downloading tarball from: ${registryVersion.tarballUrl}`)
+      logger.info(`Downloading tarball from: ${registryVersion.tarballUrl}`)
       
       let tarballBytes: Buffer
       if (registryVersion.tarballUrl.startsWith('gs://')) {
@@ -182,10 +183,10 @@ const getResolver = (input: Input) => {
 
       // 4. Verify integrity
       const actualSha256 = crypto.createHash('sha256').update(tarballBytes).digest('hex')
-      console.log('Tarball integrity check:')
-      console.log('  Expected SHA-256:', registryVersion.integritySha256)
-      console.log('  Actual SHA-256:  ', actualSha256)
-      console.log('  Tarball size:    ', tarballBytes.length, 'bytes')
+      logger.info('Tarball integrity check:')
+      logger.info('  Expected SHA-256:', registryVersion.integritySha256)
+      logger.info('  Actual SHA-256:  ', actualSha256)
+      logger.info('  Tarball size:    ', tarballBytes.length, 'bytes')
       if (actualSha256 !== registryVersion.integritySha256) {
         throw new Error(`Tarball integrity verification failed: SHA-256 mismatch. Expected: ${registryVersion.integritySha256}, Got: ${actualSha256}`)
       }
@@ -236,7 +237,7 @@ const getResolver = (input: Input) => {
       }
 
       if (!pluginRecord) {
-        console.log(`Creating new plugin record for ${artifacts.id}`)
+        logger.info(`Creating new plugin record for ${artifacts.id}`)
         const createResult = await Plugin.create({
           input: [
             ({
@@ -282,7 +283,7 @@ const getResolver = (input: Input) => {
       const readmeMarkdown = artifacts.readmeMarkdown ?? null
 
       if (!pluginVersion) {
-        console.log(`Creating new plugin version: ${pluginSlug}@${version}`)
+        logger.info(`Creating new plugin version: ${pluginSlug}@${version}`)
         const createResult = await PluginVersion.create({
           input: [
             ({
@@ -346,7 +347,7 @@ const getResolver = (input: Input) => {
       const isAlreadyInstalled = installedVersions[0]?.InstalledVersions?.length > 0
 
       if (!isAlreadyInstalled) {
-        console.log('Installing plugin version, serverName:', serverConfig.serverName, 'pluginVersion.id:', pluginVersion.id)
+        logger.info('Installing plugin version, serverName:', serverConfig.serverName, 'pluginVersion.id:', pluginVersion.id)
 
         await ServerConfig.update({
           where: { serverName: String(serverConfig.serverName) },
@@ -382,7 +383,7 @@ const getResolver = (input: Input) => {
       }
 
     } catch (error: unknown) {
-      console.error('Error in installPluginVersion resolver:', error)
+      logger.error('Error in installPluginVersion resolver:', error)
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(`Failed to install plugin: ${message}`)
     }

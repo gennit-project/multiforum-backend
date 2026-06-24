@@ -1,6 +1,7 @@
 import { Storage } from '@google-cloud/storage'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
+import { logger } from "../../logger.js";
 import type {
   ServerConfigModel
 } from '../../ogm_types.js'
@@ -175,7 +176,7 @@ const getResolver = (input: Input) => {
           }
         } catch (error) {
           // Registry fetch failed - continue without version comparison
-          console.warn('Failed to fetch plugin registry for version comparison:', error instanceof Error ? error.message : String(error))
+          logger.warn('Failed to fetch plugin registry for version comparison:', error instanceof Error ? error.message : String(error))
         }
       }
 
@@ -238,7 +239,7 @@ const getResolver = (input: Input) => {
       return installedPlugins
 
     } catch (error) {
-      console.error('Error in getInstalledPlugins resolver:', error)
+      logger.error('Error in getInstalledPlugins resolver:', error)
       throw new Error(`Failed to get installed plugins: ${error instanceof Error ? error.message : String(error)}`)
     }
   }

@@ -11,6 +11,7 @@ import { Storage } from '@google-cloud/storage'
 import type { GraphQLResolveInfo } from 'graphql'
 import { getManifestArtifacts } from './shared/pluginManifest.js'
 import type { GraphQLContext } from '../../types/context.js'
+import { logger } from "../../logger.js";
 
 type RegistryPlugin = {
   id: string
@@ -45,8 +46,8 @@ const getResolver = (input: Input) => {
         }`
       })
 
-      console.log('Found server configs:', serverConfigs.length)
-      console.log('Server config pluginRegistries:', serverConfigs[0]?.pluginRegistries)
+      logger.info('Found server configs:', serverConfigs.length)
+      logger.info('Server config pluginRegistries:', serverConfigs[0]?.pluginRegistries)
 
       if (!serverConfigs.length || !serverConfigs[0].pluginRegistries?.length) {
         throw new Error('No plugin registries configured')
@@ -57,7 +58,7 @@ const getResolver = (input: Input) => {
         throw new Error('No plugin registry URL configured')
       }
       
-      console.log(`Fetching plugin registry from: ${registryUrl}`)
+      logger.info(`Fetching plugin registry from: ${registryUrl}`)
 
       // Fetch registry data
       let registryData: PluginRegistry
@@ -69,7 +70,7 @@ const getResolver = (input: Input) => {
           const [bucketName, ...pathParts] = gsPath.split('/')
           const filePath = pathParts.join('/')
           
-          console.log(`Downloading from GCS bucket: ${bucketName}, file: ${filePath}`)
+          logger.info(`Downloading from GCS bucket: ${bucketName}, file: ${filePath}`)
           
           const bucket = storage.bucket(bucketName)
           const file = bucket.file(filePath)
@@ -85,20 +86,20 @@ const getResolver = (input: Input) => {
           registryData = await response.json()
         }
       } catch (error: unknown) {
-        console.error('Failed to fetch plugin registry:', error)
+        logger.error('Failed to fetch plugin registry:', error)
         const message = error instanceof Error ? error.message : String(error)
         throw new Error(
           `Failed to fetch plugin registry: ${message}`
         )
       }
 
-      console.log(`Registry updated at: ${registryData.updatedAt}`)
-      console.log(`Found ${registryData.plugins.length} plugins in registry`)
+      logger.info(`Registry updated at: ${registryData.updatedAt}`)
+      logger.info(`Found ${registryData.plugins.length} plugins in registry`)
 
       const updatedPlugins: any[] = []
 
       // First, find and fix any orphaned plugin versions that exist without Plugin connections
-      console.log('Checking for orphaned plugin versions...')
+      logger.info('Checking for orphaned plugin versions...')
       
       try {
         const allVersions = await PluginVersion.find({
@@ -109,7 +110,7 @@ const getResolver = (input: Input) => {
           }`
         })
 
-        console.log(`Found ${allVersions.length} total plugin versions in database`)
+        logger.info(`Found ${allVersions.length} total plugin versions in database`)
 
         // Check each version to see if it has a Plugin relationship
         for (const version of allVersions) {
@@ -129,13 +130,13 @@ const getResolver = (input: Input) => {
             })
 
             if (connectedPlugins.length === 0) {
-              console.log(`Found orphaned version: ${version.version} (${version.repoUrl})`)
+              logger.info(`Found orphaned version: ${version.version} (${version.repoUrl})`)
               
               // Try to match this version to a plugin from the registry
               for (const registryPlugin of registryData.plugins) {
                 const matchingVersion = registryPlugin.versions.find(v => v.tarballUrl === version.repoUrl)
                 if (matchingVersion) {
-                  console.log(`Attempting to connect orphaned version to plugin: ${registryPlugin.id}`)
+                  logger.info(`Attempting to connect orphaned version to plugin: ${registryPlugin.id}`)
                   
                   // Find or create the plugin
                   let plugins = await Plugin.find({
@@ -144,7 +145,7 @@ const getResolver = (input: Input) => {
 
                   let plugin = plugins[0]
                   if (!plugin) {
-                    console.log(`Creating plugin for orphaned version: ${registryPlugin.id}`)
+                    logger.info(`Creating plugin for orphaned version: ${registryPlugin.id}`)
                     const createResult = await Plugin.create({
                       input: [{ name: registryPlugin.id }]
                     })
@@ -161,23 +162,23 @@ const getResolver = (input: Input) => {
                     }
                   })
                   
-                  console.log(`Successfully connected orphaned version ${version.version} to plugin ${registryPlugin.id}`)
+                  logger.info(`Successfully connected orphaned version ${version.version} to plugin ${registryPlugin.id}`)
                   break
                 }
               }
             }
           } catch (versionError: unknown) {
             const message = versionError instanceof Error ? versionError.message : String(versionError)
-            console.warn(`Skipping version ${version.id} due to error:`, message)
+            logger.warn(`Skipping version ${version.id} due to error:`, message)
           }
         }
       } catch (orphanError: unknown) {
         const message = orphanError instanceof Error ? orphanError.message : String(orphanError)
-        console.warn('Error while checking orphaned versions:', message)
+        logger.warn('Error while checking orphaned versions:', message)
         // Continue with normal processing even if orphan check fails
       }
 
-      console.log('Finished checking orphaned versions, proceeding with registry processing...')
+      logger.info('Finished checking orphaned versions, proceeding with registry processing...')
 
 
 // Process each plugin in the registry
@@ -195,10 +196,10 @@ for (const registryPlugin of registryData.plugins) {
   for (const registryVersion of registryPlugin.versions) {
     try {
       const artifacts = await getManifestArtifacts(registryVersion.tarballUrl)
-      console.log(`Registry version: ${registryVersion.version}, Manifest version: ${artifacts.version}`)
+      logger.info(`Registry version: ${registryVersion.version}, Manifest version: ${artifacts.version}`)
 
       if (artifacts.id !== registryPlugin.id) {
-        console.warn(`Plugin ID mismatch: registry=${registryPlugin.id}, manifest=${artifacts.id}. Skipping.`)
+        logger.warn(`Plugin ID mismatch: registry=${registryPlugin.id}, manifest=${artifacts.id}. Skipping.`)
         continue
       }
 
@@ -238,7 +239,7 @@ for (const registryPlugin of registryData.plugins) {
       }
 
       if (!pluginRecord) {
-        console.log(`Creating new plugin: ${registryPlugin.id}`)
+        logger.info(`Creating new plugin: ${registryPlugin.id}`)
         const createResult = await Plugin.create({
           input: [
             ({
@@ -294,7 +295,7 @@ for (const registryPlugin of registryData.plugins) {
       const manifestJson = artifacts.manifest ? JSON.stringify(artifacts.manifest) : null
 
       if (existingVersions.length === 0) {
-        console.log(
+        logger.info(
           `Creating new plugin version: ${registryPlugin.id}@${artifacts.version} (registry: ${registryVersion.version})`
         )
         await PluginVersion.create({
@@ -320,7 +321,7 @@ for (const registryPlugin of registryData.plugins) {
         })
       } else {
         const existingVersion = existingVersions[0]
-        console.log(
+        logger.info(
           `Plugin version already exists: ${registryPlugin.id}@${artifacts.version}, ensuring connection`
         )
 
@@ -345,7 +346,7 @@ for (const registryPlugin of registryData.plugins) {
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
-      console.warn(`Failed to process version ${registryVersion.version} for plugin ${registryPlugin.id}:`, message)
+      logger.warn(`Failed to process version ${registryVersion.version} for plugin ${registryPlugin.id}:`, message)
       continue
     }
   }
@@ -355,7 +356,7 @@ for (const registryPlugin of registryData.plugins) {
   }
 }
 
-      console.log(`Successfully refreshed ${updatedPlugins.length} plugins`)
+      logger.info(`Successfully refreshed ${updatedPlugins.length} plugins`)
       
       // Before returning, make sure all plugins have their Versions relationship properly loaded
       const pluginsWithVersions = []
@@ -395,7 +396,7 @@ for (const registryPlugin of registryData.plugins) {
           }
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error)
-          console.warn(`Could not load versions for plugin ${plugin.id}:`, message)
+          logger.warn(`Could not load versions for plugin ${plugin.id}:`, message)
           // Still include the plugin but with empty versions array
           pluginsWithVersions.push({
             ...plugin,
@@ -406,7 +407,7 @@ for (const registryPlugin of registryData.plugins) {
       
       return pluginsWithVersions
     } catch (error: unknown) {
-      console.error('Error in refreshPlugins resolver:', error)
+      logger.error('Error in refreshPlugins resolver:', error)
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(`Failed to refresh plugins: ${message}`)
     }

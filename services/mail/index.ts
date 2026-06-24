@@ -7,6 +7,7 @@ import {
   type ResendMailClient,
 } from "./resendProvider.js";
 import type { MailMessage, MailProvider } from "./types.js";
+import { logger } from "../../logger.js";
 
 type MailProviderName = "sendgrid" | "resend";
 
@@ -35,7 +36,7 @@ export const getMailProviderName = (): MailProviderName => {
     return providerName as MailProviderName;
   }
 
-  console.warn(
+  logger.warn(
     `Unsupported EMAIL_PROVIDER "${process.env.EMAIL_PROVIDER}". Falling back to ${DEFAULT_PROVIDER}.`
   );
 
@@ -86,7 +87,7 @@ const resolveFromEmail = (options?: SendOptions): string | null => {
     throw new Error("EMAIL_FROM is not set");
   }
 
-  console.warn("EMAIL_FROM is not set. Email will not be sent.");
+  logger.warn("EMAIL_FROM is not set. Email will not be sent.");
   return null;
 };
 
@@ -99,7 +100,7 @@ const handleSendFailure = (
     throw error;
   }
 
-  console.error(defaultMessage, error);
+  logger.error(defaultMessage, error);
   return false;
 };
 
@@ -110,7 +111,7 @@ export const sendEmail = async (
   const provider = getMailProvider(options?.dependencies);
 
   if (!provider) {
-    console.warn("Mail provider is not configured. Email will not be sent.");
+    logger.warn("Mail provider is not configured. Email will not be sent.");
     return false;
   }
 
@@ -139,7 +140,7 @@ export const sendBatchEmails = async (
   const provider = getMailProvider(options?.dependencies);
 
   if (!provider) {
-    console.warn("Mail provider is not configured. Email will not be sent.");
+    logger.warn("Mail provider is not configured. Email will not be sent.");
     return false;
   }
 

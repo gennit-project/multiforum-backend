@@ -2,6 +2,7 @@ import type { Driver } from "neo4j-driver";
 import { createEventChannelQuery } from "../cypher/cypherQueries.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventSeriesModel, EventModel, TagModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type DateOccurrence = {
   startTime: string;
@@ -297,7 +298,7 @@ const getResolver = (input: Input) => {
           } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             if (message.includes("Constraint validation failed")) {
-              console.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
+              logger.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
               continue;
             } else {
               throw error;
@@ -317,7 +318,7 @@ const getResolver = (input: Input) => {
       return fetchedEventSeries[0];
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Error creating event series:", message);
+      logger.error("Error creating event series:", message);
       throw new Error(`Failed to create event series: ${message}`);
     } finally {
       session.close();

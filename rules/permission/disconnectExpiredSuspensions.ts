@@ -1,3 +1,4 @@
+import { logger } from "../../logger.js";
 // Disconnects expired suspensions from a channel.
 // This keeps the Suspension nodes for historical display but removes
 // them from the channel's active suspended users/mods lists.
@@ -56,7 +57,7 @@ export async function disconnectExpiredSuspensions(
         update: disconnectOperations,
       });
     } catch (error) {
-      console.error("Error disconnecting expired suspensions", error);
+      logger.error("Error disconnecting expired suspensions", error);
     }
   }
 

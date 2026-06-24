@@ -4,6 +4,7 @@ import { resolveChannelForModPermission } from "./resolveChannelForModPermission
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 export interface CanReportArgs {
   channelUniqueName?: string;
@@ -15,9 +16,9 @@ export const canReport = rule({ cache: "contextual" })(
     let channelUniqueName = args.channelUniqueName;
     const issueId = args.issueId;
     
-    console.log('can report');
-    console.log("channelUniqueName", channelUniqueName);
-    console.log("issueId", issueId);
+    logger.info('can report');
+    logger.info("channelUniqueName", channelUniqueName);
+    logger.info("issueId", issueId);
     
     // If channelUniqueName is not provided, look it up from the issue.
     let issue;

@@ -5,6 +5,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import { logger } from "../../logger.js";
 
 type HasChannelPermissionInput = {
   permission: keyof ChannelRole;
@@ -93,7 +94,7 @@ export const hasChannelPermission: (
       expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
       expiredModSuspensions: suspensionInfo.expiredModSuspensions,
     }).catch((error) => {
-      console.error("Failed to disconnect expired suspensions", error);
+      logger.error("Failed to disconnect expired suspensions", error);
     });
   }
 
@@ -171,7 +172,7 @@ export const hasChannelPermission: (
         actorType: "user",
       });
     } catch (error) {
-      console.error("Failed to create suspension notification", error);
+      logger.error("Failed to create suspension notification", error);
     }
   }
 

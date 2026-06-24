@@ -2,6 +2,7 @@ import { getModContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import type { ModerationProfileModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 interface Input {
   ModerationProfile: ModerationProfileModel;
@@ -64,7 +65,7 @@ const getModContributionsResolver = (input: Input) => {
 
       return contributions;
     } catch (error: unknown) {
-      console.error("Error fetching mod contributions:", error);
+      logger.error("Error fetching mod contributions:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(
         `Failed to fetch contributions for mod ${displayName}: ${message}`

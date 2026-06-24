@@ -1,4 +1,5 @@
 import type { Driver } from "neo4j-driver";
+import { logger } from "../../logger.js";
 
 type Input = {
     driver: Driver;
@@ -65,11 +66,11 @@ async function runDeleteWithRetry(
 
             if (isRetriable && attempt < maxRetries) {
                 const delayMs = baseDelayMs * Math.pow(2, attempt - 1);
-                console.warn(`Transient error on attempt ${attempt} for ${nodeLabel}. Retrying in ${delayMs}ms...`);
+                logger.warn(`Transient error on attempt ${attempt} for ${nodeLabel}. Retrying in ${delayMs}ms...`);
                 await delay(delayMs);
             } else {
                 // Log and continue - some node types may not exist or deletion may have partially completed
-                console.warn(`Error deleting ${nodeLabel}:`, error?.message || error);
+                logger.warn(`Error deleting ${nodeLabel}:`, error?.message || error);
                 return;
             }
         } finally {

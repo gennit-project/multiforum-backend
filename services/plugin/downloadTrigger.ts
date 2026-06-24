@@ -7,6 +7,7 @@ import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, pa
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
+import { logger } from "../../logger.js";
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -310,7 +311,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
         log: (...args: unknown[]) => {
           const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
           logs.push(message)
-          console.log(`[Plugin:${pluginId}]`, message)
+          logger.info(`[Plugin:${pluginId}]`, message)
         },
         storeFlag: async (flag: unknown) => {
           flags.push(flag)

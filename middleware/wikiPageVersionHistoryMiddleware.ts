@@ -9,6 +9,7 @@ import { wikiPageVersionHistoryHandler } from "../hooks/wikiPageVersionHistoryHo
 import { GraphQLResolveInfo } from 'graphql';
 import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
+import { logger } from "../logger.js";
 import type {
   TextVersionModel,
   WikiPageModel,
@@ -104,7 +105,7 @@ async function handleChildWikiPageCreation(
     // Get the updated WikiPages from the result
     const wikiPages = result?.updateWikiPages?.wikiPages;
     if (!wikiPages || !wikiPages.length) {
-      console.log('No wikiPages found in result for child page creation');
+      logger.info('No wikiPages found in result for child page creation');
       return;
     }
     
@@ -112,7 +113,7 @@ async function handleChildWikiPageCreation(
     const currentUsername = getCurrentUsernameFromContext(context);
     
     if (!currentUsername) {
-      console.log('Could not determine current user for child WikiPage creation');
+      logger.info('Could not determine current user for child WikiPage creation');
       return;
     }
     
@@ -125,7 +126,7 @@ async function handleChildWikiPageCreation(
       
       // Create TextVersions for each new child page
       for (const childPage of childPages) {
-        console.log(`Creating first TextVersion for child WikiPage ${childPage.id}`);
+        logger.info(`Creating first TextVersion for child WikiPage ${childPage.id}`);
         
         if (childPage.title) {
           await createFirstTextVersion(
@@ -151,9 +152,9 @@ async function handleChildWikiPageCreation(
       }
     }
     
-    console.log('Successfully created first TextVersions for child WikiPages');
+    logger.info('Successfully created first TextVersions for child WikiPages');
   } catch (error) {
-    console.error('Error creating first TextVersions for child pages:', error);
+    logger.error('Error creating first TextVersions for child pages:', error);
     // Don't throw the error - we don't want to break the WikiPage creation
   }
 }
@@ -187,7 +188,7 @@ async function createFirstTextVersion(
     });
 
     if (!textVersionResult.textVersions.length) {
-      console.log('Failed to create TextVersion');
+      logger.info('Failed to create TextVersion');
       return;
     }
 
@@ -210,9 +211,9 @@ async function createFirstTextVersion(
       } as unknown as WikiPageUpdateInput
     });
 
-    console.log(`Successfully created first TextVersion for WikiPage ${wikiPageId}`);
+    logger.info(`Successfully created first TextVersion for WikiPage ${wikiPageId}`);
   } catch (error) {
-    console.error(`Error creating first TextVersion for WikiPage ${wikiPageId}:`, error);
+    logger.error(`Error creating first TextVersion for WikiPage ${wikiPageId}:`, error);
   }
 }
 

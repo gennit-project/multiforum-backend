@@ -2,6 +2,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { CommentModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   commentId: string;
@@ -56,7 +57,7 @@ const getResolver = (input: Input) => {
 
       return result[0];
     } catch (error: unknown) {
-      console.error("Error subscribing to comment:", error);
+      logger.error("Error subscribing to comment:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to subscribe to comment: ${message}`);
     } finally {

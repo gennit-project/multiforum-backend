@@ -2,6 +2,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { IssueModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   issueId: string;
@@ -59,7 +60,7 @@ const getResolver = (input: Input) => {
 
       return result[0];
     } catch (error: unknown) {
-      console.error("Error unsubscribing from issue:", error);
+      logger.error("Error unsubscribing from issue:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to unsubscribe from issue: ${message}`);
     } finally {

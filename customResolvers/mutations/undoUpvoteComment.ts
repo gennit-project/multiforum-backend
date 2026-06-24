@@ -5,6 +5,7 @@ import type { CommentModel, UserModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { commentIsUpvotedByUserQuery } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   Comment: CommentModel;
@@ -163,12 +164,12 @@ const undoUpvoteCommentResolver = (input: Input) => {
       };
       return returnValue;
     } catch (e) {
-      console.error("Error in undoUpvoteComment:", e);
+      logger.error("Error in undoUpvoteComment:", e);
       if (tx) {
         try {
           await tx.rollback();
         } catch (rollbackError) {
-          console.error("Failed to rollback transaction", rollbackError);
+          logger.error("Failed to rollback transaction", rollbackError);
         }
       }
       throw e; // Re-throw the error after logging
@@ -177,7 +178,7 @@ const undoUpvoteCommentResolver = (input: Input) => {
         try {
           session.close();
         } catch (sessionCloseError) {
-          console.error("Failed to close session", sessionCloseError);
+          logger.error("Failed to close session", sessionCloseError);
         }
       }
     }

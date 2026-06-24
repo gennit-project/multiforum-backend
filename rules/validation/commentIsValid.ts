@@ -3,6 +3,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { CommentCreateInput, CommentUpdateInput } from "../../src/generated/graphql.js";
 import { MAX_CHARS_IN_COMMENT_TEXT } from "./constants.js";
+import { logger } from "../../logger.js";
 
 type CommentTextValidationInput = {
   text: string;
@@ -23,7 +24,7 @@ const validateCommentInput = (input: CommentTextValidationInput): true | string 
   if (text.length > MAX_CHARS_IN_COMMENT_TEXT) {
     return `The comment text cannot exceed ${MAX_CHARS_IN_COMMENT_TEXT} characters.`;
   }
-  console.log('comment is valid')
+  logger.info('comment is valid')
 
   return true;
 };
@@ -99,8 +100,8 @@ export const createCommentInputIsValid = rule({ cache: "contextual" })(
       return "Missing or empty input in args.";
     }
     const createCommentInput: CommentCreateInput = args.input[0]
-    console.log('validating comment input')
-    console.log('arguments passed to validate comment input ', {
+    logger.info('validating comment input')
+    logger.info('arguments passed to validate comment input ', {
       text: createCommentInput.text || "",
       modProfileName: createCommentInput?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
       username: createCommentInput?.CommentAuthor?.User?.connect?.where?.node?.username || "",

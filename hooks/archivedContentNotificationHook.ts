@@ -1,6 +1,7 @@
 import { createInAppNotification } from './notificationHelpers.js';
 import type { Driver } from 'neo4j-driver';
 import type { Ogm } from '../types/context.js';
+import { logger } from "../logger.js";
 
 type ContentType = 'comment' | 'discussion' | 'event' | 'image';
 
@@ -93,7 +94,7 @@ export async function notifyArchivedContentAuthor(
 
     const UserModel = context.ogm?.model('User');
     if (!UserModel) {
-      console.error('UserModel not available for archived content notification');
+      logger.error('UserModel not available for archived content notification');
       return false;
     }
 
@@ -121,7 +122,7 @@ export async function notifyArchivedContentAuthor(
       notificationType: 'moderation',
     });
   } catch (error) {
-    console.error('Error sending archived content notification:', error);
+    logger.error('Error sending archived content notification:', error);
     return false;
   }
 }

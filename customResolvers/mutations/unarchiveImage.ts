@@ -13,6 +13,7 @@ import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   imageId: string;
@@ -264,7 +265,7 @@ const getResolver = (input: Input) => {
         commentText: explanation,
       });
     } catch (error) {
-      console.error("Error updating issue:", error);
+      logger.error("Error updating issue:", error);
       throw new GraphQLError("Error updating issue");
     }
 
@@ -289,7 +290,7 @@ const getResolver = (input: Input) => {
 
       return existingIssue;
     } catch (error) {
-      console.error("Error updating image:", error);
+      logger.error("Error updating image:", error);
       throw new GraphQLError("Error updating image");
     }
   };

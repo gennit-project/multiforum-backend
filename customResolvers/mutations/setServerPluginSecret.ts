@@ -4,6 +4,7 @@ import type {
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
 import { encryptSecret } from '../../services/plugin/encryption.js'
+import { logger } from "../../logger.js";
 
 type Input = {
   ServerSecret: ServerSecretModel
@@ -68,7 +69,7 @@ const getResolver = (input: Input) => {
 
       return true
     } catch (error: unknown) {
-      console.error('Error in setServerPluginSecret resolver:', error)
+      logger.error('Error in setServerPluginSecret resolver:', error)
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(`Failed to set server plugin secret: ${message}`)
     }

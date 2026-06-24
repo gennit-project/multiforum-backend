@@ -3,6 +3,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { sanitizeAlbumCreateInput } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { AlbumCreateInput, AlbumModel, UserModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   input: AlbumCreateInput[];
@@ -71,7 +72,7 @@ const getResolver = (input: Input) => {
 
       return response;
     } catch (error: unknown) {
-      console.error("Error creating albums:", error);
+      logger.error("Error creating albums:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new GraphQLError(`Failed to create albums: ${message}`);
     }

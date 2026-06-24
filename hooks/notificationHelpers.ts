@@ -1,4 +1,5 @@
 import type { UserModel } from '../ogm_types.js';
+import { logger } from "../logger.js";
 
 type CreateInAppNotificationInput = {
   UserModel: UserModel;
@@ -35,7 +36,7 @@ export const createInAppNotification = async ({
 
     return Boolean(userUpdateResult?.users?.length);
   } catch (error) {
-    console.error('Error creating in-app notification:', error);
+    logger.error('Error creating in-app notification:', error);
     return false;
   }
 };

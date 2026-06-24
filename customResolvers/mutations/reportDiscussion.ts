@@ -16,6 +16,7 @@ import {
   getIssueCreateInput,
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   discussionId: string;
@@ -190,7 +191,7 @@ const getResolver = (input: Input) => {
         }
         existingIssueId = issueId;
       } catch (error) {
-        console.error("Error creating issue:", {
+        logger.error("Error creating issue:", {
           error,
           issueCreateInput,
         });

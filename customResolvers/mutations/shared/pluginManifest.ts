@@ -2,6 +2,7 @@ import { Storage } from '@google-cloud/storage'
 import path from 'path'
 import tar from 'tar-stream'
 import zlib from 'zlib'
+import { logger } from "../../../logger.js";
 
 type ManifestData = {
   id: string
@@ -121,7 +122,7 @@ export async function parseManifestFromTarball(tarballBytes: Buffer): Promise<Ma
 }
 
 export async function getManifestArtifacts(tarballUrl: string): Promise<ManifestArtifacts> {
-  console.log(`Downloading and parsing manifest from: ${tarballUrl}`)
+  logger.info(`Downloading and parsing manifest from: ${tarballUrl}`)
 
   let tarballBytes: Buffer
   if (tarballUrl.startsWith('gs://')) {

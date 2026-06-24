@@ -7,6 +7,7 @@ import {
 } from '../../services/botUserService.js'
 import { mergeSettings } from '../../services/plugin/pipelineUtils.js'
 import { validatePipelines, type EventPipelineInput } from './updatePluginPipelines.js'
+import { logger } from "../../logger.js";
 
 type Input = {
   Channel: ChannelModel
@@ -221,7 +222,7 @@ const getResolver = (input: Input) => {
       )
 
       if (botsToDisconnect.length > 0) {
-        console.log('🧹 Marking orphaned bots as deprecated and disconnecting from channel (pipeline update)', {
+        logger.info('🧹 Marking orphaned bots as deprecated and disconnecting from channel (pipeline update)', {
           channelUniqueName,
           botsToDisconnect,
           desiredBots: Array.from(allDesiredBotUsernames)
@@ -249,7 +250,7 @@ const getResolver = (input: Input) => {
         })
       }
     } catch (error: unknown) {
-      console.warn(
+      logger.warn(
         `Failed to sync bot users for channel ${channelUniqueName}:`,
         (error instanceof Error ? error.message : undefined) || error
       )

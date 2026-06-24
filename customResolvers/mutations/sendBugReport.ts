@@ -1,6 +1,7 @@
 import { sendEmail } from "../../services/mail/index.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   contactEmail: string;
@@ -90,8 +91,8 @@ ${text}
 
       // Convert markdown message to HTML
       const htmlMessage = convertMarkdownToHtml(text);
-      console.log("Original text:", text);
-      console.log("Converted HTML:", htmlMessage);
+      logger.info("Original text:", text);
+      logger.info("Converted HTML:", htmlMessage);
 
       // Create HTML version with formatted content
       const html = `
@@ -116,10 +117,10 @@ ${username ? `<p><strong>Username:</strong> ${username}</p>` : ''}
         throwOnMissingFrom: true,
       });
 
-      console.log("Sending bug report email to", process.env.SUPPORT_EMAIL);
+      logger.info("Sending bug report email to", process.env.SUPPORT_EMAIL);
       return emailSent;
     } catch (e: unknown) {
-      console.error("Error sending bug report email:", e);
+      logger.error("Error sending bug report email:", e);
       const message = e instanceof Error ? e.message : String(e);
       throw new Error(
         `An error occurred while sending the bug report: ${message}`

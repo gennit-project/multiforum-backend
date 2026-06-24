@@ -1,6 +1,7 @@
 import { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../types/context.js'
 import { triggerPluginRunsForComment } from '../services/pluginRunner.js'
+import { logger } from "../logger.js";
 
 const commentPluginPipelineMiddleware = {
   Mutation: {
@@ -52,7 +53,7 @@ const commentPluginPipelineMiddleware = {
           })
         }
       } catch (error) {
-        console.warn('Comment plugin pipeline failed:', error instanceof Error ? error.message : error)
+        logger.warn('Comment plugin pipeline failed:', error instanceof Error ? error.message : error)
       }
 
       return result

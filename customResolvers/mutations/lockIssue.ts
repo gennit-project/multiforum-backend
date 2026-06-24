@@ -9,6 +9,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
+import { logger } from "../../logger.js";
 
 type Args = {
   issueId: string;
@@ -188,10 +189,10 @@ const getResolver = (input: Input) => {
         commentText: reason,
       });
 
-      console.log(`✅ Issue ${existingIssue.issueNumber} locked by ${loggedInModName}`);
+      logger.info(`✅ Issue ${existingIssue.issueNumber} locked by ${loggedInModName}`);
       return updatedIssue;
     } catch (error) {
-      console.error("Error locking issue:", error);
+      logger.error("Error locking issue:", error);
       throw new GraphQLError("Error locking issue");
     }
   };

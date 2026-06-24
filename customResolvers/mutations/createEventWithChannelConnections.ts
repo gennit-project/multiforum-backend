@@ -4,6 +4,7 @@ import { createEventChannelQuery } from "../cypher/cypherQueries.js";
 import { EventCreateInput } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type EventCreateInputWithChannels = {
   eventCreateInput: EventCreateInput;
@@ -86,7 +87,7 @@ export const createEventsFromInput = async (
   try {
     for (const { eventCreateInput, channelConnections } of input) {
       if (!channelConnections || channelConnections.length === 0) {
-        console.warn("Skipping event creation: No channels provided");
+        logger.warn("Skipping event creation: No channels provided");
         continue;
       }
 
@@ -110,7 +111,7 @@ export const createEventsFromInput = async (
           } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             if (message.includes("Constraint validation failed")) {
-              console.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
+              logger.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
               continue;
             } else {
               throw error;
@@ -130,7 +131,7 @@ export const createEventsFromInput = async (
       } catch (error: unknown) {
         const err = error as { message?: string; code?: string; stack?: string; neo4jError?: unknown };
         const message = error instanceof Error ? error.message : String(error);
-        console.warn("Event creation error details:", {
+        logger.warn("Event creation error details:", {
           message: err.message,
           code: err.code,
           details: err.stack,
@@ -138,15 +139,15 @@ export const createEventsFromInput = async (
           fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
         });
         if (message.includes("Constraint validation failed")) {
-          console.warn("Constraint validation details:");
-          console.log('Input:', JSON.stringify(eventCreateInput, null, 2));
+          logger.warn("Constraint validation details:");
+          logger.info('Input:', JSON.stringify(eventCreateInput, null, 2));
           continue;
         }
       }
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("Unexpected error during event creation:", message);
+    logger.error("Unexpected error during event creation:", message);
   } finally {
     session.close();
   }
@@ -168,7 +169,7 @@ const getResolver = (input: Input) => {
       const events = await createEventsFromInput(Event, driver, input, context);
       return events;
     } catch (error: unknown) {
-      console.error(error);
+      logger.error(error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`An error occurred while creating events: ${message}`);
     }

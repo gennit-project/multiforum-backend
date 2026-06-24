@@ -7,6 +7,7 @@ import { GraphQLError } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateNode } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 import type {
   DiscussionModel,
   ChannelModel,
@@ -207,13 +208,13 @@ export const createDiscussionsFromInput = async (
             } catch (pipelineError: unknown) {
               // Log pipeline errors but don't fail the discussion creation
               const message = pipelineError instanceof Error ? pipelineError.message : String(pipelineError);
-              console.error(`Channel pipeline error for ${channelUniqueName}:`, message);
+              logger.error(`Channel pipeline error for ${channelUniqueName}:`, message);
             }
           }
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error);
           if (message.includes("Constraint validation failed")) {
-            console.warn(`Skipping duplicate DiscussionChannel: ${channelUniqueName}`);
+            logger.warn(`Skipping duplicate DiscussionChannel: ${channelUniqueName}`);
             continue;
           } else {
             throw error;
@@ -232,7 +233,7 @@ export const createDiscussionsFromInput = async (
       discussions.push(fetchedDiscussion[0]);
     }
   } catch (error: unknown) {
-    console.error("Error creating discussions:", error);
+    logger.error("Error creating discussions:", error);
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to create discussions: ${message}`);
   } finally {
@@ -267,7 +268,7 @@ const getResolver = (input: Input) => {
       );
       return discussions;
     } catch (error: unknown) {
-      console.error(error);
+      logger.error(error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`An error occurred while creating discussions: ${message}`);
     }

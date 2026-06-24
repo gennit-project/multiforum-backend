@@ -5,6 +5,7 @@ import { getDiscussionChannelsQuery } from "../cypher/cypherQueries.js";
 import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionChannelModel } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 enum timeFrameOptionKeys {
   year = "year",
@@ -157,7 +158,7 @@ const getResolver = (input: Input) => {
           };
       }
     } catch (error: unknown) {
-      console.error("Error getting discussionChannels:", error);
+      logger.error("Error getting discussionChannels:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(
         `Failed to fetch discussionChannels in channel. ${message}`

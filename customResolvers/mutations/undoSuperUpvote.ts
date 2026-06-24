@@ -1,6 +1,7 @@
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
+import { logger } from "../../logger.js";
 import type {
   CommentModel,
   DiscussionChannelModel,
@@ -147,7 +148,7 @@ const undoSuperUpvoteResolver = (input: Input) => {
         try {
           await tx.rollback();
         } catch (rollbackError) {
-          console.error('Failed to rollback transaction', rollbackError);
+          logger.error('Failed to rollback transaction', rollbackError);
         }
       }
       throw e;
@@ -156,7 +157,7 @@ const undoSuperUpvoteResolver = (input: Input) => {
         try {
           await session.close();
         } catch (sessionCloseError) {
-          console.error('Failed to close session', sessionCloseError);
+          logger.error('Failed to close session', sessionCloseError);
         }
       }
     }

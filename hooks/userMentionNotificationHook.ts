@@ -1,6 +1,7 @@
 import { createInAppNotification } from './notificationHelpers.js';
 import { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
 import { sendEmail } from '../services/mail/index.js';
+import { logger } from "../logger.js";
 import {
   buildDiscussionMentionContext,
   MentionContextDiscussion,
@@ -282,6 +283,6 @@ export const notifyNewUserMentions = async ({
       }
     }
   } catch (error) {
-    console.error('Error sending user mention notifications:', error);
+    logger.error('Error sending user mention notifications:', error);
   }
 };

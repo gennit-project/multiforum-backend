@@ -2,6 +2,7 @@ import type { Driver } from "neo4j-driver";
 import type { Ogm } from "../../types/context.js";
 import { SortDirection } from "../../src/generated/graphql.js";
 import type { CollectionWhere } from "../../ogm_types.js";
+import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
@@ -108,7 +109,7 @@ const publicCollectionsContaining = ({ ogm }: Input) => {
 
       return collections;
     } catch (error) {
-      console.error("Error fetching public collections containing item:", {
+      logger.error("Error fetching public collections containing item:", {
         itemId,
         itemType,
         error,

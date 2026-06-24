@@ -24,6 +24,7 @@ import {
   IssueWhere,
 } from "../../src/generated/graphql.js";
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
+import { logger } from "../../logger.js";
 
 type IsChannelOwnerInput = {
   where: ChannelWhere;
@@ -34,7 +35,7 @@ type IsChannelOwnerInput = {
 
 export const isChannelOwner = rule({ cache: "contextual" })(
   async (parent: unknown, args: IsChannelOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    console.log('🔐 isChannelOwner rule called with args:', JSON.stringify(args));
+    logger.info('🔐 isChannelOwner rule called with args:', JSON.stringify(args));
 
     // set user data
     ctx.user = await setUserDataOnContext({
@@ -42,11 +43,11 @@ export const isChannelOwner = rule({ cache: "contextual" })(
       getPermissionInfo: false,
     });
     let username = ctx.user.username;
-    console.log("username: ", ctx.user);
+    logger.info("username: ", ctx.user);
 
     let ogm = ctx.ogm;
     const { where, channelUniqueName, issueId, commentId } = args;
-    console.log('args: ', JSON.stringify(args));
+    logger.info('args: ', JSON.stringify(args));
     let uniqueName = '';
 
     if (where?.uniqueName) {
@@ -98,7 +99,7 @@ export const isChannelOwner = rule({ cache: "contextual" })(
           channelUniqueName
         }`,
       });
-      console.log('issue', JSON.stringify(issue));
+      logger.info('issue', JSON.stringify(issue));
 
       if (!issue || !issue[0]) {
         // Return false instead of throwing to allow OR chain to continue
@@ -276,7 +277,7 @@ type IsCommentAuthorInput = {
 
 export const isCommentAuthor = rule({ cache: "contextual" })(
   async (parent: unknown, args: IsCommentAuthorInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    console.log("isCommentAuthor rule");
+    logger.info("isCommentAuthor rule");
     const { where } = args;
     const commentId  = where.id
 
@@ -288,8 +289,8 @@ export const isCommentAuthor = rule({ cache: "contextual" })(
 
     let username = ctx.user.username;
     let modName =  ctx.user.data?.ModerationProfile?.displayName || null;
-    console.log("username: ", username);
-    console.log("modName: ", modName);
+    logger.info("username: ", username);
+    logger.info("modName: ", modName);
 
     let ogm = ctx.ogm;
 
@@ -486,7 +487,7 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
     }
 
     if (!discussionId || !channelUniqueName) {
-      console.error("Missing discussionId or channelUniqueName in args:", args);
+      logger.error("Missing discussionId or channelUniqueName in args:", args);
       return false;
     }
 
@@ -531,7 +532,7 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
 
       return false;
     } catch (error) {
-      console.error("Error in isDiscussionChannelOwner:", error);
+      logger.error("Error in isDiscussionChannelOwner:", error);
       return false;
     }
   }
@@ -572,7 +573,7 @@ export const isImageUploader = rule({ cache: "contextual" })(
       }`,
     });
 
-    console.log('🔍 isImageUploader - Found images:', JSON.stringify(images, null, 2));
+    logger.info('🔍 isImageUploader - Found images:', JSON.stringify(images, null, 2));
 
     if (!images || images.length === 0) {
       throw new Error(ERROR_MESSAGES.image.notFound);
@@ -581,22 +582,22 @@ export const isImageUploader = rule({ cache: "contextual" })(
     const image = images[0];
     const uploaderUsername = image?.Uploader?.username;
 
-    console.log('🔍 isImageUploader - Image:', { imageId: image.id, uploaderUsername, loggedInUsername: username });
+    logger.info('🔍 isImageUploader - Image:', { imageId: image.id, uploaderUsername, loggedInUsername: username });
 
     // If there's no uploader set (legacy/test data), allow anyone authenticated to edit
     // This maintains backward compatibility with existing images
     if (!uploaderUsername) {
-      console.log('⚠️ isImageUploader - No uploader found, allowing edit (legacy data)');
+      logger.info('⚠️ isImageUploader - No uploader found, allowing edit (legacy data)');
       return true;
     }
 
     // Check if the user is the uploader
     if (uploaderUsername !== username) {
-      console.log('❌ isImageUploader - User is not the uploader');
+      logger.info('❌ isImageUploader - User is not the uploader');
       return false; // Permission check - return false to allow OR to work
     }
 
-    console.log('✅ isImageUploader - User is the uploader');
+    logger.info('✅ isImageUploader - User is the uploader');
     return true;
   }
 );

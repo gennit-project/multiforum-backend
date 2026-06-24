@@ -6,6 +6,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
+import { logger } from "../../logger.js";
 
 // Helper function to check if a user is a channel owner
 async function isUserChannelOwner(username: string, channelName: string, context: GraphQLContext): Promise<boolean> {
@@ -116,10 +117,10 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
     const issueId = args.issueId;
     const targetUsername = args.username; // The username of the user to be suspended
     
-    console.log('can suspend and unsuspend user');
-    console.log("channelUniqueName", channelUniqueName);
-    console.log("issueId", issueId);
-    console.log("targetUsername", targetUsername);
+    logger.info('can suspend and unsuspend user');
+    logger.info("channelUniqueName", channelUniqueName);
+    logger.info("issueId", issueId);
+    logger.info("targetUsername", targetUsername);
     
     // If channelUniqueName is not provided, look it up from the issue
     if (!channelUniqueName && issueId) {
