@@ -24,6 +24,12 @@ jobs:
       - name: Clean install dependencies
         run: npm ci
 
+      # Generated type files (ogm_types.ts, src/generated/graphql.ts) are no
+      # longer committed; regenerate them from typeDefs.ts (no DB needed) before
+      # type checking and tests so imports resolve.
+      - name: Generate GraphQL/OGM types
+        run: npm run codegen
+
       - name: Run TypeScript type checking
         run: npm run tsc
 
@@ -56,6 +62,10 @@ jobs:
 
       - name: Clean install dependencies
         run: npm ci
+
+      # Generated type files are no longer committed; regenerate before tests.
+      - name: Generate GraphQL/OGM types
+        run: npm run codegen
 
       # Testcontainers manages the Neo4j container itself via the Docker daemon
       # that is available on GitHub-hosted Ubuntu runners. Run under c8 so the
