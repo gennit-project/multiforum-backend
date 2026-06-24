@@ -130,3 +130,173 @@ test("authenticated admin passes the shield and the resolver runs", async () => 
     | undefined;
   assert.equal(data?.deleteServerConfigs?.nodesDeleted, 0);
 });
+
+// --- Resource-ownership gate: deleteComments = and(isAuthenticated, or(isAdmin, isCommentAuthor)) ---
+//
+// The ownership analogue of the admin test above. isCommentAuthor reads the
+// comment's CommentAuthor from the DB and compares it to the caller, so this
+// exercises the full path: shield rule -> live OGM lookup -> allow/deny. Each
+// test seeds its own comment so the admit case (which actually deletes) cannot
+// affect the deny cases regardless of run order.
+
+const seedComment = async (id: string, authorUsername: string) => {
+  const session = driver.session();
+  try {
+    await session.run(
+      `MATCH (u:User { username: $authorUsername })
+       CREATE (c:Comment { id: $id, text: 'hello', isRootComment: true, createdAt: datetime() })
+       CREATE (u)-[:AUTHORED_COMMENT]->(c)`,
+      { id, authorUsername }
+    );
+  } finally {
+    await session.close();
+  }
+};
+
+const countComment = async (id: string): Promise<number> => {
+  const session = driver.session();
+  try {
+    const res = await session.run(
+      `MATCH (c:Comment { id: $id }) RETURN count(c) AS n`,
+      { id }
+    );
+    return res.records[0].get("n").toNumber();
+  } finally {
+    await session.close();
+  }
+};
+
+const execDeleteComments = (id: string, authorization?: string) =>
+  graphql({
+    schema,
+    source: `mutation ($id: ID!) {
+      deleteComments(where: { id: $id }) { nodesDeleted }
+    }`,
+    variableValues: { id },
+    contextValue: {
+      driver,
+      ogm,
+      req: {
+        headers: authorization ? { authorization } : {},
+        body: {},
+        isMutation: true,
+      },
+    },
+  });
+
+test("deleteComments: unauthenticated request is blocked by isAuthenticated", async () => {
+  await seedComment("c-unauth", "normaluser");
+  const result = await execDeleteComments("c-unauth");
+  assert.ok(result.errors && result.errors.length > 0);
+  assert.equal(result.errors[0].message, ERROR_MESSAGES.channel.notAuthenticated);
+  assert.equal(await countComment("c-unauth"), 1, "comment must survive a denied delete");
+});
+
+test("deleteComments: authenticated non-author non-admin is blocked by isCommentAuthor", async () => {
+  await seedComment("c-other", "normaluser");
+  const result = await execDeleteComments(
+    "c-other",
+    mockToken({ username: "adminuser", email: "not-admin-here@e2e.test" })
+  );
+  // adminuser is not an admin here (email doesn't match) and is not the author,
+  // so both branches of the or() fail -> shield's default deny.
+  assert.ok(result.errors && result.errors.length > 0);
+  assert.match(result.errors[0].message, /Not Authoris/i);
+  assert.notEqual(result.errors[0].message, ERROR_MESSAGES.channel.notAuthenticated);
+  assert.equal(await countComment("c-other"), 1, "comment must survive a denied delete");
+});
+
+test("deleteComments: the comment author passes isCommentAuthor and the resolver deletes it", async () => {
+  await seedComment("c-own", "normaluser");
+  const result = await execDeleteComments(
+    "c-own",
+    mockToken({ username: "normaluser", email: "normal@e2e.test" })
+  );
+  assert.equal(
+    result.errors,
+    undefined,
+    `author should not be blocked, got: ${JSON.stringify(result.errors)}`
+  );
+  const data = result.data as { deleteComments?: { nodesDeleted?: number } } | null;
+  assert.equal(data?.deleteComments?.nodesDeleted, 1);
+  assert.equal(await countComment("c-own"), 0, "the author's comment should be deleted");
+});
+
+// --- Account-owner + input-validation gate:
+//     updateUsers = and(isAuthenticated, updateUserInputIsValid, or(isAccountOwner, isAdmin))
+//
+// Adds two paths the comment gate above doesn't reach:
+//   - isAccountOwner DENIES BY THROWING (not by returning false), exercising
+//     shield's or() over a throwing rule.
+//   - an input-validation gate (updateUserInputIsValid) that can deny an
+//     otherwise-authorized owner purely on bad input.
+
+const readBio = async (username: string): Promise<string | null> => {
+  const session = driver.session();
+  try {
+    const res = await session.run(
+      `MATCH (u:User { username: $username }) RETURN u.bio AS bio`,
+      { username }
+    );
+    return res.records[0]?.get("bio") ?? null;
+  } finally {
+    await session.close();
+  }
+};
+
+const execUpdateUserBio = (username: string, bio: string, authorization?: string) =>
+  graphql({
+    schema,
+    source: `mutation ($username: String!, $bio: String!) {
+      updateUsers(where: { username: $username }, update: { bio: $bio }) {
+        users { username bio }
+      }
+    }`,
+    variableValues: { username, bio },
+    contextValue: {
+      driver,
+      ogm,
+      req: {
+        headers: authorization ? { authorization } : {},
+        body: {},
+        isMutation: true,
+      },
+    },
+  });
+
+test("updateUsers: authenticated non-owner is blocked by isAccountOwner (throwing branch of or())", async () => {
+  const result = await execUpdateUserBio(
+    "normaluser",
+    "hacked bio",
+    mockToken({ username: "adminuser", email: "not-admin-here@e2e.test" })
+  );
+  assert.ok(result.errors && result.errors.length > 0);
+  assert.notEqual(result.errors[0].message, ERROR_MESSAGES.channel.notAuthenticated);
+  assert.notEqual(await readBio("normaluser"), "hacked bio", "non-owner must not change another user's bio");
+});
+
+test("updateUsers: the account owner passes and the resolver updates the bio", async () => {
+  const result = await execUpdateUserBio(
+    "normaluser",
+    "my new bio",
+    mockToken({ username: "normaluser", email: "normal@e2e.test" })
+  );
+  assert.equal(
+    result.errors,
+    undefined,
+    `owner should not be blocked, got: ${JSON.stringify(result.errors)}`
+  );
+  assert.equal(await readBio("normaluser"), "my new bio");
+});
+
+test("updateUsers: an over-length bio is blocked by updateUserInputIsValid even for the owner", async () => {
+  const longBio = "x".repeat(501); // MAX_CHARS_IN_USER_BIO is 500
+  const result = await execUpdateUserBio(
+    "normaluser",
+    longBio,
+    mockToken({ username: "normaluser", email: "normal@e2e.test" })
+  );
+  assert.ok(result.errors && result.errors.length > 0);
+  assert.match(result.errors[0].message, /bio cannot exceed/i);
+  assert.notEqual(await readBio("normaluser"), longBio, "invalid bio must not be persisted");
+});
