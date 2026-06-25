@@ -590,6 +590,20 @@ const typeDefinitions = gql`
       END AS isFavorited
     """, columnName: "isFavorited")
 
+    # Membership-derived display flag: is this discussion's author a moderator or
+    # owner of the given channel? Replaces the legacy ChannelRole.showModTag for
+    # the MOD badge. See docs/isadmin-phaseout-design.md.
+    authorIsChannelModerator(channelUniqueName: String): Boolean @cypher(statement: """
+      OPTIONAL MATCH (this)<-[:POSTED_DISCUSSION]-(author:User)
+      RETURN CASE
+        WHEN author IS NULL OR $channelUniqueName IS NULL THEN false
+        WHEN EXISTS { (author)-[:ADMIN_OF_CHANNEL]->(:Channel {uniqueName: $channelUniqueName}) }
+          OR EXISTS { (author)-[:MODERATION_PROFILE]->(:ModerationProfile)-[:MODERATOR_OF_CHANNEL]->(:Channel {uniqueName: $channelUniqueName}) }
+        THEN true
+        ELSE false
+      END AS authorIsChannelModerator
+    """, columnName: "authorIsChannelModerator")
+
     # Shared collections
     SharedCollection: Collection @relationship(type: "SHARES_COLLECTION", direction: OUT)
   }
@@ -756,6 +770,18 @@ const typeDefinitions = gql`
       @relationship(type: "SUBSCRIBED_TO_NOTIFICATIONS", direction: IN)
     SubscribedToEventUpdates: [User!]!
       @relationship(type: "SUBSCRIBED_TO_EVENT_UPDATES", direction: IN)
+    # Membership-derived display flag: is this event's author a moderator or
+    # owner of the given channel? Replaces the legacy ChannelRole.showModTag.
+    authorIsChannelModerator(channelUniqueName: String): Boolean @cypher(statement: """
+      OPTIONAL MATCH (this)<-[:POSTED_BY]-(author:User)
+      RETURN CASE
+        WHEN author IS NULL OR $channelUniqueName IS NULL THEN false
+        WHEN EXISTS { (author)-[:ADMIN_OF_CHANNEL]->(:Channel {uniqueName: $channelUniqueName}) }
+          OR EXISTS { (author)-[:MODERATION_PROFILE]->(:ModerationProfile)-[:MODERATOR_OF_CHANNEL]->(:Channel {uniqueName: $channelUniqueName}) }
+        THEN true
+        ELSE false
+      END AS authorIsChannelModerator
+    """, columnName: "authorIsChannelModerator")
   }
 
   type Comment {
