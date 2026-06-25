@@ -20,6 +20,7 @@ type HasChannelPermissionInput = {
 type ChannelRoleLike = Record<string, boolean | null | undefined> | null | undefined;
 
 interface ChannelRoles {
+  ElevatedChannelRole?: ChannelRoleLike;
   DefaultChannelRole?: ChannelRoleLike;
   SuspendedRole?: ChannelRoleLike;
 }
@@ -29,12 +30,25 @@ interface ServerRoleDefaults {
   DefaultSuspendedRole?: ChannelRoleLike;
 }
 
-// Channel owners (admins) get every permission. Mirrors the Admins.some() check.
+// True when the user is listed among the channel's owners (admins).
 export function isChannelAdmin(
   admins: Array<{ username?: string | null }> | null | undefined,
   username: string | null | undefined
 ): boolean {
   return !!admins?.some((admin) => admin.username === username);
+}
+
+// Owner (channel admin) permission. Owners resolve the channel's configurable
+// elevated role; until one is configured they retain every permission (current
+// behavior). See docs/isadmin-phaseout-design.md.
+export function evaluateChannelOwnerPermission(
+  elevatedChannelRole: ChannelRoleLike,
+  permission: string
+): boolean {
+  if (!elevatedChannelRole) {
+    return true;
+  }
+  return elevatedChannelRole[permission] === true;
 }
 
 /**
@@ -91,11 +105,21 @@ export const hasChannelPermission: (
     where: {
       uniqueName: channelName,
     },
-    selectionSet: `{ 
+    selectionSet: `{
       Admins {
         username
       }
-      DefaultChannelRole { 
+      ElevatedChannelRole {
+        name
+        canCreateEvent
+        canCreateDiscussion
+        canCreateComment
+        canUpvoteComment
+        canUpvoteDiscussion
+        canUploadFile
+        canUpdateChannel
+      }
+      DefaultChannelRole {
         name
         canCreateEvent
         canCreateDiscussion
@@ -124,9 +148,13 @@ export const hasChannelPermission: (
 
   const channelData = channel[0];
 
-  // Check if user is admin/owner - if so, grant all permissions
+  // Channel owners (admins) resolve the channel's elevated role (with a
+  // behavior-preserving fallback to all-permissions when none is configured).
   if (isChannelAdmin(channelData.Admins, username)) {
-    return true;
+    const elevatedRole = (channelData as unknown as ChannelRoles).ElevatedChannelRole;
+    return evaluateChannelOwnerPermission(elevatedRole, permission)
+      ? true
+      : new Error(ERROR_MESSAGES.channel.noChannelPermission);
   }
 
   // Check for an active suspension

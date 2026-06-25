@@ -5,10 +5,23 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   isChannelAdmin,
+  evaluateChannelOwnerPermission,
   evaluateChannelRolePermission,
 } from "./hasChannelPermission.js";
 
 const PERM = "canCreateComment";
+
+test("an owner with no elevated role configured keeps every permission", () => {
+  assert.equal(evaluateChannelOwnerPermission(null, PERM), true);
+  assert.equal(evaluateChannelOwnerPermission(undefined, PERM), true);
+});
+
+test("a configured elevated role governs the owner (can be restrictive)", () => {
+  assert.equal(evaluateChannelOwnerPermission({ [PERM]: true }, PERM), true);
+  assert.equal(evaluateChannelOwnerPermission({ [PERM]: false }, PERM), false);
+  // A role that simply omits the permission denies it.
+  assert.equal(evaluateChannelOwnerPermission({ canUploadFile: true }, PERM), false);
+});
 
 test("isChannelAdmin matches a user listed in the channel admins", () => {
   const admins = [{ username: "alice" }, { username: "bob" }];

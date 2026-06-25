@@ -55,10 +55,10 @@ const {
 const permissionList = shield({
     Query: {
       "*": allow,
-      // Enumerating all emails is admin-only. Non-admin clients (incl. the
-      // onboarding flow) must use the self-scoped `getOwnEmail` query instead,
-      // which only returns the caller's own verified-token email.
-      emails: and(isAuthenticated, isAdmin),
+      // Enumerating all emails is denied for every role — only direct database
+      // access should be able to read them. Clients that need the caller's own
+      // email use the self-scoped `getOwnEmail` query.
+      emails: deny,
     },
     User: {
       // Public fields - anyone can access
