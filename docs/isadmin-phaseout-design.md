@@ -29,10 +29,16 @@ make every tier resolve to a **configurable role** (not a hardcoded bypass).
 
 | Tier | Channel scope | Server scope | Governing role (seeded default, configurable) |
 |---|---|---|---|
-| Elevated | `Channel.Admins` (owners) | `ServerConfig.Admins` | elevated/admin role — permissive |
+| Super-admin | — (owners are the channel apex) | `ServerConfig.SuperAdmins` | super-admin role — apex (holds `canManageAdmins`/`canManageSuperAdmins`) |
+| Elevated | `Channel.Admins` (owners) | `ServerConfig.Admins` | admin role — permissive but **no** `canManageAdmins` (restricted by default) |
 | Moderator | `Channel.Moderators` | `ServerConfig.Moderators` | mod role |
 | Standard | (no special connection) | (no special connection) | default role — medium (vote + feedback, no hide/delete) |
 | Suspended | `Channel.SuspendedUsers` / `SuspendedMods` | `ServerConfig.SuspendedUsers` / `SuspendedMods` | suspended role — restricted |
+
+Channels have no super tier — the channel owner is the channel apex. The server
+splits its apex into **SuperAdmins** (can manage admins) and **Admins**
+(restricted, cannot) so super-administration can be delegated to a trusted group
+without making every admin able to mint peers.
 
 The schema already has the server-side default roles:
 `ServerConfig.DefaultServerRole`, `DefaultModRole`, `DefaultElevatedModRole`,
@@ -45,11 +51,11 @@ with suspended users (the suspended role already exists).
 ### What "restricted admin" means in this model
 
 The admin tier resolves to a **configurable** admin role, not a hardcoded
-all-permissions bypass. The seeded default admin role is **permissive but omits
-`canManageAdmins`** — so *every DB admin is "restricted" by default*, and only
-**root** can mint admins. Operators who want a DB admin that can invite peers
-configure the admin role (or, future, assign a distinct elevated role) to include
-`canManageAdmins`.
+all-permissions bypass. The seeded default `Admins` role is **permissive but omits
+`canManageAdmins`** — so *every regular admin is "restricted" by default*. The
+ability to mint admins lives in the **SuperAdmins** tier (and root). Operators who
+want someone able to invite admins add them to `ServerConfig.SuperAdmins`, not
+`Admins`.
 
 > Note: the *current* channel code gives channel owners **every** permission
 > unconditionally (`isChannelAdmin → true`). The target model makes the
@@ -57,18 +63,27 @@ configure the admin role (or, future, assign a distinct elevated role) to includ
 > owners/admins can be made more restrictive. See §8 Q1 — whether to align the
 > channel side now or later.
 
-## 3. Root: the only hardcoded super-user
+## 3. Root (break-glass) + SuperAdmins (operational apex)
 
-- **Root identity from env** (`SUPERADMIN_EMAIL`), generalizing the existing
-  `CYPRESS_ADMIN_TEST_EMAIL` shortcut in
-  [`getServerScopedMembership.ts`](../rules/permission/getServerScopedMembership.ts).
-- Holds **all** capabilities unconditionally; can never be locked out; the only
-  account holding `canManageAdmins` out of the box.
-- It is the recovery path if role data is misconfigured — which is what makes the
-  migration (§7) safe.
-- This is the **only** membership-style override that remains. `isAdmin` as a
-  "you're in `Admins` ⇒ you can do anything" check is removed; admin power flows
-  through the (configurable) admin role like every other tier.
+A single env super-admin is impractical (single point of failure, no team
+delegation). So two distinct mechanisms:
+
+- **Root — env bootstrap & break-glass** (`SUPERADMIN_EMAIL`, generalizing the
+  existing `CYPRESS_ADMIN_TEST_EMAIL` shortcut in
+  [`getServerScopedMembership.ts`](../rules/permission/getServerScopedMembership.ts)).
+  Holds **all** capabilities unconditionally; immutable from the DB; can never be
+  locked out. Its jobs: (a) seed the **first** SuperAdmin on a fresh install
+  (cold-start), and (b) recover if `SuperAdmins` is ever emptied/misconfigured.
+  Rarely used in normal operation.
+- **`ServerConfig.SuperAdmins` — the operational apex group.** A DB-managed,
+  **self-managing** membership tier whose role holds `canManageAdmins` and
+  `canManageSuperAdmins`. This is the day-to-day "trusted operators" set: multiple
+  people, no single point of failure.
+
+`isAdmin` as a "you're in `Admins` ⇒ you can do anything" check is removed. Admin
+power flows through the (configurable) tier roles; the only unconditional override
+is the env root. Regular `Admins` are restricted (no `canManageAdmins`);
+`SuperAdmins` and root mint admins.
 
 ## 4. Capabilities
 
@@ -83,7 +98,8 @@ configure the admin role (or, future, assign a distinct elevated role) to includ
 | `canManagePlugins` | `refreshPlugins`, `installPluginVersion`, `enableServerPlugin`, `setServerPluginSecret`, `deletePluginVersions` |
 | `canManageRoles` | `create/deleteServerRoles`, `create/updateModServerRoles`, `create*ChannelRoles`, `deleteChannelRoles`¹ |
 | `canManageMods` | `inviteServerMod`, `cancelInviteServerMod` |
-| `canManageAdmins` (**apex**) | `inviteServerAdmin`, `cancelInviteServerAdmin` |
+| `canManageAdmins` (**apex**) | `inviteServerAdmin`, `cancelInviteServerAdmin` (SuperAdmins + root) |
+| `canManageSuperAdmins` (**apex**) | add/remove `ServerConfig.SuperAdmins` (SuperAdmins self-manage + root) |
 | `canManageServerMembers` | `emails` enumeration, `deleteEmails`², `deleteUsers`², `updateUsers`-on-others² |
 
 ¹ keep the existing `isChannelOwner` path for channel-scoped role deletes.
@@ -125,14 +141,21 @@ admin-management UI (`components/admin/ServerMembershipEditor.vue`,
 *display, invites, and tier selection*; it just no longer **implies all
 permissions** — the admin *role* does that, configurably.
 
+A new **`ServerConfig.SuperAdmins`** connection is added as a sibling tier (same
+UI/invite pattern). It selects the super-admin role and is the only DB tier that
+can manage admins/super-admins; the existing `ServerMembershipEditor` gains a
+SuperAdmins section.
+
 ## 7. Evaluator changes, migration & rollout
 
 ### Evaluator
 1. **Root override** in `hasServerPermission` / `hasServerModPermission`: env-root
    ⇒ `true` before role evaluation. No `Admins`-membership shortcut.
-2. **Admin tier:** when the caller is in `ServerConfig.Admins`, evaluate against
-   the admin/elevated `ServerRole` (+ `ModServerRole`), symmetric with the
-   channel owner tier — but via a configurable role, not a hardcoded `true`.
+2. **Tier resolution (highest wins):** `SuperAdmins` → super-admin role,
+   else `Admins` → admin role, else `Moderators` → mod role, else suspended →
+   suspended role, else default role. Each is a configurable `ServerRole`
+   (+ `ModServerRole`), not a hardcoded `true` — symmetric with the channel
+   owner/mod/suspended/default resolution.
 3. **Generalize the default-role fallback.** `evaluateServerPermission` hardcodes
    only `canCreateChannel` / `canUploadFile`
    ([hasServerPermission.ts:40-49](../rules/permission/hasServerPermission.ts));
@@ -141,17 +164,22 @@ permissions** — the admin *role* does that, configurably.
    role (symmetric with suspended users).
 
 ### Migration (one-time; root is the safety net)
-1. Seed the **Administrator** `ServerRole` (admin caps, default **without**
-   `canManageAdmins`) and a full `ModServerRole`; optionally a permissive
-   "Super Administrator" variant *with* `canManageAdmins`.
-2. Connect the admin/elevated role as the role resolved for `ServerConfig.Admins`
-   membership; backfill existing admins.
-3. Designate the env root (`SUPERADMIN_EMAIL`). Verify root + a migrated admin can
-   authenticate before removing the `isAdmin` path.
+1. Seed two server roles: **Super Administrator** (admin caps *with*
+   `canManageAdmins`/`canManageSuperAdmins`) and **Administrator** (admin caps
+   *without* them), plus the full `ModServerRole` for both.
+2. Wire the roles to their tiers: `ServerConfig.SuperAdmins` → Super Administrator,
+   `ServerConfig.Admins` → Administrator.
+3. **Backfill existing `Admins` into `SuperAdmins`** to preserve their current
+   full power (they can manage admins today). Operators then *demote* specific
+   people to restricted `Admins` as desired — nobody silently loses the ability
+   to manage admins.
+4. Designate the env root (`SUPERADMIN_EMAIL`). Verify root + a migrated
+   super-admin can authenticate before removing the `isAdmin` path.
 
 ### Phasing (separate PRs)
-1. **PR-1** — add admin capability flags to `ServerRole`; add root override + the
-   admin tier + generic default-role fallback to the evaluators; add the new
+1. **PR-1** — add admin capability flags to `ServerRole`; add the
+   `ServerConfig.SuperAdmins` connection; add root override + the SuperAdmin/Admin
+   tier resolution + generic default-role fallback to the evaluators; add the new
    rules. **No call sites converted → no behavior change.** Tests.
 2. **PR-2 (migration)** — seed roles, backfill admins, wire env root; maintenance
    window.
@@ -168,12 +196,15 @@ it. Frontend: none required until PR-5.
 ## 8. Decisions & open questions
 
 **Resolved (with the operator):**
-- **Pure role-based with env-only break-glass root** (no superuser-by-membership).
-- **`SUPERADMIN_EMAIL` env root** for now.
-- **Keep `ServerConfig.Admins`** for display / invites / tier selection.
-- **Separate `canManageAdmins` vs `canManageMods`**; `canManageAdmins` is apex,
-  root-only by default → restricted admins are the default.
-- **Server scope mirrors channel scope**, including a **suspended admin** tier.
+- **Pure role-based** with two apex mechanisms: an **env break-glass root**
+  (bootstrap + recovery) and a DB **`ServerConfig.SuperAdmins`** group (the
+  practical, self-managing apex) — a single env super-admin alone is impractical.
+- **Keep `ServerConfig.Admins`** for display / invites / tier selection; regular
+  admins are restricted (no `canManageAdmins`).
+- **Separate `canManageAdmins` vs `canManageMods`**; both apex caps live on the
+  SuperAdmin role; root holds everything.
+- **Server scope mirrors channel scope**, including a **suspended admin** tier;
+  the server adds a SuperAdmin tier above Admins (channels keep owner as apex).
 
 **Still open:**
 1. **Align the channel owner tier now or later?** Today channel owners get *all*
