@@ -39,7 +39,7 @@ interface ServerPluginEdge {
 
 const BOT_TAGS = new Set(['bot', 'bots']);
 
-const parseSettingsJson = (settingsJson: unknown): Record<string, unknown> => {
+export const parseSettingsJson = (settingsJson: unknown): Record<string, unknown> => {
   if (!settingsJson || typeof settingsJson !== 'string') {
     return (settingsJson as Record<string, unknown>) || {};
   }
@@ -50,7 +50,7 @@ const parseSettingsJson = (settingsJson: unknown): Record<string, unknown> => {
   }
 };
 
-const isBotPlugin = (plugin: { tags?: unknown } | null | undefined) => {
+export const isBotPlugin = (plugin: { tags?: unknown } | null | undefined) => {
   const tags = Array.isArray(plugin?.tags) ? plugin.tags : [];
   return tags.some((tag: unknown) => BOT_TAGS.has(String(tag).toLowerCase()));
 };
