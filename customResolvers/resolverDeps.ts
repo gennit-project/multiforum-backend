@@ -45,6 +45,7 @@ export function createOgmAndModels(driver: Driver) {
     ServerSecret: ogm.model("ServerSecret"),
     Image: ogm.model("Image"),
     Album: ogm.model("Album"),
+    Collection: ogm.model("Collection"),
     WikiPage: ogm.model("WikiPage"),
     TextVersion: ogm.model("TextVersion"),
     FilterOption: ogm.model("FilterOption"),

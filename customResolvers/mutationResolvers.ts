@@ -86,6 +86,7 @@ import updateChannelPluginPipelines from "./mutations/updateChannelPluginPipelin
 import createImageWithUploader from "./mutations/createImageWithUploader.js";
 import createImagesWithUploader from "./mutations/createImagesWithUploader.js";
 import createAlbumsWithOwner from "./mutations/createAlbumsWithOwner.js";
+import createCollectionsWithOwner from "./mutations/createCollectionsWithOwner.js";
 import updateDownloadLabels from "./mutations/updateDownloadLabels.js";
 import createScratchpadEntry from "./mutations/createScratchpadEntry.js";
 import undoSuperUpvote from "./mutations/undoSuperUpvote.js";
@@ -118,6 +119,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ServerSecret,
     Image,
     Album,
+    Collection,
     WikiPage,
     TextVersion,
     FilterOption,
@@ -522,6 +524,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     createAlbums: createAlbumsWithOwner({
       Album,
+      User
+    }),
+    createCollections: createCollectionsWithOwner({
+      Collection,
       User
     }),
     updateDownloadLabels: updateDownloadLabels({

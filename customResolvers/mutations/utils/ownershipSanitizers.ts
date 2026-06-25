@@ -4,9 +4,23 @@ import type {
   AlbumImagesFieldInput,
   AlbumOwnerFieldInput,
   ImageUploaderFieldInput,
+  CollectionCreateInput,
+  CollectionCreatedByFieldInput,
 } from "../../../ogm_types.js";
 
 const buildOwnerConnect = (username: string): AlbumOwnerFieldInput => ({
+  connect: {
+    where: {
+      node: {
+        username,
+      },
+    },
+  },
+});
+
+const buildCreatedByConnect = (
+  username: string
+): CollectionCreatedByFieldInput => ({
   connect: {
     where: {
       node: {
@@ -93,6 +107,21 @@ export const sanitizeAlbumCreateNode = (
   }
 
   return sanitizeAlbumCreateInput(node, username);
+};
+
+export const sanitizeCollectionCreateInput = (
+  collectionInput: unknown,
+  username: string
+): CollectionCreateInput => {
+  // Strip any client-supplied CreatedBy and force ownership to the
+  // authenticated user, so a caller can't create a collection owned by
+  // someone else.
+  const { CreatedBy, ...rest } = (collectionInput as UnknownRecord) || {};
+
+  return {
+    ...rest,
+    CreatedBy: buildCreatedByConnect(username),
+  } as CollectionCreateInput;
 };
 
 export const sanitizeAlbumUpdateNode = (

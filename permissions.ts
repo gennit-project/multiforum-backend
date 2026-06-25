@@ -54,7 +54,10 @@ const {
 const permissionList = shield({
     Query: {
       "*": allow,
-      emails: allow// isAdmin,
+      // Enumerating all emails is admin-only. Non-admin clients (incl. the
+      // onboarding flow) must use the self-scoped `getOwnEmail` query instead,
+      // which only returns the caller's own verified-token email.
+      emails: and(isAuthenticated, isAdmin),
     },
     User: {
       // Public fields - anyone can access
@@ -78,6 +81,9 @@ const permissionList = shield({
       FavoriteImages: isAccountOwner,
       FavoriteChannels: isAccountOwner,
       OwnedDownloads: isAccountOwner,
+
+      // Notifications - only the account owner may list their own notifications
+      Notifications: isAccountOwner,
 
       // Other private fields
       Email: isAccountOwner,
@@ -115,7 +121,7 @@ const permissionList = shield({
       createServerConfigs: and(isAuthenticated, isAdmin),
       deleteServerConfigs: and(isAuthenticated, isAdmin),
 
-      updateServerConfigs: and(isAuthenticated, allow),//isAdmin,
+      updateServerConfigs: and(isAuthenticated, isAdmin),
       updateModServerRoles: and(isAuthenticated, isAdmin),
       deleteChannelRoles: and(isAuthenticated, or(isAdmin, isChannelOwner)),
       deleteServerRoles: and(isAuthenticated, isAdmin),

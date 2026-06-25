@@ -1826,6 +1826,19 @@ const typeDefinitions = gql`
     dayData: [DayData!]!
   }
 
+  """
+  Self-scoped account summary for the authenticated caller, returned by the
+  getOwnEmail query. Plain (non-node) type whose fields are populated entirely
+  by the custom resolver.
+  """
+  type OwnEmail {
+    address: String!
+    username: String
+    profilePicURL: String
+    modProfileName: String
+    unreadNotificationCount: Int
+  }
+
   type Query {
     # Discovery
     """
@@ -1878,6 +1891,14 @@ const typeDefinitions = gql`
       limit: Int
       sort: SortType
     ): CommentRepliesFormat
+    """
+    Return the authenticated caller's own account summary, keyed off the
+    verified token email. Self-scoped (takes no arguments), so it cannot look
+    up anyone else. Used by onboarding to detect whether the logged-in user
+    already has an account: returns null when not authenticated, and an object
+    with username: null when authenticated but no account exists yet.
+    """
+    getOwnEmail: OwnEmail
     getUserFavoriteComment(commentId: ID!): Boolean
     getSortedChannels(
       offset: Int
