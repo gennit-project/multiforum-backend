@@ -48,7 +48,6 @@ export const canBecomeForumAdmin = rule({ cache: "contextual" })(
     if (channelUniqueName) {
       context.user = await setUserDataOnContext({
         context,
-        getPermissionInfo: false,
       });
     }
 

@@ -1,6 +1,8 @@
 import { execute, parse, subscribe } from 'graphql';
 import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
 import { logger } from "../logger.js";
+import type { GraphQLSchema } from "graphql";
+import type { Ogm } from "../types/context.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -114,12 +116,12 @@ export const handleDiscussionUpdateEvent = async (
  * and tracks version history of title and body changes
  */
 export class DiscussionVersionHistoryService {
-  private schema: any;
-  private ogm: any;
+  private schema: GraphQLSchema;
+  private ogm: Ogm;
   private isRunning: boolean = false;
   private subscriptionIterator: AsyncIterableIterator<any> | null = null;
 
-  constructor(schema: any, ogm: any) {
+  constructor(schema: GraphQLSchema, ogm: Ogm) {
     this.schema = schema;
     this.ogm = ogm;
     logger.info('Discussion version history service initialized');

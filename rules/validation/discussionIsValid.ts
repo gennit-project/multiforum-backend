@@ -5,7 +5,7 @@ import {
   CanCreateDiscussionArgs,
   CreateDiscussionItem,
   CanUpdateDiscussionArgs,
-} from "../rules";
+} from "../definitions/contentCreationRules.js";
 import {
   MAX_CHARS_IN_DISCUSSION_BODY,
   MAX_CHARS_IN_DISCUSSION_TITLE,

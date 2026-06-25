@@ -89,10 +89,9 @@ test("makeOgm throws on an unexpected model lookup", () => {
   assert.throws(() => ogm.model("Ghost"), /Unexpected model lookup: Ghost/);
 });
 
-test("makeUser carries server roles where the permission system reads them", () => {
-  const user = makeUser({ username: "alice", ServerRoles: [{ canCreateChannel: true }] });
+test("makeUser builds a user with the given username", () => {
+  const user = makeUser({ username: "alice" });
   assert.equal(user.username, "alice");
-  assert.deepEqual(user.data.ServerRoles, [{ canCreateChannel: true }]);
 });
 
 test("makeContext composes driver, ogm, and user", () => {

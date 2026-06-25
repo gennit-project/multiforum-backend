@@ -21,7 +21,6 @@ export const isIssueAuthor = rule({ cache: "contextual" })(
     // Set user data
     ctx.user = await setUserDataOnContext({
       context: ctx,
-      getPermissionInfo: false,
     });
 
     const username = ctx.user.username;

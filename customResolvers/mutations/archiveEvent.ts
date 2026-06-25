@@ -14,7 +14,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
-import { getFinalCommentText } from "./reportDiscussion.js";
+import { getFinalCommentText } from "./shared/reportText.js";
 import {
   getModerationActionCreateInput,
   getIssueCreateInput,
@@ -72,7 +72,6 @@ const getResolver = (input: Input) => {
     // Set loggedInUsername to null explicitly if not present
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false,
     });
 
     const loggedInUsername = context.user?.username || null;

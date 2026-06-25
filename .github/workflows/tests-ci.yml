@@ -36,6 +36,9 @@ jobs:
       - name: Run TypeScript type checking
         run: npm run tsc
 
+      - name: Check for circular dependencies
+        run: npm run lint:circular
+
       - name: Run unit tests with coverage
         run: npm run coverage
 

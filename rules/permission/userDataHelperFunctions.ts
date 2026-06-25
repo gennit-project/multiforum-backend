@@ -1,6 +1,6 @@
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { EmailModel } from "../../ogm_types.js";
-import type { GraphQLContext, GraphQLRequest, Ogm } from "../../types/context.js";
+import type { GraphQLContext, GraphQLRequest, Ogm, UserDataOnContext } from "../../types/context.js";
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import jwt from "jsonwebtoken";
@@ -135,16 +135,12 @@ export type AuthContextForUserLookup = {
 
 type SetUserDataInput = {
   context: AuthContextForUserLookup;
-  getPermissionInfo: boolean;
-  checkSpecificChannel?: string;
 };
 
-export type UserDataOnContext = {
-  username: string | null;
-  email: string | null;
-  email_verified: boolean;
-  data: any;
-};
+// UserDataOnContext now lives in types/context.ts (single source of truth for
+// the context shape); re-exported here for the many call sites that import it
+// from this module.
+export type { UserDataOnContext };
 
 export const setUserDataOnContext = async (
   input: SetUserDataInput
@@ -300,8 +296,6 @@ export const setUserDataOnContext = async (
     email,
     email_verified: isMockAuthEnabled() ? true : false,
     data: {
-      ServerRoles: [],
-      ChannelRoles: [],
       ModerationProfile: modProfileName ? { displayName: modProfileName } : null,
     },
   };
@@ -324,7 +318,6 @@ export const isAuthenticatedAndVerified = rule({ cache: "contextual" })(
       // Set user data on context - this may throw for mutations with JWT errors
       context.user = await setUserDataOnContext({
         context,
-        getPermissionInfo: false,
       });
     } catch (error) {
       // JWT errors for mutations are thrown from setUserDataOnContext
@@ -377,7 +370,6 @@ export const isAuthenticated = rule({ cache: "contextual" })(
       // Set user data on context - this may throw for mutations with JWT errors
       context.user = await setUserDataOnContext({
         context,
-        getPermissionInfo: false,
       });
       logger.info("✅ setUserDataOnContext completed successfully");
     } catch (error) {

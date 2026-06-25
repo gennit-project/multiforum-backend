@@ -102,7 +102,6 @@ const getResolver = (input: Input) => {
       args
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false
     });
     const loggedInUsername = context.user?.username || null;
 

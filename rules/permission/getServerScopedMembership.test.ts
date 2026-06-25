@@ -10,7 +10,6 @@ async function testDirectServerMembershipWins() {
     modProfileName: "Mod Alice",
     serverAdminUsernames: ["alice"],
     serverModeratorDisplayNames: ["Mod Alice"],
-    legacyServerRoles: [],
   });
 
   assert.deepEqual(result, {
@@ -19,25 +18,11 @@ async function testDirectServerMembershipWins() {
   });
 }
 
-async function testLegacyShowAdminTagFallbackStillWorks() {
-  const result = evaluateServerScopedMembership({
-    username: "alice",
-    serverAdminUsernames: [],
-    legacyServerRoles: [{ showAdminTag: true }],
-  });
-
-  assert.deepEqual(result, {
-    isServerAdmin: true,
-    isServerModerator: false,
-  });
-}
-
 async function testCypressAdminFallbackStillWorks() {
   const result = evaluateServerScopedMembership({
     email: "admin@example.com",
     cypressAdminTestEmail: "admin@example.com",
     serverAdminUsernames: [],
-    legacyServerRoles: [],
   });
 
   assert.deepEqual(result, {
@@ -56,7 +41,6 @@ async function testGetServerScopedMembershipReadsServerConfigRelationships() {
         ModerationProfile: {
           displayName: "Mod Alice",
         },
-        ServerRoles: [],
       },
     },
     req: {
@@ -104,7 +88,6 @@ async function testGetServerScopedMembershipReadsServerConfigRelationships() {
 
 async function run() {
   await testDirectServerMembershipWins();
-  await testLegacyShowAdminTagFallbackStillWorks();
   await testCypressAdminFallbackStillWorks();
   await testGetServerScopedMembershipReadsServerConfigRelationships();
   console.log("getServerScopedMembership tests passed");

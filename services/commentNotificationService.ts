@@ -1,6 +1,9 @@
 import { execute, parse, subscribe } from 'graphql';
 import { handleCommentCreatedNotification } from './commentNotificationHandler.js';
 import { logger } from "../logger.js";
+import type { GraphQLSchema } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { Ogm } from "../types/context.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -9,13 +12,13 @@ type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
  * and sends notifications to relevant users
  */
 export class CommentNotificationService {
-  private schema: any;
-  private ogm: any;
-  private driver: any;
+  private schema: GraphQLSchema;
+  private ogm: Ogm;
+  private driver?: Driver;
   private isRunning: boolean = false;
   private subscriptionIterator: AsyncIterableIterator<any> | null = null;
 
-  constructor(schema: any, ogm: any, driver?: any) {
+  constructor(schema: GraphQLSchema, ogm: Ogm, driver?: Driver) {
     this.schema = schema;
     this.ogm = ogm;
     this.driver = driver;

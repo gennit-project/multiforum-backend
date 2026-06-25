@@ -90,7 +90,6 @@ export function createSuspensionResolver ({
     // 4. Confirm the person calling this is indeed a moderator
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false
     })
     const loggedInUsername = context.user?.username
     if (!loggedInUsername) {

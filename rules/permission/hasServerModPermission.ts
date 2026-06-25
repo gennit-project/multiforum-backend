@@ -17,7 +17,6 @@ export const hasServerModPermission: (
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: true,
     });
   }
 

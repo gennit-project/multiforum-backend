@@ -51,7 +51,6 @@ const getResolver = (input: Input) => {
     // Set user data on context
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: true,
     });
 
     const loggedInUsername = context.user?.username || null;
@@ -87,16 +86,27 @@ const getResolver = (input: Input) => {
     let hasModPermission = false;
 
     if (!isOwner) {
+      // The role/permission fields this resolver reads off the user are not part
+      // of the base UserContextData shape; view them through a local typed cast.
+      const userData = context.user?.data as {
+        ModeratedChannels?: Array<{ uniqueName: string }>;
+        AdminOfServers?: unknown[];
+        ModerationProfile?: {
+          ModChannelRoles?: Array<{ channelUniqueName: string; canEditDiscussions?: boolean }>;
+          ModServerRoles?: Array<{ canEditDiscussions?: boolean }>;
+        } | null;
+      } | null | undefined;
+
       // Check if user is a channel admin
-      const isChannelAdmin = context.user?.data?.ModeratedChannels?.some(
+      const isChannelAdmin = userData?.ModeratedChannels?.some(
         (c: { uniqueName: string }) => c.uniqueName === channelUniqueName
       );
 
       // Check if user is a server admin
-      const isServerAdmin = context.user?.data?.AdminOfServers?.length > 0;
+      const isServerAdmin = (userData?.AdminOfServers?.length ?? 0) > 0;
 
       // Check if mod has canEditDiscussions permission for the channel
-      const channelModPermissions = context.user?.data?.ModerationProfile?.ModChannelRoles?.filter(
+      const channelModPermissions = userData?.ModerationProfile?.ModChannelRoles?.filter(
         (role: { channelUniqueName: string }) => role.channelUniqueName === channelUniqueName
       ) || [];
 
@@ -105,7 +115,7 @@ const getResolver = (input: Input) => {
       );
 
       // Check if mod has server-level canEditDiscussions permission
-      const serverModPermissions = context.user?.data?.ModerationProfile?.ModServerRoles || [];
+      const serverModPermissions = userData?.ModerationProfile?.ModServerRoles || [];
       const hasServerModEditPermission = serverModPermissions.some(
         (role: { canEditDiscussions?: boolean }) => role.canEditDiscussions === true
       );

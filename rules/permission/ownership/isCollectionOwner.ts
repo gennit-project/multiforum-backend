@@ -15,7 +15,6 @@ export const isCollectionOwner = rule({ cache: "contextual" })(
   async (parent: { id?: string } | undefined, args: IsCollectionOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     ctx.user = await setUserDataOnContext({
       context: ctx,
-      getPermissionInfo: false,
     });
 
     const username = ctx.user?.username;

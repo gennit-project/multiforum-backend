@@ -45,7 +45,6 @@ const getResolver = (input: Input) => {
     if (needsAlbumSanitization) {
       context.user = await setUserDataOnContext({
         context,
-        getPermissionInfo: false,
       });
 
       const username = context.user?.username;

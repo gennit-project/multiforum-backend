@@ -77,8 +77,6 @@ export const hasChannelPermission: (
   if (!context.user?.username) {
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: true,
-      checkSpecificChannel: channelName,
     });
   }
 

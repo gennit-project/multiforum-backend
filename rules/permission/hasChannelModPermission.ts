@@ -94,8 +94,6 @@ export const hasChannelModPermission: (
   // 1. Check for mod roles on the user object
   context.user = await setUserDataOnContext({
     context,
-    getPermissionInfo: true,
-    checkSpecificChannel: channelName,
   });
 
   // 2. Check if user has a moderation profile
@@ -169,7 +167,7 @@ export const hasChannelModPermission: (
   }
 
   const channelData = channel[0];
-  const modProfileName = context.user?.data?.ModerationProfile?.displayName;
+  const modProfileName = context.user?.data?.ModerationProfile?.displayName ?? undefined;
 
   const ServerConfig = context.ogm.model("ServerConfig");
   const serverConfig = await ServerConfig.find({

@@ -13,7 +13,6 @@ const baseRole = (canCreateChannel: boolean, canUploadFile: boolean = true) => (
 async function testSuspendedUsesDefaultSuspendedRole() {
   const result = evaluateServerPermission({
     permission: "canCreateChannel",
-    userRoles: [],
     defaultServerRole: baseRole(true),
     defaultSuspendedRole: baseRole(false),
     hasActiveSuspension: true,
@@ -24,7 +23,6 @@ async function testSuspendedUsesDefaultSuspendedRole() {
 async function testSuspendedAllowedWhenSuspendedRoleAllows() {
   const result = evaluateServerPermission({
     permission: "canCreateChannel",
-    userRoles: [],
     defaultServerRole: baseRole(false),
     defaultSuspendedRole: baseRole(true),
     hasActiveSuspension: true,
@@ -35,23 +33,11 @@ async function testSuspendedAllowedWhenSuspendedRoleAllows() {
 async function testFallsBackToDefaultServerRole() {
   const result = evaluateServerPermission({
     permission: "canCreateChannel",
-    userRoles: [],
     defaultServerRole: baseRole(true),
     defaultSuspendedRole: baseRole(false),
     hasActiveSuspension: false,
   });
   assert.equal(result, true, "Non-suspended user should use default server role");
-}
-
-async function testUserRoleMustAllow() {
-  const result = evaluateServerPermission({
-    permission: "canCreateChannel",
-    userRoles: [baseRole(false)],
-    defaultServerRole: baseRole(true),
-    defaultSuspendedRole: baseRole(false),
-    hasActiveSuspension: false,
-  });
-  assert.ok(result instanceof Error, "Explicit user server role denying permission should block");
 }
 
 async function testHasServerPermissionCachesRequestLookups() {
@@ -78,7 +64,6 @@ async function testHasServerPermissionCachesRequestLookups() {
     user: {
       username: "alice",
       data: {
-        ServerRoles: [],
       },
     },
     req: {
@@ -136,7 +121,6 @@ async function run() {
   await testSuspendedUsesDefaultSuspendedRole();
   await testSuspendedAllowedWhenSuspendedRoleAllows();
   await testFallsBackToDefaultServerRole();
-  await testUserRoleMustAllow();
   await testHasServerPermissionCachesRequestLookups();
   console.log("hasServerPermission tests passed");
 }

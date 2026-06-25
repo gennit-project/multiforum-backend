@@ -2,10 +2,6 @@ import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 import type { GraphQLContext } from "../../types/context.js";
 
-type ServerRoleLike = {
-  showAdminTag?: boolean | null;
-};
-
 type EvaluateServerScopedMembershipInput = {
   username?: string | null;
   modProfileName?: string | null;
@@ -13,7 +9,6 @@ type EvaluateServerScopedMembershipInput = {
   cypressAdminTestEmail?: string | null;
   serverAdminUsernames?: string[];
   serverModeratorDisplayNames?: string[];
-  legacyServerRoles?: ServerRoleLike[];
 };
 
 export type ServerScopedMembership = {
@@ -31,12 +26,8 @@ export function evaluateServerScopedMembership(
     cypressAdminTestEmail,
     serverAdminUsernames = [],
     serverModeratorDisplayNames = [],
-    legacyServerRoles = [],
   } = input;
 
-  const isLegacyAdmin = legacyServerRoles.some(
-    (role) => role.showAdminTag === true
-  );
   const isCypressAdmin =
     Boolean(email) &&
     Boolean(cypressAdminTestEmail) &&
@@ -45,8 +36,7 @@ export function evaluateServerScopedMembership(
   return {
     isServerAdmin:
       isCypressAdmin ||
-      (Boolean(username) && serverAdminUsernames.includes(username as string)) ||
-      isLegacyAdmin,
+      (Boolean(username) && serverAdminUsernames.includes(username as string)),
     isServerModerator:
       Boolean(modProfileName) &&
       serverModeratorDisplayNames.includes(modProfileName as string),
@@ -59,7 +49,6 @@ export const getServerScopedMembership = async (
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: true,
     });
   }
 
@@ -77,6 +66,5 @@ export const getServerScopedMembership = async (
       serverConfig?.Moderators?.map(
         (moderator: { displayName: string }) => moderator.displayName
       ) || [],
-    legacyServerRoles: context.user?.data?.ServerRoles || [],
   });
 };

@@ -15,7 +15,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
-import { getFinalCommentText } from "./reportDiscussion.js";
+import { getFinalCommentText } from "./shared/reportText.js";
 import {
   getModerationActionCreateInput,
   getIssueCreateInput,
@@ -69,7 +69,6 @@ const getResolver = (input: Input) => {
     // Set loggedInUsername to null explicitly if not present
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false,
     });
 
     const loggedInUsername = context.user?.username || null;
@@ -78,7 +77,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("User must be logged in");
     }
 
-    const loggedInModName = context.user.data.ModerationProfile.displayName;
+    const loggedInModName = context.user.data?.ModerationProfile?.displayName;
     if (!loggedInModName) {
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`);
     }
