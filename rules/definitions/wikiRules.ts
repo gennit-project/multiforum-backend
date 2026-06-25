@@ -202,8 +202,15 @@ export async function evaluateCanEditWikiHomePageRule(
 ) {
   const wikiHomePageUpdate = args?.update?.WikiHomePage;
 
+  // This rule only grants the wiki-home-page edit path. For any other channel
+  // update it grants nothing (returns an Error) so it can be safely OR'd with
+  // isChannelOwner/isAdmin in permissions.ts: general channel-config updates
+  // must qualify as owner/admin, while wiki-home edits can additionally be done
+  // by users with channel canUpdateChannel permission. Previously this returned
+  // `true` for non-wiki updates, which — once OR'd — let ANY authenticated user
+  // edit arbitrary channel settings.
   if (!wikiHomePageUpdate) {
-    return true;
+    return new Error(ERROR_MESSAGES.channel.noChannelPermission);
   }
 
   const channelNames = new Set<string>();

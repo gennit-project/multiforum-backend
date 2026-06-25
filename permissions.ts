@@ -45,6 +45,7 @@ const {
   canBecomeForumAdmin,
   canLockChannel,
   isCollectionOwner,
+  isAlbumOwner,
   isImageUploader,
   canEditWikiPages,
   canDeleteWikiPages,
@@ -113,11 +114,14 @@ const permissionList = shield({
       seedDataForCypressTests: isAdmin,
       createTags: and(isAuthenticated, allow),
       
-      createChannelRoles: and(isAuthenticated, allow),//isAdmin,
-      createModChannelRoles: and(isAuthenticated, allow),//isAdmin,
+      // Role-definition creation is admin-only: a non-admin who could create a
+      // role (and then connect it to themselves via updateUsers) would be able
+      // to self-escalate. updateUsers also blocks role-relationship connects.
+      createChannelRoles: and(isAuthenticated, isAdmin),
+      createModChannelRoles: and(isAuthenticated, isAdmin),
 
-      createModServerRoles: and(isAuthenticated, allow),//isAdmin,
-      createServerRoles: and(isAuthenticated, allow),//isAdmin,
+      createModServerRoles: and(isAuthenticated, isAdmin),
+      createServerRoles: and(isAuthenticated, isAdmin),
       createServerConfigs: and(isAuthenticated, isAdmin),
       deleteServerConfigs: and(isAuthenticated, isAdmin),
 
@@ -130,7 +134,10 @@ const permissionList = shield({
       updateUsers: and(isAuthenticated, updateUserInputIsValid, or(isAccountOwner, isAdmin)),
       
       createChannels: and(isAuthenticated, createChannelInputIsValid, canCreateChannel),
-      updateChannels: canEditWikiHomePage,// and(isAuthenticated, updateChannelInputIsValid, or(isChannelOwner, isAdmin)),
+      // Owner/admin for general channel-config updates; canEditWikiHomePage
+      // additionally grants the wiki-home-page edit path (and now denies, rather
+      // than blanket-allows, non-wiki updates — see evaluateCanEditWikiHomePageRule).
+      updateChannels: and(isAuthenticated, updateChannelInputIsValid, or(isChannelOwner, isAdmin, canEditWikiHomePage)),
       deleteChannels: and(isAuthenticated, or(isAdmin, isChannelOwner)),
 
       deleteEmails: and(isAuthenticated, or(isAccountOwner, isAdmin)),
@@ -181,7 +188,11 @@ const permissionList = shield({
       
       createIssue: and(isAuthenticated, issueIsValid),
       createIssues: and(isAuthenticated, issueIsValid),
-      deleteIssues: and(isAuthenticated, allow), // canDeleteIssues,
+      // Issue deletion restricted to a server admin or the issue's own author
+      // (isIssueAuthor resolves the issue from where.id and matches User or
+      // ModerationProfile authorship). Previously any authenticated user could
+      // delete any moderation issue, e.g. a report filed against themselves.
+      deleteIssues: and(isAuthenticated, or(isAdmin, isIssueAuthor)),
       // Issue updates (close/reopen) can be done by:
       // 1. Channel owners (always)
       // 2. Issue author (if issue is not locked)
@@ -195,9 +206,9 @@ const permissionList = shield({
         )
       ),
 
-      createAlbums: and(isAuthenticated, allow),
-      updateAlbums: and(isAuthenticated, allow),
-      deleteAlbums: and(isAuthenticated, allow),
+      createAlbums: and(isAuthenticated, allow), // Owner forced server-side in createAlbumsWithOwner
+      updateAlbums: and(isAuthenticated, or(isAlbumOwner, isAdmin)),
+      deleteAlbums: and(isAuthenticated, or(isAlbumOwner, isAdmin)),
 
       inviteForumOwner: and(isAuthenticated, isChannelOwner),
       cancelInviteForumOwner: and(isAuthenticated, isChannelOwner),
@@ -267,8 +278,11 @@ const permissionList = shield({
       unsubscribeFromIssue: and(isAuthenticated, allow),
       sendBugReport: allow, // Allow non-authenticated users to send bug reports
 
-      deleteFilterGroups: allow,
-      deleteFilterOptions: allow,
+      // Standalone filter-config deletes (not used by the app; filters are
+      // managed via nested channel updates). Were bare `allow` — unauthenticated
+      // anyone could delete them. Restricted to admins.
+      deleteFilterGroups: and(isAuthenticated, isAdmin),
+      deleteFilterOptions: and(isAuthenticated, isAdmin),
 
       // Collection mutations - authenticated users only
       createCollections: and(isAuthenticated, allow),
@@ -287,7 +301,7 @@ const permissionList = shield({
       installPluginVersion: and(isAuthenticated, isAdmin),
       enableServerPlugin: and(isAuthenticated, isAdmin),
       setServerPluginSecret: and(isAuthenticated, isAdmin),
-      deletePluginVersions: allow, // and(isAuthenticated, isAdmin)
+      deletePluginVersions: and(isAuthenticated, isAdmin), // was bare `allow` (unauthenticated delete)
       updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
       updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
     },

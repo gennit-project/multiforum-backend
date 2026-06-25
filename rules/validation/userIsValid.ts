@@ -18,6 +18,41 @@ type UserInput = {
   isEditMode?: boolean | null;
 };
 
+// Role relationships must never be assigned through the generic updateUsers
+// mutation: it is gated to `isAccountOwner OR isAdmin`, so a non-admin can edit
+// their OWN user node. Without this guard a user could connect (or create) an
+// elevated ServerRole/ModServerRole/ChannelRole/ModChannelRole on themselves
+// and self-escalate to admin/mod. Role assignment must go through the dedicated
+// invite/accept workflows (inviteServerAdmin, acceptServerModInvite, ...), which
+// have their own permission checks. This is enforced for ALL callers because
+// the generic role-connect path is not a legitimate flow.
+const FORBIDDEN_USER_UPDATE_RELATIONSHIPS = [
+  "ServerRoles",
+  "ModServerRoles",
+  "ChannelRoles",
+  "ModChannelRoles",
+] as const;
+
+export const validateNoRoleRelationshipUpdates = (
+  update: Record<string, unknown> | null | undefined
+): true | string => {
+  if (!update) {
+    return true;
+  }
+
+  const attempted = FORBIDDEN_USER_UPDATE_RELATIONSHIPS.filter(
+    (field) => update[field] !== undefined
+  );
+
+  if (attempted.length > 0) {
+    return `Roles cannot be assigned through updateUsers (${attempted.join(
+      ", "
+    )}). Use the dedicated invite workflows instead.`;
+  }
+
+  return true;
+};
+
 export const validateUserInput = (input: UserInput): true | string => {
   const { username, bio, displayName, isEditMode } = input;
 
@@ -65,6 +100,12 @@ export const updateUserInputIsValid = rule({ cache: "contextual" })(
   async (parent: unknown, args: UpdateUserInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.update) {
       return "Missing update input in args.";
+    }
+    const roleCheck = validateNoRoleRelationshipUpdates(
+      args.update as Record<string, unknown>
+    );
+    if (roleCheck !== true) {
+      return roleCheck;
     }
     return validateUserInput({
       ...args.update,
