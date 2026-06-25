@@ -13,6 +13,59 @@ type HasChannelPermissionInput = {
   context: GraphQLContext;
 };
 
+// --- Pure permission decision (extracted for unit testing) ---
+
+// A channel role is a flat map of permission name -> granted, modeled loosely so
+// the decision logic is decoupled from the generated OGM role types.
+type ChannelRoleLike = Record<string, boolean | null | undefined> | null | undefined;
+
+interface ChannelRoles {
+  DefaultChannelRole?: ChannelRoleLike;
+  SuspendedRole?: ChannelRoleLike;
+}
+
+interface ServerRoleDefaults {
+  DefaultServerRole?: ChannelRoleLike;
+  DefaultSuspendedRole?: ChannelRoleLike;
+}
+
+// Channel owners (admins) get every permission. Mirrors the Admins.some() check.
+export function isChannelAdmin(
+  admins: Array<{ username?: string | null }> | null | undefined,
+  username: string | null | undefined
+): boolean {
+  return !!admins?.some((admin) => admin.username === username);
+}
+
+/**
+ * Selects the governing channel role for a (non-owner) user and checks a
+ * permission. A suspended user uses the channel's SuspendedRole, everyone else
+ * the DefaultChannelRole — each falling back to the corresponding server-config
+ * default when the channel defines none.
+ *
+ * Returns the resolved role (null when neither channel nor server defines one)
+ * and whether it grants `permission`, preserving the wrapper's control flow
+ * (a null role and allowed=false both map to a "no permission" error).
+ */
+export function evaluateChannelRolePermission(args: {
+  permission: string;
+  channelData: ChannelRoles;
+  serverDefaults: ServerRoleDefaults | undefined;
+  isSuspended: boolean;
+}): { role: ChannelRoleLike; allowed: boolean } {
+  const { permission, channelData, serverDefaults, isSuspended } = args;
+
+  let role: ChannelRoleLike;
+  if (isSuspended) {
+    role = channelData.SuspendedRole ?? serverDefaults?.DefaultSuspendedRole ?? null;
+  } else {
+    role = channelData.DefaultChannelRole ?? serverDefaults?.DefaultServerRole ?? null;
+  }
+
+  const allowed = !!role && role[permission] === true;
+  return { role, allowed };
+}
+
 export const hasChannelPermission: (
   input: HasChannelPermissionInput
 ) => Promise<Error | boolean> = async (input: HasChannelPermissionInput) => {
@@ -74,7 +127,7 @@ export const hasChannelPermission: (
   const channelData = channel[0];
 
   // Check if user is admin/owner - if so, grant all permissions
-  if (channelData.Admins?.some((admin: { username: string }) => admin.username === username)) {
+  if (isChannelAdmin(channelData.Admins, username)) {
     return true;
   }
 
@@ -97,9 +150,6 @@ export const hasChannelPermission: (
       logger.error("Failed to disconnect expired suspensions", error);
     });
   }
-
-  // Determine which role to use
-  let roleToUse = null;
 
   // Fetch server config for default roles
   const ServerConfig = context.ogm.model("ServerConfig");
@@ -127,31 +177,21 @@ export const hasChannelPermission: (
     }`,
   });
 
-  if (suspensionInfo.isSuspended) {
-    // Use suspended role
-    roleToUse = channelData.SuspendedRole;
-    // Use server default suspended role as fallback
-    if (!roleToUse) {
-      roleToUse = serverConfig[0]?.DefaultSuspendedRole;
-    }
-  } else {    
-    // If no specific role, use channel default
-    if (!roleToUse && channelData.DefaultChannelRole) {
-      roleToUse = channelData.DefaultChannelRole;
-    }
-    
-    // 7. If no channel default, fall back to server default
-    if (!roleToUse) {
-      roleToUse = serverConfig[0]?.DefaultServerRole;
-    }
-  }
+  // Select the governing role (suspended vs default, with server-config
+  // fallback) and check the permission. The pure decision is extracted to
+  // evaluateChannelRolePermission so the role matrix can be unit tested.
+  const { role: roleToUse, allowed } = evaluateChannelRolePermission({
+    permission,
+    channelData: channelData as unknown as ChannelRoles,
+    serverDefaults: serverConfig[0] as unknown as ServerRoleDefaults | undefined,
+    isSuspended: suspensionInfo.isSuspended,
+  });
 
-  // 8. Check if the role exists and has the required permission
   if (!roleToUse) {
     return new Error(ERROR_MESSAGES.channel.noChannelPermission);
   }
 
-  if ((roleToUse as ChannelRole)[permission] === true) {
+  if (allowed) {
     return true;
   }
 
