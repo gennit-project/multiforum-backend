@@ -169,6 +169,25 @@ SuperAdmins section.
 4. Suspension handling stays; ensure a **suspended admin** resolves the suspended
    role (symmetric with suspended users).
 
+### Seed-data architecture (single source of truth)
+
+The default roles are defined once, in **`seedData/`**, and consumed by every
+caller that needs them — so a fresh self-hosted instance, the migration, and the
+integration tests all use the *same* definitions instead of three drifting copies
+(previously: frontend Cypress fixtures, inline per-test seeding, and nothing for
+production):
+
+- `seedData/defaultRoles.ts` — canonical `ServerRole` / `ModServerRole` /
+  `ChannelRole` definitions (incl. the **Administrator** vs **Super Administrator**
+  split) and the `ServerConfig` tier→role wiring map.
+- `seedData/provisionServerDefaults.ts` — **idempotent** (upsert by role name,
+  `overwrite` on the config links), so it is safe to run on every boot/deploy and
+  in test setup. Also performs the admin→SuperAdmin backfill.
+- `npm run provision` (`build_scripts/provisionServerDefaults.ts`) — runnable
+  entry for bootstrapping/upgrading an instance.
+- Integration tests call `provisionServerDefaults` in setup (incremental
+  adoption) so they exercise the real defaults.
+
 ### Migration (one-time; root is the safety net)
 1. Seed two server roles: **Super Administrator** (admin caps *with*
    `canManageAdmins`/`canManageSuperAdmins`) and **Administrator** (admin caps
@@ -203,9 +222,13 @@ SuperAdmins section.
      `Channel.ElevatedChannelRole` field added (codegen run); `hasChannelPermission`
      resolves owners via `evaluateChannelOwnerPermission` (fallback to all-perms
      until a role is configured). Unit test added.
-2. **PR-2 (migration)** — seed roles (Administrator without `canManageAdmins`,
-   Super Administrator with it; channel elevated role), backfill existing admins
-   into `SuperAdmins`, wire env root; maintenance window.
+2. **PR-2 (seed defaults + migration). 🟡 IN PROGRESS.**
+   - ✅ `seedData/` single-source-of-truth module + idempotent
+     `provisionServerDefaults` (roles, config wiring, admin→SuperAdmin backfill);
+     `npm run provision` entry; unit tests.
+   - 🔲 Adopt `provisionServerDefaults` in integration-test setup (incremental).
+   - 🔲 Wire env root (`SUPERADMIN_EMAIL`) in deploy config; run provisioning per
+     environment in a maintenance window.
 3. **PR-3** — convert Category-A call sites to capability checks; drop `isAdmin`
    from Category-B ORs; tier-based mod resolution for admins in
    `hasServerModPermission`; remove the `isAdmin` rule. Integration coverage for a
@@ -248,6 +271,18 @@ it. Frontend: none required until PR-5.
 5. **`deleteDiscussionChannels` / `deleteEventChannels`** → destructive caps on
    **`ModServerRole`** (`canRemoveDiscussionChannel` / `canRemoveEventChannel`).
    (Schema added in PR-1; call sites convert in PR-3.)
+6. **Roles are permissions-only; display tags derive from membership.** The
+   ADMIN/MOD tag must come from the user's relationship to `ServerConfig`
+   (`Admins`/`SuperAdmins`) / `Channel` (`Moderators`), **not** from a role flag.
+   The seed roles no longer set `showAdminTag` / `showModTag` (PR-2). The legacy
+   schema fields are slated for removal in a dedicated follow-up — they are
+   currently read by ~5 backend cypher queries and several frontend components,
+   so the removal is a coordinated backend+frontend change:
+   - Backend: derive the tag in the comment/post queries from membership; drop
+     `showAdminTag` (`ServerRole`) and `showModTag` (`ChannelRole`) from the schema
+     and `getServerConfigForPermissions`'s fetch.
+   - Frontend: have the tag-rendering components/queries read membership-derived
+     data instead of the role flag.
 
 Note: items 2 and 4 mean the earlier `canManageServerMembers` capability is
 dropped from the taxonomy (§4).
