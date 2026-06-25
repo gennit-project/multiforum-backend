@@ -6,6 +6,10 @@
 //
 // Also backfills existing admins into SuperAdmins (isAdmin phase-out). See
 // docs/isadmin-phaseout-design.md and seedData/.
+//
+// Loads .env first (like index.ts) so NEO4J_PASSWORD etc. are read from the
+// project's .env when not already exported in the shell.
+import "dotenv/config";
 import neo4j from "neo4j-driver";
 import { createOgmAndModels } from "../customResolvers/resolverDeps.js";
 import { provisionServerDefaults } from "../seedData/provisionServerDefaults.js";
