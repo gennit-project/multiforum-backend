@@ -19,7 +19,6 @@ export const isAlbumOwner = rule({ cache: "contextual" })(
   async (parent: { id?: string } | undefined, args: IsAlbumOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     ctx.user = await setUserDataOnContext({
       context: ctx,
-      getPermissionInfo: false,
     });
 
     const username = ctx.user?.username;

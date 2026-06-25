@@ -48,7 +48,6 @@ const getResolver = (input: Input) => {
   ) => {
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false,
     });
 
     const email = context.user?.email;
