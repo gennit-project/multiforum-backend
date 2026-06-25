@@ -49,13 +49,17 @@ const ALL_CONTENT_CAPS = {
   canGiveFeedback: true,
 };
 
+// Note: roles are permissions-only. The ADMIN/MOD display tag is NOT set here —
+// it should derive from the user's membership relationship to ServerConfig /
+// Channel (e.g. in ServerConfig.Admins/SuperAdmins), not from a role flag. The
+// legacy `showAdminTag` / `showModTag` schema fields are slated for removal once
+// the tag is membership-derived. See docs/isadmin-phaseout-design.md.
 export const DEFAULT_SERVER_ROLES = [
   {
     // Standard signed-in user: can create/participate, no administration.
     name: ROLE_NAMES.serverStandard,
     description: "Default role for a standard signed-in user.",
     ...ALL_CONTENT_CAPS,
-    showAdminTag: false,
     ...NO_SERVER_ADMIN_CAPS,
   },
   {
@@ -70,7 +74,6 @@ export const DEFAULT_SERVER_ROLES = [
     canUpvoteComment: false,
     canUploadFile: false,
     canGiveFeedback: false,
-    showAdminTag: false,
     ...NO_SERVER_ADMIN_CAPS,
   },
   {
@@ -79,7 +82,6 @@ export const DEFAULT_SERVER_ROLES = [
     description:
       "Restricted administrator: full administration except creating/removing admins.",
     ...ALL_CONTENT_CAPS,
-    showAdminTag: true,
     canManageServerSettings: true,
     canManagePlugins: true,
     canManageRoles: true,
@@ -93,7 +95,6 @@ export const DEFAULT_SERVER_ROLES = [
     description:
       "Super administrator: full administration including managing admins and super-admins.",
     ...ALL_CONTENT_CAPS,
-    showAdminTag: true,
     canManageServerSettings: true,
     canManagePlugins: true,
     canManageRoles: true,
@@ -170,6 +171,8 @@ export const DEFAULT_MOD_SERVER_ROLES = [
 // time; defined here so the source of truth is shared. The elevated role is the
 // channel-owner tier (see hasChannelPermission).
 // ---------------------------------------------------------------------------
+// As with server roles, the MOD display tag is not set here — it should derive
+// from Channel membership (Moderators), not a role flag.
 export const DEFAULT_CHANNEL_ROLES = [
   {
     name: ROLE_NAMES.channelDefault,
@@ -181,7 +184,6 @@ export const DEFAULT_CHANNEL_ROLES = [
     canUpvoteComment: true,
     canUploadFile: true,
     canUpdateChannel: false,
-    showModTag: false,
   },
   {
     name: ROLE_NAMES.channelElevated,
@@ -193,7 +195,6 @@ export const DEFAULT_CHANNEL_ROLES = [
     canUpvoteComment: true,
     canUploadFile: true,
     canUpdateChannel: true,
-    showModTag: true,
   },
   {
     name: ROLE_NAMES.channelSuspended,
@@ -205,7 +206,6 @@ export const DEFAULT_CHANNEL_ROLES = [
     canUpvoteComment: false,
     canUploadFile: false,
     canUpdateChannel: false,
-    showModTag: false,
   },
 ] as const;
 

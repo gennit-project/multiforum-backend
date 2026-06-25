@@ -271,6 +271,18 @@ it. Frontend: none required until PR-5.
 5. **`deleteDiscussionChannels` / `deleteEventChannels`** → destructive caps on
    **`ModServerRole`** (`canRemoveDiscussionChannel` / `canRemoveEventChannel`).
    (Schema added in PR-1; call sites convert in PR-3.)
+6. **Roles are permissions-only; display tags derive from membership.** The
+   ADMIN/MOD tag must come from the user's relationship to `ServerConfig`
+   (`Admins`/`SuperAdmins`) / `Channel` (`Moderators`), **not** from a role flag.
+   The seed roles no longer set `showAdminTag` / `showModTag` (PR-2). The legacy
+   schema fields are slated for removal in a dedicated follow-up — they are
+   currently read by ~5 backend cypher queries and several frontend components,
+   so the removal is a coordinated backend+frontend change:
+   - Backend: derive the tag in the comment/post queries from membership; drop
+     `showAdminTag` (`ServerRole`) and `showModTag` (`ChannelRole`) from the schema
+     and `getServerConfigForPermissions`'s fetch.
+   - Frontend: have the tag-rendering components/queries read membership-derived
+     data instead of the role flag.
 
 Note: items 2 and 4 mean the earlier `canManageServerMembers` capability is
 dropped from the taxonomy (§4).
