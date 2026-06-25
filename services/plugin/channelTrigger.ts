@@ -15,12 +15,17 @@ export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
  * Triggers channel-scoped plugin pipelines when content is submitted to a channel.
  * This runs plugins configured in the Channel's pluginPipelines field.
  */
-export const triggerChannelPluginPipeline = async ({
-  discussionId,
-  channelUniqueName,
-  event,
-  models
-}: ChannelTriggerArgs) => {
+export const triggerChannelPluginPipeline = async (
+  {
+    discussionId,
+    channelUniqueName,
+    event,
+    models
+  }: ChannelTriggerArgs,
+  // Injectable plugin loader so the execution path can be tested without
+  // downloading/running a real plugin tarball. Defaults to the real loader.
+  { loadPlugin = loadPluginImplementation }: { loadPlugin?: typeof loadPluginImplementation } = {}
+) => {
   if (!CHANNEL_EVENTS.has(event)) {
     throw new Error(`Unsupported channel plugin event: ${event}`)
   }
@@ -311,7 +316,7 @@ export const triggerChannelPluginPipeline = async ({
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
-      const PluginClass = await loadPluginImplementation(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
+      const PluginClass = await loadPlugin(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
 
       const serverSecrets = await ServerSecret.find({
         where: { pluginId },

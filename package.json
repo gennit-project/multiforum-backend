@@ -12,6 +12,7 @@
     "test:integration": "TESTCONTAINERS_REUSE_ENABLE=true node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
     "coverage": "c8 node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
     "coverage:integration": "TESTCONTAINERS_REUSE_ENABLE=true c8 node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
+    "coverage:merged": "bash build_scripts/coverage-merged.sh",
     "prepare": "husky",
     "codegen": "node --loader ts-node/esm build_scripts/generateTypes.ts",
     "lint": "eslint .",

@@ -11,11 +11,16 @@ import { logger } from "../../logger.js";
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
-export const triggerPluginRunsForDownloadableFile = async ({
-  downloadableFileId,
-  event,
-  models
-}: TriggerArgs) => {
+export const triggerPluginRunsForDownloadableFile = async (
+  {
+    downloadableFileId,
+    event,
+    models
+  }: TriggerArgs,
+  // Injectable plugin loader so the execution path can be tested without
+  // downloading/running a real plugin tarball. Defaults to the real loader.
+  { loadPlugin = loadPluginImplementation }: { loadPlugin?: typeof loadPluginImplementation } = {}
+) => {
   if (!DOWNLOAD_EVENTS.has(event)) {
     throw new Error(`Unsupported plugin event: ${event}`)
   }
@@ -277,7 +282,7 @@ export const triggerPluginRunsForDownloadableFile = async ({
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
-      const PluginClass = await loadPluginImplementation(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
+      const PluginClass = await loadPlugin(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
 
       const serverSecrets = await ServerSecret.find({
         where: { pluginId },

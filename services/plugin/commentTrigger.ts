@@ -15,12 +15,17 @@ import { logger } from "../../logger.js";
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
-export const triggerPluginRunsForComment = async ({
-  commentId,
-  event,
-  models,
-  driver
-}: CommentTriggerArgs) => {
+export const triggerPluginRunsForComment = async (
+  {
+    commentId,
+    event,
+    models,
+    driver
+  }: CommentTriggerArgs,
+  // Injectable plugin loader so the execution path can be tested without
+  // downloading/running a real plugin tarball. Defaults to the real loader.
+  { loadPlugin = loadPluginImplementation }: { loadPlugin?: typeof loadPluginImplementation } = {}
+) => {
   if (!COMMENT_EVENTS.has(event)) {
     throw new Error(`Unsupported comment plugin event: ${event}`)
   }
@@ -396,7 +401,7 @@ export const triggerPluginRunsForComment = async ({
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
-      const PluginClass = await loadPluginImplementation(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
+      const PluginClass = await loadPlugin(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
 
       const serverSecrets = await ServerSecret.find({
         where: { pluginId },
