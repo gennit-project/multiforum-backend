@@ -129,7 +129,7 @@ test("feedback validation ignores regular comments", async () => {
 test("download validation rejects disabled download channels", async () => {
   const result = await validateDiscussionDownloadPreferences(
     {
-      discussionCreateInput: {
+      discussionInput: {
         title: "Download",
         hasDownload: true,
       },
@@ -146,7 +146,7 @@ test("download validation rejects disabled download channels", async () => {
 test("download validation rejects disallowed channel file types", async () => {
   const result = await validateDiscussionDownloadPreferences(
     {
-      discussionCreateInput: {
+      discussionInput: {
         title: "Download",
         hasDownload: true,
         DownloadableFiles: {
@@ -174,7 +174,7 @@ test("download validation rejects disallowed channel file types", async () => {
 test("download validation allows enabled channels with allowed file types", async () => {
   const result = await validateDiscussionDownloadPreferences(
     {
-      discussionCreateInput: {
+      discussionInput: {
         title: "Download",
         hasDownload: true,
         DownloadableFiles: {
@@ -194,6 +194,23 @@ test("download validation allows enabled channels with allowed file types", asyn
   );
 
   assert.equal(result, true);
+});
+
+test("download validation on update resolves the discussion's channels from where", async () => {
+  // The update path passes `where` instead of channelConnections; the
+  // discussion's existing channels are resolved and their download rules apply.
+  const result = await validateDiscussionDownloadPreferences(
+    {
+      discussionInput: { hasDownload: true },
+      where: { id: "discussion-1" },
+    },
+    createContext({
+      channel: { uniqueName: "cats", downloadsEnabled: false },
+      discussion: { DiscussionChannels: [{ channelUniqueName: "cats" }] },
+    })
+  );
+
+  assert.equal(result, "Downloads are disabled in channel 'cats'.");
 });
 
 test("discussion image validation rejects disabled image upload channels on create", async () => {

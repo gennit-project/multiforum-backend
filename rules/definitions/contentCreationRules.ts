@@ -12,6 +12,22 @@ import {
   EventCreateInput,
 } from "../../src/generated/graphql.js";
 
+// Locked content is read-only and archived content is closed: no new comments
+// (or replies) may be created on a locked/archived discussion, event, or
+// comment. Throws with a clear reason. Mods who need to comment must unlock /
+// unarchive first.
+const assertParentNotLockedOrArchived = (
+  entity: { locked?: boolean | null; archived?: boolean | null } | null | undefined,
+  label: string
+) => {
+  if (entity?.locked) {
+    throw new Error(`You cannot comment on a locked ${label}.`);
+  }
+  if (entity?.archived) {
+    throw new Error(`You cannot comment on an archived ${label}.`);
+  }
+};
+
 export async function evaluateCanCreateChannelRule(ctx: GraphQLContext) {
   const hasPermissionToCreateChannels = await hasServerPermission(
     "canCreateChannel",
@@ -107,12 +123,27 @@ export const canCreateComment = rule({ cache: "contextual" })(
       GivesFeedbackOnEvent,
       GivesFeedbackOnDiscussion,
       GivesFeedbackOnComment,
+      ParentComment,
       Channel,
     } = firstItemInInput;
 
     // Throw an error if no Channel is provided; all comments must be in the context of a channel.
     if (!Channel || !Channel.connect?.where?.node?.uniqueName) {
       throw new Error("Comment must be connected to a Channel.");
+    }
+
+    // Replies cannot be made to an archived comment.
+    const parentCommentId = ParentComment?.connect?.where?.node?.id;
+    if (parentCommentId) {
+      const commentModel = ctx.ogm.model("Comment");
+      const parentComments = await commentModel.find({
+        where: { id: parentCommentId },
+        selectionSet: `{ id archived }`,
+      });
+      if (!parentComments || !parentComments[0]) {
+        throw new Error("Could not find the comment being replied to.");
+      }
+      assertParentNotLockedOrArchived(parentComments[0], "comment");
     }
 
     let channelName = '';
@@ -131,12 +162,14 @@ export const canCreateComment = rule({ cache: "contextual" })(
       const discussionChannelModel = ctx.ogm.model("DiscussionChannel");
       const discussionChannel = await discussionChannelModel.find({
         where: { id: discussionChannelId },
-        selectionSet: `{ channelUniqueName }`,
+        selectionSet: `{ channelUniqueName locked archived }`,
       });
 
       if (!discussionChannel || !discussionChannel[0]) {
         throw new Error("No discussion channel found.");
       }
+
+      assertParentNotLockedOrArchived(discussionChannel[0], "discussion");
 
       channelName = discussionChannel[0]?.channelUniqueName;
     }
@@ -157,12 +190,14 @@ export const canCreateComment = rule({ cache: "contextual" })(
           eventId,
           channelUniqueName: Channel?.connect?.where?.node?.uniqueName
         },
-        selectionSet: `{ id }`,
+        selectionSet: `{ id locked archived }`,
       });
 
       if (!event || !event[0]) {
         throw new Error("Could not find the event submission in the given channel.");
       }
+
+      assertParentNotLockedOrArchived(event[0], "event");
 
       channelName = Channel?.connect?.where?.node?.uniqueName
     }
