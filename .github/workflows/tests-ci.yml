@@ -53,6 +53,13 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
+    # The integration suite is the CI bottleneck (serial, real Neo4j). Split it
+    # into parallel shards — each matrix job runs ~1/N of the files against its
+    # own Testcontainers Neo4j — so wall-clock is roughly the suite divided by N.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -71,18 +78,23 @@ jobs:
         run: npm run codegen
 
       # Testcontainers manages the Neo4j container itself via the Docker daemon
-      # that is available on GitHub-hosted Ubuntu runners. Run under c8 so the
-      # resolver coverage these tests provide is reported too.
-      - name: Run integration tests against live Neo4j (with coverage)
-        run: npm run coverage:integration
+      # available on GitHub-hosted Ubuntu runners. Run under c8 so the resolver
+      # coverage these tests provide is reported too.
+      - name: Run integration shard ${{ matrix.shard }}/4 against live Neo4j (with coverage)
+        run: npm run test:integration:shard
+        env:
+          SHARD: ${{ matrix.shard }}
+          SHARD_TOTAL: 4
 
-      # Uploaded under the `integration` flag; Codecov merges it with the unit
-      # upload so a line covered by either suite counts as covered.
+      # Each shard uploads under the `integration` flag with a distinct name;
+      # Codecov unions the shards (and merges with the unit upload), so a line
+      # covered by any shard or the unit suite counts as covered.
       - name: Upload integration coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
           flags: integration
+          name: integration-shard-${{ matrix.shard }}
           fail_ci_if_error: false
           verbose: true
