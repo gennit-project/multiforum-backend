@@ -497,6 +497,9 @@ const typeDefinitions = gql`
 
     # default roles
     DefaultChannelRole:   ChannelRole  @relationship(type: "HAS_DEFAULT_CHANNEL_ROLE", direction: OUT)
+    # Owner (channel admin) tier role. When unset, owners fall back to all
+    # permissions (current behavior). See docs/isadmin-phaseout-design.md.
+    ElevatedChannelRole:  ChannelRole  @relationship(type: "HAS_DEFAULT_ELEVATED_CHANNEL_ROLE", direction: OUT)
     DefaultModRole:       ModChannelRole @relationship(type: "HAS_DEFAULT_MOD_ROLE", direction: OUT)
     ElevatedModRole:      ModChannelRole @relationship(type: "HAS_DEFAULT_ELEVATED_MOD_ROLE", direction: OUT)
     SuspendedRole:        ChannelRole    @relationship(type: "HAS_DEFAULT_SUSPENDED_ROLE", direction: OUT)
@@ -1469,6 +1472,15 @@ const typeDefinitions = gql`
     canUploadFile: Boolean
     canGiveFeedback: Boolean
     showAdminTag: Boolean
+    # Server-administration capabilities ("creative" — configure/grant). Default
+    # off; held by the admin/super-admin tier roles. See
+    # docs/isadmin-phaseout-design.md.
+    canManageServerSettings: Boolean
+    canManagePlugins: Boolean
+    canManageRoles: Boolean
+    canManageMods: Boolean
+    canManageAdmins: Boolean
+    canManageSuperAdmins: Boolean
   }
 
   type ChannelRole {
@@ -1522,6 +1534,10 @@ const typeDefinitions = gql`
     canArchiveImage: Boolean
     canDeleteWiki: Boolean
     canPermanentlyRemoveImage: Boolean
+    # Destructive structural removals at server scope. See
+    # docs/isadmin-phaseout-design.md.
+    canRemoveDiscussionChannel: Boolean
+    canRemoveEventChannel: Boolean
   }
 
   type Plugin {
@@ -1648,6 +1664,14 @@ const typeDefinitions = gql`
       @relationship(type: "HAS_DEFAULT_SUSPENDED_ROLE", direction: OUT)
     DefaultSuspendedModRole: ModServerRole
       @relationship(type: "HAS_DEFAULT_SUSPENDED_ROLE", direction: OUT)
+    # Admin / super-admin tier roles (creative caps). The admin/super-admin mod
+    # capabilities are taken from DefaultElevatedModRole. See
+    # docs/isadmin-phaseout-design.md.
+    DefaultAdminRole: ServerRole
+      @relationship(type: "HAS_DEFAULT_ADMIN_ROLE", direction: OUT)
+    DefaultSuperAdminRole: ServerRole
+      @relationship(type: "HAS_DEFAULT_SUPER_ADMIN_ROLE", direction: OUT)
+    SuperAdmins: [User!]! @relationship(type: "SUPER_ADMIN_OF_SERVER", direction: IN)
     Admins: [User!]! @relationship(type: "ADMIN_OF_SERVER", direction: IN)
     Moderators: [ModerationProfile!]!
       @relationship(type: "MODERATOR_OF_SERVER", direction: IN)

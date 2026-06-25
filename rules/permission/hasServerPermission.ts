@@ -6,6 +6,7 @@ import { getServerConfigForPermissions } from "./getServerConfigForPermissions.j
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import { isServerRoot } from "./isServerRoot.js";
 import { logger } from "../../logger.js";
 
 type EvaluateServerPermissionInput = {
@@ -13,13 +14,35 @@ type EvaluateServerPermissionInput = {
   defaultServerRole?: ServerRole | null;
   defaultSuspendedRole?: ServerRole | null;
   hasActiveSuspension: boolean;
+  // Tier inputs (see docs/isadmin-phaseout-design.md). All optional so existing
+  // callers/tests keep working: with none set, this evaluates the default
+  // server role exactly as before.
+  isRoot?: boolean;
+  isSuperAdmin?: boolean;
+  isAdmin?: boolean;
+  superAdminRole?: ServerRole | null;
+  adminRole?: ServerRole | null;
 };
 
 export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
-  const { permission, defaultServerRole, defaultSuspendedRole, hasActiveSuspension } =
-    input;
+  const {
+    permission,
+    defaultServerRole,
+    defaultSuspendedRole,
+    hasActiveSuspension,
+    isRoot = false,
+    isSuperAdmin = false,
+    isAdmin = false,
+    superAdminRole,
+    adminRole,
+  } = input;
 
-  // If suspended at the server level, use the default suspended role
+  // The env break-glass root holds every capability unconditionally.
+  if (isRoot) {
+    return true;
+  }
+
+  // Suspension takes precedence over tier (a suspended admin is restricted).
   if (hasActiveSuspension) {
     const suspendedRole = defaultSuspendedRole;
     if (!suspendedRole) {
@@ -30,25 +53,25 @@ export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
       : new Error(ERROR_MESSAGES.server.noServerPermission);
   }
 
-  // Server permissions are governed by the default server role
-  if (!defaultServerRole) {
+  // Pick the governing role by tier, falling back to the default server role
+  // when a tier role is not configured yet (keeps behavior unchanged until the
+  // admin/super-admin roles are seeded — see the PR-2 migration).
+  const effectiveRole =
+    (isSuperAdmin ? superAdminRole : null) ??
+    (isAdmin ? adminRole : null) ??
+    defaultServerRole;
+
+  if (!effectiveRole) {
     return new Error(
       "Could not find permission on user's role or on the default server role."
     );
   }
 
-  if (permission === "canCreateChannel") {
-    return defaultServerRole.canCreateChannel === true
-      ? true
-      : new Error(ERROR_MESSAGES.server.noServerPermission);
-  }
-  if (permission === "canUploadFile") {
-    return defaultServerRole.canUploadFile === true
-      ? true
-      : new Error(ERROR_MESSAGES.server.noServerPermission);
-  }
-
-  return new Error(ERROR_MESSAGES.server.noServerPermission);
+  // Generic capability check (replaces the previous hard-coded
+  // canCreateChannel / canUploadFile branches) so any ServerRole flag works.
+  return effectiveRole[permission] === true
+    ? true
+    : new Error(ERROR_MESSAGES.server.noServerPermission);
 }
 
 export const hasServerPermission: (
@@ -100,11 +123,32 @@ export const hasServerPermission: (
   const defaultServerRole = serverConfig.DefaultServerRole;
   const defaultSuspendedRole = serverConfig.DefaultSuspendedRole;
 
+  // Tier detection: env root (break-glass) > super-admin > admin > default.
+  // Tier roles fall back to the default server role inside
+  // evaluateServerPermission until they are seeded (PR-2 migration), so this is
+  // behavior-preserving for existing servers.
+  const isRoot = isServerRoot(context);
+  const isSuperAdmin =
+    !!username &&
+    (serverConfig.SuperAdmins ?? []).some(
+      (member: { username?: string | null }) => member?.username === username
+    );
+  const isAdmin =
+    !!username &&
+    (serverConfig.Admins ?? []).some(
+      (member: { username?: string | null }) => member?.username === username
+    );
+
   const result = evaluateServerPermission({
     permission,
     defaultServerRole,
     defaultSuspendedRole,
     hasActiveSuspension,
+    isRoot,
+    isSuperAdmin,
+    isAdmin,
+    superAdminRole: serverConfig.DefaultSuperAdminRole,
+    adminRole: serverConfig.DefaultAdminRole,
   });
 
   if (result instanceof Error && hasActiveSuspension && username) {

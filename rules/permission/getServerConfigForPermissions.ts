@@ -1,6 +1,26 @@
 import { getPermissionRequestCache } from "./getPermissionRequestCache.js";
 import type { GraphQLContext } from "../../types/context.js";
 
+// All ServerRole capability fields, including the server-administration caps
+// added for the isAdmin phase-out (docs/isadmin-phaseout-design.md).
+const SERVER_ROLE_CAPS = `
+  canCreateChannel
+  canCreateDiscussion
+  canCreateEvent
+  canCreateComment
+  canUpvoteComment
+  canUpvoteDiscussion
+  canUploadFile
+  canGiveFeedback
+  showAdminTag
+  canManageServerSettings
+  canManagePlugins
+  canManageRoles
+  canManageMods
+  canManageAdmins
+  canManageSuperAdmins
+`;
+
 export const getServerConfigForPermissions = async (context: GraphQLContext) => {
   const cache = getPermissionRequestCache(context);
 
@@ -10,22 +30,16 @@ export const getServerConfigForPermissions = async (context: GraphQLContext) => 
       where: { serverName: process.env.SERVER_CONFIG_NAME },
       selectionSet: `{
         DefaultServerRole {
-          canCreateChannel
-          canCreateDiscussion
-          canCreateEvent
-          canCreateComment
-          canUpvoteComment
-          canUpvoteDiscussion
-          canUploadFile
+          ${SERVER_ROLE_CAPS}
         }
         DefaultSuspendedRole {
-          canCreateChannel
-          canCreateDiscussion
-          canCreateEvent
-          canCreateComment
-          canUpvoteComment
-          canUpvoteDiscussion
-          canUploadFile
+          ${SERVER_ROLE_CAPS}
+        }
+        DefaultAdminRole {
+          ${SERVER_ROLE_CAPS}
+        }
+        DefaultSuperAdminRole {
+          ${SERVER_ROLE_CAPS}
         }
         DefaultModRole {
           canOpenSupportTickets
@@ -77,6 +91,9 @@ export const getServerConfigForPermissions = async (context: GraphQLContext) => 
           canArchiveImage
           canDeleteWiki
           canPermanentlyRemoveImage
+        }
+        SuperAdmins {
+          username
         }
         Admins {
           username

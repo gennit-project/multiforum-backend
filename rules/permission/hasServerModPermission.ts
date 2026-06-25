@@ -7,6 +7,7 @@ import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import { isServerRoot } from "./isServerRoot.js";
 import { logger } from "../../logger.js";
 
 export const hasServerModPermission: (
@@ -18,6 +19,12 @@ export const hasServerModPermission: (
     context.user = await setUserDataOnContext({
       context,
     });
+  }
+
+  // The env break-glass root holds every capability, including mod actions, and
+  // need not have a moderation profile. See docs/isadmin-phaseout-design.md.
+  if (isServerRoot(context)) {
+    return true;
   }
 
   const modProfileName = context.user?.data?.ModerationProfile?.displayName;

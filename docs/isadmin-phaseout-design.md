@@ -100,14 +100,20 @@ is the env root. Regular `Admins` are restricted (no `canManageAdmins`);
 | `canManageMods` | `inviteServerMod`, `cancelInviteServerMod` |
 | `canManageAdmins` (**apex**) | `inviteServerAdmin`, `cancelInviteServerAdmin` (SuperAdmins + root) |
 | `canManageSuperAdmins` (**apex**) | add/remove `ServerConfig.SuperAdmins` (SuperAdmins self-manage + root) |
-| `canManageServerMembers` | `emails` enumeration, `deleteEmails`², `deleteUsers`², `updateUsers`-on-others² |
+
+Plus destructive structural caps on **`ModServerRole`**: `canRemoveDiscussionChannel`,
+`canRemoveEventChannel` (for `deleteDiscussionChannels` / `deleteEventChannels`).
 
 ¹ keep the existing `isChannelOwner` path for channel-scoped role deletes.
-² keep the existing `isAccountOwner` path.
 
-**Where they live:** extend `ServerRole` (least code — `hasServerPermission` keys
-on `keyof ServerRole`; defaults off so `DefaultServerRole` grants none) vs. a
-dedicated `ServerAdminRole`. Leaning `ServerRole` for Phase 1; see §8 Q3.
+There is **no `canManageServerMembers`**: `emails` enumeration is denied outright
+(§8.2), `deleteEmails`/`deleteUsers` keep their `isAccountOwner` path, and
+`updateUsers` is self-only (§8.4). Cross-user admin actions happen only through
+the existing invite flows.
+
+**Where they live (decided):** extend `ServerRole` for creative caps and
+`ModServerRole` for destructive caps — no dedicated admin role type. Defaults off,
+so `DefaultServerRole`/`DefaultModRole` grant none.
 
 ### Content-moderation `isAdmin` (the OR fallbacks)
 
@@ -177,18 +183,36 @@ SuperAdmins section.
    super-admin can authenticate before removing the `isAdmin` path.
 
 ### Phasing (separate PRs)
-1. **PR-1** — add admin capability flags to `ServerRole`; add the
-   `ServerConfig.SuperAdmins` connection; add root override + the SuperAdmin/Admin
-   tier resolution + generic default-role fallback to the evaluators; add the new
-   rules. **No call sites converted → no behavior change.** Tests.
-2. **PR-2 (migration)** — seed roles, backfill admins, wire env root; maintenance
-   window.
+
+1. **PR-1 — evaluator & schema groundwork. 🟡 IN PROGRESS.** No call sites
+   converted → no behavior change.
+   - ✅ Schema: admin "creative" caps on `ServerRole`
+     (`canManageServerSettings/Plugins/Roles/Mods/Admins/SuperAdmins`); destructive
+     caps on `ModServerRole` (`canRemoveDiscussionChannel/EventChannel`);
+     `ServerConfig.SuperAdmins` connection + `DefaultAdminRole` /
+     `DefaultSuperAdminRole` links. Codegen run.
+   - ✅ Evaluator: env break-glass root override (`isServerRoot`, `SUPERADMIN_EMAIL`)
+     in `hasServerPermission` + `hasServerModPermission`; SuperAdmin/Admin tier
+     resolution with **fallback to `DefaultServerRole`** (so unseeded tiers keep
+     current behavior); generic default-role check replacing the hard-coded
+     `canCreateChannel`/`canUploadFile` branches. `getServerConfigForPermissions`
+     fetches the new fields. Unit tests added (root, super-admin, restricted-admin,
+     tier fallback, suspended-admin, generic capability).
+   - ✅ `emails` query → `deny` (decision: only direct DB access reads emails).
+   - ✅ Align the **channel owner tier** to a configurable elevated role:
+     `Channel.ElevatedChannelRole` field added (codegen run); `hasChannelPermission`
+     resolves owners via `evaluateChannelOwnerPermission` (fallback to all-perms
+     until a role is configured). Unit test added.
+2. **PR-2 (migration)** — seed roles (Administrator without `canManageAdmins`,
+   Super Administrator with it; channel elevated role), backfill existing admins
+   into `SuperAdmins`, wire env root; maintenance window.
 3. **PR-3** — convert Category-A call sites to capability checks; drop `isAdmin`
-   from Category-B ORs; remove the `isAdmin` rule. Integration coverage for a
+   from Category-B ORs; tier-based mod resolution for admins in
+   `hasServerModPermission`; remove the `isAdmin` rule. Integration coverage for a
    restricted admin.
 4. **PR-4** — enforce the no-escalation invariant on invite / assign / role-edit.
-5. **PR-5 (later)** — role-management UI; (optional) align the channel owner tier
-   to the configurable-role model for full symmetry.
+5. **PR-5 (later)** — role-management UI; SuperAdmins section in
+   `ServerMembershipEditor`.
 
 `isAdmin` keeps working until PR-2 is verified per environment; only PR-3 removes
 it. Frontend: none required until PR-5.
@@ -206,21 +230,27 @@ it. Frontend: none required until PR-5.
 - **Server scope mirrors channel scope**, including a **suspended admin** tier;
   the server adds a SuperAdmin tier above Admins (channels keep owner as apex).
 
-**Still open:**
-1. **Align the channel owner tier now or later?** Today channel owners get *all*
-   permissions unconditionally; the symmetric/configurable model makes the
-   owner/admin tier a configurable elevated role. Align channels in this effort,
-   or keep channel-owner=all for now and only build the server admin tier
-   configurable? (Recommend: build server configurable now; align channels in
-   PR-5.)
-2. **`emails` enumeration** — `canManageServerMembers`, or keep strictly
-   root/admin (privacy-sensitive)?
-3. **Schema home for admin caps** — extend `ServerRole` (Phase 1 lean) vs. a
-   dedicated `ServerAdminRole` type.
-4. **`updateUsers` on other users** — under `canManageServerMembers`, or
-   root/admin-only?
-5. **`deleteDiscussionChannels` / `deleteEventChannels`** —
-   `canManageServerSettings`, a content-mod perm, or admin-only?
+**Resolved in review (2nd round):**
+1. **Align the channel owner tier now** — owners resolve a configurable elevated
+   channel role (behavior-preserving fallback to all-perms until seeded), so even
+   owners can be made restrictive. Done as part of PR-1.
+2. **`emails` enumeration → blanket `deny`** for every role. Only direct database
+   access reads addresses; clients use `getOwnEmail`. (Done in PR-1.) No
+   `canManageServerMembers` capability is needed for it.
+3. **Schema home: extend `ServerRole`** (creative caps) and **`ModServerRole`**
+   (destructive: ban/archive/delete) — split by action nature, no dedicated admin
+   type. `ServerConfig` holds the per-tier default-role links.
+4. **`updateUsers`: self-only.** Users may edit only their own account (with the
+   #64 role-assignment block). Editing *other* users is not offered now or
+   planned — the only cross-user admin actions are the existing invite flows
+   (server admin / channel owner). So there is **no** `canManageServerMembers`
+   capability and no admin override on `updateUsers`.
+5. **`deleteDiscussionChannels` / `deleteEventChannels`** → destructive caps on
+   **`ModServerRole`** (`canRemoveDiscussionChannel` / `canRemoveEventChannel`).
+   (Schema added in PR-1; call sites convert in PR-3.)
+
+Note: items 2 and 4 mean the earlier `canManageServerMembers` capability is
+dropped from the taxonomy (§4).
 
 ## 9. Testing
 - Unit: extend `hasServerPermission.test.ts` / `hasServerModPermission.test.ts`
