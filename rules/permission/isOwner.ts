@@ -9,6 +9,7 @@ export { isEventOwner } from "./ownership/isEventOwner.js";
 export { isCommentAuthor } from "./ownership/isCommentAuthor.js";
 export { isAccountOwner } from "./ownership/isAccountOwner.js";
 export { isCollectionOwner } from "./ownership/isCollectionOwner.js";
+export { isAlbumOwner } from "./ownership/isAlbumOwner.js";
 export { isDiscussionChannelOwner } from "./ownership/isDiscussionChannelOwner.js";
 export { isImageUploader } from "./ownership/isImageUploader.js";
 export { isIssueAuthor } from "./ownership/isIssueAuthor.js";

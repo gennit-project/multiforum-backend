@@ -232,11 +232,16 @@ test("blocks wiki home page updates when wiki is disabled for the channel", asyn
   assert.ok(result instanceof Error);
 });
 
-test("allows unrelated channel updates to keep existing updateChannels behavior", async () => {
+test("does not grant non-wiki channel updates (owner/admin gate handles those)", async () => {
   const ctx = buildContext({
     suspendedUsers: [{ username: "wiki-author" }],
   });
 
+  // The home-page rule grants nothing for a non-wiki update; in permissions.ts
+  // it is OR'd with isChannelOwner/isAdmin, which are what authorize general
+  // channel-config changes. Returning an Error here (instead of the old `true`)
+  // is what closes the gap where any authenticated user could edit channel
+  // settings.
   const result = await evaluateCanEditWikiHomePageRule(
     {
       where: { uniqueName: "sourceit" },
@@ -245,7 +250,7 @@ test("allows unrelated channel updates to keep existing updateChannels behavior"
     ctx
   );
 
-  assert.equal(result, true);
+  assert.ok(result instanceof Error);
 });
 
 test("allows original wiki page authors to delete their pages", async () => {

@@ -19,6 +19,7 @@ import getInstalledPlugins from "./queries/getInstalledPlugins.js";
 import getPluginRunsForDownloadableFile from "./queries/getPluginRunsForDownloadableFile.js";
 import getPipelineRuns from "./queries/getPipelineRuns.js";
 import publicCollectionsContaining from "./queries/publicCollectionsContaining.js";
+import getOwnEmail from "./queries/getOwnEmail.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -35,6 +36,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     ServerConfig,
     ServerSecret,
     PluginRun,
+    Email,
   } = deps;
 
   return {
@@ -103,6 +105,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     publicCollectionsContaining: publicCollectionsContaining({
       driver,
       ogm
+    }),
+    getOwnEmail: getOwnEmail({
+      Email
     })
   };
 }
