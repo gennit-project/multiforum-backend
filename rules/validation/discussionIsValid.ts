@@ -179,19 +179,40 @@ export async function validateDiscussionImagePreferences(
   return validateImageUploadsEnabled(targetChannelConnections, ctx);
 }
 
+// Enforces channel-level download rules when a discussion attaches a download.
+// Works for both create and update: downloads are governed by sitewide rules at
+// upload time, but the channel's rules (downloadsEnabled + allowedFileTypes)
+// only apply once the download is submitted to a channel — which is here. For
+// updates with no explicit channelConnections, the discussion's existing
+// channels are resolved from `where`.
 export async function validateDiscussionDownloadPreferences(
-  item: CreateDiscussionItem,
+  {
+    discussionInput,
+    channelConnections,
+    where,
+  }: {
+    discussionInput: any;
+    channelConnections?: string[];
+    where?: any;
+  },
   ctx: GraphQLContext
 ) {
-  const { discussionCreateInput, channelConnections } = item;
-  const downloadableFileIds = getDownloadableFileIds(discussionCreateInput);
+  const downloadableFileIds = getDownloadableFileIds(discussionInput);
 
-  if (!discussionCreateInput.hasDownload && !downloadableFileIds.length) {
+  if (!discussionInput?.hasDownload && !downloadableFileIds.length) {
     return true;
   }
 
+  const targetChannelConnections = channelConnections?.length
+    ? channelConnections
+    : await getDiscussionChannelNamesByWhere(where, ctx);
+
+  if (!targetChannelConnections.length) {
+    return "No channel specified for this operation.";
+  }
+
   const downloadsEnabledResult = await validateDownloadChannelsEnabled(
-    channelConnections,
+    targetChannelConnections,
     ctx
   );
 
@@ -221,7 +242,7 @@ export async function validateDiscussionDownloadPreferences(
 
     const fileTypeValidation = await validateFileTypePermissions(
       downloadableFile.fileName || "",
-      channelConnections,
+      targetChannelConnections,
       ctx
     );
 
@@ -251,7 +272,10 @@ export const createDiscussionInputIsValid = rule({ cache: "contextual" })(
       }
 
       const downloadValidation = await validateDiscussionDownloadPreferences(
-        item,
+        {
+          discussionInput: item.discussionCreateInput,
+          channelConnections: item.channelConnections,
+        },
         ctx
       );
       if (downloadValidation !== true) {
@@ -290,6 +314,21 @@ export const updateDiscussionInputIsValid = rule({ cache: "contextual" })(
 
     if (discussionValidation !== true) {
       return discussionValidation;
+    }
+
+    // Attaching or changing a download via update must respect the channel's
+    // download rules, same as create. Previously only image preferences were
+    // checked here, so downloads could be added through update unchecked.
+    const downloadValidation = await validateDiscussionDownloadPreferences(
+      {
+        discussionInput: discussionUpdateInput,
+        channelConnections: args.channelConnections,
+        where: (args as any).where,
+      },
+      ctx
+    );
+    if (downloadValidation !== true) {
+      return downloadValidation;
     }
 
     return validateDiscussionImagePreferences(
