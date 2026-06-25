@@ -169,7 +169,7 @@ export const hasChannelModPermission: (
   }
 
   const channelData = channel[0];
-  const modProfileName = context.user?.data?.ModerationProfile?.displayName;
+  const modProfileName = context.user?.data?.ModerationProfile?.displayName ?? undefined;
 
   const ServerConfig = context.ogm.model("ServerConfig");
   const serverConfig = await ServerConfig.find({

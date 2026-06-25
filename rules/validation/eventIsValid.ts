@@ -1,7 +1,7 @@
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import { CanCreateEventArgs, SingleEventInput } from "../rules";
+import { CanCreateEventArgs, SingleEventInput } from "../definitions/contentCreationRules.js";
 import {
   MAX_CHARS_IN_EVENT_DESCRIPTION,
   MAX_CHARS_IN_EVENT_TITLE,

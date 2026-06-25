@@ -16,7 +16,7 @@ import {
   getIssueCreateInput,
   getModerationActionCreateInput
 } from './reportComment.js'
-import { getFinalCommentText } from './reportDiscussion.js'
+import { getFinalCommentText } from "./shared/reportText.js"
 import getNextIssueNumber from './utils/getNextIssueNumber.js'
 
 type Args = {
@@ -79,7 +79,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError('User must be logged in')
     }
 
-    const loggedInModName = context.user.data.ModerationProfile.displayName
+    const loggedInModName = context.user.data?.ModerationProfile?.displayName
     if (!loggedInModName) {
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`)
     }

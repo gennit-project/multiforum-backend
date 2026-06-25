@@ -16,7 +16,7 @@ import {
   getIssueCreateInput,
   getModerationActionCreateInput
 } from '../customResolvers/mutations/reportComment.js'
-import { getFinalCommentText } from '../customResolvers/mutations/reportDiscussion.js'
+import { getFinalCommentText } from "../customResolvers/mutations/shared/reportText.js"
 import getNextIssueNumber from '../customResolvers/mutations/utils/getNextIssueNumber.js'
 import { logger } from "../logger.js";
 

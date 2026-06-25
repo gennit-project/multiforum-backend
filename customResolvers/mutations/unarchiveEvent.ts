@@ -50,7 +50,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("User must be logged in");
     }
 
-    const loggedInModName = context.user.data.ModerationProfile.displayName;
+    const loggedInModName = context.user.data?.ModerationProfile?.displayName;
     if (!loggedInModName) {
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`);
     }

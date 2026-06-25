@@ -74,7 +74,7 @@ export const hasServerPermission: (
       getPermissionInfo: true,
     });
   }
-  const usersServerRoles = context.user?.data?.ServerRoles || [];
+  const usersServerRoles = (context.user?.data?.ServerRoles ?? []) as ServerRole[];
 
   const username = context.user?.username;
   let hasActiveSuspension = false;

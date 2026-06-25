@@ -16,6 +16,7 @@ import {
   getIssueCreateInput,
 } from "./reportComment.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
+import { getFinalCommentText } from "./shared/reportText.js";
 import { logger } from "../../logger.js";
 
 type Args = {
@@ -30,36 +31,6 @@ type Input = {
   Issue: IssueModel;
   Discussion: DiscussionModel;
   driver: Driver;
-};
-
-type FinalCommentTextInput = {
-  selectedForumRules: string[];
-  selectedServerRules: string[];
-  reportText: string;
-};
-
-export const getFinalCommentText = (input: FinalCommentTextInput) => {
-  const { selectedForumRules, selectedServerRules, reportText } = input;
-  return `
-${
-  selectedForumRules.length > 0
-    ? `Server rule violations: ${selectedForumRules.join(", ")}
-`
-    : ""
-}
-${
-  selectedServerRules.length > 0
-    ? `Forum rule violations: ${selectedServerRules.join(", ")}
-`
-    : ""
-}
-${
-  reportText
-    ? `${reportText}
-`
-    : ""
-}
-`;
 };
 
 const getResolver = (input: Input) => {
@@ -105,7 +76,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("User must be logged in");
     }
 
-    const loggedInModName = context.user.data.ModerationProfile.displayName;
+    const loggedInModName = context.user.data?.ModerationProfile?.displayName;
     if (!loggedInModName) {
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`);
     }

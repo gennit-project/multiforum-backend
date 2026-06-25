@@ -1,6 +1,6 @@
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { EmailModel } from "../../ogm_types.js";
-import type { GraphQLContext, GraphQLRequest, Ogm } from "../../types/context.js";
+import type { GraphQLContext, GraphQLRequest, Ogm, UserDataOnContext } from "../../types/context.js";
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import jwt from "jsonwebtoken";
@@ -139,12 +139,10 @@ type SetUserDataInput = {
   checkSpecificChannel?: string;
 };
 
-export type UserDataOnContext = {
-  username: string | null;
-  email: string | null;
-  email_verified: boolean;
-  data: any;
-};
+// UserDataOnContext now lives in types/context.ts (single source of truth for
+// the context shape); re-exported here for the many call sites that import it
+// from this module.
+export type { UserDataOnContext };
 
 export const setUserDataOnContext = async (
   input: SetUserDataInput

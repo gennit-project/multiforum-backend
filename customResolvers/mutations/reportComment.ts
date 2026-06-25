@@ -8,7 +8,7 @@ import type {
 } from '../../ogm_types.js'
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js'
 import { GraphQLError } from 'graphql'
-import { getFinalCommentText } from './reportDiscussion.js'
+import { getFinalCommentText } from "./shared/reportText.js"
 import { DateTime } from 'luxon'
 import type { Driver } from 'neo4j-driver'
 import type { GraphQLResolveInfo } from 'graphql'
@@ -303,7 +303,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError('User must be logged in')
     }
 
-    const loggedInModName = context.user.data.ModerationProfile.displayName
+    const loggedInModName = context.user.data?.ModerationProfile?.displayName
     if (!loggedInModName) {
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`)
     }

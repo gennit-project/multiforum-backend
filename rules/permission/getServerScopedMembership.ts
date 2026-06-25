@@ -77,6 +77,6 @@ export const getServerScopedMembership = async (
       serverConfig?.Moderators?.map(
         (moderator: { displayName: string }) => moderator.displayName
       ) || [],
-    legacyServerRoles: context.user?.data?.ServerRoles || [],
+    legacyServerRoles: (context.user?.data?.ServerRoles ?? []) as ServerRoleLike[],
   });
 };
