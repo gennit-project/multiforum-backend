@@ -81,7 +81,7 @@ test("returns error when user has an active indefinite suspension", async () => 
     ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
     user: {
       username: "suspended-user",
-      data: { ServerRoles: [] }, // Pre-populate to skip setUserDataOnContext
+      data: {}, // Pre-populate to skip setUserDataOnContext
     },
     req: { headers: {} },
   };
@@ -99,7 +99,7 @@ test("returns error when user has an active time-limited suspension", async () =
     ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
     user: {
       username: "time-limited-suspended-user",
-      data: { ServerRoles: [] }, // Pre-populate to skip setUserDataOnContext
+      data: {}, // Pre-populate to skip setUserDataOnContext
     },
     req: { headers: {} },
   };

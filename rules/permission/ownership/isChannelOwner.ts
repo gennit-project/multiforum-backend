@@ -20,7 +20,6 @@ export const isChannelOwner = rule({ cache: "contextual" })(
     // set user data
     ctx.user = await setUserDataOnContext({
       context: ctx,
-      getPermissionInfo: false,
     });
     let username = ctx.user.username;
     logger.info("username: ", ctx.user);

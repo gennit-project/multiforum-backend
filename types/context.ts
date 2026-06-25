@@ -25,8 +25,6 @@ export type ContextModerationProfile = {
  */
 export type UserContextData = {
   ModerationProfile?: ContextModerationProfile;
-  ServerRoles?: unknown[];
-  ChannelRoles?: unknown[];
   ModeratedChannels?: Array<{ uniqueName?: string | null }>;
   AdminOfServers?: unknown[];
   [key: string]: unknown;

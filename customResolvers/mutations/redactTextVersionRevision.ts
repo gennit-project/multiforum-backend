@@ -137,7 +137,6 @@ const getCurrentUser = async (input: {
 
   context.user = await getUserData({
     context,
-    getPermissionInfo: false
   })
 
   return context.user

@@ -26,7 +26,6 @@ const getResolver = (input: Input) => {
     const { commentId, modName, offset, limit, sort } = args;
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false,
     });
     const loggedInUsername = context.user?.username || null;
 

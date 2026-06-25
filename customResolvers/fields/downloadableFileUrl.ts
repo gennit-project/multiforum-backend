@@ -30,7 +30,6 @@ export const createDownloadableFileUrlResolver = (
     if (!context.user) {
       context.user = await getUserData({
         context,
-        getPermissionInfo: false,
       });
     }
 

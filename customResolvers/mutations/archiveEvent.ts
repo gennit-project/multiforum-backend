@@ -72,7 +72,6 @@ const getResolver = (input: Input) => {
     // Set loggedInUsername to null explicitly if not present
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false,
     });
 
     const loggedInUsername = context.user?.username || null;

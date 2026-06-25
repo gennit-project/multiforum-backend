@@ -36,7 +36,6 @@ const channelCreatorModeratorMiddleware = {
       try {
         const userData = await setUserDataOnContext({
           context: context as AuthContextForUserLookup,
-          getPermissionInfo: false,
         });
 
         if (!userData?.username) {

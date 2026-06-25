@@ -51,7 +51,6 @@ const getResolver = (input: Input) => {
     const { eventId, offset, limit, sort } = args;
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: false,
     });
     const loggedInUsername = context.user?.username || null;
 

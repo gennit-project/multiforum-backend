@@ -94,8 +94,6 @@ export const hasChannelModPermission: (
   // 1. Check for mod roles on the user object
   context.user = await setUserDataOnContext({
     context,
-    getPermissionInfo: true,
-    checkSpecificChannel: channelName,
   });
 
   // 2. Check if user has a moderation profile

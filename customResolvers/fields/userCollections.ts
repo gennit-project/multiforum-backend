@@ -36,7 +36,6 @@ export default function ({ ogm }: UserCollectionsArgs) {
     if (!context.user) {
       context.user = await setUserDataOnContext({
         context,
-        getPermissionInfo: false,
       });
     }
 

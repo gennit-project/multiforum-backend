@@ -36,7 +36,6 @@ async function testServerModeratorUsesElevatedRoleForSuspendPermission() {
         ModerationProfile: {
           displayName: "Mod Alice",
         },
-        ServerRoles: [],
       },
     },
     req: { headers: {} },
@@ -92,7 +91,6 @@ async function testSuspendedServerModUsesSuspendedRole() {
         ModerationProfile: {
           displayName: "Mod Alice",
         },
-        ServerRoles: [],
       },
     },
     req: { headers: {} },
@@ -140,7 +138,6 @@ async function testServerAdminBypassesServerModRoleChecks() {
         ModerationProfile: {
           displayName: "Mod Alice",
         },
-        ServerRoles: [],
       },
     },
     req: { headers: {} },

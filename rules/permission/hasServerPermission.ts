@@ -10,14 +10,13 @@ import { logger } from "../../logger.js";
 
 type EvaluateServerPermissionInput = {
   permission: keyof ServerRole;
-  userRoles: ServerRole[];
   defaultServerRole?: ServerRole | null;
   defaultSuspendedRole?: ServerRole | null;
   hasActiveSuspension: boolean;
 };
 
 export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
-  const { permission, userRoles, defaultServerRole, defaultSuspendedRole, hasActiveSuspension } =
+  const { permission, defaultServerRole, defaultSuspendedRole, hasActiveSuspension } =
     input;
 
   // If suspended at the server level, use the default suspended role
@@ -31,17 +30,7 @@ export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
       : new Error(ERROR_MESSAGES.server.noServerPermission);
   }
 
-  // Use explicit server roles on the user if present
-  if (userRoles.length > 0) {
-    for (const serverRole of userRoles) {
-      if (!serverRole[permission]) {
-        return new Error(ERROR_MESSAGES.server.noServerPermission);
-      }
-    }
-    return true;
-  }
-
-  // Fall back to default server role
+  // Server permissions are governed by the default server role
   if (!defaultServerRole) {
     return new Error(
       "Could not find permission on user's role or on the default server role."
@@ -71,11 +60,8 @@ export const hasServerPermission: (
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
       context,
-      getPermissionInfo: true,
     });
   }
-  const usersServerRoles = (context.user?.data?.ServerRoles ?? []) as ServerRole[];
-
   const username = context.user?.username;
   let hasActiveSuspension = false;
   let suspensionInfo: Awaited<ReturnType<typeof getActiveServerSuspension>> | null =
@@ -116,7 +102,6 @@ export const hasServerPermission: (
 
   const result = evaluateServerPermission({
     permission,
-    userRoles: usersServerRoles,
     defaultServerRole,
     defaultSuspendedRole,
     hasActiveSuspension,

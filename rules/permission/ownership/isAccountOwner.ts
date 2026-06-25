@@ -18,7 +18,6 @@ export const isAccountOwner = rule({ cache: "contextual" })(
     // set user data
     ctx.user = await setUserDataOnContext({
       context: ctx,
-      getPermissionInfo: false,
     });
 
     if (!username) {

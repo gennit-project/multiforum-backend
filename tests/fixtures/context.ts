@@ -1,24 +1,23 @@
 // Factory for the resolver `context` object, composing the fake driver and OGM.
 //
-// Resolvers receive a context shaped like `{ driver, ogm, user, req }`. The
-// user carries permission roles under `data.ServerRoles` (matching what the
-// permission system reads). Use `makeContext` for the whole object, or
-// `makeUser` alone when a resolver only needs the user.
+// Resolvers receive a context shaped like `{ driver, ogm, user, req }`. Use
+// `makeContext` for the whole object, or `makeUser` alone when a resolver only
+// needs the user. The user's `data` carries the moderation profile; channel and
+// server role data is fetched live by the permission rules, not from the user.
 
 import { makeDriver, type DriverCalls, type DriverOptions } from "./driver.js";
 import { makeOgm, type ModelStub, type OgmCalls } from "./ogm.js";
 
 export interface UserOptions {
   username?: string;
-  ServerRoles?: any[];
   [key: string]: unknown;
 }
 
 export function makeUser(overrides: UserOptions = {}) {
-  const { username = "testuser", ServerRoles = [], ...rest } = overrides;
+  const { username = "testuser", ...rest } = overrides;
   return {
     username,
-    data: { ServerRoles },
+    data: {},
     ...rest,
   };
 }
