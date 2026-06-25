@@ -232,7 +232,11 @@ const permissionList = shield({
       deleteNotifications: deny,
       updateNotifications: deny,
 
-      updateImages: and(isAuthenticated, isImageUploader),
+      // Image edits (e.g. captions) are allowed for the uploader (OP), an
+      // image mod, or an admin. canArchiveAndUnarchiveImage resolves to the
+      // server-level canArchiveImage mod permission here, since updateImages
+      // carries no channel argument and images aren't channel-scoped.
+      updateImages: and(isAuthenticated, or(isImageUploader, canArchiveAndUnarchiveImage, isAdmin)),
       createImages: deny, // Use createImageWithUploader instead to ensure Uploader is set
       createImageWithUploader: and(isAuthenticated, canUploadFile),
 
