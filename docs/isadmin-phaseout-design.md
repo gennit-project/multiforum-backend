@@ -1,6 +1,9 @@
 # Design: Phasing out `isAdmin` → symmetric, role-based permissions
 
-Status: **Draft for review** · Owner: TBD · Related: PR #64 (P0), PR #65 (P1)
+Status: **Implemented** (PR-1 → PR-4c; see §7 Phasing for the per-stage status).
+The remaining work is rollout/cleanup, not the core model. · Related: PR #64
+(P0), PR #65 (P1). For the resulting system, see
+[permission-system.md](./permission-system.md).
 
 ## 1. Goal & product context
 
