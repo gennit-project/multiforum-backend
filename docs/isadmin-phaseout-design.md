@@ -229,10 +229,21 @@ production):
    - 🔲 Adopt `provisionServerDefaults` in integration-test setup (incremental).
    - 🔲 Wire env root (`SUPERADMIN_EMAIL`) in deploy config; run provisioning per
      environment in a maintenance window.
-3. **PR-3** — convert Category-A call sites to capability checks; drop `isAdmin`
-   from Category-B ORs; tier-based mod resolution for admins in
-   `hasServerModPermission`; remove the `isAdmin` rule. Integration coverage for a
-   restricted admin.
+3. **PR-3 — ✅ DONE.** PR-3a (#72) converted Category-A call sites to capability
+   checks; PR-3b (#73) dropped `isAdmin` from the Category-B ORs and removed the
+   `isAdmin` rule, replacing it with a server-admin + root override
+   (`passesAsServerAdminOrRoot`) inside the channel/ownership rules. `updateUsers`/
+   `deleteUsers`/`deleteEmails` are self-only; the dangerous Cypress seams use the
+   env-root-only `isRoot`; `reportProfilePicture` uses `canReportServerContent`.
+3.5. **PR-3.5 — suspended-admin path. ✅ DONE.** The override is **server-
+   suspension-aware**: a server-suspended admin loses the blanket override and
+   falls through to the normal (restricted) role checks everywhere (channel,
+   ownership, and server-mod). `hasServerModPermission` no longer lets a suspended
+   admin bypass the suspended role. **Root is the only actor a suspension cannot
+   stop.** Server suspension (`scope: 'server'`) is the lever to restrict an admin;
+   channel-level roles intentionally do *not* restrict an un-suspended admin (they
+   are server staff). Unit tests: `serverAdminOverride.test.ts` (pure
+   `evaluateAdminOverride`) + a suspended-admin case in `hasServerModPermission.test.ts`.
 4. **PR-4 — no-privilege-escalation invariant. ✅ DONE (server roles).** Role
    authoring is now gated by a capability-superset check in addition to
    `canManageRoles`: `createServerRoles` / `createModServerRoles` /
@@ -244,12 +255,25 @@ production):
    `findEscalatedCapabilities` in `rules/validation/roleEscalation.ts`. Assignment
    is already covered: `updateUsers` role-connect is blocked (#64), and the invite
    flows grant fixed tier roles (the inviter never chooses capabilities).
-   - 🔲 **Follow-up (PR-4b):** extend the guard to channel-scoped role authoring
-     (`createChannelRoles` / `createModChannelRoles`) and to **nested** role
-     create/update reachable through other mutations (e.g. a role `create`/`update`
-     embedded in `updateServerConfigs`). Channel-role capabilities carry no
-     server-administration power, so this is lower-risk than the server-role paths
-     closed here.
+   - ✅ **PR-4b — nested ServerConfig escalation closed.** The generated
+     `ServerConfig` create/update input allows nested role writes on the tier
+     relationships (`DefaultAdminRole`, `DefaultServerRole`, …), reachable via
+     `updateServerConfigs`/`createServerConfigs` (gated only by
+     `canManageServerSettings`) — e.g.
+     `updateServerConfigs(update: { DefaultAdminRole: { update: { node: { canManageAdmins: true } } } })`.
+     `serverConfigInputDoesNotEscalate` (`rules/validation/nestedRoleEscalation.ts`)
+     now walks those relationships and rejects any nested `create`/`update`/
+     `connectOrCreate` node — and resolves `connect`/`connectOrCreate` targets from
+     the DB — that grants a capability the actor lacks (so connecting an existing
+     `DefaultSuperAdminRole` into a lower tier slot is caught too). Root / full
+     admin bypass; lookup failures fail closed.
+   - ✅ **PR-4c — channel-role authoring (defense-in-depth).**
+     `createChannelRoles`/`createModChannelRoles` may author a capability-bearing
+     channel role only for a channel the actor owns (or as server admin / root).
+     Channel roles carry **no** server-administration capability and cannot reach
+     the apex tier; wiring a channel role is already channel-owner-gated. Nested
+     role writes in `createChannels`/`updateChannels` need no guard — the actor is
+     creating/owns the channel and legitimately defines its roles.
 5. **PR-5 (later)** — role-management UI; SuperAdmins section in
    `ServerMembershipEditor`.
 

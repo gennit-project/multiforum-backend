@@ -174,10 +174,69 @@ async function testServerAdminBypassesServerModRoleChecks() {
   assert.equal(result, true);
 }
 
+async function testSuspendedServerAdminFallsThroughToSuspendedRole() {
+  // A server admin who is also server-suspended must NOT bypass the role checks
+  // — they fall through to the DefaultSuspendedModRole (suspension beats tier).
+  const result = await hasServerModPermission("canSuspendUser", asContext({
+    driver: buildDriver({
+      modSuspensions: [
+        {
+          id: "server-admin-suspension-1",
+          modProfileName: "Mod Alice",
+          suspendedIndefinitely: true,
+          suspendedUntil: null,
+        },
+      ],
+    }),
+    user: {
+      username: "alice",
+      email: "alice@example.com",
+      data: {
+        ModerationProfile: {
+          displayName: "Mod Alice",
+        },
+      },
+    },
+    req: { headers: {} },
+    ogm: {
+      model(name: string) {
+        if (name === "ServerConfig") {
+          return {
+            find: async () => [
+              {
+                DefaultModRole: { canSuspendUser: true },
+                DefaultElevatedModRole: { canSuspendUser: true },
+                DefaultSuspendedModRole: { canSuspendUser: false },
+                Admins: [{ username: "alice" }],
+                Moderators: [],
+                SuspendedUsers: [],
+                SuspendedMods: [],
+              },
+            ],
+          };
+        }
+
+        if (name === "User") {
+          return {
+            find: async () => [],
+            update: async () => ({}),
+          };
+        }
+
+        throw new Error(`Unexpected model lookup: ${name}`);
+      },
+    },
+  }));
+
+  assert.ok(result instanceof Error);
+  assert.equal(result.message, "You do not have permission to do that.");
+}
+
 async function run() {
   await testServerModeratorUsesElevatedRoleForSuspendPermission();
   await testSuspendedServerModUsesSuspendedRole();
   await testServerAdminBypassesServerModRoleChecks();
+  await testSuspendedServerAdminFallsThroughToSuspendedRole();
   console.log("hasServerModPermission tests passed");
 }
 
