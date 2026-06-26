@@ -60,6 +60,10 @@ import {
 } from "./validation/roleEscalation.js";
 import { serverConfigInputDoesNotEscalate } from "./validation/nestedRoleEscalation.js";
 import {
+  channelRoleInputDoesNotEscalate,
+  modChannelRoleInputDoesNotEscalate,
+} from "./validation/channelRoleEscalation.js";
+import {
   canCreateChannel,
   canCreateComment,
   canCreateDiscussion,
@@ -132,6 +136,8 @@ const ruleList = {
   serverRoleInputDoesNotEscalate,
   modServerRoleInputDoesNotEscalate,
   serverConfigInputDoesNotEscalate,
+  channelRoleInputDoesNotEscalate,
+  modChannelRoleInputDoesNotEscalate,
   hasChannelPermission,
   isRoot,
   canManageServerSettings,

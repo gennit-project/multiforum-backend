@@ -42,6 +42,8 @@ const {
   serverRoleInputDoesNotEscalate,
   modServerRoleInputDoesNotEscalate,
   serverConfigInputDoesNotEscalate,
+  channelRoleInputDoesNotEscalate,
+  modChannelRoleInputDoesNotEscalate,
   canReport,
   canSuspendAndUnsuspendUser,
   canArchiveAndUnarchiveComment,
@@ -127,14 +129,15 @@ const permissionList = shield({
       createTags: and(isAuthenticated, allow),
       
       // Role management requires canManageRoles (the updateUsers role-connect
-      // block still prevents self-escalation via assignment). The server-role
-      // create/update paths additionally enforce the no-privilege-escalation
-      // invariant: you cannot author a role granting a capability you lack
-      // (e.g. a restricted admin cannot mint canManageAdmins). Channel-role
-      // creation carries no server-administration capability, so it is not
-      // guarded here — see docs/isadmin-phaseout-design.md §5.
-      createChannelRoles: and(isAuthenticated, canManageRoles),
-      createModChannelRoles: and(isAuthenticated, canManageRoles),
+      // block still prevents self-escalation via assignment). The role-authoring
+      // paths additionally enforce the no-privilege-escalation invariant: you
+      // cannot author a role granting a capability you lack (e.g. a restricted
+      // admin cannot mint canManageAdmins). For channel roles — which carry no
+      // server-administration capability — the invariant is ownership: you may
+      // author a capability-bearing channel role only for a channel you own (or
+      // as server admin / root). See docs/isadmin-phaseout-design.md §5.
+      createChannelRoles: and(isAuthenticated, canManageRoles, channelRoleInputDoesNotEscalate),
+      createModChannelRoles: and(isAuthenticated, canManageRoles, modChannelRoleInputDoesNotEscalate),
 
       createModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       createServerRoles: and(isAuthenticated, canManageRoles, serverRoleInputDoesNotEscalate),

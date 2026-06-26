@@ -62,6 +62,34 @@ export const MOD_SERVER_ROLE_CAPABILITY_FIELDS = [
   "canRemoveEventChannel",
 ] as const;
 
+// Channel-scoped role capabilities (no server-administration power). Used by the
+// PR-4c channel-role-authoring guard. Display-only showModTag is excluded.
+export const CHANNEL_ROLE_CAPABILITY_FIELDS = [
+  "canCreateDiscussion",
+  "canCreateEvent",
+  "canCreateComment",
+  "canUpvoteDiscussion",
+  "canUpvoteComment",
+  "canUploadFile",
+  "canUpdateChannel",
+] as const;
+
+export const MOD_CHANNEL_ROLE_CAPABILITY_FIELDS = [
+  "canHideComment",
+  "canHideEvent",
+  "canHideDiscussion",
+  "canEditComments",
+  "canEditDiscussions",
+  "canEditEvents",
+  "canGiveFeedback",
+  "canOpenSupportTickets",
+  "canCloseSupportTickets",
+  "canReport",
+  "canSuspendUser",
+  "canArchiveImage",
+  "canDeleteWiki",
+] as const;
+
 // --- Pure tier selection (extracted for unit testing) ---
 
 export function resolveEffectiveServerRole(input: {
