@@ -12,7 +12,6 @@ const SERVER_ROLE_CAPS = `
   canUpvoteDiscussion
   canUploadFile
   canGiveFeedback
-  showAdminTag
   canManageServerSettings
   canManagePlugins
   canManageRoles

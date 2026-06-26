@@ -1497,7 +1497,6 @@ const typeDefinitions = gql`
     canUpvoteComment: Boolean
     canUploadFile: Boolean
     canGiveFeedback: Boolean
-    showAdminTag: Boolean
     # Server-administration capabilities ("creative" — configure/grant). Default
     # off; held by the admin/super-admin tier roles. See
     # docs/isadmin-phaseout-design.md.
@@ -1520,7 +1519,6 @@ const typeDefinitions = gql`
     canUpvoteComment: Boolean
     canUploadFile: Boolean
     canUpdateChannel: Boolean
-    showModTag: Boolean
   }
 
   type ModChannelRole {

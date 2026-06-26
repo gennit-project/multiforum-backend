@@ -40,14 +40,6 @@ const discussionChannelSelectionSet = `
             commentKarma
             createdAt
             discussionKarma
-            ... on User {
-                ServerRoles {
-                  showAdminTag
-                }
-                ChannelRoles {
-                  showModTag
-                }
-            }
         }
     }
     CommentsAggregate(where: { isFeedbackComment: false }) {

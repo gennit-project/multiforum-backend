@@ -53,14 +53,11 @@ WITH parentComment, child, author, serverRoles, channelRoles, UpvotedByUsers, Su
      GrandchildCommentsCount, FilteredFeedbackComments, FilteredPastVersions, isFavoritedByUser,
      10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
 
-WITH parentComment, child, author, UpvotedByUsers, SuperUpvotedByUsers, weightedVotesCount, hotRank, GrandchildCommentsCount, FilteredFeedbackComments, FilteredPastVersions, isFavoritedByUser,
-     serverRoles, channelRoles
-
-WITH parentComment, child, author, UpvotedByUsers, SuperUpvotedByUsers, weightedVotesCount, hotRank, GrandchildCommentsCount, FilteredFeedbackComments, FilteredPastVersions, isFavoritedByUser,
-     [role IN serverRoles | {showAdminTag: role.showAdminTag}] AS serverRoles, channelRoles
-
-WITH parentComment, child, author, UpvotedByUsers, SuperUpvotedByUsers, weightedVotesCount, hotRank, GrandchildCommentsCount, FilteredFeedbackComments, FilteredPastVersions, serverRoles, isFavoritedByUser,
-     [role IN channelRoles | {showModTag: role.showModTag}] AS channelRoles
+// Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
+// @cypher field + server-admin membership), so the author's roles are no longer
+// projected onto the reply. (serverRoles/channelRoles were collapsed above and are
+// now dropped.)
+WITH parentComment, child, author, UpvotedByUsers, SuperUpvotedByUsers, weightedVotesCount, hotRank, GrandchildCommentsCount, FilteredFeedbackComments, FilteredPastVersions, isFavoritedByUser
 
 // Structure the return data
 RETURN {
@@ -80,9 +77,7 @@ RETURN {
         profilePicURL: author.profilePicURL,
         discussionKarma: author.discussionKarma,
         commentKarma: author.commentKarma,
-        createdAt: author.createdAt,
-        ServerRoles: serverRoles,
-        ChannelRoles: channelRoles
+        createdAt: author.createdAt
     },
     isFavoritedByUser: isFavoritedByUser,
     UpvotedByUsers: [user IN UpvotedByUsers | user{.*, createdAt: toString(user.createdAt)}],
