@@ -39,6 +39,8 @@ const {
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
   updateUserInputIsValid,
+  serverRoleInputDoesNotEscalate,
+  modServerRoleInputDoesNotEscalate,
   canReport,
   canSuspendAndUnsuspendUser,
   canArchiveAndUnarchiveComment,
@@ -124,17 +126,22 @@ const permissionList = shield({
       createTags: and(isAuthenticated, allow),
       
       // Role management requires canManageRoles (the updateUsers role-connect
-      // block still prevents self-escalation via assignment).
+      // block still prevents self-escalation via assignment). The server-role
+      // create/update paths additionally enforce the no-privilege-escalation
+      // invariant: you cannot author a role granting a capability you lack
+      // (e.g. a restricted admin cannot mint canManageAdmins). Channel-role
+      // creation carries no server-administration capability, so it is not
+      // guarded here — see docs/isadmin-phaseout-design.md §5.
       createChannelRoles: and(isAuthenticated, canManageRoles),
       createModChannelRoles: and(isAuthenticated, canManageRoles),
 
-      createModServerRoles: and(isAuthenticated, canManageRoles),
-      createServerRoles: and(isAuthenticated, canManageRoles),
+      createModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
+      createServerRoles: and(isAuthenticated, canManageRoles, serverRoleInputDoesNotEscalate),
       createServerConfigs: and(isAuthenticated, canManageServerSettings),
       deleteServerConfigs: and(isAuthenticated, canManageServerSettings),
 
       updateServerConfigs: and(isAuthenticated, canManageServerSettings),
-      updateModServerRoles: and(isAuthenticated, canManageRoles),
+      updateModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       deleteChannelRoles: and(isAuthenticated, or(canManageRoles, isChannelOwner)),
       deleteServerRoles: and(isAuthenticated, canManageRoles),
       

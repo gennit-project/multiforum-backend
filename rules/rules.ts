@@ -55,6 +55,10 @@ import {
 } from "./validation/downloadableFileIsValid.js";
 import { updateUserInputIsValid } from "./validation/userIsValid.js";
 import {
+  serverRoleInputDoesNotEscalate,
+  modServerRoleInputDoesNotEscalate,
+} from "./validation/roleEscalation.js";
+import {
   canCreateChannel,
   canCreateComment,
   canCreateDiscussion,
@@ -124,6 +128,8 @@ const ruleList = {
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
   updateUserInputIsValid,
+  serverRoleInputDoesNotEscalate,
+  modServerRoleInputDoesNotEscalate,
   hasChannelPermission,
   isRoot,
   canManageServerSettings,

@@ -233,7 +233,23 @@ production):
    from Category-B ORs; tier-based mod resolution for admins in
    `hasServerModPermission`; remove the `isAdmin` rule. Integration coverage for a
    restricted admin.
-4. **PR-4** — enforce the no-escalation invariant on invite / assign / role-edit.
+4. **PR-4 — no-privilege-escalation invariant. ✅ DONE (server roles).** Role
+   authoring is now gated by a capability-superset check in addition to
+   `canManageRoles`: `createServerRoles` / `createModServerRoles` /
+   `updateModServerRoles` reject any input that sets a capability `true` the actor
+   does not hold (so a restricted admin with `canManageRoles` cannot mint
+   `canManageAdmins`). Root bypasses; if the actor's role can't be resolved the
+   guard fails closed. Implemented as `rules/permission/actorCapabilities.ts`
+   (effective-role resolution, reusing the tier logic) + a pure, unit-tested
+   `findEscalatedCapabilities` in `rules/validation/roleEscalation.ts`. Assignment
+   is already covered: `updateUsers` role-connect is blocked (#64), and the invite
+   flows grant fixed tier roles (the inviter never chooses capabilities).
+   - 🔲 **Follow-up (PR-4b):** extend the guard to channel-scoped role authoring
+     (`createChannelRoles` / `createModChannelRoles`) and to **nested** role
+     create/update reachable through other mutations (e.g. a role `create`/`update`
+     embedded in `updateServerConfigs`). Channel-role capabilities carry no
+     server-administration power, so this is lower-risk than the server-role paths
+     closed here.
 5. **PR-5 (later)** — role-management UI; SuperAdmins section in
    `ServerMembershipEditor`.
 
