@@ -25,6 +25,15 @@ tokens fall through the audience checks and server-side user lookups are
 rejected — users appear logged in but resolve with no username/profile. The
 value must match the frontend's `NUXT_AUTH0_AUDIENCE`.
 
+## Break-glass root (`SUPERADMIN_EMAIL`)
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `SUPERADMIN_EMAIL` | Recommended | Email of the **env break-glass root**. A caller whose verified token email equals this value holds **every** capability unconditionally, bypassing all role/tier checks (`rules/permission/isServerRoot.ts`). It is immutable from the database and cannot be locked out, so it can bootstrap the first `SuperAdmin` on a fresh install and recover if `ServerConfig.SuperAdmins` is ever emptied. It is the **only** unconditional override — and the only actor a suspension cannot restrict. Keep it to a tightly controlled account; day-to-day administration should go through the `SuperAdmins`/`Admins` tiers, not root. See [permission-system.md](./permission-system.md). |
+
+`CYPRESS_ADMIN_TEST_EMAIL` (below) is honored by the same root check, so in
+test/E2E environments the seeded admin test user also acts as root.
+
 ## Database (Neo4j)
 
 | Variable | Required | Description |
