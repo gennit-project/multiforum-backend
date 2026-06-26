@@ -8,6 +8,7 @@ type EvaluateServerScopedMembershipInput = {
   email?: string | null;
   cypressAdminTestEmail?: string | null;
   serverAdminUsernames?: string[];
+  serverSuperAdminUsernames?: string[];
   serverModeratorDisplayNames?: string[];
 };
 
@@ -25,6 +26,7 @@ export function evaluateServerScopedMembership(
     email,
     cypressAdminTestEmail,
     serverAdminUsernames = [],
+    serverSuperAdminUsernames = [],
     serverModeratorDisplayNames = [],
   } = input;
 
@@ -34,9 +36,12 @@ export function evaluateServerScopedMembership(
     email === cypressAdminTestEmail;
 
   return {
+    // SuperAdmins are admins too (the apex tier); both count as a server admin.
     isServerAdmin:
       isCypressAdmin ||
-      (Boolean(username) && serverAdminUsernames.includes(username as string)),
+      (Boolean(username) &&
+        (serverAdminUsernames.includes(username as string) ||
+          serverSuperAdminUsernames.includes(username as string))),
     isServerModerator:
       Boolean(modProfileName) &&
       serverModeratorDisplayNames.includes(modProfileName as string),
@@ -62,6 +67,10 @@ export const getServerScopedMembership = async (
     serverAdminUsernames:
       serverConfig?.Admins?.map((admin: { username: string }) => admin.username) ||
       [],
+    serverSuperAdminUsernames:
+      serverConfig?.SuperAdmins?.map(
+        (admin: { username: string }) => admin.username
+      ) || [],
     serverModeratorDisplayNames:
       serverConfig?.Moderators?.map(
         (moderator: { displayName: string }) => moderator.displayName

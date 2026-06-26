@@ -3,6 +3,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../../types/context.js";
 import { DiscussionChannelWhere, User } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
+import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
 import { logger } from "../../../logger.js";
 
 type IsDiscussionChannelOwnerInput = {
@@ -12,6 +13,11 @@ type IsDiscussionChannelOwnerInput = {
 export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
   async (parent: unknown, args: IsDiscussionChannelOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     // Set user data
+    // Server admins and the env root pass any ownership-gated mutation (replaces isAdmin).
+    if (await passesAsServerAdminOrRoot(ctx)) {
+      return true;
+    }
+
     ctx.user = await setUserDataOnContext({
       context: ctx,
     });

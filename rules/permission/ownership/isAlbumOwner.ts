@@ -4,6 +4,7 @@ import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
 import { Album, AlbumWhere } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
+import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
 
 type IsAlbumOwnerArgs = {
   where?: AlbumWhere;
@@ -17,6 +18,11 @@ type IsAlbumOwnerArgs = {
 // rule any authenticated user could edit or delete anyone's album.
 export const isAlbumOwner = rule({ cache: "contextual" })(
   async (parent: { id?: string } | undefined, args: IsAlbumOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
+    // Server admins and the env root pass any ownership-gated mutation (replaces isAdmin).
+    if (await passesAsServerAdminOrRoot(ctx)) {
+      return true;
+    }
+
     ctx.user = await setUserDataOnContext({
       context: ctx,
     });

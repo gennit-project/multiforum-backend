@@ -4,6 +4,7 @@ import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
 import { Comment, CommentWhere } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
+import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
 import { logger } from "../../../logger.js";
 
 type IsCommentAuthorInput = {
@@ -14,10 +15,18 @@ type IsCommentAuthorInput = {
 export const isCommentAuthor = rule({ cache: "contextual" })(
   async (parent: unknown, args: IsCommentAuthorInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     logger.info("isCommentAuthor rule");
+    let commentId;
     const { where } = args;
-    const commentId  = where.id
+    if (where) {
+      commentId = where.id;
+    }
 
     // set user data
+    // Server admins and the env root pass any ownership-gated mutation (replaces isAdmin).
+    if (await passesAsServerAdminOrRoot(ctx)) {
+      return true;
+    }
+
     ctx.user = await setUserDataOnContext({
       context: ctx,
     });

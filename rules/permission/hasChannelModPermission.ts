@@ -4,6 +4,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import { passesAsServerAdminOrRoot } from "./serverAdminOverride.js";
 import { logger } from "../../logger.js";
 
 // Define the moderator permissions as an enum for type safety
@@ -95,6 +96,13 @@ export const hasChannelModPermission: (
   context.user = await setUserDataOnContext({
     context,
   });
+
+  // Server admins and the env break-glass root hold every channel mod
+  // permission across the whole server (replaces the per-call-site isAdmin
+  // override). See docs/isadmin-phaseout-design.md.
+  if (await passesAsServerAdminOrRoot(context)) {
+    return true;
+  }
 
   // 2. Check if user has a moderation profile
   const hasModProfile = context.user?.data?.ModerationProfile !== null;
