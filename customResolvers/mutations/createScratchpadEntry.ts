@@ -28,7 +28,9 @@ type Args = {
 const MAX_TEXT_LENGTH = 500;
 
 const createScratchpadEntryResolver = (input: Input) => {
-  const { ScratchpadEntry, Comment, DiscussionChannel, User, driver } = input;
+  // ScratchpadEntry intentionally unused: the entry is created via Cypher inside
+  // the transaction (below) so it is atomic with the super-upvote/notification.
+  const { Comment, DiscussionChannel, User, driver } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { recipientUsername, text, sourceType, sourceId, sourceChannelUniqueName } = args;
@@ -74,12 +76,15 @@ const createScratchpadEntryResolver = (input: Input) => {
       }
 
       // 2. Verify the logged-in user has already upvoted the source content.
-      //    Also capture where the content lives so the notification can link
-      //    directly to the upvoted post/comment.
+      //    Also capture where the content lives (to link the notification to the
+      //    upvoted post/comment) and who authored it (to award karma).
       let hasUpvoted = false;
       let hasSuperUpvoted = false;
       let postDiscussionId: string | null = null;
       let postChannelUniqueName: string | null = sourceChannelUniqueName || null;
+      // The content author, if it is a User (ModerationProfile authors get no
+      // karma, matching the normal upvote resolvers).
+      let postAuthorUsername: string | null = null;
 
       if (sourceType === 'comment') {
         const commentResult = await Comment.find({
@@ -89,6 +94,9 @@ const createScratchpadEntryResolver = (input: Input) => {
             UpvotedByUsers { username }
             SuperUpvotedByUsers { username }
             DiscussionChannel { discussionId channelUniqueName }
+            CommentAuthor {
+              ... on User { username }
+            }
           }`,
         });
 
@@ -102,6 +110,9 @@ const createScratchpadEntryResolver = (input: Input) => {
         postDiscussionId = comment.DiscussionChannel?.discussionId || null;
         postChannelUniqueName =
           comment.DiscussionChannel?.channelUniqueName || postChannelUniqueName;
+        const commentAuthor = comment.CommentAuthor;
+        postAuthorUsername =
+          commentAuthor && 'username' in commentAuthor ? commentAuthor.username : null;
       } else {
         // sourceType === 'discussion'
         const dcResult = await DiscussionChannel.find({
@@ -112,6 +123,7 @@ const createScratchpadEntryResolver = (input: Input) => {
             channelUniqueName
             UpvotedByUsers { username }
             SuperUpvotedByUsers { username }
+            Discussion { Author { username } }
           }`,
         });
 
@@ -124,6 +136,7 @@ const createScratchpadEntryResolver = (input: Input) => {
         hasSuperUpvoted = dc.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
         postDiscussionId = dc.discussionId || null;
         postChannelUniqueName = dc.channelUniqueName || postChannelUniqueName;
+        postAuthorUsername = dc.Discussion?.Author?.username || null;
       }
 
       if (!hasUpvoted) {
@@ -134,64 +147,88 @@ const createScratchpadEntryResolver = (input: Input) => {
         throw new Error('You have already super upvoted this content');
       }
 
-      // 3. Create the ScratchpadEntry
-      const createEntryResult = await ScratchpadEntry.create({
-        input: [
-          {
-            text: text.trim(),
-            isPublic: false,
-            sourceType,
-            sourceId,
-            sourceChannelUniqueName:
-              sourceChannelUniqueName || postChannelUniqueName || null,
-            discussionId: postDiscussionId || null,
-            Author: {
-              connect: {
-                where: { node: { username: loggedInUsername } },
-              },
-            },
-            Recipient: {
-              connect: {
-                where: { node: { username: recipientUsername } },
-              },
-            },
-          },
-        ],
-      });
+      // 3. Create the ScratchpadEntry node + Author/Recipient relationships in
+      //    the transaction (not via OGM) so it is atomic with everything below.
+      const createEntryResult = await tx.run(
+        `MATCH (author:User { username: $loggedInUsername })
+         MATCH (recipient:User { username: $recipientUsername })
+         CREATE (author)-[:WROTE_SCRATCHPAD_ENTRY]->(e:ScratchpadEntry {
+           id: randomUUID(),
+           createdAt: datetime(),
+           text: $text,
+           isPublic: false,
+           sourceType: $sourceType,
+           sourceId: $sourceId,
+           sourceChannelUniqueName: $sourceChannelUniqueName,
+           discussionId: $discussionId
+         })
+         CREATE (recipient)-[:HAS_SCRATCHPAD_ENTRY]->(e)
+         RETURN e.id AS id, toString(e.createdAt) AS createdAt, e.text AS text,
+                e.isPublic AS isPublic, e.sourceType AS sourceType,
+                e.sourceId AS sourceId,
+                e.sourceChannelUniqueName AS sourceChannelUniqueName,
+                e.discussionId AS discussionId`,
+        {
+          loggedInUsername,
+          recipientUsername,
+          text: text.trim(),
+          sourceType,
+          sourceId,
+          sourceChannelUniqueName: sourceChannelUniqueName || postChannelUniqueName || null,
+          discussionId: postDiscussionId || null,
+        }
+      );
 
-      const createdEntry = createEntryResult.scratchpadEntries[0];
+      const entryRecord = createEntryResult.records[0];
+      if (!entryRecord) {
+        throw new Error('Failed to create scratchpad entry');
+      }
+      const entryId = entryRecord.get('id');
 
-      // 4. Create the SUPER_UPVOTED relationship
+      // 4. Create the SUPER_UPVOTED relationship and bump weightedVotesCount.
+      //    A super upvote is a second vote, so it adds the same +1 weight as a
+      //    normal upvote (the recipient already has the normal upvote's weight).
       if (sourceType === 'comment') {
-        const superUpvoteQuery = `
-          MATCH (c:Comment { id: $sourceId }), (u:User { username: $username })
-          CREATE (u)-[:SUPER_UPVOTED_COMMENT]->(c)
-          SET c.weightedVotesCount = coalesce(c.weightedVotesCount, 0) + 1
-          RETURN c
-        `;
-        await tx.run(superUpvoteQuery, { sourceId, username: loggedInUsername });
+        await tx.run(
+          `MATCH (c:Comment { id: $sourceId }), (u:User { username: $username })
+           CREATE (u)-[:SUPER_UPVOTED_COMMENT]->(c)
+           SET c.weightedVotesCount = coalesce(c.weightedVotesCount, 0) + 1`,
+          { sourceId, username: loggedInUsername }
+        );
       } else {
-        const superUpvoteQuery = `
-          MATCH (dc:DiscussionChannel { id: $sourceId }), (u:User { username: $username })
-          CREATE (u)-[:SUPER_UPVOTED_DISCUSSION]->(dc)
-          SET dc.weightedVotesCount = coalesce(dc.weightedVotesCount, 0) + 1
-          RETURN dc
-        `;
-        await tx.run(superUpvoteQuery, { sourceId, username: loggedInUsername });
+        await tx.run(
+          `MATCH (dc:DiscussionChannel { id: $sourceId }), (u:User { username: $username })
+           CREATE (u)-[:SUPER_UPVOTED_DISCUSSION]->(dc)
+           SET dc.weightedVotesCount = coalesce(dc.weightedVotesCount, 0) + 1`,
+          { sourceId, username: loggedInUsername }
+        );
       }
 
-      // 5. Notify the recipient. Build a working link to the upvoted content
-      //    plus a link to their Kudos page, and connect the notification to the
-      //    scratchpad entry so the recipient can show-on-profile / ignore it
-      //    straight from the notification. Created inside the transaction so the
-      //    notification is atomic with the super upvote.
+      // 5. Award karma to the content author, like a normal upvote does (a super
+      //    upvote is a second vote, so it grants a second karma point).
+      if (postAuthorUsername) {
+        const karmaField = sourceType === 'comment' ? 'commentKarma' : 'discussionKarma';
+        await tx.run(
+          `MATCH (a:User { username: $postAuthorUsername })
+           SET a.${karmaField} = coalesce(a.${karmaField}, 0) + 1`,
+          { postAuthorUsername }
+        );
+      }
+
+      // 6. Notify the recipient. Link to the upvoted content (the specific
+      //    comment if a comment was super upvoted, otherwise the discussion) and
+      //    to their Kudos page, and connect the notification to the scratchpad
+      //    entry so they can show-on-profile / ignore it from the bell.
       const truncatedText = text.length > 50 ? text.substring(0, 50) + '...' : text;
       const subject = sourceType === 'comment' ? 'comment' : 'post';
       const kudosUrl = `/u/${recipientUsername}/scratchpad`;
-      const postUrl =
-        postDiscussionId && postChannelUniqueName
-          ? `/forums/${postChannelUniqueName}/discussions/${postDiscussionId}`
-          : kudosUrl;
+      let postUrl = kudosUrl;
+      if (postDiscussionId && postChannelUniqueName) {
+        postUrl =
+          sourceType === 'comment'
+            ? `/forums/${postChannelUniqueName}/discussions/${postDiscussionId}/comments/${sourceId}`
+            : `/forums/${postChannelUniqueName}/discussions/${postDiscussionId}`;
+      }
       const notificationText =
         `[@${loggedInUsername}](/u/${loggedInUsername}) super upvoted your ` +
         `[${subject}](${postUrl}) with a thank-you note: "${truncatedText}" — ` +
@@ -211,16 +248,16 @@ const createScratchpadEntryResolver = (input: Input) => {
          RETURN n`,
         {
           recipientUsername,
-          entryId: createdEntry.id,
+          entryId,
           notificationText,
         }
       );
 
-      // Read the updated super-upvoter list inside the same transaction so it
-      // always reflects the relationship we just created. A post-commit read on
-      // a fresh OGM session can lag behind the write on a clustered database,
-      // returning a stale list that omits the actor — which left the frontend
-      // super-upvote button looking inactive (and un-undoable).
+      // 7. Read the updated super-upvoter list inside the same transaction so it
+      //    always reflects the relationship we just created. A post-commit read
+      //    on a fresh OGM session can lag behind the write on a clustered
+      //    database, returning a stale list that omits the actor — which left the
+      //    frontend super-upvote button looking inactive (and un-undoable).
       const readSuperUpvotersQuery =
         sourceType === 'comment'
           ? `MATCH (u:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment { id: $sourceId })
@@ -235,14 +272,14 @@ const createScratchpadEntryResolver = (input: Input) => {
 
       // Return the created entry with author info and updated super upvoted users
       return {
-        id: createdEntry.id,
-        createdAt: createdEntry.createdAt,
-        text: createdEntry.text,
-        isPublic: createdEntry.isPublic,
-        sourceType: createdEntry.sourceType,
-        sourceId: createdEntry.sourceId,
-        sourceChannelUniqueName: createdEntry.sourceChannelUniqueName,
-        discussionId: createdEntry.discussionId,
+        id: entryId,
+        createdAt: entryRecord.get('createdAt'),
+        text: entryRecord.get('text'),
+        isPublic: entryRecord.get('isPublic'),
+        sourceType: entryRecord.get('sourceType'),
+        sourceId: entryRecord.get('sourceId'),
+        sourceChannelUniqueName: entryRecord.get('sourceChannelUniqueName'),
+        discussionId: entryRecord.get('discussionId'),
         Author: {
           username: loggedInUsername,
         },
