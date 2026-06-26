@@ -1,6 +1,5 @@
 import type { Driver } from 'neo4j-driver';
 import type { GraphQLResolveInfo } from 'graphql';
-import { createInAppNotification } from '../../hooks/notificationHelpers.js';
 import type { GraphQLContext } from '../../types/context.js';
 import { logger } from "../../logger.js";
 import type {
@@ -74,9 +73,13 @@ const createScratchpadEntryResolver = (input: Input) => {
         throw new Error('Recipient user not found');
       }
 
-      // 2. Verify the logged-in user has already upvoted the source content
+      // 2. Verify the logged-in user has already upvoted the source content.
+      //    Also capture where the content lives so the notification can link
+      //    directly to the upvoted post/comment.
       let hasUpvoted = false;
       let hasSuperUpvoted = false;
+      let postDiscussionId: string | null = null;
+      let postChannelUniqueName: string | null = sourceChannelUniqueName || null;
 
       if (sourceType === 'comment') {
         const commentResult = await Comment.find({
@@ -85,6 +88,7 @@ const createScratchpadEntryResolver = (input: Input) => {
             id
             UpvotedByUsers { username }
             SuperUpvotedByUsers { username }
+            DiscussionChannel { discussionId channelUniqueName }
           }`,
         });
 
@@ -95,12 +99,17 @@ const createScratchpadEntryResolver = (input: Input) => {
         const comment = commentResult[0];
         hasUpvoted = comment.UpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
         hasSuperUpvoted = comment.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
+        postDiscussionId = comment.DiscussionChannel?.discussionId || null;
+        postChannelUniqueName =
+          comment.DiscussionChannel?.channelUniqueName || postChannelUniqueName;
       } else {
         // sourceType === 'discussion'
         const dcResult = await DiscussionChannel.find({
           where: { id: sourceId },
           selectionSet: `{
             id
+            discussionId
+            channelUniqueName
             UpvotedByUsers { username }
             SuperUpvotedByUsers { username }
           }`,
@@ -113,6 +122,8 @@ const createScratchpadEntryResolver = (input: Input) => {
         const dc = dcResult[0];
         hasUpvoted = dc.UpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
         hasSuperUpvoted = dc.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
+        postDiscussionId = dc.discussionId || null;
+        postChannelUniqueName = dc.channelUniqueName || postChannelUniqueName;
       }
 
       if (!hasUpvoted) {
@@ -131,7 +142,9 @@ const createScratchpadEntryResolver = (input: Input) => {
             isPublic: false,
             sourceType,
             sourceId,
-            sourceChannelUniqueName: sourceChannelUniqueName || null,
+            sourceChannelUniqueName:
+              sourceChannelUniqueName || postChannelUniqueName || null,
+            discussionId: postDiscussionId || null,
             Author: {
               connect: {
                 where: { node: { username: loggedInUsername } },
@@ -167,34 +180,58 @@ const createScratchpadEntryResolver = (input: Input) => {
         await tx.run(superUpvoteQuery, { sourceId, username: loggedInUsername });
       }
 
-      // 5. Send notification to the recipient
+      // 5. Notify the recipient. Build a working link to the upvoted content
+      //    plus a link to their Kudos page, and connect the notification to the
+      //    scratchpad entry so the recipient can show-on-profile / ignore it
+      //    straight from the notification. Created inside the transaction so the
+      //    notification is atomic with the super upvote.
       const truncatedText = text.length > 50 ? text.substring(0, 50) + '...' : text;
-      const notificationText = `[@${loggedInUsername}](/u/${loggedInUsername}) wrote on your scratchpad: "${truncatedText}" [View scratchpad](/u/${recipientUsername}/scratchpad)`;
+      const subject = sourceType === 'comment' ? 'comment' : 'post';
+      const kudosUrl = `/u/${recipientUsername}/scratchpad`;
+      const postUrl =
+        postDiscussionId && postChannelUniqueName
+          ? `/forums/${postChannelUniqueName}/discussions/${postDiscussionId}`
+          : kudosUrl;
+      const notificationText =
+        `[@${loggedInUsername}](/u/${loggedInUsername}) super upvoted your ` +
+        `[${subject}](${postUrl}) with a thank-you note: "${truncatedText}" — ` +
+        `[View on your Kudos page](${kudosUrl})`;
 
-      await createInAppNotification({
-        UserModel: User,
-        username: recipientUsername,
-        text: notificationText,
-        notificationType: 'scratchpad',
-      });
+      await tx.run(
+        `MATCH (recipient:User { username: $recipientUsername })
+         MATCH (entry:ScratchpadEntry { id: $entryId })
+         CREATE (recipient)-[:HAS_NOTIFICATION]->(n:Notification {
+           id: randomUUID(),
+           createdAt: datetime(),
+           read: false,
+           text: $notificationText,
+           notificationType: 'scratchpad'
+         })
+         CREATE (n)-[:NOTIFICATION_FOR_SCRATCHPAD_ENTRY]->(entry)
+         RETURN n`,
+        {
+          recipientUsername,
+          entryId: createdEntry.id,
+          notificationText,
+        }
+      );
+
+      // Read the updated super-upvoter list inside the same transaction so it
+      // always reflects the relationship we just created. A post-commit read on
+      // a fresh OGM session can lag behind the write on a clustered database,
+      // returning a stale list that omits the actor — which left the frontend
+      // super-upvote button looking inactive (and un-undoable).
+      const readSuperUpvotersQuery =
+        sourceType === 'comment'
+          ? `MATCH (u:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment { id: $sourceId })
+             RETURN collect({ username: u.username }) AS users`
+          : `MATCH (u:User)-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: $sourceId })
+             RETURN collect({ username: u.username }) AS users`;
+      const superUpvotersResult = await tx.run(readSuperUpvotersQuery, { sourceId });
+      const superUpvotedByUsers: Array<{ username: string }> =
+        superUpvotersResult.records[0]?.get('users') || [];
 
       await tx.commit();
-
-      // Fetch the updated SuperUpvotedByUsers for cache update
-      let superUpvotedByUsers: Array<{ username: string }> = [];
-      if (sourceType === 'comment') {
-        const result = await Comment.find({
-          where: { id: sourceId },
-          selectionSet: `{ SuperUpvotedByUsers { username } }`,
-        });
-        superUpvotedByUsers = result[0]?.SuperUpvotedByUsers || [];
-      } else {
-        const result = await DiscussionChannel.find({
-          where: { id: sourceId },
-          selectionSet: `{ SuperUpvotedByUsers { username } }`,
-        });
-        superUpvotedByUsers = result[0]?.SuperUpvotedByUsers || [];
-      }
 
       // Return the created entry with author info and updated super upvoted users
       return {
@@ -205,6 +242,7 @@ const createScratchpadEntryResolver = (input: Input) => {
         sourceType: createdEntry.sourceType,
         sourceId: createdEntry.sourceId,
         sourceChannelUniqueName: createdEntry.sourceChannelUniqueName,
+        discussionId: createdEntry.discussionId,
         Author: {
           username: loggedInUsername,
         },
