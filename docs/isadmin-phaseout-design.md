@@ -244,12 +244,24 @@ production):
    `findEscalatedCapabilities` in `rules/validation/roleEscalation.ts`. Assignment
    is already covered: `updateUsers` role-connect is blocked (#64), and the invite
    flows grant fixed tier roles (the inviter never chooses capabilities).
-   - 🔲 **Follow-up (PR-4b):** extend the guard to channel-scoped role authoring
-     (`createChannelRoles` / `createModChannelRoles`) and to **nested** role
-     create/update reachable through other mutations (e.g. a role `create`/`update`
-     embedded in `updateServerConfigs`). Channel-role capabilities carry no
-     server-administration power, so this is lower-risk than the server-role paths
-     closed here.
+   - ✅ **PR-4b — nested ServerConfig escalation closed.** The generated
+     `ServerConfig` create/update input allows nested role writes on the tier
+     relationships (`DefaultAdminRole`, `DefaultServerRole`, …), reachable via
+     `updateServerConfigs`/`createServerConfigs` (gated only by
+     `canManageServerSettings`) — e.g.
+     `updateServerConfigs(update: { DefaultAdminRole: { update: { node: { canManageAdmins: true } } } })`.
+     `serverConfigInputDoesNotEscalate` (`rules/validation/nestedRoleEscalation.ts`)
+     now walks those relationships and rejects any nested `create`/`update`/
+     `connectOrCreate` node — and resolves `connect`/`connectOrCreate` targets from
+     the DB — that grants a capability the actor lacks (so connecting an existing
+     `DefaultSuperAdminRole` into a lower tier slot is caught too). Root / full
+     admin bypass; lookup failures fail closed.
+   - 🔲 **Follow-up (PR-4c, low risk):** channel-scoped role authoring
+     (`createChannelRoles`/`createModChannelRoles` and nested role writes in
+     `createChannels`/`updateChannels`). `Channel` only links `ChannelRole`/
+     `ModChannelRole`, which carry **no** server-administration capability, so they
+     cannot reach the apex tier; channel role definition is also a legitimate
+     channel-owner operation. Tracked as defense-in-depth, not an open apex hole.
 5. **PR-5 (later)** — role-management UI; SuperAdmins section in
    `ServerMembershipEditor`.
 
