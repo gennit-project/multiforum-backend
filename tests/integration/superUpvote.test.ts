@@ -28,7 +28,7 @@ beforeEach(async () => {
   await run(
     `CREATE (alice:User { username: 'alice' })
      CREATE (bob:User { username: 'bob' })
-     CREATE (c:Comment { id: 'comment-1', text: 'great point', isRootComment: true, createdAt: datetime() })
+     CREATE (c:Comment { id: 'comment-1', text: 'great point', isRootComment: true, weightedVotesCount: 0, createdAt: datetime() })
      CREATE (alice)-[:UPVOTED_COMMENT]->(c)`
   );
 });
@@ -57,9 +57,19 @@ const seedUpvotedDiscussion = () =>
   run(
     `MATCH (alice:User { username: 'alice' })
      CREATE (d:Discussion { id: 'discussion-1', title: 'Great idea', createdAt: datetime() })
-     CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'discussion-1', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'discussion-1', channelUniqueName: 'cats', weightedVotesCount: 0, createdAt: datetime() })
      CREATE (alice)-[:UPVOTED_DISCUSSION]->(dc)`
   );
+
+// Read the current weightedVotesCount (the visibility/ranking signal) for a
+// Comment or DiscussionChannel.
+const weightOf = async (label: "Comment" | "DiscussionChannel", id: string) => {
+  const rows = await run(
+    `MATCH (n:${label} { id: $id }) RETURN n.weightedVotesCount AS weight`,
+    { id }
+  );
+  return Number(rows[0]?.weight);
+};
 
 const baseArgs = {
   recipientUsername: "bob",
@@ -83,6 +93,9 @@ test("createScratchpadEntry writes an entry, super-upvotes, and notifies", async
      RETURN count(*) AS n`
   );
   assert.equal(Number(superUpvote[0].n), 1);
+
+  // The super upvote makes the comment more visible: weightedVotesCount 0 -> 1.
+  assert.equal(await weightOf("Comment", "comment-1"), 1, "comment weight 0 -> 1");
 
   const notifications = await run(
     `MATCH (b:User { username: 'bob' })-[:HAS_NOTIFICATION]->(n:Notification)
@@ -135,6 +148,56 @@ test("undoSuperUpvote removes the super-upvote and deletes the scratchpad entry"
     `MATCH (e:ScratchpadEntry { sourceId: 'comment-1' }) RETURN count(e) AS n`
   );
   assert.equal(Number(entries[0].n), 0, "scratchpad entry should be deleted");
+
+  // Undoing the super upvote reverses the visibility bump: weight 1 -> 0.
+  assert.equal(await weightOf("Comment", "comment-1"), 0, "comment weight back to 0");
+});
+
+test("super upvoting a discussion creates the relationship and makes it more visible", async () => {
+  await seedUpvotedDiscussion();
+
+  await createScratchpadEntry({
+    recipientUsername: "bob",
+    text: "Loved this discussion!",
+    sourceType: "discussion",
+    sourceId: "dc-1",
+    sourceChannelUniqueName: "cats",
+  });
+
+  const superUpvote = await run(
+    `MATCH (:User { username: 'alice' })-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: 'dc-1' })
+     RETURN count(*) AS n`
+  );
+  assert.equal(Number(superUpvote[0].n), 1, "SUPER_UPVOTED_DISCUSSION relationship created");
+
+  // The super upvote makes the discussion more visible: weightedVotesCount 0 -> 1.
+  assert.equal(await weightOf("DiscussionChannel", "dc-1"), 1, "discussion weight 0 -> 1");
+});
+
+test("undoSuperUpvote on a discussion removes the relationship, deletes the entry, and reverses the weight", async () => {
+  await seedUpvotedDiscussion();
+  await createScratchpadEntry({
+    recipientUsername: "bob",
+    text: "Loved this discussion!",
+    sourceType: "discussion",
+    sourceId: "dc-1",
+    sourceChannelUniqueName: "cats",
+  });
+
+  await undoSuperUpvote({ sourceType: "discussion", sourceId: "dc-1" });
+
+  const superUpvote = await run(
+    `MATCH (:User { username: 'alice' })-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: 'dc-1' })
+     RETURN count(*) AS n`
+  );
+  assert.equal(Number(superUpvote[0].n), 0, "super-upvote relationship should be removed");
+
+  const entries = await run(
+    `MATCH (e:ScratchpadEntry { sourceId: 'dc-1' }) RETURN count(e) AS n`
+  );
+  assert.equal(Number(entries[0].n), 0, "scratchpad entry should be deleted");
+
+  assert.equal(await weightOf("DiscussionChannel", "dc-1"), 0, "discussion weight back to 0");
 });
 
 test("undoSuperUpvote throws when the user has not super-upvoted", async () => {
