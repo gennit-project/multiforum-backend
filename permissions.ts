@@ -3,6 +3,14 @@ import rules from "./rules/rules.js";
 
 const {
   isAdmin,
+  canManageServerSettings,
+  canManagePlugins,
+  canManageRoles,
+  canManageMods,
+  canManageAdmins,
+  canManageSuperAdmins,
+  canRemoveDiscussionChannel,
+  canRemoveEventChannel,
   isAccountOwner,
   isChannelOwner,
   isDiscussionOwner,
@@ -114,21 +122,20 @@ const permissionList = shield({
       seedDataForCypressTests: isAdmin,
       createTags: and(isAuthenticated, allow),
       
-      // Role-definition creation is admin-only: a non-admin who could create a
-      // role (and then connect it to themselves via updateUsers) would be able
-      // to self-escalate. updateUsers also blocks role-relationship connects.
-      createChannelRoles: and(isAuthenticated, isAdmin),
-      createModChannelRoles: and(isAuthenticated, isAdmin),
+      // Role management requires canManageRoles (the updateUsers role-connect
+      // block still prevents self-escalation via assignment).
+      createChannelRoles: and(isAuthenticated, canManageRoles),
+      createModChannelRoles: and(isAuthenticated, canManageRoles),
 
-      createModServerRoles: and(isAuthenticated, isAdmin),
-      createServerRoles: and(isAuthenticated, isAdmin),
-      createServerConfigs: and(isAuthenticated, isAdmin),
-      deleteServerConfigs: and(isAuthenticated, isAdmin),
+      createModServerRoles: and(isAuthenticated, canManageRoles),
+      createServerRoles: and(isAuthenticated, canManageRoles),
+      createServerConfigs: and(isAuthenticated, canManageServerSettings),
+      deleteServerConfigs: and(isAuthenticated, canManageServerSettings),
 
-      updateServerConfigs: and(isAuthenticated, isAdmin),
-      updateModServerRoles: and(isAuthenticated, isAdmin),
-      deleteChannelRoles: and(isAuthenticated, or(isAdmin, isChannelOwner)),
-      deleteServerRoles: and(isAuthenticated, isAdmin),
+      updateServerConfigs: and(isAuthenticated, canManageServerSettings),
+      updateModServerRoles: and(isAuthenticated, canManageRoles),
+      deleteChannelRoles: and(isAuthenticated, or(canManageRoles, isChannelOwner)),
+      deleteServerRoles: and(isAuthenticated, canManageRoles),
       
       createEmailAndUser: allow, // Keep this as-is since this is for user registration
       updateUsers: and(isAuthenticated, updateUserInputIsValid, or(isAccountOwner, isAdmin)),
@@ -147,7 +154,7 @@ const permissionList = shield({
       updateDiscussionWithChannelConnections: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, isAdmin, canEditDiscussions)),
       deleteDiscussions: and(isAuthenticated, or(isAdmin, isDiscussionOwner)),
       updateDiscussions: and(isAuthenticated, updateDiscussionInputIsValid, or(isAdmin, isDiscussionOwner, canEditDiscussions)),
-      deleteDiscussionChannels: and(isAuthenticated, isAdmin),
+      deleteDiscussionChannels: and(isAuthenticated, canRemoveDiscussionChannel),
       updateDiscussionChannels: and(isAuthenticated, or(isAdmin, isDiscussionChannelOwner)),
 
       deleteTextVersions: deny,
@@ -162,7 +169,7 @@ const permissionList = shield({
       updateEventWithChannelConnections: and(isAuthenticated, updateEventInputIsValid, or(isEventOwner, isAdmin, canEditEvents)),
       updateEvents: and(isAuthenticated, or(isAdmin, isEventOwner, canEditEvents)),
       deleteEvents: and(isAuthenticated, or(isAdmin, isEventOwner)),
-      deleteEventChannels: and(isAuthenticated, isAdmin),
+      deleteEventChannels: and(isAuthenticated, canRemoveEventChannel),
 
       createComments: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
       updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, isAdmin, canEditComments)),
@@ -221,11 +228,11 @@ const permissionList = shield({
       acceptForumModInvite: and(isAuthenticated),
 
       // Server admin/mod invite workflow
-      inviteServerAdmin: and(isAuthenticated, isAdmin),
-      cancelInviteServerAdmin: and(isAuthenticated, isAdmin),
+      inviteServerAdmin: and(isAuthenticated, canManageAdmins),
+      cancelInviteServerAdmin: and(isAuthenticated, canManageAdmins),
       acceptServerAdminInvite: and(isAuthenticated),
-      inviteServerMod: and(isAuthenticated, isAdmin),
-      cancelInviteServerMod: and(isAuthenticated, isAdmin),
+      inviteServerMod: and(isAuthenticated, canManageMods),
+      cancelInviteServerMod: and(isAuthenticated, canManageMods),
       acceptServerModInvite: and(isAuthenticated),
 
       createNotifications: deny,
@@ -285,8 +292,8 @@ const permissionList = shield({
       // Standalone filter-config deletes (not used by the app; filters are
       // managed via nested channel updates). Were bare `allow` — unauthenticated
       // anyone could delete them. Restricted to admins.
-      deleteFilterGroups: and(isAuthenticated, isAdmin),
-      deleteFilterOptions: and(isAuthenticated, isAdmin),
+      deleteFilterGroups: and(isAuthenticated, canManageServerSettings),
+      deleteFilterOptions: and(isAuthenticated, canManageServerSettings),
 
       // Collection mutations - authenticated users only
       createCollections: and(isAuthenticated, allow),
@@ -301,11 +308,11 @@ const permissionList = shield({
       addToOwnedDownloads: and(isAuthenticated, allow),
       initializeUserFavorites: and(isAuthenticated, allow),
 
-      refreshPlugins: and(isAuthenticated, isAdmin),
-      installPluginVersion: and(isAuthenticated, isAdmin),
-      enableServerPlugin: and(isAuthenticated, isAdmin),
-      setServerPluginSecret: and(isAuthenticated, isAdmin),
-      deletePluginVersions: and(isAuthenticated, isAdmin), // was bare `allow` (unauthenticated delete)
+      refreshPlugins: and(isAuthenticated, canManagePlugins),
+      installPluginVersion: and(isAuthenticated, canManagePlugins),
+      enableServerPlugin: and(isAuthenticated, canManagePlugins),
+      setServerPluginSecret: and(isAuthenticated, canManagePlugins),
+      deletePluginVersions: and(isAuthenticated, canManagePlugins),
       updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
       updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
     },

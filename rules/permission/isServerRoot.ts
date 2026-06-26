@@ -11,6 +11,21 @@ import type { GraphQLContext } from "../../types/context.js";
  */
 export const isServerRoot = (context: GraphQLContext): boolean => {
   const email = context.user?.email;
-  const rootEmail = process.env.SUPERADMIN_EMAIL;
-  return Boolean(email) && Boolean(rootEmail) && email === rootEmail;
+  if (!email) {
+    return false;
+  }
+  // Production break-glass root.
+  if (process.env.SUPERADMIN_EMAIL && email === process.env.SUPERADMIN_EMAIL) {
+    return true;
+  }
+  // Test super-user: the Cypress/E2E admin email is the root-equivalent in test
+  // environments (it already grants isServerAdmin via getServerScopedMembership).
+  // Only set in test/CI, never production, so it cannot escalate a real server.
+  if (
+    process.env.CYPRESS_ADMIN_TEST_EMAIL &&
+    email === process.env.CYPRESS_ADMIN_TEST_EMAIL
+  ) {
+    return true;
+  }
+  return false;
 };
