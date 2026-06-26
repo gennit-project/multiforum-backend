@@ -9,40 +9,102 @@ on:
       - main
 
 jobs:
-  unit-tests:
+  # Detect whether anything other than documentation changed. We do NOT use a
+  # workflow-level `paths-ignore`, because `unit-tests` is a REQUIRED status
+  # check on `main`: a path-filtered workflow never reports the check, which
+  # would leave docs-only PRs stuck "pending" and unmergeable. Instead the
+  # required job always runs (so it always reports) but skips its heavy steps
+  # when only docs changed.
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect non-docs changes
+        id: filter
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          else
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+          fi
+
+          # If the base commit isn't available (e.g. a brand-new branch reports
+          # an all-zero "before"), fail safe and run the full pipeline.
+          if [ -z "$base" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            echo "Base commit unavailable; running full CI."
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed="$(git diff --name-only "$base" "$head")"
+          echo "Changed files:"
+          echo "$changed"
+
+          # Docs = anything under docs/ or any *.md file. If anything else
+          # changed, run the tests.
+          if echo "$changed" | grep -vE '(^docs/|\.md$)' | grep -q .; then
+            echo "Non-docs changes detected → running tests."
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Docs-only change → skipping tests."
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Required check on `main`. Always runs so it always reports a status; the
+  # heavy steps are gated on a non-docs change.
+  unit-tests:
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        if: needs.changes.outputs.code == 'true'
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
+        if: needs.changes.outputs.code == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
       - name: Clean install dependencies
+        if: needs.changes.outputs.code == 'true'
         run: npm ci
 
       # Generated type files (ogm_types.ts, src/generated/graphql.ts) are no
       # longer committed; regenerate them from typeDefs.ts (no DB needed) before
       # type checking and tests so imports resolve.
       - name: Generate GraphQL/OGM types
+        if: needs.changes.outputs.code == 'true'
         run: npm run codegen
 
       - name: Lint (enforces no console.* in runtime code)
+        if: needs.changes.outputs.code == 'true'
         run: npm run lint
 
       - name: Run TypeScript type checking
+        if: needs.changes.outputs.code == 'true'
         run: npm run tsc
 
       - name: Check for circular dependencies
+        if: needs.changes.outputs.code == 'true'
         run: npm run lint:circular
 
       - name: Run unit tests with coverage
+        if: needs.changes.outputs.code == 'true'
         run: npm run coverage
 
       - name: Upload unit coverage to Codecov
+        if: needs.changes.outputs.code == 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -52,9 +114,16 @@ jobs:
           verbose: true
 
       - name: Verify build (tsc + cypher copy)
+        if: needs.changes.outputs.code == 'true'
         run: npm run build
 
+      - name: Docs-only change — tests skipped
+        if: needs.changes.outputs.code != 'true'
+        run: echo "Only documentation changed; unit tests skipped."
+
   integration-tests:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     # The integration suite is the CI bottleneck (serial, real Neo4j). Split it
     # into parallel shards — each matrix job runs ~1/N of the files against its
