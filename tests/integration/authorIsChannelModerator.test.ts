@@ -57,6 +57,21 @@ before(async () => {
       `CREATE (u:User { username: 'regular' })
        CREATE (u)-[:POSTED_DISCUSSION]->(:Discussion { id: 'd-regular', title: 'r' })`
     );
+
+    // Link each discussion to the channel via a DiscussionChannel so the custom
+    // getDiscussionsInChannel resolver (which matches DiscussionChannel, not the
+    // auto `discussions` query) returns them. The resolver needs createdAt for
+    // hot-rank scoring.
+    await session.run(
+      `MATCH (ch:Channel { uniqueName: $ch })
+       MATCH (d:Discussion) WHERE d.id IN ['d-owner', 'd-mod', 'd-regular']
+       SET d.createdAt = datetime()
+       CREATE (dc:DiscussionChannel {
+         id: 'dc-' + d.id, channelUniqueName: $ch, createdAt: datetime(),
+         archived: false, answered: false, locked: false
+       })-[:POSTED_IN_CHANNEL]->(d)`,
+      { ch: CHANNEL }
+    );
   } finally {
     await session.close();
   }
@@ -106,4 +121,46 @@ test("a different channel does not grant the badge", async () => {
 
 test("null channelUniqueName -> false", async () => {
   assert.equal(await run("d-owner", null), false);
+});
+
+// The channel list uses the custom getDiscussionsInChannel resolver, where the
+// @cypher field does NOT auto-resolve — the resolver's Cypher must populate
+// authorIsChannelModerator itself. This guards that path (the badge regression).
+const LIST_QUERY = /* GraphQL */ `
+  query ($ch: String!) {
+    getDiscussionsInChannel(
+      channelUniqueName: $ch
+      searchInput: ""
+      selectedTags: []
+      showArchived: false
+      showUnanswered: false
+      hasDownload: false
+      options: { limit: 10, offset: 0 }
+    ) {
+      discussionChannels {
+        Discussion {
+          id
+          authorIsChannelModerator(channelUniqueName: $ch)
+        }
+      }
+    }
+  }
+`;
+
+test("getDiscussionsInChannel (custom resolver) populates authorIsChannelModerator", async () => {
+  const result = await graphql({
+    schema,
+    source: LIST_QUERY,
+    contextValue: { driver, ogm, req: { headers: {} } },
+    variableValues: { ch: CHANNEL },
+  });
+  assert.equal(result.errors, undefined, JSON.stringify(result.errors));
+  const channels =
+    (result.data as any)?.getDiscussionsInChannel?.discussionChannels ?? [];
+  const byId = Object.fromEntries(
+    channels.map((c: any) => [c.Discussion.id, c.Discussion.authorIsChannelModerator])
+  );
+  assert.equal(byId["d-owner"], true, "channel owner should be a mod in the list");
+  assert.equal(byId["d-mod"], true, "channel moderator should be a mod in the list");
+  assert.equal(byId["d-regular"], false, "regular user should not be a mod in the list");
 });

@@ -225,7 +225,18 @@ RETURN {
                     Images: albumImages
                 }
               END,
-        Tags: [t IN tagsText | {text: t}]
+        Tags: [t IN tagsText | {text: t}],
+        // Membership-derived MOD badge: is the author channel staff (owner or
+        // moderator) of this channel? Computed inline because the @cypher field
+        // of the same name only auto-resolves on the generated `discussions`
+        // query, not inside this custom resolver. Mirrors typeDefs.ts.
+        authorIsChannelModerator: CASE
+            WHEN author IS NULL THEN false
+            WHEN EXISTS { (author)-[:ADMIN_OF_CHANNEL]->(:Channel {uniqueName: dc.channelUniqueName}) }
+              OR EXISTS { (author)-[:MODERATION_PROFILE]->(:ModerationProfile)-[:MODERATOR_OF_CHANNEL]->(:Channel {uniqueName: dc.channelUniqueName}) }
+            THEN true
+            ELSE false
+        END
     },
     Channel: {
         uniqueName: dc.channelUniqueName
