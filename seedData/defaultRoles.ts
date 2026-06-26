@@ -49,11 +49,12 @@ const ALL_CONTENT_CAPS = {
   canGiveFeedback: true,
 };
 
-// Note: roles are permissions-only. The ADMIN/MOD display tag is NOT set here —
-// it should derive from the user's membership relationship to ServerConfig /
-// Channel (e.g. in ServerConfig.Admins/SuperAdmins), not from a role flag. The
-// legacy `showAdminTag` / `showModTag` schema fields are slated for removal once
-// the tag is membership-derived. See docs/isadmin-phaseout-design.md.
+// Note: roles are permissions-only. The ADMIN/MOD display tag is NOT a role
+// flag — it derives from the user's membership relationship to ServerConfig /
+// Channel (server-admin membership for the ADMIN badge; the
+// `authorIsChannelModerator` @cypher field for the channel MOD badge). The
+// legacy `showAdminTag` / `showModTag` schema fields have been removed.
+// See docs/isadmin-phaseout-design.md.
 export const DEFAULT_SERVER_ROLES = [
   {
     // Standard signed-in user: can create/participate, no administration.

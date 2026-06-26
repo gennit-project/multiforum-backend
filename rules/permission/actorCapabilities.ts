@@ -23,8 +23,8 @@ type RoleLike = Record<string, boolean | null | undefined> | null | undefined;
 // i.e. fail closed).
 export type EffectiveRole = RoleLike | "all";
 
-// Real capabilities only — display-only flags (showAdminTag / showModTag) are
-// intentionally excluded: granting a tag is not a privilege escalation.
+// Real capabilities only. (The legacy display-only tag flags have been removed;
+// ADMIN/MOD badges are membership-derived, not role flags.)
 export const SERVER_ROLE_CAPABILITY_FIELDS = [
   "canCreateChannel",
   "canCreateDiscussion",
@@ -63,7 +63,7 @@ export const MOD_SERVER_ROLE_CAPABILITY_FIELDS = [
 ] as const;
 
 // Channel-scoped role capabilities (no server-administration power). Used by the
-// PR-4c channel-role-authoring guard. Display-only showModTag is excluded.
+// PR-4c channel-role-authoring guard.
 export const CHANNEL_ROLE_CAPABILITY_FIELDS = [
   "canCreateDiscussion",
   "canCreateEvent",

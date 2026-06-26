@@ -22,7 +22,7 @@ test("selects only items that set a channel capability to true", () => {
 
 test("an all-false / capability-free role grants nothing", () => {
   const items = [
-    { channelUniqueName: "cats", name: "Reader", description: "x", showModTag: true },
+    { channelUniqueName: "cats", name: "Reader", description: "x" },
   ];
   assert.deepEqual(
     roleItemsGrantingCapabilities(items, CHANNEL_ROLE_CAPABILITY_FIELDS),

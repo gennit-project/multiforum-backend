@@ -41,21 +41,11 @@ WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, SuperUpvotedByU
     [version IN PastVersions WHERE version.id IS NOT NULL] AS FilteredPastVersions,
     FeedbackComments
 
-WITH c, author, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
-    ChildComments, FilteredPastVersions, FeedbackComments,
-    COLLECT(DISTINCT serverRole) AS serverRoles
-
-WITH c, author, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
-    ChildComments, FilteredPastVersions, FeedbackComments,
-    [role IN serverRoles | {showAdminTag: role.showAdminTag}] as serverRoles
-
-WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
-    ChildComments, FilteredPastVersions, FeedbackComments, serverRoles,
-    COLLECT(DISTINCT channelRole) AS channelRoles
-
-WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
-    ChildComments, FilteredPastVersions, FeedbackComments, serverRoles,
-    [role IN channelRoles | {showModTag: role.showModTag}] as channelRoles
+// Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
+// @cypher field + server-admin membership), so the author's roles are no longer
+// projected onto the comment. Collapse the serverRole/channelRole fan-out.
+WITH DISTINCT c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, isFavoritedByUser,
+    ChildComments, FilteredPastVersions, FeedbackComments
 
 RETURN {
     id: c.id,
@@ -70,9 +60,7 @@ RETURN {
         profilePicURL: author.profilePicURL,
         discussionKarma: author.discussionKarma,
         commentKarma: author.commentKarma,
-        createdAt: author.createdAt,
-        ServerRoles: serverRoles,
-        ChannelRoles: channelRoles
+        createdAt: author.createdAt
     } END,
     isFavoritedByUser: isFavoritedByUser,
     ParentComment: CASE WHEN SIZE(parentIds) > 0 THEN {id: parentIds[0]} ELSE null END,

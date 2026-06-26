@@ -139,14 +139,10 @@ WITH dc, d, author, serverRole, channelRole, COLLECT(c) AS comments, tagsText, l
 WITH dc, d, author, serverRole, channelRole, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, totalCount,
      10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
 
-WITH dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount,
-     COLLECT(DISTINCT serverRole) AS serverRoles, channelRole
-
-WITH dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, serverRoles, channelRole, totalCount
-
-WITH dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount,
-     [role in serverRoles | {showAdminTag: role.showAdminTag}] AS serverRoles,
-     [role in COLLECT(DISTINCT channelRole) | {showModTag: role.showModTag}] AS channelRoles
+// Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
+// @cypher field + server-admin membership), so the author's roles are no longer
+// projected onto the result. Collapse the serverRole/channelRole fan-out.
+WITH DISTINCT dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount
 
 // Sort based on individual elements, not the collection
 ORDER BY
@@ -156,7 +152,7 @@ ORDER BY
     dc.createdAt DESC
 
 // Apply pagination
-WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, serverRoles, channelRoles
+WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank
 SKIP toInteger($offset)
 LIMIT toInteger($limit)
 
@@ -167,7 +163,7 @@ WHERE image.id IS NOT NULL
   AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
 
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, serverRoles, channelRoles,
+     weightedVotesCount, comments, hotRank,
      album,
      [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
          id: image.id,
@@ -181,7 +177,7 @@ WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperU
 // Check if the logged-in user has favorited this discussion
 OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, serverRoles, channelRoles, album, albumImages,
+     weightedVotesCount, comments, hotRank, album, albumImages,
      CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
 
 // Return the results with modified UpvotedByUsers
@@ -218,9 +214,7 @@ RETURN {
                       profilePicURL: author.profilePicURL,
                       createdAt: author.createdAt,
                       discussionKarma: author.discussionKarma,
-                      commentKarma: author.commentKarma,
-                      ServerRoles: serverRoles,
-                      ChannelRoles: channelRoles
+                      commentKarma: author.commentKarma
                   }
                 END,
         Album: CASE 

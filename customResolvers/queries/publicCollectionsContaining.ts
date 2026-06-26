@@ -69,9 +69,6 @@ const selectionSet = `
       commentKarma
       discussionKarma
       createdAt
-      ServerRoles {
-        showAdminTag
-      }
     }
   }
 }

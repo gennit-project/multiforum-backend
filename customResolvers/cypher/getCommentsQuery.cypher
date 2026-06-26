@@ -48,19 +48,11 @@ WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, SuperUpvotedByU
 WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, isFavoritedByUser,
     10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
 
-// Collect distinct server roles which should be attached to the comment author.
-WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, isFavoritedByUser,
-     COLLECT(DISTINCT serverRole) AS serverRoles, channelRole
-
-// Each serverRole should include: {showAdminTag: role.showAdminTag}
-WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, isFavoritedByUser,
-        [role IN serverRoles | {showAdminTag: role.showAdminTag}] AS serverRoles, channelRole
-
-WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, serverRoles, isFavoritedByUser,
-     COLLECT(DISTINCT channelRole) AS channelRoles
-
-WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, serverRoles, isFavoritedByUser,
-        [role IN channelRoles | {showModTag: role.showModTag}] AS channelRoles
+// Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
+// @cypher field + server-admin membership), so the author's roles are no longer
+// projected onto the comment. Collapse the serverRole/channelRole fan-out from the
+// OPTIONAL MATCHes above so each comment yields a single row.
+WITH DISTINCT c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, isFavoritedByUser
 
 RETURN {
     id: c.id,
@@ -77,9 +69,7 @@ RETURN {
         profilePicURL: author.profilePicURL,
         discussionKarma: author.discussionKarma,
         commentKarma: author.commentKarma,
-        createdAt: author.createdAt,
-        ServerRoles: serverRoles,
-        ChannelRoles: channelRoles
+        createdAt: author.createdAt
     } END,
     isFavoritedByUser: isFavoritedByUser,
     ParentComment: CASE WHEN SIZE(parentIds) > 0 THEN {id: parentIds[0]} ELSE null END,
