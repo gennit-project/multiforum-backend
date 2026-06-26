@@ -74,7 +74,7 @@ import {
   canDeleteWikiPages,
   canEditWikiHomePage,
 } from "./definitions/wikiRules.js";
-import { canUpvoteComment, canUpvoteDiscussion } from "./definitions/votingRules.js";
+import { canUpvoteComment, canUpvoteDiscussion, canSuperUpvote } from "./definitions/votingRules.js";
 import {
   isRoot,
   canUploadFile,
@@ -152,6 +152,7 @@ const ruleList = {
   canUploadFile,
   canUpvoteComment,
   canUpvoteDiscussion,
+  canSuperUpvote,
   canGiveFeedback,
   canReportContent,
   canReportServerContent,

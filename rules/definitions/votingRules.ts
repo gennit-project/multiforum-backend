@@ -67,6 +67,78 @@ export const canUpvoteComment = rule({ cache: "contextual" })(
   }
 );
 
+type CanSuperUpvoteArgs = {
+  sourceType: "comment" | "discussion";
+  sourceId: string;
+  sourceChannelUniqueName?: string;
+};
+
+// Super upvoting is a second vote, so it requires the same channel permission as
+// a normal upvote (this blocks suspended users from super upvoting). The mutation
+// handles both comments and discussions, so resolve the channel + permission from
+// the source type. Reused for undoSuperUpvote, which sends the same args.
+export const canSuperUpvote = rule({ cache: "contextual" })(
+  async (parent: unknown, args: CanSuperUpvoteArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
+    const { sourceType, sourceId, sourceChannelUniqueName } = args;
+
+    if (!sourceType || !sourceId) {
+      throw new Error("sourceType and sourceId are required");
+    }
+
+    let channelName = sourceChannelUniqueName;
+    let permission: "canUpvoteComment" | "canUpvoteDiscussion";
+
+    if (sourceType === "comment") {
+      permission = "canUpvoteComment";
+      if (!channelName) {
+        const CommentModel = ctx.ogm.model("Comment");
+        const commentData = await CommentModel.find({
+          where: { id: sourceId },
+          selectionSet: `{
+            DiscussionChannel { channelUniqueName }
+            Channel { uniqueName }
+          }`,
+        });
+        channelName =
+          commentData?.[0]?.DiscussionChannel?.channelUniqueName ||
+          commentData?.[0]?.Channel?.uniqueName;
+      }
+    } else if (sourceType === "discussion") {
+      permission = "canUpvoteDiscussion";
+      if (!channelName) {
+        const DiscussionChannelModel = ctx.ogm.model("DiscussionChannel");
+        const dcData = await DiscussionChannelModel.find({
+          where: { id: sourceId },
+          selectionSet: `{ channelUniqueName }`,
+        });
+        channelName = dcData?.[0]?.channelUniqueName;
+      }
+    } else {
+      throw new Error('sourceType must be "comment" or "discussion"');
+    }
+
+    if (!channelName) {
+      throw new Error("No channel found.");
+    }
+
+    const permissionResult = await hasChannelPermission({
+      permission,
+      channelName,
+      context: ctx,
+    });
+
+    if (!permissionResult) {
+      throw new Error(ERROR_MESSAGES.channel.noChannelPermission);
+    }
+
+    if (permissionResult instanceof Error) {
+      return permissionResult;
+    }
+
+    return true;
+  }
+);
+
 type CanUpvoteDiscussionChannelArgs = {
   discussionChannelId: string;
   username: string;

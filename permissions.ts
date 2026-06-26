@@ -27,6 +27,7 @@ const {
   canUploadFile,
   canUpvoteComment,
   canUpvoteDiscussion,
+  canSuperUpvote,
   issueIsValid,
   createChannelInputIsValid,
   updateChannelInputIsValid,
@@ -213,8 +214,8 @@ const permissionList = shield({
       // Any user who can upvote a discussion can undo their upvote. The undo upvote resolver
       // checks if the user has upvoted the discussion and if so, removes the upvote.
 
-      createScratchpadEntry: and(isAuthenticated, allow), // Super upvote - any authenticated user can send a thank-you note
-      undoSuperUpvote: and(isAuthenticated, allow), // Undo super upvote - any authenticated user can undo their super upvote
+      createScratchpadEntry: and(isAuthenticated, canSuperUpvote), // Super upvote requires the same channel permission as a normal upvote (blocks suspended users)
+      undoSuperUpvote: and(isAuthenticated, canSuperUpvote), // Reuse the same rule for undoing a super upvote
       
       createIssue: and(isAuthenticated, issueIsValid),
       createIssues: and(isAuthenticated, issueIsValid),
