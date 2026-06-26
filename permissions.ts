@@ -2,7 +2,7 @@ import { and, shield, allow, deny, or } from "graphql-shield";
 import rules from "./rules/rules.js";
 
 const {
-  isAdmin,
+  isRoot,
   canManageServerSettings,
   canManagePlugins,
   canManageRoles,
@@ -11,6 +11,7 @@ const {
   canManageSuperAdmins,
   canRemoveDiscussionChannel,
   canRemoveEventChannel,
+  canReportServerContent,
   isAccountOwner,
   isChannelOwner,
   isDiscussionOwner,
@@ -118,8 +119,8 @@ const permissionList = shield({
     },
     Mutation: {
       "*": deny,
-      dropDataForCypressTests: isAdmin,
-      seedDataForCypressTests: isAdmin,
+      dropDataForCypressTests: isRoot,
+      seedDataForCypressTests: isRoot,
       createTags: and(isAuthenticated, allow),
       
       // Role management requires canManageRoles (the updateUsers role-connect
@@ -138,42 +139,51 @@ const permissionList = shield({
       deleteServerRoles: and(isAuthenticated, canManageRoles),
       
       createEmailAndUser: allow, // Keep this as-is since this is for user registration
-      updateUsers: and(isAuthenticated, updateUserInputIsValid, or(isAccountOwner, isAdmin)),
+      // Self-only: a user may edit their own account, never another's. The
+      // role-assignment fields are additionally blocked in the resolver to
+      // prevent privilege escalation. Server admins do NOT get a blanket edit
+      // over other users here (no isAdmin override) — account ownership is
+      // self-scoped by design. See docs/isadmin-phaseout-design.md §8.4.
+      updateUsers: and(isAuthenticated, updateUserInputIsValid, isAccountOwner),
       
       createChannels: and(isAuthenticated, createChannelInputIsValid, canCreateChannel),
       // Owner/admin for general channel-config updates; canEditWikiHomePage
       // additionally grants the wiki-home-page edit path (and now denies, rather
       // than blanket-allows, non-wiki updates — see evaluateCanEditWikiHomePageRule).
-      updateChannels: and(isAuthenticated, updateChannelInputIsValid, or(isChannelOwner, isAdmin, canEditWikiHomePage)),
-      deleteChannels: and(isAuthenticated, or(isAdmin, isChannelOwner)),
+      updateChannels: and(isAuthenticated, updateChannelInputIsValid, or(isChannelOwner, canEditWikiHomePage)),
+      deleteChannels: and(isAuthenticated, isChannelOwner),
 
-      deleteEmails: and(isAuthenticated, or(isAccountOwner, isAdmin)),
-      deleteUsers: and(isAuthenticated, or(isAdmin, isAccountOwner)),
+      // Self-only by design (§8.2/§8.4): account deletion is self-scoped, never a
+      // blanket admin power. isAccountOwner deliberately does NOT carry the
+      // server-admin override. Cross-user admin actions happen through the
+      // invite/suspension flows instead. See docs/isadmin-phaseout-design.md.
+      deleteEmails: and(isAuthenticated, isAccountOwner),
+      deleteUsers: and(isAuthenticated, isAccountOwner),
     
-      createDiscussionWithChannelConnections: and(isAuthenticated, createDiscussionInputIsValid, or(canCreateDiscussion, isAdmin)),
-      updateDiscussionWithChannelConnections: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, isAdmin, canEditDiscussions)),
-      deleteDiscussions: and(isAuthenticated, or(isAdmin, isDiscussionOwner)),
-      updateDiscussions: and(isAuthenticated, updateDiscussionInputIsValid, or(isAdmin, isDiscussionOwner, canEditDiscussions)),
+      createDiscussionWithChannelConnections: and(isAuthenticated, createDiscussionInputIsValid, canCreateDiscussion),
+      updateDiscussionWithChannelConnections: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, canEditDiscussions)),
+      deleteDiscussions: and(isAuthenticated, isDiscussionOwner),
+      updateDiscussions: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, canEditDiscussions)),
       deleteDiscussionChannels: and(isAuthenticated, canRemoveDiscussionChannel),
-      updateDiscussionChannels: and(isAuthenticated, or(isAdmin, isDiscussionChannelOwner)),
+      updateDiscussionChannels: and(isAuthenticated, isDiscussionChannelOwner),
 
       deleteTextVersions: deny,
       deleteCommentRevision: and(isAuthenticated, allow),
       deleteDiscussionBodyRevision: and(isAuthenticated, allow),
       deleteWikiRevision: and(isAuthenticated, allow),
-      deleteWikiPages: and(isAuthenticated, or(isAdmin, canDeleteWikiPages)),
+      deleteWikiPages: and(isAuthenticated, canDeleteWikiPages),
       createWikiPages: and(isAuthenticated, canEditWikiPages),
       updateWikiPages: and(isAuthenticated, canEditWikiPages),
       
       createEventWithChannelConnections: and(isAuthenticated, createEventInputIsValid, canCreateEvent),
-      updateEventWithChannelConnections: and(isAuthenticated, updateEventInputIsValid, or(isEventOwner, isAdmin, canEditEvents)),
-      updateEvents: and(isAuthenticated, or(isAdmin, isEventOwner, canEditEvents)),
-      deleteEvents: and(isAuthenticated, or(isAdmin, isEventOwner)),
+      updateEventWithChannelConnections: and(isAuthenticated, updateEventInputIsValid, or(isEventOwner, canEditEvents)),
+      updateEvents: and(isAuthenticated, or(isEventOwner, canEditEvents)),
+      deleteEvents: and(isAuthenticated, isEventOwner),
       deleteEventChannels: and(isAuthenticated, canRemoveEventChannel),
 
       createComments: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
-      updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, isAdmin, canEditComments)),
-      deleteComments: and(isAuthenticated, or(isAdmin, isCommentAuthor)),
+      updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, canEditComments)),
+      deleteComments: and(isAuthenticated, isCommentAuthor),
       
       createSignedStorageURL: and(isAuthenticated, canUploadFile),
       addEmojiToComment: and(isAuthenticated, canUpvoteComment),
@@ -199,7 +209,7 @@ const permissionList = shield({
       // (isIssueAuthor resolves the issue from where.id and matches User or
       // ModerationProfile authorship). Previously any authenticated user could
       // delete any moderation issue, e.g. a report filed against themselves.
-      deleteIssues: and(isAuthenticated, or(isAdmin, isIssueAuthor)),
+      deleteIssues: and(isAuthenticated, isIssueAuthor),
       // Issue updates (close/reopen) can be done by:
       // 1. Channel owners (always)
       // 2. Issue author (if issue is not locked)
@@ -214,8 +224,8 @@ const permissionList = shield({
       ),
 
       createAlbums: and(isAuthenticated, allow), // Owner forced server-side in createAlbumsWithOwner
-      updateAlbums: and(isAuthenticated, or(isAlbumOwner, isAdmin)),
-      deleteAlbums: and(isAuthenticated, or(isAlbumOwner, isAdmin)),
+      updateAlbums: and(isAuthenticated, isAlbumOwner),
+      deleteAlbums: and(isAuthenticated, isAlbumOwner),
 
       inviteForumOwner: and(isAuthenticated, isChannelOwner),
       cancelInviteForumOwner: and(isAuthenticated, isChannelOwner),
@@ -239,11 +249,12 @@ const permissionList = shield({
       deleteNotifications: deny,
       updateNotifications: deny,
 
-      // Image edits (e.g. captions) are allowed for the uploader (OP), an
-      // image mod, or an admin. canArchiveAndUnarchiveImage resolves to the
-      // server-level canArchiveImage mod permission here, since updateImages
-      // carries no channel argument and images aren't channel-scoped.
-      updateImages: and(isAuthenticated, or(isImageUploader, canArchiveAndUnarchiveImage, isAdmin)),
+      // Image edits (e.g. captions) are allowed for the uploader (OP) or an
+      // image mod. canArchiveAndUnarchiveImage resolves to the server-level
+      // canArchiveImage mod permission here, since updateImages carries no
+      // channel argument and images aren't channel-scoped; server admins are
+      // covered because the seeded admin bundle grants that mod capability.
+      updateImages: and(isAuthenticated, or(isImageUploader, canArchiveAndUnarchiveImage)),
       createImages: deny, // Use createImageWithUploader instead to ensure Uploader is set
       createImageWithUploader: and(isAuthenticated, canUploadFile),
 
@@ -258,9 +269,9 @@ const permissionList = shield({
       reportChannel: and(isAuthenticated, canReport), // Channel reports require mod profile, no channel owner shortcut
       reportImage: and(isAuthenticated, or(isChannelOwner, canReport)), // mirrors reportComment/reportDiscussion (channel-scoped image content)
       reportChannelImage: and(isAuthenticated, canReport), // server-scoped, but canReport resolves the channel from channelUniqueName (like reportChannel)
-      reportProfilePicture: and(isAuthenticated, isAdmin), // server-scoped, no channel to scope canReport to
-      lockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
-      unlockChannel: and(isAuthenticated, or(isAdmin, canLockChannel)),
+      reportProfilePicture: and(isAuthenticated, canReportServerContent), // server-scoped, no channel to scope canReport to
+      lockChannel: and(isAuthenticated, canLockChannel),
+      unlockChannel: and(isAuthenticated, canLockChannel),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),

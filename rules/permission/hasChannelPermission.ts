@@ -5,6 +5,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
+import { passesAsServerAdminOrRoot } from "./serverAdminOverride.js";
 import { logger } from "../../logger.js";
 
 type HasChannelPermissionInput = {
@@ -96,6 +97,13 @@ export const hasChannelPermission: (
 
   if (!context.user) {
     return new Error(ERROR_MESSAGES.channel.noChannelPermission);
+  }
+
+  // Server admins and the env break-glass root hold every channel permission
+  // across the whole server (this replaces the per-call-site isAdmin override).
+  // See docs/isadmin-phaseout-design.md.
+  if (await passesAsServerAdminOrRoot(context)) {
+    return true;
   }
 
   const username = context.user?.username;

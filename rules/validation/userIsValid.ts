@@ -19,7 +19,7 @@ type UserInput = {
 };
 
 // Role relationships must never be assigned through the generic updateUsers
-// mutation: it is gated to `isAccountOwner OR isAdmin`, so a non-admin can edit
+// mutation: it is gated to `isAccountOwner` (self-only), so a user can edit
 // their OWN user node. Without this guard a user could connect (or create) an
 // elevated ServerRole/ModServerRole/ChannelRole/ModChannelRole on themselves
 // and self-escalate to admin/mod. Role assignment must go through the dedicated

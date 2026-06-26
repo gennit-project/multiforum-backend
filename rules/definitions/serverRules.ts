@@ -6,13 +6,14 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { ServerRole, ModServerRole } from "../../ogm_types.js";
 import { hasServerPermission } from "../permission/hasServerPermission.js";
 import { hasServerModPermission } from "../permission/hasServerModPermission.js";
-import { getServerScopedMembership } from "../permission/getServerScopedMembership.js";
+import { isServerRoot } from "../permission/isServerRoot.js";
 
-export const isAdmin = rule({ cache: "contextual" })(
-  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    const membership = await getServerScopedMembership(ctx);
-    return membership.isServerAdmin;
-  }
+// The env break-glass root (and the test super-user) only. Used for the
+// dangerous Cypress test-data mutations, which must never be a delegatable
+// capability. See docs/isadmin-phaseout-design.md.
+export const isRoot = rule({ cache: "contextual" })(
+  async (_parent: unknown, _args: unknown, ctx: GraphQLContext, _info: GraphQLResolveInfo) =>
+    isServerRoot(ctx)
 );
 
 // Factories for capability-named server rules (the isAdmin phase-out). Each
@@ -50,6 +51,10 @@ export const canManageSuperAdmins = serverPermissionRule("canManageSuperAdmins")
 // Destructive structural removals (ModServerRole).
 export const canRemoveDiscussionChannel = serverModPermissionRule("canRemoveDiscussionChannel");
 export const canRemoveEventChannel = serverModPermissionRule("canRemoveEventChannel");
+
+// Server-scoped reporting (e.g. profile pictures, which have no channel to scope
+// to). Covered for server admins via the hasServerModPermission shortcut.
+export const canReportServerContent = serverModPermissionRule("canReport");
 
 export const canUploadFile = rule({ cache: "contextual" })(
   async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {

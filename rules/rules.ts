@@ -67,10 +67,11 @@ import {
 } from "./definitions/wikiRules.js";
 import { canUpvoteComment, canUpvoteDiscussion } from "./definitions/votingRules.js";
 import {
-  isAdmin,
+  isRoot,
   canUploadFile,
   canGiveFeedback,
   canReportContent,
+  canReportServerContent,
   issueIsValid,
   canManageServerSettings,
   canManagePlugins,
@@ -124,7 +125,7 @@ const ruleList = {
   updateDownloadableFileInputIsValid,
   updateUserInputIsValid,
   hasChannelPermission,
-  isAdmin,
+  isRoot,
   canManageServerSettings,
   canManagePlugins,
   canManageRoles,
@@ -139,6 +140,7 @@ const ruleList = {
   canUpvoteDiscussion,
   canGiveFeedback,
   canReportContent,
+  canReportServerContent,
   canArchiveAndUnarchiveDiscussion,
   canArchiveAndUnarchiveEvent,
   canArchiveAndUnarchiveComment,

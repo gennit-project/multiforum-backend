@@ -4,6 +4,7 @@ import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
 import { Event, EventWhere, EventUpdateInput } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
+import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
 
 type IsEventOwnerInput = {
   where: EventWhere;
@@ -23,6 +24,11 @@ export const isEventOwner = rule({ cache: "contextual" })(
     }
 
     // set user data
+    // Server admins and the env root pass any ownership-gated mutation (replaces isAdmin).
+    if (await passesAsServerAdminOrRoot(ctx)) {
+      return true;
+    }
+
     ctx.user = await setUserDataOnContext({
       context: ctx,
     });
