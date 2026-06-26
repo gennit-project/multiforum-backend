@@ -41,13 +41,18 @@ before(async () => {
     "../../seedData/provisionServerDefaults.js"
   ));
 
-  // Seed a ServerConfig with two existing admins to exercise the backfill.
+  // Seed a ServerConfig with two existing admins (to exercise the backfill) and
+  // a pre-existing DefaultServerRole pointing at a DIFFERENT role, so wiring must
+  // disconnect+reconnect a to-one link rather than blind-connect (regression for
+  // "DefaultServerRole must be less than or equal to one").
   const session = driver.session();
   try {
     await session.run(
       `CREATE (sc:ServerConfig { serverName: $name })
        CREATE (a:User { username: 'alice' })-[:ADMIN_OF_SERVER]->(sc)
-       CREATE (b:User { username: 'bob' })-[:ADMIN_OF_SERVER]->(sc)`,
+       CREATE (b:User { username: 'bob' })-[:ADMIN_OF_SERVER]->(sc)
+       CREATE (old:ServerRole { name: 'Legacy Default Role' })
+       CREATE (sc)-[:HAS_DEFAULT_SERVER_ROLE]->(old)`,
       { name: SERVER_CONFIG_NAME }
     );
   } finally {

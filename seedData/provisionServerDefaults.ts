@@ -73,24 +73,35 @@ export const provisionServerDefaults = async (
     `Upserted ${DEFAULT_SERVER_ROLES.length} server roles and ${DEFAULT_MOD_SERVER_ROLES.length} mod server roles.`
   );
 
-  // 2. Ensure the ServerConfig exists.
+  // 2. Ensure the ServerConfig exists, and read the current tier-role links so
+  // wiring can be idempotent (the default-role relationships are to-one, so a
+  // blind `connect` on an already-linked config violates cardinality).
+  const linkSelection = Object.keys(SERVER_CONFIG_ROLE_WIRING)
+    .map((relationship) => `${relationship} { name }`)
+    .join("\n      ");
   const existingConfigs = await ServerConfig.find({
     where: { serverName },
     selectionSet: `{
       serverName
       Admins { username }
       SuperAdmins { username }
+      ${linkSelection}
     }`,
   });
   let serverConfigCreated = false;
   let adminUsernames: string[] = [];
   let superAdminUsernames: string[] = [];
+  let currentConfig: Record<string, { name?: string | null } | null> = {};
 
   if (existingConfigs.length === 0) {
     await ServerConfig.create({ input: [{ serverName }] });
     serverConfigCreated = true;
     log(`Created ServerConfig '${serverName}'.`);
   } else {
+    currentConfig = existingConfigs[0] as unknown as Record<
+      string,
+      { name?: string | null } | null
+    >;
     adminUsernames = (existingConfigs[0].Admins ?? [])
       .map((a: { username?: string | null }) => a?.username)
       .filter((u: unknown): u is string => typeof u === "string");
@@ -99,18 +110,31 @@ export const provisionServerDefaults = async (
       .filter((u: unknown): u is string => typeof u === "string");
   }
 
-  // 3. Wire each ServerConfig default-role link to its role (overwrite -> idempotent).
+  // 3. Wire each to-one default-role link to its role, idempotently: skip when
+  // it already points at the right role; otherwise disconnect any wrong target
+  // first, then connect the right one.
   const rolesWired: string[] = [];
   const wiringUpdate: Record<string, unknown> = {};
   for (const [relationship, roleName] of Object.entries(
     SERVER_CONFIG_ROLE_WIRING
   )) {
-    wiringUpdate[relationship] = {
-      connect: { where: { node: { name: roleName } }, overwrite: true },
+    const currentName = currentConfig[relationship]?.name ?? null;
+    if (currentName === roleName) {
+      continue; // already correct
+    }
+    const linkUpdate: Record<string, unknown> = {
+      connect: { where: { node: { name: roleName } } },
     };
+    if (currentName) {
+      // Remove the existing (wrong) target before connecting the new one.
+      linkUpdate.disconnect = { where: { node: { name: currentName } } };
+    }
+    wiringUpdate[relationship] = linkUpdate;
     rolesWired.push(relationship);
   }
-  await ServerConfig.update({ where: { serverName }, update: wiringUpdate });
+  if (Object.keys(wiringUpdate).length > 0) {
+    await ServerConfig.update({ where: { serverName }, update: wiringUpdate });
+  }
   log(`Wired ${rolesWired.length} default-role links on '${serverName}'.`);
 
   // 4. Backfill: existing Admins that are not yet SuperAdmins get connected, so
