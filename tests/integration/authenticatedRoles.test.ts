@@ -59,6 +59,19 @@ before(async () => {
   } finally {
     await session.close();
   }
+
+  // Provision the default roles so a non-admin resolves the real
+  // DefaultServerRole (which lacks the admin capabilities) — exercising the
+  // post-migration permission path that the capability checks rely on.
+  const { provisionServerDefaults } = await import(
+    "../../seedData/provisionServerDefaults.js"
+  );
+  await provisionServerDefaults({
+    ServerRole: ogm.model("ServerRole"),
+    ModServerRole: ogm.model("ModServerRole"),
+    ServerConfig: ogm.model("ServerConfig"),
+    serverName: SERVER_CONFIG_NAME,
+  });
 }, { timeout: 240000 });
 
 after(async () => {
@@ -69,7 +82,8 @@ after(async () => {
 const mockToken = (claims: Record<string, unknown>) =>
   `Bearer ${jwt.sign(claims, "mock-signing-key")}`;
 
-// deleteServerConfigs is gated `and(isAuthenticated, isAdmin)`. The non-matching
+// deleteServerConfigs is gated `and(isAuthenticated, canManageServerSettings)`.
+// The non-matching
 // where clause makes the admit-path resolution a harmless no-op (deletes
 // nothing) so the test is non-destructive.
 const execDeleteServerConfigs = (authorization?: string) =>
@@ -101,13 +115,17 @@ test("unauthenticated request is blocked by isAuthenticated", async () => {
   assert.equal(result.data, null);
 });
 
-test("authenticated non-admin is blocked by isAdmin (not by isAuthenticated)", async () => {
+test("authenticated non-admin is blocked by the capability check (not by isAuthenticated)", async () => {
   const result = await execDeleteServerConfigs(
     mockToken({ username: "normaluser", email: "normal@e2e.test" })
   );
   assert.ok(result.errors && result.errors.length > 0);
-  // Denied by authorization, NOT authentication — this is the gap unit tests miss.
-  assert.match(result.errors[0].message, /Not Authoris/i);
+  // Denied by authorization (canManageServerSettings), NOT authentication — the
+  // non-admin resolves DefaultServerRole, which lacks the capability.
+  assert.equal(
+    result.errors[0].message,
+    ERROR_MESSAGES.server.noServerPermission
+  );
   assert.notEqual(
     result.errors[0].message,
     ERROR_MESSAGES.channel.notAuthenticated
