@@ -229,10 +229,21 @@ production):
    - 🔲 Adopt `provisionServerDefaults` in integration-test setup (incremental).
    - 🔲 Wire env root (`SUPERADMIN_EMAIL`) in deploy config; run provisioning per
      environment in a maintenance window.
-3. **PR-3** — convert Category-A call sites to capability checks; drop `isAdmin`
-   from Category-B ORs; tier-based mod resolution for admins in
-   `hasServerModPermission`; remove the `isAdmin` rule. Integration coverage for a
-   restricted admin.
+3. **PR-3 — ✅ DONE.** PR-3a (#72) converted Category-A call sites to capability
+   checks; PR-3b (#73) dropped `isAdmin` from the Category-B ORs and removed the
+   `isAdmin` rule, replacing it with a server-admin + root override
+   (`passesAsServerAdminOrRoot`) inside the channel/ownership rules. `updateUsers`/
+   `deleteUsers`/`deleteEmails` are self-only; the dangerous Cypress seams use the
+   env-root-only `isRoot`; `reportProfilePicture` uses `canReportServerContent`.
+3.5. **PR-3.5 — suspended-admin path. ✅ DONE.** The override is **server-
+   suspension-aware**: a server-suspended admin loses the blanket override and
+   falls through to the normal (restricted) role checks everywhere (channel,
+   ownership, and server-mod). `hasServerModPermission` no longer lets a suspended
+   admin bypass the suspended role. **Root is the only actor a suspension cannot
+   stop.** Server suspension (`scope: 'server'`) is the lever to restrict an admin;
+   channel-level roles intentionally do *not* restrict an un-suspended admin (they
+   are server staff). Unit tests: `serverAdminOverride.test.ts` (pure
+   `evaluateAdminOverride`) + a suspended-admin case in `hasServerModPermission.test.ts`.
 4. **PR-4** — enforce the no-escalation invariant on invite / assign / role-edit.
 5. **PR-5 (later)** — role-management UI; SuperAdmins section in
    `ServerMembershipEditor`.

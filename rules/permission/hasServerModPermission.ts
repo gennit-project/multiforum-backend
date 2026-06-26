@@ -59,7 +59,11 @@ export const hasServerModPermission: (
 
   const membership = await getServerScopedMembership(context);
 
-  if (membership.isServerAdmin) {
+  // A server admin holds every mod capability — UNLESS they are server-
+  // suspended, in which case they fall through to the DefaultSuspendedModRole
+  // below (root already short-circuited above and is never suspended). This
+  // keeps admin suspension effective and consistent with hasServerPermission.
+  if (membership.isServerAdmin && !suspensionInfo.isSuspended) {
     return true;
   }
 
