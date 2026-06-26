@@ -112,36 +112,27 @@ const undoSuperUpvoteResolver = (input: Input) => {
         },
       });
 
-      await tx.commit();
+      // Read the updated super-upvoter list inside the same transaction so it
+      // reflects the relationship we just deleted. A post-commit read on a fresh
+      // OGM session can lag behind the write on a clustered database.
+      const readSuperUpvotersQuery =
+        sourceType === 'comment'
+          ? `MATCH (u:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment { id: $sourceId })
+             RETURN collect({ username: u.username }) AS users`
+          : `MATCH (u:User)-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: $sourceId })
+             RETURN collect({ username: u.username }) AS users`;
+      const superUpvotersResult = await tx.run(readSuperUpvotersQuery, { sourceId });
+      const superUpvotedByUsers: Array<{ username: string }> =
+        superUpvotersResult.records[0]?.get('users') || [];
 
-      // Fetch and return the updated source with SuperUpvotedByUsers for cache update
-      let updatedSource = null;
-      if (sourceType === 'comment') {
-        const result = await Comment.find({
-          where: { id: sourceId },
-          selectionSet: `{
-            id
-            SuperUpvotedByUsers { username }
-          }`,
-        });
-        updatedSource = result[0];
-      } else {
-        const result = await DiscussionChannel.find({
-          where: { id: sourceId },
-          selectionSet: `{
-            id
-            SuperUpvotedByUsers { username }
-          }`,
-        });
-        updatedSource = result[0];
-      }
+      await tx.commit();
 
       return {
         success: true,
         message: 'Super upvote removed successfully',
         sourceId,
         sourceType,
-        superUpvotedByUsers: updatedSource?.SuperUpvotedByUsers || [],
+        superUpvotedByUsers,
       };
     } catch (e) {
       if (tx) {

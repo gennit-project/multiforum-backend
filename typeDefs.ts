@@ -182,6 +182,10 @@ const typeDefinitions = gql`
     read: Boolean
     text: String
     notificationType: String # "feedback", "mention", "reply", "moderation", "scratchpad", etc.
+    # Set for "scratchpad" (super upvote) notifications so the recipient can act
+    # on the thank-you note (show on profile / ignore) straight from the bell.
+    ScratchpadEntry: ScratchpadEntry
+      @relationship(type: "NOTIFICATION_FOR_SCRATCHPAD_ENTRY", direction: OUT)
   }
 
   type Message {
@@ -311,8 +315,12 @@ const typeDefinitions = gql`
     text: String!
     isPublic: Boolean! @default(value: false)
     sourceType: String! # "comment" or "discussion"
-    sourceId: String!
+    sourceId: String! # DiscussionChannel id (discussion) or Comment id (comment)
     sourceChannelUniqueName: String
+    # The Discussion id the upvoted content belongs to, used to build a working
+    # link back to the post/comment from the recipient's Kudos page. (sourceId is
+    # the DiscussionChannel/Comment id, which the discussion route cannot use.)
+    discussionId: String
 
     # Relationships
     Author: User! @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: IN)

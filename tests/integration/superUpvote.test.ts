@@ -45,6 +45,22 @@ const createScratchpadEntry = (args: Record<string, unknown>, username = "alice"
 const undoSuperUpvote = (args: Record<string, unknown>, username = "alice") =>
   env.resolvers.Mutation.undoSuperUpvote(null, args, asUser(username));
 
+const updateScratchpadEntryVisibility = (
+  args: Record<string, unknown>,
+  username = "bob"
+) =>
+  env.resolvers.Mutation.updateScratchpadEntryVisibility(null, args, asUser(username));
+
+// Seed a discussion that alice has already upvoted, so she can super upvote it.
+// bob is the discussion author / recipient.
+const seedUpvotedDiscussion = () =>
+  run(
+    `MATCH (alice:User { username: 'alice' })
+     CREATE (d:Discussion { id: 'discussion-1', title: 'Great idea', createdAt: datetime() })
+     CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'discussion-1', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (alice)-[:UPVOTED_DISCUSSION]->(dc)`
+  );
+
 const baseArgs = {
   recipientUsername: "bob",
   text: "Thanks for the thoughtful comment!",
@@ -125,5 +141,102 @@ test("undoSuperUpvote throws when the user has not super-upvoted", async () => {
   await assert.rejects(
     undoSuperUpvote({ sourceType: "comment", sourceId: "comment-1" }),
     /not super upvoted/i
+  );
+});
+
+test("the scratchpad notification is linked to the entry so the recipient can act on it", async () => {
+  await createScratchpadEntry({ ...baseArgs });
+
+  const linked = await run(
+    `MATCH (:User { username: 'bob' })-[:HAS_NOTIFICATION]->(n:Notification)-[:NOTIFICATION_FOR_SCRATCHPAD_ENTRY]->(e:ScratchpadEntry)
+     RETURN n.notificationType AS type, n.read AS read, e.sourceId AS sourceId`
+  );
+
+  assert.equal(linked.length, 1, "notification should link to exactly one scratchpad entry");
+  assert.equal(linked[0].type, "scratchpad");
+  assert.equal(linked[0].read, false, "new notification should be unread");
+  assert.equal(linked[0].sourceId, "comment-1");
+});
+
+test("the scratchpad notification for a discussion links to the post", async () => {
+  await seedUpvotedDiscussion();
+
+  await createScratchpadEntry({
+    recipientUsername: "bob",
+    text: "Loved this discussion!",
+    sourceType: "discussion",
+    sourceId: "dc-1",
+    sourceChannelUniqueName: "cats",
+  });
+
+  const notifications = await run(
+    `MATCH (:User { username: 'bob' })-[:HAS_NOTIFICATION]->(n:Notification)
+     RETURN n.text AS text`
+  );
+
+  assert.equal(notifications.length, 1);
+  assert.match(
+    notifications[0].text,
+    /\/forums\/cats\/discussions\/discussion-1/,
+    "notification should contain a working link to the post"
+  );
+});
+
+test("createScratchpadEntry records the discussionId so the Kudos card can link to the post", async () => {
+  await seedUpvotedDiscussion();
+
+  await createScratchpadEntry({
+    recipientUsername: "bob",
+    text: "Loved this discussion!",
+    sourceType: "discussion",
+    sourceId: "dc-1",
+    sourceChannelUniqueName: "cats",
+  });
+
+  const entries = await run(
+    `MATCH (e:ScratchpadEntry { sourceId: 'dc-1' })
+     RETURN e.discussionId AS discussionId, e.sourceChannelUniqueName AS channel`
+  );
+
+  assert.equal(entries.length, 1);
+  // sourceId is the DiscussionChannel id; discussionId is the Discussion id used
+  // to build the route, so they must differ and discussionId must be resolved.
+  assert.equal(entries[0].discussionId, "discussion-1");
+  assert.equal(entries[0].channel, "cats");
+});
+
+test("updateScratchpadEntryVisibility lets the recipient show a note on their profile", async () => {
+  const created = await createScratchpadEntry({ ...baseArgs });
+
+  // Entry starts private (pending).
+  const before = await run(
+    `MATCH (e:ScratchpadEntry { id: $id }) RETURN e.isPublic AS isPublic`,
+    { id: created.id }
+  );
+  assert.equal(before[0].isPublic, false);
+
+  // The recipient (bob) makes it public ("show on profile").
+  await updateScratchpadEntryVisibility(
+    { scratchpadEntryId: created.id, isPublic: true },
+    "bob"
+  );
+
+  const after = await run(
+    `MATCH (e:ScratchpadEntry { id: $id }) RETURN e.isPublic AS isPublic`,
+    { id: created.id }
+  );
+  assert.equal(after[0].isPublic, true, "entry should be public after show-on-profile");
+});
+
+test("updateScratchpadEntryVisibility rejects anyone other than the recipient", async () => {
+  const created = await createScratchpadEntry({ ...baseArgs });
+
+  // alice is the author, not the recipient, so she cannot publish it.
+  await assert.rejects(
+    updateScratchpadEntryVisibility(
+      { scratchpadEntryId: created.id, isPublic: true },
+      "alice"
+    ),
+    /only the recipient/i
   );
 });

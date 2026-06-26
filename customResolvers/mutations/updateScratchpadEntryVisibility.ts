@@ -46,6 +46,7 @@ const updateScratchpadEntryVisibilityResolver = (input: Input) => {
         sourceType
         sourceId
         sourceChannelUniqueName
+        discussionId
         createdAt
         Recipient {
           username
