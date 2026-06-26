@@ -255,17 +255,25 @@ production):
    `findEscalatedCapabilities` in `rules/validation/roleEscalation.ts`. Assignment
    is already covered: `updateUsers` role-connect is blocked (#64), and the invite
    flows grant fixed tier roles (the inviter never chooses capabilities).
-   - ✅ **PR-4b — nested ServerConfig escalation closed.** `serverConfigInputDoesNotEscalate`
-     (`rules/validation/nestedRoleEscalation.ts`) rejects nested role
-     `create`/`update`/`connectOrCreate` (and resolves `connect` targets from the
-     DB) on the `ServerConfig` tier relationships in
-     `createServerConfigs`/`updateServerConfigs`, so a `canManageServerSettings`
-     holder cannot escalate a tier role (e.g.
-     `DefaultAdminRole.update.node.canManageAdmins = true`).
-   - ✅ **PR-4c — channel-role authoring.** `createChannelRoles`/`createModChannelRoles`
-     may only author a capability-bearing channel role for a channel the actor
-     owns (or as server admin / root); channel roles carry no server-administration
-     capability, so this is defense-in-depth.
+   - ✅ **PR-4b — nested ServerConfig escalation closed.** The generated
+     `ServerConfig` create/update input allows nested role writes on the tier
+     relationships (`DefaultAdminRole`, `DefaultServerRole`, …), reachable via
+     `updateServerConfigs`/`createServerConfigs` (gated only by
+     `canManageServerSettings`) — e.g.
+     `updateServerConfigs(update: { DefaultAdminRole: { update: { node: { canManageAdmins: true } } } })`.
+     `serverConfigInputDoesNotEscalate` (`rules/validation/nestedRoleEscalation.ts`)
+     now walks those relationships and rejects any nested `create`/`update`/
+     `connectOrCreate` node — and resolves `connect`/`connectOrCreate` targets from
+     the DB — that grants a capability the actor lacks (so connecting an existing
+     `DefaultSuperAdminRole` into a lower tier slot is caught too). Root / full
+     admin bypass; lookup failures fail closed.
+   - ✅ **PR-4c — channel-role authoring (defense-in-depth).**
+     `createChannelRoles`/`createModChannelRoles` may author a capability-bearing
+     channel role only for a channel the actor owns (or as server admin / root).
+     Channel roles carry **no** server-administration capability and cannot reach
+     the apex tier; wiring a channel role is already channel-owner-gated. Nested
+     role writes in `createChannels`/`updateChannels` need no guard — the actor is
+     creating/owns the channel and legitimately defines its roles.
 5. **PR-5 (later)** — role-management UI; SuperAdmins section in
    `ServerMembershipEditor`.
 

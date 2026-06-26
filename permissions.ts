@@ -41,6 +41,7 @@ const {
   updateUserInputIsValid,
   serverRoleInputDoesNotEscalate,
   modServerRoleInputDoesNotEscalate,
+  serverConfigInputDoesNotEscalate,
   canReport,
   canSuspendAndUnsuspendUser,
   canArchiveAndUnarchiveComment,
@@ -137,10 +138,12 @@ const permissionList = shield({
 
       createModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       createServerRoles: and(isAuthenticated, canManageRoles, serverRoleInputDoesNotEscalate),
-      createServerConfigs: and(isAuthenticated, canManageServerSettings),
+      createServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate),
       deleteServerConfigs: and(isAuthenticated, canManageServerSettings),
 
-      updateServerConfigs: and(isAuthenticated, canManageServerSettings),
+      // canManageServerSettings additionally must not be used to escalate a tier
+      // role via a nested role create/update/connect (see §5 / PR-4b).
+      updateServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate),
       updateModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       deleteChannelRoles: and(isAuthenticated, or(canManageRoles, isChannelOwner)),
       deleteServerRoles: and(isAuthenticated, canManageRoles),
