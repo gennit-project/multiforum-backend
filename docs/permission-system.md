@@ -242,10 +242,10 @@ When a suspended user attempts a blocked action, `createSuspensionNotification` 
 - Roles are defined as nodes and wired to the `ServerConfig`/`Channel` tiers. The
   seeded defaults are the source of truth and are installed idempotently by
   `provisionServerDefaults` (`npm run provision`).
-- Custom (non-default) roles **can** be created/edited through the role-authoring
-  mutations (gated by `canManageRoles` + the no-privilege-escalation guards). A
-  UI for managing them is still planned; today they are created via
-  seed/provisioning/mutations.
+- Custom (non-default) roles are **API-only, UI pending**: they can be
+  created/edited through the role-authoring mutations (gated by `canManageRoles` +
+  the no-privilege-escalation guards) and via seed/provisioning, but there is no
+  management UI yet.
 - All permission checks are enforced through GraphQL Shield middleware combined
   with custom rule resolvers. The pure decision in each rule (given fetched roles,
   is this permission granted?) is separated from data fetching for unit testing.
