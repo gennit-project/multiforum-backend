@@ -87,6 +87,37 @@ test("owner removing a label disconnects it and records 'removed' history", asyn
   assert.ok(Number(removed[0].n) >= 1, "at least one 'removed' history entry expected");
 });
 
+test("attributes an owner's label change to the acting user (ActorUser)", async () => {
+  await updateLabels(["fo-1"]);
+
+  const userActor = await run(
+    `MATCH (:User { username: 'test-owner' })-[:MADE_LABEL_CHANGE]->(h:LabelChangeHistory { actionType: 'added' })
+     RETURN count(h) AS n`
+  );
+  assert.ok(
+    Number(userActor[0].n) >= 1,
+    "owner change should be attributed to the acting User"
+  );
+
+  const modActor = await run(
+    `MATCH (:ModerationProfile)-[:MADE_LABEL_CHANGE]->(:LabelChangeHistory)
+     RETURN count(*) AS n`
+  );
+  assert.equal(
+    Number(modActor[0].n),
+    0,
+    "owner change should not be attributed to a moderator profile"
+  );
+});
+
+// NOTE: the mod -> ActorMod attribution path is intentionally not integration
+// tested here. updateDownloadLabels resolves the actor via setUserDataOnContext,
+// which only populates ModerationProfile.displayName; the resolver's mod
+// permission check reads ModeratedChannels / AdminOfServers /
+// ModerationProfile.ModChannelRoles, none of which that helper loads, so a
+// non-owner moderator is currently always rejected (see analysis notes). Once
+// the resolver loads real mod permissions, add an ActorMod attribution test.
+
 test("a non-owner without mod permission is rejected", async () => {
   await assert.rejects(
     updateLabels(["fo-1"], modContext(env, mockToken({ username: "rando", email: "r@e2e.test" }))),
