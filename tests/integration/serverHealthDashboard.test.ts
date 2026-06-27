@@ -64,7 +64,7 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
       title: 'Stale issue',
       isOpen: true,
       flaggedServerRuleViolation: true,
-      createdAt: datetime() - duration({days: 10})
+      createdAt: datetime() - duration({days: 20})
     })
     CREATE (channelIssue:Issue {
       id: 'issue-2',
@@ -136,6 +136,32 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
     result.attentionItems.some((item: any) => item.title === "Stale open issues"),
     `expected stale issue attention item, got ${JSON.stringify(result.attentionItems)}`
   );
+});
+
+test("getServerHealthDashboard buckets months-old open issues into the 30+ day aging bucket", async () => {
+  await run(
+    `
+    CREATE (oldServerIssue:Issue {
+      id: 'issue-old',
+      issueNumber: 10,
+      title: 'Six month old server request',
+      isOpen: true,
+      flaggedServerRuleViolation: true,
+      createdAt: datetime() - duration({days: 200})
+    })
+    `
+  );
+
+  const result = await env.resolvers.Query.getServerHealthDashboard(null, {
+    startDate: "2000-01-01",
+    endDate: "2100-01-01",
+    limit: 10,
+  });
+
+  const oldBucket = result.issueAging.find(
+    (bucket: any) => bucket.label === "30+ days"
+  );
+  assert.equal(oldBucket?.count, 1);
 });
 
 test("getServerHealthDashboard filters channel rows without limiting summary totals", async () => {

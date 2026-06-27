@@ -279,7 +279,7 @@ const channelHealthQuery = `
     WHERE ${SERVER_SCOPED_ISSUE_WHERE}
     RETURN count(DISTINCT CASE WHEN coalesce(issue.isOpen, false) THEN issue END) AS openIssueCount,
            count(DISTINCT CASE WHEN date(datetime(issue.createdAt)) >= startDate AND date(datetime(issue.createdAt)) <= endDate THEN issue END) AS issueOpenedCount,
-           max(CASE WHEN coalesce(issue.isOpen, false) THEN duration.between(date(datetime(issue.createdAt)), date()).days ELSE null END) AS oldestOpenIssueAgeDays
+           max(CASE WHEN coalesce(issue.isOpen, false) THEN duration.inDays(date(datetime(issue.createdAt)), date()).days ELSE null END) AS oldestOpenIssueAgeDays
   }
 
   CALL {
@@ -333,7 +333,7 @@ const timeSeriesQuery = `
        $channelUniqueNames AS channelUniqueNames
   CALL {
     WITH startDate, endDate, channelUniqueNames
-    UNWIND range(0, duration.between(startDate, endDate).days) AS offset
+    UNWIND range(0, duration.inDays(startDate, endDate).days) AS offset
     WITH startDate + duration({days: offset}) AS day, channelUniqueNames
 
     CALL {
@@ -437,7 +437,7 @@ const openIssueSummaryQuery = `
     AND (size(channelUniqueNames) = 0 OR issue.channelUniqueName IN channelUniqueNames)
     AND ${SERVER_SCOPED_ISSUE_WHERE}
   RETURN count(DISTINCT issue) AS totalOpenIssueCount,
-         collect(duration.between(date(datetime(issue.createdAt)), date()).days) AS openIssueAges
+         collect(duration.inDays(date(datetime(issue.createdAt)), date()).days) AS openIssueAges
 `;
 
 const moderationActionTotalQuery = `
