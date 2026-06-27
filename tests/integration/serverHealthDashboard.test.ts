@@ -63,7 +63,24 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
       channelUniqueName: 'general',
       title: 'Stale issue',
       isOpen: true,
+      flaggedServerRuleViolation: true,
       createdAt: datetime() - duration({days: 10})
+    })
+    CREATE (channelIssue:Issue {
+      id: 'issue-2',
+      issueNumber: 2,
+      channelUniqueName: 'general',
+      title: 'Channel-only issue',
+      isOpen: true,
+      flaggedServerRuleViolation: false,
+      createdAt: datetime() - duration({days: 20})
+    })
+    CREATE (serverIssue:Issue {
+      id: 'issue-3',
+      issueNumber: 3,
+      title: 'Server request',
+      isOpen: true,
+      createdAt: datetime() - duration({days: 2})
     })
     CREATE (action:ModerationAction {
       id: 'action-1',
@@ -81,6 +98,7 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
     CREATE (ec)-[:POSTED_IN_CHANNEL]->(general)
     CREATE (ec)-[:POSTED_IN_CHANNEL]->(event)
     CREATE (general)-[:HAS_ISSUE]->(issue)
+    CREATE (general)-[:HAS_ISSUE]->(channelIssue)
     CREATE (issue)-[:ACTIVITY_ON_ISSUE]->(action)
     CREATE (mod)-[:PERFORMED_MODERATION_ACTION]->(action)
     CREATE (bob)-[:UPVOTED_DISCUSSION]->(dc)
@@ -100,8 +118,8 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
   assert.equal(result.summary.eventCount, 1);
   assert.equal(result.summary.downloadCount, 1);
   assert.equal(result.summary.voteCount, 2);
-  assert.equal(result.summary.openIssueCount, 1);
-  assert.equal(result.summary.issueOpenedCount, 1);
+  assert.equal(result.summary.openIssueCount, 2);
+  assert.equal(result.summary.issueOpenedCount, 2);
   assert.equal(result.summary.moderationActionCount, 1);
 
   const general = result.channelHealth.find(
@@ -109,10 +127,11 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
   );
   assert.ok(general, `expected general row, got ${JSON.stringify(result.channelHealth)}`);
   assert.equal(general.uniqueContributorCount, 2);
+  assert.equal(general.openIssueCount, 1);
   assert.equal(general.healthLabel, "Needs review");
 
   assert.ok(result.timeSeries.length > 0);
-  assert.equal(result.issueAging.reduce((sum: number, bucket: any) => sum + bucket.count, 0), 1);
+  assert.equal(result.issueAging.reduce((sum: number, bucket: any) => sum + bucket.count, 0), 2);
   assert.ok(
     result.attentionItems.some((item: any) => item.title === "Stale open issues"),
     `expected stale issue attention item, got ${JSON.stringify(result.attentionItems)}`

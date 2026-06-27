@@ -47,6 +47,8 @@ type AttentionItem = {
 
 const DEFAULT_RANGE_DAYS = 30;
 const DEFAULT_CHANNEL_LIMIT = 25;
+const SERVER_SCOPED_ISSUE_WHERE =
+  "(coalesce(issue.flaggedServerRuleViolation, false) = true OR issue.channelUniqueName IS NULL)";
 
 const toNumber = (value: unknown): number => {
   if (neo4j.isInt(value)) return value.toNumber();
@@ -274,6 +276,7 @@ const channelHealthQuery = `
   CALL {
     WITH c, startDate, endDate
     MATCH (c)-[:HAS_ISSUE]->(issue:Issue)
+    WHERE ${SERVER_SCOPED_ISSUE_WHERE}
     RETURN count(DISTINCT CASE WHEN coalesce(issue.isOpen, false) THEN issue END) AS openIssueCount,
            count(DISTINCT CASE WHEN date(datetime(issue.createdAt)) >= startDate AND date(datetime(issue.createdAt)) <= endDate THEN issue END) AS issueOpenedCount,
            max(CASE WHEN coalesce(issue.isOpen, false) THEN duration.between(date(datetime(issue.createdAt)), date()).days ELSE null END) AS oldestOpenIssueAgeDays
@@ -281,8 +284,9 @@ const channelHealthQuery = `
 
   CALL {
     WITH c, startDate, endDate
-    MATCH (c)-[:HAS_ISSUE]->(:Issue)-[:ACTIVITY_ON_ISSUE]->(action:ModerationAction)
+    MATCH (c)-[:HAS_ISSUE]->(issue:Issue)-[:ACTIVITY_ON_ISSUE]->(action:ModerationAction)
     WHERE date(datetime(action.createdAt)) >= startDate AND date(datetime(action.createdAt)) <= endDate
+      AND ${SERVER_SCOPED_ISSUE_WHERE}
     RETURN count(DISTINCT action) AS moderationActionCount
   }
 
@@ -385,6 +389,7 @@ const timeSeriesQuery = `
       MATCH (issue:Issue)
       WHERE date(datetime(issue.createdAt)) = day
         AND (size(channelUniqueNames) = 0 OR issue.channelUniqueName IN channelUniqueNames)
+        AND ${SERVER_SCOPED_ISSUE_WHERE}
       RETURN count(DISTINCT issue) AS issuesOpened
     }
     CALL {
@@ -392,6 +397,7 @@ const timeSeriesQuery = `
       MATCH (issue:Issue)-[:ACTIVITY_ON_ISSUE]->(action:ModerationAction)
       WHERE date(datetime(action.createdAt)) = day
         AND (size(channelUniqueNames) = 0 OR issue.channelUniqueName IN channelUniqueNames)
+        AND ${SERVER_SCOPED_ISSUE_WHERE}
       RETURN count(DISTINCT action) AS moderationActions
     }
 
@@ -416,6 +422,7 @@ const issueSummaryQuery = `
   WHERE date(datetime(issue.createdAt)) >= startDate
     AND date(datetime(issue.createdAt)) <= endDate
     AND (size(channelUniqueNames) = 0 OR issue.channelUniqueName IN channelUniqueNames)
+    AND ${SERVER_SCOPED_ISSUE_WHERE}
   OPTIONAL MATCH (issue)-[:ACTIVITY_ON_ISSUE]->(closeAction:ModerationAction)
   WHERE toLower(coalesce(closeAction.actionType, "")) CONTAINS "close"
   WITH issue, count(closeAction) AS closeActions
@@ -428,6 +435,7 @@ const openIssueSummaryQuery = `
   MATCH (issue:Issue)
   WHERE coalesce(issue.isOpen, false) = true
     AND (size(channelUniqueNames) = 0 OR issue.channelUniqueName IN channelUniqueNames)
+    AND ${SERVER_SCOPED_ISSUE_WHERE}
   RETURN count(DISTINCT issue) AS totalOpenIssueCount,
          collect(duration.between(date(datetime(issue.createdAt)), date()).days) AS openIssueAges
 `;
@@ -440,6 +448,7 @@ const moderationActionTotalQuery = `
   WHERE date(datetime(action.createdAt)) >= startDate
     AND date(datetime(action.createdAt)) <= endDate
     AND (size(channelUniqueNames) = 0 OR issue.channelUniqueName IN channelUniqueNames)
+    AND ${SERVER_SCOPED_ISSUE_WHERE}
   RETURN count(DISTINCT action) AS totalModerationActionCount
 `;
 
