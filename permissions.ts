@@ -74,6 +74,7 @@ const permissionList = shield({
       // access should be able to read them. Clients that need the caller's own
       // email use the self-scoped `getOwnEmail` query.
       emails: deny,
+      getServerHealthDashboard: and(isAuthenticated, canManageMods),
     },
     User: {
       // Public fields - anyone can access

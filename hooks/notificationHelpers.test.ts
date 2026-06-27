@@ -65,8 +65,9 @@ test("targets the right user and creates an unread notification", async () => {
   assert.equal(UserModel.calls[0].where.username, "alice");
   assert.equal(node.text, "you were mentioned");
   assert.equal(node.read, false);
-  // notificationType omitted when not supplied
-  assert.equal("notificationType" in node, false);
+  // notificationType defaults to "general" so the notification is never
+  // null-typed (which would hide it from both notification tabs).
+  assert.equal(node.notificationType, "general");
 });
 
 test("includes notificationType when provided", async () => {

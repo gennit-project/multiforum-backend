@@ -267,7 +267,8 @@ const getResolver = (input: Input) => {
               id: randomUUID(),
               createdAt: datetime(),
               read: false,
-              text: $notificationText
+              text: $notificationText,
+              notificationType: 'moderation'
             })
             CREATE (user)-[:HAS_NOTIFICATION]->(notification)
             RETURN count(notification) as notificationsCreated

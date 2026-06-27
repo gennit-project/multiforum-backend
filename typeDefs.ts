@@ -1874,6 +1874,82 @@ const typeDefinitions = gql`
     activities: [ModActivity!]!
   }
 
+  type ServerHealthSummary @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    activeChannelCount: Int!
+    discussionCount: Int!
+    commentCount: Int!
+    eventCount: Int!
+    downloadCount: Int!
+    voteCount: Int!
+    openIssueCount: Int!
+    issueOpenedCount: Int!
+    issueClosedCount: Int!
+    moderationActionCount: Int!
+    archivedContentCount: Int!
+    lockedContentCount: Int!
+    suspensionCount: Int!
+    medianOpenIssueAgeDays: Float
+  }
+
+  type ServerHealthTimeSeriesPoint @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    date: String!
+    discussions: Int!
+    comments: Int!
+    events: Int!
+    downloads: Int!
+    issuesOpened: Int!
+    moderationActions: Int!
+  }
+
+  type ChannelHealthRow @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    channelUniqueName: String!
+    displayName: String
+    channelIconURL: String
+    discussionCount: Int!
+    commentCount: Int!
+    eventCount: Int!
+    downloadCount: Int!
+    voteCount: Int!
+    uniqueContributorCount: Int!
+    openIssueCount: Int!
+    issueOpenedCount: Int!
+    moderationActionCount: Int!
+    archivedContentCount: Int!
+    lockedContentCount: Int!
+    oldestOpenIssueAgeDays: Int
+    issuesPerHundredContributions: Float
+    activityScore: Int!
+    healthLabel: String!
+  }
+
+  type IssueAgingBucket @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    label: String!
+    minDays: Int!
+    maxDays: Int
+    count: Int!
+  }
+
+  type ServerHealthAttentionItem @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    severity: String!
+    title: String!
+    description: String!
+    channelUniqueName: String
+    issueNumber: Int
+    metric: String
+    value: Float
+  }
+
+  type ServerHealthDashboard @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    startDate: String!
+    endDate: String!
+    generatedAt: DateTime!
+    summary: ServerHealthSummary!
+    timeSeries: [ServerHealthTimeSeriesPoint!]!
+    channelHealth: [ChannelHealthRow!]!
+    issueAging: [IssueAgingBucket!]!
+    attentionItems: [ServerHealthAttentionItem!]!
+  }
+
   type UserContributionData {
     username: String!
     displayName: String
@@ -1982,6 +2058,12 @@ const typeDefinitions = gql`
       endDate: String
       year: Int
     ): [ModDayData!]!
+    getServerHealthDashboard(
+      startDate: String
+      endDate: String
+      channelUniqueNames: [String!]
+      limit: Int
+    ): ServerHealthDashboard!
     isOriginalPosterSuspended(issueId: String!): Boolean
     safetyCheck: SafetyCheckResponse
     getServerPluginSecrets(
