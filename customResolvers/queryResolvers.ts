@@ -20,6 +20,7 @@ import getPluginRunsForDownloadableFile from "./queries/getPluginRunsForDownload
 import getPipelineRuns from "./queries/getPipelineRuns.js";
 import publicCollectionsContaining from "./queries/publicCollectionsContaining.js";
 import getOwnEmail from "./queries/getOwnEmail.js";
+import getServerHealthDashboard from "./queries/getServerHealthDashboard.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -108,6 +109,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getOwnEmail: getOwnEmail({
       Email
+    }),
+    getServerHealthDashboard: getServerHealthDashboard({
+      driver
     })
   };
 }
