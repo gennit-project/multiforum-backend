@@ -1,7 +1,9 @@
 # Design: Phasing out `isAdmin` → symmetric, role-based permissions
 
 Status: **Implemented** (PR-1 → PR-4c; see §7 Phasing for the per-stage status).
-The remaining work is rollout/cleanup, not the core model. · Related: PR #64
+All code stages and the tag-field cleanup (§8.6) have shipped; the **only**
+remaining item is the per-environment provisioning rollout (PR-2's last step —
+wire `SUPERADMIN_EMAIL` + run `npm run provision` per env). · Related: PR #64
 (P0), PR #65 (P1). For the resulting system, see
 [permission-system.md](./permission-system.md).
 
@@ -206,8 +208,8 @@ production):
 
 ### Phasing (separate PRs)
 
-1. **PR-1 — evaluator & schema groundwork. 🟡 IN PROGRESS.** No call sites
-   converted → no behavior change.
+1. **PR-1 — evaluator & schema groundwork. ✅ DONE.** No call sites
+   converted in this stage → no behavior change; the conversions land in PR-3.
    - ✅ Schema: admin "creative" caps on `ServerRole`
      (`canManageServerSettings/Plugins/Roles/Mods/Admins/SuperAdmins`); destructive
      caps on `ModServerRole` (`canRemoveDiscussionChannel/EventChannel`);
@@ -225,13 +227,23 @@ production):
      `Channel.ElevatedChannelRole` field added (codegen run); `hasChannelPermission`
      resolves owners via `evaluateChannelOwnerPermission` (fallback to all-perms
      until a role is configured). Unit test added.
-2. **PR-2 (seed defaults + migration). 🟡 IN PROGRESS.**
+2. **PR-2 (seed defaults + migration). 🟡 CODE DONE; one rollout step left.**
    - ✅ `seedData/` single-source-of-truth module + idempotent
      `provisionServerDefaults` (roles, config wiring, admin→SuperAdmin backfill);
      `npm run provision` entry; unit tests.
-   - 🔲 Adopt `provisionServerDefaults` in integration-test setup (incremental).
-   - 🔲 Wire env root (`SUPERADMIN_EMAIL`) in deploy config; run provisioning per
-     environment in a maintenance window.
+   - ✅ Adopt provisioning in integration-test setup. The model-wiring boilerplate
+     (`ogm.model("ServerRole")` × 3) now lives in one shared seam,
+     `provisionServerDefaultsFromOgm(ogm, { serverName })`, used by **both** the
+     production entry point (`build_scripts/provisionServerDefaults.ts`) and the
+     role-exercising integration tests (`authenticatedRoles`,
+     `provisionServerDefaults`). Adoption is **deliberately selective**: only tests
+     that exercise the role/capability resolution path provision the defaults;
+     the rest keep creating a bare `ServerConfig` (a one-line Cypher `CREATE`)
+     because full provisioning there would add cost without coverage.
+   - 🔲 **(Only remaining item — ops.)** Wire env root (`SUPERADMIN_EMAIL`) in each
+     environment's deploy config and run provisioning per environment in a
+     maintenance window. Until this is verified per-environment, `isAdmin` +
+     the default-role fallbacks keep current behavior, so there is no rush.
 3. **PR-3 — ✅ DONE.** PR-3a (#72) converted Category-A call sites to capability
    checks; PR-3b (#73) dropped `isAdmin` from the Category-B ORs and removed the
    `isAdmin` rule, replacing it with a server-admin + root override
@@ -314,27 +326,32 @@ it. Frontend: none required until PR-5.
 5. **`deleteDiscussionChannels` / `deleteEventChannels`** → destructive caps on
    **`ModServerRole`** (`canRemoveDiscussionChannel` / `canRemoveEventChannel`).
    (Schema added in PR-1; call sites convert in PR-3.)
-6. **Roles are permissions-only; display tags derive from membership.** The
-   ADMIN/MOD tag must come from the user's relationship to `ServerConfig`
+6. **Roles are permissions-only; display tags derive from membership. ✅ DONE.**
+   The ADMIN/MOD tag comes from the user's relationship to `ServerConfig`
    (`Admins`/`SuperAdmins`) / `Channel` (`Moderators`), **not** from a role flag.
-   The seed roles no longer set `showAdminTag` / `showModTag` (PR-2). The legacy
-   schema fields are slated for removal in a dedicated follow-up — they are
-   currently read by ~5 backend cypher queries and several frontend components,
-   so the removal is a coordinated backend+frontend change:
-   - Backend: derive the tag in the comment/post queries from membership; drop
-     `showAdminTag` (`ServerRole`) and `showModTag` (`ChannelRole`) from the schema
-     and `getServerConfigForPermissions`'s fetch.
-   - Frontend: have the tag-rendering components/queries read membership-derived
-     data instead of the role flag.
+   The coordinated backend+frontend removal shipped:
+   - Backend: `showAdminTag` (`ServerRole`) and `showModTag` (`ChannelRole`) were
+     dropped from the schema (`typeDefs.ts`) and `getServerConfigForPermissions`'s
+     fetch. The channel MOD signal is now the `authorIsChannelModerator` `@cypher`
+     field, derived from `Channel.Moderators` (also populated inside the custom
+     `getDiscussionsInChannel` resolver so channel-scoped lists carry it).
+   - Frontend: the tag-rendering components read membership-derived data. Author
+     badges across discussions, events, downloads, comments and the mod activity
+     feed now resolve through a single `getAuthorBadges()` helper
+     (Server Admin / Server Mod / Forum Admin / Forum Mod). See the multiforum-nuxt
+     badge-unification work.
 
 Note: items 2 and 4 mean the earlier `canManageServerMembers` capability is
 dropped from the taxonomy (§4).
 
-## 9. Testing
-- Unit: extend `hasServerPermission.test.ts` / `hasServerModPermission.test.ts`
-  for the root override, the admin tier, the suspended-admin path, and the
-  generalized default-role fallback (pure-function seams already exist).
-- Unit: one test per new capability rule (granted via admin role / via default
-  role / denied) following the existing `evaluate*` pattern.
-- Integration: extend `authenticatedRoles.test.ts` — a restricted admin passes a
-  granted capability and is denied `canManageAdmins`; root passes everything.
+## 9. Testing — ✅ shipped
+- Unit: `hasServerPermission.test.ts` / `hasServerModPermission.test.ts` cover the
+  root override, the admin tier, the suspended-admin path, and the generalized
+  default-role fallback (via the pure-function seams).
+- Unit: per-capability-rule tests follow the existing `evaluate*` pattern;
+  `serverAdminOverride.test.ts` covers the suspension-aware override (PR-3.5);
+  `roleEscalation` / `nestedRoleEscalation` cover the no-escalation invariant (PR-4/4b).
+- Integration: `authenticatedRoles.test.ts` runs an admin-gated mutation as
+  unauthenticated / non-admin / admin against live Neo4j; `provisionServerDefaults.test.ts`
+  verifies provisioning + idempotency + backfill. Both seed via the shared
+  `provisionServerDefaultsFromOgm` helper (PR-2).

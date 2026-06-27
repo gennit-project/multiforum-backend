@@ -163,3 +163,31 @@ export const provisionServerDefaults = async (
     adminsBackfilledToSuperAdmins: adminsToPromote,
   };
 };
+
+// Minimal OGM shape: anything exposing `.model(name)` (the real `@neo4j/graphql`
+// OGM, or a test double). Avoids importing the concrete OGM type here.
+export type OgmLike = {
+  model: (name: string) => unknown;
+};
+
+// Convenience wrapper that resolves the three role/config models from an OGM
+// instance and delegates to `provisionServerDefaults`. This is the seam shared
+// by every caller — the production entry point (build_scripts) and the
+// role-exercising integration tests — so the `ogm.model("ServerRole")` wiring
+// lives in exactly one place.
+//
+// Note: most integration tests only need a bare `ServerConfig` and should keep
+// creating one directly (a one-line Cypher CREATE) rather than calling this —
+// full provisioning is only worth its cost where a test actually exercises the
+// role/capability resolution path. See docs/isadmin-phaseout-design.md §7 (PR-2).
+export const provisionServerDefaultsFromOgm = (
+  ogm: OgmLike,
+  options: { serverName: string; log?: (message: string) => void }
+): Promise<ProvisionServerDefaultsResult> =>
+  provisionServerDefaults({
+    ServerRole: ogm.model("ServerRole") as ServerRoleModel,
+    ModServerRole: ogm.model("ModServerRole") as ModServerRoleModel,
+    ServerConfig: ogm.model("ServerConfig") as ServerConfigModel,
+    serverName: options.serverName,
+    log: options.log,
+  });
