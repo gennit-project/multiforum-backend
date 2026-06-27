@@ -296,6 +296,36 @@ test('redactTextVersionRevision rejects mismatched revision types', async () => 
   )
 })
 
+test('assertCanRedactRevision allows the revision author to redact their own wiki revision', async () => {
+  await assert.doesNotReject(
+    assertCanRedactRevision({
+      context: {
+        user: { username: 'alice', data: { ModerationProfile: null } }
+      } as unknown as GraphQLContext,
+      target: {
+        targetType: 'wiki',
+        targetId: 'wiki-1',
+        ownerUsername: 'alice',
+        ownerModProfileName: null,
+        channelUniqueName: 'cats'
+      },
+      revisionType: 'wiki',
+      // No mod permission: authorization must come from authorship alone.
+      checkModPermissions: async () => new Error('No mod permission'),
+      getServerMembership: async () => ({
+        isServerAdmin: false,
+        isServerModerator: false
+      }),
+      getUserData: async () => ({
+        username: 'alice',
+        email: null,
+        email_verified: false,
+        data: null
+      })
+    })
+  )
+})
+
 test('assertCanRedactRevision rejects non-authors without mod permission', async () => {
   await assert.rejects(
     assertCanRedactRevision({

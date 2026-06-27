@@ -91,3 +91,39 @@ test("throws when the wiki page does not exist", async () => {
     /Wiki page not found/i
   );
 });
+
+test("attributes the wiki page version author on the issue", async () => {
+  await run(
+    `MATCH (wp:WikiPage { id: 'wiki-1' })
+     MERGE (a:User { username: 'wiki-author' })
+     MERGE (a)-[:AUTHORED_VERSION]->(wp)`
+  );
+
+  await reportWikiEdit({});
+
+  const issues = await run(
+    `MATCH (i:Issue { relatedWikiPageId: 'wiki-1' })
+     RETURN i.relatedUsername AS relatedUsername`
+  );
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].relatedUsername, "wiki-author");
+});
+
+test("records the reported revision id and attributes the revision author", async () => {
+  await run(
+    `MERGE (ra:User { username: 'rev-author' })
+     CREATE (ra)-[:AUTHORED_VERSION]->(:TextVersion {
+       id: 'rev-1', body: 'bad edit', createdAt: datetime()
+     })`
+  );
+
+  await reportWikiEdit({ wikiRevisionId: "rev-1" });
+
+  const issues = await run(
+    `MATCH (i:Issue { relatedWikiPageId: 'wiki-1' })
+     RETURN i.relatedWikiRevisionId AS revisionId, i.relatedUsername AS relatedUsername`
+  );
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].revisionId, "rev-1");
+  assert.equal(issues[0].relatedUsername, "rev-author");
+});

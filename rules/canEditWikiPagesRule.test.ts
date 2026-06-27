@@ -155,6 +155,29 @@ test("blocks wiki page creation when wiki is disabled for the channel", async ()
   assert.ok(result instanceof Error);
 });
 
+test("blocks wiki page creation for suspended users even when wiki is enabled", async () => {
+  const ctx = buildContext({
+    suspendedUsers: [{ username: "wiki-author" }],
+    channels: [{ uniqueName: "sourceit", wikiEnabled: true }],
+  });
+
+  const result = await evaluateCanEditWikiPagesRule(
+    {
+      input: [
+        {
+          channelUniqueName: "sourceit",
+          slug: "new-page",
+          title: "New Page",
+          body: "Created while suspended.",
+        },
+      ],
+    },
+    ctx
+  );
+
+  assert.ok(result instanceof Error);
+});
+
 test("blocks wiki page updates for suspended users when the suspended role cannot update the channel", async () => {
   const ctx = buildContext({
     suspendedUsers: [{ username: "wiki-author" }],
