@@ -1027,10 +1027,6 @@ const typeDefinitions = gql`
     removeFromCollection(collectionId: ID!, itemId: ID!, itemType: CollectionItemType!): Boolean!
     reorderCollectionItem(collectionId: ID!, itemId: ID!, newPosition: Int!): Boolean!
 
-    # Bookmarking shortcuts
-    toggleBookmark(itemId: ID!, itemType: CollectionItemType!): Boolean!
-    addToFavorites(itemId: ID!, itemType: CollectionItemType!): Boolean!
-
     # Share collection as discussion
     shareCollectionAsDiscussion(
       collectionId: ID!,
@@ -1041,16 +1037,12 @@ const typeDefinitions = gql`
     ): Discussion!
 
     # Library management
-    addToOwnedDownloads(pluginVersionId: ID!): Boolean!
     trackDownload(downloadableFileId: ID!, discussionId: ID!): Boolean!
     updateDownloadableFileSupportSettings(
       downloadableFileId: ID!
       discussionId: ID!
       input: DownloadSupportSettingsInput!
     ): Boolean!
-
-    # Initialize user's default favorites collections
-    initializeUserFavorites: Boolean!
 
     # Image upload with automatic uploader assignment
     createImageWithUploader(input: CreateImageInput!): Image!
