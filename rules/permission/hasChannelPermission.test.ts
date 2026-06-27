@@ -64,6 +64,36 @@ test("a suspended user is governed by the suspended role", () => {
   assert.deepEqual(r.role, { [PERM]: false });
 });
 
+// Super upvoting requires the same channel permission as normal voting
+// (createScratchpadEntry/undoSuperUpvote are gated by canSuperUpvote, which calls
+// hasChannelPermission with these keys). So a suspended user — governed by the
+// suspended role, which denies voting — cannot super upvote, while a normal user
+// can. Guards against the super-upvote permission silently diverging from voting.
+for (const votePermission of ["canUpvoteComment", "canUpvoteDiscussion"] as const) {
+  test(`super upvoting is blocked for a suspended user (${votePermission})`, () => {
+    const suspended = evaluateChannelRolePermission({
+      permission: votePermission,
+      channelData: {
+        DefaultChannelRole: { [votePermission]: true },
+        SuspendedRole: { [votePermission]: false },
+      },
+      serverDefaults: undefined,
+      isSuspended: true,
+    });
+    assert.equal(suspended.allowed, false);
+  });
+
+  test(`super upvoting is allowed for a non-suspended user (${votePermission})`, () => {
+    const normal = evaluateChannelRolePermission({
+      permission: votePermission,
+      channelData: { DefaultChannelRole: { [votePermission]: true } },
+      serverDefaults: undefined,
+      isSuspended: false,
+    });
+    assert.equal(normal.allowed, true);
+  });
+}
+
 test("falls back to the server default role when the channel defines none", () => {
   const normal = evalPerm({
     channelData: {},
