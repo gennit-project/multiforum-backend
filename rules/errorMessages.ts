@@ -47,6 +47,10 @@ export const ERROR_MESSAGES = {
     notFound: "Collection not found.",
     notOwner: "You must be the owner of this collection to do that.",
   },
+  download: {
+    notEnabled:
+      "Downloads are not enabled on this server. An administrator must turn on downloads in the server settings before downloads can be created.",
+  },
   album: {
     noId: "You must provide an album id.",
     notFound: "Album not found.",

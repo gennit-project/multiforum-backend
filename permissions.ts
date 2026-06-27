@@ -33,6 +33,7 @@ const {
   updateChannelInputIsValid,
   createDiscussionInputIsValid,
   updateDiscussionInputIsValid,
+  serverDownloadsEnabled,
   createEventInputIsValid,
   updateEventInputIsValid,
   createCommentInputIsValid,
@@ -175,7 +176,7 @@ const permissionList = shield({
       deleteEmails: and(isAuthenticated, isAccountOwner),
       deleteUsers: and(isAuthenticated, isAccountOwner),
     
-      createDiscussionWithChannelConnections: and(isAuthenticated, createDiscussionInputIsValid, canCreateDiscussion),
+      createDiscussionWithChannelConnections: and(isAuthenticated, createDiscussionInputIsValid, canCreateDiscussion, serverDownloadsEnabled),
       updateDiscussionWithChannelConnections: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, canEditDiscussions)),
       deleteDiscussions: and(isAuthenticated, isDiscussionOwner),
       updateDiscussions: and(isAuthenticated, updateDiscussionInputIsValid, or(isDiscussionOwner, canEditDiscussions)),

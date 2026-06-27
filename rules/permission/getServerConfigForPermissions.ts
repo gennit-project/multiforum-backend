@@ -28,6 +28,7 @@ export const getServerConfigForPermissions = async (context: GraphQLContext) => 
     cache.serverConfigPromise = ServerConfig.find({
       where: { serverName: process.env.SERVER_CONFIG_NAME },
       selectionSet: `{
+        enableDownloads
         DefaultServerRole {
           ${SERVER_ROLE_CAPS}
         }
