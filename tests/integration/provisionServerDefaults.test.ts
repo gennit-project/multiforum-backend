@@ -15,15 +15,10 @@ const SERVER_CONFIG_NAME = "ProvisionTestServer";
 let container: StartedNeo4jContainer;
 let driver: Driver;
 let ogm: any;
-let provisionServerDefaults: any;
+let provisionServerDefaultsFromOgm: any;
 
 const provision = () =>
-  provisionServerDefaults({
-    ServerRole: ogm.model("ServerRole"),
-    ModServerRole: ogm.model("ModServerRole"),
-    ServerConfig: ogm.model("ServerConfig"),
-    serverName: SERVER_CONFIG_NAME,
-  });
+  provisionServerDefaultsFromOgm(ogm, { serverName: SERVER_CONFIG_NAME });
 
 before(async () => {
   container = await new Neo4jContainer("neo4j:5-community").withApoc().start();
@@ -37,7 +32,7 @@ before(async () => {
   );
   ({ driver, ogm } = await buildPermissionedSchema());
   await ogm.init();
-  ({ provisionServerDefaults } = await import(
+  ({ provisionServerDefaultsFromOgm } = await import(
     "../../seedData/provisionServerDefaults.js"
   ));
 

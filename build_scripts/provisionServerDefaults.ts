@@ -12,7 +12,7 @@
 import "dotenv/config";
 import neo4j from "neo4j-driver";
 import { createOgmAndModels } from "../customResolvers/resolverDeps.js";
-import { provisionServerDefaults } from "../seedData/provisionServerDefaults.js";
+import { provisionServerDefaultsFromOgm } from "../seedData/provisionServerDefaults.js";
 
 const uri = process.env.NEO4J_URI || "bolt://localhost:7687";
 const user = process.env.NEO4J_USER || "neo4j";
@@ -32,10 +32,7 @@ const run = async () => {
   await deps.ogm.init();
 
   try {
-    const result = await provisionServerDefaults({
-      ServerRole: deps.ServerRole,
-      ModServerRole: deps.ModServerRole,
-      ServerConfig: deps.ServerConfig,
+    const result = await provisionServerDefaultsFromOgm(deps.ogm, {
       serverName: serverName as string,
       log: (message) => console.log(`[provision] ${message}`),
     });

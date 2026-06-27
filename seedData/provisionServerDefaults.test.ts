@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { provisionServerDefaults } from "./provisionServerDefaults.js";
+import {
+  provisionServerDefaults,
+  provisionServerDefaultsFromOgm,
+} from "./provisionServerDefaults.js";
 import {
   DEFAULT_SERVER_ROLES,
   DEFAULT_MOD_SERVER_ROLES,
@@ -135,6 +138,38 @@ test("backfill promotes only admins that are not already super-admins", async ()
     (u) => u.update?.SuperAdmins
   );
   assert.ok(backfillUpdate, "expected a SuperAdmins backfill update");
+});
+
+test("provisionServerDefaultsFromOgm resolves the three models off the OGM and delegates", async () => {
+  const ServerRole = makeRoleModel(false);
+  const ModServerRole = makeRoleModel(false);
+  const ServerConfig = makeServerConfigModel(null);
+  const requested: string[] = [];
+  const ogm = {
+    model: (name: string) => {
+      requested.push(name);
+      const byName: Record<string, unknown> = {
+        ServerRole: ServerRole.model,
+        ModServerRole: ModServerRole.model,
+        ServerConfig: ServerConfig.model,
+      };
+      return byName[name];
+    },
+  };
+
+  const result = await provisionServerDefaultsFromOgm(ogm, {
+    serverName: "Test Server",
+  });
+
+  // It pulled exactly the three role/config models from the OGM...
+  assert.deepEqual(requested.sort(), [
+    "ModServerRole",
+    "ServerConfig",
+    "ServerRole",
+  ]);
+  // ...and the underlying provisioning ran against them.
+  assert.equal(ServerRole.calls.create.length, DEFAULT_SERVER_ROLES.length);
+  assert.equal(result.serverConfigCreated, true);
 });
 
 test("backfill is a no-op when all admins are already super-admins", async () => {

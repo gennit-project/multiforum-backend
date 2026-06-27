@@ -63,15 +63,10 @@ before(async () => {
   // Provision the default roles so a non-admin resolves the real
   // DefaultServerRole (which lacks the admin capabilities) — exercising the
   // post-migration permission path that the capability checks rely on.
-  const { provisionServerDefaults } = await import(
+  const { provisionServerDefaultsFromOgm } = await import(
     "../../seedData/provisionServerDefaults.js"
   );
-  await provisionServerDefaults({
-    ServerRole: ogm.model("ServerRole"),
-    ModServerRole: ogm.model("ModServerRole"),
-    ServerConfig: ogm.model("ServerConfig"),
-    serverName: SERVER_CONFIG_NAME,
-  });
+  await provisionServerDefaultsFromOgm(ogm, { serverName: SERVER_CONFIG_NAME });
 }, { timeout: 240000 });
 
 after(async () => {
