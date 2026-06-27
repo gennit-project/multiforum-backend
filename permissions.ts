@@ -328,11 +328,7 @@ const permissionList = shield({
       deleteCollections: and(isAuthenticated, isCollectionOwner),
       removeFromCollection: and(isAuthenticated, isCollectionOwner),
       reorderCollectionItem: and(isAuthenticated, isCollectionOwner),
-      toggleBookmark: and(isAuthenticated, allow),
-      addToFavorites: and(isAuthenticated, allow),
       shareCollectionAsDiscussion: and(isAuthenticated, isCollectionOwner),
-      addToOwnedDownloads: and(isAuthenticated, allow),
-      initializeUserFavorites: and(isAuthenticated, allow),
 
       refreshPlugins: and(isAuthenticated, canManagePlugins),
       installPluginVersion: and(isAuthenticated, canManagePlugins),
