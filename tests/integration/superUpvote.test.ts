@@ -24,12 +24,21 @@ after(async () => {
 
 beforeEach(async () => {
   await resetDb();
-  // alice (actor) has upvoted comment-1; bob is the comment author / recipient.
+  // bob authored both comment-1 (inside dc-1) and discussion-1; alice (the actor)
+  // has already upvoted both, so she may super upvote them. Weights/karma start
+  // at 0 so the +1 / -1 effects are unambiguous.
   await run(
     `CREATE (alice:User { username: 'alice' })
-     CREATE (bob:User { username: 'bob' })
+     CREATE (bob:User { username: 'bob', commentKarma: 0, discussionKarma: 0 })
+     CREATE (d:Discussion { id: 'discussion-1', title: 'Great idea', createdAt: datetime() })
+     CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'discussion-1', channelUniqueName: 'cats', weightedVotesCount: 0, createdAt: datetime() })
      CREATE (c:Comment { id: 'comment-1', text: 'great point', isRootComment: true, weightedVotesCount: 0, createdAt: datetime() })
-     CREATE (alice)-[:UPVOTED_COMMENT]->(c)`
+     CREATE (bob)-[:POSTED_DISCUSSION]->(d)
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(d)
+     CREATE (bob)-[:AUTHORED_COMMENT]->(c)
+     CREATE (dc)-[:CONTAINS_COMMENT]->(c)
+     CREATE (alice)-[:UPVOTED_COMMENT]->(c)
+     CREATE (alice)-[:UPVOTED_DISCUSSION]->(dc)`
   );
 });
 
@@ -51,16 +60,6 @@ const updateScratchpadEntryVisibility = (
 ) =>
   env.resolvers.Mutation.updateScratchpadEntryVisibility(null, args, asUser(username));
 
-// Seed a discussion that alice has already upvoted, so she can super upvote it.
-// bob is the discussion author / recipient.
-const seedUpvotedDiscussion = () =>
-  run(
-    `MATCH (alice:User { username: 'alice' })
-     CREATE (d:Discussion { id: 'discussion-1', title: 'Great idea', createdAt: datetime() })
-     CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'discussion-1', channelUniqueName: 'cats', weightedVotesCount: 0, createdAt: datetime() })
-     CREATE (alice)-[:UPVOTED_DISCUSSION]->(dc)`
-  );
-
 // Read the current weightedVotesCount (the visibility/ranking signal) for a
 // Comment or DiscussionChannel.
 const weightOf = async (label: "Comment" | "DiscussionChannel", id: string) => {
@@ -71,11 +70,28 @@ const weightOf = async (label: "Comment" | "DiscussionChannel", id: string) => {
   return Number(rows[0]?.weight);
 };
 
+// Read a user's karma for the relevant content type.
+const karmaOf = async (username: string, field: "commentKarma" | "discussionKarma") => {
+  const rows = await run(
+    `MATCH (u:User { username: $username }) RETURN u.${field} AS karma`,
+    { username }
+  );
+  return Number(rows[0]?.karma);
+};
+
 const baseArgs = {
   recipientUsername: "bob",
   text: "Thanks for the thoughtful comment!",
   sourceType: "comment",
   sourceId: "comment-1",
+};
+
+const discussionArgs = {
+  recipientUsername: "bob",
+  text: "Loved this discussion!",
+  sourceType: "discussion",
+  sourceId: "dc-1",
+  sourceChannelUniqueName: "cats",
 };
 
 test("createScratchpadEntry writes an entry, super-upvotes, and notifies", async () => {
@@ -154,15 +170,7 @@ test("undoSuperUpvote removes the super-upvote and deletes the scratchpad entry"
 });
 
 test("super upvoting a discussion creates the relationship and makes it more visible", async () => {
-  await seedUpvotedDiscussion();
-
-  await createScratchpadEntry({
-    recipientUsername: "bob",
-    text: "Loved this discussion!",
-    sourceType: "discussion",
-    sourceId: "dc-1",
-    sourceChannelUniqueName: "cats",
-  });
+  await createScratchpadEntry({ ...discussionArgs });
 
   const superUpvote = await run(
     `MATCH (:User { username: 'alice' })-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: 'dc-1' })
@@ -175,14 +183,7 @@ test("super upvoting a discussion creates the relationship and makes it more vis
 });
 
 test("undoSuperUpvote on a discussion removes the relationship, deletes the entry, and reverses the weight", async () => {
-  await seedUpvotedDiscussion();
-  await createScratchpadEntry({
-    recipientUsername: "bob",
-    text: "Loved this discussion!",
-    sourceType: "discussion",
-    sourceId: "dc-1",
-    sourceChannelUniqueName: "cats",
-  });
+  await createScratchpadEntry({ ...discussionArgs });
 
   await undoSuperUpvote({ sourceType: "discussion", sourceId: "dc-1" });
 
@@ -222,15 +223,7 @@ test("the scratchpad notification is linked to the entry so the recipient can ac
 });
 
 test("the scratchpad notification for a discussion links to the post", async () => {
-  await seedUpvotedDiscussion();
-
-  await createScratchpadEntry({
-    recipientUsername: "bob",
-    text: "Loved this discussion!",
-    sourceType: "discussion",
-    sourceId: "dc-1",
-    sourceChannelUniqueName: "cats",
-  });
+  await createScratchpadEntry({ ...discussionArgs });
 
   const notifications = await run(
     `MATCH (:User { username: 'bob' })-[:HAS_NOTIFICATION]->(n:Notification)
@@ -246,15 +239,7 @@ test("the scratchpad notification for a discussion links to the post", async () 
 });
 
 test("createScratchpadEntry records the discussionId so the Kudos card can link to the post", async () => {
-  await seedUpvotedDiscussion();
-
-  await createScratchpadEntry({
-    recipientUsername: "bob",
-    text: "Loved this discussion!",
-    sourceType: "discussion",
-    sourceId: "dc-1",
-    sourceChannelUniqueName: "cats",
-  });
+  await createScratchpadEntry({ ...discussionArgs });
 
   const entries = await run(
     `MATCH (e:ScratchpadEntry { sourceId: 'dc-1' })
@@ -302,4 +287,66 @@ test("updateScratchpadEntryVisibility rejects anyone other than the recipient", 
     ),
     /only the recipient/i
   );
+});
+
+// --- karma (a super upvote is a second vote, so it grants a second karma point) ---
+
+test("super upvoting a comment awards the author commentKarma", async () => {
+  await createScratchpadEntry({ ...baseArgs });
+  assert.equal(await karmaOf("bob", "commentKarma"), 1, "comment author karma 0 -> 1");
+});
+
+test("undoing a super upvote on a comment reverses the author's commentKarma", async () => {
+  await createScratchpadEntry({ ...baseArgs });
+  await undoSuperUpvote({ sourceType: "comment", sourceId: "comment-1" });
+  assert.equal(await karmaOf("bob", "commentKarma"), 0, "comment author karma back to 0");
+});
+
+test("super upvoting a discussion awards the author discussionKarma", async () => {
+  await createScratchpadEntry({ ...discussionArgs });
+  assert.equal(await karmaOf("bob", "discussionKarma"), 1, "discussion author karma 0 -> 1");
+});
+
+test("undoing a super upvote on a discussion reverses the author's discussionKarma", async () => {
+  await createScratchpadEntry({ ...discussionArgs });
+  await undoSuperUpvote({ sourceType: "discussion", sourceId: "dc-1" });
+  assert.equal(await karmaOf("bob", "discussionKarma"), 0, "discussion author karma back to 0");
+});
+
+// --- notification deep-links to the upvoted content ---
+
+test("the scratchpad notification for a comment links to the comment", async () => {
+  await createScratchpadEntry({ ...baseArgs });
+
+  const notifications = await run(
+    `MATCH (:User { username: 'bob' })-[:HAS_NOTIFICATION]->(n:Notification)
+     RETURN n.text AS text`
+  );
+
+  assert.equal(notifications.length, 1);
+  assert.match(
+    notifications[0].text,
+    /\/forums\/cats\/discussions\/discussion-1\/comments\/comment-1/,
+    "comment notification should link to the comment permalink"
+  );
+});
+
+// --- ranking: a super upvote makes content rank higher by weightedVotesCount ---
+
+test("a super upvoted discussion ranks above one with fewer votes", async () => {
+  // dc-2 lives in the same channel but is not super upvoted.
+  await run(
+    `CREATE (d2:Discussion { id: 'discussion-2', title: 'Other', createdAt: datetime() })
+     CREATE (dc2:DiscussionChannel { id: 'dc-2', discussionId: 'discussion-2', channelUniqueName: 'cats', weightedVotesCount: 0, createdAt: datetime() })`
+  );
+
+  await createScratchpadEntry({ ...discussionArgs });
+
+  const ranked = await run(
+    `MATCH (dc:DiscussionChannel { channelUniqueName: 'cats' })
+     RETURN dc.id AS id
+     ORDER BY dc.weightedVotesCount DESC`
+  );
+
+  assert.equal(ranked[0].id, "dc-1", "the super upvoted discussion ranks first");
 });

@@ -21,7 +21,9 @@ type Args = {
 };
 
 const undoSuperUpvoteResolver = (input: Input) => {
-  const { Comment, DiscussionChannel, ScratchpadEntry, driver } = input;
+  // ScratchpadEntry intentionally unused: the entry is deleted via Cypher inside
+  // the transaction (below) so it is atomic with the relationship/weight/karma.
+  const { Comment, DiscussionChannel, driver } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { sourceType, sourceId } = args;
@@ -44,8 +46,10 @@ const undoSuperUpvoteResolver = (input: Input) => {
     const tx = session.beginTransaction();
 
     try {
-      // 1. Verify the user has super upvoted this content
+      // 1. Verify the user has super upvoted this content, and capture the
+      //    content author (a User) so we can reverse the karma we awarded.
       let hasSuperUpvoted = false;
+      let postAuthorUsername: string | null = null;
 
       if (sourceType === 'comment') {
         const commentResult = await Comment.find({
@@ -53,6 +57,9 @@ const undoSuperUpvoteResolver = (input: Input) => {
           selectionSet: `{
             id
             SuperUpvotedByUsers { username }
+            CommentAuthor {
+              ... on User { username }
+            }
           }`,
         });
 
@@ -62,6 +69,9 @@ const undoSuperUpvoteResolver = (input: Input) => {
 
         const comment = commentResult[0];
         hasSuperUpvoted = comment.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
+        const commentAuthor = comment.CommentAuthor;
+        postAuthorUsername =
+          commentAuthor && 'username' in commentAuthor ? commentAuthor.username : null;
       } else {
         // sourceType === 'discussion'
         const dcResult = await DiscussionChannel.find({
@@ -69,6 +79,7 @@ const undoSuperUpvoteResolver = (input: Input) => {
           selectionSet: `{
             id
             SuperUpvotedByUsers { username }
+            Discussion { Author { username } }
           }`,
         });
 
@@ -78,43 +89,51 @@ const undoSuperUpvoteResolver = (input: Input) => {
 
         const dc = dcResult[0];
         hasSuperUpvoted = dc.SuperUpvotedByUsers?.some((u: { username: string }) => u.username === loggedInUsername) || false;
+        postAuthorUsername = dc.Discussion?.Author?.username || null;
       }
 
       if (!hasSuperUpvoted) {
         throw new Error('You have not super upvoted this content');
       }
 
-      // 2. Remove the SUPER_UPVOTED relationship
+      // 2. Remove the SUPER_UPVOTED relationship and reverse the weight.
       if (sourceType === 'comment') {
-        const undoSuperUpvoteQuery = `
-          MATCH (u:User { username: $username })-[r:SUPER_UPVOTED_COMMENT]->(c:Comment { id: $sourceId })
-          DELETE r
-          SET c.weightedVotesCount = coalesce(c.weightedVotesCount, 1) - 1
-          RETURN c
-        `;
-        await tx.run(undoSuperUpvoteQuery, { sourceId, username: loggedInUsername });
+        await tx.run(
+          `MATCH (u:User { username: $username })-[r:SUPER_UPVOTED_COMMENT]->(c:Comment { id: $sourceId })
+           DELETE r
+           SET c.weightedVotesCount = coalesce(c.weightedVotesCount, 1) - 1`,
+          { sourceId, username: loggedInUsername }
+        );
       } else {
-        const undoSuperUpvoteQuery = `
-          MATCH (u:User { username: $username })-[r:SUPER_UPVOTED_DISCUSSION]->(dc:DiscussionChannel { id: $sourceId })
-          DELETE r
-          SET dc.weightedVotesCount = coalesce(dc.weightedVotesCount, 1) - 1
-          RETURN dc
-        `;
-        await tx.run(undoSuperUpvoteQuery, { sourceId, username: loggedInUsername });
+        await tx.run(
+          `MATCH (u:User { username: $username })-[r:SUPER_UPVOTED_DISCUSSION]->(dc:DiscussionChannel { id: $sourceId })
+           DELETE r
+           SET dc.weightedVotesCount = coalesce(dc.weightedVotesCount, 1) - 1`,
+          { sourceId, username: loggedInUsername }
+        );
       }
 
-      // 3. Delete the associated scratchpad entry
-      await ScratchpadEntry.delete({
-        where: {
-          sourceType,
-          sourceId,
-          Author: { username: loggedInUsername },
-        },
-      });
+      // 3. Reverse the karma the super upvote awarded to the content author.
+      if (postAuthorUsername) {
+        const karmaField = sourceType === 'comment' ? 'commentKarma' : 'discussionKarma';
+        await tx.run(
+          `MATCH (a:User { username: $postAuthorUsername })
+           SET a.${karmaField} = coalesce(a.${karmaField}, 0) - 1`,
+          { postAuthorUsername }
+        );
+      }
 
-      // Read the updated super-upvoter list inside the same transaction so it
-      // reflects the relationship we just deleted. A post-commit read on a fresh
-      // OGM session can lag behind the write on a clustered database.
+      // 4. Delete the associated scratchpad entry (in the transaction, so it is
+      //    atomic with the relationship/weight/karma changes above).
+      await tx.run(
+        `MATCH (:User { username: $username })-[:WROTE_SCRATCHPAD_ENTRY]->(e:ScratchpadEntry { sourceType: $sourceType, sourceId: $sourceId })
+         DETACH DELETE e`,
+        { username: loggedInUsername, sourceType, sourceId }
+      );
+
+      // 5. Read the updated super-upvoter list inside the same transaction so it
+      //    reflects the relationship we just deleted. A post-commit read on a
+      //    fresh OGM session can lag behind the write on a clustered database.
       const readSuperUpvotersQuery =
         sourceType === 'comment'
           ? `MATCH (u:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment { id: $sourceId })
