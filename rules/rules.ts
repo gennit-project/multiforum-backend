@@ -37,6 +37,7 @@ import {
   createDiscussionInputIsValid,
   updateDiscussionInputIsValid,
 } from "./validation/discussionIsValid.js";
+import { serverDownloadsEnabled } from "./validation/serverDownloadsEnabled.js";
 import {
   createCommentInputIsValid,
   updateCommentInputIsValid,
@@ -128,6 +129,7 @@ const ruleList = {
   updateCommentInputIsValid,
   createDiscussionInputIsValid,
   updateDiscussionInputIsValid,
+  serverDownloadsEnabled,
   createEventInputIsValid,
   updateEventInputIsValid,
   createDownloadableFileInputIsValid,
