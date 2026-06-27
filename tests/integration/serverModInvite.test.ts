@@ -39,6 +39,8 @@ const inviteServerMod = (args: Record<string, unknown>) =>
   env.resolvers.Mutation.inviteServerMod(null, args, {});
 const acceptServerModInvite = (args: Record<string, unknown>, ctx: any) =>
   env.resolvers.Mutation.acceptServerModInvite(null, args, ctx);
+const cancelInviteServerMod = (args: Record<string, unknown>) =>
+  env.resolvers.Mutation.cancelInviteServerMod(null, args, {});
 
 const pendingInvitesFor = (serverName: string) =>
   run(
@@ -125,5 +127,28 @@ test("acceptServerModInvite rejects a caller who is not a moderator", async () =
   await assert.rejects(
     acceptServerModInvite({ serverName: "srv" }, asMod("plain")),
     /not a moderator/i
+  );
+});
+
+// --- cancelInviteServerMod ---
+
+test("cancelInviteServerMod removes a pending mod invite", async () => {
+  await run(
+    `CREATE (u:User { username: 'invitee' })
+     CREATE (sc:ServerConfig { serverName: 'srv' })
+     CREATE (sc)-[:HAS_PENDING_SERVER_MOD_INVITE]->(u)`
+  );
+
+  await cancelInviteServerMod({ serverName: "srv", inviteeUsername: "invitee" });
+
+  assert.equal(
+    (await pendingInvitesFor("srv")).length,
+    0,
+    "the pending invite is removed"
+  );
+  assert.equal(
+    (await moderatorsOf("srv")).length,
+    0,
+    "the user did not become a moderator"
   );
 });
