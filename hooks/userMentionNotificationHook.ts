@@ -246,6 +246,7 @@ export const notifyNewUserMentions = async ({
         UserModel,
         username: user.username,
         text: notificationText,
+        notificationType: "mention",
       });
 
       if (notificationUrl && user.notifyWhenTagged && user.email) {
