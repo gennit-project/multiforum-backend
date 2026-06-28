@@ -31,6 +31,7 @@ export const ERROR_MESSAGES = {
     notVerified: "You must verify your email address to do that.",
     notOwner: "You must be the owner of this channel to do that.",
     noChannelPermission: "You do not have permission to do that in this channel.",
+    locked: "This forum is locked. New discussions, events, and comments cannot be created until a server moderator unlocks it.",
     notMod: "You need to be a moderator to do that.",
     noModRole: "You need to have a moderator role to do that.",
     noModPermission: "You do not have permission to do that as a moderator.",
