@@ -355,3 +355,140 @@ test('assertCanRedactRevision rejects non-authors without mod permission', async
     /No mod permission/
   )
 })
+
+test('assertCanRedactRevision allows a comment author to redact their own comment revision', async () => {
+  await assert.doesNotReject(
+    assertCanRedactRevision({
+      context: {
+        user: { username: 'alice', data: { ModerationProfile: null } }
+      } as unknown as GraphQLContext,
+      target: {
+        targetType: 'comment',
+        targetId: 'comment-1',
+        ownerUsername: 'alice',
+        ownerModProfileName: null,
+        channelUniqueName: 'cats'
+      },
+      revisionType: 'comment',
+      // No mod permission: authorization must come from authorship alone.
+      checkModPermissions: async () => new Error('No mod permission'),
+      getServerMembership: async () => ({
+        isServerAdmin: false,
+        isServerModerator: false
+      }),
+      getUserData: async () => ({
+        username: 'alice',
+        email: null,
+        email_verified: false,
+        data: null
+      })
+    })
+  )
+})
+
+test('assertCanRedactRevision allows a discussion OP to redact their own discussion body revision', async () => {
+  await assert.doesNotReject(
+    assertCanRedactRevision({
+      context: {
+        user: { username: 'alice', data: { ModerationProfile: null } }
+      } as unknown as GraphQLContext,
+      target: {
+        targetType: 'discussion body',
+        targetId: 'discussion-1',
+        ownerUsername: 'alice',
+        ownerModProfileName: null,
+        channelUniqueName: 'cats'
+      },
+      revisionType: 'discussion body',
+      // No mod permission: authorization must come from authorship alone.
+      checkModPermissions: async () => new Error('No mod permission'),
+      getServerMembership: async () => ({
+        isServerAdmin: false,
+        isServerModerator: false
+      }),
+      getUserData: async () => ({
+        username: 'alice',
+        email: null,
+        email_verified: false,
+        data: null
+      })
+    })
+  )
+})
+
+test('assertCanRedactRevision allows a server admin to redact a revision they do not own', async () => {
+  let checkedModPermissions = false
+  await assert.doesNotReject(
+    assertCanRedactRevision({
+      context: {
+        user: { username: 'admin', data: { ModerationProfile: null } }
+      } as unknown as GraphQLContext,
+      target: {
+        targetType: 'comment',
+        targetId: 'comment-1',
+        ownerUsername: 'alice',
+        ownerModProfileName: null,
+        channelUniqueName: 'cats'
+      },
+      revisionType: 'comment',
+      // Not the author and no channel mod permission: authorization must come
+      // from server-admin status, which short-circuits the mod permission check.
+      checkModPermissions: async () => {
+        checkedModPermissions = true
+        return new Error('No mod permission')
+      },
+      getServerMembership: async () => ({
+        isServerAdmin: true,
+        isServerModerator: false
+      }),
+      getUserData: async () => ({
+        username: 'admin',
+        email: null,
+        email_verified: false,
+        data: null
+      })
+    })
+  )
+  assert.equal(checkedModPermissions, false)
+})
+
+test('redactTextVersionRevision lets a moderator with the edit permission redact a comment revision', async () => {
+  const updatedRevision = {
+    id: 'version-1',
+    body: REDACTED_REVISION_BODY
+  }
+  const { TextVersion, calls } = buildTextVersionModel({
+    findResult: [{ id: 'version-1', body: 'old text' }],
+    updateResult: { textVersions: [updatedRevision] }
+  })
+  const { driver } = buildDriver({
+    targetType: 'comment',
+    targetId: 'comment-1',
+    ownerUsername: 'alice',
+    ownerModProfileName: null,
+    channelUniqueName: 'cats'
+  })
+  const permissionCalls: any[] = []
+  const resolver = redactTextVersionRevision(
+    buildResolverInput({
+      TextVersion,
+      driver,
+      revisionType: 'comment',
+      checkModPermissions: async (input: any) => {
+        permissionCalls.push(input)
+        return true
+      }
+    })
+  )
+
+  await resolver(
+    null,
+    { textVersionId: 'version-1' },
+    { user: { username: 'mod', data: { ModerationProfile: { displayName: 'mod-cats' } } } } as unknown as GraphQLContext,
+    {} as unknown as GraphQLResolveInfo
+  )
+
+  assert.equal(calls.update.length, 1)
+  assert.deepEqual(permissionCalls[0].channelConnections, ['cats'])
+  assert.equal(permissionCalls[0].permissionCheck, 'canEditComments')
+})
