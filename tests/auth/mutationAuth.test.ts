@@ -147,3 +147,35 @@ for (const { name, op } of authGatedReports) {
     assert.equal((result.data as Record<string, unknown> | null)?.[name], null);
   });
 }
+
+// Channel lock/unlock are gated `and(isAuthenticated, canLockChannel)` — a
+// server-mod-scoped capability. The full role matrix (who holds canLockChannel)
+// is covered at the rule level in hasServerModPermission.test.ts; here we prove
+// the rules are actually attached to these mutations, so an unauthenticated
+// request fails with notAuthenticated rather than slipping through or hitting
+// the default-deny fallback.
+const authGatedChannelLock: Array<{ name: string; op: string }> = [
+  {
+    name: "lockChannel",
+    op: `mutation { lockChannel(channelUniqueName: "c", reason: "r") { uniqueName } }`,
+  },
+  {
+    name: "unlockChannel",
+    op: `mutation { unlockChannel(channelUniqueName: "c") { uniqueName } }`,
+  },
+];
+
+for (const { name, op } of authGatedChannelLock) {
+  test(`${name} is auth-gated (unauthenticated -> notAuthenticated, not default-deny)`, async () => {
+    const result = await execUnauthenticated(op);
+
+    assert.ok(result.errors && result.errors.length > 0, `${name} should error`);
+    assert.equal(
+      result.errors[0].message,
+      ERROR_MESSAGES.channel.notAuthenticated,
+      `${name} should be auth-gated, got: ${result.errors[0].message}`
+    );
+    // Channel is nullable, so a denied field nulls itself (rather than all of data).
+    assert.equal((result.data as Record<string, unknown> | null)?.[name], null);
+  });
+}
