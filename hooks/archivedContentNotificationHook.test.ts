@@ -148,3 +148,49 @@ test('notifyArchivedContentAuthor includes issue link for appeal', async () => {
   assert.match(createdNotifications[0].text, /\/forums\/cats\/issues\/99/);
   assert.match(createdNotifications[0].text, /request a review/);
 });
+
+test('notifyArchivedContentAuthor uses "event" label for archived events', async () => {
+  process.env.FRONTEND_URL = 'https://example.com';
+  const createdNotifications: any[] = [];
+  const users = [{ username: 'author' }];
+
+  const context = {
+    ogm: {
+      model: () => buildMockUserModel(users, createdNotifications),
+    },
+  } as unknown as NotifyContext;
+
+  await notifyArchivedContentAuthor({
+    context,
+    contentType: 'event',
+    authorUsername: 'author',
+    contentUrl: '/forums/cats/events/123',
+    channelUniqueName: 'cats',
+    issueNumber: 7,
+  });
+
+  assert.match(createdNotifications[0].text, /Your \[event\]/);
+});
+
+test('notifyArchivedContentAuthor uses "image" label for archived images', async () => {
+  process.env.FRONTEND_URL = 'https://example.com';
+  const createdNotifications: any[] = [];
+  const users = [{ username: 'author' }];
+
+  const context = {
+    ogm: {
+      model: () => buildMockUserModel(users, createdNotifications),
+    },
+  } as unknown as NotifyContext;
+
+  await notifyArchivedContentAuthor({
+    context,
+    contentType: 'image',
+    authorUsername: 'author',
+    contentUrl: '/forums/cats/images/123',
+    channelUniqueName: 'cats',
+    issueNumber: 12,
+  });
+
+  assert.match(createdNotifications[0].text, /Your \[image\]/);
+});
