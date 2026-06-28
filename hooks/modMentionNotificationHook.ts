@@ -59,7 +59,7 @@ export const getNewModMentions = (
 const resolveModProfiles = async (
   context: GraphQLContext,
   modProfileNames: string[]
-): Promise<Array<{ displayName: string; username: string; notifyWhenTagged: boolean }>> => {
+): Promise<Array<{ displayName: string; username: string }>> => {
   if (!modProfileNames.length) return [];
 
   const driver = context?.driver;
@@ -71,7 +71,7 @@ const resolveModProfiles = async (
       `
       MATCH (u:User)-[:MODERATION_PROFILE]->(mp:ModerationProfile)
       WHERE mp.displayName IN $modProfileNames
-      RETURN mp.displayName as displayName, u.username as username, u.notifyWhenTagged as notifyWhenTagged
+      RETURN mp.displayName as displayName, u.username as username
       `,
       { modProfileNames }
     );
@@ -79,7 +79,6 @@ const resolveModProfiles = async (
     return result.records.map((record: Neo4jRecord) => ({
       displayName: record.get('displayName'),
       username: record.get('username'),
-      notifyWhenTagged: Boolean(record.get('notifyWhenTagged')),
     }));
   } finally {
     await session.close();

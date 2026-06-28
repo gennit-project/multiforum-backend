@@ -303,3 +303,30 @@ test("notifyModMentions does nothing when no new mentions", async () => {
 
   assert.equal(createdNotifications.length, 0);
 });
+
+test("notifyModMentions still creates an in-app notification when the mod has notifyWhenTagged disabled (in-app is not gated by the tag-email preference)", async () => {
+  process.env.FRONTEND_URL = "https://example.com";
+  const createdNotifications: any[] = [];
+  const modProfiles = [
+    { displayName: "alice", username: "alice_user", notifyWhenTagged: false },
+  ];
+
+  const context = buildMockContext(modProfiles, createdNotifications);
+
+  await notifyModMentions({
+    context,
+    mentionContext: {
+      type: "comment",
+      authorUsername: "commenter",
+      authorLabel: "[@commenter](/u/commenter)",
+      commentId: "comment-1",
+      discussionId: "discussion-1",
+      discussionTitle: "Test Discussion",
+      channelUniqueName: "phoenix",
+    },
+    previousText: null,
+    nextText: "Hey /m/alice can you take a look?",
+  });
+
+  assert.equal(createdNotifications.length, 1);
+});
