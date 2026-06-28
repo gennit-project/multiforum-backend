@@ -259,23 +259,55 @@ type CheckChannelPermissionInput = {
   permissionCheck: keyof ChannelRole;
 };
 
+/**
+ * A locked channel is frozen: no new discussions, events, comments, or wiki
+ * edits may be created by anyone — including channel owners and server admins.
+ * A server moderator with `canLockChannel` must unlock the forum first (this
+ * mirrors the per-entity lock convention in contentCreationRules, where a
+ * locked discussion/event/comment is read-only regardless of the actor).
+ *
+ * Returns an Error when the channel is locked, otherwise null.
+ */
+async function getChannelLockError(
+  channelName: string,
+  context: GraphQLContext
+): Promise<Error | null> {
+  const Channel = context.ogm.model("Channel");
+  const channel = await Channel.find({
+    where: { uniqueName: channelName },
+    selectionSet: `{ locked }`,
+  });
+
+  if (channel?.[0]?.locked) {
+    return new Error(ERROR_MESSAGES.channel.locked);
+  }
+  return null;
+}
+
 // Helper function to check channel permissions across multiple channels
 export async function checkChannelPermissions(
   input: CheckChannelPermissionInput
 ) {
   const { channelConnections, context, permissionCheck } = input;
-  
+
   // Check for JWT errors first (expired tokens, etc.)
   if (context.jwtError) {
     return context.jwtError;
   }
-  
+
   // Check if we have valid channel connections
   if (!channelConnections || channelConnections.length === 0 || !channelConnections[0]) {
     return new Error("No channel specified for this operation.");
   }
 
   for (const channelConnection of channelConnections) {
+    // A locked forum blocks content creation for everyone; surface a clear
+    // reason before falling through to the per-role permission check.
+    const lockError = await getChannelLockError(channelConnection, context);
+    if (lockError) {
+      return lockError;
+    }
+
     const permissionResult = await hasChannelPermission({
       permission: permissionCheck,
       channelName: channelConnection,
