@@ -110,6 +110,19 @@ test("attributes an owner's label change to the acting user (ActorUser)", async 
   );
 });
 
+test("an owner's label change does not create a ModerationAction", async () => {
+  await updateLabels(["fo-1"]);
+
+  const actions = await run(
+    `MATCH (m:ModerationAction) RETURN count(m) AS n`
+  );
+  assert.equal(
+    Number(actions[0].n),
+    0,
+    "owner self-edit should not create a moderation action"
+  );
+});
+
 // NOTE: the mod -> ActorMod attribution path is intentionally not integration
 // tested here. updateDownloadLabels resolves the actor via setUserDataOnContext,
 // which only populates ModerationProfile.displayName; the resolver's mod
