@@ -44,8 +44,9 @@ const USER_SUSPENSION_QUERY = `
   MATCH (serverConfig:ServerConfig {serverName: $serverName})
   MATCH (serverConfig)-[:SUSPENDED_AS_USER]->(suspension:Suspension)
   OPTIONAL MATCH (suspension)<-[:SUSPENDED_AS_USER]-(suspendedUser:User)
-  OPTIONAL MATCH (suspension)-[:HAS_CONTEXT]->(issue:Issue)
+  WITH suspension, suspendedUser
   WHERE suspension.username = $username OR suspendedUser.username = $username
+  OPTIONAL MATCH (suspension)-[:HAS_CONTEXT]->(issue:Issue)
   RETURN {
     id: suspension.id,
     username: suspension.username,
@@ -72,8 +73,9 @@ const MOD_SUSPENSION_QUERY = `
   MATCH (serverConfig:ServerConfig {serverName: $serverName})
   MATCH (serverConfig)-[:SUSPENDED_AS_MOD]->(suspension:Suspension)
   OPTIONAL MATCH (suspension)<-[:SUSPENDED_AS_MOD]-(suspendedMod:ModerationProfile)
-  OPTIONAL MATCH (suspension)-[:HAS_CONTEXT]->(issue:Issue)
+  WITH suspension, suspendedMod
   WHERE suspension.modProfileName = $modProfileName OR suspendedMod.displayName = $modProfileName
+  OPTIONAL MATCH (suspension)-[:HAS_CONTEXT]->(issue:Issue)
   RETURN {
     id: suspension.id,
     username: suspension.username,
