@@ -147,3 +147,37 @@ for (const { name, op } of authGatedReports) {
     assert.equal((result.data as Record<string, unknown> | null)?.[name], null);
   });
 }
+
+// The image archive/remove mutations are gated `and(isAuthenticated, <perm>)`
+// (canArchiveAndUnarchiveImage / canPermanentlyRemoveImage). Like the reports
+// above, an unauthenticated request must fail with the not-authenticated error
+// rather than the "Not Authorised!" default-deny fallback — proving the rule is
+// actually attached, not that the mutation is unmapped.
+const authGatedImageMod: Array<{ name: string; op: string }> = [
+  {
+    name: "archiveImage",
+    op: `mutation { archiveImage(imageId: "i", selectedForumRules: [], selectedServerRules: [], reportText: "t") { id } }`,
+  },
+  {
+    name: "unarchiveImage",
+    op: `mutation { unarchiveImage(imageId: "i") { id } }`,
+  },
+  {
+    name: "permanentlyRemoveImage",
+    op: `mutation { permanentlyRemoveImage(imageId: "i") { id } }`,
+  },
+];
+
+for (const { name, op } of authGatedImageMod) {
+  test(`${name} is wired (unauthenticated -> notAuthenticated, not default-deny)`, async () => {
+    const result = await execUnauthenticated(op);
+
+    assert.ok(result.errors && result.errors.length > 0, `${name} should error`);
+    assert.equal(
+      result.errors[0].message,
+      ERROR_MESSAGES.channel.notAuthenticated,
+      `${name} should be auth-gated, got: ${result.errors[0].message}`
+    );
+    assert.equal((result.data as Record<string, unknown> | null)?.[name], null);
+  });
+}
