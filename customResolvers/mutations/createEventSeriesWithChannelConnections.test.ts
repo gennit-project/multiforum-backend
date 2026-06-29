@@ -189,10 +189,10 @@ test("createEventSeriesWithChannelConnections handles repeat pattern", async () 
   assert.equal(typedResult.repeatPattern.endType, "AFTER_COUNT");
   assert.equal(typedResult.repeatPattern.endCount, 4);
 
-  // Verify repeat pattern was passed to create
+  // Verify repeat pattern was passed to create as a nested RepeatPattern node.
   const createInput = createCalls[0].input[0];
-  assert.equal(createInput.repeatPattern.type, "WEEKLY");
-  assert.deepEqual(createInput.repeatPattern.daysOfWeek, [3]);
+  assert.equal(createInput.repeatPattern.create.node.type, "WEEKLY");
+  assert.deepEqual(createInput.repeatPattern.create.node.daysOfWeek, [3]);
 });
 
 test("createEventSeriesWithChannelConnections connects tags", async () => {
