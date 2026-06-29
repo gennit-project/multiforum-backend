@@ -23,7 +23,34 @@ type ChannelInput = {
   displayName?: string | null;
   rules?: string;
   isEditMode?: boolean | null;
+  // Preference flags
+  eventsEnabled?: boolean | null;
+  wikiEnabled?: boolean | null;
+  feedbackEnabled?: boolean | null;
+  downloadsEnabled?: boolean | null;
+  emojiEnabled?: boolean | null;
+  imageUploadsEnabled?: boolean | null;
+  markdownImagesEnabled?: boolean | null;
+  markAsAnsweredEnabled?: boolean | null;
+  allowedFileTypes?: Array<string | null> | null;
 };
+
+// The Channel preference flags, all GraphQL Booleans. GraphQL already rejects
+// non-booleans on the API path, so this is a defensive guard for the exported
+// validator.
+const BOOLEAN_FLAGS: Array<keyof ChannelInput> = [
+  "eventsEnabled",
+  "wikiEnabled",
+  "feedbackEnabled",
+  "downloadsEnabled",
+  "emojiEnabled",
+  "imageUploadsEnabled",
+  "markdownImagesEnabled",
+  "markAsAnsweredEnabled",
+];
+
+// A file type is an extension token: letters/digits, optionally a leading dot.
+const FILE_TYPE_PATTERN = /^\.?[A-Za-z0-9]+$/;
 
 export const validateChannelInput = (input: ChannelInput): true | string => {
   const { uniqueName, description, displayName, isEditMode } = input;
@@ -68,6 +95,32 @@ export const validateChannelInput = (input: ChannelInput): true | string => {
       return "The rules must be a valid JSON array.";
     }
   }
+
+  // Preference flags must be booleans when present.
+  for (const flag of BOOLEAN_FLAGS) {
+    const value = input[flag];
+    if (value !== undefined && value !== null && typeof value !== "boolean") {
+      return `${flag} must be true or false.`;
+    }
+  }
+
+  // allowedFileTypes, when present, must be an array of non-empty extension
+  // tokens (whether a given type is permitted server-wide is enforced at upload
+  // time; here we only validate the shape).
+  if (input.allowedFileTypes !== undefined && input.allowedFileTypes !== null) {
+    if (!Array.isArray(input.allowedFileTypes)) {
+      return "allowedFileTypes must be an array.";
+    }
+    for (const fileType of input.allowedFileTypes) {
+      if (typeof fileType !== "string" || fileType.trim() === "") {
+        return "Each allowed file type must be a non-empty string.";
+      }
+      if (!FILE_TYPE_PATTERN.test(fileType.trim())) {
+        return `"${fileType}" is not a valid file type.`;
+      }
+    }
+  }
+
   logger.info("channel input is valid");
 
   return true;

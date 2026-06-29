@@ -108,3 +108,85 @@ test("rejects malformed rules JSON", () => {
     "The rules must be a valid JSON array."
   );
 });
+
+// --- preference flags (#105) ---
+
+test("accepts boolean preference flags", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      eventsEnabled: false,
+      wikiEnabled: true,
+      isEditMode: false,
+    }),
+    true
+  );
+});
+
+test("accepts null/undefined preference flags", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      eventsEnabled: null,
+      isEditMode: false,
+    }),
+    true
+  );
+});
+
+test("rejects a non-boolean preference flag", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      // @ts-expect-error - deliberately invalid value
+      eventsEnabled: "yes",
+      isEditMode: false,
+    }),
+    "eventsEnabled must be true or false."
+  );
+});
+
+test("accepts a valid allowedFileTypes array", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      allowedFileTypes: ["pdf", ".png", "STL"],
+      isEditMode: false,
+    }),
+    true
+  );
+});
+
+test("rejects allowedFileTypes that is not an array", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      // @ts-expect-error - deliberately invalid value
+      allowedFileTypes: "pdf",
+      isEditMode: false,
+    }),
+    "allowedFileTypes must be an array."
+  );
+});
+
+test("rejects an empty-string file type", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      allowedFileTypes: ["pdf", "  "],
+      isEditMode: false,
+    }),
+    "Each allowed file type must be a non-empty string."
+  );
+});
+
+test("rejects a malformed file type", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      allowedFileTypes: ["pdf/exe"],
+      isEditMode: false,
+    }),
+    '"pdf/exe" is not a valid file type.'
+  );
+});
