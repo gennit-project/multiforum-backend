@@ -1,5 +1,4 @@
 import crypto from 'crypto'
-import { Storage } from '@google-cloud/storage'
 import type {
   PluginModel,
   PluginVersionModel,
@@ -13,20 +12,7 @@ import type { GraphQLResolveInfo } from 'graphql'
 import { parseManifestFromTarball } from './shared/pluginManifest.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
-
-type RegistryPlugin = {
-  id: string
-  versions: {
-    version: string
-    tarballUrl: string
-    integritySha256: string
-  }[]
-}
-
-type PluginRegistry = {
-  updatedAt: string
-  plugins: RegistryPlugin[]
-}
+import { downloadBytes, fetchMergedPluginRegistry, type RegistryVersion } from '../../services/plugin/registryService.js'
 
 type Input = {
   Plugin: PluginModel
@@ -58,37 +44,10 @@ const getResolver = (input: Input) => {
         throw new Error('No plugin registries configured')
       }
 
-      const registryUrl = serverConfigs[0].pluginRegistries?.[0]
-      if (!registryUrl) {
-        throw new Error('No plugin registry URL configured')
-      }
-      logger.info('Using plugin registry URL:', registryUrl)
-
-      // 2. Fetch and find plugin version in registry
-      let registryData: PluginRegistry
-      try {
-        if (registryUrl.startsWith('gs://')) {
-          const storage = new Storage()
-          const gsPath = registryUrl.replace('gs://', '')
-          const [bucketName, ...pathParts] = gsPath.split('/')
-          const filePath = pathParts.join('/')
-          
-          const bucket = storage.bucket(bucketName)
-          const file = bucket.file(filePath)
-          
-          const [contents] = await file.download()
-          registryData = JSON.parse(contents.toString())
-        } else {
-          const response = await fetch(registryUrl)
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-          registryData = await response.json()
-        }
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error)
-        throw new Error(`Failed to fetch plugin registry: ${message}`)
-      }
+      const registryUrls = (serverConfigs[0].pluginRegistries || [])
+        .filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+      logger.info('Using plugin registry URLs:', registryUrls)
+      const registryData = await fetchMergedPluginRegistry(registryUrls)
 
       // First, resolve the plugin node using either the Neo4j ID or the plugin slug
       const pluginCandidates = await Plugin.find({
@@ -130,7 +89,7 @@ const getResolver = (input: Input) => {
         }`
       })
 
-      let registryVersion: { version: string; tarballUrl: string; integritySha256: string }
+      let registryVersion: RegistryVersion
 
       // Always get the version data from the registry for integrity verification
       const registryPlugin = registryData.plugins.find(p => p.id === pluginSlug)
@@ -161,25 +120,7 @@ const getResolver = (input: Input) => {
       // 3. Download and verify tarball integrity
       logger.info(`Downloading tarball from: ${registryVersion.tarballUrl}`)
       
-      let tarballBytes: Buffer
-      if (registryVersion.tarballUrl.startsWith('gs://')) {
-        const storage = new Storage()
-        const gsPath = registryVersion.tarballUrl.replace('gs://', '')
-        const [bucketName, ...pathParts] = gsPath.split('/')
-        const filePath = pathParts.join('/')
-        
-        const bucket = storage.bucket(bucketName)
-        const file = bucket.file(filePath)
-        
-        const [contents] = await file.download()
-        tarballBytes = contents
-      } else {
-        const response = await fetch(registryVersion.tarballUrl)
-        if (!response.ok) {
-          throw new Error(`Failed to download tarball: HTTP ${response.status}`)
-        }
-        tarballBytes = Buffer.from(await response.arrayBuffer())
-      }
+      const tarballBytes = await downloadBytes(registryVersion.tarballUrl)
 
       // 4. Verify integrity
       const actualSha256 = crypto.createHash('sha256').update(tarballBytes).digest('hex')
