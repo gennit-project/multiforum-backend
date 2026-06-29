@@ -1,11 +1,9 @@
 // Integration tests for the event-series UPDATE and DELETE resolvers against a
 // live Neo4j container (issue #104): scope-aware edits/deletes across a series,
-// plus the subscriber-notification path. We seed the EventSeries graph directly
-// via Cypher rather than through createEventSeriesWithChannelConnections, which
-// is currently broken end-to-end against the real OGM (see
-// gennit-project/multiforum-backend#108) — that resolver needs its own fix +
-// coverage. The update/delete/notification logic is the more involved part and
-// is fully exercised here.
+// plus the subscriber-notification path. The series is created through the real
+// createEventSeriesWithChannelConnections resolver (fixed in #108), so this
+// exercises the full create → update/delete → notify flow end-to-end.
+// (createEventSeries's own graph shape is covered in createEventSeries.test.ts.)
 
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
@@ -35,25 +33,39 @@ beforeEach(async () => {
   );
 });
 
-// Seed a 3-occurrence series with deterministic occurrence ids (occ-0..occ-2),
-// indexed in order and linked to the series via HAS_OCCURRENCE.
-const seedSeries = () =>
-  run(
-    `CREATE (s:EventSeries { id: 'series-1', title: 'Weekly Meetup', createdAt: datetime() })
-     WITH s
-     UNWIND range(0, 2) AS i
-     CREATE (s)-[:HAS_OCCURRENCE]->(:Event {
-       id: 'occ-' + toString(i),
-       title: 'Weekly Meetup',
-       description: 'Every Wednesday',
-       occurrenceIndex: i,
-       canceled: false,
-       deleted: false,
-       startTime: datetime({ year: 2030, month: 1, day: 2 + 7 * i, hour: 18 }),
-       endTime: datetime({ year: 2030, month: 1, day: 2 + 7 * i, hour: 20 }),
-       createdAt: datetime()
-     })`
+const seriesInput = () => ({
+  title: "Weekly Meetup",
+  description: "Every Wednesday",
+  channelConnections: ["cats"],
+  occurrences: [
+    { startTime: "2030-01-02T18:00:00.000Z", endTime: "2030-01-02T20:00:00.000Z" },
+    { startTime: "2030-01-09T18:00:00.000Z", endTime: "2030-01-09T20:00:00.000Z" },
+    { startTime: "2030-01-16T18:00:00.000Z", endTime: "2030-01-16T20:00:00.000Z" },
+  ],
+  repeatPattern: {
+    type: "WEEKLY",
+    count: 1,
+    daysOfWeek: [3],
+    endType: "AFTER_COUNT",
+    endCount: 3,
+    endDate: null,
+  },
+});
+
+// Create a 3-occurrence series via the real resolver and return the occurrence
+// ids ordered by occurrenceIndex.
+const createSeriesOccurrences = async (): Promise<string[]> => {
+  await env.resolvers.Mutation.createEventSeriesWithChannelConnections(
+    null,
+    { input: seriesInput() },
+    { user: { username: "poster" } }
   );
+  const rows = await run(
+    `MATCH (:EventSeries)-[:HAS_OCCURRENCE]->(e:Event)
+     RETURN e.id AS id ORDER BY e.occurrenceIndex`
+  );
+  return rows.map((r) => r.id as string);
+};
 
 const updateInSeries = (args: Record<string, unknown>, actor = "poster") =>
   env.resolvers.Mutation.updateEventInSeries(
@@ -78,10 +90,10 @@ const titlesByIndex = async () =>
 // --- update scopes ---
 
 test("updateEventInSeries ALL_IN_SERIES applies a title change to every occurrence", async () => {
-  await seedSeries();
+  const occ = await createSeriesOccurrences();
 
   await updateInSeries({
-    eventId: "occ-0",
+    eventId: occ[0],
     scope: "ALL_IN_SERIES",
     eventUpdateInput: { title: "Renamed Meetup" },
   });
@@ -94,11 +106,11 @@ test("updateEventInSeries ALL_IN_SERIES applies a title change to every occurren
 });
 
 test("updateEventInSeries THIS_AND_FUTURE changes the edited occurrence and later ones only", async () => {
-  await seedSeries();
+  const occ = await createSeriesOccurrences();
 
   // Edit the middle occurrence (index 1).
   await updateInSeries({
-    eventId: "occ-1",
+    eventId: occ[1],
     scope: "THIS_AND_FUTURE",
     eventUpdateInput: { title: "Future Meetup" },
   });
@@ -111,10 +123,10 @@ test("updateEventInSeries THIS_AND_FUTURE changes the edited occurrence and late
 });
 
 test("updateEventInSeries THIS_ONLY changes only the edited occurrence", async () => {
-  await seedSeries();
+  const occ = await createSeriesOccurrences();
 
   await updateInSeries({
-    eventId: "occ-1",
+    eventId: occ[1],
     scope: "THIS_ONLY",
     eventUpdateInput: { title: "Just This One" },
   });
@@ -129,9 +141,9 @@ test("updateEventInSeries THIS_ONLY changes only the edited occurrence", async (
 // --- delete scopes ---
 
 test("deleteEventInSeries THIS_ONLY removes one occurrence and keeps the series", async () => {
-  await seedSeries();
+  const occ = await createSeriesOccurrences();
 
-  const result = await deleteInSeries({ eventId: "occ-1", scope: "THIS_ONLY" });
+  const result = await deleteInSeries({ eventId: occ[1], scope: "THIS_ONLY" });
 
   const events = await run(`MATCH (e:Event) RETURN count(e) AS n`);
   const series = await run(`MATCH (s:EventSeries) RETURN count(s) AS n`);
@@ -146,9 +158,9 @@ test("deleteEventInSeries THIS_ONLY removes one occurrence and keeps the series"
 });
 
 test("deleteEventInSeries THIS_AND_FUTURE removes the edited occurrence and later ones", async () => {
-  await seedSeries();
+  const occ = await createSeriesOccurrences();
 
-  await deleteInSeries({ eventId: "occ-1", scope: "THIS_AND_FUTURE" });
+  await deleteInSeries({ eventId: occ[1], scope: "THIS_AND_FUTURE" });
 
   const remaining = await run(
     `MATCH (e:Event) RETURN e.occurrenceIndex AS idx ORDER BY idx`
@@ -157,9 +169,9 @@ test("deleteEventInSeries THIS_AND_FUTURE removes the edited occurrence and late
 });
 
 test("deleteEventInSeries ALL_IN_SERIES removes every occurrence and the series", async () => {
-  await seedSeries();
+  const occ = await createSeriesOccurrences();
 
-  await deleteInSeries({ eventId: "occ-0", scope: "ALL_IN_SERIES" });
+  await deleteInSeries({ eventId: occ[0], scope: "ALL_IN_SERIES" });
 
   const events = await run(`MATCH (e:Event) RETURN count(e) AS n`);
   const series = await run(`MATCH (s:EventSeries) RETURN count(s) AS n`);
@@ -172,20 +184,22 @@ test("deleteEventInSeries ALL_IN_SERIES removes every occurrence and the series"
 // --- notifications ---
 
 test("updateEventInSeries notifies subscribers of the edited occurrence but not the acting user", async () => {
-  await seedSeries();
+  const occ = await createSeriesOccurrences();
 
   // A watcher and the actor (poster) both subscribe to the edited occurrence.
   await run(
-    `MATCH (e:Event { id: 'occ-0' })
-     CREATE (:User { username: 'watcher' })-[:SUBSCRIBED_TO_EVENT_UPDATES]->(e)
+    `MATCH (e:Event { id: $occId })
+     MERGE (w:User { username: 'watcher' })
+     MERGE (w)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(e)
      WITH e
      MATCH (p:User { username: 'poster' })
-     CREATE (p)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(e)`
+     MERGE (p)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(e)`,
+    { occId: occ[0] }
   );
 
   await updateInSeries(
     {
-      eventId: "occ-0",
+      eventId: occ[0],
       scope: "ALL_IN_SERIES",
       eventUpdateInput: { title: "Renamed Meetup" },
     },
