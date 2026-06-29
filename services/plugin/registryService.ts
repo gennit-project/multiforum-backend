@@ -5,6 +5,11 @@ export type RegistryVersion = {
   tarballUrl: string
   integritySha256: string
   registryUrl?: string
+  releaseNotesUrl?: string
+  sourceRepoUrl?: string
+  sourceCommit?: string
+  minServerVersion?: string
+  apiVersion?: string
 }
 
 export type RegistryPlugin = {

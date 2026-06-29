@@ -25,6 +25,15 @@ type Args = {
   version: string
 }
 
+const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
+  registryUrl: registryVersion.registryUrl || null,
+  releaseNotesUrl: registryVersion.releaseNotesUrl || null,
+  sourceRepoUrl: registryVersion.sourceRepoUrl || null,
+  sourceCommit: registryVersion.sourceCommit || null,
+  minServerVersion: registryVersion.minServerVersion || null,
+  apiVersion: registryVersion.apiVersion || null
+})
+
 const getResolver = (input: Input) => {
   const { Plugin, PluginVersion, ServerConfig } = input
 
@@ -81,6 +90,12 @@ const getResolver = (input: Input) => {
           repoUrl
           tarballGsUri
           integritySha256
+          registryUrl
+          releaseNotesUrl
+          sourceRepoUrl
+          sourceCommit
+          minServerVersion
+          apiVersion
           entryPath
           Plugin {
             id
@@ -222,6 +237,7 @@ const getResolver = (input: Input) => {
       const manifestJson = artifacts.manifest ? JSON.stringify(artifacts.manifest) : null
       const documentationPath = artifacts.readmePath ?? manifest.documentation?.readmePath ?? null
       const readmeMarkdown = artifacts.readmeMarkdown ?? null
+      const releaseMetadataPayload = buildReleaseMetadataPayload(registryVersion)
 
       if (!pluginVersion) {
         logger.info(`Creating new plugin version: ${pluginSlug}@${version}`)
@@ -232,6 +248,7 @@ const getResolver = (input: Input) => {
               repoUrl: String(registryVersion.tarballUrl),
               tarballGsUri: String(registryVersion.tarballUrl),
               integritySha256: String(registryVersion.integritySha256),
+              ...releaseMetadataPayload,
               entryPath: artifacts.entryPath || 'index.js',
               manifest: manifestJson,
               settingsDefaults,
@@ -254,6 +271,7 @@ const getResolver = (input: Input) => {
             repoUrl: String(registryVersion.tarballUrl),
             tarballGsUri: String(registryVersion.tarballUrl),
             integritySha256: String(registryVersion.integritySha256),
+            ...releaseMetadataPayload,
             entryPath: artifacts.entryPath || pluginVersion.entryPath || 'index.js',
             manifest: manifestJson,
             settingsDefaults,

@@ -51,6 +51,12 @@ const getResolver = (input: Input) => {
             uiSchema
             documentationPath
             readmeMarkdown
+            registryUrl
+            releaseNotesUrl
+            sourceRepoUrl
+            sourceCommit
+            minServerVersion
+            apiVersion
           }
         }`
       })
@@ -174,7 +180,13 @@ const getResolver = (input: Input) => {
         settingsDefaults: pluginVersion.settingsDefaults || null,
         uiSchema: pluginVersion.uiSchema || null,
         documentationPath: pluginVersion.documentationPath || null,
-        readmeMarkdown: pluginVersion.readmeMarkdown || null
+        readmeMarkdown: pluginVersion.readmeMarkdown || null,
+        registryUrl: pluginVersion.registryUrl || null,
+        releaseNotesUrl: pluginVersion.releaseNotesUrl || null,
+        sourceRepoUrl: pluginVersion.sourceRepoUrl || null,
+        sourceCommit: pluginVersion.sourceCommit || null,
+        minServerVersion: pluginVersion.minServerVersion || null,
+        apiVersion: pluginVersion.apiVersion || null
       }
 
     } catch (error: unknown) {

@@ -22,6 +22,12 @@ type PluginEdge = {
     uiSchema?: string | Record<string, unknown> | null
     documentationPath?: string | null
     readmeMarkdown?: string | null
+    registryUrl?: string | null
+    releaseNotesUrl?: string | null
+    sourceRepoUrl?: string | null
+    sourceCommit?: string | null
+    minServerVersion?: string | null
+    apiVersion?: string | null
     Plugin?: {
       id?: string
       name?: string
@@ -61,6 +67,12 @@ const getResolver = (input: Input) => {
                 repoUrl
                 tarballGsUri
                 integritySha256
+                registryUrl
+                releaseNotesUrl
+                sourceRepoUrl
+                sourceCommit
+                minServerVersion
+                apiVersion
                 entryPath
                 manifest
                 settingsDefaults
@@ -158,6 +170,12 @@ const getResolver = (input: Input) => {
           uiSchema: node.uiSchema ? (typeof node.uiSchema === 'string' ? JSON.parse(node.uiSchema) : node.uiSchema) : null,
           documentationPath: node.documentationPath || null,
           readmeMarkdown: node.readmeMarkdown || null,
+          registryUrl: node.registryUrl || null,
+          releaseNotesUrl: node.releaseNotesUrl || null,
+          sourceRepoUrl: node.sourceRepoUrl || null,
+          sourceCommit: node.sourceCommit || null,
+          minServerVersion: node.minServerVersion || null,
+          apiVersion: node.apiVersion || null,
           hasUpdate,
           latestVersion,
           availableVersions: availableVersions.sort((a, b) => compareVersions(b, a)) // sorted newest first

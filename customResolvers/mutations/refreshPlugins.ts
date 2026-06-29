@@ -11,13 +11,22 @@ import type { GraphQLResolveInfo } from 'graphql'
 import { getManifestArtifacts } from './shared/pluginManifest.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
-import { fetchMergedPluginRegistry } from '../../services/plugin/registryService.js'
+import { fetchMergedPluginRegistry, type RegistryVersion } from '../../services/plugin/registryService.js'
 
 type Input = {
   Plugin: PluginModel
   PluginVersion: PluginVersionModel
   ServerConfig: ServerConfigModel
 }
+
+const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
+  registryUrl: registryVersion.registryUrl || null,
+  releaseNotesUrl: registryVersion.releaseNotesUrl || null,
+  sourceRepoUrl: registryVersion.sourceRepoUrl || null,
+  sourceCommit: registryVersion.sourceCommit || null,
+  minServerVersion: registryVersion.minServerVersion || null,
+  apiVersion: registryVersion.apiVersion || null
+})
 
 
 const getResolver = (input: Input) => {
@@ -244,6 +253,7 @@ for (const registryPlugin of registryData.plugins) {
       const settingsDefaults = settingsDefaultsRaw ? JSON.stringify(settingsDefaultsRaw) : null
       const uiSchema = uiSchemaRaw ? JSON.stringify(uiSchemaRaw) : null
       const manifestJson = artifacts.manifest ? JSON.stringify(artifacts.manifest) : null
+      const releaseMetadataPayload = buildReleaseMetadataPayload(registryVersion)
 
       if (existingVersions.length === 0) {
         logger.info(
@@ -256,6 +266,7 @@ for (const registryPlugin of registryData.plugins) {
               repoUrl: registryVersion.tarballUrl,
               tarballGsUri: registryVersion.tarballUrl,
               integritySha256: registryVersion.integritySha256,
+              ...releaseMetadataPayload,
               entryPath: artifacts.entryPath || 'index.js',
               manifest: manifestJson,
               settingsDefaults,
@@ -281,6 +292,7 @@ for (const registryPlugin of registryData.plugins) {
           update: ({
             tarballGsUri: registryVersion.tarballUrl,
             integritySha256: registryVersion.integritySha256,
+            ...releaseMetadataPayload,
             entryPath: artifacts.entryPath || 'index.js',
             manifest: manifestJson,
             settingsDefaults,
@@ -332,6 +344,12 @@ for (const registryPlugin of registryData.plugins) {
                 repoUrl
                 tarballGsUri
                 integritySha256
+                registryUrl
+                releaseNotesUrl
+                sourceRepoUrl
+                sourceCommit
+                minServerVersion
+                apiVersion
                 entryPath
                 manifest
                 settingsDefaults

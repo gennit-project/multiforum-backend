@@ -53,7 +53,12 @@ test('fetchMergedPluginRegistry merges multiple registry URLs and sorts versions
             {
               version: '1.1.0',
               tarballUrl: 'https://registry-b.test/alpha-1.1.0.tgz',
-              integritySha256: 'bbb'
+              integritySha256: 'bbb',
+              releaseNotesUrl: 'https://registry-b.test/alpha/releases/1.1.0',
+              sourceRepoUrl: 'https://github.com/example/alpha',
+              sourceCommit: 'abcdef123456',
+              minServerVersion: '0.8.0',
+              apiVersion: '1'
             }
           ]
         },
@@ -84,6 +89,13 @@ test('fetchMergedPluginRegistry merges multiple registry URLs and sorts versions
     registry.plugins.find((plugin) => plugin.id === 'alpha')?.versions.map((version) => version.version),
     ['1.1.0', '1.0.0']
   )
+  const latestAlpha = registry.plugins.find((plugin) => plugin.id === 'alpha')?.versions[0]
+  assert.equal(latestAlpha?.registryUrl, 'https://registry-b.test/registry.json')
+  assert.equal(latestAlpha?.releaseNotesUrl, 'https://registry-b.test/alpha/releases/1.1.0')
+  assert.equal(latestAlpha?.sourceRepoUrl, 'https://github.com/example/alpha')
+  assert.equal(latestAlpha?.sourceCommit, 'abcdef123456')
+  assert.equal(latestAlpha?.minServerVersion, '0.8.0')
+  assert.equal(latestAlpha?.apiVersion, '1')
 })
 
 test('fetchMergedPluginRegistry rejects conflicting plugin version entries', async () => {

@@ -1584,6 +1584,12 @@ const typeDefinitions = gql`
     repoUrl: String!
     tarballGsUri: String
     integritySha256: String
+    registryUrl: String
+    releaseNotesUrl: String
+    sourceRepoUrl: String
+    sourceCommit: String
+    minServerVersion: String
+    apiVersion: String
     entryPath: String!
     manifest: JSON
     settingsDefaults: JSON
@@ -1733,6 +1739,12 @@ const typeDefinitions = gql`
     uiSchema: JSON
     documentationPath: String
     readmeMarkdown: String
+    registryUrl: String
+    releaseNotesUrl: String
+    sourceRepoUrl: String
+    sourceCommit: String
+    minServerVersion: String
+    apiVersion: String
     hasUpdate: Boolean
     latestVersion: String
     availableVersions: [String!]
