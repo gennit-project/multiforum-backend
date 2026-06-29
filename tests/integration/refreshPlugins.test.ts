@@ -1,11 +1,13 @@
 // Integration test for refreshPlugins against live Neo4j. This resolver reaches
-// out to a plugin registry over HTTP and downloads each plugin's tarball to read
-// its manifest, so we mock global fetch: the registry URL returns registry JSON,
-// and each tarball URL returns a real gzipped tar containing plugin.json. The DB
-// writes (Plugin / PluginVersion nodes) run against the live container.
+// out to a plugin source over HTTP and now synthesizes registry entries from the
+// GitHub Releases API, so we mock global fetch: the repo URL resolves to release
+// metadata, the plugin.json asset provides the manifest, and the tarball/checksum
+// assets are downloaded and verified against a real gzipped tar containing plugin.json.
+// The DB writes (Plugin / PluginVersion nodes) run against the live container.
 
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import tar from "tar-stream";
 import { gzipSync } from "zlib";
 import {
@@ -19,8 +21,11 @@ import {
 let env: ImageModEnv;
 const originalFetch = globalThis.fetch;
 
-const REGISTRY_URL = "https://registry.test/registry.json";
-const TARBALL_URL = "https://registry.test/test-plugin-1.0.0.tgz";
+const REPO_URL = "https://github.com/gennit-project/test-plugin";
+const RELEASES_API_URL = "https://api.github.com/repos/gennit-project/test-plugin/releases?per_page=100";
+const TARBALL_URL = "https://github.com/gennit-project/test-plugin/releases/download/v1.0.0/test-plugin-1.0.0.tgz";
+const MANIFEST_URL = "https://github.com/gennit-project/test-plugin/releases/download/v1.0.0/plugin.json";
+const CHECKSUM_URL = "https://github.com/gennit-project/test-plugin/releases/download/v1.0.0/test-plugin-1.0.0.tgz.sha256";
 
 const buildTarball = (manifest: object): Promise<Buffer> =>
   new Promise((resolve, reject) => {
@@ -36,28 +41,53 @@ const buildTarball = (manifest: object): Promise<Buffer> =>
   });
 
 let tarball: Buffer;
-
-const registryJson = {
-  updatedAt: "2026-01-01T00:00:00Z",
-  plugins: [
-    {
-      id: "test-plugin",
-      versions: [
-        {
-          version: "1.0.0",
-          tarballUrl: TARBALL_URL,
-          integritySha256: "deadbeef",
-        },
-      ],
-    },
-  ],
-};
+let tarballSha256: string;
 
 const installFetchMock = () => {
   globalThis.fetch = (async (url: any) => {
     const u = String(url);
-    if (u === REGISTRY_URL) {
-      return { ok: true, status: 200, json: async () => registryJson };
+    if (u === RELEASES_API_URL) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ([
+          {
+            tag_name: "v1.0.0",
+            html_url: "https://github.com/gennit-project/test-plugin/releases/tag/v1.0.0",
+            target_commitish: "main",
+            assets: [
+              { name: "plugin.json", browser_download_url: MANIFEST_URL },
+              { name: "test-plugin-1.0.0.tgz", browser_download_url: TARBALL_URL },
+              { name: "test-plugin-1.0.0.tgz.sha256", browser_download_url: CHECKSUM_URL },
+            ],
+          },
+        ]),
+      };
+    }
+    if (u === MANIFEST_URL) {
+      const manifest = {
+        id: "test-plugin",
+        version: "1.0.0",
+        name: "Test Plugin",
+        description: "A test plugin",
+        entry: "index.js",
+        metadata: { author: { name: "Alice" }, tags: ["util"] },
+        source: { repoUrl: REPO_URL },
+        compatibility: { minServerVersion: "1.0.0", apiVersion: "1" },
+      };
+      return {
+        ok: true,
+        status: 200,
+        json: async () => manifest,
+        text: async () => JSON.stringify(manifest),
+      };
+    }
+    if (u === CHECKSUM_URL) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => `${tarballSha256}  test-plugin-1.0.0.tgz\n`,
+      };
     }
     if (u === TARBALL_URL) {
       return {
@@ -84,6 +114,7 @@ before(async () => {
     entry: "index.js",
     metadata: { author: { name: "Alice" }, tags: ["util"] },
   });
+  tarballSha256 = crypto.createHash("sha256").update(tarball).digest("hex");
 }, { timeout: 240000 });
 
 after(async () => {
@@ -102,7 +133,7 @@ const refreshPlugins = () =>
 test("creates Plugin + PluginVersion from the registry and tarball manifest", async () => {
   await run(
     `CREATE (:ServerConfig { serverName: 'test-server', pluginRegistries: [$url] })`,
-    { url: REGISTRY_URL }
+    { url: REPO_URL }
   );
 
   await refreshPlugins();

@@ -7,31 +7,26 @@ import type {
   PluginVersionCreateInput,
   PluginVersionUpdateInput
 } from '../../ogm_types.js'
-import { Storage } from '@google-cloud/storage'
 import type { GraphQLResolveInfo } from 'graphql'
 import { getManifestArtifacts } from './shared/pluginManifest.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
-
-type RegistryPlugin = {
-  id: string
-  versions: {
-    version: string
-    tarballUrl: string
-    integritySha256: string
-  }[]
-}
-
-type PluginRegistry = {
-  updatedAt: string
-  plugins: RegistryPlugin[]
-}
+import { fetchMergedPluginRegistry, type RegistryVersion } from '../../services/plugin/registryService.js'
 
 type Input = {
   Plugin: PluginModel
   PluginVersion: PluginVersionModel
   ServerConfig: ServerConfigModel
 }
+
+const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
+  registryUrl: registryVersion.registryUrl || null,
+  releaseNotesUrl: registryVersion.releaseNotesUrl || null,
+  sourceRepoUrl: registryVersion.sourceRepoUrl || null,
+  sourceCommit: registryVersion.sourceCommit || null,
+  minServerVersion: registryVersion.minServerVersion || null,
+  apiVersion: registryVersion.apiVersion || null
+})
 
 
 const getResolver = (input: Input) => {
@@ -53,45 +48,10 @@ const getResolver = (input: Input) => {
         throw new Error('No plugin registries configured')
       }
 
-      const registryUrl = serverConfigs[0].pluginRegistries?.[0]
-      if (!registryUrl) {
-        throw new Error('No plugin registry URL configured')
-      }
-      
-      logger.info(`Fetching plugin registry from: ${registryUrl}`)
-
-      // Fetch registry data
-      let registryData: PluginRegistry
-      try {
-        if (registryUrl.startsWith('gs://')) {
-          // For Google Cloud Storage URLs, use authenticated GCS client
-          const storage = new Storage()
-          const gsPath = registryUrl.replace('gs://', '')
-          const [bucketName, ...pathParts] = gsPath.split('/')
-          const filePath = pathParts.join('/')
-          
-          logger.info(`Downloading from GCS bucket: ${bucketName}, file: ${filePath}`)
-          
-          const bucket = storage.bucket(bucketName)
-          const file = bucket.file(filePath)
-          
-          const [contents] = await file.download()
-          registryData = JSON.parse(contents.toString())
-        } else {
-          // For regular HTTP/HTTPS URLs
-          const response = await fetch(registryUrl)
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-          registryData = await response.json()
-        }
-      } catch (error: unknown) {
-        logger.error('Failed to fetch plugin registry:', error)
-        const message = error instanceof Error ? error.message : String(error)
-        throw new Error(
-          `Failed to fetch plugin registry: ${message}`
-        )
-      }
+      const registryUrls = (serverConfigs[0].pluginRegistries || [])
+        .filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+      logger.info(`Fetching plugin registries from: ${registryUrls.join(', ')}`)
+      const registryData = await fetchMergedPluginRegistry(registryUrls)
 
       logger.info(`Registry updated at: ${registryData.updatedAt}`)
       logger.info(`Found ${registryData.plugins.length} plugins in registry`)
@@ -293,6 +253,7 @@ for (const registryPlugin of registryData.plugins) {
       const settingsDefaults = settingsDefaultsRaw ? JSON.stringify(settingsDefaultsRaw) : null
       const uiSchema = uiSchemaRaw ? JSON.stringify(uiSchemaRaw) : null
       const manifestJson = artifacts.manifest ? JSON.stringify(artifacts.manifest) : null
+      const releaseMetadataPayload = buildReleaseMetadataPayload(registryVersion)
 
       if (existingVersions.length === 0) {
         logger.info(
@@ -305,6 +266,7 @@ for (const registryPlugin of registryData.plugins) {
               repoUrl: registryVersion.tarballUrl,
               tarballGsUri: registryVersion.tarballUrl,
               integritySha256: registryVersion.integritySha256,
+              ...releaseMetadataPayload,
               entryPath: artifacts.entryPath || 'index.js',
               manifest: manifestJson,
               settingsDefaults,
@@ -330,6 +292,7 @@ for (const registryPlugin of registryData.plugins) {
           update: ({
             tarballGsUri: registryVersion.tarballUrl,
             integritySha256: registryVersion.integritySha256,
+            ...releaseMetadataPayload,
             entryPath: artifacts.entryPath || 'index.js',
             manifest: manifestJson,
             settingsDefaults,
@@ -381,6 +344,12 @@ for (const registryPlugin of registryData.plugins) {
                 repoUrl
                 tarballGsUri
                 integritySha256
+                registryUrl
+                releaseNotesUrl
+                sourceRepoUrl
+                sourceCommit
+                minServerVersion
+                apiVersion
                 entryPath
                 manifest
                 settingsDefaults

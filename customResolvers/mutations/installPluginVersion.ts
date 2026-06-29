@@ -1,5 +1,4 @@
 import crypto from 'crypto'
-import { Storage } from '@google-cloud/storage'
 import type {
   PluginModel,
   PluginVersionModel,
@@ -13,20 +12,8 @@ import type { GraphQLResolveInfo } from 'graphql'
 import { parseManifestFromTarball } from './shared/pluginManifest.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
-
-type RegistryPlugin = {
-  id: string
-  versions: {
-    version: string
-    tarballUrl: string
-    integritySha256: string
-  }[]
-}
-
-type PluginRegistry = {
-  updatedAt: string
-  plugins: RegistryPlugin[]
-}
+import { downloadBytes, fetchMergedPluginRegistry, type RegistryVersion } from '../../services/plugin/registryService.js'
+import { getPluginVersionCompatibility } from '../../services/plugin/compatibility.js'
 
 type Input = {
   Plugin: PluginModel
@@ -38,6 +25,15 @@ type Args = {
   pluginId: string
   version: string
 }
+
+const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
+  registryUrl: registryVersion.registryUrl || null,
+  releaseNotesUrl: registryVersion.releaseNotesUrl || null,
+  sourceRepoUrl: registryVersion.sourceRepoUrl || null,
+  sourceCommit: registryVersion.sourceCommit || null,
+  minServerVersion: registryVersion.minServerVersion || null,
+  apiVersion: registryVersion.apiVersion || null
+})
 
 const getResolver = (input: Input) => {
   const { Plugin, PluginVersion, ServerConfig } = input
@@ -58,37 +54,10 @@ const getResolver = (input: Input) => {
         throw new Error('No plugin registries configured')
       }
 
-      const registryUrl = serverConfigs[0].pluginRegistries?.[0]
-      if (!registryUrl) {
-        throw new Error('No plugin registry URL configured')
-      }
-      logger.info('Using plugin registry URL:', registryUrl)
-
-      // 2. Fetch and find plugin version in registry
-      let registryData: PluginRegistry
-      try {
-        if (registryUrl.startsWith('gs://')) {
-          const storage = new Storage()
-          const gsPath = registryUrl.replace('gs://', '')
-          const [bucketName, ...pathParts] = gsPath.split('/')
-          const filePath = pathParts.join('/')
-          
-          const bucket = storage.bucket(bucketName)
-          const file = bucket.file(filePath)
-          
-          const [contents] = await file.download()
-          registryData = JSON.parse(contents.toString())
-        } else {
-          const response = await fetch(registryUrl)
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-          registryData = await response.json()
-        }
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error)
-        throw new Error(`Failed to fetch plugin registry: ${message}`)
-      }
+      const registryUrls = (serverConfigs[0].pluginRegistries || [])
+        .filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+      logger.info('Using plugin registry URLs:', registryUrls)
+      const registryData = await fetchMergedPluginRegistry(registryUrls)
 
       // First, resolve the plugin node using either the Neo4j ID or the plugin slug
       const pluginCandidates = await Plugin.find({
@@ -122,6 +91,12 @@ const getResolver = (input: Input) => {
           repoUrl
           tarballGsUri
           integritySha256
+          registryUrl
+          releaseNotesUrl
+          sourceRepoUrl
+          sourceCommit
+          minServerVersion
+          apiVersion
           entryPath
           Plugin {
             id
@@ -130,7 +105,7 @@ const getResolver = (input: Input) => {
         }`
       })
 
-      let registryVersion: { version: string; tarballUrl: string; integritySha256: string }
+      let registryVersion: RegistryVersion
 
       // Always get the version data from the registry for integrity verification
       const registryPlugin = registryData.plugins.find(p => p.id === pluginSlug)
@@ -148,6 +123,7 @@ const getResolver = (input: Input) => {
         logger.info(`Found existing version in database: ${pluginSlug}@${version}`)
         // Use database URL but always use registry hash for verification
         registryVersion = {
+          ...registryVersionData,
           version: dbVersion.version,
           tarballUrl: dbVersion.repoUrl || registryVersionData.tarballUrl,
           integritySha256: registryVersionData.integritySha256 // Always use registry hash
@@ -156,30 +132,17 @@ const getResolver = (input: Input) => {
         registryVersion = registryVersionData
       }
 
+      const compatibility = getPluginVersionCompatibility(registryVersion)
+      if (!compatibility.compatible) {
+        throw new Error(compatibility.message)
+      }
+
       logger.info('Using version data:', JSON.stringify(registryVersion, null, 2))
 
       // 3. Download and verify tarball integrity
       logger.info(`Downloading tarball from: ${registryVersion.tarballUrl}`)
       
-      let tarballBytes: Buffer
-      if (registryVersion.tarballUrl.startsWith('gs://')) {
-        const storage = new Storage()
-        const gsPath = registryVersion.tarballUrl.replace('gs://', '')
-        const [bucketName, ...pathParts] = gsPath.split('/')
-        const filePath = pathParts.join('/')
-        
-        const bucket = storage.bucket(bucketName)
-        const file = bucket.file(filePath)
-        
-        const [contents] = await file.download()
-        tarballBytes = contents
-      } else {
-        const response = await fetch(registryVersion.tarballUrl)
-        if (!response.ok) {
-          throw new Error(`Failed to download tarball: HTTP ${response.status}`)
-        }
-        tarballBytes = Buffer.from(await response.arrayBuffer())
-      }
+      const tarballBytes = await downloadBytes(registryVersion.tarballUrl)
 
       // 4. Verify integrity
       const actualSha256 = crypto.createHash('sha256').update(tarballBytes).digest('hex')
@@ -281,6 +244,7 @@ const getResolver = (input: Input) => {
       const manifestJson = artifacts.manifest ? JSON.stringify(artifacts.manifest) : null
       const documentationPath = artifacts.readmePath ?? manifest.documentation?.readmePath ?? null
       const readmeMarkdown = artifacts.readmeMarkdown ?? null
+      const releaseMetadataPayload = buildReleaseMetadataPayload(registryVersion)
 
       if (!pluginVersion) {
         logger.info(`Creating new plugin version: ${pluginSlug}@${version}`)
@@ -291,6 +255,7 @@ const getResolver = (input: Input) => {
               repoUrl: String(registryVersion.tarballUrl),
               tarballGsUri: String(registryVersion.tarballUrl),
               integritySha256: String(registryVersion.integritySha256),
+              ...releaseMetadataPayload,
               entryPath: artifacts.entryPath || 'index.js',
               manifest: manifestJson,
               settingsDefaults,
@@ -313,6 +278,7 @@ const getResolver = (input: Input) => {
             repoUrl: String(registryVersion.tarballUrl),
             tarballGsUri: String(registryVersion.tarballUrl),
             integritySha256: String(registryVersion.integritySha256),
+            ...releaseMetadataPayload,
             entryPath: artifacts.entryPath || pluginVersion.entryPath || 'index.js',
             manifest: manifestJson,
             settingsDefaults,
