@@ -12,9 +12,12 @@ type Args = {
   endDate?: string | null;
   channelUniqueNames?: string[] | null;
   limit?: number | null;
+  sortBy?: string | null;
+  sortDirection?: string | null;
 };
 
 type ChannelHealthRow = {
+  id: string;
   channelUniqueName: string;
   displayName: string | null;
   channelIconURL: string | null;
@@ -45,8 +48,50 @@ type AttentionItem = {
   value?: number | null;
 };
 
+type ChannelHealthSortKey =
+  | "channelUniqueName"
+  | "displayName"
+  | "discussionCount"
+  | "commentCount"
+  | "eventCount"
+  | "downloadCount"
+  | "voteCount"
+  | "uniqueContributorCount"
+  | "openIssueCount"
+  | "issueOpenedCount"
+  | "moderationActionCount"
+  | "archivedContentCount"
+  | "lockedContentCount"
+  | "oldestOpenIssueAgeDays"
+  | "issuesPerHundredContributions"
+  | "activityScore"
+  | "healthLabel";
+
+type SortDirection = "asc" | "desc";
+
 const DEFAULT_RANGE_DAYS = 30;
 const DEFAULT_CHANNEL_LIMIT = 25;
+const DEFAULT_CHANNEL_SORT_BY: ChannelHealthSortKey = "activityScore";
+const DEFAULT_CHANNEL_SORT_DIRECTION: SortDirection = "desc";
+const CHANNEL_HEALTH_SORT_KEYS = new Set<ChannelHealthSortKey>([
+  "channelUniqueName",
+  "displayName",
+  "discussionCount",
+  "commentCount",
+  "eventCount",
+  "downloadCount",
+  "voteCount",
+  "uniqueContributorCount",
+  "openIssueCount",
+  "issueOpenedCount",
+  "moderationActionCount",
+  "archivedContentCount",
+  "lockedContentCount",
+  "oldestOpenIssueAgeDays",
+  "issuesPerHundredContributions",
+  "activityScore",
+  "healthLabel",
+]);
 const SERVER_SCOPED_ISSUE_WHERE =
   "(coalesce(issue.flaggedServerRuleViolation, false) = true OR issue.channelUniqueName IS NULL)";
 
@@ -77,6 +122,50 @@ const parseDateArg = (value: string | null | undefined, fallback: DateTime) => {
   if (!value) return fallback;
   const parsed = DateTime.fromISO(value, { zone: "utc" });
   return parsed.isValid ? parsed : fallback;
+};
+
+const parseSortBy = (value: string | null | undefined): ChannelHealthSortKey => {
+  if (value && CHANNEL_HEALTH_SORT_KEYS.has(value as ChannelHealthSortKey)) {
+    return value as ChannelHealthSortKey;
+  }
+  return DEFAULT_CHANNEL_SORT_BY;
+};
+
+const parseSortDirection = (value: string | null | undefined): SortDirection => {
+  return value === "asc" || value === "desc"
+    ? value
+    : DEFAULT_CHANNEL_SORT_DIRECTION;
+};
+
+const compareChannelRows = (
+  a: ChannelHealthRow,
+  b: ChannelHealthRow,
+  sortBy: ChannelHealthSortKey,
+  sortDirection: SortDirection
+) => {
+  const aValue = a[sortBy];
+  const bValue = b[sortBy];
+  let comparison = 0;
+
+  if (typeof aValue === "string" || typeof bValue === "string") {
+    comparison = String(aValue || "").localeCompare(String(bValue || ""));
+  } else {
+    comparison = toNumber(aValue) - toNumber(bValue);
+  }
+
+  if (comparison !== 0) {
+    return sortDirection === "asc" ? comparison : -comparison;
+  }
+
+  comparison = b.activityScore - a.activityScore;
+  if (comparison === 0) {
+    comparison = b.openIssueCount - a.openIssueCount;
+  }
+  if (comparison === 0) {
+    comparison = a.channelUniqueName.localeCompare(b.channelUniqueName);
+  }
+
+  return comparison;
 };
 
 const getHealthLabel = (row: Omit<ChannelHealthRow, "healthLabel">): string => {
@@ -305,6 +394,7 @@ const channelHealthQuery = `
        oldestOpenIssueAgeDays,
        discussionCount + commentCount + eventCount AS contributionCount
   WITH {
+    id: c.uniqueName,
     channelUniqueName: c.uniqueName,
     displayName: c.displayName,
     channelIconURL: c.channelIconURL,
@@ -493,6 +583,8 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
     const startDate = start.toISODate() || now.toISODate();
     const endDate = end.toISODate() || now.toISODate();
     const limit = args.limit || DEFAULT_CHANNEL_LIMIT;
+    const sortBy = parseSortBy(args.sortBy);
+    const sortDirection = parseSortDirection(args.sortDirection);
     const channelUniqueNames = args.channelUniqueNames || [];
     const session = driver.session({ defaultAccessMode: "READ" });
 
@@ -512,8 +604,7 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
 
       const channelRecord = channelResult.records[0];
       const allChannelHealth = sanitize(channelRecord?.get("allChannelHealth") || []) as Array<Omit<ChannelHealthRow, "healthLabel">>;
-      const rawRows = allChannelHealth.slice(0, limit);
-      const channelHealth = rawRows.map((row) => {
+      const normalizedChannelHealth = allChannelHealth.map((row) => {
         const normalized = {
           ...row,
           oldestOpenIssueAgeDays: toNullableNumber(row.oldestOpenIssueAgeDays),
@@ -524,6 +615,9 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
           healthLabel: getHealthLabel(normalized),
         };
       });
+      const channelHealth = normalizedChannelHealth
+        .sort((a, b) => compareChannelRows(a, b, sortBy, sortDirection))
+        .slice(0, limit);
       const timeSeries = sanitize(timeSeriesResult.records[0]?.get("timeSeries") || []);
       const issueSummary = issueSummaryResult.records[0];
       const openIssueSummary = openIssueSummaryResult.records[0];
