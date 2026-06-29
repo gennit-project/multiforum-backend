@@ -126,6 +126,7 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
     (row: any) => row.channelUniqueName === "general"
   );
   assert.ok(general, `expected general row, got ${JSON.stringify(result.channelHealth)}`);
+  assert.equal(general.id, "general");
   assert.equal(general.uniqueContributorCount, 2);
   assert.equal(general.openIssueCount, 1);
   assert.equal(general.healthLabel, "Needs review");
@@ -192,4 +193,47 @@ test("getServerHealthDashboard filters channel rows without limiting summary tot
   assert.equal(result.channelHealth.length, 1);
   assert.equal(result.summary.discussionCount, 2);
   assert.equal(result.summary.activeChannelCount, 2);
+});
+
+test("getServerHealthDashboard sorts channel rows before applying the limit", async () => {
+  await run(
+    `
+    CREATE (active:Channel { uniqueName: 'active', createdAt: datetime() })
+    CREATE (stale:Channel { uniqueName: 'stale', createdAt: datetime() })
+    CREATE (u:User { username: 'alice' })
+    CREATE (d1:Discussion { id: 'd1', title: 'One', createdAt: datetime() })
+    CREATE (d2:Discussion { id: 'd2', title: 'Two', createdAt: datetime() })
+    CREATE (dc1:DiscussionChannel { id: 'dc1', discussionId: 'd1', channelUniqueName: 'active', createdAt: datetime() })
+    CREATE (dc2:DiscussionChannel { id: 'dc2', discussionId: 'd2', channelUniqueName: 'active', createdAt: datetime() })
+    CREATE (oldIssue:Issue {
+      id: 'old-issue',
+      issueNumber: 50,
+      channelUniqueName: 'stale',
+      title: 'Old stale issue',
+      isOpen: true,
+      flaggedServerRuleViolation: true,
+      createdAt: datetime() - duration({days: 45})
+    })
+    CREATE (u)-[:POSTED_DISCUSSION]->(d1)
+    CREATE (u)-[:POSTED_DISCUSSION]->(d2)
+    CREATE (dc1)-[:POSTED_IN_CHANNEL]->(active)
+    CREATE (dc1)-[:POSTED_IN_CHANNEL]->(d1)
+    CREATE (dc2)-[:POSTED_IN_CHANNEL]->(active)
+    CREATE (dc2)-[:POSTED_IN_CHANNEL]->(d2)
+    CREATE (stale)-[:HAS_ISSUE]->(oldIssue)
+    `
+  );
+
+  const result = await env.resolvers.Query.getServerHealthDashboard(null, {
+    startDate: "2000-01-01",
+    endDate: "2100-01-01",
+    limit: 1,
+    sortBy: "oldestOpenIssueAgeDays",
+    sortDirection: "desc",
+  });
+
+  assert.equal(result.channelHealth.length, 1);
+  assert.equal(result.channelHealth[0].channelUniqueName, "stale");
+  assert.equal(result.summary.discussionCount, 2);
+  assert.equal(result.summary.activeChannelCount, 1);
 });

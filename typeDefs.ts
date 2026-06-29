@@ -1894,6 +1894,7 @@ const typeDefinitions = gql`
   }
 
   type ChannelHealthRow @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    id: ID!
     channelUniqueName: String!
     displayName: String
     channelIconURL: String
@@ -2055,6 +2056,8 @@ const typeDefinitions = gql`
       endDate: String
       channelUniqueNames: [String!]
       limit: Int
+      sortBy: String
+      sortDirection: String
     ): ServerHealthDashboard!
     isOriginalPosterSuspended(issueId: String!): Boolean
     safetyCheck: SafetyCheckResponse
