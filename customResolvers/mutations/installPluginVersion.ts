@@ -13,6 +13,7 @@ import { parseManifestFromTarball } from './shared/pluginManifest.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
 import { downloadBytes, fetchMergedPluginRegistry, type RegistryVersion } from '../../services/plugin/registryService.js'
+import { getPluginVersionCompatibility } from '../../services/plugin/compatibility.js'
 
 type Input = {
   Plugin: PluginModel
@@ -122,12 +123,18 @@ const getResolver = (input: Input) => {
         logger.info(`Found existing version in database: ${pluginSlug}@${version}`)
         // Use database URL but always use registry hash for verification
         registryVersion = {
+          ...registryVersionData,
           version: dbVersion.version,
           tarballUrl: dbVersion.repoUrl || registryVersionData.tarballUrl,
           integritySha256: registryVersionData.integritySha256 // Always use registry hash
         }
       } else {
         registryVersion = registryVersionData
+      }
+
+      const compatibility = getPluginVersionCompatibility(registryVersion)
+      if (!compatibility.compatible) {
+        throw new Error(compatibility.message)
       }
 
       logger.info('Using version data:', JSON.stringify(registryVersion, null, 2))

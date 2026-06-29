@@ -14,3 +14,6 @@ export const COMMENT_EVENTS = new Set([
 export const CHANNEL_EVENTS = new Set([
   'discussionChannel.created',
 ])
+
+export const CURRENT_SERVER_VERSION = '1.0.0'
+export const SUPPORTED_PLUGIN_API_VERSION = '1'
