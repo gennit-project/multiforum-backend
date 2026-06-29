@@ -220,15 +220,20 @@ const getResolver = (input: Input) => {
         eventSeriesCreateInput.location = locationPoint;
       }
 
-      // Add repeat pattern if provided
+      // Add repeat pattern if provided. RepeatPattern is its own node linked via
+      // HAS_REPEAT_PATTERN, so create it nested rather than as a property.
       if (seriesInput.repeatPattern) {
         eventSeriesCreateInput.repeatPattern = {
-          type: seriesInput.repeatPattern.type,
-          count: seriesInput.repeatPattern.count,
-          daysOfWeek: seriesInput.repeatPattern.daysOfWeek,
-          endType: seriesInput.repeatPattern.endType,
-          endCount: seriesInput.repeatPattern.endCount,
-          endDate: seriesInput.repeatPattern.endDate,
+          create: {
+            node: {
+              type: seriesInput.repeatPattern.type,
+              count: seriesInput.repeatPattern.count,
+              daysOfWeek: seriesInput.repeatPattern.daysOfWeek,
+              endType: seriesInput.repeatPattern.endType,
+              endCount: seriesInput.repeatPattern.endCount,
+              endDate: seriesInput.repeatPattern.endDate,
+            },
+          },
         };
       }
 

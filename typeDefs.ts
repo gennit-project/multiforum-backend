@@ -675,7 +675,10 @@ const typeDefinitions = gql`
     until: DateTime
   }
 
+  # A repeat pattern is its own node (Neo4j can't store a nested object as a
+  # property), linked to its EventSeries via HAS_REPEAT_PATTERN.
   type RepeatPattern {
+    id: ID! @id
     type: RepeatPatternType!
     count: Int
     daysOfWeek: [Int]
@@ -717,6 +720,7 @@ const typeDefinitions = gql`
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     repeatPattern: RepeatPattern
+      @relationship(type: "HAS_REPEAT_PATTERN", direction: OUT)
     Poster: User @relationship(type: "POSTED_BY", direction: IN)
     Tags: [Tag!]! @relationship(type: "HAS_TAG", direction: OUT)
     Occurrences: [Event!]! @relationship(type: "HAS_OCCURRENCE", direction: OUT)
@@ -958,7 +962,11 @@ const typeDefinitions = gql`
     channelConnections: [String!]!
   }
 
-  input EventSeriesCreateInput {
+  # Must NOT be named EventSeriesCreateInput — that collides with the OGM's
+  # auto-generated node-create input for the EventSeries @node type (the two
+  # merge, injecting this required channelConnections into the OGM input and
+  # breaking EventSeries.create() in the resolver).
+  input CreateEventSeriesInput {
     title: String!
     description: String
     locationName: String
@@ -1082,7 +1090,7 @@ const typeDefinitions = gql`
       input: [EventCreateInputWithChannels!]!
     ): [Event!]!
     createEventSeriesWithChannelConnections(
-      input: EventSeriesCreateInput!
+      input: CreateEventSeriesInput!
     ): EventSeries
     updateEventWithChannelConnections(
       where: EventWhere!
