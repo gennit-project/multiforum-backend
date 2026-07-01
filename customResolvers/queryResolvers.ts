@@ -21,6 +21,7 @@ import getPipelineRuns from "./queries/getPipelineRuns.js";
 import publicCollectionsContaining from "./queries/publicCollectionsContaining.js";
 import getOwnEmail from "./queries/getOwnEmail.js";
 import getServerHealthDashboard from "./queries/getServerHealthDashboard.js";
+import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -43,6 +44,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
   return {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
       Discussion,
+      driver,
+    }),
+    getSiteWideIssueList: getSiteWideIssueList({
       driver,
     }),
     getSiteWideWikiList: getSiteWideWikiList({
