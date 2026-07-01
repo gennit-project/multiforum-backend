@@ -2,10 +2,15 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import type { Driver } from 'neo4j-driver'
 import type { GraphQLContext } from '../../types/context.js'
-import trackDownload from './trackDownload.js'
+import trackDownload, {
+  AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION,
+  AUTO_SAVED_DOWNLOADS_COLLECTION_NAME
+} from './trackDownload.js'
 
 type RunCall = [string, {
   username?: string
+  downloadsCollectionName?: string
+  downloadsCollectionDescription?: string
   downloadableFileId: string
   discussionId: string
 }]
@@ -114,6 +119,51 @@ test('trackDownload updates counters and saves the download discussion', async (
   assert.match(calls.run[0][0], /downloadCountTotal/)
   assert.match(calls.run[0][0], /downloadCountUnique/)
   assert.match(calls.run[0][0], /OWNS_DOWNLOAD/)
+  assert.match(calls.run[0][0], /CREATED_BY/)
+  assert.match(calls.run[0][0], /CONTAINS_DOWNLOAD/)
+  assert.match(calls.run[0][0], /itemOrder/)
+  assert.equal(
+    calls.run[0][1].downloadsCollectionName,
+    AUTO_SAVED_DOWNLOADS_COLLECTION_NAME
+  )
+  assert.equal(
+    calls.run[0][1].downloadsCollectionDescription,
+    AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION
+  )
+})
+
+test('trackDownload only appends to the downloads collection when the discussion is not already present', async () => {
+  const { driver, calls } = buildDriver()
+  const resolver = trackDownload({ driver })
+
+  await resolver(
+    null,
+    { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+    { user: { username: 'alice' } } as unknown as GraphQLContext
+  )
+
+  assert.match(calls.run[0][0], /existingCollectionDownload IS NULL/)
+  assert.match(calls.run[0][0], /FOREACH/)
+  assert.match(calls.run[0][0], /coalesce\(downloadsCollection.itemOrder, \[\]\) \+ \[\$discussionId\]/)
+})
+
+test('trackDownload treats a different authenticated user as a separate downloader', async () => {
+  const { driver, calls } = buildDriver()
+  const resolver = trackDownload({ driver })
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+    { user: { username: 'bob' } } as unknown as GraphQLContext
+  )
+
+  assert.equal(result, true)
+  assert.equal(calls.run[0][1].username, 'bob')
+  assert.match(calls.run[0][0], /existingDownload IS NULL AS isUnique/)
+  assert.match(
+    calls.run[0][0],
+    /downloadCountUnique = coalesce\(file.downloadCountUnique, 0\) \+ CASE WHEN isUnique THEN 1 ELSE 0 END/
+  )
 })
 
 test('trackDownload throws when the file does not belong to the discussion', async () => {
