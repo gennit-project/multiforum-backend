@@ -1398,6 +1398,18 @@ const typeDefinitions = gql`
     timeFrame: TimeFrame
   }
 
+  enum IssueSortType {
+    newest
+    oldest
+    mostReports
+  }
+
+  input IssueListOptions {
+    offset: Int
+    limit: Int
+    sort: IssueSortType
+  }
+
   input WikiListOptions {
     offset: Int
     limit: Int
@@ -1426,6 +1438,35 @@ const typeDefinitions = gql`
   type SiteWideWikiListFormat {
     aggregateWikiPageCount: Int!
     wikiPages: [WikiPage!]!
+  }
+
+  type SiteWideIssueListItem {
+    id: ID!
+    issueNumber: Int!
+    title: String
+    body: String
+    isOpen: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime
+    relatedCommentId: ID
+    relatedDiscussionId: ID
+    relatedEventId: ID
+    relatedImageId: ID
+    relatedWikiPageId: ID
+    relatedWikiRevisionId: ID
+    relatedUsername: String
+    flaggedServerRuleViolation: Boolean
+    locked: Boolean
+    lockReason: String
+    channelUniqueName: String
+    channelIconURL: String
+    authorName: String
+    reportCount: Int!
+  }
+
+  type SiteWideIssueListFormat {
+    aggregateIssueCount: Int!
+    issues: [SiteWideIssueListItem!]!
   }
 
   type DiscussionChannelListItem {
@@ -2010,6 +2051,15 @@ const typeDefinitions = gql`
       options: DiscussionListOptions
       loggedInUsername: String
     ): SiteWideDiscussionListFormat
+    getSiteWideIssueList(
+      searchInput: String
+      selectedChannels: [String]
+      startDate: String
+      endDate: String
+      showOnlyServerRuleViolations: Boolean
+      isOpen: Boolean!
+      options: IssueListOptions
+    ): SiteWideIssueListFormat
     getSiteWideWikiList(
       searchInput: String
       selectedChannels: [String]
