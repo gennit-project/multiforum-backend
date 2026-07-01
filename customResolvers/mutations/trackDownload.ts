@@ -20,6 +20,10 @@ type Input = {
 
 type Neo4jCount = number | { toNumber: () => number } | null | undefined
 
+export const AUTO_SAVED_DOWNLOADS_COLLECTION_NAME = 'Downloaded Items'
+export const AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION =
+  'Items appear here automatically when you download them.'
+
 const toNumber = (value: Neo4jCount) => {
   if (typeof value === 'number') {
     return value
@@ -93,11 +97,28 @@ const trackDownload = ({
         MATCH (user:User {username: $username})
         MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
         OPTIONAL MATCH (user)-[existingDownload:DOWNLOADED_FILE]->(file)
-        WITH user, discussion, file, existingDownload IS NULL AS isUnique
+        MERGE (user)<-[:CREATED_BY]-(downloadsCollection:Collection {
+          name: $downloadsCollectionName,
+          collectionType: 'DOWNLOADS'
+        })
+          ON CREATE SET
+            downloadsCollection.id = randomUUID(),
+            downloadsCollection.description = $downloadsCollectionDescription,
+            downloadsCollection.visibility = 'PRIVATE',
+            downloadsCollection.itemOrder = [],
+            downloadsCollection.createdAt = datetime(),
+            downloadsCollection.updatedAt = datetime()
+        WITH user, discussion, file, downloadsCollection, existingDownload IS NULL AS isUnique
         MERGE (user)-[download:DOWNLOADED_FILE]->(file)
           ON CREATE SET download.createdAt = datetime()
+        OPTIONAL MATCH (downloadsCollection)-[existingCollectionDownload:CONTAINS_DOWNLOAD]->(discussion)
+        FOREACH (_ IN CASE WHEN existingCollectionDownload IS NULL THEN [1] ELSE [] END |
+          MERGE (downloadsCollection)-[:CONTAINS_DOWNLOAD]->(discussion)
+          SET downloadsCollection.itemOrder = coalesce(downloadsCollection.itemOrder, []) + [$discussionId]
+        )
         SET
           download.lastDownloadedAt = datetime(),
+          downloadsCollection.updatedAt = datetime(),
           file.downloadCountTotal = coalesce(file.downloadCountTotal, 0) + 1,
           file.downloadCountUnique = coalesce(file.downloadCountUnique, 0) + CASE WHEN isUnique THEN 1 ELSE 0 END
         MERGE (user)-[:OWNS_DOWNLOAD]->(discussion)
@@ -105,6 +126,9 @@ const trackDownload = ({
         `,
         {
           username,
+          downloadsCollectionName: AUTO_SAVED_DOWNLOADS_COLLECTION_NAME,
+          downloadsCollectionDescription:
+            AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION,
           downloadableFileId,
           discussionId
         }
