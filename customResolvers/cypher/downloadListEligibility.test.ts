@@ -25,6 +25,24 @@ test("channel download list query requires an attached downloadable file when ha
   );
 });
 
+test("channel download label filters honor include and exclude filter group modes", () => {
+  assert.match(
+    getDiscussionChannelsQuery,
+    /fg\.mode = "EXCLUDE"[\s\S]*NOT EXISTS[\s\S]*excludedOption\.value IN labelFilter\.values/
+  );
+  assert.match(
+    getDiscussionChannelsQuery,
+    /ELSE EXISTS[\s\S]*includedOption\.value IN labelFilter\.values/
+  );
+});
+
+test("channel download label filters are scoped to the current channel's filter groups", () => {
+  assert.match(
+    getDiscussionChannelsQuery,
+    /:Channel \{uniqueName: dc\.channelUniqueName\}\)-\[:HAS_FILTER_GROUP\]->\(fg:FilterGroup \{key: labelFilter\.groupKey\}\)/
+  );
+});
+
 test("user contributions query still treats hasDownload as a presentation flag without list-only file gating", () => {
   assert.match(
     getUserContributionsQuery,
