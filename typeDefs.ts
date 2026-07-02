@@ -73,6 +73,12 @@ const typeDefinitions = gql`
   type Image {
     id: ID! @id
     url: String
+    storageBucket: String
+    storageObjectName: String
+    storageUrl: String
+    uploadedAt: DateTime
+    uploadedByUsername: String
+    uploadedByIp: String
     alt: String
     caption: String
     longDescription: String
@@ -391,6 +397,12 @@ const typeDefinitions = gql`
     kind:     FileKind!
     size:     Int
     url:      String!
+    storageBucket: String
+    storageObjectName: String
+    storageUrl: String
+    uploadedAt: DateTime
+    uploadedByUsername: String
+    uploadedByIp: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
 
     # commerce fields
@@ -945,6 +957,10 @@ const typeDefinitions = gql`
 
   type SignedURL {
     url: String
+    storageBucket: String
+    storageObjectName: String
+    storageUrl: String
+    uploadedAt: DateTime
   }
 
   type DropDataResponse {

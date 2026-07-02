@@ -3,6 +3,10 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLRequest, Ogm } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import {
+  getAttemptedUploadAuditFields,
+  uploadAuditFieldsError,
+} from "./uploadAuditFields.js";
+import {
   DownloadableFileCreateInput,
   DownloadableFileUpdateInput,
 } from "../../src/generated/graphql.js";
@@ -180,6 +184,13 @@ export const updateDownloadableFileInputIsValid = rule({ cache: "contextual" })(
   async (parent: unknown, args: UpdateDownloadableFileArgs, ctx: ValidationContext, info: GraphQLResolveInfo) => {
     if (!args.update) {
       return "Missing update input in args.";
+    }
+
+    const attemptedUploadAuditFields = getAttemptedUploadAuditFields(
+      args.update as Record<string, unknown>
+    );
+    if (attemptedUploadAuditFields.length > 0) {
+      return uploadAuditFieldsError(attemptedUploadAuditFields);
     }
 
     // For update operations, we need to find the existing file and its channel connections

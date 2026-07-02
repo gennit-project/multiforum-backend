@@ -40,6 +40,7 @@ const {
   updateCommentInputIsValid,
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
+  updateImageInputIsValid,
   updateUserInputIsValid,
   serverRoleInputDoesNotEscalate,
   modServerRoleInputDoesNotEscalate,
@@ -270,7 +271,7 @@ const permissionList = shield({
       // canArchiveImage mod permission here, since updateImages carries no
       // channel argument and images aren't channel-scoped; server admins are
       // covered because the seeded admin bundle grants that mod capability.
-      updateImages: and(isAuthenticated, or(isImageUploader, canArchiveAndUnarchiveImage)),
+      updateImages: and(isAuthenticated, updateImageInputIsValid, or(isImageUploader, canArchiveAndUnarchiveImage)),
       createImages: deny, // Use createImageWithUploader instead to ensure Uploader is set
       createImageWithUploader: and(isAuthenticated, canUploadFile),
 
