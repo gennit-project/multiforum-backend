@@ -6,6 +6,7 @@ import {
   sanitizeImagesFieldInput,
   sanitizeAlbumCreateNode,
   sanitizeAlbumUpdateNode,
+  sanitizeCollectionCreateInput,
 } from "./ownershipSanitizers.js";
 
 // sanitizeAlbumCreateInput tests
@@ -308,4 +309,42 @@ test("sanitizeAlbumUpdateNode preserves non-ownership fields", () => {
   assert.deepEqual(result?.imageOrder, ["1", "2", "3"]);
   // Arbitrary client field preserved by the spread but not on AlbumUpdateInput.
   assert.equal((result as Record<string, unknown>).customField, "preserved");
+});
+
+test("sanitizeCollectionCreateInput defaults visibility to PRIVATE", () => {
+  const result = sanitizeCollectionCreateInput(
+    {
+      name: "Reading List",
+      collectionType: "DISCUSSIONS",
+      updatedAt: "2026-07-01T00:00:00.000Z",
+      itemOrder: [],
+    },
+    "owner-user"
+  );
+
+  assert.equal(result.visibility, "PRIVATE");
+  assert.deepEqual(result.CreatedBy, {
+    connect: { where: { node: { username: "owner-user" } } },
+  });
+});
+
+test("sanitizeCollectionCreateInput preserves explicit visibility overrides", () => {
+  const result = sanitizeCollectionCreateInput(
+    {
+      name: "Shared List",
+      collectionType: "DISCUSSIONS",
+      visibility: "PUBLIC",
+      updatedAt: "2026-07-01T00:00:00.000Z",
+      itemOrder: [],
+      CreatedBy: {
+        connect: { where: { node: { username: "spoofed-user" } } },
+      },
+    },
+    "owner-user"
+  );
+
+  assert.equal(result.visibility, "PUBLIC");
+  assert.deepEqual(result.CreatedBy, {
+    connect: { where: { node: { username: "owner-user" } } },
+  });
 });
