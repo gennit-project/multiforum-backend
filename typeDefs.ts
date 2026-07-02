@@ -404,6 +404,10 @@ const typeDefinitions = gql`
     uploadedByUsername: String
     uploadedByIp: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
+    permanentlyRemoved: Boolean @default(value: false)
+    permanentlyRemovedAt: DateTime
+    PermanentlyRemovedByUser: User @relationship(type: "REMOVED_DOWNLOADABLE_FILE", direction: IN)
+    PermanentlyRemovedByMod: ModerationProfile @relationship(type: "REMOVED_DOWNLOADABLE_FILE", direction: IN)
 
     # commerce fields
     priceModel: PriceModel! @default(value: FREE)
@@ -1283,6 +1287,8 @@ const typeDefinitions = gql`
       imageId: ID!
       explanation: String
     ): Issue
+    permanentlyDeleteImage(imageId: ID!): Image
+    permanentlyDeleteDownloadableFile(downloadableFileId: ID!): DownloadableFile
     lockChannel(
       channelUniqueName: String!
       reason: String!

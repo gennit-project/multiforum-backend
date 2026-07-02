@@ -198,6 +198,14 @@ const authGatedImageMod: Array<{ name: string; op: string }> = [
     name: "permanentlyRemoveImage",
     op: `mutation { permanentlyRemoveImage(imageId: "i") { id } }`,
   },
+  {
+    name: "permanentlyDeleteImage",
+    op: `mutation { permanentlyDeleteImage(imageId: "i") { id } }`,
+  },
+  {
+    name: "permanentlyDeleteDownloadableFile",
+    op: `mutation { permanentlyDeleteDownloadableFile(downloadableFileId: "f") { id } }`,
+  },
 ];
 
 for (const { name, op } of authGatedImageMod) {
