@@ -61,6 +61,72 @@ test("getUserContributions returns nothing for a user with no activity", async (
   assert.equal(total, 0, "a user with no authored content has no contributions");
 });
 
+test("getUserWikiEditsCount counts current and historical wiki edits only", async () => {
+  await run(
+    `CREATE (alice:User { username: 'alice' })
+     CREATE (wikiCurrent:WikiPage {
+       id: 'wiki-current',
+       title: 'Current Wiki',
+       slug: 'current-wiki',
+       channelUniqueName: 'cats',
+       createdAt: datetime()
+     })
+     CREATE (wikiOld:WikiPage {
+       id: 'wiki-old',
+       title: 'Old Wiki',
+       slug: 'old-wiki',
+       channelUniqueName: 'cats',
+       createdAt: datetime()
+     })
+     CREATE (wikiRev:TextVersion {
+       id: 'wiki-rev-1',
+       body: 'old body',
+       createdAt: datetime()
+     })
+     CREATE (comment:Comment {
+       id: 'comment-1',
+       text: 'comment',
+       isRootComment: true,
+       createdAt: datetime()
+     })
+     CREATE (commentRev:TextVersion {
+       id: 'comment-rev-1',
+       body: 'old comment',
+       createdAt: datetime()
+     })
+     CREATE (discussion:Discussion {
+       id: 'discussion-1',
+       title: 'Discussion',
+       createdAt: datetime()
+     })
+     CREATE (discussionRev:TextVersion {
+       id: 'discussion-rev-1',
+       body: 'old discussion',
+       createdAt: datetime()
+     })
+     CREATE (alice)-[:AUTHORED_VERSION]->(wikiCurrent)
+     CREATE (alice)-[:AUTHORED_VERSION]->(wikiRev)
+     CREATE (alice)-[:AUTHORED_VERSION]->(commentRev)
+     CREATE (alice)-[:AUTHORED_VERSION]->(discussionRev)
+     CREATE (wikiOld)-[:HAS_VERSION]->(wikiRev)
+     CREATE (comment)-[:HAS_VERSION]->(commentRev)
+     CREATE (discussion)-[:HAS_BODY_VERSION]->(discussionRev)`
+  );
+
+  const result = await env.resolvers.Query.getUserWikiEditsCount(null, {
+    username: "alice",
+  });
+
+  assert.equal(result, 2);
+});
+
+test("getUserWikiEditsCount throws when the user does not exist", async () => {
+  await assert.rejects(
+    env.resolvers.Query.getUserWikiEditsCount(null, { username: "ghost" }),
+    /not found|Failed to fetch wiki edits count/i
+  );
+});
+
 // --- getModContributions ---
 
 test("getModContributions returns a mod's moderation actions grouped by date", async () => {
