@@ -56,6 +56,8 @@ import unarchiveEvent from "./mutations/unarchiveEvent.js";
 import archiveImage from "./mutations/archiveImage.js";
 import unarchiveImage from "./mutations/unarchiveImage.js";
 import permanentlyRemoveImage from "./mutations/permanentlyRemoveImage.js";
+import permanentlyDeleteImage from "./mutations/permanentlyDeleteImage.js";
+import permanentlyDeleteDownloadableFile from "./mutations/permanentlyDeleteDownloadableFile.js";
 import createIssue from "./mutations/createIssue.js";
 import suspendUser from "./mutations/suspendUser.js";
 import suspendMod from "./mutations/suspendMod.js";
@@ -348,6 +350,12 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     permanentlyRemoveImage: permanentlyRemoveImage({
       Issue,
       Image,
+      driver
+    }),
+    permanentlyDeleteImage: permanentlyDeleteImage({
+      driver
+    }),
+    permanentlyDeleteDownloadableFile: permanentlyDeleteDownloadableFile({
       driver
     }),
     lockChannel: lockChannel({

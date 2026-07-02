@@ -304,6 +304,8 @@ const permissionList = shield({
       archiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
       unarchiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
       permanentlyRemoveImage: and(isAuthenticated, canPermanentlyRemoveImage),
+      permanentlyDeleteImage: and(isAuthenticated, allow),
+      permanentlyDeleteDownloadableFile: and(isAuthenticated, allow),
 
       subscribeToDiscussionChannel: and(isAuthenticated, allow),
       unsubscribeFromDiscussionChannel: and(isAuthenticated, allow),
