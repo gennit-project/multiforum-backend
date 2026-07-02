@@ -404,6 +404,10 @@ const typeDefinitions = gql`
     uploadedByUsername: String
     uploadedByIp: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
+    permanentlyRemoved: Boolean @default(value: false)
+    permanentlyRemovedAt: DateTime
+    PermanentlyRemovedByUser: User @relationship(type: "REMOVED_DOWNLOADABLE_FILE", direction: IN)
+    PermanentlyRemovedByMod: ModerationProfile @relationship(type: "REMOVED_DOWNLOADABLE_FILE", direction: IN)
 
     # commerce fields
     priceModel: PriceModel! @default(value: FREE)
@@ -1283,6 +1287,8 @@ const typeDefinitions = gql`
       imageId: ID!
       explanation: String
     ): Issue
+    permanentlyDeleteImage(imageId: ID!): Image
+    permanentlyDeleteDownloadableFile(downloadableFileId: ID!): DownloadableFile
     lockChannel(
       channelUniqueName: String!
       reason: String!
@@ -2041,6 +2047,19 @@ const typeDefinitions = gql`
     unreadNotificationCount: Int
   }
 
+  type UploadedDownloadableFileDiscussion @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    id: ID!
+    title: String!
+    createdAt: DateTime
+    updatedAt: DateTime
+    channelUniqueNames: [String!]!
+  }
+
+  type UploadedDownloadableFileGroup @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    discussion: UploadedDownloadableFileDiscussion!
+    files: [DownloadableFile!]!
+  }
+
   type Query {
     # Discovery
     """
@@ -2110,6 +2129,7 @@ const typeDefinitions = gql`
     with username: null when authenticated but no account exists yet.
     """
     getOwnEmail: OwnEmail
+    getUploadedDownloadableFiles(username: String!): [UploadedDownloadableFileGroup!]!
     getUserFavoriteComment(commentId: ID!): Boolean
     getSortedChannels(
       offset: Int

@@ -76,6 +76,7 @@ const permissionList = shield({
       // access should be able to read them. Clients that need the caller's own
       // email use the self-scoped `getOwnEmail` query.
       emails: deny,
+      getUploadedDownloadableFiles: and(isAuthenticated, allow),
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
     },
     User: {
@@ -304,6 +305,8 @@ const permissionList = shield({
       archiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
       unarchiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
       permanentlyRemoveImage: and(isAuthenticated, canPermanentlyRemoveImage),
+      permanentlyDeleteImage: and(isAuthenticated, allow),
+      permanentlyDeleteDownloadableFile: and(isAuthenticated, allow),
 
       subscribeToDiscussionChannel: and(isAuthenticated, allow),
       unsubscribeFromDiscussionChannel: and(isAuthenticated, allow),
