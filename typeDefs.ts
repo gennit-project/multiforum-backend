@@ -2047,6 +2047,19 @@ const typeDefinitions = gql`
     unreadNotificationCount: Int
   }
 
+  type UploadedDownloadableFileDiscussion @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    id: ID!
+    title: String!
+    createdAt: DateTime
+    updatedAt: DateTime
+    channelUniqueNames: [String!]!
+  }
+
+  type UploadedDownloadableFileGroup @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    discussion: UploadedDownloadableFileDiscussion!
+    files: [DownloadableFile!]!
+  }
+
   type Query {
     # Discovery
     """
@@ -2116,6 +2129,7 @@ const typeDefinitions = gql`
     with username: null when authenticated but no account exists yet.
     """
     getOwnEmail: OwnEmail
+    getUploadedDownloadableFiles(username: String!): [UploadedDownloadableFileGroup!]!
     getUserFavoriteComment(commentId: ID!): Boolean
     getSortedChannels(
       offset: Int
