@@ -12,12 +12,12 @@ test("returns an Error result unchanged", () => {
 });
 
 test("default behavior treats a falsy non-error result as allowed", () => {
-  // Mirrors canPermanentlyRemoveImage / image server-scope.
+  // Preserved for legacy callers that do not opt into fail-closed behavior.
   assert.equal(normalizeServerModPermissionResult(false), true);
 });
 
-test("denyOnFalsy treats a falsy non-error result as denied", () => {
-  // Mirrors canLockChannel.
+test("denyOnFalsy treats a falsy non-error result as denied for destructive actions", () => {
+  // Mirrors canLockChannel and canPermanentlyRemoveImage.
   assert.equal(
     normalizeServerModPermissionResult(false, { denyOnFalsy: true }),
     false
