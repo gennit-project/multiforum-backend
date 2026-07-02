@@ -6,6 +6,7 @@ import type {
   ImageUploaderFieldInput,
   CollectionCreateInput,
   CollectionCreatedByFieldInput,
+  CollectionVisibility,
 } from "../../../ogm_types.js";
 
 const buildOwnerConnect = (username: string): AlbumOwnerFieldInput => ({
@@ -120,6 +121,9 @@ export const sanitizeCollectionCreateInput = (
 
   return {
     ...rest,
+    visibility:
+      ((rest as Partial<CollectionCreateInput>).visibility as CollectionVisibility | undefined) ??
+      "PRIVATE",
     CreatedBy: buildCreatedByConnect(username),
   } as CollectionCreateInput;
 };
