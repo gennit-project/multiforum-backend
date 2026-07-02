@@ -93,6 +93,8 @@ const typeDefinitions = gql`
     archived: Boolean @default(value: false)
     permanentlyRemoved: Boolean @default(value: false)
     permanentlyRemovedAt: DateTime
+    permanentlyRemovedByUsername: String
+    permanentlyRemovedByModName: String
     PermanentlyRemovedByUser: User @relationship(type: "REMOVED_IMAGE", direction: IN)
     PermanentlyRemovedByMod: ModerationProfile @relationship(type: "REMOVED_IMAGE", direction: IN)
 
@@ -406,6 +408,8 @@ const typeDefinitions = gql`
     createdAt: DateTime! @timestamp(operations: [CREATE])
     permanentlyRemoved: Boolean @default(value: false)
     permanentlyRemovedAt: DateTime
+    permanentlyRemovedByUsername: String
+    permanentlyRemovedByModName: String
     PermanentlyRemovedByUser: User @relationship(type: "REMOVED_DOWNLOADABLE_FILE", direction: IN)
     PermanentlyRemovedByMod: ModerationProfile @relationship(type: "REMOVED_DOWNLOADABLE_FILE", direction: IN)
 

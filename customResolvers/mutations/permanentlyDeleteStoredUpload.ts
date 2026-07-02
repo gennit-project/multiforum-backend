@@ -172,7 +172,9 @@ const markStoredUploadRemoved = async ({
         ? `
           MATCH (target:Image {id: $id})
           SET target.permanentlyRemoved = true,
-              target.permanentlyRemovedAt = datetime($removedAt)
+              target.permanentlyRemovedAt = datetime($removedAt),
+              target.permanentlyRemovedByUsername = $username,
+              target.permanentlyRemovedByModName = $modProfileName
           WITH target
           OPTIONAL MATCH (removerUser:User {username: $username})
           FOREACH (_ IN CASE WHEN removerUser IS NULL THEN [] ELSE [1] END |
@@ -190,12 +192,16 @@ const markStoredUploadRemoved = async ({
             target.storageObjectName AS storageObjectName,
             target.storageUrl AS storageUrl,
             target.permanentlyRemoved AS permanentlyRemoved,
-            toString(target.permanentlyRemovedAt) AS permanentlyRemovedAt
+            toString(target.permanentlyRemovedAt) AS permanentlyRemovedAt,
+            target.permanentlyRemovedByUsername AS permanentlyRemovedByUsername,
+            target.permanentlyRemovedByModName AS permanentlyRemovedByModName
           `
         : `
           MATCH (target:DownloadableFile {id: $id})
           SET target.permanentlyRemoved = true,
-              target.permanentlyRemovedAt = datetime($removedAt)
+              target.permanentlyRemovedAt = datetime($removedAt),
+              target.permanentlyRemovedByUsername = $username,
+              target.permanentlyRemovedByModName = $modProfileName
           WITH target
           OPTIONAL MATCH (removerUser:User {username: $username})
           FOREACH (_ IN CASE WHEN removerUser IS NULL THEN [] ELSE [1] END |
@@ -216,7 +222,9 @@ const markStoredUploadRemoved = async ({
             target.storageObjectName AS storageObjectName,
             target.storageUrl AS storageUrl,
             target.permanentlyRemoved AS permanentlyRemoved,
-            toString(target.permanentlyRemovedAt) AS permanentlyRemovedAt
+            toString(target.permanentlyRemovedAt) AS permanentlyRemovedAt,
+            target.permanentlyRemovedByUsername AS permanentlyRemovedByUsername,
+            target.permanentlyRemovedByModName AS permanentlyRemovedByModName
           `,
       {
         id,
