@@ -1293,6 +1293,8 @@ const typeDefinitions = gql`
     ): Issue
     permanentlyDeleteImage(imageId: ID!): Image
     permanentlyDeleteDownloadableFile(downloadableFileId: ID!): DownloadableFile
+    permanentlyDeleteProfileImage(username: String!, imageUrl: String!): User
+    permanentlyDeleteChannelBanner(channelUniqueName: String!, imageUrl: String!): Channel
     lockChannel(
       channelUniqueName: String!
       reason: String!
