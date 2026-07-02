@@ -21,6 +21,8 @@ export const canPermanentlyRemoveImage = rule({ cache: "contextual" })(
       context
     );
 
-    return normalizeServerModPermissionResult(permissionResult);
+    return normalizeServerModPermissionResult(permissionResult, {
+      denyOnFalsy: true,
+    });
   }
 );

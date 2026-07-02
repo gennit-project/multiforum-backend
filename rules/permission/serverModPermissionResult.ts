@@ -3,13 +3,15 @@
 // return type allows `false`, so callers historically handled the falsy case
 // inconsistently:
 //
-//   - canLockChannel: a falsy (non-Error) result denies (returns false).
-//   - canPermanentlyRemoveImage / canArchiveAndUnarchiveImage (server scope):
-//     a falsy result is treated as allowed (returns true).
+//   - canLockChannel / canPermanentlyRemoveImage: a falsy (non-Error)
+//     result denies (returns false).
+//   - canArchiveAndUnarchiveImage (server scope): a falsy result is treated
+//     as allowed (returns true).
 //
-// `denyOnFalsy` preserves that distinction so existing behavior is unchanged.
+// `denyOnFalsy` makes destructive permission checks fail closed while preserving
+// older behavior for callers that intentionally leave it false.
 // (The falsy branch is currently unreachable given hasServerModPermission's
-// real returns; the flag documents intent rather than fixing a live bug.)
+// real returns; the flag documents intent and protects future changes.)
 export function normalizeServerModPermissionResult(
   result: boolean | Error,
   { denyOnFalsy = false }: { denyOnFalsy?: boolean } = {}
