@@ -1,6 +1,14 @@
 import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
-import type { Ogm } from "../../types/context.js";
+import type { Driver } from "neo4j-driver";
+import type { GraphQLContext, Ogm } from "../../types/context.js";
 import { logger } from "../../logger.js";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import {
+  buildStorageObjectName,
+  buildStorageUrl,
+  createUploadAuditRecord,
+  getRequesterIp,
+} from "../../services/uploadStorageMetadata.js";
 
 type Args = {
   filename: string;
@@ -12,18 +20,14 @@ interface ValidationContext {
   ogm: Ogm;
 }
 
+type ResolverContext = ValidationContext & {
+  driver: Driver;
+} & Pick<GraphQLContext, "req" | "user">;
+
 type ChannelUploadPreferences = {
   uniqueName?: string | null;
   imageUploadsEnabled?: boolean | null;
   allowedFileTypes?: string[] | null;
-};
-
-const isUrlEncoded = (filename: string): boolean => {
-  try {
-    return filename === encodeURIComponent(decodeURIComponent(filename));
-  } catch (e) {
-    return false;
-  }
 };
 
 /**
@@ -153,11 +157,18 @@ export const validateFile = async (
 };
 
 const createSignedStorageURL = () => {
-  return async (parent: unknown, args: Args, ctx: ValidationContext) => {
+  return async (parent: unknown, args: Args, ctx: ResolverContext) => {
     let { filename, contentType, channelConnections = [] } = args;
 
-    if (!isUrlEncoded(filename)) {
-      throw new Error("Filename is not properly URL encoded");
+    if (!filename?.trim()) {
+      throw new Error("Filename is required");
+    }
+
+    ctx.user = await setUserDataOnContext({ context: ctx });
+    const username = ctx.user?.username;
+
+    if (!username) {
+      throw new Error("You must be logged in to upload files");
     }
 
     // Validate file against server and channel configurations
@@ -170,6 +181,16 @@ const createSignedStorageURL = () => {
       throw new Error("GCS_BUCKET_NAME environment variable not set");
     }
 
+    const uploadedAt = new Date().toISOString();
+    const storageObjectName = buildStorageObjectName({
+      username,
+      originalFilename: filename,
+    });
+    const storageUrl = buildStorageUrl({
+      storageBucket: bucketName,
+      storageObjectName,
+    });
+
     const options: GetSignedUrlConfig = {
       version: "v4",
       action: "write",
@@ -180,7 +201,7 @@ const createSignedStorageURL = () => {
     // Generate the Signed URL
     const [url] = await storage
       .bucket(bucketName)
-      .file(filename)
+      .file(storageObjectName)
       .getSignedUrl(options);
 
     if (!url) {
@@ -188,8 +209,26 @@ const createSignedStorageURL = () => {
       return { url: "" };
     }
 
+    await createUploadAuditRecord({
+      driver: ctx.driver,
+      storageBucket: bucketName,
+      storageObjectName,
+      storageUrl,
+      originalFilename: filename,
+      contentType,
+      uploadedAt,
+      uploadedByUsername: username,
+      uploadedByIp: getRequesterIp(ctx),
+    });
+
     // Return the Signed URL
-    return { url };
+    return {
+      url,
+      storageBucket: bucketName,
+      storageObjectName,
+      storageUrl,
+      uploadedAt,
+    };
   };
 };
 

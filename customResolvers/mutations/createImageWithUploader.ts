@@ -1,9 +1,14 @@
 import { GraphQLError, type GraphQLResolveInfo } from 'graphql';
+import type { Driver } from 'neo4j-driver';
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js';
 import { ERROR_MESSAGES } from '../../rules/errorMessages.js';
 import type { GraphQLContext } from '../../types/context.js';
 import type { ImageModel, UserModel } from '../../ogm_types.js';
 import { logger } from "../../logger.js";
+import {
+  claimUploadAuditMetadata,
+  getUnclaimedUploadAuditMetadata,
+} from "../../services/uploadStorageMetadata.js";
 
 // Input type for image creation (excluding Uploader since we set it automatically)
 type ImageInput = {
@@ -15,6 +20,7 @@ type ImageInput = {
   hasSensitiveContent?: boolean;
   hasSpoiler?: boolean;
   albumId?: string;
+  storageObjectName?: string;
 };
 
 type Args = {
@@ -24,12 +30,19 @@ type Args = {
 type Input = {
   Image: ImageModel;
   User: UserModel;
+  driver?: Driver;
 };
 
 const selectionSet = `
   {
     id
     url
+    storageBucket
+    storageObjectName
+    storageUrl
+    uploadedAt
+    uploadedByUsername
+    uploadedByIp
     alt
     caption
     longDescription
@@ -48,7 +61,7 @@ const selectionSet = `
 `;
 
 const getResolver = (input: Input) => {
-  const { Image, User } = input;
+  const { Image, User, driver } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input: imageInput } = args;
@@ -74,9 +87,29 @@ const getResolver = (input: Input) => {
       throw new GraphQLError(ERROR_MESSAGES.image.noUploader);
     }
 
+    const uploadMetadata = imageInput.storageObjectName
+      ? await getUnclaimedUploadAuditMetadata({
+          driver: driver || (() => {
+            throw new GraphQLError("Upload metadata lookup is not configured.");
+          })(),
+          storageObjectName: imageInput.storageObjectName,
+          username,
+        })
+      : null;
+
+    if (imageInput.storageObjectName && !uploadMetadata) {
+      throw new GraphQLError("Upload metadata not found for this image.");
+    }
+
     // Build the create input with the Uploader relationship
     const createInput: any = {
       url: imageInput.url,
+      storageBucket: uploadMetadata?.storageBucket,
+      storageObjectName: uploadMetadata?.storageObjectName,
+      storageUrl: uploadMetadata?.storageUrl,
+      uploadedAt: uploadMetadata?.uploadedAt,
+      uploadedByUsername: uploadMetadata?.uploadedByUsername,
+      uploadedByIp: uploadMetadata?.uploadedByIp,
       alt: imageInput.alt,
       caption: imageInput.caption,
       longDescription: imageInput.longDescription,
@@ -118,6 +151,18 @@ const getResolver = (input: Input) => {
 
       if (!createdImage) {
         throw new GraphQLError('Failed to create image.');
+      }
+
+      if (uploadMetadata?.storageObjectName) {
+        await claimUploadAuditMetadata({
+          driver: driver || (() => {
+            throw new GraphQLError("Upload metadata claim is not configured.");
+          })(),
+          storageObjectName: uploadMetadata.storageObjectName,
+          username,
+          claimedByType: "Image",
+          claimedById: createdImage.id,
+        });
       }
 
       return createdImage;

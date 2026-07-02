@@ -54,6 +54,7 @@ import {
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
 } from "./validation/downloadableFileIsValid.js";
+import { updateImageInputIsValid } from "./validation/imageIsValid.js";
 import { updateUserInputIsValid } from "./validation/userIsValid.js";
 import {
   serverRoleInputDoesNotEscalate,
@@ -134,6 +135,7 @@ const ruleList = {
   updateEventInputIsValid,
   createDownloadableFileInputIsValid,
   updateDownloadableFileInputIsValid,
+  updateImageInputIsValid,
   updateUserInputIsValid,
   serverRoleInputDoesNotEscalate,
   modServerRoleInputDoesNotEscalate,

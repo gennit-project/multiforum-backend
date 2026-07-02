@@ -79,6 +79,7 @@ import installPluginVersion from "./mutations/installPluginVersion.js";
 import triggerDownloadableFilePluginRuns from "./mutations/triggerDownloadableFilePluginRuns.js";
 import trackDownload from "./mutations/trackDownload.js";
 import updateDownloadableFileSupportSettings from "./mutations/updateDownloadableFileSupportSettings.js";
+import createDownloadableFilesWithUploadMetadata from "./mutations/createDownloadableFilesWithUploadMetadata.js";
 import enableServerPlugin from "./mutations/enableServerPlugin.js";
 import setServerPluginSecret from "./mutations/setServerPluginSecret.js";
 import updatePluginPipelines from "./mutations/updatePluginPipelines.js";
@@ -497,6 +498,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
       driver
     }),
+    createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
+      DownloadableFile,
+      driver
+    }),
     enableServerPlugin: enableServerPlugin({
       Plugin,
       PluginVersion,
@@ -516,11 +521,13 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     createImageWithUploader: createImageWithUploader({
       Image,
-      User
+      User,
+      driver
     }),
     createImages: createImagesWithUploader({
       Image,
-      User
+      User,
+      driver
     }),
     createAlbums: createAlbumsWithOwner({
       Album,
