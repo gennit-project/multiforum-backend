@@ -8,6 +8,7 @@ import getEventComments from "./queries/getEventComments.js";
 import getCommentReplies from "./queries/getCommentReplies.js";
 import getDiscussionsInChannel from "./queries/getDiscussionsInChannel.js";
 import getUserContributions from "./queries/getUserContributions.js";
+import getUserWikiEditsCount from "./queries/getUserWikiEditsCount.js";
 import getChannelContributions from "./queries/getChannelContributions.js";
 import getModContributions from "./queries/getModContributions.js";
 import getUserFavoriteComment from "./queries/getUserFavoriteComment.js";
@@ -76,6 +77,10 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     getUserContributions: getUserContributions({
+      User,
+      driver,
+    }),
+    getUserWikiEditsCount: getUserWikiEditsCount({
       User,
       driver,
     }),

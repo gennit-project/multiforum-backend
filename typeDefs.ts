@@ -2144,6 +2144,7 @@ const typeDefinitions = gql`
       endDate: String
       year: Int
     ): [DayData!]!
+    getUserWikiEditsCount(username: String!): Int!
     getChannelContributions(
       channelUniqueName: String!
       startDate: String
