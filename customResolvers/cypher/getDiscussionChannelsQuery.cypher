@@ -34,13 +34,24 @@ WHERE
             )
         }
     END
-    // Filter by label options if specified
+    // Filter by label options if specified. INCLUDE groups require at least
+    // one selected option on the download; EXCLUDE groups reject downloads
+    // that have any selected option.
     AND (
         SIZE($labelFilters) = 0 OR
         ALL(labelFilter IN $labelFilters WHERE
             EXISTS {
-                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
-                WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
+                MATCH (:Channel {uniqueName: dc.channelUniqueName})-[:HAS_FILTER_GROUP]->(fg:FilterGroup {key: labelFilter.groupKey})
+                WHERE CASE
+                    WHEN fg.mode = "EXCLUDE" THEN NOT EXISTS {
+                        MATCH (dc)-[:HAS_LABEL_OPTION]->(excludedOption:FilterOption)<-[:HAS_FILTER_OPTION]-(fg)
+                        WHERE excludedOption.value IN labelFilter.values
+                    }
+                    ELSE EXISTS {
+                        MATCH (dc)-[:HAS_LABEL_OPTION]->(includedOption:FilterOption)<-[:HAS_FILTER_OPTION]-(fg)
+                        WHERE includedOption.value IN labelFilter.values
+                    }
+                END
             }
         )
     )
@@ -83,13 +94,24 @@ WHERE
             )
         }
     END
-    // Filter by label options if specified
+    // Filter by label options if specified. INCLUDE groups require at least
+    // one selected option on the download; EXCLUDE groups reject downloads
+    // that have any selected option.
     AND (
         SIZE($labelFilters) = 0 OR
         ALL(labelFilter IN $labelFilters WHERE
             EXISTS {
-                MATCH (dc)-[:HAS_LABEL_OPTION]->(fo:FilterOption)-[:HAS_FILTER_OPTION]-(fg:FilterGroup)
-                WHERE fg.key = labelFilter.groupKey AND fo.value IN labelFilter.values
+                MATCH (:Channel {uniqueName: dc.channelUniqueName})-[:HAS_FILTER_GROUP]->(fg:FilterGroup {key: labelFilter.groupKey})
+                WHERE CASE
+                    WHEN fg.mode = "EXCLUDE" THEN NOT EXISTS {
+                        MATCH (dc)-[:HAS_LABEL_OPTION]->(excludedOption:FilterOption)<-[:HAS_FILTER_OPTION]-(fg)
+                        WHERE excludedOption.value IN labelFilter.values
+                    }
+                    ELSE EXISTS {
+                        MATCH (dc)-[:HAS_LABEL_OPTION]->(includedOption:FilterOption)<-[:HAS_FILTER_OPTION]-(fg)
+                        WHERE includedOption.value IN labelFilter.values
+                    }
+                END
             }
         )
     )
