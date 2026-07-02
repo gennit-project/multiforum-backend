@@ -76,6 +76,8 @@ const buildDriver = ({
                 storageUrl: "https://storage.example/file.stl",
                 permanentlyRemoved: true,
                 permanentlyRemovedAt: "2026-07-01T12:00:00.000Z",
+                permanentlyRemovedByUsername: params.username,
+                permanentlyRemovedByModName: params.modProfileName,
               }),
             ],
           };
@@ -185,6 +187,179 @@ test("permanentlyDeleteDownloadableFile lets a discussion author delete an older
       writeCount: 1,
     }
   );
+});
+
+test("permanentlyDeleteDownloadableFile lets the original uploader delete a stored file", async () => {
+  const { driver, calls } = buildDriver({
+    target: {
+      uploadedByUsername: "alice",
+      discussionAuthorUsernames: ["bob"],
+    },
+  });
+  const deleted: Record<string, unknown>[] = [];
+  const resolver = getResolver({
+    driver,
+    mediaType: "DownloadableFile",
+    deleteObject: async (input) => {
+      deleted.push(input);
+      return { status: "deleted" };
+    },
+    checkServerModPermission: async () => {
+      throw new Error("permission should not be checked for owner");
+    },
+  });
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1" },
+    contextFor("alice")
+  );
+  const writeParams = calls.writes[0]?.params as
+    | Record<string, unknown>
+    | undefined;
+
+  assert.deepEqual(
+    {
+      permanentlyRemoved: result.permanentlyRemoved,
+      permanentlyRemovedByUsername: result.permanentlyRemovedByUsername,
+      permanentlyRemovedByModName: result.permanentlyRemovedByModName,
+      deleted,
+      writeParams,
+    },
+    {
+      permanentlyRemoved: true,
+      permanentlyRemovedByUsername: "alice",
+      permanentlyRemovedByModName: null,
+      deleted: [
+        {
+          storageBucket: "bucket",
+          storageObjectName: "uploads/alice/file.stl",
+        },
+      ],
+      writeParams: {
+        id: "file-1",
+        removedAt: writeParams?.removedAt,
+        username: "alice",
+        modProfileName: null,
+      },
+    }
+  );
+});
+
+test("permanentlyDeleteDownloadableFile lets a server mod with permanent removal permission delete another user's file", async () => {
+  const { driver, calls } = buildDriver({
+    target: {
+      uploadedByUsername: "alice",
+      discussionAuthorUsernames: ["bob"],
+    },
+  });
+  const resolver = getResolver({
+    driver,
+    mediaType: "DownloadableFile",
+    deleteObject: async () => ({ status: "deleted" }),
+    checkServerModPermission: async (permission) => {
+      assert.equal(permission, "canPermanentlyRemoveImage");
+      return true;
+    },
+  });
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1" },
+    contextFor("moderator", "Mod One")
+  );
+  const writeParams = calls.writes[0]?.params as
+    | Record<string, unknown>
+    | undefined;
+
+  assert.deepEqual(
+    {
+      permanentlyRemoved: result.permanentlyRemoved,
+      permanentlyRemovedByUsername: result.permanentlyRemovedByUsername,
+      permanentlyRemovedByModName: result.permanentlyRemovedByModName,
+      writeParams,
+    },
+    {
+      permanentlyRemoved: true,
+      permanentlyRemovedByUsername: "moderator",
+      permanentlyRemovedByModName: "Mod One",
+      writeParams: {
+        id: "file-1",
+        removedAt: writeParams?.removedAt,
+        username: "moderator",
+        modProfileName: "Mod One",
+      },
+    }
+  );
+});
+
+test("permanentlyDeleteDownloadableFile rejects an unrelated non-mod user", async () => {
+  const { driver, calls } = buildDriver({
+    target: {
+      uploadedByUsername: "alice",
+      discussionAuthorUsernames: ["bob"],
+    },
+  });
+  const resolver = getResolver({
+    driver,
+    mediaType: "DownloadableFile",
+    deleteObject: async () => ({ status: "deleted" }),
+    checkServerModPermission: async () => new Error("no permission"),
+  });
+
+  await assert.rejects(
+    resolver(null, { downloadableFileId: "file-1" }, contextFor("mallory")),
+    /no permission/
+  );
+  assert.deepEqual(calls.writes, []);
+});
+
+test("permanentlyDeleteDownloadableFile rejects a moderator without permanent removal permission", async () => {
+  const { driver, calls } = buildDriver({
+    target: {
+      uploadedByUsername: "alice",
+      discussionAuthorUsernames: ["bob"],
+    },
+  });
+  const resolver = getResolver({
+    driver,
+    mediaType: "DownloadableFile",
+    deleteObject: async () => ({ status: "deleted" }),
+    checkServerModPermission: async () =>
+      new Error("You do not have permission to permanently remove uploads"),
+  });
+
+  await assert.rejects(
+    resolver(
+      null,
+      { downloadableFileId: "file-1" },
+      contextFor("moderator", "Mod One")
+    ),
+    /do not have permission/
+  );
+  assert.deepEqual(calls.writes, []);
+});
+
+test("permanentlyDeleteDownloadableFile does not mark the DB removed when storage deletion fails", async () => {
+  const { driver, calls } = buildDriver({
+    target: {
+      uploadedByUsername: "alice",
+    },
+  });
+  const resolver = getResolver({
+    driver,
+    mediaType: "DownloadableFile",
+    deleteObject: async () => {
+      throw new Error("storage unavailable");
+    },
+    checkServerModPermission: async () => new Error("not a mod"),
+  });
+
+  await assert.rejects(
+    resolver(null, { downloadableFileId: "file-1" }, contextFor("alice")),
+    /storage unavailable/
+  );
+  assert.deepEqual(calls.writes, []);
 });
 
 test("permanentlyDeleteImage lets a server mod with permanent removal permission delete another user's upload", async () => {
