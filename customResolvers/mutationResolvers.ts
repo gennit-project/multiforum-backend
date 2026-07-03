@@ -102,6 +102,7 @@ import {
   removeFromCollection,
   reorderCollectionItem,
 } from "./mutations/collectionOrdering.js";
+import shareCollectionAsDiscussion from "./mutations/shareCollectionAsDiscussion.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
@@ -565,6 +566,12 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     reorderCollectionItem: reorderCollectionItem({
+      driver
+    }),
+    shareCollectionAsDiscussion: shareCollectionAsDiscussion({
+      Discussion,
+      Collection,
+      Channel,
       driver
     }),
     updateDownloadLabels: updateDownloadLabels({
