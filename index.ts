@@ -21,6 +21,7 @@ import issueActivityFeedMiddleware from "./middleware/issueActivityFeedMiddlewar
 import issueSubscriptionNotificationMiddleware from "./middleware/issueSubscriptionNotificationMiddleware.js";
 import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
+import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
 import path from "path";
 import dotenv from "dotenv";
 import getCustomResolvers from "./customResolvers.js";
@@ -207,7 +208,8 @@ async function initializeServer() {
       issueActivityFeedMiddleware as AppMiddleware,
       issueSubscriptionNotificationMiddleware as AppMiddleware,
       channelBotsMiddleware as AppMiddleware,
-      channelCreatorModeratorMiddleware as AppMiddleware
+      channelCreatorModeratorMiddleware as AppMiddleware,
+      filterGroupValidationMiddleware as AppMiddleware
     );
     await ogm.init();
     if (edition === "enterprise") {
