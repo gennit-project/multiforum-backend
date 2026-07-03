@@ -54,7 +54,7 @@ const selectionSet = `
     Uploader {
       username
     }
-    Album {
+    Albums {
       id
     }
   }
@@ -128,16 +128,18 @@ const getResolver = (input: Input) => {
       },
     };
 
-    // If an albumId is provided, connect the Album relationship
+    // If an albumId is provided, connect the Albums relationship.
     if (imageInput.albumId) {
-      createInput.Album = {
-        connect: {
-          where: {
-            node: {
-              id: imageInput.albumId,
+      createInput.Albums = {
+        connect: [
+          {
+            where: {
+              node: {
+                id: imageInput.albumId,
+              },
             },
           },
-        },
+        ],
       };
     }
 

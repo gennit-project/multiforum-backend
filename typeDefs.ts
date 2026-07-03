@@ -98,7 +98,7 @@ const typeDefinitions = gql`
     PermanentlyRemovedByUser: User @relationship(type: "REMOVED_IMAGE", direction: IN)
     PermanentlyRemovedByMod: ModerationProfile @relationship(type: "REMOVED_IMAGE", direction: IN)
 
-    Album:    Album @relationship(type: "HAS_IMAGE", direction: IN)
+    Albums:   [Album!]! @relationship(type: "HAS_IMAGE", direction: IN)
     Uploader: User  @relationship(type: "UPLOADED_IMAGE", direction: IN)
     RelatedIssues: [Issue!]! @relationship(type: "CITED_ISSUE", direction: IN)
 
@@ -2066,12 +2066,26 @@ const typeDefinitions = gql`
     files: [DownloadableFile!]!
   }
 
+  type ImageAlbumUsage @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    imageId: ID!
+    uploaderUsername: String
+    uploaderOwnedAlbums: [Album!]!
+    otherAlbums: [Album!]!
+  }
+
   type Query {
     # Discovery
     """
     Return public collections that include the specified item (e.g. downloads are Discussions with hasDownload=true).
     """
     publicCollectionsContaining(itemId: ID!, itemType: CollectionItemType!): [Collection!]!
+
+    """
+    Return albums that contain an image, grouped by whether the album owner is
+    the original image uploader. Uses the existing HAS_IMAGE relationship, which
+    can support multiple albums per image.
+    """
+    getImageAlbumUsage(imageId: ID!): ImageAlbumUsage!
 
     getDiscussionsInChannel(
       channelUniqueName: String!
