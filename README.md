@@ -116,15 +116,18 @@ breakdown, request lifecycle, data model, and the testing strategy.
 
 ## Common Commands
 
+This repo uses **pnpm** (pinned via the `packageManager` field) on **Node 22.x**.
+Enable it once with `corepack enable`, then `pnpm install`.
+
 | Command | Description |
 | --- | --- |
-| `npm run codegen` | Generate GraphQL code |
-| `npm run tsc` | Run the TypeScript compiler |
-| `npm run build` | Build the project (tsc + copy Cypher files) |
-| `npm run start` | Start the server |
-| `npm test` | Run the unit test suite |
-| `npm run test:integration` | Run integration tests against a real Neo4j (Testcontainers) |
-| `npm run logSchema` | Log the GraphQL schema to the console |
+| `pnpm run codegen` | Generate GraphQL code |
+| `pnpm run tsc` | Run the TypeScript compiler |
+| `pnpm run build` | Build the project (tsc + copy Cypher files) |
+| `pnpm run start` | Start the server |
+| `pnpm test` | Run the unit test suite |
+| `pnpm run test:integration` | Run integration tests against a real Neo4j (Testcontainers) |
+| `pnpm run logSchema` | Log the GraphQL schema to the console |
 
 See [Environment variables and running the app](./docs/environment-variables.md)
 for the configuration needed before starting the server.

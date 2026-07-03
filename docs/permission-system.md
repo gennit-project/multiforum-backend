@@ -122,7 +122,7 @@ is to bootstrap the first SuperAdmin and to recover if `SuperAdmins` is emptied.
 
 The seeded default roles are the single source of truth for what each tier
 grants and are installed/repaired idempotently by `provisionServerDefaults`
-(`npm run provision`).
+(`pnpm run provision`).
 
 ### No-privilege-escalation invariant
 
@@ -241,7 +241,7 @@ When a suspended user attempts a blocked action, `createSuspensionNotification` 
 
 - Roles are defined as nodes and wired to the `ServerConfig`/`Channel` tiers. The
   seeded defaults are the source of truth and are installed idempotently by
-  `provisionServerDefaults` (`npm run provision`).
+  `provisionServerDefaults` (`pnpm run provision`).
 - Custom (non-default) roles are **API-only, UI pending**: they can be
   created/edited through the role-authoring mutations (gated by `canManageRoles` +
   the no-privilege-escalation guards) and via seed/provisioning, but there is no

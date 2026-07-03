@@ -10,7 +10,7 @@ threshold blocking PRs**.
 ## Reproduce
 
 ```bash
-npm run coverage:merged
+pnpm run coverage:merged
 ```
 
 Runs the unit suite and the integration suite (Testcontainers Neo4j — Docker
