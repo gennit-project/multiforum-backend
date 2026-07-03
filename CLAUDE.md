@@ -21,3 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - ES2018 target with ESNext modules
   - Use Neo4j GraphQL library and OGM for database operations
   - Follow existing permission system architecture (see README.md)
+  - Database sessions use the driver's default (leader) routing. Do NOT switch
+    reads to `READ` sessions/replicas without end-to-end Neo4j bookmark
+    propagation — it breaks read-your-own-writes on a causal cluster. See the
+    "Neo4j session routing" note in docs/architecture.md.

@@ -170,6 +170,22 @@ domain maps onto the storage model instead of fighting it.
   integration-tested with coverage, and built before merge.
 - **Observability.** A structured, leveled logger replaces ad-hoc logging, and
   GraphQL errors pass through one centralized formatter.
+- **Neo4j session routing — reads stay leader-routed on purpose.** Custom
+  resolvers open sessions with the driver's default access mode. On a causal
+  cluster that routes every query to the leader (and it is a no-op on the
+  single-instance deployment used today). This is deliberate: the leader is
+  always current, so it guarantees *read-your-own-writes* — a user who performs a
+  mutation and immediately loads a follow-up query (their new comment, the
+  channel feed, etc.) sees their own change. **Do not** switch reads to `READ`
+  sessions (replicas) as a blanket optimization: this codebase does not capture
+  or forward Neo4j **bookmarks**, so a follow-up read could land on a lagging
+  follower and miss the just-written data — an intermittent read-your-own-writes
+  regression that is invisible on a single instance and only appears once a
+  cluster exists. Offloading reads to replicas is a deliberate cluster-migration
+  workstream (end-to-end bookmark propagation plus a per-query decision on which
+  reads may tolerate staleness — search/analytics may, user-facing follow-ups
+  may not), and it applies system-wide, including Neo4jGraphQL's auto-generated
+  read resolvers — not a default to flip on per query.
 
 ## Repository map
 
