@@ -97,6 +97,11 @@ import createScratchpadEntry from "./mutations/createScratchpadEntry.js";
 import undoSuperUpvote from "./mutations/undoSuperUpvote.js";
 import updateScratchpadEntryVisibility from "./mutations/updateScratchpadEntryVisibility.js";
 import deleteScratchpadEntry from "./mutations/deleteScratchpadEntry.js";
+import {
+  addToCollection,
+  removeFromCollection,
+  reorderCollectionItem,
+} from "./mutations/collectionOrdering.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
@@ -552,6 +557,15 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createCollections: createCollectionsWithOwner({
       Collection,
       User
+    }),
+    addToCollection: addToCollection({
+      driver
+    }),
+    removeFromCollection: removeFromCollection({
+      driver
+    }),
+    reorderCollectionItem: reorderCollectionItem({
+      driver
     }),
     updateDownloadLabels: updateDownloadLabels({
       Discussion,
