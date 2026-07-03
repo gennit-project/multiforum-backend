@@ -3,6 +3,7 @@ import { ERROR_MESSAGES } from "../errorMessages.js";
 import { ChannelRole } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
+import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
 import { passesAsServerAdminOrRoot } from "./serverAdminOverride.js";
@@ -185,31 +186,11 @@ export const hasChannelPermission: (
     });
   }
 
-  // Fetch server config for default roles
-  const ServerConfig = context.ogm.model("ServerConfig");
-  const serverConfig = await ServerConfig.find({
-    where: { serverName: process.env.SERVER_CONFIG_NAME },
-    selectionSet: `{ 
-      DefaultServerRole { 
-        canCreateChannel
-        canCreateEvent
-        canCreateDiscussion
-        canCreateComment
-        canUpvoteComment
-        canUpvoteDiscussion
-        canUploadFile
-      }
-      DefaultSuspendedRole {
-        canCreateChannel
-        canCreateEvent
-        canCreateDiscussion
-        canCreateComment
-        canUpvoteComment
-        canUpvoteDiscussion
-        canUploadFile
-      }
-    }`,
-  });
+  // Fetch server config for default roles. Request-cached: this is process-
+  // global config, identical across the whole request, so re-fetching it per
+  // channel per rule is pure waste. getServerConfigForPermissions memoizes it
+  // on the context, and its selection set is a superset of the fields read here.
+  const serverConfig = await getServerConfigForPermissions(context);
 
   // Select the governing role (suspended vs default, with server-config
   // fallback) and check the permission. The pure decision is extracted to
@@ -217,7 +198,7 @@ export const hasChannelPermission: (
   const { role: roleToUse, allowed } = evaluateChannelRolePermission({
     permission,
     channelData: channelData as unknown as ChannelRoles,
-    serverDefaults: serverConfig[0] as unknown as ServerRoleDefaults | undefined,
+    serverDefaults: serverConfig as unknown as ServerRoleDefaults | undefined,
     isSuspended: suspensionInfo.isSuspended,
   });
 

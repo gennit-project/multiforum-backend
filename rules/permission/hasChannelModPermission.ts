@@ -2,6 +2,7 @@ import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
+import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
 import { passesAsServerAdminOrRoot } from "./serverAdminOverride.js";
@@ -177,60 +178,9 @@ export const hasChannelModPermission: (
   const channelData = channel[0];
   const modProfileName = context.user?.data?.ModerationProfile?.displayName ?? undefined;
 
-  const ServerConfig = context.ogm.model("ServerConfig");
-  const serverConfig = await ServerConfig.find({
-    where: { serverName: process.env.SERVER_CONFIG_NAME },
-    selectionSet: `{
-      DefaultModRole {
-        canOpenSupportTickets
-        canLockChannel
-        canCloseSupportTickets
-        canGiveFeedback
-        canHideComment
-        canHideDiscussion
-        canHideEvent
-        canEditComments
-        canEditDiscussions
-        canEditEvents
-        canReport
-        canSuspendUser
-        canArchiveImage
-        canDeleteWiki
-      }
-      DefaultSuspendedModRole {
-        canOpenSupportTickets
-        canLockChannel
-        canCloseSupportTickets
-        canGiveFeedback
-        canHideComment
-        canHideDiscussion
-        canHideEvent
-        canEditComments
-        canEditDiscussions
-        canEditEvents
-        canReport
-        canSuspendUser
-        canArchiveImage
-        canDeleteWiki
-      }
-      DefaultElevatedModRole {
-        canOpenSupportTickets
-        canLockChannel
-        canCloseSupportTickets
-        canGiveFeedback
-        canHideComment
-        canHideDiscussion
-        canHideEvent
-        canEditComments
-        canEditDiscussions
-        canEditEvents
-        canReport
-        canSuspendUser
-        canArchiveImage
-        canDeleteWiki
-      }
-    }`,
-  });
+  // Request-cached (see hasChannelPermission for rationale); the cached
+  // selection set is a superset of the mod-role fields read here.
+  const serverConfig = await getServerConfigForPermissions(context);
 
   const suspensionInfo = await getActiveSuspension({
     ogm: context.ogm,
@@ -258,7 +208,7 @@ export const hasChannelModPermission: (
   const { role: roleToUse, allowed } = evaluateChannelModPermission({
     permission,
     channelData: channelData as unknown as ChannelModRoles,
-    serverDefaults: serverConfig[0] as unknown as ServerModDefaults | undefined,
+    serverDefaults: serverConfig as unknown as ServerModDefaults | undefined,
     isSuspended: suspensionInfo.isSuspended,
     modProfileName,
   });

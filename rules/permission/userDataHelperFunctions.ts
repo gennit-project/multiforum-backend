@@ -131,6 +131,9 @@ export type AuthContextForUserLookup = {
   ogm: Ogm;
   req?: GraphQLRequest;
   jwtError?: Error;
+  // May already be populated by an earlier rule/resolver in the same request;
+  // setUserDataOnContext reuses it instead of re-querying (see its guard).
+  user?: UserDataOnContext;
 };
 
 type SetUserDataInput = {
@@ -146,6 +149,18 @@ export const setUserDataOnContext = async (
   input: SetUserDataInput
 ): Promise<UserDataOnContext> => {
   const { context } = input;
+
+  // Identity is stable for the lifetime of a single request. graphql-shield
+  // invokes this once per rule, and ~40 mutation resolvers call it again
+  // directly, so an authenticated request would otherwise re-run
+  // getUserFromEmail + getModProfileNameFromUsername (2 DB queries) many times.
+  // Every caller assigns the result back to `context.user`, so once a username
+  // has been resolved we can safely reuse it for the rest of the request.
+  const existingUser = context.user;
+  if (existingUser?.username) {
+    return existingUser;
+  }
+
   const { ogm, req } = context;
   const token = req?.headers?.authorization?.replace("Bearer ", "");
 
