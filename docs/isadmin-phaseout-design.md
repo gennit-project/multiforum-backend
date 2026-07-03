@@ -3,7 +3,7 @@
 Status: **Implemented** (PR-1 → PR-4c; see §7 Phasing for the per-stage status).
 All code stages and the tag-field cleanup (§8.6) have shipped; the **only**
 remaining item is the per-environment provisioning rollout (PR-2's last step —
-wire `SUPERADMIN_EMAIL` + run `npm run provision` per env). · Related: PR #64
+wire `SUPERADMIN_EMAIL` + run `pnpm run provision` per env). · Related: PR #64
 (P0), PR #65 (P1). For the resulting system, see
 [permission-system.md](./permission-system.md).
 
@@ -188,7 +188,7 @@ production):
 - `seedData/provisionServerDefaults.ts` — **idempotent** (upsert by role name,
   `overwrite` on the config links), so it is safe to run on every boot/deploy and
   in test setup. Also performs the admin→SuperAdmin backfill.
-- `npm run provision` (`build_scripts/provisionServerDefaults.ts`) — runnable
+- `pnpm run provision` (`build_scripts/provisionServerDefaults.ts`) — runnable
   entry for bootstrapping/upgrading an instance.
 - Integration tests call `provisionServerDefaults` in setup (incremental
   adoption) so they exercise the real defaults.
@@ -230,7 +230,7 @@ production):
 2. **PR-2 (seed defaults + migration). 🟡 CODE DONE; one rollout step left.**
    - ✅ `seedData/` single-source-of-truth module + idempotent
      `provisionServerDefaults` (roles, config wiring, admin→SuperAdmin backfill);
-     `npm run provision` entry; unit tests.
+     `pnpm run provision` entry; unit tests.
    - ✅ Adopt provisioning in integration-test setup. The model-wiring boilerplate
      (`ogm.model("ServerRole")` × 3) now lives in one shared seam,
      `provisionServerDefaultsFromOgm(ogm, { serverName })`, used by **both** the

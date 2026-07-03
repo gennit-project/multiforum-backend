@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "type": "module",
+  "packageManager": "pnpm@10.28.2",
   "engines": {
     "node": "22.x"
   },
@@ -21,8 +22,8 @@
     "tsc": "tsc",
     "logSchema": "node build_scripts/logSchema.js",
     "provision": "node --loader ts-node/esm build_scripts/provisionServerDefaults.ts",
-    "build": "npm run codegen && tsc && node build_scripts/copyCypherFiles.js",
-    "heroku-postbuild": "npm run build",
+    "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",
+    "heroku-postbuild": "pnpm run build",
     "start": "node ./ts_emitted/index.js"
   },
   "keywords": [],
@@ -80,10 +81,18 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.62.0"
   },
-  "overrides": {
-    "whatwg-url": "^11.0.0",
-    "tr46": "^4.1.0",
-    "lodash": "^4.18.0",
-    "uuid": "^11.1.1"
+  "pnpm": {
+    "overrides": {
+      "whatwg-url": "^11.0.0",
+      "tr46": "^4.1.0",
+      "lodash": "^4.18.0",
+      "uuid": "^11.1.1"
+    },
+    "ignoredBuiltDependencies": [
+      "@apollo/protobufjs",
+      "cpu-features",
+      "protobufjs",
+      "ssh2"
+    ]
   }
 }

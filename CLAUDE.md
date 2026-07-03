@@ -3,11 +3,11 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Build/Run Commands
-- `npm run codegen` - Generate GraphQL code
-- `npm run tsc` - Run TypeScript compiler
-- `npm run build` - Build project (runs tsc + copies Cypher files)
-- `npm run start` - Start the server
-- `npm run logSchema` - Log GraphQL schema to console
+- `pnpm run codegen` - Generate GraphQL code
+- `pnpm run tsc` - Run TypeScript compiler
+- `pnpm run build` - Build project (runs tsc + copies Cypher files)
+- `pnpm run start` - Start the server
+- `pnpm run logSchema` - Log GraphQL schema to console
 - No explicit test/lint commands defined (update when added)
 
 ## Code Style

@@ -18,7 +18,7 @@ coverage:
         informational: true
 
 # Coverage is uploaded from two CI jobs under separate flags and merged by
-# Codecov: `unit` (fast `npm test`) and `integration` (Testcontainers Neo4j).
+# Codecov: `unit` (fast `pnpm test`) and `integration` (Testcontainers Neo4j).
 # A line covered by either suite counts as covered for the project total.
 # carryforward keeps the last known coverage for a flag if a run doesn't upload
 # it (e.g. a flaky container run), so it doesn't spuriously drop the total.

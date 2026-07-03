@@ -69,39 +69,43 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        if: needs.changes.outputs.code == 'true'
+        uses: pnpm/action-setup@v4
+
       - name: Set up Node.js
         if: needs.changes.outputs.code == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Clean install dependencies
         if: needs.changes.outputs.code == 'true'
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # Generated type files (ogm_types.ts, src/generated/graphql.ts) are no
       # longer committed; regenerate them from typeDefs.ts (no DB needed) before
       # type checking and tests so imports resolve.
       - name: Generate GraphQL/OGM types
         if: needs.changes.outputs.code == 'true'
-        run: npm run codegen
+        run: pnpm run codegen
 
       - name: Lint (enforces no console.* in runtime code)
         if: needs.changes.outputs.code == 'true'
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Run TypeScript type checking
         if: needs.changes.outputs.code == 'true'
-        run: npm run tsc
+        run: pnpm run tsc
 
       - name: Check for circular dependencies
         if: needs.changes.outputs.code == 'true'
-        run: npm run lint:circular
+        run: pnpm run lint:circular
 
       - name: Run unit tests with coverage
         if: needs.changes.outputs.code == 'true'
-        run: npm run coverage
+        run: pnpm run coverage
 
       - name: Upload unit coverage to Codecov
         if: needs.changes.outputs.code == 'true'
@@ -115,7 +119,7 @@ jobs:
 
       - name: Verify build (tsc + cypher copy)
         if: needs.changes.outputs.code == 'true'
-        run: npm run build
+        run: pnpm run build
 
       - name: Docs-only change — tests skipped
         if: needs.changes.outputs.code != 'true'
@@ -136,24 +140,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Clean install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # Generated type files are no longer committed; regenerate before tests.
       - name: Generate GraphQL/OGM types
-        run: npm run codegen
+        run: pnpm run codegen
 
       # Testcontainers manages the Neo4j container itself via the Docker daemon
       # available on GitHub-hosted Ubuntu runners. Run under c8 so the resolver
       # coverage these tests provide is reported too.
       - name: Run integration shard ${{ matrix.shard }}/4 against live Neo4j (with coverage)
-        run: npm run test:integration:shard
+        run: pnpm run test:integration:shard
         env:
           SHARD: ${{ matrix.shard }}
           SHARD_TOTAL: 4

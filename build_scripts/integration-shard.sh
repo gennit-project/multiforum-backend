@@ -11,7 +11,7 @@
 #   SHARD       1-based shard index   (default 1)
 #   SHARD_TOTAL number of shards      (default 1 -> runs everything)
 #
-# Run via `npm run test:integration:shard` so node_modules/.bin (c8) is on PATH.
+# Run via `pnpm run test:integration:shard` so node_modules/.bin (c8) is on PATH.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

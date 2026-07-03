@@ -1,14 +1,17 @@
-# Use a lightweight Node.js image
-FROM node:20-alpine
+# Use a lightweight Node.js image (22.x, matching package.json "engines")
+FROM node:22-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Enable pnpm via corepack (version pinned by package.json "packageManager")
+RUN corepack enable
+
+# Copy manifest and pnpm lockfile
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy the entire project
 COPY . .
@@ -29,10 +32,10 @@ ENV CYPRESS_ADMIN_TEST_EMAIL ""
 ENV CYPRESS_ADMIN_TEST_USERNAME ""
 
 # Build the application
-RUN npm run build
+RUN pnpm run build
 
 # Expose the backend port
 EXPOSE 4000
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "start"]
