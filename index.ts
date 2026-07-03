@@ -26,7 +26,6 @@ import path from "path";
 import dotenv from "dotenv";
 import getCustomResolvers from "./customResolvers.js";
 import { fileURLToPath } from "url";
-import axios from "axios";
 import fs from "fs";
 import { CommentNotificationService } from "./services/commentNotificationService.js";
 import { DiscussionVersionHistoryService } from "./services/discussionVersionHistoryService.js";
@@ -85,26 +84,6 @@ if (process.env.GOOGLE_CREDENTIALS_BASE64) {
   fs.writeFileSync(credentialsPath, credentials);
   process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
 }
-
-const sendSlackNotification = async (text: string) => {
-  if (!process.env.SLACK_WEBHOOK_URL) {
-    logger.error("SLACK_WEBHOOK_URL environment variable is not set");
-    return;
-  }
-  try {
-    await axios.post(process.env.SLACK_WEBHOOK_URL, {
-      text: text,
-    });
-    logger.info("Slack notification sent successfully");
-  } catch (error) {
-    logger.error("Error sending Slack notification:", error);
-  }
-};
-
-const extractMutationName = (query: string) => {
-  const match = query.match(/mutation\s+(\w+)/);
-  return match ? match[1] : 'Unknown Mutation';
-};
 
 const uri = process.env.NEO4J_URI || "bolt://localhost:7687";
 const password = process.env.NEO4J_PASSWORD;
@@ -261,14 +240,6 @@ async function initializeServer() {
               query: req.body.query,
               variables: req.body.variables
             });
-
-            if (isMutation) {
-              const mutationName = extractMutationName(req.body.query);
-              const text = `Mutation: ${mutationName}\nVariables: ${JSON.stringify(req.body.variables, null, 2)}`;
-
-              // Send Slack notification
-              await sendSlackNotification(text);
-            }
           }
 
           return {
