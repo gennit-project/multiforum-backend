@@ -277,7 +277,7 @@ test("createImageWithUploader connects to album when albumId provided", async ()
           id: "img-1",
           url: "https://example.com/image.jpg",
           Uploader: { username: "user" },
-          Album: { id: "album-123" },
+          Albums: [{ id: "album-123" }],
         },
       ],
     })
@@ -303,14 +303,16 @@ test("createImageWithUploader connects to album when albumId provided", async ()
 
   const createInput = Image.createCalls[0].input[0];
 
-  assert.deepEqual(createInput.Album, {
-    connect: {
-      where: {
-        node: {
-          id: "album-123",
+  assert.deepEqual(createInput.Albums, {
+    connect: [
+      {
+        where: {
+          node: {
+            id: "album-123",
+          },
         },
       },
-    },
+    ],
   });
 });
 
@@ -323,7 +325,7 @@ test("createImageWithUploader does not connect album when albumId not provided",
           id: "img-1",
           url: "https://example.com/image.jpg",
           Uploader: { username: "user" },
-          Album: null,
+          Albums: [],
         },
       ],
     })
@@ -349,7 +351,7 @@ test("createImageWithUploader does not connect album when albumId not provided",
 
   const createInput = Image.createCalls[0].input[0];
 
-  assert.equal(createInput.Album, undefined);
+  assert.equal(createInput.Albums, undefined);
 });
 
 test("createImageWithUploader handles empty string albumId as no album", async () => {
@@ -386,8 +388,8 @@ test("createImageWithUploader handles empty string albumId as no album", async (
 
   const createInput = Image.createCalls[0].input[0];
 
-  // Empty string is falsy, so Album should not be set
-  assert.equal(createInput.Album, undefined);
+  // Empty string is falsy, so Albums should not be set.
+  assert.equal(createInput.Albums, undefined);
 });
 
 // Response structure tests
@@ -404,7 +406,7 @@ test("createImageWithUploader returns the created image", async () => {
     hasSpoiler: false,
     scanStatus: "pending",
     Uploader: { username: "photographer" },
-    Album: { id: "album-1" },
+    Albums: [{ id: "album-1" }],
   };
 
   const Image = new ModelStub(

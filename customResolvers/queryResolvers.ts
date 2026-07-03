@@ -24,6 +24,7 @@ import getOwnEmail from "./queries/getOwnEmail.js";
 import getServerHealthDashboard from "./queries/getServerHealthDashboard.js";
 import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
 import getUploadedDownloadableFiles from "./queries/getUploadedDownloadableFiles.js";
+import getImageAlbumUsage from "./queries/getImageAlbumUsage.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -121,6 +122,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       Email
     }),
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
+      driver
+    }),
+    getImageAlbumUsage: getImageAlbumUsage({
       driver
     }),
     getServerHealthDashboard: getServerHealthDashboard({

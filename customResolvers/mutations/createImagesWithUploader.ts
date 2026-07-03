@@ -41,7 +41,7 @@ const selectionSet = `
     Uploader {
       username
     }
-    Album {
+    Albums {
       id
     }
   }
