@@ -1,5 +1,6 @@
 import type { Suspension } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { getPermissionRequestCache } from "./getPermissionRequestCache.js";
 
 type ActiveServerSuspensionInput = {
   context: GraphQLContext;
@@ -7,7 +8,7 @@ type ActiveServerSuspensionInput = {
   modProfileName?: string;
 };
 
-type ActiveServerSuspensionResult = {
+export type ActiveServerSuspensionResult = {
   activeSuspension: Suspension | null;
   isSuspended: boolean;
   relatedIssueId: string | null;
@@ -141,14 +142,10 @@ async function fetchTargetedServerSuspensions(params: {
   }
 }
 
-export async function getActiveServerSuspension(
+async function computeActiveServerSuspension(
   input: ActiveServerSuspensionInput
 ): Promise<ActiveServerSuspensionResult> {
   const { context, username, modProfileName } = input;
-
-  if (!username && !modProfileName) {
-    throw new Error("Must provide a username or modProfileName to check server suspension.");
-  }
 
   const now = new Date();
   const expiredUserSuspensions: Suspension[] = [];
@@ -194,4 +191,33 @@ export async function getActiveServerSuspension(
     expiredModSuspensions,
     suspendedEntity,
   };
+}
+
+export async function getActiveServerSuspension(
+  input: ActiveServerSuspensionInput
+): Promise<ActiveServerSuspensionResult> {
+  const { context, username, modProfileName } = input;
+
+  if (!username && !modProfileName) {
+    throw new Error(
+      "Must provide a username or modProfileName to check server suspension."
+    );
+  }
+
+  // Request-scoped memoization: a user's server suspension is stable within a
+  // single request, but this is called by several server-scoped rules
+  // (passesAsServerAdminOrRoot, hasServerPermission, hasServerModPermission),
+  // each of which otherwise issued its own 1-2 suspension queries. Cache the
+  // promise (keyed by username|modProfileName) so concurrent callers share one
+  // lookup. Never TTL-cached — a new suspension takes effect on the next request.
+  const cache = getPermissionRequestCache(context);
+  const cacheKey = `${username ?? ""}|${modProfileName ?? ""}`;
+  const cached = cache.activeServerSuspensionByKey.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const promise = computeActiveServerSuspension(input);
+  cache.activeServerSuspensionByKey.set(cacheKey, promise);
+  return promise;
 }
