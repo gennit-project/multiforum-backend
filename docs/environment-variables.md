@@ -70,7 +70,6 @@ test/E2E environments the seeded admin test user also acts as root.
 | `GRAPHQL_MAX_DEPTH` | No | Maximum allowed GraphQL query nesting depth (default `15`). Deeper queries are rejected before execution to prevent one crafted query from generating a pathological Cypher query. |
 | `SERVER_CONFIG_NAME` | Yes | Name of the `ServerConfig` record this instance runs as (e.g. `Listical`). The special value `Cypress Test Server` enables test-only behavior. |
 | `FRONTEND_URL` | Yes | Base URL of the frontend, used to build links in outbound emails (e.g. mod-invite acceptance links). |
-| `SLACK_WEBHOOK_URL` | No | Incoming-webhook URL for posting server notifications to Slack. |
 | `PLUGIN_SECRET_ENCRYPTION_KEY` | If plugins store secrets | 32-character key used to encrypt plugin secrets at rest. Set a strong value in production (the in-code fallback is a placeholder only). |
 
 ## Build / development / test

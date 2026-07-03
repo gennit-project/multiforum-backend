@@ -4,6 +4,7 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
+import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
 import { logger } from "../../logger.js";
@@ -36,17 +37,8 @@ async function isUserSiteAdmin(context: GraphQLContext): Promise<boolean> {
 }
 
 async function isUserServerAdmin(username: string, context: GraphQLContext): Promise<boolean> {
-  const ServerConfig = context.ogm.model("ServerConfig");
-  const serverConfigs = await ServerConfig.find({
-    where: { serverName: process.env.SERVER_CONFIG_NAME },
-    selectionSet: `{
-      Admins {
-        username
-      }
-    }`,
-  });
-
-  const serverConfig = serverConfigs?.[0];
+  // Request-cached (see hasChannelPermission); the cached config includes Admins.
+  const serverConfig = await getServerConfigForPermissions(context);
   return (
     serverConfig?.Admins?.some((admin: { username: string }) => admin.username === username) ??
     false
