@@ -2,6 +2,7 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import depthLimit from "graphql-depth-limit";
 import express from "express";
 import http from "http";
 import cors from "cors";
@@ -219,9 +220,18 @@ async function initializeServer() {
     const app = express();
     const httpServer = http.createServer(app);
 
+    // Reject pathologically deep queries before they reach the schema. Neo4jGraphQL
+    // translates a nested GraphQL selection into one Cypher query, so an
+    // arbitrarily deep query can generate an enormous, slow Cypher pattern — a
+    // cheap DoS lever. The bound is generous (real forum queries nest well under
+    // this) and tunable via GRAPHQL_MAX_DEPTH; validate against real traffic
+    // before tightening it.
+    const maxQueryDepth = Number(process.env.GRAPHQL_MAX_DEPTH) || 15;
+
     const server = new ApolloServer({
       persistedQueries: false,
       schema,
+      validationRules: [depthLimit(maxQueryDepth)],
       plugins: [
         // Drains in-flight requests before the HTTP server shuts down.
         ApolloServerPluginDrainHttpServer({ httpServer }),

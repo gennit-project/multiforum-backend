@@ -67,6 +67,7 @@ test/E2E environments the seeded admin test user also acts as root.
 | --- | --- | --- |
 | `PORT` | No | Port the Apollo server listens on (defaults are provided in code; Heroku sets this automatically). |
 | `NODE_ENV` | No | Standard Node environment (`development` / `production` / `test`). |
+| `GRAPHQL_MAX_DEPTH` | No | Maximum allowed GraphQL query nesting depth (default `15`). Deeper queries are rejected before execution to prevent one crafted query from generating a pathological Cypher query. |
 | `SERVER_CONFIG_NAME` | Yes | Name of the `ServerConfig` record this instance runs as (e.g. `Listical`). The special value `Cypress Test Server` enables test-only behavior. |
 | `FRONTEND_URL` | Yes | Base URL of the frontend, used to build links in outbound emails (e.g. mod-invite acceptance links). |
 | `SLACK_WEBHOOK_URL` | No | Incoming-webhook URL for posting server notifications to Slack. |
