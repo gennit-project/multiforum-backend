@@ -190,11 +190,14 @@ async function testHasServerPermissionCachesRequestLookups() {
   await hasServerPermission("canCreateChannel", context as unknown as GraphQLContext);
   await hasServerPermission("canCreateChannel", context as unknown as GraphQLContext);
 
+  // Both the ServerConfig lookup and the server-suspension lookup are memoized
+  // on the per-request permission cache, so calling the rule twice within one
+  // request issues each underlying query exactly once.
   assert.deepEqual({
     suspensionQueryCalls,
     serverConfigFindCalls,
   }, {
-    suspensionQueryCalls: 2,
+    suspensionQueryCalls: 1,
     serverConfigFindCalls: 1,
   });
 }
