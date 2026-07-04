@@ -102,6 +102,10 @@ import {
   removeFromCollection,
   reorderCollectionItem,
 } from "./mutations/collectionOrdering.js";
+import {
+  addImageToAlbum,
+  removeImageFromAlbum,
+} from "./mutations/albumImageReuse.js";
 import shareCollectionAsDiscussion from "./mutations/shareCollectionAsDiscussion.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
@@ -566,6 +570,12 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     reorderCollectionItem: reorderCollectionItem({
+      driver
+    }),
+    addImageToAlbum: addImageToAlbum({
+      driver
+    }),
+    removeImageFromAlbum: removeImageFromAlbum({
       driver
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
