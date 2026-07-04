@@ -1059,6 +1059,10 @@ const typeDefinitions = gql`
     removeFromCollection(collectionId: ID!, itemId: ID!, itemType: CollectionItemType!): Boolean!
     reorderCollectionItem(collectionId: ID!, itemId: ID!, newPosition: Int!): Boolean!
 
+    # Album reuse custom mutations
+    addImageToAlbum(albumId: ID!, imageId: ID!, position: Int): Boolean!
+    removeImageFromAlbum(albumId: ID!, imageId: ID!): Boolean!
+
     # Share collection as discussion
     shareCollectionAsDiscussion(
       collectionId: ID!,
