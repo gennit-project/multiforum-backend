@@ -69,16 +69,21 @@ Each item: what it is in plain terms, why it matters, the symptom that means
      `Discussion.createdAt`, `Issue.createdAt`/`isOpen`, `Event.startTime`.
 - **Effort:** low (verification + a few `CREATE INDEX IF NOT EXISTS`). **Risk:**
   low — creating indexes is safe, though on a large prod DB do it in a
-  maintenance window (index build can take time). **Caveat:** date-window filters
-  currently wrap the string field in `datetime(...)`, which defeats a range index
-  even if one exists — getting index-backed date filtering also needs #4-style
-  work (store `createdAt` as a native datetime). Feeds into #2 and #3.
+  maintenance window (index build can take time). **Caveat:** several date-window
+  filters currently wrap already-`DateTime` fields in `datetime(...)`, which can
+  defeat a range index even if one exists. Getting index-backed date filtering
+  means removing those conversion wrappers and indexing the actual properties the
+  queries filter on (including connector-node timestamps such as
+  `DiscussionChannel.createdAt` / `EventChannel.createdAt` where relevant). Feeds
+  into #2 and #3.
 
 ### 2. Pagination limits on list queries
 
-- **Plain terms:** List queries (`discussions`, `comments`, `events`, …) have no
-  default or maximum page size. A client that forgets to ask for a page can
-  fetch the entire table in one request.
+- **Plain terms:** List queries (`discussions`, `comments`, `events`, `issues`,
+  …) have no default or maximum page size. A client that forgets to ask for a
+  page can fetch the entire table in one request. The clearest example today is
+  `getSiteWideIssueList`, whose fallback `limit` is effectively unbounded
+  (`1_000_000_000`).
 - **Why it matters:** as content grows, one such query fetches and serialises
   thousands of nodes → memory and latency spikes; big `SKIP` offsets get slow.
 - **Symptom:** a list endpoint returns huge responses / slows down as data grows;
@@ -86,8 +91,9 @@ Each item: what it is in plain terms, why it matters, the symptom that means
 - **How:** add the `@limit(default: 25, max: 100)` directive to list-returning
   types in [typeDefs.ts](../typeDefs.ts); and clamp the client-supplied
   `limit`/`offset` in the custom Cypher list resolvers (e.g.
-  `getSiteWideDiscussionList`). **Check the frontend's largest real page size
-  first** so the `max` doesn't cut off a legitimate query.
+  `getSiteWideDiscussionList`, `getSiteWideIssueList`). **Check the frontend's
+  largest real page size first** so the `max` doesn't cut off a legitimate
+  query.
 - **Effort:** medium (touches many types, mechanical). **Risk:** medium — a
   client asking for more than `max` gets capped, so verify real page sizes.
 
@@ -105,7 +111,10 @@ Each item: what it is in plain terms, why it matters, the symptom that means
   `WikiPage(title, body)`, `Issue`, and switch the search resolvers to
   `CALL db.index.fulltext.queryNodes(...)`. **Depends on #1** (the index must be
   created). Note: full-text tokenises (word matching) rather than substring
-  matching, so match behaviour changes slightly — worth a product check.
+  matching, so match behaviour changes slightly — worth a product check. Also
+  note that channel search is currently scan-based too (`toLower(... ) CONTAINS
+  toLower($searchInput)`), so if that path starts to hurt it belongs in the same
+  conversation.
 - **Effort:** medium–high (schema + rewrite the search branch of several
   resolvers). **Risk:** medium (search result/ranking behaviour changes).
 
@@ -153,11 +162,13 @@ Each item: what it is in plain terms, why it matters, the symptom that means
   the landing page on by default. Turning them off in prod is a **security
   posture** decision (some tooling relies on introspection), so it's flagged
   rather than assumed.
-- **Store timestamps as native datetime.** Date-window filters wrap string
-  `createdAt` in `datetime(...)`, which prevents index use. Storing timestamps
-  natively (or as epoch millis) unlocks index-backed date filtering. Cross-cutting
-  (schema + data migration + query changes) — larger, do only if date-filtered
-  feeds are a measured bottleneck.
+- **Make date filters index-friendly.** Several date-window filters wrap existing
+  `DateTime` properties in `datetime(...)`, and some hot filters are on
+  connector-node timestamps (`DiscussionChannel.createdAt`, `EventChannel.createdAt`)
+  rather than the parent content node. Removing unnecessary conversion wrappers
+  and indexing the properties the queries actually filter on is the smaller,
+  more accurate fix. Cross-cutting (query changes + targeted indexes), but much
+  cheaper than a schema-wide timestamp migration.
 
 ---
 
