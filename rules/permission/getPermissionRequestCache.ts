@@ -5,8 +5,9 @@ type PermissionRequestCache = {
   // Holds the cached ServerConfig lookup. Kept as `any` because downstream
   // permission checks read many dynamically-selected fields off the result.
   serverConfigPromise?: Promise<any>;
-  // Memoized server-suspension lookups, keyed by `username|modProfileName`
-  // (see getActiveServerSuspension). Request-scoped only.
+  // Memoized server-suspension lookups, keyed by the exact
+  // `[username, modProfileName]` tuple (see getActiveServerSuspension).
+  // Request-scoped only.
   activeServerSuspensionByKey: Map<string, Promise<ActiveServerSuspensionResult>>;
 };
 

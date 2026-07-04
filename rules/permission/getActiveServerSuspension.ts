@@ -8,6 +8,12 @@ type ActiveServerSuspensionInput = {
   modProfileName?: string;
 };
 
+const buildCacheKey = ({
+  username,
+  modProfileName,
+}: Pick<ActiveServerSuspensionInput, "username" | "modProfileName">) =>
+  JSON.stringify([username ?? null, modProfileName ?? null]);
+
 export type ActiveServerSuspensionResult = {
   activeSuspension: Suspension | null;
   isSuspended: boolean;
@@ -208,10 +214,11 @@ export async function getActiveServerSuspension(
   // single request, but this is called by several server-scoped rules
   // (passesAsServerAdminOrRoot, hasServerPermission, hasServerModPermission),
   // each of which otherwise issued its own 1-2 suspension queries. Cache the
-  // promise (keyed by username|modProfileName) so concurrent callers share one
-  // lookup. Never TTL-cached — a new suspension takes effect on the next request.
+  // promise (keyed by the exact [username, modProfileName] tuple) so concurrent
+  // callers share one lookup without aliasing distinct actors. Never TTL-cached
+  // — a new suspension takes effect on the next request.
   const cache = getPermissionRequestCache(context);
-  const cacheKey = `${username ?? ""}|${modProfileName ?? ""}`;
+  const cacheKey = buildCacheKey({ username, modProfileName });
   const cached = cache.activeServerSuspensionByKey.get(cacheKey);
   if (cached) {
     return cached;
