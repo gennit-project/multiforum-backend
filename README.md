@@ -109,6 +109,7 @@ breakdown, request lifecycle, data model, and the testing strategy.
 - [Permission system architecture](./docs/permission-system.md)
 - [Comment notification system](./docs/notifications.md)
 - [Test coverage baseline](./docs/coverage-baseline.md)
+- [Performance roadmap](./docs/performance-roadmap.md)
 - [Plugin requirements](./PLUGIN_REQUIREMENTS.md)
 - [Enhanced error handling](./ENHANCED_ERROR_HANDLING_USAGE.md)
 - [`hasDownload` filter logic](./HASDOWNLOAD_FILTER_LOGIC.md)
