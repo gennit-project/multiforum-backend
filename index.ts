@@ -6,6 +6,7 @@ import depthLimit from "graphql-depth-limit";
 import express from "express";
 import http from "http";
 import cors from "cors";
+import compression from "compression";
 import { applyMiddleware } from "graphql-middleware";
 import type { IMiddleware } from "graphql-middleware";
 import type { ApolloServerPlugin } from "@apollo/server";
@@ -232,6 +233,8 @@ async function initializeServer() {
         origin: "*",
         credentials: true,
       }),
+      // Gzip GraphQL responses — list payloads especially benefit.
+      compression(),
       express.json({ limit: "50mb" }),
       expressMiddleware(server, {
         context: async ({ req }) => {
