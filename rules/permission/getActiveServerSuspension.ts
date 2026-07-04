@@ -1,5 +1,6 @@
 import type { Suspension } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import type { ActiveServerSuspensionResult } from "./activeServerSuspensionTypes.js";
 import { getPermissionRequestCache } from "./getPermissionRequestCache.js";
 
 type ActiveServerSuspensionInput = {
@@ -13,16 +14,6 @@ const buildCacheKey = ({
   modProfileName,
 }: Pick<ActiveServerSuspensionInput, "username" | "modProfileName">) =>
   JSON.stringify([username ?? null, modProfileName ?? null]);
-
-export type ActiveServerSuspensionResult = {
-  activeSuspension: Suspension | null;
-  isSuspended: boolean;
-  relatedIssueId: string | null;
-  relatedIssueNumber: number | null;
-  expiredUserSuspensions: Suspension[];
-  expiredModSuspensions: Suspension[];
-  suspendedEntity: "user" | "mod" | null;
-};
 
 const normalizeValue = (value: any): any => {
   if (value == null) return value;

@@ -1,5 +1,5 @@
 import type { GraphQLContext } from "../../types/context.js";
-import type { ActiveServerSuspensionResult } from "./getActiveServerSuspension.js";
+import type { ActiveServerSuspensionResult } from "./activeServerSuspensionTypes.js";
 
 type PermissionRequestCache = {
   // Holds the cached ServerConfig lookup. Kept as `any` because downstream
