@@ -291,6 +291,8 @@ const permissionList = shield({
       reportProfilePicture: and(isAuthenticated, canReportServerContent), // server-scoped, no channel to scope canReport to
       lockChannel: and(isAuthenticated, canLockChannel),
       unlockChannel: and(isAuthenticated, canLockChannel),
+      lockWikiPage: and(isAuthenticated, allow),
+      unlockWikiPage: and(isAuthenticated, allow),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
