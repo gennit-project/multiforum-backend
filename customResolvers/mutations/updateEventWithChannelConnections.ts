@@ -7,6 +7,7 @@ import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
+import { eventVersionHistoryHandler } from "../../hooks/eventVersionHistoryHook.js";
 import { logger } from "../../logger.js";
 
 type Input = {
@@ -70,6 +71,22 @@ const getResolver = (input: Input) => {
       const existingEvent = existingEvents[0];
       if (!existingEvent) {
         throw new Error("Event not found");
+      }
+
+      // Snapshot the previous title/description into the event's version
+      // history before applying the update. Runs before Event.update so it
+      // reads the pre-update values.
+      if (where.id) {
+        await eventVersionHistoryHandler({
+          context,
+          params: {
+            where: { id: where.id },
+            update: {
+              title: eventUpdateInput.title,
+              description: eventUpdateInput.description,
+            },
+          },
+        });
       }
 
       // Update the event

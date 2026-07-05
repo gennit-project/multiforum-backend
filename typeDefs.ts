@@ -801,6 +801,12 @@ const typeDefinitions = gql`
     isAllDay: Boolean
     coverImageURL: String
     locked: Boolean
+    PastTitleVersions: [TextVersion!]!
+      @relationship(type: "HAS_TITLE_VERSION", direction: OUT)
+    PastDescriptionVersions: [TextVersion!]!
+      @relationship(type: "HAS_DESCRIPTION_VERSION", direction: OUT)
+    DescriptionLastEditedBy: User
+      @relationship(type: "DESCRIPTION_LAST_EDITED_BY", direction: OUT)
     # Series-related fields
     occurrenceIndex: Int # Position in series (0-based), null for standalone events
     overrideSeriesTitle: Boolean # True if title diverged from series
@@ -1285,6 +1291,7 @@ const typeDefinitions = gql`
     ): Issue
     deleteCommentRevision(textVersionId: ID!): TextVersion
     deleteDiscussionBodyRevision(textVersionId: ID!): TextVersion
+    deleteEventDescriptionRevision(textVersionId: ID!): TextVersion
     deleteWikiRevision(textVersionId: ID!): TextVersion
     reportChannel(
       channelUniqueName: String!

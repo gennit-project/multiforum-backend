@@ -23,7 +23,7 @@ type Args = {
   textVersionId: string
 }
 
-type RevisionType = 'comment' | 'discussion body' | 'wiki'
+type RevisionType = 'comment' | 'discussion body' | 'wiki' | 'event description'
 
 type RevisionRedactionTarget = {
   targetType: RevisionType | null
@@ -49,7 +49,8 @@ type Input = {
 const revisionPermissionByType: Record<RevisionType, ModChannelPermission> = {
   comment: ModChannelPermission.canEditComments,
   'discussion body': ModChannelPermission.canEditDiscussions,
-  wiki: ModChannelPermission.canDeleteWiki
+  wiki: ModChannelPermission.canDeleteWiki,
+  'event description': ModChannelPermission.canEditEvents
 }
 
 export const getRevisionRedactionTarget = async (input: {
@@ -84,15 +85,20 @@ export const getRevisionRedactionTarget = async (input: {
       OPTIONAL MATCH (wikiPage:WikiPage)-[:HAS_VERSION]->(version)
       OPTIONAL MATCH (wikiOriginalAuthor:User)-[:AUTHORED_WIKI_PAGE]->(wikiPage)
 
+      OPTIONAL MATCH (event:Event)-[:HAS_DESCRIPTION_VERSION]->(version)
+      OPTIONAL MATCH (eventPoster:User)-[:POSTED_BY]->(event)
+      OPTIONAL MATCH (eventChannel:EventChannel)-[:POSTED_IN_CHANNEL]->(event)
+
       RETURN
         CASE
           WHEN comment IS NOT NULL THEN 'comment'
           WHEN discussion IS NOT NULL THEN 'discussion body'
           WHEN wikiPage IS NOT NULL THEN 'wiki'
+          WHEN event IS NOT NULL THEN 'event description'
           ELSE null
         END AS targetType,
-        coalesce(comment.id, discussion.id, wikiPage.id) AS targetId,
-        coalesce(commentUser.username, discussionAuthor.username, wikiOriginalAuthor.username) AS ownerUsername,
+        coalesce(comment.id, discussion.id, wikiPage.id, event.id) AS targetId,
+        coalesce(commentUser.username, discussionAuthor.username, wikiOriginalAuthor.username, eventPoster.username) AS ownerUsername,
         commentMod.displayName AS ownerModProfileName,
         coalesce(
           commentChannel.uniqueName,
@@ -102,7 +108,8 @@ export const getRevisionRedactionTarget = async (input: {
           parentCommentDiscussionChannel.channelUniqueName,
           parentCommentEventChannel.channelUniqueName,
           discussionChannel.channelUniqueName,
-          wikiPage.channelUniqueName
+          wikiPage.channelUniqueName,
+          eventChannel.channelUniqueName
         ) AS channelUniqueName
       `,
       { textVersionId }

@@ -189,6 +189,7 @@ const permissionList = shield({
       deleteTextVersions: deny,
       deleteCommentRevision: and(isAuthenticated, allow),
       deleteDiscussionBodyRevision: and(isAuthenticated, allow),
+      deleteEventDescriptionRevision: and(isAuthenticated, allow),
       deleteWikiRevision: and(isAuthenticated, allow),
       deleteWikiPages: and(isAuthenticated, canDeleteWikiPages),
       createWikiPages: and(isAuthenticated, canEditWikiPages),
