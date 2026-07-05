@@ -116,6 +116,7 @@ import {
   lockWikiPage,
   unlockWikiPage,
 } from "./mutations/wikiPageLocks.js";
+import { setFeaturedWikiPages } from "./mutations/setFeaturedWikiPages.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
@@ -615,6 +616,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     unlockWikiPage: unlockWikiPage({
       Channel,
+      WikiPage,
+    }),
+    setFeaturedWikiPages: setFeaturedWikiPages({
+      ServerConfig,
       WikiPage,
     }),
     updateDownloadLabels: updateDownloadLabels({
