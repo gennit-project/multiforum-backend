@@ -221,3 +221,28 @@ for (const { name, op } of authGatedImageMod) {
     assert.equal((result.data as Record<string, unknown> | null)?.[name], null);
   });
 }
+
+const authGatedCommentSticky: Array<{ name: string; op: string }> = [
+  {
+    name: "stickyComment",
+    op: `mutation { stickyComment(commentId: "c") { id } }`,
+  },
+  {
+    name: "unstickyComment",
+    op: `mutation { unstickyComment(commentId: "c") { id } }`,
+  },
+];
+
+for (const { name, op } of authGatedCommentSticky) {
+  test(`${name} is wired (unauthenticated -> notAuthenticated, not default-deny)`, async () => {
+    const result = await execUnauthenticated(op);
+
+    assert.ok(result.errors && result.errors.length > 0, `${name} should error`);
+    assert.equal(
+      result.errors[0].message,
+      ERROR_MESSAGES.channel.notAuthenticated,
+      `${name} should be auth-gated, got: ${result.errors[0].message}`
+    );
+    assert.equal((result.data as Record<string, unknown> | null)?.[name], null);
+  });
+}

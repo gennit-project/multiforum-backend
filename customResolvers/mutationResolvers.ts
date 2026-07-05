@@ -49,6 +49,7 @@ import lockChannel from "./mutations/lockChannel.js";
 import unlockChannel from "./mutations/unlockChannel.js";
 import archiveComment from "./mutations/archiveComment.js";
 import unarchiveComment from "./mutations/unarchiveComment.js";
+import { stickyComment, unstickyComment } from "./mutations/stickyComment.js";
 import archiveDiscussion from "./mutations/archiveDiscussion.js";
 import unarchiveDiscussion from "./mutations/unarchiveDiscussion.js";
 import archiveEvent from "./mutations/archiveEvent.js";
@@ -438,6 +439,12 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Issue,
       Comment,
       driver,
+    }),
+    stickyComment: stickyComment({
+      Comment,
+    }),
+    unstickyComment: unstickyComment({
+      Comment,
     }),
     archiveDiscussion: archiveDiscussion({
       Issue,

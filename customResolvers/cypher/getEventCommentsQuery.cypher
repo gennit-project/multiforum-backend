@@ -51,6 +51,9 @@ RETURN {
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
     archived: c.archived,
+    isSticky: coalesce(c.isSticky, false),
+    stickyAt: c.stickyAt,
+    stickyByUsername: c.stickyByUsername,
     CommentAuthor: {
         username: author.username,
         displayName: author.displayName,
@@ -74,6 +77,7 @@ RETURN {
 } AS comment, weightedVotesCount, hotRank
 
 ORDER BY 
+    coalesce(c.isSticky, false) DESC,
     CASE WHEN $sortOption = "top" THEN weightedVotesCount END DESC,
     CASE WHEN $sortOption = "hot" THEN hotRank END DESC,
     c.createdAt DESC
