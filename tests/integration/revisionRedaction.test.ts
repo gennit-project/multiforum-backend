@@ -116,6 +116,49 @@ test("a wiki page original author can redact a wiki revision", async () => {
   assert.equal(await bodyOf("v-wiki"), REDACTED_REVISION_BODY);
 });
 
+test("an event OP can redact their own event description revision", async () => {
+  await run(
+    `CREATE (alice:User { username: 'alice', createdAt: datetime() })
+     CREATE (e:Event { id: 'e1', title: 'My Event', createdAt: datetime() })
+     CREATE (ec:EventChannel { id: 'ec1', eventId: 'e1', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (v:TextVersion { id: 'v-event', body: 'old description', createdAt: datetime() })
+     CREATE (e)-[:HAS_DESCRIPTION_VERSION]->(v)
+     CREATE (ec)-[:POSTED_IN_CHANNEL]->(e)
+     CREATE (alice)-[:POSTED_BY]->(e)`
+  );
+
+  await env.resolvers.Mutation.deleteEventDescriptionRevision(
+    null,
+    { textVersionId: "v-event" },
+    ctxFor("alice"),
+    info
+  );
+
+  assert.equal(await bodyOf("v-event"), REDACTED_REVISION_BODY);
+});
+
+test("calling deleteEventDescriptionRevision with a discussion revision id is rejected", async () => {
+  await run(
+    `CREATE (alice:User { username: 'alice', createdAt: datetime() })
+     CREATE (d:Discussion { id: 'd1', title: 'My Discussion', createdAt: datetime() })
+     CREATE (v:TextVersion { id: 'v-discussion', body: 'old body', createdAt: datetime() })
+     CREATE (d)-[:HAS_BODY_VERSION]->(v)
+     CREATE (alice)-[:POSTED_DISCUSSION]->(d)`
+  );
+
+  await assert.rejects(
+    env.resolvers.Mutation.deleteEventDescriptionRevision(
+      null,
+      { textVersionId: "v-discussion" },
+      ctxFor("alice"),
+      info
+    ),
+    /event description revision not found/
+  );
+
+  assert.equal(await bodyOf("v-discussion"), "old body");
+});
+
 test("calling deleteCommentRevision with a wiki revision id is rejected", async () => {
   await run(
     `CREATE (alice:User { username: 'alice', createdAt: datetime() })

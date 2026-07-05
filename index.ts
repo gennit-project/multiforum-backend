@@ -14,6 +14,7 @@ import typesDefinitions from "./typeDefs.js";
 import permissions from "./permissions.js";
 import discussionVersionHistoryMiddleware from "./middleware/discussionVersionHistoryMiddleware.js";
 import commentVersionHistoryMiddleware from "./middleware/commentVersionHistoryMiddleware.js";
+import eventVersionHistoryMiddleware from "./middleware/eventVersionHistoryMiddleware.js";
 import commentMentionsMiddleware from "./middleware/commentMentionsMiddleware.js";
 import commentPluginPipelineMiddleware from "./middleware/commentPluginPipelineMiddleware.js";
 import commentUserMentionsMiddleware from "./middleware/commentUserMentionsMiddleware.js";
@@ -182,6 +183,7 @@ async function initializeServer() {
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,
       commentVersionHistoryMiddleware as AppMiddleware,
+      eventVersionHistoryMiddleware as AppMiddleware,
       commentMentionsMiddleware as AppMiddleware,
       commentUserMentionsMiddleware as AppMiddleware,
       commentPluginPipelineMiddleware as AppMiddleware,
