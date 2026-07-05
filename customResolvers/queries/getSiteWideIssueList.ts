@@ -2,6 +2,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
 import { DateTime } from "luxon";
 import { getSiteWideIssuesQuery } from "../cypher/cypherQueries.js";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
@@ -16,6 +17,9 @@ type Args = {
   endDate?: string | null;
   showOnlyServerRuleViolations?: boolean;
   isOpen: boolean;
+  filterCreatedByMe?: boolean | null;
+  filterIAmOP?: boolean | null;
+  filterIReported?: boolean | null;
   options?: {
     offset?: number | null;
     limit?: number | null;
@@ -78,6 +82,34 @@ const getResolver = (input: Input) => {
       ? args.options?.sort || "newest"
       : "newest";
 
+    // Resolve the caller's identity server-side so the "my involvement" filters
+    // cannot be spoofed by passing an arbitrary username from the client.
+    context.user = await setUserDataOnContext({ context });
+    const loggedInUsername = context.user?.username || null;
+    const loggedInModProfileName =
+      context.user?.data?.ModerationProfile?.displayName || null;
+
+    // A filter that needs an identity is a no-op (matches nothing) when the
+    // caller is not logged in, rather than silently returning every issue.
+    const hasIdentity = Boolean(loggedInUsername || loggedInModProfileName);
+    const filterCreatedByMe = Boolean(args.filterCreatedByMe) && hasIdentity;
+    const filterIAmOP = Boolean(args.filterIAmOP) && hasIdentity;
+    const filterIReported = Boolean(args.filterIReported) && hasIdentity;
+
+    const requestedIdentityFilter =
+      Boolean(args.filterCreatedByMe) ||
+      Boolean(args.filterIAmOP) ||
+      Boolean(args.filterIReported);
+
+    // An unauthenticated caller cannot match any identity filter, so short
+    // circuit to an empty result instead of running the query.
+    if (requestedIdentityFilter && !hasIdentity) {
+      return {
+        aggregateIssueCount: 0,
+        issues: [],
+      };
+    }
+
     const session = driver.session();
     const titleRegex = `(?i).*${searchInput}.*`;
     const bodyRegex = `(?i).*${searchInput}.*`;
@@ -94,6 +126,11 @@ const getResolver = (input: Input) => {
         startDate,
         endDate,
         isOpen: args.isOpen,
+        filterCreatedByMe,
+        filterIAmOP,
+        filterIReported,
+        loggedInUsername,
+        loggedInModProfileName,
         offset,
         limit,
         sort,

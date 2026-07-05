@@ -37,6 +37,26 @@ const createMockContext = () =>
     },
   }) as unknown as GraphQLContext;
 
+// Pre-seeds context.user so setUserDataOnContext short-circuits (it returns the
+// existing user when a username is already present) instead of parsing a JWT.
+const createAuthedContext = (
+  username: string,
+  modProfileName: string | null = null
+) =>
+  ({
+    req: {
+      headers: {},
+    },
+    user: {
+      username,
+      email: null,
+      email_verified: true,
+      data: modProfileName
+        ? { ModerationProfile: { displayName: modProfileName } }
+        : null,
+    },
+  }) as unknown as GraphQLContext;
+
 const mockInfo = null as unknown as GraphQLResolveInfo;
 
 const baseArgs = {
@@ -174,6 +194,115 @@ test("getSiteWideIssueList returns issues and aggregate count", async () => {
     { id: "i1", title: "First", reportCount: 3 },
     { id: "i2", title: "Second", reportCount: 1 },
   ]);
+});
+
+test("getSiteWideIssueList defaults the involvement filters to false", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideIssueListResolver({ driver });
+
+  await resolver(null, baseArgs, createMockContext(), mockInfo);
+
+  assert.deepEqual(
+    {
+      filterCreatedByMe: driver.runCalls[0].params.filterCreatedByMe,
+      filterIAmOP: driver.runCalls[0].params.filterIAmOP,
+      filterIReported: driver.runCalls[0].params.filterIReported,
+    },
+    { filterCreatedByMe: false, filterIAmOP: false, filterIReported: false }
+  );
+});
+
+test("getSiteWideIssueList forwards the caller identity to the query", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideIssueListResolver({ driver });
+
+  await resolver(
+    null,
+    { ...baseArgs, filterCreatedByMe: true },
+    createAuthedContext("alice", "aliceMod"),
+    mockInfo
+  );
+
+  assert.deepEqual(
+    {
+      loggedInUsername: driver.runCalls[0].params.loggedInUsername,
+      loggedInModProfileName: driver.runCalls[0].params.loggedInModProfileName,
+      filterCreatedByMe: driver.runCalls[0].params.filterCreatedByMe,
+    },
+    {
+      loggedInUsername: "alice",
+      loggedInModProfileName: "aliceMod",
+      filterCreatedByMe: true,
+    }
+  );
+});
+
+test("getSiteWideIssueList enables filterIAmOP for an authed caller", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideIssueListResolver({ driver });
+
+  await resolver(
+    null,
+    { ...baseArgs, filterIAmOP: true },
+    createAuthedContext("alice"),
+    mockInfo
+  );
+
+  assert.equal(driver.runCalls[0].params.filterIAmOP, true);
+});
+
+test("getSiteWideIssueList enables filterIReported for an authed caller", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideIssueListResolver({ driver });
+
+  await resolver(
+    null,
+    { ...baseArgs, filterIReported: true },
+    createAuthedContext("alice"),
+    mockInfo
+  );
+
+  assert.equal(driver.runCalls[0].params.filterIReported, true);
+});
+
+test("getSiteWideIssueList returns empty without running the query when an involvement filter is requested unauthenticated", async () => {
+  const driver = createMockDriver([
+    { issue: { id: "i1" }, totalCount: 1 },
+  ]);
+  const resolver = getSiteWideIssueListResolver({ driver });
+
+  const result = await resolver(
+    null,
+    { ...baseArgs, filterCreatedByMe: true },
+    createMockContext(),
+    mockInfo
+  );
+
+  assert.deepEqual(
+    { runCalls: driver.runCalls.length, result },
+    { runCalls: 0, result: { aggregateIssueCount: 0, issues: [] } }
+  );
+});
+
+test("getSiteWideIssueList query filters by issue author for filterCreatedByMe", () => {
+  assert.match(
+    getSiteWideIssuesQuery,
+    /\$filterCreatedByMe = false OR issue\.authorName = \$loggedInUsername OR EXISTS \{ \(issue\)<-\[:AUTHORED_ISSUE\]-\(author\)/
+  );
+});
+
+test("getSiteWideIssueList query filters by reported-content author for filterIAmOP", () => {
+  assert.match(
+    getSiteWideIssuesQuery,
+    /\$filterIAmOP = false OR issue\.relatedUsername = \$loggedInUsername OR issue\.relatedModProfileName = \$loggedInModProfileName/
+  );
+});
+
+test("getSiteWideIssueList query filters by report author for filterIReported", () => {
+  assert.match(
+    getSiteWideIssuesQuery,
+    /\$filterIReported = false OR EXISTS \{ \(issue\)-\[:ACTIVITY_ON_ISSUE\]->\(:ModerationAction \{actionType: "report"\}\)<-\[:PERFORMED_MODERATION_ACTION\]-\(reporter\)/
+  );
 });
 
 test("getSiteWideIssueList query uses bound pagination params", () => {

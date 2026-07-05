@@ -2158,6 +2158,12 @@ const typeDefinitions = gql`
       endDate: String
       showOnlyServerRuleViolations: Boolean
       isOpen: Boolean!
+      # Filter to issues the logged-in user authored (filed the report/issue).
+      filterCreatedByMe: Boolean
+      # Filter to issues about content authored by the logged-in user (they are the OP).
+      filterIAmOP: Boolean
+      # Filter to issues that have at least one report authored by the logged-in user.
+      filterIReported: Boolean
       options: IssueListOptions
     ): SiteWideIssueListFormat
     getSiteWideWikiList(
