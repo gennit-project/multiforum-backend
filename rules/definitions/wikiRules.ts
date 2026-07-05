@@ -4,8 +4,13 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
-import { checkChannelPermissions } from "../permission/hasChannelPermission.js";
+import {
+  checkChannelPermissions,
+  evaluateChannelOwnerPermission,
+  isChannelAdmin,
+} from "../permission/hasChannelPermission.js";
 import { checkChannelModPermissions, ModChannelPermission } from "../permission/hasChannelModPermission.js";
+import { setUserDataOnContext } from "../permission/userDataHelperFunctions.js";
 import {
   MutationCreateWikiPagesArgs,
   MutationDeleteWikiPagesArgs,
@@ -19,6 +24,7 @@ import {
 type WikiPageLookup = {
   id?: string | null;
   channelUniqueName?: string | null;
+  locked?: boolean | null;
   OriginalAuthor?: {
     username?: string | null;
   } | null;
@@ -30,6 +36,10 @@ type WikiPageLookup = {
 type WikiChannelPreference = {
   uniqueName?: string | null;
   wikiEnabled?: boolean | null;
+  Admins?: Array<{ username?: string | null }> | null;
+  ElevatedChannelRole?: {
+    canUpdateChannel?: boolean | null;
+  } | null;
 };
 
 type WikiPageMutationArgs = Partial<
@@ -68,6 +78,7 @@ async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: GraphQLCont
     selectionSet: `{
       id
       channelUniqueName
+      locked
       OriginalAuthor {
         username
       }
@@ -76,6 +87,23 @@ async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: GraphQLCont
       }
     }`,
   })) as WikiPageLookup[];
+}
+
+export async function getWikiPageById(
+  wikiPageId: string,
+  ctx: GraphQLContext
+) {
+  const WikiPage = ctx.ogm.model("WikiPage");
+  const wikiPages = (await WikiPage.find({
+    where: { id: wikiPageId },
+    selectionSet: `{
+      id
+      channelUniqueName
+      locked
+    }`,
+  })) as WikiPageLookup[];
+
+  return wikiPages[0] ?? null;
 }
 
 function collectWikiPageChannelNames(wikiPages: WikiPageLookup[]) {
@@ -164,10 +192,92 @@ async function validateWikiChannelsEnabled(
   return true;
 }
 
+export async function validateWikiPageChannelEnabled(
+  channelName: string | null | undefined,
+  ctx: GraphQLContext
+) {
+  if (!channelName) {
+    throw new Error("No channel specified for this wiki page.");
+  }
+
+  const result = await validateWikiChannelsEnabled([channelName], ctx);
+
+  if (result instanceof Error) {
+    throw result;
+  }
+}
+
+export async function assertCanManageLockedWikiPage(
+  channelName: string | null | undefined,
+  ctx: GraphQLContext
+) {
+  if (!channelName) {
+    throw new Error("No channel specified for this wiki page.");
+  }
+
+  if (!ctx.user?.username) {
+    ctx.user = await setUserDataOnContext({ context: ctx });
+  }
+
+  const username = ctx.user?.username;
+
+  if (!username) {
+    throw new Error(ERROR_MESSAGES.channel.notAuthenticated);
+  }
+
+  const Channel = ctx.ogm.model("Channel");
+  const channels = (await Channel.find({
+    where: { uniqueName: channelName },
+    selectionSet: `{
+      uniqueName
+      Admins {
+        username
+      }
+      ElevatedChannelRole {
+        canUpdateChannel
+      }
+    }`,
+  })) as WikiChannelPreference[];
+  const channel = channels[0];
+
+  if (!channel) {
+    throw new Error(ERROR_MESSAGES.channel.notFound);
+  }
+
+  if (!isChannelAdmin(channel.Admins, username)) {
+    throw new Error(ERROR_MESSAGES.channel.noChannelPermission);
+  }
+
+  if (!evaluateChannelOwnerPermission(channel.ElevatedChannelRole, "canUpdateChannel")) {
+    throw new Error(ERROR_MESSAGES.channel.noChannelPermission);
+  }
+
+  return true;
+}
+
+async function validateLockedWikiPageEdits(
+  wikiPages: WikiPageLookup[],
+  ctx: GraphQLContext
+) {
+  const lockedChannelNames = Array.from(
+    new Set(
+      wikiPages
+        .filter((wikiPage) => wikiPage.locked === true)
+        .map((wikiPage) => wikiPage.channelUniqueName)
+        .filter((channelName): channelName is string => !!channelName)
+    )
+  );
+
+  for (const channelName of lockedChannelNames) {
+    await assertCanManageLockedWikiPage(channelName, ctx);
+  }
+}
+
 export async function evaluateCanEditWikiPagesRule(
   args: WikiPageMutationArgs,
   ctx: GraphQLContext
 ) {
+  const wikiPages = await getWikiPagesByWhere(args?.where || null, ctx);
   const whereChannelNames = await getWikiPageChannelNamesByWhere(args, ctx);
   const createdChildChannelNames = getChildPageCreateChannelNames(
     args?.update?.ChildPages
@@ -187,6 +297,12 @@ export async function evaluateCanEditWikiPagesRule(
 
   if (wikiEnabledResult instanceof Error) {
     return wikiEnabledResult;
+  }
+
+  try {
+    await validateLockedWikiPageEdits(wikiPages, ctx);
+  } catch (error) {
+    return error instanceof Error ? error : new Error("Cannot edit locked wiki page.");
   }
 
   return checkChannelPermissions({
@@ -231,6 +347,25 @@ export async function evaluateCanEditWikiHomePageRule(
 
   if (wikiEnabledResult instanceof Error) {
     return wikiEnabledResult;
+  }
+
+  const Channel = ctx.ogm.model("Channel");
+  const channels = (await Channel.find({
+    where: { uniqueName: args?.where?.uniqueName || "" },
+    selectionSet: `{
+      WikiHomePage {
+        id
+        channelUniqueName
+        locked
+      }
+    }`,
+  })) as Array<{ WikiHomePage?: WikiPageLookup | null }>;
+  const wikiHomePage = channels[0]?.WikiHomePage;
+
+  try {
+    await validateLockedWikiPageEdits(wikiHomePage ? [wikiHomePage] : [], ctx);
+  } catch (error) {
+    return error instanceof Error ? error : new Error("Cannot edit locked wiki page.");
   }
 
   return checkChannelPermissions({

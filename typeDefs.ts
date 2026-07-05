@@ -366,6 +366,10 @@ const typeDefinitions = gql`
     editReason: String
     slug: String!
     channelUniqueName: String
+    locked: Boolean @default(value: false)
+    lockedAt: DateTime
+    lockReason: String
+    lockedByUsername: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     OriginalAuthor: User @relationship(type: "AUTHORED_WIKI_PAGE", direction: IN)
@@ -1066,6 +1070,10 @@ const typeDefinitions = gql`
     # Wiki sidebar pins
     pinWikiPageToChannel(channelUniqueName: String!, wikiPageId: ID!): Boolean!
     unpinWikiPageFromChannel(channelUniqueName: String!, wikiPageId: ID!): Boolean!
+
+    # Wiki page locks
+    lockWikiPage(wikiPageId: ID!, reason: String!): WikiPage!
+    unlockWikiPage(wikiPageId: ID!): WikiPage!
 
     # Share collection as discussion
     shareCollectionAsDiscussion(
