@@ -69,6 +69,63 @@ test("getSiteWideWikiList returns featured wiki pages in configured order", asyn
   );
 });
 
+// --- getSiteWideDiscussionList ---
+
+test("getSiteWideDiscussionList includes channel icon URLs for discussion channels", async () => {
+  await run(
+    `CREATE (channel:Channel {
+        uniqueName: 'cats',
+        displayName: 'Cats',
+        channelIconURL: 'https://example.com/cats-icon.png'
+      })
+      CREATE (author:User {
+        username: 'alice',
+        createdAt: datetime(),
+        discussionKarma: 1,
+        commentKarma: 2
+      })
+      CREATE (discussion:Discussion {
+        id: 'd1',
+        title: 'Alpha discussion',
+        body: 'hello',
+        createdAt: datetime(),
+        hasDownload: false
+      })
+      CREATE (dc:DiscussionChannel {
+        id: 'dc1',
+        discussionId: 'd1',
+        channelUniqueName: 'cats',
+        createdAt: datetime(),
+        weightedVotesCount: 1
+      })
+      CREATE (author)-[:POSTED_DISCUSSION]->(discussion)
+      CREATE (dc)-[:POSTED_IN_CHANNEL]->(discussion)`
+  );
+
+  const result = await env.resolvers.Query.getSiteWideDiscussionList(null, {
+    searchInput: "",
+    selectedChannels: [],
+    selectedTags: [],
+    showArchived: false,
+    hasDownload: false,
+    options: {
+      offset: "0",
+      limit: "10",
+      resultsOrder: "desc",
+      sort: "new",
+      timeFrame: "week",
+    },
+  });
+
+  assert.equal(result.discussions.length, 1);
+  assert.equal(result.discussions[0].DiscussionChannels.length, 1);
+  assert.equal(result.discussions[0].DiscussionChannels[0].Channel.uniqueName, "cats");
+  assert.equal(
+    result.discussions[0].DiscussionChannels[0].Channel.channelIconURL,
+    "https://example.com/cats-icon.png"
+  );
+});
+
 // --- getSortedChannels ---
 
 test("getSortedChannels returns channels with an aggregate count", async () => {
