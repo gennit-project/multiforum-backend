@@ -31,8 +31,15 @@ beforeEach(async () => {
 // countDownloads is passed straight to Cypher; GraphQL would supply null when
 // omitted, so default it here (a direct call would otherwise pass undefined,
 // which the driver rejects).
-const getSortedChannels = (args: Record<string, unknown> = {}) =>
-  env.resolvers.Query.getSortedChannels(null, { countDownloads: null, ...args }, {});
+const getSortedChannels = (
+  args: Record<string, unknown> = {},
+  context: Record<string, unknown> = {}
+) =>
+  env.resolvers.Query.getSortedChannels(
+    null,
+    { countDownloads: null, ...args },
+    context
+  );
 
 const num = (v: any) => (v?.toNumber ? v.toNumber() : v);
 const names = (channels: any[]) => channels.map((c) => c.uniqueName).sort();
@@ -74,6 +81,16 @@ test("returns all channels with their event/discussion sub-counts when unfiltere
   const dogs = channelByName(result, "dogs");
   assert.equal(num(dogs.DiscussionChannelsAggregate.count), 0);
   assert.equal(num(dogs.EventChannelsAggregate.count), 0);
+});
+
+test("works when called without a GraphQL context", async () => {
+  await seedChannels();
+
+  const result = await env.resolvers.Query.getSortedChannels(null, {
+    countDownloads: null,
+  });
+
+  assert.deepEqual(names(result.channels), ["cars", "cats", "dogs"]);
 });
 
 test("filters by search term across uniqueName and description", async () => {
@@ -122,4 +139,21 @@ test("countDownloads flag excludes non-download discussions from the count", asy
     num(channelByName(defaultCount, "cats").DiscussionChannelsAggregate.count),
     1
   );
+});
+
+test("returns favorite state for the logged-in user", async () => {
+  await seedChannels();
+  await run(
+    `MATCH (cats:Channel { uniqueName: 'cats' })
+     CREATE (alice:User { username: 'alice' })
+     CREATE (alice)-[:DEFAULT_FAVORITES_CHANNELS]->(cats)`
+  );
+
+  const result = await getSortedChannels(
+    {},
+    { user: { username: "alice", email: null, email_verified: true, data: null } }
+  );
+
+  assert.equal(channelByName(result, "cats").isFavorited, true);
+  assert.equal(channelByName(result, "dogs").isFavorited, false);
 });
