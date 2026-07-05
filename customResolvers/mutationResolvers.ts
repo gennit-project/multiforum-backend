@@ -112,6 +112,10 @@ import {
   pinWikiPageToChannel,
   unpinWikiPageFromChannel,
 } from "./mutations/wikiPagePins.js";
+import {
+  lockWikiPage,
+  unlockWikiPage,
+} from "./mutations/wikiPageLocks.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
@@ -602,6 +606,14 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     unpinWikiPageFromChannel: unpinWikiPageFromChannel({
       driver,
+      Channel,
+      WikiPage,
+    }),
+    lockWikiPage: lockWikiPage({
+      Channel,
+      WikiPage,
+    }),
+    unlockWikiPage: unlockWikiPage({
       Channel,
       WikiPage,
     }),

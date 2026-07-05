@@ -19,6 +19,7 @@ type BuildOgmInput = {
   wikiPages?: Array<{
     id?: string;
     channelUniqueName: string;
+    locked?: boolean;
     OriginalAuthor?: { username: string };
     ChildPages?: Array<{ id: string }>;
   }>;
@@ -128,6 +129,52 @@ test("allows wiki page updates when the channel role can update the channel", as
   const result = await evaluateCanEditWikiPagesRule(
     { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
     ctx
+  );
+
+  assert.equal(result, true);
+});
+
+test("blocks generated wiki page updates that mutate lock fields directly", async () => {
+  const ctx = buildContext({
+    wikiPages: [{ id: "wiki-page-1", channelUniqueName: "sourceit" }],
+  });
+
+  const result = await evaluateCanEditWikiPagesRule(
+    { where: { id: "wiki-page-1" }, update: { locked: true } },
+    ctx
+  );
+
+  assert.match(String(result), /lockWikiPage or unlockWikiPage/);
+});
+
+test("blocks ordinary wiki editors from editing locked wiki pages", async () => {
+  const ctx = buildContext({
+    wikiPages: [
+      { id: "wiki-page-1", channelUniqueName: "sourceit", locked: true },
+    ],
+  });
+
+  const result = await evaluateCanEditWikiPagesRule(
+    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    ctx,
+    async () => new Error("No wiki moderation permission")
+  );
+
+  assert.ok(result instanceof Error);
+});
+
+test("allows users with wiki moderation permission to edit locked wiki pages", async () => {
+  const ctx = buildContext({
+    defaultCanUpdateChannel: false,
+    wikiPages: [
+      { id: "wiki-page-1", channelUniqueName: "sourceit", locked: true },
+    ],
+  });
+
+  const result = await evaluateCanEditWikiPagesRule(
+    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    ctx,
+    async () => true
   );
 
   assert.equal(result, true);

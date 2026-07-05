@@ -19,6 +19,7 @@ import {
 type WikiPageLookup = {
   id?: string | null;
   channelUniqueName?: string | null;
+  locked?: boolean | null;
   OriginalAuthor?: {
     username?: string | null;
   } | null;
@@ -44,6 +45,13 @@ type WikiPageChildPagesUpdate =
       create?: Array<{ node?: Pick<WikiPageCreateInput, "channelUniqueName"> }>;
     };
 
+type WikiPageLockFields = {
+  locked?: unknown;
+  lockedAt?: unknown;
+  lockReason?: unknown;
+  lockedByUsername?: unknown;
+};
+
 function addChannelName(
   channelNames: Set<string>,
   channelName?: string | null
@@ -68,6 +76,7 @@ async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: GraphQLCont
     selectionSet: `{
       id
       channelUniqueName
+      locked
       OriginalAuthor {
         username
       }
@@ -164,10 +173,70 @@ async function validateWikiChannelsEnabled(
   return true;
 }
 
+function hasDirectLockFieldMutation(args: WikiPageMutationArgs) {
+  const update = args?.update as WikiPageLockFields | null | undefined;
+  const inputs = (args?.input || []) as Array<WikiPageLockFields | null | undefined>;
+
+  const hasLockField = (value?: WikiPageLockFields | null) =>
+    !!value &&
+    (
+      "locked" in value ||
+      "lockedAt" in value ||
+      "lockReason" in value ||
+      "lockedByUsername" in value
+    );
+
+  return hasLockField(update) || inputs.some((input) => hasLockField(input));
+}
+
+async function validateLockedWikiPageEdits({
+  wikiPages,
+  ctx,
+  checkModPermissions = checkChannelModPermissions,
+}: {
+  wikiPages: WikiPageLookup[];
+  ctx: GraphQLContext;
+  checkModPermissions?: typeof checkChannelModPermissions;
+}) {
+  const lockedPages = wikiPages.filter((wikiPage) => wikiPage.locked === true);
+
+  if (!lockedPages.length) {
+    return true;
+  }
+
+  const channelConnections = collectWikiPageChannelNames(lockedPages);
+
+  if (!channelConnections.length) {
+    return new Error("No channel specified for this operation.");
+  }
+
+  const permissionResult = await checkModPermissions({
+    channelConnections,
+    context: ctx,
+    permissionCheck: ModChannelPermission.canDeleteWiki,
+  });
+
+  if (permissionResult instanceof Error) {
+    return new Error(
+      "This wiki page is locked. Only users with wiki moderation permission can edit it."
+    );
+  }
+
+  return true;
+}
+
 export async function evaluateCanEditWikiPagesRule(
   args: WikiPageMutationArgs,
-  ctx: GraphQLContext
+  ctx: GraphQLContext,
+  checkModPermissions = checkChannelModPermissions
 ) {
+  if (hasDirectLockFieldMutation(args)) {
+    return new Error(
+      "Use lockWikiPage or unlockWikiPage to change wiki page lock state."
+    );
+  }
+
+  const wikiPages = await getWikiPagesByWhere(args?.where || null, ctx);
   const whereChannelNames = await getWikiPageChannelNamesByWhere(args, ctx);
   const createdChildChannelNames = getChildPageCreateChannelNames(
     args?.update?.ChildPages
@@ -187,6 +256,20 @@ export async function evaluateCanEditWikiPagesRule(
 
   if (wikiEnabledResult instanceof Error) {
     return wikiEnabledResult;
+  }
+
+  const lockedPageEditResult = await validateLockedWikiPageEdits({
+    wikiPages,
+    ctx,
+    checkModPermissions,
+  });
+
+  if (lockedPageEditResult instanceof Error) {
+    return lockedPageEditResult;
+  }
+
+  if (wikiPages.some((wikiPage) => wikiPage.locked === true)) {
+    return true;
   }
 
   return checkChannelPermissions({
