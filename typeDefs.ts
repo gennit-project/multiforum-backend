@@ -1075,6 +1075,7 @@ const typeDefinitions = gql`
     unpinWikiPageFromChannel(channelUniqueName: String!, wikiPageId: ID!): Boolean!
     lockWikiPage(channelUniqueName: String!, wikiPageId: ID!, reason: String!): WikiPage!
     unlockWikiPage(channelUniqueName: String!, wikiPageId: ID!): WikiPage!
+    setFeaturedWikiPages(serverName: String!, wikiPageIds: [ID!]!): ServerConfig!
 
     # Share collection as discussion
     shareCollectionAsDiscussion(
@@ -1485,6 +1486,7 @@ const typeDefinitions = gql`
   type SiteWideWikiListFormat {
     aggregateWikiPageCount: Int!
     wikiPages: [WikiPage!]!
+    featuredWikiPages: [WikiPage!]!
   }
 
   type SiteWideIssueListItem {
@@ -1778,6 +1780,7 @@ const typeDefinitions = gql`
     serverIconURL: String
     rules: JSON
     allowedFileTypes: [String]
+    featuredWikiPageIds: [ID]
     enableDownloads: Boolean
     enableEvents: Boolean
     DefaultServerRole: ServerRole

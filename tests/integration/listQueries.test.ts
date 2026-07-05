@@ -54,6 +54,21 @@ test("getSiteWideWikiList filters by search input", async () => {
   assert.equal(result.wikiPages[0].title, "Alpha Guide");
 });
 
+test("getSiteWideWikiList returns featured wiki pages in configured order", async () => {
+  await run(
+    `CREATE (:ServerConfig { serverName: 'test-server', featuredWikiPageIds: ['w2', 'w1'] })
+     CREATE (:WikiPage { id: 'w1', title: 'Alpha Guide', slug: 'alpha', body: 'aaa', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (:WikiPage { id: 'w2', title: 'Beta Guide', slug: 'beta', body: 'bbb', channelUniqueName: 'dogs', createdAt: datetime() })`
+  );
+
+  const result = await env.resolvers.Query.getSiteWideWikiList(null, {});
+
+  assert.deepEqual(
+    result.featuredWikiPages.map((page: { id: string }) => page.id),
+    ["w2", "w1"]
+  );
+});
+
 // --- getSortedChannels ---
 
 test("getSortedChannels returns channels with an aggregate count", async () => {

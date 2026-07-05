@@ -293,6 +293,7 @@ const permissionList = shield({
       unlockChannel: and(isAuthenticated, canLockChannel),
       lockWikiPage: and(isAuthenticated, allow),
       unlockWikiPage: and(isAuthenticated, allow),
+      setFeaturedWikiPages: and(isAuthenticated, canManageServerSettings),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
