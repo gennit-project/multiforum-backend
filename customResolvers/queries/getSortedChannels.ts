@@ -21,14 +21,16 @@ const DEFAULT_OFFSET = "0";
 const getSortedChannelsResolver = (input: Input) => {
   const { driver } = input;
 
-  return async (_parent: unknown, args: Args, context: GraphQLContext) => {
+  return async (_parent: unknown, args: Args, context?: GraphQLContext) => {
     const limit = args.limit || DEFAULT_LIMIT;
     const offset = args.offset || DEFAULT_OFFSET;
     const tags = args.tags || [];
     const searchInput = args.searchInput || "";
     const countDownloads = args.countDownloads;
-    context.user = await setUserDataOnContext({ context });
-    const loggedInUsername = context.user?.username || null;
+    if (context) {
+      context.user = await setUserDataOnContext({ context });
+    }
+    const loggedInUsername = context?.user?.username || null;
     const session = driver.session();
 
     try {

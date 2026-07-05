@@ -83,6 +83,16 @@ test("returns all channels with their event/discussion sub-counts when unfiltere
   assert.equal(num(dogs.EventChannelsAggregate.count), 0);
 });
 
+test("works when called without a GraphQL context", async () => {
+  await seedChannels();
+
+  const result = await env.resolvers.Query.getSortedChannels(null, {
+    countDownloads: null,
+  });
+
+  assert.deepEqual(names(result.channels), ["cars", "cats", "dogs"]);
+});
+
 test("filters by search term across uniqueName and description", async () => {
   await seedChannels();
 
