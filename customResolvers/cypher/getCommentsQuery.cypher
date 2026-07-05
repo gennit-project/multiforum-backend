@@ -62,6 +62,9 @@ RETURN {
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
     archived: c.archived,
+    isSticky: coalesce(c.isSticky, false),
+    stickyAt: c.stickyAt,
+    stickyByUsername: c.stickyByUsername,
     // If the author is null, return null, otherwise return the author object.
     CommentAuthor: CASE WHEN author IS NULL THEN null ELSE {
         username: author.username,
@@ -87,6 +90,7 @@ RETURN {
 } AS comment, weightedVotesCount, hotRank
 
 ORDER BY 
+    coalesce(c.isSticky, false) DESC,
     CASE WHEN $sortOption = "top" THEN weightedVotesCount END DESC,
     CASE WHEN $sortOption = "hot" THEN hotRank END DESC,
     c.createdAt DESC

@@ -54,6 +54,9 @@ RETURN {
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
     archived: c.archived,
+    isSticky: coalesce(c.isSticky, false),
+    stickyAt: c.stickyAt,
+    stickyByUsername: c.stickyByUsername,
     CommentAuthor: CASE WHEN author IS NULL THEN null ELSE {
         username: author.username,
         displayName: author.displayName,
@@ -77,6 +80,6 @@ RETURN {
     PastVersions: FilteredPastVersions
 } AS comment
 
-ORDER BY c.createdAt DESC
+ORDER BY coalesce(c.isSticky, false) DESC, c.createdAt DESC
 SKIP toInteger($offset)
 LIMIT toInteger($limit)

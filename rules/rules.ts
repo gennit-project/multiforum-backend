@@ -27,6 +27,7 @@ import { canArchiveAndUnarchiveComment } from "./permission/canArchiveAndUnarchi
 import { canArchiveAndUnarchiveImage } from "./permission/canArchiveAndUnarchiveImage.js";
 import { canPermanentlyRemoveImage } from "./permission/canPermanentlyRemoveImage.js";
 import { canEditComments } from "./permission/canEditComments.js";
+import { canStickyComment } from "./permission/canStickyComment.js";
 import { canEditDiscussions } from "./permission/canEditDiscussions.js";
 import { canEditEvents } from "./permission/canEditEvents.js";
 import { canReport } from "./permission/canReport.js";
@@ -163,6 +164,7 @@ const ruleList = {
   canArchiveAndUnarchiveDiscussion,
   canArchiveAndUnarchiveEvent,
   canArchiveAndUnarchiveComment,
+  canStickyComment,
   canArchiveAndUnarchiveImage,
   canPermanentlyRemoveImage,
   canEditComments,

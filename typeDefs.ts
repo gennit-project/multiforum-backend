@@ -832,6 +832,9 @@ const typeDefinitions = gql`
     ChildComments: [Comment!]! @relationship(type: "IS_REPLY_TO", direction: IN)
     deleted: Boolean
     archived: Boolean
+    isSticky: Boolean @default(value: false)
+    stickyAt: DateTime
+    stickyByUsername: String
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     textLastEdited: DateTime
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -1334,6 +1337,8 @@ const typeDefinitions = gql`
       selectedServerRules: [String!]!
       reportText: String!
     ): Issue
+    stickyComment(commentId: ID!): Comment
+    unstickyComment(commentId: ID!): Comment
     archiveDiscussion(
       discussionId: ID!
       selectedForumRules: [String!]!
