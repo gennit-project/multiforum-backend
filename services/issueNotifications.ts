@@ -42,21 +42,27 @@ const getIssueNotificationCopy = (input: {
   issueTitle?: string | null;
   actionType?: string | null;
   actionDescription: string;
+  issueUrl?: string | null;
 }) => {
-  const { issueNumber, issueTitle, actionType, actionDescription } = input;
+  const { issueNumber, issueTitle, actionType, actionDescription, issueUrl } =
+    input;
   const issueLabel = issueNumber != null ? `Issue #${issueNumber}` : "Issue";
+  // In-app notifications render markdown, so link the issue label when we have
+  // a URL. Email subject/summary stay plain because the email builds its own
+  // link to the issue separately.
+  const linkedIssueLabel = issueUrl ? `[${issueLabel}](${issueUrl})` : issueLabel;
   const titleSuffix = issueTitle ? `: ${issueTitle}` : "";
 
   if (actionType === "comment") {
     return {
-      notificationText: `New reply on ${issueLabel}${titleSuffix}`,
+      notificationText: `New reply on ${linkedIssueLabel}${titleSuffix}`,
       subject: `New reply on ${issueLabel}`,
       summary: `There is a new reply on ${issueLabel}${titleSuffix}.`,
     };
   }
 
   return {
-    notificationText: `${issueLabel} was updated: ${actionDescription}`,
+    notificationText: `${linkedIssueLabel} was updated: ${actionDescription}`,
     subject: `${issueLabel} was updated`,
     summary: `${issueLabel}${titleSuffix} was updated: ${actionDescription}.`,
   };
@@ -111,13 +117,14 @@ export const notifyIssueSubscribers = async ({
     return false;
   }
 
+  const issueUrl = buildIssueUrl(issue.channelUniqueName, issue.issueNumber);
   const copy = getIssueNotificationCopy({
     issueNumber: issue.issueNumber,
     issueTitle: issue.title,
     actionType,
     actionDescription,
+    issueUrl,
   });
-  const issueUrl = buildIssueUrl(issue.channelUniqueName, issue.issueNumber);
 
   // Add unsubscribe footer to notification text
   const notificationTextWithFooter = issueUrl
