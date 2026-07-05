@@ -5,6 +5,9 @@ AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
+AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })
+AND ($filterIAmOP = false OR issue.relatedUsername = $loggedInUsername OR issue.relatedModProfileName = $loggedInModProfileName)
+AND ($filterIReported = false OR EXISTS { (issue)-[:ACTIVITY_ON_ISSUE]->(:ModerationAction {actionType: "report"})<-[:PERFORMED_MODERATION_ACTION]-(reporter) WHERE reporter.username = $loggedInUsername OR reporter.displayName = $loggedInModProfileName })
 WITH count(issue) AS totalCount
 
 MATCH (issue:Issue)
@@ -14,6 +17,9 @@ AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
+AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })
+AND ($filterIAmOP = false OR issue.relatedUsername = $loggedInUsername OR issue.relatedModProfileName = $loggedInModProfileName)
+AND ($filterIReported = false OR EXISTS { (issue)-[:ACTIVITY_ON_ISSUE]->(:ModerationAction {actionType: "report"})<-[:PERFORMED_MODERATION_ACTION]-(reporter) WHERE reporter.username = $loggedInUsername OR reporter.displayName = $loggedInModProfileName })
 OPTIONAL MATCH (issue)<-[:HAS_ISSUE]-(channel:Channel)
 OPTIONAL MATCH (issue)<-[:AUTHORED_ISSUE]-(authorUser:User)
 OPTIONAL MATCH (issue)<-[:AUTHORED_ISSUE]-(authorMod:ModerationProfile)
