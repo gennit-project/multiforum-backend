@@ -32,6 +32,7 @@ const buildDriver = () => {
 };
 
 test("notifyIssueSubscribers notifies subscribers and only emails opted-in users", async () => {
+  delete process.env.FRONTEND_URL;
   const { driver, sessions } = buildDriver();
   const sendBatchEmailsCalls: any[] = [];
 
@@ -110,6 +111,73 @@ test("notifyIssueSubscribers notifies subscribers and only emails opted-in users
     notificationText: "New reply on Issue #42: Broken image links",
   });
   assert.match(sessions[0]?.runCalls[0]?.query, /notificationType: "moderation"/);
+});
+
+test("notifyIssueSubscribers links the issue label in notification text when a URL is available", async () => {
+  const originalFrontendUrl = process.env.FRONTEND_URL;
+  process.env.FRONTEND_URL = "https://example.com";
+
+  try {
+    const { driver, sessions } = buildDriver();
+
+    const IssueModel = {
+      async find() {
+        return [
+          {
+            id: "issue-6",
+            issueNumber: 6,
+            title: "test event with tag",
+            channelUniqueName: "photography",
+            SubscribedToNotifications: [
+              {
+                username: "alice",
+                notifyOnSubscribedIssueUpdates: false,
+                Email: null,
+              },
+            ],
+          },
+        ];
+      },
+    };
+
+    // Comment reply notification links the issue label.
+    await notifyIssueSubscribers({
+      IssueModel: IssueModel as unknown as IssueModel,
+      driver: driver as unknown as Driver,
+      issueId: "issue-6",
+      actorUsername: "editor",
+      actionType: "comment",
+      actionDescription: "commented on the issue",
+    });
+
+    const replyText = sessions[0]?.runCalls[0]?.params?.notificationText as string;
+    assert.match(
+      replyText,
+      /^New reply on \[Issue #6\]\(https:\/\/example\.com\/forums\/photography\/issues\/6\): test event with tag/
+    );
+
+    // Non-comment update notification links the issue label too.
+    await notifyIssueSubscribers({
+      IssueModel: IssueModel as unknown as IssueModel,
+      driver: driver as unknown as Driver,
+      issueId: "issue-6",
+      actorUsername: "editor",
+      actionType: "archive",
+      actionDescription: "Un-archived the event",
+    });
+
+    const updateText = sessions[1]?.runCalls[0]?.params?.notificationText as string;
+    assert.match(
+      updateText,
+      /^\[Issue #6\]\(https:\/\/example\.com\/forums\/photography\/issues\/6\) was updated: Un-archived the event/
+    );
+  } finally {
+    if (originalFrontendUrl === undefined) {
+      delete process.env.FRONTEND_URL;
+    } else {
+      process.env.FRONTEND_URL = originalFrontendUrl;
+    }
+  }
 });
 
 test("notifyIssueSubscribers skips report actions", async () => {
