@@ -1,6 +1,7 @@
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 
 type Input = {
   driver: Driver;
@@ -20,12 +21,14 @@ const DEFAULT_OFFSET = "0";
 const getSortedChannelsResolver = (input: Input) => {
   const { driver } = input;
 
-  return async (_parent: unknown, args: Args, _context: GraphQLContext) => {
+  return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const limit = args.limit || DEFAULT_LIMIT;
     const offset = args.offset || DEFAULT_OFFSET;
     const tags = args.tags || [];
     const searchInput = args.searchInput || "";
     const countDownloads = args.countDownloads;
+    context.user = await setUserDataOnContext({ context });
+    const loggedInUsername = context.user?.username || null;
     const session = driver.session();
 
     try {
@@ -65,8 +68,10 @@ const getSortedChannelsResolver = (input: Input) => {
           RETURN COUNT(DISTINCT ec) AS eventChannelsCount
         }
         
+        OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_CHANNELS]->(c)
+        
         // Collect tags again for the final output
-        WITH c, tags, validDiscussionChannelsCount, eventChannelsCount
+        WITH c, tags, validDiscussionChannelsCount, eventChannelsCount, COUNT(DISTINCT favUser) > 0 AS isFavorited
         
         // Aggregate channel count
         WITH collect({
@@ -74,6 +79,7 @@ const getSortedChannelsResolver = (input: Input) => {
           displayName: c.displayName,
           channelIconURL: c.channelIconURL,
           description: c.description,
+          isFavorited: CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null ELSE isFavorited END,
           Tags: [tag IN tags | { text: tag.text }],
           EventChannelsAggregate: { count: eventChannelsCount },
           DiscussionChannelsAggregate: { count: validDiscussionChannelsCount }
@@ -93,6 +99,7 @@ const getSortedChannelsResolver = (input: Input) => {
           tags,
           searchInput,
           countDownloads,
+          loggedInUsername,
         }
       );
 

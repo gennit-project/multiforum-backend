@@ -104,6 +104,14 @@ const typeDefinitions = gql`
 
     # Collection support
     InCollections: [Collection!]! @relationship(type: "CONTAINS_IMAGE", direction: IN)
+    isFavorited(username: String): Boolean @cypher(statement: """
+      OPTIONAL MATCH (favUser:User {username: $username})-[:DEFAULT_FAVORITES_IMAGES]->(this)
+      RETURN CASE
+        WHEN $username IS NULL OR $username = '' THEN null
+        WHEN favUser IS NOT NULL THEN true
+        ELSE false
+      END AS isFavorited
+    """, columnName: "isFavorited")
   }
 
   """SPDX or custom content licence"""
@@ -493,6 +501,14 @@ const typeDefinitions = gql`
 
     # Collection support
     InCollections: [Collection!]! @relationship(type: "CONTAINS_CHANNEL", direction: IN)
+    isFavorited(username: String): Boolean @cypher(statement: """
+      OPTIONAL MATCH (favUser:User {username: $username})-[:DEFAULT_FAVORITES_CHANNELS]->(this)
+      RETURN CASE
+        WHEN $username IS NULL OR $username = '' THEN null
+        WHEN favUser IS NOT NULL THEN true
+        ELSE false
+      END AS isFavorited
+    """, columnName: "isFavorited")
 
     # feature toggles
     eventsEnabled: Boolean @default(value: true)
