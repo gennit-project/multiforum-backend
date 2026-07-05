@@ -15,10 +15,16 @@ type BuildOgmInput = {
   channels?: Array<{
     uniqueName: string;
     wikiEnabled?: boolean;
+    Admins?: Array<{ username: string }>;
+    ElevatedChannelRole?: {
+      canUpdateChannel?: boolean;
+    } | null;
   }>;
   wikiPages?: Array<{
     id?: string;
     channelUniqueName: string;
+    slug?: string;
+    locked?: boolean;
     OriginalAuthor?: { username: string };
     ChildPages?: Array<{ id: string }>;
   }>;
@@ -43,7 +49,8 @@ const buildOgm = ({
             {
               uniqueName: where?.uniqueName,
               wikiEnabled: channel?.wikiEnabled,
-              Admins: [],
+              Admins: channel?.Admins || [],
+              ElevatedChannelRole: channel?.ElevatedChannelRole ?? null,
               DefaultChannelRole: {
                 canUpdateChannel: defaultCanUpdateChannel,
               },
@@ -57,6 +64,11 @@ const buildOgm = ({
                 suspendedUntil: null,
               })),
               SuspendedMods: [],
+              WikiHomePage: wikiPages.find(
+                (wikiPage) =>
+                  wikiPage.channelUniqueName === where?.uniqueName &&
+                  wikiPage.slug === "home"
+              ),
             },
           ];
         },
@@ -123,6 +135,43 @@ const buildContext = (input: BuildOgmInput = {}) =>
 test("allows wiki page updates when the channel role can update the channel", async () => {
   const ctx = buildContext({
     wikiPages: [{ id: "wiki-page-1", channelUniqueName: "sourceit" }],
+  });
+
+  const result = await evaluateCanEditWikiPagesRule(
+    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    ctx
+  );
+
+  assert.equal(result, true);
+});
+
+test("blocks default-role editors from updating locked wiki pages", async () => {
+  const ctx = buildContext({
+    wikiPages: [
+      { id: "wiki-page-1", channelUniqueName: "sourceit", locked: true },
+    ],
+  });
+
+  const result = await evaluateCanEditWikiPagesRule(
+    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    ctx
+  );
+
+  assert.ok(result instanceof Error);
+});
+
+test("allows channel owners with elevated update permission to update locked wiki pages", async () => {
+  const ctx = buildContext({
+    channels: [
+      {
+        uniqueName: "sourceit",
+        Admins: [{ username: "wiki-author" }],
+        ElevatedChannelRole: { canUpdateChannel: true },
+      },
+    ],
+    wikiPages: [
+      { id: "wiki-page-1", channelUniqueName: "sourceit", locked: true },
+    ],
   });
 
   const result = await evaluateCanEditWikiPagesRule(
