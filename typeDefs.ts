@@ -1063,6 +1063,10 @@ const typeDefinitions = gql`
     addImageToAlbum(albumId: ID!, imageId: ID!, position: Int): Boolean!
     removeImageFromAlbum(albumId: ID!, imageId: ID!): Boolean!
 
+    # Wiki sidebar pins
+    pinWikiPageToChannel(channelUniqueName: String!, wikiPageId: ID!): Boolean!
+    unpinWikiPageFromChannel(channelUniqueName: String!, wikiPageId: ID!): Boolean!
+
     # Share collection as discussion
     shareCollectionAsDiscussion(
       collectionId: ID!,

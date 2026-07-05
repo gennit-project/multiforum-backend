@@ -107,6 +107,10 @@ import {
   removeImageFromAlbum,
 } from "./mutations/albumImageReuse.js";
 import shareCollectionAsDiscussion from "./mutations/shareCollectionAsDiscussion.js";
+import {
+  pinWikiPageToChannel,
+  unpinWikiPageFromChannel,
+} from "./mutations/wikiPagePins.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
@@ -583,6 +587,16 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Collection,
       Channel,
       driver
+    }),
+    pinWikiPageToChannel: pinWikiPageToChannel({
+      driver,
+      Channel,
+      WikiPage,
+    }),
+    unpinWikiPageFromChannel: unpinWikiPageFromChannel({
+      driver,
+      Channel,
+      WikiPage,
     }),
     updateDownloadLabels: updateDownloadLabels({
       Discussion,
