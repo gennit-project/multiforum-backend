@@ -56,7 +56,13 @@ async function main() {
     {
       schema: introspectionOut,
       generates: {
-        [graphqlTypesOut]: { plugins: ["typescript", "typescript-resolvers"] },
+        [graphqlTypesOut]: {
+          plugins: ["typescript", "typescript-resolvers"],
+          // graphql-codegen v6 changed the default for unmapped custom scalars
+          // (DateTime, JSON) from `any` to `unknown`. The hand-written code was
+          // authored against `any`; restore that to avoid a wide refactor.
+          config: { defaultScalarType: "any" },
+        },
       },
     },
     true

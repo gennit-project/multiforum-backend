@@ -28,6 +28,7 @@
     "module": "esnext",                                /* Specify what module code is generated. */
     "rootDir": "./",                                  /* Specify the root folder within your source files. */
     "moduleResolution":         "node",            /* Specify how TypeScript looks up a file from a given module specifier. */
+    "ignoreDeprecations": "6.0",                      /* Silence TS6 deprecation of moduleResolution 'node10'; removal is a TS7 concern to migrate separately. */
     // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
     // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
@@ -107,5 +108,17 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": ["**/*.ts", "**/*.d.ts"],
-  "exclude": ["node_modules", "ts_emitted"]
+  "exclude": ["node_modules", "ts_emitted"],
+  "ts-node": {
+    // Under TypeScript 6, ts-node's isolated per-file compilation stopped
+    // auto-including @types/node, so `node:`-prefixed builtin module imports
+    // (node:test, node:assert/strict, ...) fail to resolve at runtime with
+    // TS2591 even though the full `tsc` program resolves them fine. Explicitly
+    // listing the node types here restores resolution while keeping runtime
+    // type-checking on. Scoped to ts-node so the main `tsc` program is
+    // unaffected.
+    "compilerOptions": {
+      "types": ["node"]
+    }
+  }
 }
