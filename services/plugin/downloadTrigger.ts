@@ -301,8 +301,23 @@ export const triggerPluginRunsForDownloadableFile = async (
         }
       }
 
-      const settingsDefaults = pluginVersionData.settingsDefaults || {}
-      const settingsJson = edgeData.properties?.settingsJson || {}
+      // settingsJson / settingsDefaults may be stored as JSON strings; parse
+      // them before merging so plugin settings resolve to real keys instead of
+      // string character indices.
+      const parseMaybeJson = (value: unknown): Record<string, unknown> => {
+        if (typeof value === 'string') {
+          try {
+            return JSON.parse(value) as Record<string, unknown>
+          } catch {
+            return {}
+          }
+        }
+        return value && typeof value === 'object'
+          ? (value as Record<string, unknown>)
+          : {}
+      }
+      const settingsDefaults = parseMaybeJson(pluginVersionData.settingsDefaults)
+      const settingsJson = parseMaybeJson(edgeData.properties?.settingsJson)
       const runtimeSettings = mergeSettings(settingsDefaults, settingsJson)
       const attachments = getAttachmentUrls(downloadableFile)
 

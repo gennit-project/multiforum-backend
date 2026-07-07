@@ -2,7 +2,7 @@ import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import { createDiscussionChannelQuery } from "../cypher/cypherQueries.js";
 import { DiscussionCreateInput } from "../../src/generated/graphql";
-import { triggerChannelPluginPipeline } from "../../services/pluginRunner.js";
+import { triggerChannelPluginPipeline, triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { GraphQLError } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateNode } from "./utils/ownershipSanitizers.js";
@@ -218,6 +218,43 @@ export const createDiscussionsFromInput = async (
           } else {
             throw error;
           }
+        }
+      }
+
+      // Trigger the downloadable-file plugin pipeline (e.g. security scan) once
+      // per created download, mirroring the channel pipeline trigger above.
+      // Without this, plugins that handle downloadableFile.created never run on
+      // upload.
+      if (hasDownload && pluginModels) {
+        try {
+          const withFile = await Discussion.find({
+            where: { id: newDiscussionId },
+            selectionSet: `{ id DownloadableFiles { id } }`,
+          });
+          const downloadableFileId = (
+            withFile?.[0] as unknown as { DownloadableFiles?: Array<{ id?: string }> }
+          )?.DownloadableFiles?.[0]?.id;
+          if (downloadableFileId) {
+            await triggerPluginRunsForDownloadableFile({
+              downloadableFileId,
+              event: "downloadableFile.created",
+              models: {
+                DownloadableFile: pluginModels.DownloadableFile,
+                Plugin: null as any, // Not used by the download trigger
+                PluginVersion: null as any, // Not used by the download trigger
+                PluginRun: pluginModels.PluginRun,
+                ServerConfig: pluginModels.ServerConfig,
+                ServerSecret: pluginModels.ServerSecret,
+              },
+            });
+          }
+        } catch (triggerError: unknown) {
+          const message =
+            triggerError instanceof Error ? triggerError.message : String(triggerError);
+          logger.error(
+            `downloadableFile.created plugin trigger error for ${newDiscussionId}:`,
+            message
+          );
         }
       }
 

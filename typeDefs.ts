@@ -454,6 +454,10 @@ const typeDefinitions = gql`
 
     # purchases back‑ref
     purchasers: [Purchase!]! @relationship(type: "PURCHASED_FILE", direction: IN)
+
+    # owning discussion (reverse of Discussion.DownloadableFiles); used by the
+    # downloadableFile.* plugin trigger to resolve the file's channel context.
+    Discussion: Discussion @relationship(type: "HAS_DOWNLOADABLE_FILE", direction: IN)
   }
 
   type FilterGroup {
