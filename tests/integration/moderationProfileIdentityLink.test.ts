@@ -93,8 +93,10 @@ after(async () => {
 const mockToken = (claims: Record<string, unknown>) =>
   `Bearer ${jwt.sign(claims, "mock-signing-key")}`;
 
-const exec = (source: string, authorization?: string) =>
-  graphql({
+// The executed queries return dynamically shaped data, so the result is cast
+// to `any` for indexing (matching the other integration tests).
+const exec = async (source: string, authorization?: string) => {
+  const result = await graphql({
     schema,
     source,
     contextValue: {
@@ -107,6 +109,8 @@ const exec = (source: string, authorization?: string) =>
       },
     },
   });
+  return { data: result.data as any, errors: result.errors };
+};
 
 const MOD_TO_USER = `query {
   moderationProfiles(where: { displayName: "${MOD_PROFILE}" }) {
