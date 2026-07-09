@@ -113,6 +113,16 @@ const permissionList = shield({
       purchases: isAccountOwner,
       library: isAccountOwner,
 
+      // Moderation profiles are pseudonymous by design: their activity/history
+      // is public for transparency, but the link to the real account (username,
+      // email) must not be discoverable through the API. Only the account owner
+      // may traverse their own User -> ModerationProfile edge (e.g. to learn
+      // their own mod-profile name); nobody can look up someone else's. There is
+      // deliberately no admin override — if an admin truly needs the mapping
+      // they must run a direct database query. See ModerationProfile.User below,
+      // which blocks the reverse (mod profile -> user) direction outright.
+      ModerationProfile: isAccountOwner,
+
       // Sensitive settings - only user can access
       enableSensitiveContentByDefault: isAccountOwner,
       notifyOnReplyToCommentByDefault: isAccountOwner,
@@ -126,6 +136,17 @@ const permissionList = shield({
       notificationBundleContent: isAccountOwner,
 
       // Default rule for any unspecified fields - allow public access
+      "*": allow,
+    },
+    ModerationProfile: {
+      // The reverse of User.ModerationProfile: a mod profile must never resolve
+      // back to the user behind it. No client or resolver traverses this edge;
+      // an admin who genuinely needs the mapping must use a direct DB query.
+      // Denied for everyone (including the account owner) — the pseudonymous
+      // identity is one-way from the API's perspective.
+      User: deny,
+      // Everything else on a moderation profile is public for transparency and
+      // audit: displayName, AuthoredIssues, AuthoredComments, ActivityFeed, etc.
       "*": allow,
     },
     Mutation: {
