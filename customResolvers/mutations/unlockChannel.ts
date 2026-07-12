@@ -151,6 +151,7 @@ const getResolver = (input: Input) => {
             ],
           },
         ],
+        isOpen: false,
       };
 
       try {
