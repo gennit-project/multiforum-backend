@@ -12,6 +12,11 @@ type LabelChangeHistoryModel = {
   find: (args: any) => Promise<any[]>;
 };
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import {
+  checkChannelModPermissions,
+  ModChannelPermission,
+} from "../../rules/permission/hasChannelModPermission.js";
+import { getServerScopedMembership } from "../../rules/permission/getServerScopedMembership.js";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
@@ -81,49 +86,31 @@ const getResolver = (input: Input) => {
     const discussionAuthorUsername = discussion.Author?.username;
     const isOwner = discussionAuthorUsername === loggedInUsername;
 
-    // Check if user is a channel mod (if not the owner)
+    // Non-owners must be server admins or hold the shared channel-moderation
+    // permission used by other edit flows.
     const loggedInModName = context.user?.data?.ModerationProfile?.displayName;
     let hasModPermission = false;
 
     if (!isOwner) {
-      // The role/permission fields this resolver reads off the user are not part
-      // of the base UserContextData shape; view them through a local typed cast.
-      const userData = context.user?.data as {
-        ModeratedChannels?: Array<{ uniqueName: string }>;
-        AdminOfServers?: unknown[];
-        ModerationProfile?: {
-          ModChannelRoles?: Array<{ channelUniqueName: string; canEditDiscussions?: boolean }>;
-          ModServerRoles?: Array<{ canEditDiscussions?: boolean }>;
-        } | null;
-      } | null | undefined;
+      const membership = await getServerScopedMembership(context);
+      if (membership.isServerAdmin) {
+        hasModPermission = true;
+      } else {
+        const permissionResult = await checkChannelModPermissions({
+          channelConnections: [channelUniqueName],
+          context,
+          permissionCheck: ModChannelPermission.canEditDiscussions,
+        });
 
-      // Check if user is a channel admin
-      const isChannelAdmin = userData?.ModeratedChannels?.some(
-        (c: { uniqueName: string }) => c.uniqueName === channelUniqueName
-      );
+        if (permissionResult instanceof Error) {
+          throw new GraphQLError(permissionResult.message);
+        }
 
-      // Check if user is a server admin
-      const isServerAdmin = (userData?.AdminOfServers?.length ?? 0) > 0;
+        if (permissionResult !== true) {
+          throw new GraphQLError("You don't have permission to update labels on this download");
+        }
 
-      // Check if mod has canEditDiscussions permission for the channel
-      const channelModPermissions = userData?.ModerationProfile?.ModChannelRoles?.filter(
-        (role: { channelUniqueName: string }) => role.channelUniqueName === channelUniqueName
-      ) || [];
-
-      const hasChannelModEditPermission = channelModPermissions.some(
-        (role: { canEditDiscussions?: boolean }) => role.canEditDiscussions === true
-      );
-
-      // Check if mod has server-level canEditDiscussions permission
-      const serverModPermissions = userData?.ModerationProfile?.ModServerRoles || [];
-      const hasServerModEditPermission = serverModPermissions.some(
-        (role: { canEditDiscussions?: boolean }) => role.canEditDiscussions === true
-      );
-
-      hasModPermission = isChannelAdmin || isServerAdmin || hasChannelModEditPermission || hasServerModEditPermission;
-
-      if (!hasModPermission) {
-        throw new GraphQLError("You don't have permission to update labels on this download");
+        hasModPermission = true;
       }
     }
 

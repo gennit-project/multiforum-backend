@@ -13,6 +13,7 @@ import {
   run,
   mockToken,
   modContext,
+  seedModerator,
   type ImageModEnv,
 } from "./imageModerationHarness.js";
 
@@ -20,6 +21,7 @@ let env: ImageModEnv;
 
 before(async () => {
   env = await startImageModEnv();
+  process.env.SERVER_CONFIG_NAME = "E2ETestServer";
 }, { timeout: 240000 });
 
 after(async () => {
@@ -29,9 +31,12 @@ after(async () => {
 beforeEach(async () => {
   await resetDb();
   await run(
-    `CREATE (owner:User { username: 'test-owner', createdAt: datetime() })
+    `CREATE (:ServerConfig { serverName: 'E2ETestServer' })
+     CREATE (owner:User { username: 'test-owner', createdAt: datetime() })
      CREATE (rando:User { username: 'rando', createdAt: datetime() })
      CREATE (ch:Channel { uniqueName: 'test-channel', displayName: 'Test Channel', createdAt: datetime() })
+     CREATE (modRole:ModChannelRole { canEditDiscussions: true })
+     CREATE (ch)-[:HAS_DEFAULT_MOD_ROLE]->(modRole)
      CREATE (disc:Discussion { id: 'disc-1', title: 'Test Discussion', createdAt: datetime() })
      CREATE (owner)-[:POSTED_DISCUSSION]->(disc)
      CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'disc-1', channelUniqueName: 'test-channel', createdAt: datetime() })
@@ -43,6 +48,7 @@ beforeEach(async () => {
      CREATE (fg)-[:HAS_FILTER_OPTION]->(fo1)
      CREATE (fg)-[:HAS_FILTER_OPTION]->(fo2)`
   );
+  await seedModerator({ username: "moddy", modDisplayName: "Moddy" });
 });
 
 const asOwner = () => modContext(env, mockToken({ username: "test-owner", email: "owner@e2e.test" }));
@@ -53,6 +59,8 @@ const updateLabels = (labelOptionIds: string[], context = asOwner()) =>
     { discussionId: "disc-1", channelUniqueName: "test-channel", labelOptionIds },
     context
   );
+
+const asMod = () => modContext(env, mockToken({ username: "moddy", email: "moddy@e2e.test" }));
 
 const connectedLabelValues = async () => {
   const rows = await run(
@@ -123,17 +131,33 @@ test("an owner's label change does not create a ModerationAction", async () => {
   );
 });
 
-// NOTE: the mod -> ActorMod attribution path is intentionally not integration
-// tested here. updateDownloadLabels resolves the actor via setUserDataOnContext,
-// which only populates ModerationProfile.displayName; the resolver's mod
-// permission check reads ModeratedChannels / AdminOfServers /
-// ModerationProfile.ModChannelRoles, none of which that helper loads, so a
-// non-owner moderator is currently always rejected (see analysis notes). Once
-// the resolver loads real mod permissions, add an ActorMod attribution test.
+test("a non-owner moderator with canEditDiscussions can update labels", async () => {
+  await updateLabels(["fo-1"], asMod());
+
+  assert.deepEqual(await connectedLabelValues(), ["small"]);
+
+  const modActor = await run(
+    `MATCH (:ModerationProfile { displayName: 'Moddy' })-[:MADE_LABEL_CHANGE]->(h:LabelChangeHistory { actionType: 'added' })
+     RETURN count(h) AS n`
+  );
+  assert.equal(Number(modActor[0].n), 1, "mod change should be attributed to the acting moderator profile");
+
+  const userActor = await run(
+    `MATCH (:User { username: 'moddy' })-[:MADE_LABEL_CHANGE]->(:LabelChangeHistory)
+     RETURN count(*) AS n`
+  );
+  assert.equal(Number(userActor[0].n), 0, "mod change should not be attributed to the moderator's user account");
+
+  const modAction = await run(
+    `MATCH (:ModerationProfile { displayName: 'Moddy' })-[:PERFORMED_MODERATION_ACTION]->(m:ModerationAction { actionType: 'label_update' })
+     RETURN count(m) AS n`
+  );
+  assert.equal(Number(modAction[0].n), 1, "mod change should create a label_update moderation action");
+});
 
 test("a non-owner without mod permission is rejected", async () => {
   await assert.rejects(
     updateLabels(["fo-1"], modContext(env, mockToken({ username: "rando", email: "r@e2e.test" }))),
-    /don't have permission/i
+    /moderator|permission/i
   );
 });
