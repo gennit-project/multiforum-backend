@@ -7,6 +7,7 @@
 
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import getUpdateEventInSeriesResolver from "../../customResolvers/mutations/updateEventInSeries.js";
 import {
   startImageModEnv,
   stopImageModEnv,
@@ -19,6 +20,7 @@ let env: ImageModEnv;
 
 before(async () => {
   env = await startImageModEnv();
+  process.env.FRONTEND_URL = "https://example.com";
 }, { timeout: 240000 });
 
 after(async () => {
@@ -73,6 +75,33 @@ const updateInSeries = (args: Record<string, unknown>, actor = "poster") =>
     { channelConnections: [], channelDisconnections: [], ...args },
     { user: { username: actor } }
   );
+
+const updateInSeriesWithEmailSpy = async (
+  args: Record<string, unknown>,
+  input: {
+    actor?: string;
+    sendBatchEmailsCalls: Array<any[]>;
+  }
+) => {
+  const resolver = getUpdateEventInSeriesResolver({
+    Event: env.ogm.model("Event") as any,
+    EventSeries: env.ogm.model("EventSeries") as any,
+    driver: env.driver as any,
+    dependencies: {
+      async sendBatchEmails(messages) {
+        input.sendBatchEmailsCalls.push(messages);
+        return true;
+      },
+    },
+  });
+
+  return resolver(
+    null,
+    { channelConnections: [], channelDisconnections: [], ...args } as any,
+    { user: { username: input.actor || "poster" } } as any,
+    null as any
+  );
+};
 
 const deleteInSeries = (args: Record<string, unknown>) =>
   env.resolvers.Mutation.deleteEventInSeries(null, args, {
@@ -216,5 +245,135 @@ test("updateEventInSeries notifies subscribers of the edited occurrence but not 
       mentionsUpdate: /was updated/.test(notified[0].sampleText ?? ""),
     },
     { users: ["watcher"], mentionsUpdate: true }
+  );
+});
+
+test("updateEventInSeries THIS_ONLY emails subscribed watchers with time-change summary", async () => {
+  const occ = await createSeriesOccurrences();
+  const sendBatchEmailsCalls: Array<any[]> = [];
+
+  await run(
+    `MATCH (edited:Event { id: $editedId })
+     MATCH (other:Event { id: $otherId })
+     MERGE (watcher:User { username: 'watcher' })
+     MERGE (watcherEmail:Email { address: 'watcher@example.com' })
+     MERGE (watcherEmail)-[:HAS_EMAIL]->(watcher)
+     MERGE (watcher)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(edited)
+     WITH edited, other
+     MATCH (poster:User { username: 'poster' })
+     MERGE (posterEmail:Email { address: 'poster@example.com' })
+     MERGE (posterEmail)-[:HAS_EMAIL]->(poster)
+     MERGE (poster)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(edited)
+     WITH other
+     MERGE (otherWatcher:User { username: 'other-watcher' })
+     MERGE (otherWatcherEmail:Email { address: 'other@example.com' })
+     MERGE (otherWatcherEmail)-[:HAS_EMAIL]->(otherWatcher)
+     MERGE (otherWatcher)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(other)`,
+    { editedId: occ[1], otherId: occ[2] }
+  );
+
+  await updateInSeriesWithEmailSpy(
+    {
+      eventId: occ[1],
+      scope: "THIS_ONLY",
+      eventUpdateInput: {
+        startTime: "2030-01-09T19:30:00.000Z",
+        endTime: "2030-01-09T21:00:00.000Z",
+      },
+    },
+    { sendBatchEmailsCalls }
+  );
+
+  assert.equal(sendBatchEmailsCalls.length, 1);
+  assert.deepEqual(
+    sendBatchEmailsCalls[0].map((message) => message.to),
+    ["watcher@example.com"]
+  );
+  assert.match(sendBatchEmailsCalls[0][0].subject, /^Event updated:/);
+  assert.match(sendBatchEmailsCalls[0][0].text, /Scope: This occurrence only/);
+  assert.match(sendBatchEmailsCalls[0][0].text, /Time changed to/);
+  assert.match(
+    sendBatchEmailsCalls[0][0].html,
+    /View the latest event details/
+  );
+});
+
+test("updateEventInSeries THIS_AND_FUTURE emails edited-occurrence watchers with scope and location-title changes", async () => {
+  const occ = await createSeriesOccurrences();
+  const sendBatchEmailsCalls: Array<any[]> = [];
+
+  await run(
+    `MATCH (edited:Event { id: $editedId })
+     MATCH (future:Event { id: $futureId })
+     MERGE (watcher:User { username: 'watcher' })
+     MERGE (watcherEmail:Email { address: 'watcher@example.com' })
+     MERGE (watcherEmail)-[:HAS_EMAIL]->(watcher)
+     MERGE (watcher)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(edited)
+     WITH future
+     MERGE (futureWatcher:User { username: 'future-watcher' })
+     MERGE (futureWatcherEmail:Email { address: 'future@example.com' })
+     MERGE (futureWatcherEmail)-[:HAS_EMAIL]->(futureWatcher)
+     MERGE (futureWatcher)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(future)`,
+    { editedId: occ[1], futureId: occ[2] }
+  );
+
+  await updateInSeriesWithEmailSpy(
+    {
+      eventId: occ[1],
+      scope: "THIS_AND_FUTURE",
+      eventUpdateInput: {
+        title: "Future Weekly Meetup",
+        locationName: "Town Hall",
+      },
+    },
+    { sendBatchEmailsCalls }
+  );
+
+  assert.equal(sendBatchEmailsCalls.length, 1);
+  assert.deepEqual(
+    sendBatchEmailsCalls[0].map((message) => message.to),
+    ["watcher@example.com"]
+  );
+  assert.equal(sendBatchEmailsCalls[0][0].subject, "Event updated: Future Weekly Meetup");
+  assert.match(sendBatchEmailsCalls[0][0].text, /Scope: This and 1 future occurrence/);
+  assert.match(sendBatchEmailsCalls[0][0].text, /Location changed to Town Hall\./);
+  assert.match(sendBatchEmailsCalls[0][0].text, /Title changed to "Future Weekly Meetup"\./);
+});
+
+test("updateEventInSeries ALL_IN_SERIES emails edited-occurrence watchers with cancellation summary", async () => {
+  const occ = await createSeriesOccurrences();
+  const sendBatchEmailsCalls: Array<any[]> = [];
+
+  await run(
+    `MATCH (edited:Event { id: $editedId })
+     MERGE (watcher:User { username: 'watcher' })
+     MERGE (watcherEmail:Email { address: 'watcher@example.com' })
+     MERGE (watcherEmail)-[:HAS_EMAIL]->(watcher)
+     MERGE (watcher)-[:SUBSCRIBED_TO_EVENT_UPDATES]->(edited)`,
+    { editedId: occ[0] }
+  );
+
+  await updateInSeriesWithEmailSpy(
+    {
+      eventId: occ[0],
+      scope: "ALL_IN_SERIES",
+      eventUpdateInput: {
+        canceled: true,
+      },
+    },
+    { sendBatchEmailsCalls }
+  );
+
+  assert.equal(sendBatchEmailsCalls.length, 1);
+  assert.deepEqual(
+    sendBatchEmailsCalls[0].map((message) => message.to),
+    ["watcher@example.com"]
+  );
+  assert.match(sendBatchEmailsCalls[0][0].subject, /^Event canceled:/);
+  assert.match(sendBatchEmailsCalls[0][0].text, /Scope: All 3 occurrences in the series/);
+  assert.match(sendBatchEmailsCalls[0][0].text, /This event was canceled\./);
+  assert.match(
+    sendBatchEmailsCalls[0][0].text,
+    /showCanceledEvents=true/
   );
 });
