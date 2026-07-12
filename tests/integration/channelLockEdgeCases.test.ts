@@ -3,7 +3,7 @@
 // cover the happy paths). These focus on cross-mutation interactions and
 // cleanup the existing suites don't assert:
 //
-//   - unlock leaves the issue OPEN, records an unlock_channel action, and
+//   - unlock closes the related issue, records an unlock_channel action, and
 //     disconnects the LockedBy ModerationProfile (lock-state cleanup)
 //   - report-then-lock funnels into a SINGLE server-scoped issue carrying both
 //     the report and lock_channel actions (issue de-duplication)
@@ -80,7 +80,7 @@ const createChannel = (admins: string[] = []) =>
 
 // --- Unlock: issue state + LockedBy cleanup ---
 
-test("unlock leaves the related issue open and records an unlock_channel action", async () => {
+test("unlock closes the related issue and records an unlock_channel action", async () => {
   await createChannel();
   await lockChannel();
   await unlockChannel();
@@ -91,7 +91,7 @@ test("unlock leaves the related issue open and records an unlock_channel action"
   );
   assert.deepEqual(
     { isOpen: issue[0].isOpen, hasLock: (issue[0].types as string[]).includes("lock_channel"), hasUnlock: (issue[0].types as string[]).includes("unlock_channel") },
-    { isOpen: true, hasLock: true, hasUnlock: true }
+    { isOpen: false, hasLock: true, hasUnlock: true }
   );
 });
 
