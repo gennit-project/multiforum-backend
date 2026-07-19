@@ -79,6 +79,7 @@ const permissionList = shield({
       emails: deny,
       getUploadedDownloadableFiles: and(isAuthenticated, allow),
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
+      getDownloadScanReviewQueue: and(isAuthenticated, canPermanentlyRemoveImage),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
       getPluginRunsForDownloadableFile: chain(
         isAuthenticated,
@@ -369,6 +370,7 @@ const permissionList = shield({
       pausePluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
       resumePluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
       clearDownloadableFileScan: and(isAuthenticated, canPermanentlyRemoveImage),
+      requestDownloadableFileReview: and(isAuthenticated, allow),
       permanentlyDeleteImage: and(isAuthenticated, allow),
       permanentlyDeleteDownloadableFile: and(isAuthenticated, allow),
 
