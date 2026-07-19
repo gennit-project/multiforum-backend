@@ -21,6 +21,7 @@
     "lint:circular": "madge --circular --extensions ts --exclude 'ogm_types.ts|src/generated' index.ts customResolvers.ts permissions.ts",
     "tsc": "tsc",
     "logSchema": "node build_scripts/logSchema.js",
+    "migrate:private-downloads": "node --loader ts-node/esm build_scripts/migratePrivateDownloads.ts",
     "provision": "node --loader ts-node/esm build_scripts/provisionServerDefaults.ts",
     "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",
     "heroku-postbuild": "pnpm run build",

@@ -1,4 +1,5 @@
 import { performance } from 'perf_hooks'
+import { Storage } from '@google-cloud/storage'
 import type { TriggerArgs, PluginEdgeData, EventPipeline, PipelineStep, PluginToRun, PendingRun } from './types.js'
 import { DOWNLOAD_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
@@ -12,6 +13,7 @@ import {
   resolveDownloadScanOutcome,
   type DownloadScanOutcome
 } from './downloadScanOutcome.js'
+import { createDownloadReadUrl } from '../downloadStorage.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, DownloadableFileUpdateInput, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 
@@ -25,7 +27,13 @@ export const triggerPluginRunsForDownloadableFile = async (
   }: TriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
-  { loadPlugin = loadPluginImplementation }: { loadPlugin?: typeof loadPluginImplementation } = {}
+  {
+    loadPlugin = loadPluginImplementation,
+    storage = new Storage()
+  }: {
+    loadPlugin?: typeof loadPluginImplementation
+    storage?: Pick<Storage, 'bucket'>
+  } = {}
 ) => {
   if (!DOWNLOAD_EVENTS.has(event)) {
     throw new Error(`Unsupported plugin event: ${event}`)
@@ -41,6 +49,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       url
       kind
       size
+      storageBucket
+      storageObjectName
       Discussion {
         id
         title
@@ -67,6 +77,8 @@ export const triggerPluginRunsForDownloadableFile = async (
   // the generated DownloadableFile type doesn't model yet, so extend the
   // generated type with that queried field.
   const fileData = downloadableFile as DownloadableFileType & {
+    storageBucket?: string | null
+    storageObjectName?: string | null
     Discussion?: DiscussionType | null
   }
   const discussionChannel = fileData.Discussion?.DiscussionChannels?.[0] || null
@@ -197,6 +209,16 @@ export const triggerPluginRunsForDownloadableFile = async (
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
+  let attachmentPromise: Promise<string[]> | null = null
+  const getPluginAttachments = (): Promise<string[]> => {
+    if (!attachmentPromise) {
+      attachmentPromise = createDownloadReadUrl({
+        file: fileData,
+        storage
+      }).then(url => url ? [url] : [])
+    }
+    return attachmentPromise
+  }
 
   // Create PENDING records for all plugins first (for UI visibility)
   const pendingRuns: PendingRun[] = []
@@ -344,7 +366,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       const settingsDefaults = parseMaybeJson(pluginVersionData.settingsDefaults)
       const settingsJson = parseMaybeJson(edgeData.properties?.settingsJson)
       const runtimeSettings = mergeSettings(settingsDefaults, settingsJson)
-      const attachments = getAttachmentUrls(downloadableFile)
+      const attachments = await getPluginAttachments()
+      const storedAttachments = getAttachmentUrls(downloadableFile)
 
       const context = {
         scope: 'SERVER' as const,
@@ -414,7 +437,8 @@ export const triggerPluginRunsForDownloadableFile = async (
           durationMs,
           payload: JSON.stringify({
             event,
-            attachments,
+            attachments: storedAttachments,
+            attachmentCount: attachments.length,
             flags,
             logs,
             result

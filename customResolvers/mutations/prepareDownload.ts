@@ -1,4 +1,4 @@
-import { Storage, type GetSignedUrlConfig } from "@google-cloud/storage";
+import { Storage } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
 import type {
   DownloadableFileModel,
@@ -12,6 +12,7 @@ import { hasServerModPermission } from "../../rules/permission/hasServerModPermi
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { SECURITY_SCAN_PLUGIN_ID } from "../../services/plugin/downloadScanOutcome.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
+import { createDownloadReadUrl } from "../../services/downloadStorage.js";
 import type { GraphQLContext } from "../../types/context.js";
 import trackDownload from "./trackDownload.js";
 
@@ -49,7 +50,6 @@ type TrackDownloadResolver = ReturnType<typeof trackDownload>;
 
 type StorageFactory = () => Pick<Storage, "bucket">;
 
-const READ_URL_TTL_MS = 5 * 60 * 1000;
 export const DEFAULT_DOWNLOAD_SCAN_CACHE_TTL_MS = 15 * 60 * 1000;
 
 type PrepareDownloadOptions = {
@@ -102,31 +102,6 @@ const selectFile = async (
   }) as FileRecord[];
 
   return files[0] || null;
-};
-
-const createReadUrl = async ({
-  file,
-  storageFactory,
-}: {
-  file: FileRecord;
-  storageFactory: StorageFactory;
-}): Promise<string> => {
-  if (!file.storageBucket || !file.storageObjectName) {
-    return file.url || "";
-  }
-
-  const options: GetSignedUrlConfig = {
-    version: "v4",
-    action: "read",
-    expires: Date.now() + READ_URL_TTL_MS,
-    responseDisposition: "attachment",
-  };
-  const [url] = await storageFactory()
-    .bucket(file.storageBucket)
-    .file(file.storageObjectName)
-    .getSignedUrl(options);
-
-  return url || "";
 };
 
 export const createPrepareDownloadResolver = (
@@ -235,7 +210,10 @@ export const createPrepareDownloadResolver = (
       };
     }
 
-    const url = await createReadUrl({ file: scannedFile, storageFactory });
+    const url = await createDownloadReadUrl({
+      file: scannedFile,
+      storage: storageFactory(),
+    });
     if (!url) {
       return {
         ready: false,

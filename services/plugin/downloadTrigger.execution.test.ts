@@ -42,7 +42,7 @@ const fileNode = {
   },
 };
 
-function makeExecModels(edges: unknown[]) {
+function makeExecModels(edges: unknown[], file = fileNode) {
   const updates: any[] = [];
   const creates: any[] = [];
   const fileUpdates: any[] = [];
@@ -66,7 +66,7 @@ function makeExecModels(edges: unknown[]) {
   };
   const models: any = {
     DownloadableFile: {
-      ...model([fileNode]),
+      ...model([file]),
       update: async (args: any) => {
         fileUpdates.push(args);
         return {};
@@ -91,10 +91,10 @@ const pluginReturning = (result: unknown) =>
 const loaderFor = (cls: unknown) => (async () => cls) as any;
 const statusesOf = (updates: any[]) => updates.map((u) => u.update.status);
 
-const execRun = (models: any, loadPlugin: any) =>
+const execRun = (models: any, loadPlugin: any, storage?: any) =>
   triggerPluginRunsForDownloadableFile(
     { downloadableFileId: "f-1", event: EVENT, models },
-    { loadPlugin }
+    { loadPlugin, storage }
   );
 
 test("runs a matching plugin to SUCCEEDED", async () => {
@@ -107,6 +107,54 @@ test("runs a matching plugin to SUCCEEDED", async () => {
   assert.ok(statuses.includes("RUNNING"));
   assert.ok(statuses.includes("SUCCEEDED"));
   assert.equal(runs.length, 1);
+});
+
+test("gives plugins signed access to private objects without persisting the signature", async () => {
+  const privateFile = {
+    ...fileNode,
+    url: "https://storage.googleapis.com/private-downloads/a.zip",
+    storageBucket: "private-downloads",
+    storageObjectName: "uploads/alice/a.zip",
+  };
+  const { models, updates } = makeExecModels(
+    [installedEdge("security-attachment-scan")],
+    privateFile
+  );
+  let receivedEvent: any;
+  const Plugin = class {
+    async handleEvent(event: unknown) {
+      receivedEvent = event;
+      return { success: true, result: { verdict: "clean" } };
+    }
+  };
+  const storage = {
+    bucket: (bucketName: string) => ({
+      file: (objectName: string) => ({
+        getSignedUrl: async () => [
+          `https://signed.example.com/${bucketName}/${objectName}?signature=secret`,
+        ],
+      }),
+    }),
+  };
+
+  await execRun(models, loaderFor(Plugin), storage);
+
+  const completedPayload = JSON.parse(
+    updates.find((update) => update.update.status === "SUCCEEDED").update.payload
+  );
+  assert.deepEqual({
+    pluginAttachments: receivedEvent.payload.attachmentUrls,
+    storedAttachments: completedPayload.attachments,
+    storedPayloadContainsSignature: completedPayload.attachments.some(
+      (url: string) => url.includes("signature=")
+    ),
+  }, {
+    pluginAttachments: [
+      "https://signed.example.com/private-downloads/uploads/alice/a.zip?signature=secret",
+    ],
+    storedAttachments: [privateFile.url],
+    storedPayloadContainsSignature: false,
+  });
 });
 
 test("marks the run FAILED when the plugin reports failure", async () => {

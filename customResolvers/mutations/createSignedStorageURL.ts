@@ -14,6 +14,7 @@ type Args = {
   filename: string;
   contentType: string;
   channelConnections?: string[]; // Optional array of channel names
+  uploadTarget?: "PUBLIC_MEDIA" | "PRIVATE_DOWNLOAD";
 };
 
 interface ValidationContext {
@@ -156,9 +157,35 @@ export const validateFile = async (
   await validateFileType(filename, channelConnections, ctx);
 };
 
+export const resolveUploadBucketName = ({
+  uploadTarget,
+  env = process.env,
+}: {
+  uploadTarget?: Args["uploadTarget"];
+  env?: Partial<
+    Pick<NodeJS.ProcessEnv, "GCS_BUCKET_NAME" | "GCS_PRIVATE_DOWNLOAD_BUCKET_NAME">
+  >;
+}): string => {
+  const environmentVariable = uploadTarget === "PRIVATE_DOWNLOAD"
+    ? "GCS_PRIVATE_DOWNLOAD_BUCKET_NAME"
+    : "GCS_BUCKET_NAME";
+  const bucketName = env[environmentVariable];
+
+  if (!bucketName) {
+    throw new Error(`${environmentVariable} environment variable not set`);
+  }
+
+  return bucketName;
+};
+
 const createSignedStorageURL = () => {
   return async (parent: unknown, args: Args, ctx: ResolverContext) => {
-    let { filename, contentType, channelConnections = [] } = args;
+    const {
+      filename,
+      contentType,
+      channelConnections = [],
+      uploadTarget,
+    } = args;
 
     if (!filename?.trim()) {
       throw new Error("Filename is required");
@@ -175,11 +202,7 @@ const createSignedStorageURL = () => {
     await validateFile(filename, contentType, channelConnections, ctx);
 
     const storage = new Storage();
-    const bucketName = process.env.GCS_BUCKET_NAME;
-
-    if (!bucketName) {
-      throw new Error("GCS_BUCKET_NAME environment variable not set");
-    }
+    const bucketName = resolveUploadBucketName({ uploadTarget });
 
     const uploadedAt = new Date().toISOString();
     const storageObjectName = buildStorageObjectName({

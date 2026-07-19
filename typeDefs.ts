@@ -33,6 +33,11 @@ const typeDefinitions = gql`
     FAILED
   }
 
+  enum StorageUploadTarget {
+    PUBLIC_MEDIA
+    PRIVATE_DOWNLOAD
+  }
+
   enum ChannelImageType {
     ICON
     BANNER
@@ -1220,7 +1225,12 @@ const typeDefinitions = gql`
       scratchpadEntryId: ID!
     ): Boolean
 
-    createSignedStorageURL(filename: String!, contentType: String!, channelConnections: [String!]): SignedURL
+    createSignedStorageURL(
+      filename: String!
+      contentType: String!
+      channelConnections: [String!]
+      uploadTarget: StorageUploadTarget = PUBLIC_MEDIA
+    ): SignedURL
     createEmailAndUser(emailAddress: String!, username: String!): User
     dropDataForCypressTests: DropDataResponse
     seedDataForCypressTests(
