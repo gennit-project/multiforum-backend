@@ -368,6 +368,7 @@ const permissionList = shield({
       installPluginVersion: and(isAuthenticated, canManagePlugins),
       enableServerPlugin: and(isAuthenticated, canManagePlugins),
       setServerPluginSecret: and(isAuthenticated, canManagePlugins),
+      deleteServerPluginSecret: and(isAuthenticated, canManagePlugins),
       deletePluginVersions: and(isAuthenticated, canManagePlugins),
       updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
       updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
