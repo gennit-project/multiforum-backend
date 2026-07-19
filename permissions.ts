@@ -79,6 +79,7 @@ const permissionList = shield({
       emails: deny,
       getUploadedDownloadableFiles: and(isAuthenticated, allow),
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
+      getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
     },
     User: {
       // Public fields - anyone can access

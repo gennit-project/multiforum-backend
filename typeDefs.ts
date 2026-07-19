@@ -1890,6 +1890,22 @@ const typeDefinitions = gql`
     validationError: String
   }
 
+  type PluginConfigFieldStatus {
+    key: String!
+    label: String!
+    scope: String!
+    kind: String!
+    required: Boolean!
+    isSet: Boolean!
+    isValid: Boolean!
+    message: String
+  }
+
+  type PluginConfigStatus {
+    isFullyConfigured: Boolean!
+    fields: [PluginConfigFieldStatus!]!
+  }
+
   type GetSortedChannelsResponse {
     channels: [Channel]
     aggregateChannelCount: Int
@@ -2246,6 +2262,11 @@ const typeDefinitions = gql`
     getServerPluginSecrets(
       pluginId: String!
     ): [PluginSecretStatus!]!
+    getPluginConfigStatus(
+      pluginId: String!
+      version: String!
+      scope: String = "server"
+    ): PluginConfigStatus!
     getInstalledPlugins: [InstalledPlugin!]!
     getPluginRunsForDownloadableFile(downloadableFileId: ID!): [PluginRun!]!
     getPipelineRuns(targetId: ID!, targetType: String!): [PluginRun!]!

@@ -25,6 +25,7 @@ import getServerHealthDashboard from "./queries/getServerHealthDashboard.js";
 import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
 import getUploadedDownloadableFiles from "./queries/getUploadedDownloadableFiles.js";
 import getImageAlbumUsage from "./queries/getImageAlbumUsage.js";
+import getPluginConfigStatus from './queries/getPluginConfigStatus.js'
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -38,6 +39,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     ModerationProfile,
     Channel,
     Issue,
+    Plugin,
     ServerConfig,
     ServerSecret,
     PluginRun,
@@ -103,6 +105,11 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     safetyCheck: safetyCheck,
     getServerPluginSecrets: getServerPluginSecrets({
+      ServerSecret
+    }),
+    getPluginConfigStatus: getPluginConfigStatus({
+      Plugin,
+      ServerConfig,
       ServerSecret
     }),
     getInstalledPlugins: getInstalledPlugins({
