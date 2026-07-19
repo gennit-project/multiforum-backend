@@ -118,8 +118,8 @@ importers:
         specifier: 6.1.0
         version: 6.1.0(graphql@16.14.2)
       '@testcontainers/neo4j':
-        specifier: ^12.0.3
-        version: 12.0.3
+        specifier: ^12.0.4
+        version: 12.0.4
       '@types/compression':
         specifier: ^1.8.1
         version: 1.8.1
@@ -1084,8 +1084,8 @@ packages:
   '@stablelib/base64@1.0.1':
     resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
 
-  '@testcontainers/neo4j@12.0.3':
-    resolution: {integrity: sha512-MewiwZ+PfIum/UHaDC2UBjff/7KbsT/yqpUdvVwX3FifF+3n5NbAjtke+isl+oYKafl3DA7OONw2A8Sfeb3bkA==}
+  '@testcontainers/neo4j@12.0.4':
+    resolution: {integrity: sha512-WRQfxFilXehFqq0nkeAP7xqAZavkj1YODYPiSLHrMHDoKIUxCu5fWFdigJakmvqKk86J/pup146fqZgspsuocg==}
 
   '@tootallnate/once@2.0.1':
     resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
@@ -5134,7 +5134,7 @@ snapshots:
 
   '@stablelib/base64@1.0.1': {}
 
-  '@testcontainers/neo4j@12.0.3':
+  '@testcontainers/neo4j@12.0.4':
     dependencies:
       testcontainers: 12.0.4
     transitivePeerDependencies:
