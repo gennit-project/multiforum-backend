@@ -155,6 +155,9 @@ test("persists the scanner verdict on the downloadable file", async () => {
       scanStatus: "PENDING",
       scanReason: null,
       scanCheckedAt: null,
+      reviewRequestedAt: null,
+      reviewRequestReason: null,
+      reviewRequestedByUsername: null,
     },
   });
   assert.deepEqual(fileUpdates[1], {

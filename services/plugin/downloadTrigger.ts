@@ -188,7 +188,10 @@ export const triggerPluginRunsForDownloadableFile = async (
       update: ({
         scanStatus: 'PENDING',
         scanReason: null,
-        scanCheckedAt: null
+        scanCheckedAt: null,
+        reviewRequestedAt: null,
+        reviewRequestReason: null,
+        reviewRequestedByUsername: null
       } as DownloadableFileUpdateInput)
     })
   }
