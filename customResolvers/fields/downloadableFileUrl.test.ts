@@ -53,7 +53,7 @@ test("returns an empty string when the request has a JWT error", async () => {
   assert.equal(result, "");
 });
 
-test("returns the file URL for authenticated requests", async () => {
+test("withholds the stored file URL from regular authenticated requests", async () => {
   const resolver = createDownloadableFileUrlResolver(async () => ({
     username: "cluse",
     email: "cluse@example.com",
@@ -67,7 +67,7 @@ test("returns the file URL for authenticated requests", async () => {
     buildContext() as unknown as ResolverContext
   );
 
-  assert.equal(result, "https://example.com/file.zip");
+  assert.equal(result, "");
 });
 
 test("reuses context.user when it is already available", async () => {
@@ -96,7 +96,7 @@ test("reuses context.user when it is already available", async () => {
     } as unknown as ResolverContext
   );
 
-  assert.equal(result, "https://example.com/file.zip");
+  assert.equal(result, "");
   assert.equal(callCount, 0);
 });
 

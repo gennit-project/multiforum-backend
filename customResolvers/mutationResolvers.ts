@@ -85,6 +85,7 @@ import triggerDownloadableFilePluginRuns from "./mutations/triggerDownloadableFi
 import retryDownloadableFileScan from "./mutations/retryDownloadableFileScan.js";
 import clearDownloadableFileScan from "./mutations/clearDownloadableFileScan.js";
 import trackDownload from "./mutations/trackDownload.js";
+import prepareDownload from "./mutations/prepareDownload.js";
 import updateDownloadableFileSupportSettings from "./mutations/updateDownloadableFileSupportSettings.js";
 import createDownloadableFilesWithUploadMetadata from "./mutations/createDownloadableFilesWithUploadMetadata.js";
 import enableServerPlugin from "./mutations/enableServerPlugin.js";
@@ -558,6 +559,15 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     trackDownload: trackDownload({
+      driver
+    }),
+    prepareDownload: prepareDownload({
+      DownloadableFile,
+      Plugin,
+      PluginVersion,
+      PluginRun,
+      ServerConfig,
+      ServerSecret,
       driver
     }),
     updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({

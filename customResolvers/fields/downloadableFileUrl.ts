@@ -74,10 +74,6 @@ export const createDownloadableFileUrlResolver = (
       return "";
     }
 
-    if (file.scanStatus === "CLEAN") {
-      return file.url || parent.url || "";
-    }
-
     const username = context.user.username;
     const isOwner =
       file.uploadedByUsername === username ||
