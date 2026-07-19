@@ -1005,6 +1005,16 @@ const typeDefinitions = gql`
     uploadedAt: DateTime
   }
 
+  type PrepareDownloadResult {
+    ready: Boolean!
+    url: String
+    scanStatus: ScanStatus!
+    scanReason: String
+    scanCheckedAt: DateTime
+    reviewAccess: Boolean!
+    message: String!
+  }
+
   type DropDataResponse {
     success: Boolean
     message: String
@@ -1115,6 +1125,7 @@ const typeDefinitions = gql`
 
     # Library management
     trackDownload(downloadableFileId: ID!, discussionId: ID!): Boolean!
+    prepareDownload(downloadableFileId: ID!, discussionId: ID!): PrepareDownloadResult!
     updateDownloadableFileSupportSettings(
       downloadableFileId: ID!
       discussionId: ID!
