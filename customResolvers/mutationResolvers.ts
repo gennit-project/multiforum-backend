@@ -174,6 +174,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     updateDiscussionWithChannelConnections:
       updateDiscussionWithChannelConnections({
         Discussion,
+        DownloadableFile,
+        PluginRun,
+        ServerConfig,
+        ServerSecret,
         driver,
       }),
     createEventWithChannelConnections: createEventWithChannelConnections({
