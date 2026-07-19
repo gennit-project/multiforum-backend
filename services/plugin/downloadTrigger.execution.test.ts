@@ -19,7 +19,7 @@ const installedEdge = (name: string) => ({
     repoUrl: null,
     tarballGsUri: `gs://bucket/${name}.tgz`,
     entryPath: "dist/index.js",
-    manifest: JSON.stringify({ events: [EVENT] }),
+    manifest: JSON.stringify({ events: [EVENT, "downloadableFile.updated"] }),
     settingsDefaults: null,
     uiSchema: null,
     Plugin: { id: `p-${name}`, name, displayName: name, description: "", metadata: null },
@@ -152,9 +152,17 @@ test("persists the scanner verdict on the downloadable file", async () => {
   assert.deepEqual(fileUpdates[0], {
     where: { id: "f-1" },
     update: {
+      scanStatus: "PENDING",
+      scanReason: null,
+      scanCheckedAt: null,
+    },
+  });
+  assert.deepEqual(fileUpdates[1], {
+    where: { id: "f-1" },
+    update: {
       scanStatus: "INFECTED",
       scanReason: "Known malware signature",
-      scanCheckedAt: fileUpdates[0].update.scanCheckedAt,
+      scanCheckedAt: fileUpdates[1].update.scanCheckedAt,
     },
   });
 });
@@ -170,12 +178,33 @@ test("marks the downloadable file failed when the scanner throws", async () => {
     }) as any
   );
 
-  assert.deepEqual(fileUpdates[0], {
+  assert.deepEqual(fileUpdates[1], {
     where: { id: "f-1" },
     update: {
       scanStatus: "FAILED",
       scanReason: "scan service unavailable",
-      scanCheckedAt: fileUpdates[0].update.scanCheckedAt,
+      scanCheckedAt: fileUpdates[1].update.scanCheckedAt,
     },
   });
+});
+
+test("holds a replacement before the scanner begins", async () => {
+  const { models, fileUpdates } = makeExecModels([
+    installedEdge("security-attachment-scan"),
+  ]);
+
+  await triggerPluginRunsForDownloadableFile(
+    {
+      downloadableFileId: "f-1",
+      event: "downloadableFile.updated",
+      models,
+    },
+    {
+      loadPlugin: loaderFor(
+        pluginReturning({ success: true, result: { verdict: "clean" } })
+      ),
+    }
+  );
+
+  assert.equal(fileUpdates[0].update.scanStatus, "PENDING");
 });

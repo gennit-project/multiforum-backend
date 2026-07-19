@@ -179,6 +179,20 @@ export const triggerPluginRunsForDownloadableFile = async (
   )
   let securityScanOutcome: DownloadScanOutcome | null = null
 
+  // Replacements can arrive while the previous version is CLEAN. Hold the
+  // file before starting the scanner so that old approval cannot make new
+  // bytes publicly downloadable during the rescan window.
+  if (securityScanExpected && event !== 'downloadableFile.downloaded') {
+    await DownloadableFile.update({
+      where: { id: downloadableFileId },
+      update: ({
+        scanStatus: 'PENDING',
+        scanReason: null,
+        scanCheckedAt: null
+      } as DownloadableFileUpdateInput)
+    })
+  }
+
   const runs: unknown[] = []
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
