@@ -1425,6 +1425,11 @@ const typeDefinitions = gql`
       downloadableFileId: ID!
       event: String!
     ): [PluginRun!]!
+    retryDownloadableFileScan(downloadableFileId: ID!): [PluginRun!]!
+    clearDownloadableFileScan(
+      downloadableFileId: ID!
+      reason: String
+    ): DownloadableFile!
     enableServerPlugin(
       pluginId: String!
       version: String!
