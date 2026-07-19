@@ -88,6 +88,14 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
       actionDescription: 'Reviewed',
       createdAt: datetime()
     })
+    CREATE (failedFile:DownloadableFile {
+      id: 'file-failed',
+      fileName: 'failed.zip',
+      kind: 'OTHER',
+      url: 'https://example.com/failed.zip',
+      createdAt: datetime(),
+      scanStatus: 'FAILED'
+    })
 
     CREATE (alice)-[:POSTED_DISCUSSION]->(discussion)
     CREATE (bob)-[:AUTHORED_COMMENT]->(comment)
@@ -121,6 +129,7 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
   assert.equal(result.summary.openIssueCount, 2);
   assert.equal(result.summary.issueOpenedCount, 2);
   assert.equal(result.summary.moderationActionCount, 1);
+  assert.equal(result.summary.failedDownloadScanCount, 1);
 
   const general = result.channelHealth.find(
     (row: any) => row.channelUniqueName === "general"
@@ -136,6 +145,10 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
   assert.ok(
     result.attentionItems.some((item: any) => item.title === "Stale open issues"),
     `expected stale issue attention item, got ${JSON.stringify(result.attentionItems)}`
+  );
+  assert.ok(
+    result.attentionItems.some((item: any) => item.title === "Download security scans failing"),
+    `expected scan failure attention item, got ${JSON.stringify(result.attentionItems)}`
   );
 });
 

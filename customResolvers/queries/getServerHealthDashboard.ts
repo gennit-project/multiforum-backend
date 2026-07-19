@@ -184,7 +184,19 @@ const getHealthLabel = (row: Omit<ChannelHealthRow, "healthLabel">): string => {
   return "Active";
 };
 
-const buildAttentionItems = (rows: ChannelHealthRow[]): AttentionItem[] => {
+const buildAttentionItems = (
+  rows: ChannelHealthRow[],
+  failedDownloadScanCount: number
+): AttentionItem[] => {
+  const scanFailureItems: AttentionItem[] = failedDownloadScanCount > 0
+    ? [{
+        severity: "CRITICAL",
+        title: "Download security scans failing",
+        description: `${failedDownloadScanCount} downloadable file${failedDownloadScanCount === 1 ? " is" : "s are"} unavailable because the security scanner could not complete.`,
+        metric: "failedDownloadScanCount",
+        value: failedDownloadScanCount,
+      }]
+    : [];
   const staleIssueItems = rows
     .filter((row) => (row.oldestOpenIssueAgeDays || 0) >= 7)
     .sort((a, b) => (b.oldestOpenIssueAgeDays || 0) - (a.oldestOpenIssueAgeDays || 0))
@@ -224,7 +236,12 @@ const buildAttentionItems = (rows: ChannelHealthRow[]): AttentionItem[] => {
       value: row.openIssueCount,
     }));
 
-  return [...staleIssueItems, ...highPressureItems, ...underRespondedItems].slice(0, 10);
+  return [
+    ...scanFailureItems,
+    ...staleIssueItems,
+    ...highPressureItems,
+    ...underRespondedItems,
+  ].slice(0, 10);
 };
 
 const buildIssueAging = (ages: number[]) => [
@@ -555,6 +572,13 @@ const suspensionTotalQuery = `
   RETURN count(DISTINCT s) AS suspensionCount
 `;
 
+const failedDownloadScanTotalQuery = `
+  MATCH (file:DownloadableFile)
+  WHERE file.scanStatus = 'FAILED'
+    AND coalesce(file.permanentlyRemoved, false) = false
+  RETURN count(file) AS failedDownloadScanCount
+`;
+
 const runDashboardQuery = async (
   session: Session,
   name: string,
@@ -601,6 +625,12 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
       const openIssueSummaryResult = await runDashboardQuery(session, "openIssueSummary", openIssueSummaryQuery, params);
       const moderationActionTotalResult = await runDashboardQuery(session, "moderationActionTotal", moderationActionTotalQuery, params);
       const suspensionTotalResult = await runDashboardQuery(session, "suspensionTotal", suspensionTotalQuery, params);
+      const failedDownloadScanTotalResult = await runDashboardQuery(
+        session,
+        "failedDownloadScanTotal",
+        failedDownloadScanTotalQuery,
+        params
+      );
 
       const channelRecord = channelResult.records[0];
       const allChannelHealth = sanitize(channelRecord?.get("allChannelHealth") || []) as Array<Omit<ChannelHealthRow, "healthLabel">>;
@@ -627,6 +657,9 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
       const suspensionCount = toNumber(
         suspensionTotalResult.records[0]?.get("suspensionCount")
       );
+      const failedDownloadScanCount = toNumber(
+        failedDownloadScanTotalResult.records[0]?.get("failedDownloadScanCount")
+      );
       const openIssueAges = (sanitize(openIssueSummary?.get("openIssueAges") || []) as unknown[])
         .map(toNumber);
       const issueAging = buildIssueAging(openIssueAges);
@@ -645,6 +678,7 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         archivedContentCount: allChannelHealth.reduce((total, row) => total + toNumber(row.archivedContentCount), 0),
         lockedContentCount: allChannelHealth.reduce((total, row) => total + toNumber(row.lockedContentCount), 0),
         suspensionCount,
+        failedDownloadScanCount,
         medianOpenIssueAgeDays,
       };
 
@@ -656,7 +690,7 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         timeSeries,
         channelHealth,
         issueAging,
-        attentionItems: buildAttentionItems(channelHealth),
+        attentionItems: buildAttentionItems(channelHealth, failedDownloadScanCount),
       };
     } catch (error) {
       logger.error("Error fetching server health dashboard:", error);

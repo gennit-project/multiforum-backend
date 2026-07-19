@@ -99,6 +99,27 @@ test('trackDownload counts anonymous downloads as total-only activity', async ()
   assert.doesNotMatch(calls.run[0][0], /OWNS_DOWNLOAD/)
 })
 
+test('trackDownload only counts anonymous downloads for clean files', async () => {
+  const { driver, calls } = buildDriver()
+  const resolver = trackDownload({
+    driver,
+    getUserData: async () => ({
+      username: null,
+      email: null,
+      email_verified: false,
+      data: null
+    })
+  })
+
+  await resolver(
+    null,
+    { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+    {} as unknown as GraphQLContext
+  )
+
+  assert.match(calls.run[0][0], /coalesce\(file\.scanStatus, 'PENDING'\) = 'CLEAN'/)
+})
+
 test('trackDownload updates counters and saves the download discussion', async () => {
   const { driver, calls } = buildDriver()
   const resolver = trackDownload({ driver })
@@ -129,6 +150,22 @@ test('trackDownload updates counters and saves the download discussion', async (
   assert.equal(
     calls.run[0][1].downloadsCollectionDescription,
     AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION
+  )
+})
+
+test('trackDownload permits review tracking only for the uploader or discussion author', async () => {
+  const { driver, calls } = buildDriver()
+  const resolver = trackDownload({ driver })
+
+  await resolver(
+    null,
+    { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+    { user: { username: 'alice' } } as unknown as GraphQLContext
+  )
+
+  assert.match(
+    calls.run[0][0],
+    /file\.uploadedByUsername = \$username[\s\S]*\$username IN authorUsernames/
   )
 })
 
@@ -174,6 +211,6 @@ test('trackDownload throws when the file does not belong to the discussion', asy
     resolver(null, { downloadableFileId: 'file-1', discussionId: 'discussion-1' }, {
       user: { username: 'alice' }
     } as unknown as GraphQLContext),
-    /Downloadable file not found for this discussion/
+    /Downloadable file is unavailable or not found for this discussion/
   )
 })

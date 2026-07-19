@@ -49,6 +49,7 @@ const selectionSet = `
       supportPayPalMeUrl
       scanStatus
       scanCheckedAt
+      scanReason
     }
   }
 `;

@@ -451,6 +451,7 @@ const typeDefinitions = gql`
     # scanning
     scanStatus: ScanStatus! @default(value: PENDING)
     scanCheckedAt: DateTime
+    scanReason: String
 
     # purchases back‑ref
     purchasers: [Purchase!]! @relationship(type: "PURCHASED_FILE", direction: IN)
@@ -1424,6 +1425,11 @@ const typeDefinitions = gql`
       downloadableFileId: ID!
       event: String!
     ): [PluginRun!]!
+    retryDownloadableFileScan(downloadableFileId: ID!): [PluginRun!]!
+    clearDownloadableFileScan(
+      downloadableFileId: ID!
+      reason: String
+    ): DownloadableFile!
     enableServerPlugin(
       pluginId: String!
       version: String!
@@ -2036,6 +2042,7 @@ const typeDefinitions = gql`
     archivedContentCount: Int!
     lockedContentCount: Int!
     suspensionCount: Int!
+    failedDownloadScanCount: Int!
     medianOpenIssueAgeDays: Float
   }
 

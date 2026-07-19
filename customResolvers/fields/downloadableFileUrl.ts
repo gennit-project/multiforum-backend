@@ -3,20 +3,35 @@ import {
   type AuthContextForUserLookup,
   type UserDataOnContext,
 } from "../../rules/permission/userDataHelperFunctions.js";
+import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 type DownloadableFileParent = {
+  id?: string | null;
   url?: string | null;
 };
 
-type DownloadableFileContext = {
-  user?: UserDataOnContext | null;
-  jwtError?: Error | null;
-} & AuthContextForUserLookup;
+type DownloadableFileAccessRecord = {
+  url?: string | null;
+  scanStatus?: string | null;
+  uploadedByUsername?: string | null;
+  Discussion?: {
+    Author?: { username?: string | null } | null;
+  } | null;
+};
+
+type DownloadableFileContext = GraphQLContext &
+  AuthContextForUserLookup & {
+    user?: UserDataOnContext | null;
+    jwtError?: Error | null;
+  };
 
 type SetUserDataOnContext = typeof setUserDataOnContext;
+type CheckServerModPermission = typeof hasServerModPermission;
 
 export const createDownloadableFileUrlResolver = (
-  getUserData: SetUserDataOnContext = setUserDataOnContext
+  getUserData: SetUserDataOnContext = setUserDataOnContext,
+  checkServerModPermission: CheckServerModPermission = hasServerModPermission
 ) => {
   return async (
     parent: DownloadableFileParent,
@@ -37,7 +52,45 @@ export const createDownloadableFileUrlResolver = (
       return "";
     }
 
-    return parent.url || "";
+    if (!parent.id) {
+      return "";
+    }
+
+    const DownloadableFile = context.ogm.model("DownloadableFile");
+    const records = await DownloadableFile.find({
+      where: { id: parent.id },
+      selectionSet: `{
+        url
+        scanStatus
+        uploadedByUsername
+        Discussion {
+          Author { username }
+        }
+      }`,
+    }) as DownloadableFileAccessRecord[];
+    const file = records[0];
+
+    if (!file) {
+      return "";
+    }
+
+    if (file.scanStatus === "CLEAN") {
+      return file.url || parent.url || "";
+    }
+
+    const username = context.user.username;
+    const isOwner =
+      file.uploadedByUsername === username ||
+      file.Discussion?.Author?.username === username;
+    if (isOwner) {
+      return file.url || parent.url || "";
+    }
+
+    const canReview = await checkServerModPermission(
+      "canPermanentlyRemoveImage",
+      context
+    );
+    return canReview === true ? file.url || parent.url || "" : "";
   };
 };
 
