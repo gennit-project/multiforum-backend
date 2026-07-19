@@ -451,6 +451,7 @@ const typeDefinitions = gql`
     # scanning
     scanStatus: ScanStatus! @default(value: PENDING)
     scanCheckedAt: DateTime
+    scanReason: String
 
     # purchases back‑ref
     purchasers: [Purchase!]! @relationship(type: "PURCHASED_FILE", direction: IN)

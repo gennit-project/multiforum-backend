@@ -6,7 +6,13 @@ import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
-import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
+import {
+  SECURITY_SCAN_PLUGIN_ID,
+  failedDownloadScanOutcome,
+  resolveDownloadScanOutcome,
+  type DownloadScanOutcome
+} from './downloadScanOutcome.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, DownloadableFileUpdateInput, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
@@ -167,6 +173,11 @@ export const triggerPluginRunsForDownloadableFile = async (
   if (pluginsToRun.length === 0) {
     return []
   }
+
+  const securityScanExpected = pluginsToRun.some(
+    plugin => plugin.pluginId === SECURITY_SCAN_PLUGIN_ID
+  )
+  let securityScanOutcome: DownloadScanOutcome | null = null
 
   const runs: unknown[] = []
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
@@ -370,6 +381,9 @@ export const triggerPluginRunsForDownloadableFile = async (
       }
 
       const result = await pluginInstance.handleEvent(eventEnvelope)
+      if (pluginId === SECURITY_SCAN_PLUGIN_ID) {
+        securityScanOutcome = resolveDownloadScanOutcome(result)
+      }
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
 
@@ -416,6 +430,10 @@ export const triggerPluginRunsForDownloadableFile = async (
       const durationMs = Math.round(runEnd - runStart)
       const message = (error instanceof Error ? error.message : '') || 'Plugin execution failed'
 
+      if (pluginId === SECURITY_SCAN_PLUGIN_ID) {
+        securityScanOutcome = failedDownloadScanOutcome(message)
+      }
+
       previousStatus = 'FAILED'
 
       await PluginRun.update({
@@ -451,6 +469,20 @@ export const triggerPluginRunsForDownloadableFile = async (
         runs.push(updated[0])
       }
     }
+  }
+
+  if (securityScanExpected) {
+    const outcome = securityScanOutcome || failedDownloadScanOutcome(
+      'The security scan was skipped before it could complete.'
+    )
+    await DownloadableFile.update({
+      where: { id: downloadableFileId },
+      update: ({
+        scanStatus: outcome.status,
+        scanReason: outcome.reason,
+        scanCheckedAt: new Date().toISOString()
+      } as DownloadableFileUpdateInput)
+    })
   }
 
   return runs

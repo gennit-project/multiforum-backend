@@ -45,6 +45,7 @@ const fileNode = {
 function makeExecModels(edges: unknown[]) {
   const updates: any[] = [];
   const creates: any[] = [];
+  const fileUpdates: any[] = [];
   let seq = 0;
   const serverConfig = {
     serverName: "s",
@@ -64,14 +65,20 @@ function makeExecModels(edges: unknown[]) {
     find: async (args: any) => [{ id: args?.where?.id ?? "run-1" }],
   };
   const models: any = {
-    DownloadableFile: model([fileNode]),
+    DownloadableFile: {
+      ...model([fileNode]),
+      update: async (args: any) => {
+        fileUpdates.push(args);
+        return {};
+      },
+    },
     ServerConfig: model([serverConfig]),
     ServerSecret: empty(),
     PluginRun,
     Plugin: empty(),
     PluginVersion: empty(),
   };
-  return { models, updates, creates };
+  return { models, updates, creates, fileUpdates };
 }
 
 const pluginReturning = (result: unknown) =>
@@ -121,4 +128,54 @@ test("skips later plugins after a failure (stopOnFirstFailure)", async () => {
   const statuses = statusesOf(updates);
   assert.ok(statuses.includes("FAILED"));
   assert.ok(statuses.includes("SKIPPED"));
+});
+
+test("persists the scanner verdict on the downloadable file", async () => {
+  const { models, fileUpdates } = makeExecModels([
+    installedEdge("security-attachment-scan"),
+  ]);
+  await execRun(
+    models,
+    loaderFor(
+      pluginReturning({
+        success: false,
+        result: {
+          verdict: "malicious",
+          scans: [
+            { verdict: "malicious", summary: "Known malware signature" },
+          ],
+        },
+      })
+    )
+  );
+
+  assert.deepEqual(fileUpdates[0], {
+    where: { id: "f-1" },
+    update: {
+      scanStatus: "INFECTED",
+      scanReason: "Known malware signature",
+      scanCheckedAt: fileUpdates[0].update.scanCheckedAt,
+    },
+  });
+});
+
+test("marks the downloadable file failed when the scanner throws", async () => {
+  const { models, fileUpdates } = makeExecModels([
+    installedEdge("security-attachment-scan"),
+  ]);
+  await execRun(
+    models,
+    (async () => {
+      throw new Error("scan service unavailable");
+    }) as any
+  );
+
+  assert.deepEqual(fileUpdates[0], {
+    where: { id: "f-1" },
+    update: {
+      scanStatus: "FAILED",
+      scanReason: "scan service unavailable",
+      scanCheckedAt: fileUpdates[0].update.scanCheckedAt,
+    },
+  });
 });
