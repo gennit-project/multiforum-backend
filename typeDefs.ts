@@ -2042,6 +2042,7 @@ const typeDefinitions = gql`
     archivedContentCount: Int!
     lockedContentCount: Int!
     suspensionCount: Int!
+    failedDownloadScanCount: Int!
     medianOpenIssueAgeDays: Float
   }
 
