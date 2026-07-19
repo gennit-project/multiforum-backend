@@ -7,6 +7,11 @@ import type {
 } from '../../ogm_types.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
+import {
+  buildPluginConfigStatus,
+  getBlockingConfigFields,
+  resolveSecretValidationStatus
+} from '../../services/plugin/configStatus.js'
 
 type Input = {
   Plugin: PluginModel
@@ -73,9 +78,7 @@ const getResolver = (input: Input) => {
       }
 
       // `manifest` is a JSON scalar, so it's still read as a dynamic record.
-      const manifest = (pluginVersion.manifest as Record<string, unknown>) || {}
-      const manifestSecrets = Array.isArray(manifest.secrets) ? manifest.secrets : []
-      const requiredServerSecrets = manifestSecrets.filter((secret: { scope?: string; required?: boolean }) => secret && secret.scope === 'server' && secret.required !== false)
+      const manifest = pluginVersion.manifest || {}
 
       // 2. Get server config
       const serverConfigs = await ServerConfig.find({
@@ -99,7 +102,7 @@ const getResolver = (input: Input) => {
         throw new Error(`Plugin ${pluginId} version ${version} is not installed. Please install it first.`)
       }
 
-      // 3. If enabling, validate required secrets from the manifest
+      // 3. If enabling, validate all required server-scoped configuration.
       if (enabled) {
         const secrets = await ServerSecret.find({
           where: { pluginId },
@@ -111,28 +114,21 @@ const getResolver = (input: Input) => {
           }`
         })
 
-        const secretMap = new Map(secrets.map(secret => [secret.key, secret]))
-        const requiredKeys = requiredServerSecrets.map((secret: { key: string }) => secret.key as string)
-
-        const missingKeys = requiredKeys.filter((key: string) => !secretMap.has(key))
-        if (missingKeys.length > 0) {
-          throw new Error(`Missing required secrets: ${missingKeys.join(', ')}`)
-        }
-
-        const invalidKeys = requiredKeys.filter((key: string) => {
-          const record = secretMap.get(key) as { isValid?: boolean | null; validationError?: string | null; lastValidatedAt?: string | null } | undefined
-          if (!record) return false
-          if (record.lastValidatedAt && record.isValid === false) {
-            return true
-          }
-          if (record.validationError) {
-            return true
-          }
-          return false
+        const configStatus = buildPluginConfigStatus({
+          manifest,
+          settingsJson,
+          secretStatuses: secrets.map(secret => ({
+            key: secret.key,
+            status: resolveSecretValidationStatus(secret)
+          })),
+          scope: 'server'
         })
-
-        if (invalidKeys.length > 0) {
-          throw new Error(`Cannot enable plugin: invalid or failing validation for secrets: ${invalidKeys.join(', ')}`)
+        const blockingFields = getBlockingConfigFields(configStatus)
+        if (blockingFields.length > 0) {
+          const details = blockingFields
+            .map(field => `${field.kind.toLowerCase()}:${field.key}:${field.message || 'Invalid value'}`)
+            .join(', ')
+          throw new Error(`PLUGIN_CONFIG_INCOMPLETE: ${details}`)
         }
       }
 
