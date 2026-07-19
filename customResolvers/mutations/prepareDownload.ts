@@ -50,6 +50,37 @@ type TrackDownloadResolver = ReturnType<typeof trackDownload>;
 type StorageFactory = () => Pick<Storage, "bucket">;
 
 const READ_URL_TTL_MS = 5 * 60 * 1000;
+export const DEFAULT_DOWNLOAD_SCAN_CACHE_TTL_MS = 15 * 60 * 1000;
+
+type PrepareDownloadOptions = {
+  now?: () => Date;
+  scanCacheTtlMs?: number;
+};
+
+const configuredScanCacheTtlMs = (): number => {
+  const configured = Number(process.env.DOWNLOAD_SCAN_CACHE_TTL_MS);
+  return Number.isFinite(configured) && configured >= 0
+    ? configured
+    : DEFAULT_DOWNLOAD_SCAN_CACHE_TTL_MS;
+};
+
+const hasFreshCleanScan = ({
+  file,
+  now,
+  ttlMs,
+}: {
+  file: FileRecord;
+  now: Date;
+  ttlMs: number;
+}): boolean => {
+  if (file.scanStatus !== "CLEAN" || !file.scanCheckedAt || ttlMs <= 0) {
+    return false;
+  }
+
+  const checkedAt = Date.parse(file.scanCheckedAt);
+  const ageMs = now.getTime() - checkedAt;
+  return Number.isFinite(checkedAt) && ageMs >= 0 && ageMs <= ttlMs;
+};
 
 const selectFile = async (
   DownloadableFile: DownloadableFileModel,
@@ -107,8 +138,29 @@ export const createPrepareDownloadResolver = (
   storageFactory: StorageFactory = () => new Storage(),
   trackDownloadResolver: TrackDownloadResolver = trackDownload({
     driver: input.driver,
-  })
+  }),
+  {
+    now = () => new Date(),
+    scanCacheTtlMs = configuredScanCacheTtlMs(),
+  }: PrepareDownloadOptions = {}
 ) => {
+  const inFlightScans = new Map<string, Promise<PluginRunRecord[]>>();
+
+  const runOrJoinScan = (downloadableFileId: string) => {
+    const existingScan = inFlightScans.get(downloadableFileId);
+    if (existingScan) return existingScan;
+
+    const scan = Promise.resolve(triggerRuns({
+      downloadableFileId,
+      event: "downloadableFile.downloaded",
+      models: input,
+    }) as Promise<PluginRunRecord[]>).finally(() => {
+      inFlightScans.delete(downloadableFileId);
+    });
+    inFlightScans.set(downloadableFileId, scan);
+    return scan;
+  };
+
   return async (
     _parent: unknown,
     {
@@ -139,28 +191,31 @@ export const createPrepareDownloadResolver = (
       context
     )) === true;
 
-    const runs = await triggerRuns({
-      downloadableFileId,
-      event: "downloadableFile.downloaded",
-      models: input,
-    }) as PluginRunRecord[];
-    const securityRun = runs.find(
-      (run) => run.pluginId === SECURITY_SCAN_PLUGIN_ID
-    );
+    let scannedFile: FileRecord | null = originalFile;
+    if (!hasFreshCleanScan({
+      file: originalFile,
+      now: now(),
+      ttlMs: scanCacheTtlMs,
+    })) {
+      const runs = await runOrJoinScan(downloadableFileId);
+      const securityRun = runs.find(
+        (run) => run.pluginId === SECURITY_SCAN_PLUGIN_ID
+      );
 
-    if (!securityRun) {
-      return {
-        ready: false,
-        url: null,
-        scanStatus: "FAILED",
-        scanReason: null,
-        scanCheckedAt: null,
-        reviewAccess: false,
-        message: "The download security scanner is not configured.",
-      };
+      if (!securityRun) {
+        return {
+          ready: false,
+          url: null,
+          scanStatus: "FAILED",
+          scanReason: null,
+          scanCheckedAt: null,
+          reviewAccess: false,
+          message: "The download security scanner is not configured.",
+        };
+      }
+
+      scannedFile = await selectFile(input.DownloadableFile, downloadableFileId);
     }
-
-    const scannedFile = await selectFile(input.DownloadableFile, downloadableFileId);
     if (!scannedFile) throw new Error("Downloadable file no longer exists");
 
     const scanStatus = scannedFile.scanStatus || "FAILED";
