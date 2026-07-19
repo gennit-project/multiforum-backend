@@ -74,6 +74,7 @@ const trackDownload = ({
         const result = await session.run(
           `
           MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
+          WHERE coalesce(file.scanStatus, 'PENDING') = 'CLEAN'
           SET file.downloadCountTotal = coalesce(file.downloadCountTotal, 0) + 1
           RETURN count(file) AS updated
           `,
@@ -96,6 +97,11 @@ const trackDownload = ({
         `
         MATCH (user:User {username: $username})
         MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
+        OPTIONAL MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion)
+        WITH user, discussion, file, collect(DISTINCT author.username) AS authorUsernames
+        WHERE coalesce(file.scanStatus, 'PENDING') = 'CLEAN'
+          OR file.uploadedByUsername = $username
+          OR $username IN authorUsernames
         OPTIONAL MATCH (user)-[existingDownload:DOWNLOADED_FILE]->(file)
         MERGE (user)<-[:CREATED_BY]-(downloadsCollection:Collection {
           name: $downloadsCollectionName,
@@ -137,7 +143,7 @@ const trackDownload = ({
       const updated = toNumber(result.records[0]?.get('updated'))
 
       if (updated < 1) {
-        throw new GraphQLError('Downloadable file not found for this discussion')
+        throw new GraphQLError('Downloadable file is unavailable or not found for this discussion')
       }
 
       return true
