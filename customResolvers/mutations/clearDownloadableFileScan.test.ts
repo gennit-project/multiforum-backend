@@ -58,6 +58,15 @@ test("clears a held scan and notifies the discussion author", async () => {
     },
     result: { id: "file-1", scanStatus: "CLEAN" },
   });
+  assert.deepEqual({
+    requestedAt: updates[0].update.reviewRequestedAt,
+    requestReason: updates[0].update.reviewRequestReason,
+    requestedBy: updates[0].update.reviewRequestedByUsername,
+  }, {
+    requestedAt: null,
+    requestReason: null,
+    requestedBy: null,
+  });
 });
 
 test("rejects a file that is already clean", async () => {

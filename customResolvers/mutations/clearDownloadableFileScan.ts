@@ -44,6 +44,9 @@ export const createClearDownloadableFileScanResolver = ({
         scanStatus: "CLEAN",
         scanReason,
         scanCheckedAt,
+        reviewRequestedAt: null,
+        reviewRequestReason: null,
+        reviewRequestedByUsername: null,
       } as DownloadableFileUpdateInput),
     });
 

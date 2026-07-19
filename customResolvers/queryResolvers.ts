@@ -22,6 +22,7 @@ import getPipelineRuns from "./queries/getPipelineRuns.js";
 import publicCollectionsContaining from "./queries/publicCollectionsContaining.js";
 import getOwnEmail from "./queries/getOwnEmail.js";
 import getServerHealthDashboard from "./queries/getServerHealthDashboard.js";
+import getDownloadScanReviewQueue from "./queries/getDownloadScanReviewQueue.js";
 import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
 import getUploadedDownloadableFiles from "./queries/getUploadedDownloadableFiles.js";
 import getImageAlbumUsage from "./queries/getImageAlbumUsage.js";
@@ -136,6 +137,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getServerHealthDashboard: getServerHealthDashboard({
       driver
-    })
+    }),
+    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver })
   };
 }
