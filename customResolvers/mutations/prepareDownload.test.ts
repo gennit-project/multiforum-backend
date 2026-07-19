@@ -95,6 +95,179 @@ test("runs the download scanner before returning a signed read URL", async () =>
   });
 });
 
+test("reuses a recent clean scan without invoking the scanner", async () => {
+  const { input } = buildInput({
+    ...baseFile,
+    scanCheckedAt: "2026-07-19T11:55:00Z",
+  });
+  const calls = { scanned: 0, tracked: 0 };
+  const resolver = createPrepareDownloadResolver(
+    input,
+    (async () => {
+      calls.scanned += 1;
+      return [];
+    }) as any,
+    async () => false,
+    () => ({
+      bucket: () => ({
+        file: () => ({
+          getSignedUrl: async () => ["https://signed.example.com/file.zip"],
+        }),
+      }),
+    }) as any,
+    (async () => {
+      calls.tracked += 1;
+      return true;
+    }) as any,
+    {
+      now: () => new Date("2026-07-19T12:00:00Z"),
+      scanCacheTtlMs: 15 * 60 * 1000,
+    }
+  );
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1", discussionId: "discussion-1" },
+    contextFor("bob")
+  );
+
+  assert.deepEqual({
+    ready: result.ready,
+    scanned: calls.scanned,
+    tracked: calls.tracked,
+  }, {
+    ready: true,
+    scanned: 0,
+    tracked: 1,
+  });
+});
+
+test("rescans an expired clean result", async () => {
+  const { input, updateFile } = buildInput({
+    ...baseFile,
+    storageBucket: null,
+    storageObjectName: null,
+    scanCheckedAt: "2026-07-19T11:44:59Z",
+  });
+  let scanned = 0;
+  const resolver = createPrepareDownloadResolver(
+    input,
+    (async () => {
+      scanned += 1;
+      updateFile({ scanCheckedAt: "2026-07-19T12:00:00Z" });
+      return [{ pluginId: "security-attachment-scan", status: "SUCCEEDED" }];
+    }) as any,
+    async () => false,
+    (() => ({})) as any,
+    (async () => true) as any,
+    {
+      now: () => new Date("2026-07-19T12:00:00Z"),
+      scanCacheTtlMs: 15 * 60 * 1000,
+    }
+  );
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1", discussionId: "discussion-1" },
+    contextFor("bob")
+  );
+
+  assert.equal(result.ready, true);
+  assert.equal(scanned, 1);
+});
+
+test("shares one scan between concurrent download preparations", async () => {
+  const { input, updateFile } = buildInput(baseFile);
+  let releaseScan: (() => void) | undefined;
+  const scanGate = new Promise<void>((resolve) => {
+    releaseScan = resolve;
+  });
+  const calls = { scanned: 0, tracked: 0 };
+  const resolver = createPrepareDownloadResolver(
+    input,
+    (async () => {
+      calls.scanned += 1;
+      await scanGate;
+      updateFile({
+        scanStatus: "CLEAN",
+        scanCheckedAt: "2026-07-19T12:00:00Z",
+      });
+      return [{ pluginId: "security-attachment-scan", status: "SUCCEEDED" }];
+    }) as any,
+    async () => false,
+    () => ({
+      bucket: () => ({
+        file: () => ({
+          getSignedUrl: async () => ["https://signed.example.com/file.zip"],
+        }),
+      }),
+    }) as any,
+    (async () => {
+      calls.tracked += 1;
+      return true;
+    }) as any
+  );
+
+  const first = resolver(
+    null,
+    { downloadableFileId: "file-1", discussionId: "discussion-1" },
+    contextFor("bob")
+  );
+  const second = resolver(
+    null,
+    { downloadableFileId: "file-1", discussionId: "discussion-1" },
+    contextFor("carol")
+  );
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(calls.scanned, 1);
+  releaseScan?.();
+  const results = await Promise.all([first, second]);
+
+  assert.deepEqual(results.map((result) => result.ready), [true, true]);
+  assert.equal(calls.scanned, 1);
+  assert.equal(calls.tracked, 2);
+});
+
+test("clears a failed in-flight scan so a later request can retry", async () => {
+  const { input, updateFile } = buildInput({
+    ...baseFile,
+    storageBucket: null,
+    storageObjectName: null,
+  });
+  let scanned = 0;
+  const resolver = createPrepareDownloadResolver(
+    input,
+    (async () => {
+      scanned += 1;
+      if (scanned === 1) throw new Error("scanner unavailable");
+      updateFile({ scanCheckedAt: "2026-07-19T12:00:00Z" });
+      return [{ pluginId: "security-attachment-scan", status: "SUCCEEDED" }];
+    }) as any,
+    async () => false,
+    (() => ({})) as any,
+    (async () => true) as any
+  );
+
+  await assert.rejects(
+    resolver(
+      null,
+      { downloadableFileId: "file-1", discussionId: "discussion-1" },
+      contextFor("bob")
+    ),
+    /scanner unavailable/
+  );
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1", discussionId: "discussion-1" },
+    contextFor("bob")
+  );
+
+  assert.equal(result.ready, true);
+  assert.equal(scanned, 2);
+});
+
 test("withholds a blocked download and its private scanner reason", async () => {
   const { input, updateFile } = buildInput(baseFile);
   let tracked = false;
