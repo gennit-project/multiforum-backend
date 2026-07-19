@@ -57,7 +57,8 @@ test/E2E environments the seeded admin test user also acts as root.
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `GCS_BUCKET_NAME` | If uploads enabled | Google Cloud Storage bucket for uploaded images/files. |
+| `GCS_BUCKET_NAME` | If media uploads enabled | Google Cloud Storage bucket for publicly rendered image/media uploads. |
+| `GCS_PRIVATE_DOWNLOAD_BUCKET_NAME` | If downloadable-file uploads enabled | Dedicated non-public Google Cloud Storage bucket for downloadable files. Do not grant `allUsers` or `allAuthenticatedUsers` object access; downloads and plugin scans use short-lived signed read URLs. |
 | `GOOGLE_CREDENTIALS_BASE64` | If uploads enabled | Base64-encoded GCP service-account JSON. At startup it is decoded to a file and `GOOGLE_APPLICATION_CREDENTIALS` is pointed at it (convenient for single-value secrets on Heroku). |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Alternative to the above | Filesystem path to a GCP service-account JSON file. Set automatically when `GOOGLE_CREDENTIALS_BASE64` is provided. |
 | `DOWNLOAD_SCAN_CACHE_TTL_MS` | No | How long a clean pre-download security verdict may be reused (default `900000`, or 15 minutes). Set to `0` to scan on every download request. Failed or held verdicts are never reused. |

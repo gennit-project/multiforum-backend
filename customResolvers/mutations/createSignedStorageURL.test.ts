@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { validateFile } from "./createSignedStorageURL.js";
+import {
+  resolveUploadBucketName,
+  validateFile,
+} from "./createSignedStorageURL.js";
 import { ModelStub } from "../../tests/testUtils.js";
 
 const createContext = ({
@@ -72,4 +75,34 @@ test("download upload validation rejects disallowed channel file types", async (
     ),
     /File type 'zip' is not allowed in channel 'cats'/
   );
+});
+
+test("routes downloadable files to the private bucket", () => {
+  const bucketName = resolveUploadBucketName({
+    uploadTarget: "PRIVATE_DOWNLOAD",
+    env: {
+      GCS_BUCKET_NAME: "public-media",
+      GCS_PRIVATE_DOWNLOAD_BUCKET_NAME: "private-downloads",
+    },
+  });
+
+  assert.equal(bucketName, "private-downloads");
+});
+
+test("fails closed when the private download bucket is not configured", () => {
+  assert.throws(
+    () => resolveUploadBucketName({
+      uploadTarget: "PRIVATE_DOWNLOAD",
+      env: { GCS_BUCKET_NAME: "public-media" },
+    }),
+    /GCS_PRIVATE_DOWNLOAD_BUCKET_NAME environment variable not set/
+  );
+});
+
+test("keeps existing upload callers on the public media bucket", () => {
+  const bucketName = resolveUploadBucketName({
+    env: { GCS_BUCKET_NAME: "public-media" },
+  });
+
+  assert.equal(bucketName, "public-media");
 });
