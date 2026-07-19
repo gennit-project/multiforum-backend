@@ -6,11 +6,22 @@ import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { DiscussionModel } from "../../ogm_types.js";
+import type {
+  DiscussionModel,
+  DownloadableFileModel,
+  PluginRunModel,
+  ServerConfigModel,
+  ServerSecretModel,
+} from "../../ogm_types.js";
+import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { logger } from "../../logger.js";
 
 type Input = {
   Discussion: DiscussionModel;
+  DownloadableFile: DownloadableFileModel;
+  PluginRun: PluginRunModel;
+  ServerConfig: ServerConfigModel;
+  ServerSecret: ServerSecretModel;
   driver: Driver;
 };
 
@@ -21,8 +32,30 @@ type Args = {
   channelDisconnections?: string[];
 };
 
-const getResolver = (input: Input) => {
-  const { Discussion, driver } = input;
+export const getConnectedDownloadableFileIds = (
+  updateInput: DiscussionUpdateInput
+): string[] => {
+  const updates = updateInput.DownloadableFiles || [];
+  return updates.flatMap((update) =>
+    (update?.connect || [])
+      .map((connection) => connection?.where?.node?.id)
+      .filter((id): id is string => typeof id === "string" && id.length > 0)
+  );
+};
+
+const getResolver = (
+  input: Input,
+  triggerDownloadRuns: typeof triggerPluginRunsForDownloadableFile =
+    triggerPluginRunsForDownloadableFile
+) => {
+  const {
+    Discussion,
+    DownloadableFile,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+    driver,
+  } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const {
       where,
@@ -95,6 +128,38 @@ const getResolver = (input: Input) => {
         update: sanitizedUpdateInput,
       });
       const updatedDiscussionId = where.id;
+
+      // The edit form uploads replacement files before connecting them to the
+      // discussion. Trigger only newly connected file IDs after Discussion.update
+      // has created that relationship, so the scanner receives discussion and
+      // channel context and the replacement cannot remain PENDING indefinitely.
+      const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
+        sanitizedUpdateInput
+      );
+      for (const downloadableFileId of connectedDownloadableFileIds) {
+        try {
+          await triggerDownloadRuns({
+            downloadableFileId,
+            event: "downloadableFile.updated",
+            models: {
+              DownloadableFile,
+              Plugin: null as any,
+              PluginVersion: null as any,
+              PluginRun,
+              ServerConfig,
+              ServerSecret,
+            },
+          });
+        } catch (triggerError: unknown) {
+          const message = triggerError instanceof Error
+            ? triggerError.message
+            : String(triggerError);
+          logger.error(
+            `downloadableFile.updated plugin trigger error for ${downloadableFileId}:`,
+            message
+          );
+        }
+      }
 
       const session = driver.session();
 
