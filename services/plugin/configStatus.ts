@@ -22,7 +22,7 @@ export type PluginConfigStatus = {
   fields: PluginConfigFieldStatus[]
 }
 
-type ManifestField = {
+export type PluginManifestField = {
   key?: unknown
   label?: unknown
   type?: unknown
@@ -87,7 +87,7 @@ const isMateriallyPresent = (value: unknown): boolean => {
   return true
 }
 
-const validateSetting = (field: ManifestField, value: unknown): string | null => {
+export const validatePluginSetting = (field: PluginManifestField, value: unknown): string | null => {
   const required = field.required === true || field.validation?.required === true
   if (!isMateriallyPresent(value)) {
     return required ? 'Required setting is not set' : null
@@ -160,7 +160,7 @@ export const buildPluginConfigStatus = (params: {
   const formFields = Array.isArray(sections)
     ? sections.flatMap(section => {
         const fields = asRecord(section).fields
-        return Array.isArray(fields) ? fields as ManifestField[] : []
+        return Array.isArray(fields) ? fields as PluginManifestField[] : []
       })
     : []
 
@@ -173,7 +173,7 @@ export const buildPluginConfigStatus = (params: {
     .map(field => {
       const key = String(field.key)
       const value = settings[key]
-      const message = validateSetting(field, value)
+      const message = validatePluginSetting(field, value)
       return {
         key,
         label: typeof field.label === 'string' ? field.label : key,

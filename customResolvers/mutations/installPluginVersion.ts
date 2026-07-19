@@ -14,6 +14,7 @@ import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
 import { downloadBytes, fetchMergedPluginRegistry, type RegistryVersion } from '../../services/plugin/registryService.js'
 import { getPluginVersionCompatibility } from '../../services/plugin/compatibility.js'
+import { reconcileSettings, type SettingsCarryOverReport } from '../../services/plugin/reconcileSettings.js'
 
 type Input = {
   Plugin: PluginModel
@@ -24,6 +25,16 @@ type Input = {
 type Args = {
   pluginId: string
   version: string
+  carrySettings?: boolean
+}
+
+type InstalledVersionEdge = {
+  properties?: { settingsJson?: unknown }
+  node?: {
+    id?: string
+    version?: string
+    Plugin?: { id?: string; name?: string }
+  }
 }
 
 const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
@@ -39,7 +50,7 @@ const getResolver = (input: Input) => {
   const { Plugin, PluginVersion, ServerConfig } = input
 
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
-    const { pluginId, version } = args
+    const { pluginId, version, carrySettings = false } = args
 
     try {
       // 1. Get server config to find registry URLs
@@ -299,18 +310,47 @@ const getResolver = (input: Input) => {
       const installedVersions = await ServerConfig.find({
         where: { serverName: serverConfig.serverName },
         selectionSet: `{
-          InstalledVersions(where: { id: "${pluginVersion.id}" }) {
-            id
-            version
-            Plugin {
-              id
-              name
+          InstalledVersionsConnection {
+            edges {
+              properties {
+                settingsJson
+              }
+              node {
+                id
+                version
+                Plugin {
+                  id
+                  name
+                }
+              }
             }
           }
         }`
       })
 
-      const isAlreadyInstalled = installedVersions[0]?.InstalledVersions?.length > 0
+      const installedEdges = (
+        installedVersions[0]?.InstalledVersionsConnection?.edges || []
+      ) as InstalledVersionEdge[]
+      const isAlreadyInstalled = installedEdges.some(
+        edge => edge.node?.id === pluginVersion.id
+      )
+      const previousVersionEdge = installedEdges.find(
+        edge =>
+          edge.node?.Plugin?.name === pluginSlug &&
+          edge.node?.id !== pluginVersion.id
+      )
+      let reconciledSettings: Record<string, unknown> | null = null
+      let carryOverReport: SettingsCarryOverReport | null = null
+
+      if (carrySettings && previousVersionEdge) {
+        const reconciled = reconcileSettings({
+          oldSettings: previousVersionEdge.properties?.settingsJson,
+          newManifest: artifacts.manifest,
+          scope: 'server'
+        })
+        reconciledSettings = reconciled.settings
+        carryOverReport = reconciled.report
+      }
 
       if (!isAlreadyInstalled) {
         logger.info('Installing plugin version, serverName:', serverConfig.serverName, 'pluginVersion.id:', pluginVersion.id)
@@ -322,7 +362,9 @@ const getResolver = (input: Input) => {
               where: { node: { id: String(pluginVersion.id) } },
               edge: {
                 enabled: false,
-                settingsJson: null
+                settingsJson: reconciledSettings
+                  ? JSON.stringify(reconciledSettings)
+                  : null
               }
             }]
           }
@@ -345,7 +387,8 @@ const getResolver = (input: Input) => {
         version: String(version),
         scope: 'SERVER',
         enabled: false,
-        settingsJson: null
+        settingsJson: reconciledSettings,
+        carryOverReport
       }
 
     } catch (error: unknown) {

@@ -1418,6 +1418,7 @@ const typeDefinitions = gql`
     installPluginVersion(
       pluginId: String!
       version: String!
+      carrySettings: Boolean = false
     ): InstalledPlugin!
     triggerDownloadableFilePluginRuns(
       downloadableFileId: ID!
@@ -1874,6 +1875,7 @@ const typeDefinitions = gql`
     hasUpdate: Boolean
     latestVersion: String
     availableVersions: [String!]
+    carryOverReport: JSON
   }
 
   enum SecretValidationStatus {
