@@ -58,11 +58,21 @@ export const reconcileSettings = (params: {
 
   for (const [key, value] of Object.entries(oldSettings)) {
     const field = fieldsByKey.get(key)
-    if (!field) {
+    const hasDefault = Object.prototype.hasOwnProperty.call(defaults, key)
+    if (!field && !hasDefault) {
       dropped.push(key)
       continue
     }
-    if (validatePluginSetting({ ...field, required: false, validation: { ...field.validation, required: false } }, value)) {
+    const defaultValue = defaults[key]
+    const hasCompatibleDefaultType =
+      defaultValue === null ||
+      (Array.isArray(defaultValue)
+        ? Array.isArray(value)
+        : typeof defaultValue === typeof value)
+    const isInvalid = field
+      ? validatePluginSetting({ ...field, required: false, validation: { ...field.validation, required: false } }, value)
+      : !hasCompatibleDefaultType
+    if (isInvalid) {
       reset.push(key)
       continue
     }

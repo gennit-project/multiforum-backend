@@ -4,7 +4,7 @@ import { reconcileSettings } from './reconcileSettings.js'
 
 const newManifest = {
   settingsDefaults: {
-    server: { endpoint: 'https://default.example', mode: 'safe', retries: 2, added: true }
+    server: { endpoint: 'https://default.example', mode: 'safe', retries: 2, added: true, profiles: [] }
   },
   ui: {
     forms: {
@@ -28,6 +28,7 @@ test('carries compatible values, drops removed keys, and resets invalid values',
       endpoint: 'https://custom.example',
       mode: 'removed-option',
       retries: 4,
+      profiles: [{ id: 'custom' }],
       removed: 'old',
       API_KEY: 'must-never-carry-as-a-setting'
     },
@@ -40,10 +41,11 @@ test('carries compatible values, drops removed keys, and resets invalid values',
       endpoint: 'https://custom.example',
       mode: 'safe',
       retries: 4,
-      added: true
+      added: true,
+      profiles: [{ id: 'custom' }]
     },
     report: {
-      carried: ['endpoint', 'retries'],
+      carried: ['endpoint', 'retries', 'profiles'],
       dropped: ['removed', 'API_KEY'],
       reset: ['mode'],
       newDefaults: ['added']
@@ -62,6 +64,7 @@ test('supports JSON strings from Neo4j properties', () => {
     endpoint: 'https://default.example',
     mode: 'fast',
     retries: 2,
-    added: true
+    added: true,
+    profiles: []
   })
 })
