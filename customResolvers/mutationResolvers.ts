@@ -87,6 +87,7 @@ import updateDownloadableFileSupportSettings from "./mutations/updateDownloadabl
 import createDownloadableFilesWithUploadMetadata from "./mutations/createDownloadableFilesWithUploadMetadata.js";
 import enableServerPlugin from "./mutations/enableServerPlugin.js";
 import setServerPluginSecret from "./mutations/setServerPluginSecret.js";
+import deleteServerPluginSecret from "./mutations/deleteServerPluginSecret.js";
 import updatePluginPipelines from "./mutations/updatePluginPipelines.js";
 import updateChannelPluginPipelines from "./mutations/updateChannelPluginPipelines.js";
 import createImageWithUploader from "./mutations/createImageWithUploader.js";
@@ -556,6 +557,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       ServerSecret
     }),
     setServerPluginSecret: setServerPluginSecret({
+      ServerSecret
+    }),
+    deleteServerPluginSecret: deleteServerPluginSecret({
       ServerSecret
     }),
     updatePluginPipelines: updatePluginPipelines({

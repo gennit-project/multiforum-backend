@@ -1435,6 +1435,7 @@ const typeDefinitions = gql`
       key: String!
       value: String!
     ): Boolean!
+    deleteServerPluginSecret(pluginId: String!, key: String!): Boolean!
     updatePluginPipelines(
       pipelines: [EventPipelineInput!]!
     ): JSON!
