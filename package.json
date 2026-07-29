@@ -29,7 +29,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@apollo/server": "^5.5.1",
     "@as-integrations/express5": "^1.1.2",
