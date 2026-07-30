@@ -151,6 +151,7 @@ const getResolver = ({
     configured: pipelineConfigured,
     applicability: plan.applicability,
     effectiveAt: plan.effectiveAt,
+    policyId: plan.policyId,
     required: plan.required,
     reason: plan.reason,
     expectedJobs: plan.pluginsToRun.map(

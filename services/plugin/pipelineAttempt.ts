@@ -36,6 +36,8 @@ export type PipelineAttemptContext = {
   retryOfPipelineRunId?: string | null
   applicability?: PipelineApplicability | null
   policyEffectiveAt?: string | null
+  policyId?: string | null
+  campaignId?: string | null
   eventPipeline?: EventPipeline | null
   pluginsToRun: PluginToRun[]
 }
@@ -134,6 +136,8 @@ export const createPipelineAttempt = async ({
         configurationSnapshot: buildPipelineConfigurationSnapshot(context),
         applicability: context.applicability || null,
         policyEffectiveAt: context.policyEffectiveAt || null,
+        policyId: context.policyId || null,
+        campaignId: context.campaignId || null,
         queuedAt: queuedTiming.queuedAt,
         timeoutAt: queuedTiming.timeoutAt,
         updatedAt: timestamp,

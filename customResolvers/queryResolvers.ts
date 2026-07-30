@@ -30,6 +30,11 @@ import getApplicablePluginPipeline from './queries/getApplicablePluginPipeline.j
 import getPipelineSummary from './queries/getPluginPipelineSummary.js'
 import getPublicPipelineRun from './queries/getPublicPluginPipelineRun.js'
 import getInternalPluginPipelineRun from './queries/getInternalPluginPipelineRun.js'
+import {
+  getPluginPipelineCampaigns,
+  getPluginPipelineCampaignFailures,
+  previewPluginPipelineCampaign,
+} from './queries/pluginPipelineCampaigns.js'
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -47,6 +52,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     ServerConfig,
     ServerSecret,
     PluginPipelineRun,
+    PluginPipelineCampaign,
     PluginRun,
     DownloadableFile,
     Email,
@@ -148,6 +154,17 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getInternalPluginPipelineRun: getInternalPluginPipelineRun({
       PluginPipelineRun,
       PluginRun,
+    }),
+    previewPluginPipelineCampaign: previewPluginPipelineCampaign({
+      DownloadableFile,
+      ServerConfig,
+    }),
+    getPluginPipelineCampaigns: getPluginPipelineCampaigns({
+      PluginPipelineCampaign,
+    }),
+    getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
+      DownloadableFile,
+      PluginPipelineRun,
     }),
     publicCollectionsContaining: publicCollectionsContaining({
       driver,

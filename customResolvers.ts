@@ -27,6 +27,19 @@ export default function (driver: Driver) {
     pipelineWatchdogModels: {
       PluginRun: deps.PluginRun,
       PluginPipelineRun: deps.PluginPipelineRun,
+      DownloadableFile: deps.DownloadableFile,
+      User: deps.User,
+    },
+    pipelineCampaignModels: {
+      DownloadableFile: deps.DownloadableFile,
+      Plugin: deps.Plugin,
+      PluginVersion: deps.PluginVersion,
+      PluginPipelineRun: deps.PluginPipelineRun,
+      PluginRun: deps.PluginRun,
+      PluginPipelineCampaign: deps.PluginPipelineCampaign,
+      ServerConfig: deps.ServerConfig,
+      ServerSecret: deps.ServerSecret,
+      User: deps.User,
     },
   };
 }

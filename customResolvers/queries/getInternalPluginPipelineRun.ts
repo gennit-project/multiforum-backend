@@ -16,7 +16,7 @@ const getResolver = ({
     selectionSet: `{
       id pipelineId targetId targetType eventType scope channelId status trigger
       initiatedByUsername retryOfPipelineRunId attemptNumber
-      configurationSnapshot applicability policyEffectiveAt queuedAt startedAt
+      configurationSnapshot applicability policyEffectiveAt policyId campaignId queuedAt startedAt
       heartbeatAt timeoutAt finishedAt createdAt updatedAt
     }`,
   })

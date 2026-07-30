@@ -41,6 +41,7 @@ export function createOgmAndModels(driver: Driver) {
     Plugin: ogm.model("Plugin"),
     PluginVersion: ogm.model("PluginVersion"),
     PluginPipelineRun: ogm.model("PluginPipelineRun"),
+    PluginPipelineCampaign: ogm.model("PluginPipelineCampaign"),
     PluginRun: ogm.model("PluginRun"),
     DownloadableFile: ogm.model("DownloadableFile"),
     ServerSecret: ogm.model("ServerSecret"),

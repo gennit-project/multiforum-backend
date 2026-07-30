@@ -8,6 +8,7 @@ import type {
   IssueModel,
   PluginModel,
   PluginPipelineRunModel,
+  PluginPipelineCampaignModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
@@ -19,12 +20,14 @@ import type { PluginPipelineRunTrigger } from '../../ogm_types.js'
 // Base Models type for server-scoped triggers
 export type Models = {
   DownloadableFile: DownloadableFileModel
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
+  Plugin?: PluginModel
+  PluginVersion?: PluginVersionModel
   PluginPipelineRun: PluginPipelineRunModel
   PluginRun: PluginRunModel
   ServerConfig: ServerConfigModel
   ServerSecret: ServerSecretModel
+  User?: UserModel
+  PluginPipelineCampaign?: PluginPipelineCampaignModel
 }
 
 // Pipeline step configuration
@@ -42,6 +45,7 @@ export type EventPipeline = {
   stopOnFirstFailure?: boolean
   effectiveAt?: string
   applicability?: PipelineApplicability
+  policyId?: string
 }
 
 export type PipelineApplicability =
@@ -86,6 +90,8 @@ export type PipelineExecutionMetadata = {
   trigger?: PluginPipelineRunTrigger
   initiatedByUsername?: string | null
   retryOfPipelineRunId?: string | null
+  policyId?: string | null
+  campaignId?: string | null
 }
 
 // Arguments for comment trigger

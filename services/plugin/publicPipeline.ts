@@ -15,6 +15,8 @@ type PipelineAttemptRecord = {
   attemptNumber: number
   applicability?: string | null
   policyEffectiveAt?: string | null
+  policyId?: string | null
+  campaignId?: string | null
   queuedAt?: string | null
   startedAt?: string | null
   heartbeatAt?: string | null
@@ -115,6 +117,8 @@ export const toPublicPipelineRun = ({
   attemptNumber: attempt.attemptNumber,
   applicability: attempt.applicability || null,
   policyEffectiveAt: attempt.policyEffectiveAt || null,
+  policyId: attempt.policyId || null,
+  campaignId: attempt.campaignId || null,
   queuedAt: attempt.queuedAt || attempt.createdAt,
   startedAt: attempt.startedAt || null,
   heartbeatAt: attempt.heartbeatAt || null,
@@ -134,7 +138,7 @@ export const toPublicPipelineRun = ({
 export const PUBLIC_PIPELINE_ATTEMPT_SELECTION = `{
   id pipelineId targetId targetType eventType scope channelId status trigger
   initiatedByUsername retryOfPipelineRunId attemptNumber applicability
-  policyEffectiveAt queuedAt startedAt heartbeatAt timeoutAt finishedAt
+  policyEffectiveAt policyId campaignId queuedAt startedAt heartbeatAt timeoutAt finishedAt
   createdAt updatedAt
 }`
 

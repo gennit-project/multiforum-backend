@@ -18,7 +18,7 @@ export type RetryDownloadableFileScanInput = Pick<
   | "PluginRun"
   | "ServerConfig"
   | "ServerSecret"
->;
+> & Partial<Pick<ModelMap, "User">>;
 
 type FileRecord = {
   uploadedByUsername?: string | null;

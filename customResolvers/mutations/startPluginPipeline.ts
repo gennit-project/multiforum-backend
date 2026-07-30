@@ -33,7 +33,7 @@ export type StartPluginPipelineInput = Pick<
   | "PluginRun"
   | "ServerConfig"
   | "ServerSecret"
->;
+> & Partial<Pick<ModelMap, "User">>;
 
 type StartPluginPipelineArgs = {
   targetId: string;
@@ -289,7 +289,7 @@ export const createStartPluginPipelineResolver = (
       selectionSet: `{
         pipelineId targetId targetType targetVersion eventType scope channelId status trigger
         initiatedByUsername retryOfPipelineRunId attemptNumber
-        configurationSnapshot applicability policyEffectiveAt
+        configurationSnapshot applicability policyEffectiveAt policyId campaignId
         queuedAt startedAt heartbeatAt timeoutAt finishedAt createdAt updatedAt
       }`,
     });

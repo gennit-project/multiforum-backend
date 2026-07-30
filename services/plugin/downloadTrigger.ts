@@ -38,6 +38,7 @@ import {
 import { createDownloadReadUrl } from '../downloadStorage.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, DownloadableFileUpdateInput, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
+import { notifyUploaderOfPipelineResult } from "./pipelineNotifications.js";
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -69,6 +70,7 @@ export const triggerPluginRunsForDownloadableFile = async (
     PluginRun,
     ServerConfig,
     ServerSecret,
+    User,
   } = models
 
   const files = await DownloadableFile.find({
@@ -184,6 +186,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       channelId,
       applicability: plan.applicability,
       policyEffectiveAt: plan.effectiveAt,
+      policyId: execution?.policyId || plan.policyId,
+      campaignId: execution?.campaignId,
       eventPipeline,
       pluginsToRun,
       trigger: execution?.trigger,
@@ -573,6 +577,12 @@ export const triggerPluginRunsForDownloadableFile = async (
     PluginPipelineRun,
     pipelineId,
     statuses: jobStatuses,
+  })
+  await notifyUploaderOfPipelineResult({
+    DownloadableFile,
+    PluginPipelineRun,
+    User,
+    pipelineId,
   })
 
   return runs

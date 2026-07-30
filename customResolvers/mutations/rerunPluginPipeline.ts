@@ -40,7 +40,7 @@ export type RerunPluginPipelineInput = Pick<
   | "PluginRun"
   | "ServerConfig"
   | "ServerSecret"
->;
+> & Partial<Pick<ModelMap, "User">>;
 
 type AttemptRecord = Pick<
   PluginPipelineRun,

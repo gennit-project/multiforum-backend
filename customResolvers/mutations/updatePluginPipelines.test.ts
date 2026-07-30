@@ -186,8 +186,10 @@ async function testDownloadPipelineDefaultsToNewFilesOnly() {
     event: 'downloadableFile.created',
     steps: [{ pluginId: 'test-plugin' }],
     applicability: 'NEW_FILES_ONLY',
-    effectiveAt
+    effectiveAt,
+    policyId: result[0]?.policyId,
   });
+  assert.match(result[0]?.policyId || '', /^[0-9a-f-]{36}$/);
 }
 
 async function testExistingRolloutPolicyIsPreserved() {

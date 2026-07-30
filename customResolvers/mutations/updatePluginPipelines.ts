@@ -1,4 +1,5 @@
 import type { ServerConfigModel } from '../../ogm_types.js'
+import { randomUUID } from 'node:crypto'
 
 type Input = {
   ServerConfig: ServerConfigModel
@@ -17,6 +18,7 @@ export type EventPipelineInput = {
   stopOnFirstFailure?: boolean
   effectiveAt?: string
   applicability?: 'NEW_FILES_ONLY' | 'ALL_FILES_GRADUAL' | 'ALL_FILES_IMMEDIATE'
+  policyId?: string
 }
 
 type Args = {
@@ -33,6 +35,7 @@ export const normalizePipelinesForStorage = (
       ...pipeline,
       applicability: pipeline.applicability || 'NEW_FILES_ONLY',
       effectiveAt: pipeline.effectiveAt || effectiveAt,
+      policyId: pipeline.policyId || randomUUID(),
     }
   })
 

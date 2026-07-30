@@ -15,6 +15,7 @@ export type DownloadPipelinePlan = {
   event: string
   applicability: PipelineApplicability
   effectiveAt: string | null
+  policyId: string | null
   required: boolean
   reason: 'APPLICABLE' | 'UPLOADED_BEFORE_POLICY' | 'NO_APPLICABLE_PLUGINS'
   eventPipeline: EventPipeline | null
@@ -144,6 +145,7 @@ export const resolveDownloadPipelinePlan = ({
       event,
       applicability,
       effectiveAt,
+      policyId: eventPipeline?.policyId || null,
       required: false,
       reason: 'UPLOADED_BEFORE_POLICY',
       eventPipeline,
@@ -155,10 +157,10 @@ export const resolveDownloadPipelinePlan = ({
     event,
     applicability,
     effectiveAt,
+    policyId: eventPipeline?.policyId || null,
     required: pluginsToRun.length > 0,
     reason: pluginsToRun.length > 0 ? 'APPLICABLE' : 'NO_APPLICABLE_PLUGINS',
     eventPipeline,
     pluginsToRun,
   }
 }
-

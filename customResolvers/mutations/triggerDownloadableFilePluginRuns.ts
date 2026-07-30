@@ -5,7 +5,8 @@ import type {
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
-  ServerSecretModel
+  ServerSecretModel,
+  UserModel,
 } from '../../ogm_types.js'
 import { triggerPluginRunsForDownloadableFile, isSupportedEvent } from '../../services/pluginRunner.js'
 import type { GraphQLResolveInfo } from 'graphql'
@@ -19,6 +20,7 @@ type Input = {
   PluginRun: PluginRunModel
   ServerConfig: ServerConfigModel
   ServerSecret: ServerSecretModel
+  User?: UserModel
 }
 
 type Args = {
@@ -35,6 +37,7 @@ const getResolver = (input: Input) => {
     PluginRun,
     ServerConfig,
     ServerSecret,
+    User,
   } = input
 
   return async (
@@ -59,7 +62,8 @@ const getResolver = (input: Input) => {
         PluginPipelineRun,
         PluginRun,
         ServerConfig,
-        ServerSecret
+        ServerSecret,
+        User,
       }
     })
 

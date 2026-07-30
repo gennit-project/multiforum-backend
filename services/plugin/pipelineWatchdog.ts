@@ -14,6 +14,8 @@ import {
   type PipelineJobStatus,
 } from "./pipelineAttempt.js";
 import { pluginJobLeaseDurationMs } from "./executionLease.js";
+import type { DownloadableFileModel, UserModel } from "../../ogm_types.js";
+import { notifyUploaderOfPipelineResult } from "./pipelineNotifications.js";
 
 const DEFAULT_WATCHDOG_INTERVAL_MS = 60_000;
 const ACTIVE_JOB_STATUSES: string[] = [
@@ -65,11 +67,15 @@ const asPipelineJobStatus = (status: string): PipelineJobStatus =>
 export const recoverExpiredPluginJobs = async ({
   PluginRun,
   PluginPipelineRun,
+  DownloadableFile,
+  User,
   now = new Date(),
   leaseDurationMs = pluginJobLeaseDurationMs(),
 }: {
   PluginRun: PluginRunModel;
   PluginPipelineRun: PluginPipelineRunModel;
+  DownloadableFile?: DownloadableFileModel;
+  User?: UserModel;
   now?: Date;
   leaseDurationMs?: number;
 }) => {
@@ -157,6 +163,15 @@ export const recoverExpiredPluginJobs = async ({
     });
     if (status === PluginPipelineRunStatus.TimedOut) {
       attemptsTimedOut += 1;
+      if (DownloadableFile) {
+        await notifyUploaderOfPipelineResult({
+          DownloadableFile,
+          PluginPipelineRun,
+          User,
+          pipelineId,
+          now: () => timestamp,
+        });
+      }
     }
   }
 
@@ -174,6 +189,8 @@ export class PluginPipelineWatchdogService {
     private readonly models: {
       PluginRun: PluginRunModel;
       PluginPipelineRun: PluginPipelineRunModel;
+      DownloadableFile?: DownloadableFileModel;
+      User?: UserModel;
     },
     private readonly intervalMs = pluginPipelineWatchdogIntervalMs()
   ) {}

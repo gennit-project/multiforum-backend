@@ -16,6 +16,7 @@ import type {
   PluginRunModel,
   ServerConfigModel,
   ServerSecretModel,
+  UserModel,
 } from "../../ogm_types.js";
 
 type DiscussionCreateInputWithChannels = {
@@ -37,6 +38,7 @@ type Input = {
   PluginRun?: PluginRunModel;
   ServerConfig?: ServerConfigModel;
   ServerSecret?: ServerSecretModel;
+  User?: UserModel;
 };
 
 // The reason why we cannot use the auto-generated resolver
@@ -107,6 +109,7 @@ export const createDiscussionsFromInput = async (
     PluginRun: PluginRunModel;
     ServerConfig: ServerConfigModel;
     ServerSecret: ServerSecretModel;
+    User?: UserModel;
   }
 ): Promise<unknown[]> => {
   if (!input || input.length === 0) {
@@ -244,12 +247,11 @@ export const createDiscussionsFromInput = async (
               event: "downloadableFile.created",
               models: {
                 DownloadableFile: pluginModels.DownloadableFile,
-                Plugin: null as any, // Not used by the download trigger
-                PluginVersion: null as any, // Not used by the download trigger
                 PluginPipelineRun: pluginModels.PluginPipelineRun,
                 PluginRun: pluginModels.PluginRun,
                 ServerConfig: pluginModels.ServerConfig,
                 ServerSecret: pluginModels.ServerSecret,
+                User: pluginModels.User,
               },
             });
           }
@@ -297,11 +299,12 @@ const getResolver = (input: Input) => {
     PluginRun,
     ServerConfig,
     ServerSecret,
+    User,
   } = input;
 
   // Build plugin models object if all required models are provided
   const pluginModels = Channel && DownloadableFile && PluginPipelineRun && PluginRun && ServerConfig && ServerSecret
-    ? { Channel, DownloadableFile, PluginPipelineRun, PluginRun, ServerConfig, ServerSecret }
+    ? { Channel, DownloadableFile, PluginPipelineRun, PluginRun, ServerConfig, ServerSecret, User }
     : undefined;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
