@@ -4,12 +4,27 @@
 // calls captured to assert status transitions. No database or network.
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { ModelMap } from "../../ogm_types.js";
+import { PluginPipelineRunTrigger } from "../../ogm_types.js";
+import { modelStub } from "../../tests/fixtures/modelStub.js";
+import type {
+  PluginConstructor,
+  PluginRunResult,
+} from "./pluginLoader.js";
 import { triggerChannelPluginPipeline } from "./channelTrigger.js";
 
-const EVENT = "discussionChannel.created";
+type TriggerArgs = Parameters<typeof triggerChannelPluginPipeline>[0];
+type TriggerOptions = NonNullable<
+  Parameters<typeof triggerChannelPluginPipeline>[1]
+>;
+type Models = TriggerArgs["models"];
+type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
+type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
+type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
+type AttemptCreateArgs =
+  Parameters<ModelMap["PluginPipelineRun"]["create"]>[0];
 
-const model = (rows: unknown[]) => ({ find: async () => rows });
-const empty = () => model([]);
+const EVENT = "discussionChannel.created";
 
 const installedEdge = (name: string) => ({
   properties: { enabled: true, settingsJson: null },
@@ -34,9 +49,9 @@ const discussionWithFile = {
 };
 
 function makeExecModels(steps: unknown[], edges: unknown[]) {
-  const updates: any[] = [];
-  const creates: any[] = [];
-  const attemptCreates: any[] = [];
+  const updates: RunUpdateArgs[] = [];
+  const creates: RunCreateArgs[] = [];
+  const attemptCreates: AttemptCreateArgs[] = [];
   let seq = 0;
   const channel = {
     uniqueName: "cats",
@@ -49,53 +64,58 @@ function makeExecModels(steps: unknown[], edges: unknown[]) {
     EnabledPluginsConnection: { edges: [] },
   };
   const serverConfig = { serverName: "s", InstalledVersionsConnection: { edges } };
-  const PluginRun = {
-    create: async (args: any) => {
+  const PluginRun = modelStub<"PluginRun">({
+    create: async args => {
       creates.push(args);
       seq += 1;
       return { pluginRuns: [{ id: `run-${seq}` }] };
     },
-    update: async (args: any) => {
+    update: async args => {
       updates.push(args);
       return {};
     },
-    find: async (args: any) => [{ id: args?.where?.id ?? "run-1" }],
-  };
-  const PluginPipelineRun = {
+    find: async ({ where } = {}) => [{ id: where?.id ?? "run-1" }],
+  });
+  const PluginPipelineRun = modelStub<"PluginPipelineRun">({
     find: async () => [],
-    create: async (args: any) => {
+    create: async args => {
       attemptCreates.push(args);
       return {
         pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
       };
     },
     update: async () => ({}),
-  };
-  const models: any = {
-    Channel: model([channel]),
-    Discussion: model([discussionWithFile]),
-    ServerConfig: model([serverConfig]),
-    ServerSecret: empty(),
-    DownloadableFile: empty(),
+  });
+  const models = {
+    Channel: modelStub<"Channel">({ find: async () => [channel] }),
+    Discussion: modelStub<"Discussion">({
+      find: async () => [discussionWithFile],
+    }),
+    ServerConfig: modelStub<"ServerConfig">({
+      find: async () => [serverConfig],
+    }),
+    ServerSecret: modelStub<"ServerSecret">(),
+    DownloadableFile: modelStub<"DownloadableFile">(),
     PluginPipelineRun,
     PluginRun,
-    Plugin: empty(),
-    PluginVersion: empty(),
-  };
+    Plugin: modelStub<"Plugin">(),
+    PluginVersion: modelStub<"PluginVersion">(),
+  } satisfies Models;
   return { models, updates, creates, attemptCreates };
 }
 
-const pluginReturning = (result: unknown) =>
+const pluginReturning = (result: PluginRunResult): PluginConstructor =>
   class {
-    constructor(public ctx: unknown) {}
+    constructor(..._args: unknown[]) {}
     async handleEvent() {
       return result;
     }
   };
-const loaderFor = (cls: unknown) => (async () => cls) as any;
-const statusesOf = (updates: any[]) => updates.map((u) => u.update.status);
+const loaderFor = (cls: PluginConstructor): LoadPlugin => async () => cls;
+const statusesOf = (updates: RunUpdateArgs[]) =>
+  updates.map(update => update.update?.status);
 
-const execRun = (models: any, loadPlugin: any) =>
+const execRun = (models: Models, loadPlugin: LoadPlugin) =>
   triggerChannelPluginPipeline(
     { discussionId: "d-1", channelUniqueName: "cats", event: EVENT, models },
     { loadPlugin }
@@ -144,7 +164,7 @@ test("records channel manual-start metadata supplied by the caller", async () =>
       ),
       execution: {
         pipelineId: "manual-channel-pipeline",
-        trigger: "MODERATOR_START" as any,
+        trigger: PluginPipelineRunTrigger.ModeratorStart,
         initiatedByUsername: "moderator",
         retryOfPipelineRunId: "previous-channel-pipeline",
       },
@@ -176,11 +196,11 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
     [installedEdge("a"), installedEdge("b")]
   );
   let n = 0;
-  const loader = (async () => {
+  const loader: LoadPlugin = async () => {
     n += 1;
     if (n === 1) throw new Error("load boom");
     return pluginReturning({ success: true });
-  }) as any;
+  };
   await execRun(models, loader);
 
   const statuses = statusesOf(updates);

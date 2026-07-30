@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { modelStub } from '../../tests/fixtures/modelStub.js'
 import { assertPublicPipelineTargetVisible } from './pluginPipelineVisibility.js'
-
-const model = (rows: unknown[]) => ({
-  find: async () => rows,
-})
 
 test('allows a download attached to a visible discussion channel', async () => {
   const result = await assertPublicPipelineTargetVisible({
-    DownloadableFile: model([
+    DownloadableFile: modelStub<'DownloadableFile'>({
+      find: async () => [
       {
         id: 'file-1',
         permanentlyRemoved: false,
@@ -17,7 +15,8 @@ test('allows a download attached to a visible discussion channel', async () => {
           DiscussionChannels: [{ archived: false }],
         },
       },
-    ]) as any,
+      ],
+    }),
     targetId: 'file-1',
     targetType: 'DownloadableFile',
   })
@@ -27,15 +26,19 @@ test('allows a download attached to a visible discussion channel', async () => {
 
 test('allows channel-scoped history for a public download discussion', async () => {
   const result = await assertPublicPipelineTargetVisible({
-    Discussion: model([
+    Discussion: modelStub<'Discussion'>({
+      find: async () => [
       {
         id: 'discussion-1',
         deleted: false,
         DownloadableFiles: [{ permanentlyRemoved: false }],
         DiscussionChannels: [{ archived: false }],
       },
-    ]) as any,
-    DownloadableFile: model([]) as any,
+      ],
+    }),
+    DownloadableFile: modelStub<'DownloadableFile'>({
+      find: async () => [],
+    }),
     targetId: 'discussion-1',
     targetType: 'Discussion',
   })
@@ -62,7 +65,9 @@ test('hides removed, deleted, archived, missing, and unsupported targets', async
   const outcomes = await Promise.all(
     hiddenRows.map(rows =>
       assertPublicPipelineTargetVisible({
-        DownloadableFile: model(rows) as any,
+        DownloadableFile: modelStub<'DownloadableFile'>({
+          find: async () => rows,
+        }),
         targetId: 'file-1',
         targetType: 'DownloadableFile',
       }).then(
@@ -73,15 +78,19 @@ test('hides removed, deleted, archived, missing, and unsupported targets', async
   )
   outcomes.push(
     await assertPublicPipelineTargetVisible({
-      Discussion: model([
+      Discussion: modelStub<'Discussion'>({
+        find: async () => [
         {
           id: 'discussion-1',
           deleted: false,
           DownloadableFiles: [{ permanentlyRemoved: true }],
           DiscussionChannels: [{ archived: false }],
         },
-      ]) as any,
-      DownloadableFile: model([]) as any,
+        ],
+      }),
+      DownloadableFile: modelStub<'DownloadableFile'>({
+        find: async () => [],
+      }),
       targetId: 'discussion-1',
       targetType: 'Discussion',
     }).then(

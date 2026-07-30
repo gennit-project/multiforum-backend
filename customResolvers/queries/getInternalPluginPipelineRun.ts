@@ -2,6 +2,7 @@ import type {
   PluginPipelineRunModel,
   PluginRunModel,
 } from '../../ogm_types.js'
+import { SortDirection } from '../../ogm_types.js'
 
 const getResolver = ({
   PluginPipelineRun,
@@ -24,7 +25,7 @@ const getResolver = ({
 
   const jobs = await PluginRun.find({
     where: { pipelineId: attempt.pipelineId },
-    options: { sort: [{ executionOrder: 'ASC' }] } as any,
+    options: { sort: [{ executionOrder: SortDirection.Asc }] },
     selectionSet: `{
       id pluginId pluginName version scope channelId eventType status message
       durationMs targetId targetType payload publicDiagnostics pipelineId

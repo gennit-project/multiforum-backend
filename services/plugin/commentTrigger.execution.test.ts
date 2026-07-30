@@ -6,12 +6,25 @@
 // No database or network.
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { ModelMap } from "../../ogm_types.js";
+import { modelStub } from "../../tests/fixtures/modelStub.js";
+import type {
+  PluginConstructor,
+  PluginRunResult,
+} from "./pluginLoader.js";
+import type { Driver } from "neo4j-driver";
 import { triggerPluginRunsForComment } from "./commentTrigger.js";
 
-const EVENT = "comment.created";
+type TriggerArgs = Parameters<typeof triggerPluginRunsForComment>[0];
+type TriggerOptions = NonNullable<
+  Parameters<typeof triggerPluginRunsForComment>[1]
+>;
+type Models = TriggerArgs["models"];
+type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
+type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
+type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
 
-const model = (rows: unknown[]) => ({ find: async () => rows });
-const empty = () => model([]);
+const EVENT = "comment.created";
 
 const discussionComment = () => ({
   id: "comment-1",
@@ -52,8 +65,8 @@ const installedEdge = (name: string, manifestEvents: string[] = [EVENT]) => ({
 // channel-level settings, and a server config whose installed plugins are the
 // given edges (no pipeline -> fallback runs all enabled plugins for the event).
 function makeExecModels(edges: unknown[]) {
-  const updates: any[] = [];
-  const creates: any[] = [];
+  const updates: RunUpdateArgs[] = [];
+  const creates: RunCreateArgs[] = [];
   let seq = 0;
   const channel = {
     uniqueName: "cats",
@@ -68,64 +81,74 @@ function makeExecModels(edges: unknown[]) {
     pluginPipelines: null,
     InstalledVersionsConnection: { edges },
   };
-  const PluginRun = {
-    create: async (args: any) => {
+  const PluginRun = modelStub<"PluginRun">({
+    create: async args => {
       creates.push(args);
       seq += 1;
       return { pluginRuns: [{ id: `run-${seq}` }] };
     },
-    update: async (args: any) => {
+    update: async args => {
       updates.push(args);
       return {};
     },
-    find: async (args: any) => [{ id: args?.where?.id ?? "run-1" }],
-  };
-  const PluginPipelineRun = {
+    find: async ({ where } = {}) => [{ id: where?.id ?? "run-1" }],
+  });
+  const PluginPipelineRun = modelStub<"PluginPipelineRun">({
     find: async () => [],
-    create: async (args: any) => ({
+    create: async args => ({
       pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
     }),
     update: async () => ({}),
-  };
-  const models: any = {
-    Comment: model([discussionComment()]),
-    Channel: model([channel]),
-    ServerConfig: model([serverConfig]),
-    ServerSecret: empty(),
+  });
+  const models = {
+    Comment: modelStub<"Comment">({
+      find: async () => [discussionComment()],
+    }),
+    Channel: modelStub<"Channel">({ find: async () => [channel] }),
+    ServerConfig: modelStub<"ServerConfig">({
+      find: async () => [serverConfig],
+    }),
+    ServerSecret: modelStub<"ServerSecret">(),
     PluginPipelineRun,
     PluginRun,
-    Discussion: empty(),
-    Event: empty(),
-    Issue: empty(),
-    User: empty(),
-  };
+    Discussion: modelStub<"Discussion">(),
+    Event: modelStub<"Event">(),
+    Issue: modelStub<"Issue">(),
+    User: modelStub<"User">(),
+  } satisfies Models;
   return { models, updates, creates };
 }
 
 // A fake plugin class whose handleEvent returns/throws as configured.
-const pluginReturning = (result: unknown) =>
+const pluginReturning = (result: PluginRunResult): PluginConstructor =>
   class {
-    constructor(public ctx: unknown) {}
+    constructor(..._args: unknown[]) {}
     async handleEvent() {
       return result;
     }
   };
-const pluginThrowing = (message: string) =>
+const pluginThrowing = (message: string): PluginConstructor =>
   class {
-    constructor(public ctx: unknown) {}
+    constructor(..._args: unknown[]) {}
     async handleEvent(): Promise<never> {
       throw new Error(message);
     }
   };
-const loaderFor = (cls: unknown) => (async () => cls) as any;
+const loaderFor = (cls: PluginConstructor): LoadPlugin => async () => cls;
 
-const execRun = (models: any, loadPlugin: any) =>
+const execRun = (models: Models, loadPlugin: LoadPlugin) =>
   triggerPluginRunsForComment(
-    { commentId: "comment-1", event: EVENT, models, driver: {} as any },
+    {
+      commentId: "comment-1",
+      event: EVENT,
+      models,
+      driver: {} as Driver,
+    },
     { loadPlugin }
   );
 
-const statusesOf = (updates: any[]) => updates.map((u) => u.update.status);
+const statusesOf = (updates: RunUpdateArgs[]) =>
+  updates.map(update => update.update?.status);
 
 test("runs a matching plugin to SUCCEEDED", async () => {
   const { models, updates, creates } = makeExecModels([installedEdge("mybot")]);
@@ -149,16 +172,16 @@ test("marks the run FAILED when the plugin reports failure", async () => {
 test("marks the run FAILED when the plugin throws", async () => {
   const { models, updates } = makeExecModels([installedEdge("mybot")]);
   await execRun(models, loaderFor(pluginThrowing("handle boom")));
-  const failed = updates.find((u) => u.update.status === "FAILED");
+  const failed = updates.find(update => update.update?.status === "FAILED");
   assert.ok(failed);
-  assert.match(failed.update.message, /handle boom/);
+  assert.match(String(failed.update?.message), /handle boom/);
 });
 
 test("marks the run FAILED when the plugin fails to load", async () => {
   const { models, updates } = makeExecModels([installedEdge("mybot")]);
-  const badLoader = (async () => {
+  const badLoader: LoadPlugin = async () => {
     throw new Error("load boom");
-  }) as any;
+  };
   await execRun(models, badLoader);
   assert.ok(statusesOf(updates).includes("FAILED"));
 });
@@ -166,16 +189,16 @@ test("marks the run FAILED when the plugin fails to load", async () => {
 test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   const { models, updates } = makeExecModels([installedEdge("a"), installedEdge("b")]);
   let n = 0;
-  const loader = (async () => {
+  const loader: LoadPlugin = async () => {
     n += 1;
     if (n === 1) throw new Error("load boom"); // first plugin fails to load
     return pluginReturning({ success: true }); // second would succeed, but is skipped
-  }) as any;
+  };
   await execRun(models, loader);
 
   const statuses = statusesOf(updates);
   assert.ok(statuses.includes("FAILED"), "first plugin FAILED");
-  const skipped = updates.find((u) => u.update.status === "SKIPPED");
+  const skipped = updates.find(update => update.update?.status === "SKIPPED");
   assert.ok(skipped, "second plugin SKIPPED");
-  assert.match(skipped.update.skippedReason, /Pipeline stopped/);
+  assert.match(String(skipped.update?.skippedReason), /Pipeline stopped/);
 });

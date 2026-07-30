@@ -4,6 +4,7 @@ import type {
   PluginPipelineRunModel,
   PluginRunModel,
 } from '../../ogm_types.js'
+import { SortDirection } from '../../ogm_types.js'
 import {
   PUBLIC_PIPELINE_ATTEMPT_SELECTION,
   PUBLIC_PLUGIN_JOB_SELECTION,
@@ -37,13 +38,13 @@ const getResolver = ({
   })
   const jobs = await PluginRun.find({
     where: { pipelineId: attempt.pipelineId },
-    options: { sort: [{ executionOrder: 'ASC' }] } as any,
+    options: { sort: [{ executionOrder: SortDirection.Asc }] },
     selectionSet: PUBLIC_PLUGIN_JOB_SELECTION,
   })
 
   return toPublicPipelineRun({
-    attempt: attempt as any,
-    jobs: jobs as any,
+    attempt,
+    jobs,
   })
 }
 

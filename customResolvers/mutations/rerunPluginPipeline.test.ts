@@ -1,9 +1,28 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { PluginPipelineRun } from "../../ogm_types.js";
+import {
+  PluginPipelineRunStatus,
+  PluginPipelineRunTrigger,
+} from "../../ogm_types.js";
+import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
+import { modelStub } from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { createRerunPluginPipelineResolver } from "./rerunPluginPipeline.js";
+import {
+  createRerunPluginPipelineResolver,
+  type RerunPluginPipelineInput,
+} from "./rerunPluginPipeline.js";
 
-const EVENT = "downloadableFile.created";
+type DownloadTrigger = NonNullable<
+  Parameters<typeof createRerunPluginPipelineResolver>[2]
+>;
+type ChannelTrigger = NonNullable<
+  Parameters<typeof createRerunPluginPipelineResolver>[3]
+>;
+type DownloadTriggerOptions = NonNullable<Parameters<DownloadTrigger>[1]>;
+type ChannelTriggerOptions = NonNullable<Parameters<ChannelTrigger>[1]>;
+
+const EVENT = PLUGIN_EVENTS.DOWNLOADABLE_FILE_CREATED;
 const NOW = Date.parse("2026-07-30T12:00:00.000Z");
 
 const installedEdge = {
@@ -38,28 +57,76 @@ const config = {
   InstalledVersionsConnection: { edges: [installedEdge] },
 };
 
-const sourceAttempt = {
+type AttemptRecord = Pick<
+  PluginPipelineRun,
+  | "pipelineId"
+  | "targetId"
+  | "targetType"
+  | "targetVersion"
+  | "eventType"
+  | "scope"
+  | "channelId"
+  | "status"
+  | "trigger"
+  | "createdAt"
+>;
+
+const sourceAttempt: AttemptRecord = {
   pipelineId: "source-pipeline",
   targetId: "file-1",
   targetType: "DownloadableFile",
   eventType: EVENT,
   scope: "SERVER",
   channelId: null,
-  status: "FAILED",
-  trigger: "EVENT",
+  status: PluginPipelineRunStatus.Failed,
+  trigger: PluginPipelineRunTrigger.Event,
   createdAt: "2026-07-30T11:50:00.000Z",
 };
 
 const contextFor = (username: string) =>
   ({ user: { username } }) as GraphQLContext;
 
+type DiscussionFixture = {
+  id: string;
+  Author: { username: string };
+  DownloadableFile: {
+    uploadedAt: string;
+    uploadedByUsername: string;
+  };
+  DiscussionChannels: Array<{
+    channelUniqueName: string;
+    archived: boolean;
+  }>;
+};
+
+type ChannelFixture = {
+  uniqueName: string;
+  pluginPipelines: Array<{
+    event: string;
+    steps: Array<{ pluginId: string }>;
+  }>;
+};
+
 const makeInput = ({
   source = sourceAttempt,
   related = [sourceAttempt],
-} = {}) => ({
-  Channel: { find: async () => [] },
-  Discussion: { find: async () => [] },
-  DownloadableFile: {
+  discussion = null,
+  channel = null,
+  serverConfig = config,
+}: {
+  source?: AttemptRecord | null;
+  related?: AttemptRecord[];
+  discussion?: DiscussionFixture | null;
+  channel?: ChannelFixture | null;
+  serverConfig?: unknown;
+} = {}): RerunPluginPipelineInput => ({
+  Channel: modelStub<"Channel">({
+    find: async () => (channel ? [channel] : []),
+  }),
+  Discussion: modelStub<"Discussion">({
+    find: async () => (discussion ? [discussion] : []),
+  }),
+  DownloadableFile: modelStub<"DownloadableFile">({
     find: async () => [
       {
         id: "file-1",
@@ -67,35 +134,38 @@ const makeInput = ({
         uploadedAt: "2025-01-01T00:00:00.000Z",
       },
     ],
-  },
-  Plugin: {},
-  PluginVersion: {},
-  PluginPipelineRun: {
-    find: async ({ where }: any) => {
-      if (where.pipelineId === "source-pipeline") {
+  }),
+  Plugin: modelStub<"Plugin">(),
+  PluginVersion: modelStub<"PluginVersion">(),
+  PluginPipelineRun: modelStub<"PluginPipelineRun">({
+    find: async ({ where } = {}) => {
+      if (where?.pipelineId === "source-pipeline") {
         return source ? [source] : [];
       }
-      if (where.pipelineId) {
+      if (where?.pipelineId) {
         return [{ pipelineId: where.pipelineId, status: "SUCCEEDED" }];
       }
-      if (where.status_IN) return [];
+      if (where?.status_IN) return [];
       return related;
     },
-  },
-  PluginRun: {},
-  ServerConfig: { find: async () => [config] },
-  ServerSecret: {},
-}) as any;
+  }),
+  PluginRun: modelStub<"PluginRun">(),
+  ServerConfig: modelStub<"ServerConfig">({
+    find: async () => [serverConfig],
+  }),
+  ServerSecret: modelStub<"ServerSecret">(),
+});
 
 test("reruns a failed pipeline for its owner with retry lineage", async () => {
-  let execution: any;
+  let execution!: NonNullable<DownloadTriggerOptions["execution"]>;
+  const triggerDownloadRuns: DownloadTrigger = async (_args, options = {}) => {
+    execution = options.execution!;
+    return [];
+  };
   const resolver = createRerunPluginPipelineResolver(
     makeInput(),
     async () => false,
-    (async (_args: unknown, options: any) => {
-      execution = options.execution;
-      return [];
-    }) as any,
+    triggerDownloadRuns,
     undefined,
     () => NOW
   );
@@ -124,13 +194,14 @@ test("reruns a failed pipeline for its owner with retry lineage", async () => {
 
 test("records moderator retry metadata", async () => {
   let trigger: string | undefined;
+  const triggerDownloadRuns: DownloadTrigger = async (_args, options = {}) => {
+    trigger = options.execution?.trigger;
+    return [];
+  };
   const resolver = createRerunPluginPipelineResolver(
     makeInput(),
     async () => true,
-    (async (_args: unknown, options: any) => {
-      trigger = options.execution.trigger;
-      return [];
-    }) as any,
+    triggerDownloadRuns,
     undefined,
     () => NOW
   );
@@ -147,8 +218,16 @@ test("records moderator retry metadata", async () => {
 test("rejects a non-terminal source attempt", async () => {
   const resolver = createRerunPluginPipelineResolver(
     makeInput({
-      source: { ...sourceAttempt, status: "RUNNING" },
-      related: [{ ...sourceAttempt, status: "RUNNING" }],
+      source: {
+        ...sourceAttempt,
+        status: PluginPipelineRunStatus.Running,
+      },
+      related: [
+        {
+          ...sourceAttempt,
+          status: PluginPipelineRunStatus.Running,
+        },
+      ],
     }),
     undefined,
     undefined,
@@ -169,7 +248,7 @@ test("rejects a non-terminal source attempt", async () => {
 test("enforces a one-minute retry cooldown", async () => {
   const recentAttempt = {
     ...sourceAttempt,
-    trigger: "OWNER_RETRY",
+    trigger: PluginPipelineRunTrigger.OwnerRetry,
     createdAt: "2026-07-30T11:59:30.000Z",
   };
   const resolver = createRerunPluginPipelineResolver(
@@ -198,7 +277,7 @@ test("rejects retries of an older superseded attempt", async () => {
         {
           ...sourceAttempt,
           pipelineId: "newer-pipeline",
-          status: "SUCCEEDED",
+          status: PluginPipelineRunStatus.Succeeded,
           createdAt: "2026-07-30T11:55:00.000Z",
         },
       ],
@@ -225,7 +304,7 @@ test("limits a pipeline to three retries per hour", async () => {
     ...["11:10", "11:20", "11:30"].map((time, index) => ({
       ...sourceAttempt,
       pipelineId: `retry-${index}`,
-      trigger: "OWNER_RETRY",
+      trigger: PluginPipelineRunTrigger.OwnerRetry,
       createdAt: `2026-07-30T${time}:00.000Z`,
     })),
   ];
@@ -249,7 +328,7 @@ test("limits a pipeline to three retries per hour", async () => {
 
 test("returns not found for an unknown source attempt", async () => {
   const resolver = createRerunPluginPipelineResolver(
-    makeInput({ source: null as any, related: [] }),
+    makeInput({ source: null, related: [] }),
     undefined,
     undefined,
     undefined,
@@ -272,7 +351,7 @@ test("does not rerun an attempt against replacement file bytes", async () => {
       source: {
         ...sourceAttempt,
         targetVersion: "2024-01-01T00:00:00.000Z",
-      } as any,
+      },
       related: [sourceAttempt],
     }),
     undefined,
@@ -292,8 +371,8 @@ test("does not rerun an attempt against replacement file bytes", async () => {
 });
 
 test("reruns a channel pipeline with channel retry lineage", async () => {
-  const channelEvent = "discussionChannel.created";
-  const channelSource = {
+  const channelEvent = PLUGIN_EVENTS.DISCUSSION_CHANNEL_CREATED;
+  const channelSource: AttemptRecord = {
     ...sourceAttempt,
     targetId: "discussion-1",
     targetType: "Discussion",
@@ -301,56 +380,56 @@ test("reruns a channel pipeline with channel retry lineage", async () => {
     scope: "CHANNEL",
     channelId: "cats",
   };
-  const input = makeInput({
-    source: channelSource as any,
-    related: [channelSource] as any,
-  });
-  input.Discussion.find = async () => [
-    {
-      id: "discussion-1",
-      Author: { username: "alice" },
-      DownloadableFile: {
-        uploadedAt: "2025-01-01T00:00:00.000Z",
-        uploadedByUsername: "alice",
-      },
-      DiscussionChannels: [
-        { channelUniqueName: "cats", archived: false },
-      ],
+  const discussion = {
+    id: "discussion-1",
+    Author: { username: "alice" },
+    DownloadableFile: {
+      uploadedAt: "2025-01-01T00:00:00.000Z",
+      uploadedByUsername: "alice",
     },
-  ];
-  input.Channel.find = async () => [
-    {
-      uniqueName: "cats",
-      pluginPipelines: [
-        { event: channelEvent, steps: [{ pluginId: "scanner" }] },
-      ],
-    },
-  ];
-  input.ServerConfig.find = async () => [
-    {
-      pluginPipelines: [],
-      InstalledVersionsConnection: {
-        edges: [
-          {
-            ...installedEdge,
-            node: {
-              ...installedEdge.node,
-              manifest: JSON.stringify({ events: [channelEvent] }),
-            },
+    DiscussionChannels: [{ channelUniqueName: "cats", archived: false }],
+  };
+  const channel = {
+    uniqueName: "cats",
+    pluginPipelines: [
+      { event: channelEvent, steps: [{ pluginId: "scanner" }] },
+    ],
+  };
+  const channelServerConfig = {
+    pluginPipelines: [],
+    InstalledVersionsConnection: {
+      edges: [
+        {
+          ...installedEdge,
+          node: {
+            ...installedEdge.node,
+            manifest: JSON.stringify({ events: [channelEvent] }),
           },
-        ],
-      },
+        },
+      ],
     },
-  ];
-  let invocation: any;
+  };
+  const input = makeInput({
+    source: channelSource,
+    related: [channelSource],
+    discussion,
+    channel,
+    serverConfig: channelServerConfig,
+  });
+  let invocation!: {
+    args: Parameters<ChannelTrigger>[0];
+    options: ChannelTriggerOptions;
+  };
+  const triggerDownloadRuns: DownloadTrigger = async () => [];
+  const triggerChannelRuns: ChannelTrigger = async (args, options = {}) => {
+    invocation = { args, options };
+    return [];
+  };
   const resolver = createRerunPluginPipelineResolver(
     input,
     async () => false,
-    (async () => []) as any,
-    (async (args: unknown, options: unknown) => {
-      invocation = { args, options };
-      return [];
-    }) as any,
+    triggerDownloadRuns,
+    triggerChannelRuns,
     () => NOW
   );
 
@@ -363,8 +442,8 @@ test("reruns a channel pipeline with channel retry lineage", async () => {
   assert.deepEqual(
     {
       channel: invocation.args.channelUniqueName,
-      trigger: invocation.options.execution.trigger,
-      retryOf: invocation.options.execution.retryOfPipelineRunId,
+      trigger: invocation.options.execution!.trigger,
+      retryOf: invocation.options.execution!.retryOfPipelineRunId,
     },
     {
       channel: "cats",

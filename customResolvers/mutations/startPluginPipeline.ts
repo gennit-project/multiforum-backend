@@ -1,17 +1,9 @@
 import { GraphQLError } from "graphql";
 import type {
   Channel as ChannelType,
-  ChannelModel,
-  DiscussionModel,
   DownloadableFile as DownloadableFileType,
-  DownloadableFileModel,
-  PluginModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  PluginVersionModel,
+  ModelMap,
   ServerConfig as ServerConfigType,
-  ServerConfigModel,
-  ServerSecretModel,
 } from "../../ogm_types.js";
 import {
   PluginPipelineRunStatus,
@@ -30,17 +22,18 @@ import type {
   PluginEdgeData,
 } from "../../services/plugin/types.js";
 
-type Input = {
-  Channel: ChannelModel;
-  Discussion: DiscussionModel;
-  DownloadableFile: DownloadableFileModel;
-  Plugin: PluginModel;
-  PluginVersion: PluginVersionModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  PluginRun: PluginRunModel;
-  ServerConfig: ServerConfigModel;
-  ServerSecret: ServerSecretModel;
-};
+export type StartPluginPipelineInput = Pick<
+  ModelMap,
+  | "Channel"
+  | "Discussion"
+  | "DownloadableFile"
+  | "Plugin"
+  | "PluginVersion"
+  | "PluginPipelineRun"
+  | "PluginRun"
+  | "ServerConfig"
+  | "ServerSecret"
+>;
 
 type StartPluginPipelineArgs = {
   targetId: string;
@@ -72,7 +65,7 @@ const userInputError = (message: string) =>
   new GraphQLError(message, { extensions: { code: "BAD_USER_INPUT" } });
 
 export const createStartPluginPipelineResolver = (
-  input: Input,
+  input: StartPluginPipelineInput,
   checkServerModPermission: typeof hasServerModPermission = hasServerModPermission,
   triggerDownloadRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile,

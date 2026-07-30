@@ -1,13 +1,5 @@
 import type {
-  ChannelModel,
-  DiscussionModel,
-  DownloadableFileModel,
-  PluginModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  PluginVersionModel,
-  ServerConfigModel,
-  ServerSecretModel,
+  ModelMap,
 } from "../../ogm_types.js";
 import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -15,17 +7,18 @@ import { hasServerModPermission } from "../../rules/permission/hasServerModPermi
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { createRerunPluginPipelineResolver } from "./rerunPluginPipeline.js";
 
-type Input = {
-  Channel: ChannelModel;
-  Discussion: DiscussionModel;
-  DownloadableFile: DownloadableFileModel;
-  Plugin: PluginModel;
-  PluginVersion: PluginVersionModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  PluginRun: PluginRunModel;
-  ServerConfig: ServerConfigModel;
-  ServerSecret: ServerSecretModel;
-};
+export type RetryDownloadableFileScanInput = Pick<
+  ModelMap,
+  | "Channel"
+  | "Discussion"
+  | "DownloadableFile"
+  | "Plugin"
+  | "PluginVersion"
+  | "PluginPipelineRun"
+  | "PluginRun"
+  | "ServerConfig"
+  | "ServerSecret"
+>;
 
 type FileRecord = {
   uploadedByUsername?: string | null;
@@ -34,7 +27,7 @@ type FileRecord = {
 };
 
 export const createRetryDownloadableFileScanResolver = (
-  input: Input,
+  input: RetryDownloadableFileScanInput,
   checkServerModPermission: typeof hasServerModPermission = hasServerModPermission,
   triggerRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile,

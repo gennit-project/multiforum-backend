@@ -1,33 +1,62 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
+import { modelStub } from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { createRetryDownloadableFileScanResolver } from "./retryDownloadableFileScan.js";
+import {
+  createRetryDownloadableFileScanResolver,
+  type RetryDownloadableFileScanInput,
+} from "./retryDownloadableFileScan.js";
 
-const baseInput = (file: unknown) => ({
-  Channel: {},
-  Discussion: {},
-  DownloadableFile: { find: async () => file ? [file] : [] },
-  Plugin: {},
-  PluginVersion: {},
-  PluginPipelineRun: { find: async () => [] },
-  PluginRun: { find: async () => [] },
-  ServerConfig: {},
-  ServerSecret: {},
-}) as any;
+type TriggerRuns = NonNullable<
+  Parameters<typeof createRetryDownloadableFileScanResolver>[2]
+>;
+type RerunResolverFactory = NonNullable<
+  Parameters<typeof createRetryDownloadableFileScanResolver>[3]
+>;
+
+const baseInput = ({
+  file,
+  attempts = [],
+  jobs = [],
+}: {
+  file: unknown;
+  attempts?: unknown[];
+  jobs?: unknown[];
+}): RetryDownloadableFileScanInput => ({
+  Channel: modelStub<"Channel">(),
+  Discussion: modelStub<"Discussion">(),
+  DownloadableFile: modelStub<"DownloadableFile">({
+    find: async () => file ? [file] : [],
+  }),
+  Plugin: modelStub<"Plugin">(),
+  PluginVersion: modelStub<"PluginVersion">(),
+  PluginPipelineRun: modelStub<"PluginPipelineRun">({
+    find: async () => attempts,
+  }),
+  PluginRun: modelStub<"PluginRun">({
+    find: async () => jobs,
+  }),
+  ServerConfig: modelStub<"ServerConfig">(),
+  ServerSecret: modelStub<"ServerSecret">(),
+});
 
 const contextFor = (username: string) => ({
   user: { username },
 }) as GraphQLContext;
 
 test("lets the uploader retry a held scan", async () => {
-  const calls: unknown[] = [];
+  const calls: Parameters<TriggerRuns>[0][] = [];
+  const triggerRuns: TriggerRuns = async args => {
+    calls.push(args);
+    return [{ id: "run-1" }] as Awaited<ReturnType<TriggerRuns>>;
+  };
   const resolver = createRetryDownloadableFileScanResolver(
-    baseInput({ uploadedByUsername: "alice", scanStatus: "FAILED" }),
+    baseInput({
+      file: { uploadedByUsername: "alice", scanStatus: "FAILED" },
+    }),
     async () => false,
-    (async (args: unknown) => {
-      calls.push(args);
-      return [{ id: "run-1" }];
-    }) as any
+    triggerRuns
   );
 
   const result = await resolver(
@@ -37,26 +66,29 @@ test("lets the uploader retry a held scan", async () => {
   );
 
   assert.deepEqual({ result, call: calls[0] && {
-    downloadableFileId: (calls[0] as any).downloadableFileId,
-    event: (calls[0] as any).event,
+    downloadableFileId: calls[0].downloadableFileId,
+    event: calls[0].event,
   } }, {
     result: [{ id: "run-1" }],
     call: {
       downloadableFileId: "file-1",
-      event: "downloadableFile.updated",
+      event: PLUGIN_EVENTS.DOWNLOADABLE_FILE_UPDATED,
     },
   });
 });
 
 test("lets an authorized moderator retry someone else's scan", async () => {
   let triggered = false;
+  const triggerRuns: TriggerRuns = async () => {
+    triggered = true;
+    return [];
+  };
   const resolver = createRetryDownloadableFileScanResolver(
-    baseInput({ uploadedByUsername: "alice", scanStatus: "SUSPICIOUS" }),
+    baseInput({
+      file: { uploadedByUsername: "alice", scanStatus: "SUSPICIOUS" },
+    }),
     async () => true,
-    (async () => {
-      triggered = true;
-      return [];
-    }) as any
+    triggerRuns
   );
 
   await resolver(null, { downloadableFileId: "file-1" }, contextFor("mod"));
@@ -66,7 +98,9 @@ test("lets an authorized moderator retry someone else's scan", async () => {
 
 test("rejects another user without review permission", async () => {
   const resolver = createRetryDownloadableFileScanResolver(
-    baseInput({ uploadedByUsername: "alice", scanStatus: "INFECTED" }),
+    baseInput({
+      file: { uploadedByUsername: "alice", scanStatus: "INFECTED" },
+    }),
     async () => false
   );
 
@@ -78,7 +112,9 @@ test("rejects another user without review permission", async () => {
 
 test("does not retry an already clean file", async () => {
   const resolver = createRetryDownloadableFileScanResolver(
-    baseInput({ uploadedByUsername: "alice", scanStatus: "CLEAN" })
+    baseInput({
+      file: { uploadedByUsername: "alice", scanStatus: "CLEAN" },
+    })
   );
 
   await assert.rejects(
@@ -89,29 +125,32 @@ test("does not retry an already clean file", async () => {
 
 test("routes a modern failed scan through whole-pipeline retry", async () => {
   const input = baseInput({
-    uploadedByUsername: "alice",
-    scanStatus: "FAILED",
-  });
-  input.PluginPipelineRun.find = async () => [
-    {
-      pipelineId: "failed-pipeline",
-      createdAt: "2026-07-30T00:00:00.000Z",
+    file: {
+      uploadedByUsername: "alice",
+      scanStatus: "FAILED",
     },
-  ];
-  input.PluginRun.find = async () => [{ id: "new-job" }];
+    attempts: [
+      {
+        pipelineId: "failed-pipeline",
+        createdAt: "2026-07-30T00:00:00.000Z",
+      },
+    ],
+    jobs: [{ id: "new-job" }],
+  });
   let sourceId: string | undefined;
+  const triggerRuns: TriggerRuns = async () => [];
+  const createRerunResolver: RerunResolverFactory =
+    () => async (_parent, args) => {
+      sourceId = args.pipelineRunId;
+      return {
+        pipelineId: "new-pipeline",
+      } as Awaited<ReturnType<ReturnType<RerunResolverFactory>>>;
+    };
   const resolver = createRetryDownloadableFileScanResolver(
     input,
     async () => false,
-    (async () => []) as any,
-    ((..._factoryArgs: unknown[]) =>
-      async (
-        _parent: unknown,
-        args: { pipelineRunId: string }
-      ) => {
-        sourceId = args.pipelineRunId;
-        return { pipelineId: "new-pipeline" };
-      }) as any
+    triggerRuns,
+    createRerunResolver
   );
 
   const result = await resolver(

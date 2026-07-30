@@ -1,15 +1,7 @@
 import { GraphQLError } from "graphql";
 import type {
-  ChannelModel,
-  DiscussionModel,
-  DownloadableFileModel,
-  PluginModel,
+  ModelMap,
   PluginPipelineRun,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  PluginVersionModel,
-  ServerConfigModel,
-  ServerSecretModel,
 } from "../../ogm_types.js";
 import {
   PluginPipelineRunStatus,
@@ -37,17 +29,18 @@ const ELIGIBLE_STATUSES = new Set<PluginPipelineRunStatus>([
   PluginPipelineRunStatus.Cancelled,
 ]);
 
-type Input = {
-  Channel: ChannelModel;
-  Discussion: DiscussionModel;
-  DownloadableFile: DownloadableFileModel;
-  Plugin: PluginModel;
-  PluginVersion: PluginVersionModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  PluginRun: PluginRunModel;
-  ServerConfig: ServerConfigModel;
-  ServerSecret: ServerSecretModel;
-};
+export type RerunPluginPipelineInput = Pick<
+  ModelMap,
+  | "Channel"
+  | "Discussion"
+  | "DownloadableFile"
+  | "Plugin"
+  | "PluginVersion"
+  | "PluginPipelineRun"
+  | "PluginRun"
+  | "ServerConfig"
+  | "ServerSecret"
+>;
 
 type AttemptRecord = Pick<
   PluginPipelineRun,
@@ -69,7 +62,7 @@ const userInputError = (message: string) =>
 const timestamp = (value: unknown): number => Date.parse(String(value));
 
 export const createRerunPluginPipelineResolver = (
-  input: Input,
+  input: RerunPluginPipelineInput,
   checkServerModPermission: typeof hasServerModPermission = hasServerModPermission,
   triggerDownloadRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile,

@@ -1,9 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
+import { modelStub } from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { createStartPluginPipelineResolver } from "./startPluginPipeline.js";
+import {
+  createStartPluginPipelineResolver,
+  type StartPluginPipelineInput,
+} from "./startPluginPipeline.js";
 
-const EVENT = "downloadableFile.created";
+type DownloadTrigger = NonNullable<
+  Parameters<typeof createStartPluginPipelineResolver>[2]
+>;
+type ChannelTrigger = NonNullable<
+  Parameters<typeof createStartPluginPipelineResolver>[3]
+>;
+type DownloadTriggerOptions = NonNullable<Parameters<DownloadTrigger>[1]>;
+type ChannelTriggerOptions = NonNullable<Parameters<ChannelTrigger>[1]>;
+
+const EVENT = PLUGIN_EVENTS.DOWNLOADABLE_FILE_CREATED;
 
 const installedEdge = {
   properties: { enabled: true, settingsJson: null },
@@ -56,38 +70,47 @@ const makeInput = ({
     pipelineId: "captured-by-trigger",
     status: "SUCCEEDED",
   };
-  const PluginPipelineRun = {
-    find: async ({ where }: any) =>
-      where.pipelineId
+  const PluginPipelineRun = modelStub<"PluginPipelineRun">({
+    find: async ({ where } = {}) =>
+      where?.pipelineId
         ? [{ ...createdAttempt, pipelineId: where.pipelineId }]
         : activeAttempts,
-  };
+  });
   return {
     input: {
-      Channel: { find: async () => (channel ? [channel] : []) },
-      Discussion: { find: async () => (discussion ? [discussion] : []) },
-      DownloadableFile: { find: async () => (file ? [file] : []) },
-      Plugin: {},
-      PluginVersion: {},
+      Channel: modelStub<"Channel">({
+        find: async () => (channel ? [channel] : []),
+      }),
+      Discussion: modelStub<"Discussion">({
+        find: async () => (discussion ? [discussion] : []),
+      }),
+      DownloadableFile: modelStub<"DownloadableFile">({
+        find: async () => (file ? [file] : []),
+      }),
+      Plugin: modelStub<"Plugin">(),
+      PluginVersion: modelStub<"PluginVersion">(),
       PluginPipelineRun,
-      PluginRun: {},
-      ServerConfig: { find: async () => (config ? [config] : []) },
-      ServerSecret: {},
-    } as any,
+      PluginRun: modelStub<"PluginRun">(),
+      ServerConfig: modelStub<"ServerConfig">({
+        find: async () => (config ? [config] : []),
+      }),
+      ServerSecret: modelStub<"ServerSecret">(),
+    } satisfies StartPluginPipelineInput,
     createdAttempt,
   };
 };
 
 test("lets the uploader start a required missing pipeline", async () => {
   const { input } = makeInput();
-  let execution: any;
+  let execution!: NonNullable<DownloadTriggerOptions["execution"]>;
+  const triggerDownloadRuns: DownloadTrigger = async (_args, options = {}) => {
+    execution = options.execution!;
+    return [];
+  };
   const resolver = createStartPluginPipelineResolver(
     input,
     async () => false,
-    (async (_args: unknown, options: any) => {
-      execution = options.execution;
-      return [];
-    }) as any
+    triggerDownloadRuns
   );
 
   const result = await resolver(
@@ -121,13 +144,14 @@ test("lets the uploader start a required missing pipeline", async () => {
 test("records a moderator start for someone else's download", async () => {
   const { input } = makeInput();
   let trigger: string | undefined;
+  const triggerDownloadRuns: DownloadTrigger = async (_args, options = {}) => {
+    trigger = options.execution?.trigger;
+    return [];
+  };
   const resolver = createStartPluginPipelineResolver(
     input,
     async () => true,
-    (async (_args: unknown, options: any) => {
-      trigger = options.execution.trigger;
-      return [];
-    }) as any
+    triggerDownloadRuns
   );
 
   await resolver(
@@ -231,7 +255,7 @@ test("rejects unsupported target types", async () => {
 });
 
 test("starts the explicitly selected channel pipeline", async () => {
-  const channelEvent = "discussionChannel.created";
+  const channelEvent = PLUGIN_EVENTS.DISCUSSION_CHANNEL_CREATED;
   const channelEdge = {
     ...installedEdge,
     node: {
@@ -262,15 +286,20 @@ test("starts the explicitly selected channel pipeline", async () => {
       InstalledVersionsConnection: { edges: [channelEdge] },
     },
   });
-  let invocation: any;
+  let invocation!: {
+    args: Parameters<ChannelTrigger>[0];
+    options: ChannelTriggerOptions;
+  };
+  const triggerDownloadRuns: DownloadTrigger = async () => [];
+  const triggerChannelRuns: ChannelTrigger = async (args, options = {}) => {
+    invocation = { args, options };
+    return [];
+  };
   const resolver = createStartPluginPipelineResolver(
     input,
     async () => false,
-    (async () => []) as any,
-    (async (args: unknown, options: unknown) => {
-      invocation = { args, options };
-      return [];
-    }) as any
+    triggerDownloadRuns,
+    triggerChannelRuns
   );
 
   await resolver(
@@ -288,7 +317,7 @@ test("starts the explicitly selected channel pipeline", async () => {
     {
       discussionId: invocation.args.discussionId,
       channelUniqueName: invocation.args.channelUniqueName,
-      trigger: invocation.options.execution.trigger,
+      trigger: invocation.options.execution!.trigger,
     },
     {
       discussionId: "discussion-1",

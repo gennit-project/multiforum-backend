@@ -1,12 +1,19 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import type { ModelMap } from '../../ogm_types.js'
 import { PluginPipelineRunStatus } from '../../ogm_types.js'
+import { modelStub } from '../../tests/fixtures/modelStub.js'
 import {
   buildPipelineConfigurationSnapshot,
   completePipelineAttempt,
   createPipelineAttempt,
   derivePipelineAttemptStatus,
 } from './pipelineAttempt.js'
+
+type AttemptCreateArgs =
+  Parameters<ModelMap['PluginPipelineRun']['create']>[0]
+type AttemptUpdateArgs =
+  Parameters<ModelMap['PluginPipelineRun']['update']>[0]
 
 const plugin = (pluginId: string, order: number) => ({
   pluginId,
@@ -78,18 +85,18 @@ test('snapshots execution structure without plugin settings', () => {
 })
 
 test('increments the attempt number for the same target pipeline key', async () => {
-  const creates: unknown[] = []
-  const model = {
+  const creates: AttemptCreateArgs[] = []
+  const model = modelStub<'PluginPipelineRun'>({
     find: async () => [{ attemptNumber: 1 }, { attemptNumber: 3 }],
-    create: async (args: unknown) => {
+    create: async args => {
       creates.push(args)
       return { pluginPipelineRuns: [{ id: 'attempt-4' }] }
     },
     update: async () => ({}),
-  }
+  })
 
   await createPipelineAttempt({
-    PluginPipelineRun: model as any,
+    PluginPipelineRun: model,
     context: {
       pipelineId: 'pipeline-4',
       targetId: 'file-1',
@@ -101,7 +108,7 @@ test('increments the attempt number for the same target pipeline key', async () 
     now: () => '2026-07-30T12:00:00.000Z',
   })
 
-  assert.equal((creates[0] as any).input[0].attemptNumber, 4)
+  assert.equal(creates[0]?.input[0]?.attemptNumber, 4)
 })
 
 test('derives failed before successful when a job fails', () => {
@@ -133,14 +140,14 @@ test('derives succeeded when all jobs are successful or skipped', () => {
 })
 
 test('completes a terminal attempt with a finish timestamp', async () => {
-  const updates: any[] = []
+  const updates: AttemptUpdateArgs[] = []
   const status = await completePipelineAttempt({
-    PluginPipelineRun: {
-      update: async (args: unknown) => {
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
+      update: async args => {
         updates.push(args)
         return {}
       },
-    } as any,
+    }),
     pipelineId: 'pipeline-1',
     statuses: ['SUCCEEDED', 'FAILED'],
     now: () => '2026-07-30T13:00:00.000Z',
@@ -162,14 +169,14 @@ test('completes a terminal attempt with a finish timestamp', async () => {
 })
 
 test('keeps an active attempt without a finish timestamp', async () => {
-  const updates: any[] = []
+  const updates: AttemptUpdateArgs[] = []
   const status = await completePipelineAttempt({
-    PluginPipelineRun: {
-      update: async (args: unknown) => {
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
+      update: async args => {
         updates.push(args)
         return {}
       },
-    } as any,
+    }),
     pipelineId: 'pipeline-2',
     statuses: ['RUNNING'],
     now: () => {
@@ -178,7 +185,7 @@ test('keeps an active attempt without a finish timestamp', async () => {
   })
 
   assert.deepEqual(
-    { status, finishedAt: updates[0].update.finishedAt },
+    { status, finishedAt: updates[0]?.update?.finishedAt },
     {
       status: PluginPipelineRunStatus.Running,
       finishedAt: null,
@@ -187,22 +194,22 @@ test('keeps an active attempt without a finish timestamp', async () => {
 })
 
 test('uses server timestamps when callers do not provide a clock', async () => {
-  const creates: any[] = []
-  const updates: any[] = []
-  const model = {
+  const creates: AttemptCreateArgs[] = []
+  const updates: AttemptUpdateArgs[] = []
+  const model = modelStub<'PluginPipelineRun'>({
     find: async () => [],
-    create: async (args: unknown) => {
+    create: async args => {
       creates.push(args)
       return { pluginPipelineRuns: [{ id: 'attempt-default-clock' }] }
     },
-    update: async (args: unknown) => {
+    update: async args => {
       updates.push(args)
       return {}
     },
-  }
+  })
 
   await createPipelineAttempt({
-    PluginPipelineRun: model as any,
+    PluginPipelineRun: model,
     context: {
       pipelineId: 'pipeline-default-clock',
       targetId: 'file-default-clock',
@@ -213,7 +220,7 @@ test('uses server timestamps when callers do not provide a clock', async () => {
     },
   })
   await completePipelineAttempt({
-    PluginPipelineRun: model as any,
+    PluginPipelineRun: model,
     pipelineId: 'pipeline-default-clock',
     statuses: ['SUCCEEDED'],
   })
@@ -221,10 +228,10 @@ test('uses server timestamps when callers do not provide a clock', async () => {
   assert.deepEqual(
     {
       queuedAtIsDate: Number.isFinite(
-        Date.parse(creates[0].input[0].queuedAt)
+        Date.parse(String(creates[0]?.input[0]?.queuedAt))
       ),
       finishedAtIsDate: Number.isFinite(
-        Date.parse(updates[1].update.finishedAt)
+        Date.parse(String(updates[1]?.update?.finishedAt))
       ),
     },
     {

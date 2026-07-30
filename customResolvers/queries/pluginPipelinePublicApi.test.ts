@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { modelStub } from '../../tests/fixtures/modelStub.js'
 import getApplicablePluginPipeline from './getApplicablePluginPipeline.js'
 import getInternalPluginPipelineRun from './getInternalPluginPipelineRun.js'
 import getPluginPipelineSummary from './getPluginPipelineSummary.js'
@@ -48,28 +49,25 @@ const job = {
   updatedAt: '2026-07-31T00:00:01.000Z',
 }
 
-const fileModel = {
-  find: async (args: any) =>
-    args.selectionSet.includes('permanentlyRemoved')
-      ? [visibleFile]
-      : [visibleFile],
-}
-const discussionModel = {
+const fileModel = modelStub<'DownloadableFile'>({
+  find: async () => [visibleFile],
+})
+const discussionModel = modelStub<'Discussion'>({
   find: async () => [{
     id: 'discussion-1',
     deleted: false,
     DownloadableFiles: [{ id: 'file-1', permanentlyRemoved: false }],
     DiscussionChannels: [{ archived: false }],
   }],
-}
-const emptyChannelModel = { find: async () => [] }
+})
+const emptyChannelModel = modelStub<'Channel'>({ find: async () => [] })
 
 test('returns an applicable pipeline before any attempt exists', async () => {
   const resolver = getApplicablePluginPipeline({
-    Channel: emptyChannelModel as any,
-    Discussion: discussionModel as any,
-    DownloadableFile: fileModel as any,
-    ServerConfig: {
+    Channel: emptyChannelModel,
+    Discussion: discussionModel,
+    DownloadableFile: fileModel,
+    ServerConfig: modelStub<'ServerConfig'>({
       find: async () => [
         {
           pluginPipelines: [
@@ -101,7 +99,7 @@ test('returns an applicable pipeline before any attempt exists', async () => {
           },
         },
       ],
-    } as any,
+    }),
   })
 
   const result = await resolver(null, {
@@ -132,22 +130,19 @@ test('returns an applicable pipeline before any attempt exists', async () => {
 })
 
 test('returns channel-scoped applicability for the download discussion', async () => {
-  const channelFileModel = {
-    find: async (args: any) =>
-      args.selectionSet.includes('permanentlyRemoved')
-        ? [{
-            ...visibleFile,
-            Discussion: {
-              id: 'discussion-1',
-              deleted: false,
-              DiscussionChannels: [{
-                channelUniqueName: 'cats',
-                archived: false,
-              }],
-            },
-          }]
-        : [visibleFile],
-  }
+  const channelFileModel = modelStub<'DownloadableFile'>({
+    find: async () => [{
+      ...visibleFile,
+      Discussion: {
+        id: 'discussion-1',
+        deleted: false,
+        DiscussionChannels: [{
+          channelUniqueName: 'cats',
+          archived: false,
+        }],
+      },
+    }],
+  })
   const installedEdge = {
     properties: { enabled: true },
     node: {
@@ -164,7 +159,7 @@ test('returns channel-scoped applicability for the download discussion', async (
     },
   }
   const resolver = getApplicablePluginPipeline({
-    Channel: {
+    Channel: modelStub<'Channel'>({
       find: async () => [{
         uniqueName: 'cats',
         pluginPipelines: [{
@@ -172,14 +167,14 @@ test('returns channel-scoped applicability for the download discussion', async (
           steps: [{ pluginId: 'scanner' }],
         }],
       }],
-    } as any,
-    Discussion: discussionModel as any,
-    DownloadableFile: channelFileModel as any,
-    ServerConfig: {
+    }),
+    Discussion: discussionModel,
+    DownloadableFile: channelFileModel,
+    ServerConfig: modelStub<'ServerConfig'>({
       find: async () => [{
         InstalledVersionsConnection: { edges: [installedEdge] },
       }],
-    } as any,
+    }),
   })
 
   const result = await resolver(null, {
@@ -211,29 +206,26 @@ test('returns channel-scoped applicability for the download discussion', async (
 })
 
 test('does not infer an unconfigured channel pipeline from server plugins', async () => {
-  const channelFileModel = {
-    find: async (args: any) =>
-      args.selectionSet.includes('permanentlyRemoved')
-        ? [{
-            ...visibleFile,
-            Discussion: {
-              id: 'discussion-1',
-              deleted: false,
-              DiscussionChannels: [{
-                channelUniqueName: 'cats',
-                archived: false,
-              }],
-            },
-          }]
-        : [visibleFile],
-  }
+  const channelFileModel = modelStub<'DownloadableFile'>({
+    find: async () => [{
+      ...visibleFile,
+      Discussion: {
+        id: 'discussion-1',
+        deleted: false,
+        DiscussionChannels: [{
+          channelUniqueName: 'cats',
+          archived: false,
+        }],
+      },
+    }],
+  })
   const resolver = getApplicablePluginPipeline({
-    Channel: {
+    Channel: modelStub<'Channel'>({
       find: async () => [{ uniqueName: 'cats', pluginPipelines: [] }],
-    } as any,
-    Discussion: discussionModel as any,
-    DownloadableFile: channelFileModel as any,
-    ServerConfig: {
+    }),
+    Discussion: discussionModel,
+    DownloadableFile: channelFileModel,
+    ServerConfig: modelStub<'ServerConfig'>({
       find: async () => [{
         InstalledVersionsConnection: {
           edges: [{
@@ -249,7 +241,7 @@ test('does not infer an unconfigured channel pipeline from server plugins', asyn
           }],
         },
       }],
-    } as any,
+    }),
   })
 
   const result = await resolver(null, {
@@ -276,10 +268,12 @@ test('does not infer an unconfigured channel pipeline from server plugins', asyn
 
 test('returns safe public attempt details without raw job telemetry', async () => {
   const resolver = getPublicPluginPipelineRun({
-    Discussion: discussionModel as any,
-    DownloadableFile: fileModel as any,
-    PluginPipelineRun: { find: async () => [attempt] } as any,
-    PluginRun: { find: async () => [job] } as any,
+    Discussion: discussionModel,
+    DownloadableFile: fileModel,
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
+      find: async () => [attempt],
+    }),
+    PluginRun: modelStub<'PluginRun'>({ find: async () => [job] }),
   })
 
   const result = await resolver(null, { pipelineRunId: 'attempt-1' })
@@ -300,15 +294,15 @@ test('returns safe public attempt details without raw job telemetry', async () =
 
 test('groups public attempt history newest first through the summary API', async () => {
   const resolver = getPluginPipelineSummary({
-    Discussion: discussionModel as any,
-    DownloadableFile: fileModel as any,
-    PluginPipelineRun: {
+    Discussion: discussionModel,
+    DownloadableFile: fileModel,
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
       find: async () => [
         { ...attempt, id: 'attempt-2', attemptNumber: 2 },
         attempt,
       ],
-    } as any,
-    PluginRun: { find: async () => [job] } as any,
+    }),
+    PluginRun: modelStub<'PluginRun'>({ find: async () => [job] }),
   })
 
   const result = await resolver(null, {
@@ -340,10 +334,12 @@ test('returns channel-scoped attempt history for a visible download discussion',
     channelId: 'cats',
   }
   const resolver = getPluginPipelineSummary({
-    Discussion: discussionModel as any,
-    DownloadableFile: fileModel as any,
-    PluginPipelineRun: { find: async () => [channelAttempt] } as any,
-    PluginRun: {
+    Discussion: discussionModel,
+    DownloadableFile: fileModel,
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
+      find: async () => [channelAttempt],
+    }),
+    PluginRun: modelStub<'PluginRun'>({
       find: async () => [{
         ...job,
         pipelineId: 'channel-pipeline',
@@ -351,7 +347,7 @@ test('returns channel-scoped attempt history for a visible download discussion',
         scope: 'CHANNEL',
         channelId: 'cats',
       }],
-    } as any,
+    }),
   })
 
   const result = await resolver(null, {
@@ -375,14 +371,18 @@ test('returns channel-scoped attempt history for a visible download discussion',
 
 test('returns null when a requested public or internal attempt is missing', async () => {
   const publicResolver = getPublicPluginPipelineRun({
-    Discussion: discussionModel as any,
-    DownloadableFile: fileModel as any,
-    PluginPipelineRun: { find: async () => [] } as any,
-    PluginRun: { find: async () => [] } as any,
+    Discussion: discussionModel,
+    DownloadableFile: fileModel,
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
+      find: async () => [],
+    }),
+    PluginRun: modelStub<'PluginRun'>({ find: async () => [] }),
   })
   const internalResolver = getInternalPluginPipelineRun({
-    PluginPipelineRun: { find: async () => [] } as any,
-    PluginRun: { find: async () => [] } as any,
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
+      find: async () => [],
+    }),
+    PluginRun: modelStub<'PluginRun'>({ find: async () => [] }),
   })
 
   assert.deepEqual(
@@ -396,8 +396,10 @@ test('returns null when a requested public or internal attempt is missing', asyn
 
 test('returns raw telemetry only through the separately authorized internal resolver', async () => {
   const resolver = getInternalPluginPipelineRun({
-    PluginPipelineRun: { find: async () => [attempt] } as any,
-    PluginRun: { find: async () => [job] } as any,
+    PluginPipelineRun: modelStub<'PluginPipelineRun'>({
+      find: async () => [attempt],
+    }),
+    PluginRun: modelStub<'PluginRun'>({ find: async () => [job] }),
   })
 
   const result = await resolver(null, { pipelineRunId: 'attempt-1' })
@@ -405,7 +407,7 @@ test('returns raw telemetry only through the separately authorized internal reso
   assert.deepEqual(
     {
       attemptId: result?.attempt.id,
-      payload: (result?.jobs[0] as any)?.payload,
+      payload: result?.jobs[0]?.payload,
     },
     {
       attemptId: 'attempt-1',

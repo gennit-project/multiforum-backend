@@ -5,11 +5,12 @@ import type { Driver } from 'neo4j-driver'
 import {
   buildPermissionedSchema,
   makeRequestContext,
+  type PermissionedSchema,
 } from '../helpers/buildPermissionedSchema.js'
 
 let schema: GraphQLSchema
 let driver: Driver
-let ogm: any
+let ogm: PermissionedSchema["ogm"]
 
 before(async () => {
   ({ schema, driver, ogm } = await buildPermissionedSchema())

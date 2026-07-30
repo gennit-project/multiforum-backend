@@ -4,6 +4,7 @@ import type {
   PluginPipelineRunModel,
   PluginRunModel,
 } from '../../ogm_types.js'
+import { SortDirection } from '../../ogm_types.js'
 import {
   PUBLIC_PIPELINE_ATTEMPT_SELECTION,
   PUBLIC_PLUGIN_JOB_SELECTION,
@@ -33,7 +34,7 @@ const getResolver = ({
   })
   const attempts = await PluginPipelineRun.find({
     where: { targetId, targetType },
-    options: { sort: [{ createdAt: 'DESC' }] } as any,
+    options: { sort: [{ createdAt: SortDirection.Desc }] },
     selectionSet: PUBLIC_PIPELINE_ATTEMPT_SELECTION,
   })
   const jobs = await PluginRun.find({
@@ -46,8 +47,8 @@ const getResolver = ({
     targetType,
     attempts: attempts.map(attempt =>
       toPublicPipelineRun({
-        attempt: attempt as any,
-        jobs: jobs as any,
+        attempt,
+        jobs,
       })
     ),
   }

@@ -4,6 +4,7 @@ import {
   createPublicDiagnosticCollector,
   parsePublicDiagnostics,
   sanitizePublicDiagnostic,
+  type PublicDiagnosticLevel,
 } from './publicDiagnostics.js'
 
 test('accepts and normalizes a safe public diagnostic', () => {
@@ -148,7 +149,7 @@ test('rejects unsupported levels and empty messages', () => {
       () =>
         sanitizePublicDiagnostic({
           input: {
-            level: 'DEBUG' as any,
+            level: 'DEBUG' as unknown as PublicDiagnosticLevel,
             code: 'DEBUG_RESULT',
             message: 'Message',
           },
