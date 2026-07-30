@@ -3,6 +3,7 @@ import test from 'node:test'
 import { PluginPipelineRunStatus } from '../../ogm_types.js'
 import {
   buildPipelineConfigurationSnapshot,
+  completePipelineAttempt,
   createPipelineAttempt,
   derivePipelineAttemptStatus,
 } from './pipelineAttempt.js'
@@ -114,5 +115,121 @@ test('derives queued while any job remains pending', () => {
   assert.equal(
     derivePipelineAttemptStatus(['SUCCEEDED', 'PENDING']),
     PluginPipelineRunStatus.Queued
+  )
+})
+
+test('derives running while any job is active', () => {
+  assert.equal(
+    derivePipelineAttemptStatus(['SUCCEEDED', 'RUNNING']),
+    PluginPipelineRunStatus.Running
+  )
+})
+
+test('derives succeeded when all jobs are successful or skipped', () => {
+  assert.equal(
+    derivePipelineAttemptStatus(['SUCCEEDED', 'SKIPPED']),
+    PluginPipelineRunStatus.Succeeded
+  )
+})
+
+test('completes a terminal attempt with a finish timestamp', async () => {
+  const updates: any[] = []
+  const status = await completePipelineAttempt({
+    PluginPipelineRun: {
+      update: async (args: unknown) => {
+        updates.push(args)
+        return {}
+      },
+    } as any,
+    pipelineId: 'pipeline-1',
+    statuses: ['SUCCEEDED', 'FAILED'],
+    now: () => '2026-07-30T13:00:00.000Z',
+  })
+
+  assert.deepEqual(
+    { status, update: updates[0] },
+    {
+      status: PluginPipelineRunStatus.Failed,
+      update: {
+        where: { pipelineId: 'pipeline-1' },
+        update: {
+          status: PluginPipelineRunStatus.Failed,
+          finishedAt: '2026-07-30T13:00:00.000Z',
+        },
+      },
+    }
+  )
+})
+
+test('keeps an active attempt without a finish timestamp', async () => {
+  const updates: any[] = []
+  const status = await completePipelineAttempt({
+    PluginPipelineRun: {
+      update: async (args: unknown) => {
+        updates.push(args)
+        return {}
+      },
+    } as any,
+    pipelineId: 'pipeline-2',
+    statuses: ['RUNNING'],
+    now: () => {
+      throw new Error('active attempts must not request a finish timestamp')
+    },
+  })
+
+  assert.deepEqual(
+    { status, finishedAt: updates[0].update.finishedAt },
+    {
+      status: PluginPipelineRunStatus.Running,
+      finishedAt: null,
+    }
+  )
+})
+
+test('uses server timestamps when callers do not provide a clock', async () => {
+  const creates: any[] = []
+  const updates: any[] = []
+  const model = {
+    find: async () => [],
+    create: async (args: unknown) => {
+      creates.push(args)
+      return { pluginPipelineRuns: [{ id: 'attempt-default-clock' }] }
+    },
+    update: async (args: unknown) => {
+      updates.push(args)
+      return {}
+    },
+  }
+
+  await createPipelineAttempt({
+    PluginPipelineRun: model as any,
+    context: {
+      pipelineId: 'pipeline-default-clock',
+      targetId: 'file-default-clock',
+      targetType: 'DownloadableFile',
+      eventType: 'downloadableFile.created',
+      scope: 'SERVER',
+      pluginsToRun: [plugin('scan', 0)],
+    },
+  })
+  await completePipelineAttempt({
+    PluginPipelineRun: model as any,
+    pipelineId: 'pipeline-default-clock',
+    statuses: ['SUCCEEDED'],
+  })
+
+  assert.deepEqual(
+    {
+      queuedAtIsDate: Number.isFinite(
+        Date.parse(creates[0].input[0].queuedAt)
+      ),
+      finishedAtIsDate: Number.isFinite(
+        Date.parse(updates[1].update.finishedAt)
+      ),
+    },
+    {
+      queuedAtIsDate: true,
+      finishedAtIsDate: true,
+    }
   )
 })
