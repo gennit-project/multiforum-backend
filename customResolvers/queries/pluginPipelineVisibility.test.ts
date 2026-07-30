@@ -25,6 +25,24 @@ test('allows a download attached to a visible discussion channel', async () => {
   assert.equal(result.id, 'file-1')
 })
 
+test('allows channel-scoped history for a public download discussion', async () => {
+  const result = await assertPublicPipelineTargetVisible({
+    Discussion: model([
+      {
+        id: 'discussion-1',
+        deleted: false,
+        DownloadableFiles: [{ permanentlyRemoved: false }],
+        DiscussionChannels: [{ archived: false }],
+      },
+    ]) as any,
+    DownloadableFile: model([]) as any,
+    targetId: 'discussion-1',
+    targetType: 'Discussion',
+  })
+
+  assert.equal(result.id, 'discussion-1')
+})
+
 test('hides removed, deleted, archived, missing, and unsupported targets', async () => {
   const hiddenRows = [
     [{ id: 'file-1', permanentlyRemoved: true }],
@@ -55,6 +73,14 @@ test('hides removed, deleted, archived, missing, and unsupported targets', async
   )
   outcomes.push(
     await assertPublicPipelineTargetVisible({
+      Discussion: model([
+        {
+          id: 'discussion-1',
+          deleted: false,
+          DownloadableFiles: [{ permanentlyRemoved: true }],
+          DiscussionChannels: [{ archived: false }],
+        },
+      ]) as any,
       DownloadableFile: model([]) as any,
       targetId: 'discussion-1',
       targetType: 'Discussion',

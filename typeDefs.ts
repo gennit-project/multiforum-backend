@@ -1906,6 +1906,9 @@ const typeDefinitions = gql`
     targetId: ID!
     targetType: String!
     eventType: String!
+    scope: String!
+    channelId: String
+    configured: Boolean!
     applicability: PipelineApplicability!
     effectiveAt: DateTime
     required: Boolean!
@@ -2439,6 +2442,9 @@ const typeDefinitions = gql`
     getApplicablePluginPipeline(
       downloadableFileId: ID!
       eventType: String = "downloadableFile.created"
+      scope: String = "SERVER"
+      discussionId: ID
+      channelUniqueName: String
     ): ApplicablePluginPipeline!
     getPipelineSummary(
       targetId: ID!

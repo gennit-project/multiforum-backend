@@ -1,4 +1,8 @@
+import { GraphQLError } from 'graphql'
 import type {
+  Channel as ChannelType,
+  ChannelModel,
+  DiscussionModel,
   DownloadableFile as DownloadableFileType,
   DownloadableFileModel,
   ServerConfig as ServerConfigType,
@@ -8,10 +12,22 @@ import type { EventPipeline, PluginEdgeData } from '../../services/plugin/types.
 import { resolveDownloadPipelinePlan } from '../../services/plugin/downloadPipelinePlan.js'
 import { assertPublicPipelineTargetVisible } from './pluginPipelineVisibility.js'
 
+type ApplicablePipelineArgs = {
+  downloadableFileId: string
+  eventType?: string
+  scope?: string
+  discussionId?: string | null
+  channelUniqueName?: string | null
+}
+
 const getResolver = ({
+  Channel,
+  Discussion,
   DownloadableFile,
   ServerConfig,
 }: {
+  Channel: ChannelModel
+  Discussion: DiscussionModel
   DownloadableFile: DownloadableFileModel
   ServerConfig: ServerConfigModel
 }) => async (
@@ -19,13 +35,53 @@ const getResolver = ({
   {
     downloadableFileId,
     eventType = 'downloadableFile.created',
-  }: { downloadableFileId: string; eventType?: string }
+    scope = 'SERVER',
+    discussionId,
+    channelUniqueName,
+  }: ApplicablePipelineArgs
 ) => {
-  await assertPublicPipelineTargetVisible({
+  if (!['SERVER', 'CHANNEL'].includes(scope)) {
+    throw new GraphQLError('Pipeline scope must be SERVER or CHANNEL', {
+      extensions: { code: 'BAD_USER_INPUT' },
+    })
+  }
+  if (scope === 'CHANNEL' && (!discussionId || !channelUniqueName)) {
+    throw new GraphQLError(
+      'Channel pipeline applicability requires a discussion and channel',
+      { extensions: { code: 'BAD_USER_INPUT' } }
+    )
+  }
+
+  const visibleFile = await assertPublicPipelineTargetVisible({
+    Discussion,
     DownloadableFile,
     targetId: downloadableFileId,
     targetType: 'DownloadableFile',
-  })
+  }) as {
+    Discussion?: {
+      id?: string | null
+      DiscussionChannels?: Array<{
+        channelUniqueName?: string | null
+        archived?: boolean | null
+      }>
+    } | null
+  }
+  if (
+    scope === 'CHANNEL' &&
+    (
+      visibleFile.Discussion?.id !== discussionId ||
+      !visibleFile.Discussion?.DiscussionChannels?.some(
+        channel =>
+          channel.channelUniqueName === channelUniqueName &&
+          channel.archived !== true
+      )
+    )
+  ) {
+    throw new GraphQLError('Pipeline target not found', {
+      extensions: { code: 'NOT_FOUND' },
+    })
+  }
+
   const files = await DownloadableFile.find({
     where: { id: downloadableFileId },
     selectionSet: `{ id uploadedAt createdAt }`,
@@ -49,19 +105,50 @@ const getResolver = ({
     }`,
   })
   const config = configs[0] as ServerConfigType | undefined
+  let pipelines = (config?.pluginPipelines || []) as EventPipeline[]
+  let pipelineConfigured = false
+
+  if (scope === 'CHANNEL') {
+    const channels = await Channel.find({
+      where: { uniqueName: channelUniqueName as string },
+      selectionSet: `{ uniqueName pluginPipelines }`,
+    })
+    const channel = channels[0] as ChannelType | undefined
+    if (!channel) {
+      throw new GraphQLError('Pipeline target not found', {
+        extensions: { code: 'NOT_FOUND' },
+      })
+    }
+    pipelines = (channel.pluginPipelines || []) as EventPipeline[]
+    pipelineConfigured = Boolean(
+      pipelines.find(pipeline => pipeline.event === eventType)?.steps.length
+    )
+  }
+
+  const installedPluginEdges = (
+    config?.InstalledVersionsConnection?.edges || []
+  ) as unknown as PluginEdgeData[]
   const plan = resolveDownloadPipelinePlan({
     event: eventType,
-    pipelines: (config?.pluginPipelines || []) as EventPipeline[],
-    installedPluginEdges: (
-      config?.InstalledVersionsConnection?.edges || []
-    ) as unknown as PluginEdgeData[],
+    pipelines,
+    installedPluginEdges:
+      scope === 'CHANNEL' && !pipelineConfigured
+        ? []
+        : installedPluginEdges,
     uploadedAt: file.uploadedAt || file.createdAt,
   })
+  if (scope === 'SERVER') {
+    pipelineConfigured = Boolean(plan.eventPipeline || plan.pluginsToRun.length)
+  }
 
   return {
-    targetId: downloadableFileId,
-    targetType: 'DownloadableFile',
+    targetId:
+      scope === 'CHANNEL' ? discussionId as string : downloadableFileId,
+    targetType: scope === 'CHANNEL' ? 'Discussion' : 'DownloadableFile',
     eventType,
+    scope,
+    channelId: scope === 'CHANNEL' ? channelUniqueName : null,
+    configured: pipelineConfigured,
     applicability: plan.applicability,
     effectiveAt: plan.effectiveAt,
     required: plan.required,

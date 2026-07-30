@@ -54,9 +54,20 @@ const fileModel = {
       ? [visibleFile]
       : [visibleFile],
 }
+const discussionModel = {
+  find: async () => [{
+    id: 'discussion-1',
+    deleted: false,
+    DownloadableFiles: [{ id: 'file-1', permanentlyRemoved: false }],
+    DiscussionChannels: [{ archived: false }],
+  }],
+}
+const emptyChannelModel = { find: async () => [] }
 
 test('returns an applicable pipeline before any attempt exists', async () => {
   const resolver = getApplicablePluginPipeline({
+    Channel: emptyChannelModel as any,
+    Discussion: discussionModel as any,
     DownloadableFile: fileModel as any,
     ServerConfig: {
       find: async () => [
@@ -120,8 +131,152 @@ test('returns an applicable pipeline before any attempt exists', async () => {
   )
 })
 
+test('returns channel-scoped applicability for the download discussion', async () => {
+  const channelFileModel = {
+    find: async (args: any) =>
+      args.selectionSet.includes('permanentlyRemoved')
+        ? [{
+            ...visibleFile,
+            Discussion: {
+              id: 'discussion-1',
+              deleted: false,
+              DiscussionChannels: [{
+                channelUniqueName: 'cats',
+                archived: false,
+              }],
+            },
+          }]
+        : [visibleFile],
+  }
+  const installedEdge = {
+    properties: { enabled: true },
+    node: {
+      id: 'version-scanner',
+      version: '1.0.0',
+      manifest: JSON.stringify({
+        events: ['discussionChannel.created'],
+      }),
+      Plugin: {
+        id: 'scanner',
+        name: 'scanner',
+        displayName: 'Scanner',
+      },
+    },
+  }
+  const resolver = getApplicablePluginPipeline({
+    Channel: {
+      find: async () => [{
+        uniqueName: 'cats',
+        pluginPipelines: [{
+          event: 'discussionChannel.created',
+          steps: [{ pluginId: 'scanner' }],
+        }],
+      }],
+    } as any,
+    Discussion: discussionModel as any,
+    DownloadableFile: channelFileModel as any,
+    ServerConfig: {
+      find: async () => [{
+        InstalledVersionsConnection: { edges: [installedEdge] },
+      }],
+    } as any,
+  })
+
+  const result = await resolver(null, {
+    downloadableFileId: 'file-1',
+    discussionId: 'discussion-1',
+    channelUniqueName: 'cats',
+    eventType: 'discussionChannel.created',
+    scope: 'CHANNEL',
+  })
+
+  assert.deepEqual(
+    {
+      targetId: result.targetId,
+      targetType: result.targetType,
+      scope: result.scope,
+      channelId: result.channelId,
+      configured: result.configured,
+      required: result.required,
+    },
+    {
+      targetId: 'discussion-1',
+      targetType: 'Discussion',
+      scope: 'CHANNEL',
+      channelId: 'cats',
+      configured: true,
+      required: true,
+    }
+  )
+})
+
+test('does not infer an unconfigured channel pipeline from server plugins', async () => {
+  const channelFileModel = {
+    find: async (args: any) =>
+      args.selectionSet.includes('permanentlyRemoved')
+        ? [{
+            ...visibleFile,
+            Discussion: {
+              id: 'discussion-1',
+              deleted: false,
+              DiscussionChannels: [{
+                channelUniqueName: 'cats',
+                archived: false,
+              }],
+            },
+          }]
+        : [visibleFile],
+  }
+  const resolver = getApplicablePluginPipeline({
+    Channel: {
+      find: async () => [{ uniqueName: 'cats', pluginPipelines: [] }],
+    } as any,
+    Discussion: discussionModel as any,
+    DownloadableFile: channelFileModel as any,
+    ServerConfig: {
+      find: async () => [{
+        InstalledVersionsConnection: {
+          edges: [{
+            properties: { enabled: true },
+            node: {
+              id: 'version-scanner',
+              version: '1.0.0',
+              manifest: JSON.stringify({
+                events: ['discussionChannel.created'],
+              }),
+              Plugin: { id: 'scanner', name: 'scanner' },
+            },
+          }],
+        },
+      }],
+    } as any,
+  })
+
+  const result = await resolver(null, {
+    downloadableFileId: 'file-1',
+    discussionId: 'discussion-1',
+    channelUniqueName: 'cats',
+    eventType: 'discussionChannel.created',
+    scope: 'CHANNEL',
+  })
+
+  assert.deepEqual(
+    {
+      configured: result.configured,
+      required: result.required,
+      expectedJobs: result.expectedJobs,
+    },
+    {
+      configured: false,
+      required: false,
+      expectedJobs: [],
+    }
+  )
+})
+
 test('returns safe public attempt details without raw job telemetry', async () => {
   const resolver = getPublicPluginPipelineRun({
+    Discussion: discussionModel as any,
     DownloadableFile: fileModel as any,
     PluginPipelineRun: { find: async () => [attempt] } as any,
     PluginRun: { find: async () => [job] } as any,
@@ -145,6 +300,7 @@ test('returns safe public attempt details without raw job telemetry', async () =
 
 test('groups public attempt history newest first through the summary API', async () => {
   const resolver = getPluginPipelineSummary({
+    Discussion: discussionModel as any,
     DownloadableFile: fileModel as any,
     PluginPipelineRun: {
       find: async () => [
@@ -172,8 +328,54 @@ test('groups public attempt history newest first through the summary API', async
   )
 })
 
+test('returns channel-scoped attempt history for a visible download discussion', async () => {
+  const channelAttempt = {
+    ...attempt,
+    id: 'channel-attempt',
+    pipelineId: 'channel-pipeline',
+    targetId: 'discussion-1',
+    targetType: 'Discussion',
+    eventType: 'discussionChannel.created',
+    scope: 'CHANNEL',
+    channelId: 'cats',
+  }
+  const resolver = getPluginPipelineSummary({
+    Discussion: discussionModel as any,
+    DownloadableFile: fileModel as any,
+    PluginPipelineRun: { find: async () => [channelAttempt] } as any,
+    PluginRun: {
+      find: async () => [{
+        ...job,
+        pipelineId: 'channel-pipeline',
+        eventType: 'discussionChannel.created',
+        scope: 'CHANNEL',
+        channelId: 'cats',
+      }],
+    } as any,
+  })
+
+  const result = await resolver(null, {
+    targetId: 'discussion-1',
+    targetType: 'Discussion',
+  })
+
+  assert.deepEqual(
+    {
+      scope: result.attempts[0]?.scope,
+      channelId: result.attempts[0]?.channelId,
+      jobs: result.attempts[0]?.jobs.length,
+    },
+    {
+      scope: 'CHANNEL',
+      channelId: 'cats',
+      jobs: 1,
+    }
+  )
+})
+
 test('returns null when a requested public or internal attempt is missing', async () => {
   const publicResolver = getPublicPluginPipelineRun({
+    Discussion: discussionModel as any,
     DownloadableFile: fileModel as any,
     PluginPipelineRun: { find: async () => [] } as any,
     PluginRun: { find: async () => [] } as any,

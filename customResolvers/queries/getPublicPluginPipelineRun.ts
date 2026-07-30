@@ -1,4 +1,5 @@
 import type {
+  DiscussionModel,
   DownloadableFileModel,
   PluginPipelineRunModel,
   PluginRunModel,
@@ -11,10 +12,12 @@ import {
 import { assertPublicPipelineTargetVisible } from './pluginPipelineVisibility.js'
 
 const getResolver = ({
+  Discussion,
   DownloadableFile,
   PluginPipelineRun,
   PluginRun,
 }: {
+  Discussion: DiscussionModel
   DownloadableFile: DownloadableFileModel
   PluginPipelineRun: PluginPipelineRunModel
   PluginRun: PluginRunModel
@@ -27,6 +30,7 @@ const getResolver = ({
   if (!attempt) return null
 
   await assertPublicPipelineTargetVisible({
+    Discussion,
     DownloadableFile,
     targetId: attempt.targetId,
     targetType: attempt.targetType,
