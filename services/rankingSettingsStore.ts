@@ -1,5 +1,8 @@
 import type { ManagedTransaction, Session } from "neo4j-driver";
 import {
+  DEFAULT_RANKING_SETTINGS,
+  getCommentHotRankingParams,
+  getDiscussionHotRankingParams,
   readRankingSettings,
   type RankingSettings,
 } from "./rankingSettings.js";
@@ -49,4 +52,27 @@ export const findRankingSettings = async ({
   );
 
   return readRecord(result.records[0]);
+};
+
+export const getHotRankingQueryParams = async ({
+  executor,
+  profile,
+  sortOption,
+  serverName = process.env.SERVER_CONFIG_NAME,
+}: {
+  executor: Session | ManagedTransaction;
+  profile: "discussion" | "comment";
+  sortOption: string;
+  serverName?: string;
+}) => {
+  let settings = DEFAULT_RANKING_SETTINGS;
+
+  if (sortOption === "hot" && serverName) {
+    const stored = await findRankingSettings({ executor, serverName });
+    settings = stored?.settings ?? DEFAULT_RANKING_SETTINGS;
+  }
+
+  return profile === "discussion"
+    ? getDiscussionHotRankingParams(settings)
+    : getCommentHotRankingParams(settings);
 };

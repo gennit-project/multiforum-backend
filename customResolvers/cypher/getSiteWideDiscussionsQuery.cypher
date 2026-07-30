@@ -129,7 +129,7 @@ WITH d, totalCount,
     serverRole,
     discussionChannels,
     CASE WHEN score < 0 THEN 0 ELSE score END AS score, 
-    CASE WHEN $sortOption = "hot" THEN 10000 * log10(score + 1) / ((ageInMonths + 2) ^ 1.8) ELSE NULL END AS rank
+    CASE WHEN $sortOption = "hot" THEN log10(score + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) ELSE NULL END AS rank
 
 WITH d, totalCount, tagsText, author, discussionChannels, score, rank,
     COLLECT(DISTINCT serverRole) AS serverRoles
