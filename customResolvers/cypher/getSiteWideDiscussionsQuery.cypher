@@ -53,7 +53,7 @@ AND (
 WITH d, totalCount
 MATCH (dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d)
 WHERE (SIZE($selectedChannels) = 0 OR dc.channelUniqueName IN $selectedChannels)
-AND (dc.isArchived IS NULL OR dc.isArchived = false) // Only include non-archived channels
+AND (dc.archived IS NULL OR dc.archived = false) // Only include non-archived channels
 WITH d, COLLECT(dc) AS discussionChannels, totalCount
 
 // Unwind the discussion channels to work with them individually for fetching related data
