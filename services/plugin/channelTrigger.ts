@@ -9,6 +9,10 @@ import {
   createPipelineAttempt,
   type PipelineJobStatus,
 } from './pipelineAttempt.js'
+import {
+  createPublicDiagnosticCollector,
+  type PublicDiagnostic,
+} from './publicDiagnostics.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
@@ -344,6 +348,7 @@ export const triggerChannelPluginPipeline = async (
     const runStart = performance.now()
     const logs: string[] = []
     const flags: unknown[] = []
+    let publicDiagnostics: PublicDiagnostic[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -393,6 +398,22 @@ export const triggerChannelPluginPipeline = async (
         mergeSettings(settingsDefaults, serverSettingsJson),
         channelSettingsJson
       )
+      const diagnosticCollector = createPublicDiagnosticCollector({
+        secrets: Object.values(decryptedSecrets),
+      })
+      publicDiagnostics = diagnosticCollector.entries
+      const internalLog = (...args: unknown[]) => {
+        const message = args
+          .map(arg =>
+            typeof arg === 'string' ? arg : JSON.stringify(arg)
+          )
+          .join(' ')
+        logs.push(message)
+        logger.info(
+          `[Plugin:${pluginId}:${channelUniqueName}]`,
+          message
+        )
+      }
 
       // Build channel context for plugins
       const channelContext = {
@@ -428,11 +449,10 @@ export const triggerChannelPluginPipeline = async (
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: unknown[]) => {
-          const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
-          logs.push(message)
-          logger.info(`[Plugin:${pluginId}:${channelUniqueName}]`, message)
+        diagnostics: {
+          public: diagnosticCollector.public,
         },
+        log: Object.assign(internalLog, { internal: internalLog }),
         storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
@@ -487,6 +507,7 @@ export const triggerChannelPluginPipeline = async (
             ? (result?.result?.message || 'Plugin run completed')
             : (result?.error || 'Plugin reported failure'),
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             channel: channelContext,
@@ -528,6 +549,7 @@ export const triggerChannelPluginPipeline = async (
           status: 'FAILED',
           message,
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             error: message,

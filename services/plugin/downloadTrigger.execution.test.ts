@@ -138,6 +138,53 @@ test("runs a matching plugin to SUCCEEDED", async () => {
   assert.equal(runs.length, 1);
 });
 
+test("stores structured public diagnostics separately from internal logs", async () => {
+  const { models, updates } = makeExecModels([installedEdge("mybot")]);
+  const Plugin = class {
+    constructor(private ctx: any) {}
+    async handleEvent() {
+      this.ctx.log.internal("internal provider request secret-value");
+      this.ctx.diagnostics.public({
+        level: "WARNING",
+        code: "ARCHIVE_CONTAINS_EXECUTABLE",
+        message: "The archive contains an executable file.",
+        details: {
+          path: "setup.exe",
+          apiToken: "must-not-be-public",
+        },
+      });
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin));
+
+  const completed = updates.find(
+    (update) => update.update.status === "SUCCEEDED"
+  ).update;
+  assert.deepEqual(
+    {
+      publicDiagnostics: JSON.parse(completed.publicDiagnostics),
+      internalPayload: JSON.parse(completed.payload).logs,
+    },
+    {
+      publicDiagnostics: [
+        {
+          level: "WARNING",
+          code: "ARCHIVE_CONTAINS_EXECUTABLE",
+          message: "The archive contains an executable file.",
+          details: {
+            path: "setup.exe",
+            apiToken: "[REDACTED]",
+          },
+          helpUrl: null,
+        },
+      ],
+      internalPayload: ["internal provider request secret-value"],
+    }
+  );
+});
+
 test("creates and completes a first-class pipeline attempt", async () => {
   const {
     models,

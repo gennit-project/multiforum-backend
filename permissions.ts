@@ -1,4 +1,4 @@
-import { and, shield, allow, deny, or } from "graphql-shield";
+import { and, chain, shield, allow, deny, or } from "graphql-shield";
 import rules from "./rules/rules.js";
 
 const {
@@ -80,6 +80,28 @@ const permissionList = shield({
       getUploadedDownloadableFiles: and(isAuthenticated, allow),
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
+      getPluginRunsForDownloadableFile: chain(
+        isAuthenticated,
+        canManagePlugins
+      ),
+      getPipelineRuns: chain(isAuthenticated, canManagePlugins),
+      getInternalPluginPipelineRun: chain(
+        isAuthenticated,
+        canManagePlugins
+      ),
+      pluginRuns: deny,
+      pluginRunsAggregate: deny,
+      pluginPipelineRuns: deny,
+      pluginPipelineRunsAggregate: deny,
+    },
+    PluginRun: {
+      payload: chain(isAuthenticated, canManagePlugins),
+      publicDiagnostics: chain(isAuthenticated, canManagePlugins),
+      "*": allow,
+    },
+    PluginPipelineRun: {
+      configurationSnapshot: chain(isAuthenticated, canManagePlugins),
+      "*": allow,
     },
     User: {
       // Public fields - anyone can access

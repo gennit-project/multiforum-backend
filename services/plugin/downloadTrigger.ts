@@ -11,6 +11,10 @@ import {
   createPipelineAttempt,
   type PipelineJobStatus,
 } from './pipelineAttempt.js'
+import {
+  createPublicDiagnosticCollector,
+  type PublicDiagnostic,
+} from './publicDiagnostics.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import {
@@ -314,6 +318,7 @@ export const triggerPluginRunsForDownloadableFile = async (
     const runStart = performance.now()
     const logs: string[] = []
     const flags: unknown[] = []
+    let publicDiagnostics: PublicDiagnostic[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -356,6 +361,19 @@ export const triggerPluginRunsForDownloadableFile = async (
       const runtimeSettings = mergeSettings(settingsDefaults, settingsJson)
       const attachments = await getPluginAttachments()
       const storedAttachments = getAttachmentUrls(downloadableFile)
+      const diagnosticCollector = createPublicDiagnosticCollector({
+        secrets: Object.values(decryptedSecrets),
+      })
+      publicDiagnostics = diagnosticCollector.entries
+      const internalLog = (...args: unknown[]) => {
+        const message = args
+          .map(arg =>
+            typeof arg === 'string' ? arg : JSON.stringify(arg)
+          )
+          .join(' ')
+        logs.push(message)
+        logger.info(`[Plugin:${pluginId}]`, message)
+      }
 
       const context = {
         scope: 'SERVER' as const,
@@ -364,11 +382,10 @@ export const triggerPluginRunsForDownloadableFile = async (
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: unknown[]) => {
-          const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
-          logs.push(message)
-          logger.info(`[Plugin:${pluginId}]`, message)
+        diagnostics: {
+          public: diagnosticCollector.public,
         },
+        log: Object.assign(internalLog, { internal: internalLog }),
         storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
@@ -423,6 +440,7 @@ export const triggerPluginRunsForDownloadableFile = async (
             ? (result?.result?.message || 'Plugin run completed')
             : (result?.error || 'Plugin reported failure'),
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             attachments: storedAttachments,
@@ -469,6 +487,7 @@ export const triggerPluginRunsForDownloadableFile = async (
           status: 'FAILED',
           message,
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             error: message,

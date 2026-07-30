@@ -26,6 +26,10 @@ import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
 import getUploadedDownloadableFiles from "./queries/getUploadedDownloadableFiles.js";
 import getImageAlbumUsage from "./queries/getImageAlbumUsage.js";
 import getPluginConfigStatus from './queries/getPluginConfigStatus.js'
+import getApplicablePluginPipeline from './queries/getApplicablePluginPipeline.js'
+import getPipelineSummary from './queries/getPluginPipelineSummary.js'
+import getPublicPipelineRun from './queries/getPublicPluginPipelineRun.js'
+import getInternalPluginPipelineRun from './queries/getInternalPluginPipelineRun.js'
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -42,7 +46,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     Plugin,
     ServerConfig,
     ServerSecret,
+    PluginPipelineRun,
     PluginRun,
+    DownloadableFile,
     Email,
   } = deps;
 
@@ -120,6 +126,24 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getPipelineRuns: getPipelineRuns({
       PluginRun
+    }),
+    getApplicablePluginPipeline: getApplicablePluginPipeline({
+      DownloadableFile,
+      ServerConfig,
+    }),
+    getPipelineSummary: getPipelineSummary({
+      DownloadableFile,
+      PluginPipelineRun,
+      PluginRun,
+    }),
+    getPublicPipelineRun: getPublicPipelineRun({
+      DownloadableFile,
+      PluginPipelineRun,
+      PluginRun,
+    }),
+    getInternalPluginPipelineRun: getInternalPluginPipelineRun({
+      PluginPipelineRun,
+      PluginRun,
     }),
     publicCollectionsContaining: publicCollectionsContaining({
       driver,

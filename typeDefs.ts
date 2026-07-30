@@ -1871,11 +1871,98 @@ const typeDefinitions = gql`
     targetId: String
     targetType: String
     payload: JSON
+    publicDiagnostics: JSON
     pipelineId: String
     executionOrder: Int
     skippedReason: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime! @timestamp(operations: [UPDATE])
+  }
+
+  enum PublicPluginDiagnosticLevel {
+    INFO
+    WARNING
+    ERROR
+  }
+
+  type PublicPluginDiagnostic {
+    level: PublicPluginDiagnosticLevel!
+    code: String!
+    message: String!
+    details: JSON
+    helpUrl: String
+  }
+
+  type PublicExpectedPluginJob {
+    pluginId: String!
+    pluginName: String!
+    version: String!
+    order: Int!
+    condition: PipelineCondition!
+    continueOnError: Boolean!
+  }
+
+  type ApplicablePluginPipeline {
+    targetId: ID!
+    targetType: String!
+    eventType: String!
+    applicability: PipelineApplicability!
+    effectiveAt: DateTime
+    required: Boolean!
+    reason: String!
+    expectedJobs: [PublicExpectedPluginJob!]!
+  }
+
+  type PublicPluginJobRun {
+    id: ID!
+    pluginId: String!
+    pluginName: String!
+    version: String!
+    scope: String!
+    channelId: String
+    eventType: String!
+    status: PluginRunStatus!
+    message: String
+    durationMs: Int
+    executionOrder: Int!
+    skippedReason: String
+    diagnostics: [PublicPluginDiagnostic!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type PublicPluginPipelineRun {
+    id: ID!
+    pipelineId: String!
+    targetId: ID!
+    targetType: String!
+    eventType: String!
+    scope: String!
+    channelId: String
+    status: PluginPipelineRunStatus!
+    trigger: PluginPipelineRunTrigger!
+    initiatedByUsername: String
+    retryOfPipelineRunId: ID
+    attemptNumber: Int!
+    applicability: PipelineApplicability
+    policyEffectiveAt: DateTime
+    queuedAt: DateTime!
+    startedAt: DateTime
+    finishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    jobs: [PublicPluginJobRun!]!
+  }
+
+  type PluginPipelineSummary {
+    targetId: ID!
+    targetType: String!
+    attempts: [PublicPluginPipelineRun!]!
+  }
+
+  type InternalPluginPipelineRunDetail {
+    attempt: PluginPipelineRun!
+    jobs: [PluginRun!]!
   }
 
   type ServerConfig {
@@ -2349,6 +2436,20 @@ const typeDefinitions = gql`
     getInstalledPlugins: [InstalledPlugin!]!
     getPluginRunsForDownloadableFile(downloadableFileId: ID!): [PluginRun!]!
     getPipelineRuns(targetId: ID!, targetType: String!): [PluginRun!]!
+    getApplicablePluginPipeline(
+      downloadableFileId: ID!
+      eventType: String = "downloadableFile.created"
+    ): ApplicablePluginPipeline!
+    getPipelineSummary(
+      targetId: ID!
+      targetType: String!
+    ): PluginPipelineSummary!
+    getPublicPipelineRun(
+      pipelineRunId: ID!
+    ): PublicPluginPipelineRun
+    getInternalPluginPipelineRun(
+      pipelineRunId: ID!
+    ): InternalPluginPipelineRunDetail
   }
 `
 
