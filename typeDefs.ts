@@ -1118,6 +1118,10 @@ const typeDefinitions = gql`
     lockWikiPage(channelUniqueName: String!, wikiPageId: ID!, reason: String!): WikiPage!
     unlockWikiPage(channelUniqueName: String!, wikiPageId: ID!): WikiPage!
     setFeaturedWikiPages(serverName: String!, wikiPageIds: [ID!]!): ServerConfig!
+    setRankingSettings(
+      serverName: String!
+      input: RankingSettingsPatchInput!
+    ): RankingSettings!
 
     # Share collection as discussion
     shareCollectionAsDiscussion(
@@ -1834,6 +1838,15 @@ const typeDefinitions = gql`
     serverDescription: String
     serverIconURL: String
     rules: JSON
+    rankingSettingsJson: String
+      @selectable(onRead: false, onAggregate: false)
+      @settable(onCreate: false, onUpdate: false)
+    rankingSettingsUpdatedAt: DateTime
+      @selectable(onRead: false, onAggregate: false)
+      @settable(onCreate: false, onUpdate: false)
+    rankingSettingsUpdatedBy: String
+      @selectable(onRead: false, onAggregate: false)
+      @settable(onCreate: false, onUpdate: false)
     allowedFileTypes: [String]
     featuredWikiPageIds: [ID]
     enableDownloads: Boolean
@@ -1876,6 +1889,35 @@ const typeDefinitions = gql`
   type EnvironmentInfo {
     isTestEnvironment: Boolean
     currentDatabase: String
+  }
+
+  type HotRankingSettings
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    ageOffsetMonths: Float!
+    gravity: Float!
+  }
+
+  type RankingSettings
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    version: Int!
+    discussionHot: HotRankingSettings!
+    commentHot: HotRankingSettings!
+    updatedAt: DateTime
+    updatedBy: String
+  }
+
+  input HotRankingSettingsPatchInput {
+    ageOffsetMonths: Float
+    gravity: Float
+  }
+
+  input RankingSettingsPatchInput {
+    discussionHot: HotRankingSettingsPatchInput
+    commentHot: HotRankingSettingsPatchInput
   }
 
   type SafetyCheckResponse {
@@ -2201,6 +2243,7 @@ const typeDefinitions = gql`
       options: DiscussionListOptions
       loggedInUsername: String
     ): SiteWideDiscussionListFormat
+    getRankingSettings(serverName: String!): RankingSettings!
     getSiteWideIssueList(
       searchInput: String
       selectedChannels: [String]

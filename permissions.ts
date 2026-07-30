@@ -80,6 +80,7 @@ const permissionList = shield({
       getUploadedDownloadableFiles: and(isAuthenticated, allow),
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
+      getRankingSettings: and(isAuthenticated, canManageServerSettings),
     },
     User: {
       // Public fields - anyone can access
@@ -317,6 +318,7 @@ const permissionList = shield({
       lockWikiPage: and(isAuthenticated, allow),
       unlockWikiPage: and(isAuthenticated, allow),
       setFeaturedWikiPages: and(isAuthenticated, canManageServerSettings),
+      setRankingSettings: and(isAuthenticated, canManageServerSettings),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),

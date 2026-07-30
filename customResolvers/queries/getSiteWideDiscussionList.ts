@@ -5,10 +5,12 @@ import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
+import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 
 type Input = {
   Discussion: DiscussionModel;
   driver: Driver;
+  serverName?: string;
 };
 
 enum timeFrameOptionKeys {
@@ -35,7 +37,7 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Discussion } = input;
+  const { driver, Discussion, serverName } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, loggedInUsername, options } = args;
@@ -47,6 +49,15 @@ const getResolver = (input: Input) => {
     let totalCount = 0;
 
     try {
+      const effectiveSort =
+        sort === "new" || sort === "top" ? sort : "hot";
+      const rankingParams = await getHotRankingQueryParams({
+        executor: session,
+        profile: "discussion",
+        sortOption: effectiveSort,
+        serverName,
+      });
+
       switch (sort) {
         case "new":
           let newDiscussionResult = await session.run(
@@ -65,6 +76,7 @@ const getResolver = (input: Input) => {
               startOfTimeFrame: null,
               sortOption: "new",
               loggedInUsername: loggedInUsername || null,
+              ...rankingParams,
             }
           );
 
@@ -108,6 +120,7 @@ const getResolver = (input: Input) => {
               startOfTimeFrame: selectedTimeFrame,
               sortOption: "top",
               loggedInUsername: loggedInUsername || null,
+              ...rankingParams,
             }
           );
 
@@ -144,6 +157,7 @@ const getResolver = (input: Input) => {
               startOfTimeFrame: null,
               sortOption: "hot",
               loggedInUsername: loggedInUsername || null,
+              ...rankingParams,
             }
           );
 

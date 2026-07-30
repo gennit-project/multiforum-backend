@@ -6,6 +6,7 @@ import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionChannelModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
+import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 
 enum timeFrameOptionKeys {
   year = "year",
@@ -17,6 +18,7 @@ enum timeFrameOptionKeys {
 type Input = {
   DiscussionChannel: DiscussionChannelModel;
   driver: Driver;
+  serverName?: string;
 };
 
 type LabelFilter = {
@@ -41,7 +43,7 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver } = input;
+  const { driver, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, options, selectedTags, searchInput, showArchived, showUnanswered, hasDownload, labelFilters } = args;
     const { offset, limit, sort, timeFrame } = options || {};
@@ -60,6 +62,14 @@ const getResolver = (input: Input) => {
 
     try {
       let aggregateCount = 0;
+      const effectiveSort =
+        sort === "new" || sort === "top" ? sort : "hot";
+      const rankingParams = await getHotRankingQueryParams({
+        executor: session,
+        profile: "discussion",
+        sortOption: effectiveSort,
+        serverName,
+      });
       const queryParams = {
         searchInput: searchValue,
         showArchived,
@@ -74,7 +84,8 @@ const getResolver = (input: Input) => {
         limit: parseInt(limit, 10),
         startOfTimeFrame: null,
         sortOption: "new",
-        loggedInUsername
+        loggedInUsername,
+        ...rankingParams,
       };
 
       switch (sort) {

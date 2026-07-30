@@ -9,6 +9,7 @@ import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.j
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionChannelModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
+import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 
 const discussionChannelSelectionSet = `
 {
@@ -76,6 +77,7 @@ const discussionChannelSelectionSet = `
 type Input = {
   driver: Driver
   DiscussionChannel: DiscussionChannelModel
+  serverName?: string
 }
 
 type Args = {
@@ -88,7 +90,7 @@ type Args = {
 }
 
 const getResolver = (input: Input) => {
-  const { driver, DiscussionChannel } = input
+  const { driver, DiscussionChannel, serverName } = input
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, discussionId, modName, offset, limit, sort } =
       args
@@ -120,6 +122,13 @@ const getResolver = (input: Input) => {
 
       const discussionChannel = result[0]
       const discussionChannelId = discussionChannel.id
+      const effectiveSort = sort === 'top' ? 'top' : sort === 'new' ? 'new' : 'hot'
+      const rankingParams = await getHotRankingQueryParams({
+        executor: session,
+        profile: "comment",
+        sortOption: effectiveSort,
+        serverName,
+      })
 
       // Filter SubscribedToNotifications to only show current user's subscription status
       if (loggedInUsername && discussionChannel.SubscribedToNotifications) {
@@ -157,7 +166,8 @@ const getResolver = (input: Input) => {
           offset: parseInt(offset, 10),
           limit: parseInt(limit, 10),
           sortOption: 'top',
-          loggedInUsername
+          loggedInUsername,
+          ...rankingParams,
         })
 
         commentsResult = queryResult.records.map((record: Neo4jRecord) => {
@@ -172,7 +182,8 @@ const getResolver = (input: Input) => {
           offset: parseInt(offset, 10),
           limit: parseInt(limit, 10),
           sortOption: 'hot',
-          loggedInUsername
+          loggedInUsername,
+          ...rankingParams,
         })
 
         commentsResult = queryResult.records.map((record: Neo4jRecord) => {

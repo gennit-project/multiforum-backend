@@ -26,6 +26,7 @@ import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
 import getUploadedDownloadableFiles from "./queries/getUploadedDownloadableFiles.js";
 import getImageAlbumUsage from "./queries/getImageAlbumUsage.js";
 import getPluginConfigStatus from './queries/getPluginConfigStatus.js'
+import getRankingSettings from "./queries/getRankingSettings.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -49,6 +50,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
   return {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
       Discussion,
+      driver,
+    }),
+    getRankingSettings: getRankingSettings({
       driver,
     }),
     getSiteWideIssueList: getSiteWideIssueList({

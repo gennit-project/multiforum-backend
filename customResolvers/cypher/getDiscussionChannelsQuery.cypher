@@ -159,7 +159,7 @@ WITH dc, d, author, serverRole, channelRole, COLLECT(c) AS comments, tagsText, l
      duration.between(dc.createdAt, datetime()).days / 30.0 AS ageInMonths
 
 WITH dc, d, author, serverRole, channelRole, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, totalCount,
-     10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
+     log10(weightedVotesCount + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) AS hotRank
 
 // Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
 // @cypher field + server-admin membership), so the author's roles are no longer
