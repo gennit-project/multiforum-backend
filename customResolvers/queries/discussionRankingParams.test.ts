@@ -78,7 +78,8 @@ test("getSiteWideDiscussionList passes stored discussion ranking settings to Cyp
         limit: "20",
         resultsOrder: "desc",
         sort: "hot",
-        timeFrame: "week",
+        timeFrame:
+          "week" as Parameters<typeof resolver>[1]["options"]["timeFrame"],
       },
     },
     {} as GraphQLContext,
@@ -110,7 +111,8 @@ test("getDiscussionsInChannel passes stored discussion ranking settings to Cyphe
         offset: "0",
         limit: "20",
         sort: "hot",
-        timeFrame: "week",
+        timeFrame:
+          "week" as Parameters<typeof resolver>[1]["options"]["timeFrame"],
       },
     },
     {
