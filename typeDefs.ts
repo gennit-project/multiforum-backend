@@ -1447,6 +1447,12 @@ const typeDefinitions = gql`
       event: String!
     ): [PluginRun!]!
     retryDownloadableFileScan(downloadableFileId: ID!): [PluginRun!]!
+    startPluginPipeline(
+      targetId: ID!
+      targetType: String!
+      eventType: String!
+      channelId: String
+    ): PluginPipelineRun!
     clearDownloadableFileScan(
       downloadableFileId: ID!
       reason: String

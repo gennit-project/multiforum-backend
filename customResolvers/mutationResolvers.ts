@@ -83,6 +83,7 @@ import refreshPlugins from "./mutations/refreshPlugins.js";
 import installPluginVersion from "./mutations/installPluginVersion.js";
 import triggerDownloadableFilePluginRuns from "./mutations/triggerDownloadableFilePluginRuns.js";
 import retryDownloadableFileScan from "./mutations/retryDownloadableFileScan.js";
+import startPluginPipeline from "./mutations/startPluginPipeline.js";
 import clearDownloadableFileScan from "./mutations/clearDownloadableFileScan.js";
 import trackDownload from "./mutations/trackDownload.js";
 import prepareDownload from "./mutations/prepareDownload.js";
@@ -551,6 +552,17 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       ServerSecret
     }),
     retryDownloadableFileScan: retryDownloadableFileScan({
+      DownloadableFile,
+      Plugin,
+      PluginVersion,
+      PluginPipelineRun,
+      PluginRun,
+      ServerConfig,
+      ServerSecret
+    }),
+    startPluginPipeline: startPluginPipeline({
+      Channel,
+      Discussion,
       DownloadableFile,
       Plugin,
       PluginVersion,

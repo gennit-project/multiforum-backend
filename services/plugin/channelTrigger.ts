@@ -1,5 +1,12 @@
 import { performance } from 'perf_hooks'
-import type { ChannelTriggerArgs, PluginEdgeData, EventPipeline, PluginToRun, PendingRun } from './types.js'
+import type {
+  ChannelTriggerArgs,
+  PluginEdgeData,
+  EventPipeline,
+  PluginToRun,
+  PendingRun,
+  PipelineExecutionMetadata,
+} from './types.js'
 import { CHANNEL_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
@@ -33,7 +40,13 @@ export const triggerChannelPluginPipeline = async (
   }: ChannelTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
-  { loadPlugin = loadPluginImplementation }: { loadPlugin?: typeof loadPluginImplementation } = {}
+  {
+    loadPlugin = loadPluginImplementation,
+    execution,
+  }: {
+    loadPlugin?: typeof loadPluginImplementation
+    execution?: PipelineExecutionMetadata
+  } = {}
 ) => {
   if (!CHANNEL_EVENTS.has(event)) {
     throw new Error(`Unsupported channel plugin event: ${event}`)
@@ -217,7 +230,7 @@ export const triggerChannelPluginPipeline = async (
     return []
   }
 
-  const pipelineId = generatePipelineId()
+  const pipelineId = execution?.pipelineId || generatePipelineId()
   const runs: unknown[] = []
   const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
@@ -235,6 +248,8 @@ export const triggerChannelPluginPipeline = async (
       channelId: channelUniqueName,
       eventPipeline,
       pluginsToRun,
+      trigger: execution?.trigger,
+      initiatedByUsername: execution?.initiatedByUsername,
     },
   })
 

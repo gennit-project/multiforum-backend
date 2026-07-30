@@ -357,6 +357,7 @@ const permissionList = shield({
       unarchiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
       permanentlyRemoveImage: and(isAuthenticated, canPermanentlyRemoveImage),
       retryDownloadableFileScan: and(isAuthenticated, allow),
+      startPluginPipeline: and(isAuthenticated, allow),
       clearDownloadableFileScan: and(isAuthenticated, canPermanentlyRemoveImage),
       permanentlyDeleteImage: and(isAuthenticated, allow),
       permanentlyDeleteDownloadableFile: and(isAuthenticated, allow),

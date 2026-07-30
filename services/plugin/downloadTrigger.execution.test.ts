@@ -252,6 +252,39 @@ test("creates and completes a first-class pipeline attempt", async () => {
   );
 });
 
+test("records manual-start metadata supplied by the caller", async () => {
+  const { models, attemptCreates } = makeExecModels([
+    installedEdge("mybot"),
+  ]);
+
+  await triggerPluginRunsForDownloadableFile(
+    { downloadableFileId: "f-1", event: EVENT, models },
+    {
+      loadPlugin: loaderFor(
+        pluginReturning({ success: true, result: { message: "ok" } })
+      ),
+      execution: {
+        pipelineId: "manual-pipeline-1",
+        trigger: "OWNER_START" as any,
+        initiatedByUsername: "alice",
+      },
+    }
+  );
+
+  assert.deepEqual(
+    {
+      pipelineId: attemptCreates[0].input[0].pipelineId,
+      trigger: attemptCreates[0].input[0].trigger,
+      initiatedByUsername: attemptCreates[0].input[0].initiatedByUsername,
+    },
+    {
+      pipelineId: "manual-pipeline-1",
+      trigger: "OWNER_START",
+      initiatedByUsername: "alice",
+    }
+  );
+});
+
 test("gives plugins signed access to private objects without persisting the signature", async () => {
   const privateFile = {
     ...fileNode,

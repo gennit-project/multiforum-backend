@@ -36,6 +36,7 @@ const discussionWithFile = {
 function makeExecModels(steps: unknown[], edges: unknown[]) {
   const updates: any[] = [];
   const creates: any[] = [];
+  const attemptCreates: any[] = [];
   let seq = 0;
   const channel = {
     uniqueName: "cats",
@@ -62,9 +63,12 @@ function makeExecModels(steps: unknown[], edges: unknown[]) {
   };
   const PluginPipelineRun = {
     find: async () => [],
-    create: async (args: any) => ({
-      pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
-    }),
+    create: async (args: any) => {
+      attemptCreates.push(args);
+      return {
+        pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
+      };
+    },
     update: async () => ({}),
   };
   const models: any = {
@@ -78,7 +82,7 @@ function makeExecModels(steps: unknown[], edges: unknown[]) {
     Plugin: empty(),
     PluginVersion: empty(),
   };
-  return { models, updates, creates };
+  return { models, updates, creates, attemptCreates };
 }
 
 const pluginReturning = (result: unknown) =>
@@ -119,6 +123,45 @@ test("marks the run FAILED when the plugin reports failure", async () => {
   );
   await execRun(models, loaderFor(pluginReturning({ success: false, error: "nope" })));
   assert.ok(statusesOf(updates).includes("FAILED"));
+});
+
+test("records channel manual-start metadata supplied by the caller", async () => {
+  const { models, attemptCreates } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [installedEdge("mybot")]
+  );
+
+  await triggerChannelPluginPipeline(
+    {
+      discussionId: "d-1",
+      channelUniqueName: "cats",
+      event: EVENT,
+      models,
+    },
+    {
+      loadPlugin: loaderFor(
+        pluginReturning({ success: true, result: { message: "ok" } })
+      ),
+      execution: {
+        pipelineId: "manual-channel-pipeline",
+        trigger: "MODERATOR_START" as any,
+        initiatedByUsername: "moderator",
+      },
+    }
+  );
+
+  assert.deepEqual(
+    {
+      pipelineId: attemptCreates[0].input[0].pipelineId,
+      trigger: attemptCreates[0].input[0].trigger,
+      actor: attemptCreates[0].input[0].initiatedByUsername,
+    },
+    {
+      pipelineId: "manual-channel-pipeline",
+      trigger: "MODERATOR_START",
+      actor: "moderator",
+    }
+  );
 });
 
 test("skips later steps after a failure (stopOnFirstFailure)", async () => {

@@ -14,6 +14,7 @@ import type {
   ServerSecretModel,
   UserModel
 } from '../../ogm_types.js'
+import type { PluginPipelineRunTrigger } from '../../ogm_types.js'
 
 // Base Models type for server-scoped triggers
 export type Models = {
@@ -78,6 +79,12 @@ export type TriggerArgs = {
   downloadableFileId: string
   event: string
   models: Models
+}
+
+export type PipelineExecutionMetadata = {
+  pipelineId?: string
+  trigger?: PluginPipelineRunTrigger
+  initiatedByUsername?: string | null
 }
 
 // Arguments for comment trigger

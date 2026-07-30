@@ -1,6 +1,12 @@
 import { performance } from 'perf_hooks'
 import { Storage } from '@google-cloud/storage'
-import type { TriggerArgs, PluginEdgeData, EventPipeline, PendingRun } from './types.js'
+import type {
+  TriggerArgs,
+  PluginEdgeData,
+  EventPipeline,
+  PendingRun,
+  PipelineExecutionMetadata,
+} from './types.js'
 import { DOWNLOAD_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
@@ -39,10 +45,12 @@ export const triggerPluginRunsForDownloadableFile = async (
   // downloading/running a real plugin tarball. Defaults to the real loader.
   {
     loadPlugin = loadPluginImplementation,
-    storage = new Storage()
+    storage = new Storage(),
+    execution,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     storage?: Pick<Storage, 'bucket'>
+    execution?: PipelineExecutionMetadata
   } = {}
 ) => {
   if (!DOWNLOAD_EVENTS.has(event)) {
@@ -152,7 +160,7 @@ export const triggerPluginRunsForDownloadableFile = async (
   const { eventPipeline, pluginsToRun } = plan
 
   // Generate unique pipeline ID
-  const pipelineId = generatePipelineId()
+  const pipelineId = execution?.pipelineId || generatePipelineId()
 
   if (!plan.required || pluginsToRun.length === 0) {
     return []
@@ -171,6 +179,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       policyEffectiveAt: plan.effectiveAt,
       eventPipeline,
       pluginsToRun,
+      trigger: execution?.trigger,
+      initiatedByUsername: execution?.initiatedByUsername,
     },
   })
 
