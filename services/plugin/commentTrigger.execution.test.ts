@@ -89,7 +89,7 @@ function makeExecModels(edges: unknown[]) {
     },
     update: async args => {
       updates.push(args);
-      return {};
+      return { pluginRuns: [{ id: "run-1" }] };
     },
     find: async ({ where } = {}) => [{ id: where?.id ?? "run-1" }],
   });

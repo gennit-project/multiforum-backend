@@ -4,7 +4,8 @@
 // ~140 resolvers inline. The OGM/model setup now lives in
 // customResolvers/resolverDeps.ts and the wiring is split across the
 // type/query/mutation resolver builders below. The exported factory signature
-// is unchanged: getCustomResolvers(driver) => { resolvers, ogm }.
+// remains backwards compatible and also exposes the two pipeline models needed
+// by the background watchdog.
 import type { Driver } from "neo4j-driver";
 import { createOgmAndModels } from "./customResolvers/resolverDeps.js";
 import buildTypeResolvers from "./customResolvers/typeResolvers.js";
@@ -23,5 +24,9 @@ export default function (driver: Driver) {
   return {
     resolvers,
     ogm: deps.ogm,
+    pipelineWatchdogModels: {
+      PluginRun: deps.PluginRun,
+      PluginPipelineRun: deps.PluginPipelineRun,
+    },
   };
 }

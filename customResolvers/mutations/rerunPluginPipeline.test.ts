@@ -192,6 +192,35 @@ test("reruns a failed pipeline for its owner with retry lineage", async () => {
   );
 });
 
+test("allows the owner to rerun a timed-out pipeline", async () => {
+  let trigger: string | undefined;
+  const timedOutAttempt: AttemptRecord = {
+    ...sourceAttempt,
+    status: PluginPipelineRunStatus.TimedOut,
+  };
+  const resolver = createRerunPluginPipelineResolver(
+    makeInput({
+      source: timedOutAttempt,
+      related: [timedOutAttempt],
+    }),
+    async () => false,
+    async (_args, options = {}) => {
+      trigger = options.execution?.trigger;
+      return [];
+    },
+    undefined,
+    () => NOW
+  );
+
+  await resolver(
+    null,
+    { pipelineRunId: "source-pipeline" },
+    contextFor("alice")
+  );
+
+  assert.equal(trigger, PluginPipelineRunTrigger.OwnerRetry);
+});
+
 test("records moderator retry metadata", async () => {
   let trigger: string | undefined;
   const triggerDownloadRuns: DownloadTrigger = async (_args, options = {}) => {

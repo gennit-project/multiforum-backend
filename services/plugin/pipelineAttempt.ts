@@ -12,6 +12,7 @@ import type {
   PipelineApplicability,
   PluginToRun,
 } from './types.js'
+import { createQueuedPluginRunTiming } from './executionLease.js'
 
 export type PipelineJobStatus =
   | 'PENDING'
@@ -19,6 +20,8 @@ export type PipelineJobStatus =
   | 'SUCCEEDED'
   | 'FAILED'
   | 'SKIPPED'
+  | 'TIMED_OUT'
+  | 'CANCELLED'
 
 export type PipelineAttemptContext = {
   pipelineId: string
@@ -102,6 +105,9 @@ export const createPipelineAttempt = async ({
   now?: () => string
 }) => {
   const timestamp = now()
+  const queuedTiming = createQueuedPluginRunTiming({
+    now: new Date(timestamp),
+  })
   const attemptNumber = await nextAttemptNumber({
     PluginPipelineRun,
     targetId: context.targetId,
@@ -128,7 +134,8 @@ export const createPipelineAttempt = async ({
         configurationSnapshot: buildPipelineConfigurationSnapshot(context),
         applicability: context.applicability || null,
         policyEffectiveAt: context.policyEffectiveAt || null,
-        queuedAt: timestamp,
+        queuedAt: queuedTiming.queuedAt,
+        timeoutAt: queuedTiming.timeoutAt,
         updatedAt: timestamp,
       } as PluginPipelineRunCreateInput,
     ],
@@ -154,8 +161,14 @@ export const derivePipelineAttemptStatus = (
   if (statuses.some(status => status === 'PENDING')) {
     return PluginPipelineRunStatus.Queued
   }
+  if (statuses.some(status => status === 'TIMED_OUT')) {
+    return PluginPipelineRunStatus.TimedOut
+  }
   if (statuses.some(status => status === 'FAILED')) {
     return PluginPipelineRunStatus.Failed
+  }
+  if (statuses.some(status => status === 'CANCELLED')) {
+    return PluginPipelineRunStatus.Cancelled
   }
   return PluginPipelineRunStatus.Succeeded
 }
@@ -183,6 +196,7 @@ export const completePipelineAttempt = async ({
     update: {
       status,
       finishedAt,
+      ...(finishedAt ? { timeoutAt: null } : {}),
     } as PluginPipelineRunUpdateInput,
   })
 

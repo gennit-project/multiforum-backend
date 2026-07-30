@@ -34,6 +34,7 @@ import { CommentNotificationService } from "./services/commentNotificationServic
 import { DiscussionVersionHistoryService } from "./services/discussionVersionHistoryService.js";
 import { CommentVersionHistoryService } from "./services/commentVersionHistoryService.js";
 import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistoryService.js";
+import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdog.js";
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
 import type { GraphQLSchema } from "graphql";
 import type { Ogm, GraphQLRequest, GraphQLContext } from "./types/context.js";
@@ -95,7 +96,7 @@ const user = process.env.NEO4J_USER || "neo4j";
 
 const driver = neo4j.driver(uri, neo4j.auth.basic(user, password as string));
 
-const { ogm, resolvers } = getCustomResolvers(driver);
+const { ogm, resolvers, pipelineWatchdogModels } = getCustomResolvers(driver);
 
 const features = {
   filters: {
@@ -310,6 +311,11 @@ async function startBackgroundServices(schema: GraphQLSchema, ogm: Ogm) {
     {
       name: 'WikiPage Version History Service',
       service: () => new WikiPageVersionHistoryService(schema, ogm),
+      critical: false
+    },
+    {
+      name: 'Plugin Pipeline Watchdog',
+      service: () => new PluginPipelineWatchdogService(pipelineWatchdogModels),
       critical: false
     }
   ];

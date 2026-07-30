@@ -48,6 +48,17 @@ type AttentionItem = {
   value?: number | null;
 };
 
+type PluginPipelineOperations = {
+  queuedPluginJobCount: number;
+  runningPluginJobCount: number;
+  pluginTimeoutCount24h: number;
+  pluginTimeoutRate24h: number;
+  repeatedPluginFailureCount24h: number;
+  pluginRetryAttemptCount1h: number;
+  pluginRetryStormCount1h: number;
+  oldestQueuedPluginJobAgeSeconds: number;
+};
+
 type ChannelHealthSortKey =
   | "channelUniqueName"
   | "displayName"
@@ -186,7 +197,8 @@ const getHealthLabel = (row: Omit<ChannelHealthRow, "healthLabel">): string => {
 
 const buildAttentionItems = (
   rows: ChannelHealthRow[],
-  failedDownloadScanCount: number
+  failedDownloadScanCount: number,
+  pipelineOperations: PluginPipelineOperations
 ): AttentionItem[] => {
   const scanFailureItems: AttentionItem[] = failedDownloadScanCount > 0
     ? [{
@@ -236,8 +248,39 @@ const buildAttentionItems = (
       value: row.openIssueCount,
     }));
 
+  const pipelineItems: AttentionItem[] = [
+    ...(pipelineOperations.pluginTimeoutCount24h > 0
+      ? [{
+          severity: "WARNING" as const,
+          title: "Plugin pipeline timeouts",
+          description: `${pipelineOperations.pluginTimeoutCount24h} plugin job${pipelineOperations.pluginTimeoutCount24h === 1 ? "" : "s"} timed out in the last 24 hours.`,
+          metric: "pluginTimeoutCount24h",
+          value: pipelineOperations.pluginTimeoutCount24h,
+        }]
+      : []),
+    ...(pipelineOperations.repeatedPluginFailureCount24h > 0
+      ? [{
+          severity: "WARNING" as const,
+          title: "Repeated plugin failures",
+          description: `${pipelineOperations.repeatedPluginFailureCount24h} pipeline target${pipelineOperations.repeatedPluginFailureCount24h === 1 ? "" : "s"} failed or timed out at least three times in the last 24 hours.`,
+          metric: "repeatedPluginFailureCount24h",
+          value: pipelineOperations.repeatedPluginFailureCount24h,
+        }]
+      : []),
+    ...(pipelineOperations.pluginRetryStormCount1h > 0
+      ? [{
+          severity: "CRITICAL" as const,
+          title: "Plugin retry storms",
+          description: `${pipelineOperations.pluginRetryStormCount1h} pipeline target${pipelineOperations.pluginRetryStormCount1h === 1 ? "" : "s"} reached at least three retries in the last hour.`,
+          metric: "pluginRetryStormCount1h",
+          value: pipelineOperations.pluginRetryStormCount1h,
+        }]
+      : []),
+  ];
+
   return [
     ...scanFailureItems,
+    ...pipelineItems,
     ...staleIssueItems,
     ...highPressureItems,
     ...underRespondedItems,
@@ -579,6 +622,56 @@ const failedDownloadScanTotalQuery = `
   RETURN count(file) AS failedDownloadScanCount
 `;
 
+const pluginJobOperationsQuery = `
+  MATCH (job:PluginRun)
+  WITH job, datetime() AS now
+  RETURN
+    count(CASE WHEN job.status = 'PENDING' THEN 1 END) AS queuedPluginJobCount,
+    count(CASE WHEN job.status = 'RUNNING' THEN 1 END) AS runningPluginJobCount,
+    count(CASE
+      WHEN job.status = 'TIMED_OUT'
+       AND datetime(job.finishedAt) >= now - duration('P1D')
+      THEN 1
+    END) AS pluginTimeoutCount24h,
+    count(CASE
+      WHEN job.status IN ['SUCCEEDED', 'FAILED', 'SKIPPED', 'TIMED_OUT', 'CANCELLED']
+       AND datetime(job.finishedAt) >= now - duration('P1D')
+      THEN 1
+    END) AS pluginTerminalCount24h,
+    coalesce(max(CASE
+      WHEN job.status = 'PENDING'
+      THEN duration.inSeconds(datetime(job.queuedAt), now).seconds
+    END), 0) AS oldestQueuedPluginJobAgeSeconds
+`;
+
+const pluginRetryOperationsQuery = `
+  MATCH (attempt:PluginPipelineRun)
+  WHERE attempt.trigger IN ['OWNER_RETRY', 'MODERATOR_RETRY', 'AUTOMATIC_RETRY']
+    AND datetime(attempt.createdAt) >= datetime() - duration('PT1H')
+  WITH attempt.targetId AS targetId,
+       attempt.targetType AS targetType,
+       attempt.eventType AS eventType,
+       attempt.scope AS scope,
+       attempt.channelId AS channelId,
+       count(*) AS retryCount
+  RETURN coalesce(sum(retryCount), 0) AS pluginRetryAttemptCount1h,
+         count(CASE WHEN retryCount >= 3 THEN 1 END) AS pluginRetryStormCount1h
+`;
+
+const repeatedPluginFailuresQuery = `
+  MATCH (attempt:PluginPipelineRun)
+  WHERE attempt.status IN ['FAILED', 'TIMED_OUT']
+    AND datetime(attempt.finishedAt) >= datetime() - duration('P1D')
+  WITH attempt.targetId AS targetId,
+       attempt.targetType AS targetType,
+       attempt.eventType AS eventType,
+       attempt.scope AS scope,
+       attempt.channelId AS channelId,
+       count(*) AS failureCount
+  WHERE failureCount >= 3
+  RETURN count(*) AS repeatedPluginFailureCount24h
+`;
+
 const runDashboardQuery = async (
   session: Session,
   name: string,
@@ -631,6 +724,24 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         failedDownloadScanTotalQuery,
         params
       );
+      const pluginJobOperationsResult = await runDashboardQuery(
+        session,
+        "pluginJobOperations",
+        pluginJobOperationsQuery,
+        params
+      );
+      const pluginRetryOperationsResult = await runDashboardQuery(
+        session,
+        "pluginRetryOperations",
+        pluginRetryOperationsQuery,
+        params
+      );
+      const repeatedPluginFailuresResult = await runDashboardQuery(
+        session,
+        "repeatedPluginFailures",
+        repeatedPluginFailuresQuery,
+        params
+      );
 
       const channelRecord = channelResult.records[0];
       const allChannelHealth = sanitize(channelRecord?.get("allChannelHealth") || []) as Array<Omit<ChannelHealthRow, "healthLabel">>;
@@ -660,6 +771,41 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
       const failedDownloadScanCount = toNumber(
         failedDownloadScanTotalResult.records[0]?.get("failedDownloadScanCount")
       );
+      const pluginJobOperations = pluginJobOperationsResult.records[0];
+      const pluginRetryOperations = pluginRetryOperationsResult.records[0];
+      const pluginTerminalCount24h = toNumber(
+        pluginJobOperations?.get("pluginTerminalCount24h")
+      );
+      const pluginTimeoutCount24h = toNumber(
+        pluginJobOperations?.get("pluginTimeoutCount24h")
+      );
+      const pipelineOperations: PluginPipelineOperations = {
+        queuedPluginJobCount: toNumber(
+          pluginJobOperations?.get("queuedPluginJobCount")
+        ),
+        runningPluginJobCount: toNumber(
+          pluginJobOperations?.get("runningPluginJobCount")
+        ),
+        pluginTimeoutCount24h,
+        pluginTimeoutRate24h:
+          pluginTerminalCount24h > 0
+            ? pluginTimeoutCount24h / pluginTerminalCount24h
+            : 0,
+        repeatedPluginFailureCount24h: toNumber(
+          repeatedPluginFailuresResult.records[0]?.get(
+            "repeatedPluginFailureCount24h"
+          )
+        ),
+        pluginRetryAttemptCount1h: toNumber(
+          pluginRetryOperations?.get("pluginRetryAttemptCount1h")
+        ),
+        pluginRetryStormCount1h: toNumber(
+          pluginRetryOperations?.get("pluginRetryStormCount1h")
+        ),
+        oldestQueuedPluginJobAgeSeconds: toNumber(
+          pluginJobOperations?.get("oldestQueuedPluginJobAgeSeconds")
+        ),
+      };
       const openIssueAges = (sanitize(openIssueSummary?.get("openIssueAges") || []) as unknown[])
         .map(toNumber);
       const issueAging = buildIssueAging(openIssueAges);
@@ -679,6 +825,7 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         lockedContentCount: allChannelHealth.reduce((total, row) => total + toNumber(row.lockedContentCount), 0),
         suspensionCount,
         failedDownloadScanCount,
+        ...pipelineOperations,
         medianOpenIssueAgeDays,
       };
 
@@ -690,7 +837,11 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         timeSeries,
         channelHealth,
         issueAging,
-        attentionItems: buildAttentionItems(channelHealth, failedDownloadScanCount),
+        attentionItems: buildAttentionItems(
+          channelHealth,
+          failedDownloadScanCount,
+          pipelineOperations
+        ),
       };
     } catch (error) {
       logger.error("Error fetching server health dashboard:", error);

@@ -290,7 +290,7 @@ export const createStartPluginPipelineResolver = (
         pipelineId targetId targetType targetVersion eventType scope channelId status trigger
         initiatedByUsername retryOfPipelineRunId attemptNumber
         configurationSnapshot applicability policyEffectiveAt
-        queuedAt startedAt finishedAt createdAt updatedAt
+        queuedAt startedAt heartbeatAt timeoutAt finishedAt createdAt updatedAt
       }`,
     });
     if (!attempts[0]) {

@@ -139,6 +139,17 @@ test('derives succeeded when all jobs are successful or skipped', () => {
   )
 })
 
+test('derives timed out and cancelled terminal states', () => {
+  assert.equal(
+    derivePipelineAttemptStatus(['SUCCEEDED', 'TIMED_OUT']),
+    PluginPipelineRunStatus.TimedOut
+  )
+  assert.equal(
+    derivePipelineAttemptStatus(['SUCCEEDED', 'CANCELLED']),
+    PluginPipelineRunStatus.Cancelled
+  )
+})
+
 test('completes a terminal attempt with a finish timestamp', async () => {
   const updates: AttemptUpdateArgs[] = []
   const status = await completePipelineAttempt({
@@ -162,6 +173,7 @@ test('completes a terminal attempt with a finish timestamp', async () => {
         update: {
           status: PluginPipelineRunStatus.Failed,
           finishedAt: '2026-07-30T13:00:00.000Z',
+          timeoutAt: null,
         },
       },
     }

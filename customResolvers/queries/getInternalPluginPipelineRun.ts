@@ -17,7 +17,7 @@ const getResolver = ({
       id pipelineId targetId targetType eventType scope channelId status trigger
       initiatedByUsername retryOfPipelineRunId attemptNumber
       configurationSnapshot applicability policyEffectiveAt queuedAt startedAt
-      finishedAt createdAt updatedAt
+      heartbeatAt timeoutAt finishedAt createdAt updatedAt
     }`,
   })
   const attempt = attempts[0]
@@ -29,7 +29,8 @@ const getResolver = ({
     selectionSet: `{
       id pluginId pluginName version scope channelId eventType status message
       durationMs targetId targetType payload publicDiagnostics pipelineId
-      executionOrder skippedReason createdAt updatedAt
+      executionOrder skippedReason leaseId queuedAt startedAt heartbeatAt
+      timeoutAt finishedAt createdAt updatedAt
     }`,
   })
   return { attempt, jobs }

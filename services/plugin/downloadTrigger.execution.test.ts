@@ -83,7 +83,7 @@ function makeExecModels(edges: unknown[], file = fileNode) {
     },
     update: async args => {
       updates.push(args);
-      return {};
+      return { pluginRuns: [{ id: "run-1" }] };
     },
     find: async ({ where } = {}) => [{ id: where?.id ?? "run-1" }],
   });
@@ -236,15 +236,21 @@ test("creates and completes a first-class pipeline attempt", async () => {
     models,
     loaderFor(pluginReturning({ success: true, result: { message: "ok" } }))
   );
+  const started = attemptUpdates.find(
+    update => update.update?.status === "RUNNING"
+  );
+  const completed = attemptUpdates.find(
+    update => update.update?.status === "SUCCEEDED"
+  );
 
   assert.deepEqual(
     {
       created: attemptCreates[0]!.input[0],
-      started: attemptUpdates[0]!.update,
-      completed: attemptUpdates[1]!.update,
+      started: started!.update,
+      completed: completed!.update,
       matchingPipelineId:
         attemptCreates[0]!.input[0]!.pipelineId ===
-        attemptUpdates[1]!.where?.pipelineId,
+        completed!.where?.pipelineId,
     },
     {
       created: {
@@ -278,6 +284,7 @@ test("creates and completes a first-class pipeline attempt", async () => {
         applicability: "ALL_FILES_IMMEDIATE",
         policyEffectiveAt: null,
         queuedAt: attemptCreates[0]!.input[0]!.queuedAt,
+        timeoutAt: attemptCreates[0]!.input[0]!.timeoutAt,
         updatedAt: attemptCreates[0]!.input[0]!.updatedAt,
       },
       started: {
@@ -286,7 +293,8 @@ test("creates and completes a first-class pipeline attempt", async () => {
       },
       completed: {
         status: "SUCCEEDED",
-        finishedAt: attemptUpdates[1]!.update?.finishedAt,
+        finishedAt: completed!.update?.finishedAt,
+        timeoutAt: null,
       },
       matchingPipelineId: true,
     }

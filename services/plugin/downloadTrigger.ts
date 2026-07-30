@@ -18,6 +18,12 @@ import {
   type PipelineJobStatus,
 } from './pipelineAttempt.js'
 import {
+  claimPluginRunLease,
+  completePluginRunLease,
+  createQueuedPluginRunTiming,
+  startPluginRunHeartbeat,
+} from './executionLease.js'
+import {
   createPublicDiagnosticCollector,
   type PublicDiagnostic,
 } from './publicDiagnostics.js'
@@ -227,6 +233,7 @@ export const triggerPluginRunsForDownloadableFile = async (
     const pluginNode = edgeData.node.Plugin
     const pluginVersionData = edgeData.node
 
+    const timing = createQueuedPluginRunTiming()
     const runCreateResult = await PluginRun.create({
       input: [
         ({
@@ -241,6 +248,8 @@ export const triggerPluginRunsForDownloadableFile = async (
           targetType: 'DownloadableFile',
           pipelineId,
           executionOrder: order,
+          queuedAt: timing.queuedAt,
+          timeoutAt: timing.timeoutAt,
           payload: JSON.stringify({
             fileName: fileData.fileName,
             url: fileData.url,
@@ -275,7 +284,9 @@ export const triggerPluginRunsForDownloadableFile = async (
         update: ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
-          message: 'Skipped: pipeline stopped'
+          message: 'Skipped: pipeline stopped',
+          finishedAt: new Date().toISOString(),
+          timeoutAt: null,
         } as PluginRunUpdateInput)
       })
       jobStatuses[order] = 'SKIPPED'
@@ -303,7 +314,9 @@ export const triggerPluginRunsForDownloadableFile = async (
         update: ({
           status: 'SKIPPED',
           skippedReason: reason,
-          message: `Skipped: ${reason}`
+          message: `Skipped: ${reason}`,
+          finishedAt: new Date().toISOString(),
+          timeoutAt: null,
         } as PluginRunUpdateInput)
       })
       jobStatuses[order] = 'SKIPPED'
@@ -320,10 +333,18 @@ export const triggerPluginRunsForDownloadableFile = async (
       continue
     }
 
-    // Update status to RUNNING
-    await PluginRun.update({
-      where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
+    const lease = await claimPluginRunLease({
+      PluginRun,
+      PluginPipelineRun,
+      pluginRunId,
+      pipelineId,
+    })
+    if (!lease) continue
+
+    const heartbeat = startPluginRunHeartbeat({
+      PluginRun,
+      PluginPipelineRun,
+      lease,
     })
     jobStatuses[order] = 'RUNNING'
 
@@ -444,9 +465,10 @@ export const triggerPluginRunsForDownloadableFile = async (
       const succeeded = result?.success !== false
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await completePluginRunLease({
+        PluginRun,
+        lease,
+        update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
           message: succeeded
             ? (result?.result?.message || 'Plugin run completed')
@@ -460,8 +482,8 @@ export const triggerPluginRunsForDownloadableFile = async (
             flags,
             logs,
             result
-          })
-        } as PluginRunUpdateInput)
+          }),
+        },
       })
       jobStatuses[order] = succeeded ? 'SUCCEEDED' : 'FAILED'
 
@@ -493,9 +515,10 @@ export const triggerPluginRunsForDownloadableFile = async (
 
       previousStatus = 'FAILED'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await completePluginRunLease({
+        PluginRun,
+        lease,
+        update: {
           status: 'FAILED',
           message,
           durationMs,
@@ -505,8 +528,8 @@ export const triggerPluginRunsForDownloadableFile = async (
             error: message,
             logs,
             flags
-          })
-        } as PluginRunUpdateInput)
+          }),
+        },
       })
       jobStatuses[order] = 'FAILED'
 
@@ -527,6 +550,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       if (updated[0]) {
         runs.push(updated[0])
       }
+    } finally {
+      heartbeat.stop()
     }
   }
 

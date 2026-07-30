@@ -1822,6 +1822,8 @@ const typeDefinitions = gql`
     SUCCEEDED
     FAILED
     SKIPPED
+    TIMED_OUT
+    CANCELLED
   }
 
   enum PluginPipelineRunStatus {
@@ -1859,8 +1861,10 @@ const typeDefinitions = gql`
     configurationSnapshot: JSON!
     applicability: String
     policyEffectiveAt: DateTime
-    queuedAt: DateTime!
+    queuedAt: DateTime
     startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
     finishedAt: DateTime
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime! @timestamp(operations: [UPDATE])
@@ -1884,6 +1888,12 @@ const typeDefinitions = gql`
     pipelineId: String
     executionOrder: Int
     skippedReason: String
+    leaseId: String
+    queuedAt: DateTime
+    startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
+    finishedAt: DateTime
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime! @timestamp(operations: [UPDATE])
   }
@@ -1939,6 +1949,11 @@ const typeDefinitions = gql`
     executionOrder: Int!
     skippedReason: String
     diagnostics: [PublicPluginDiagnostic!]!
+    queuedAt: DateTime!
+    startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
+    finishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -1960,6 +1975,8 @@ const typeDefinitions = gql`
     policyEffectiveAt: DateTime
     queuedAt: DateTime!
     startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
     finishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -2212,6 +2229,14 @@ const typeDefinitions = gql`
     lockedContentCount: Int!
     suspensionCount: Int!
     failedDownloadScanCount: Int!
+    queuedPluginJobCount: Int!
+    runningPluginJobCount: Int!
+    pluginTimeoutCount24h: Int!
+    pluginTimeoutRate24h: Float!
+    repeatedPluginFailureCount24h: Int!
+    pluginRetryAttemptCount1h: Int!
+    pluginRetryStormCount1h: Int!
+    oldestQueuedPluginJobAgeSeconds: Int!
     medianOpenIssueAgeDays: Float
   }
 

@@ -15,8 +15,10 @@ type PipelineAttemptRecord = {
   attemptNumber: number
   applicability?: string | null
   policyEffectiveAt?: string | null
-  queuedAt: string
+  queuedAt?: string | null
   startedAt?: string | null
+  heartbeatAt?: string | null
+  timeoutAt?: string | null
   finishedAt?: string | null
   createdAt: string
   updatedAt: string
@@ -36,6 +38,11 @@ type PluginJobRecord = {
   executionOrder?: number | null
   skippedReason?: string | null
   publicDiagnostics?: unknown
+  queuedAt?: string | null
+  startedAt?: string | null
+  heartbeatAt?: string | null
+  timeoutAt?: string | null
+  finishedAt?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -77,6 +84,11 @@ export const toPublicPluginJob = (job: PluginJobRecord) => {
       hasDiagnostics: diagnostics.length > 0,
     }),
     diagnostics,
+    queuedAt: job.queuedAt || job.createdAt,
+    startedAt: job.startedAt || null,
+    heartbeatAt: job.heartbeatAt || null,
+    timeoutAt: job.timeoutAt || null,
+    finishedAt: job.finishedAt || null,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
   }
@@ -103,8 +115,10 @@ export const toPublicPipelineRun = ({
   attemptNumber: attempt.attemptNumber,
   applicability: attempt.applicability || null,
   policyEffectiveAt: attempt.policyEffectiveAt || null,
-  queuedAt: attempt.queuedAt,
+  queuedAt: attempt.queuedAt || attempt.createdAt,
   startedAt: attempt.startedAt || null,
+  heartbeatAt: attempt.heartbeatAt || null,
+  timeoutAt: attempt.timeoutAt || null,
   finishedAt: attempt.finishedAt || null,
   createdAt: attempt.createdAt,
   updatedAt: attempt.updatedAt,
@@ -120,10 +134,12 @@ export const toPublicPipelineRun = ({
 export const PUBLIC_PIPELINE_ATTEMPT_SELECTION = `{
   id pipelineId targetId targetType eventType scope channelId status trigger
   initiatedByUsername retryOfPipelineRunId attemptNumber applicability
-  policyEffectiveAt queuedAt startedAt finishedAt createdAt updatedAt
+  policyEffectiveAt queuedAt startedAt heartbeatAt timeoutAt finishedAt
+  createdAt updatedAt
 }`
 
 export const PUBLIC_PLUGIN_JOB_SELECTION = `{
   id pipelineId pluginId pluginName version scope channelId eventType status
-  durationMs executionOrder skippedReason publicDiagnostics createdAt updatedAt
+  durationMs executionOrder skippedReason publicDiagnostics queuedAt startedAt
+  heartbeatAt timeoutAt finishedAt createdAt updatedAt
 }`
