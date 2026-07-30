@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { validatePipelines, type EventPipelineInput } from "./updatePluginPipelines.js";
+import {
+  normalizePipelinesForStorage,
+  validatePipelines,
+  type EventPipelineInput
+} from "./updatePluginPipelines.js";
 
 // Tests for validatePipelines function
 
@@ -143,6 +147,62 @@ async function testStepWithOptionalFields() {
   assert.equal(result, null, "Pipeline with all optional fields should be valid");
 }
 
+async function testInvalidApplicabilityReturnsError() {
+  const pipelines = [
+    {
+      event: 'downloadableFile.created',
+      applicability: 'SOMETHING_ELSE',
+      steps: [{ pluginId: 'test-plugin' }]
+    }
+  ] as unknown as EventPipelineInput[];
+
+  const result = validatePipelines(pipelines);
+  assert.match(result || '', /applicability/);
+}
+
+async function testInvalidEffectiveAtReturnsError() {
+  const pipelines: EventPipelineInput[] = [
+    {
+      event: 'downloadableFile.created',
+      effectiveAt: 'not-a-date',
+      steps: [{ pluginId: 'test-plugin' }]
+    }
+  ];
+
+  const result = validatePipelines(pipelines);
+  assert.match(result || '', /effectiveAt/);
+}
+
+async function testDownloadPipelineDefaultsToNewFilesOnly() {
+  const effectiveAt = '2026-07-30T12:00:00.000Z';
+  const result = normalizePipelinesForStorage([
+    {
+      event: 'downloadableFile.created',
+      steps: [{ pluginId: 'test-plugin' }]
+    }
+  ], effectiveAt);
+
+  assert.deepEqual(result[0], {
+    event: 'downloadableFile.created',
+    steps: [{ pluginId: 'test-plugin' }],
+    applicability: 'NEW_FILES_ONLY',
+    effectiveAt
+  });
+}
+
+async function testExistingRolloutPolicyIsPreserved() {
+  const result = normalizePipelinesForStorage([
+    {
+      event: 'downloadableFile.created',
+      steps: [{ pluginId: 'test-plugin' }],
+      applicability: 'ALL_FILES_GRADUAL',
+      effectiveAt: '2026-06-01T00:00:00.000Z'
+    }
+  ], '2026-07-30T12:00:00.000Z');
+
+  assert.equal(result[0]?.applicability, 'ALL_FILES_GRADUAL');
+}
+
 // Run all tests
 async function run() {
   await testValidPipelineReturnsNull();
@@ -155,6 +215,10 @@ async function run() {
   await testMultiplePipelinesAllValid();
   await testMultiplePipelinesOneInvalid();
   await testStepWithOptionalFields();
+  await testInvalidApplicabilityReturnsError();
+  await testInvalidEffectiveAtReturnsError();
+  await testDownloadPipelineDefaultsToNewFilesOnly();
+  await testExistingRolloutPolicyIsPreserved();
 
   console.log("updatePluginPipelines validation tests passed");
 }

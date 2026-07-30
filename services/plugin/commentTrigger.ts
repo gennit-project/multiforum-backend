@@ -4,6 +4,11 @@ import { COMMENT_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import {
+  completePipelineAttempt,
+  createPipelineAttempt,
+  type PipelineJobStatus,
+} from './pipelineAttempt.js'
 import { createBotComment, buildBotUsername } from '../botUserService.js'
 import { createBotReport } from '../botReportService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
@@ -30,7 +35,18 @@ export const triggerPluginRunsForComment = async (
     throw new Error(`Unsupported comment plugin event: ${event}`)
   }
 
-  const { Channel, Comment, Discussion, Event, Issue, PluginRun, ServerConfig, ServerSecret, User } = models
+  const {
+    Channel,
+    Comment,
+    Discussion,
+    Event,
+    Issue,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+    User,
+  } = models
 
   const comments = await Comment.find({
     where: { id: commentId },
@@ -293,9 +309,24 @@ export const triggerPluginRunsForComment = async (
   }
 
   const runs: unknown[] = []
+  const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
+
+  await createPipelineAttempt({
+    PluginPipelineRun,
+    context: {
+      pipelineId,
+      targetId: comment.id,
+      targetType: 'Comment',
+      eventType: event,
+      scope: 'SERVER',
+      channelId: channelUniqueName,
+      eventPipeline,
+      pluginsToRun,
+    },
+  })
 
   const pendingRuns: PendingRun[] = []
   for (const { pluginId, edgeData, order } of pluginsToRun) {
@@ -351,6 +382,7 @@ export const triggerPluginRunsForComment = async (
           message: 'Skipped: pipeline stopped'
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -377,6 +409,7 @@ export const triggerPluginRunsForComment = async (
           message: `Skipped: ${reason}`
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -394,6 +427,7 @@ export const triggerPluginRunsForComment = async (
       where: { id: pluginRunId },
       update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
+    jobStatuses[order] = 'RUNNING'
 
     const runStart = performance.now()
     const logs: string[] = []
@@ -657,6 +691,7 @@ export const triggerPluginRunsForComment = async (
           })
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
         pipelineStopped = true
@@ -695,6 +730,7 @@ export const triggerPluginRunsForComment = async (
           })
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'FAILED'
 
       const updated = await PluginRun.find({
         where: { id: pluginRunId },
@@ -714,6 +750,12 @@ export const triggerPluginRunsForComment = async (
       }
     }
   }
+
+  await completePipelineAttempt({
+    PluginPipelineRun,
+    pipelineId,
+    statuses: jobStatuses,
+  })
 
   return runs
 }

@@ -46,6 +46,8 @@ function makeExecModels(edges: unknown[], file = fileNode) {
   const updates: any[] = [];
   const creates: any[] = [];
   const fileUpdates: any[] = [];
+  const attemptCreates: any[] = [];
+  const attemptUpdates: any[] = [];
   let seq = 0;
   const serverConfig = {
     serverName: "s",
@@ -64,6 +66,25 @@ function makeExecModels(edges: unknown[], file = fileNode) {
     },
     find: async (args: any) => [{ id: args?.where?.id ?? "run-1" }],
   };
+  const PluginPipelineRun = {
+    find: async () => [],
+    create: async (args: any) => {
+      attemptCreates.push(args);
+      return {
+        pluginPipelineRuns: [
+          {
+            id: 'attempt-1',
+            pipelineId: args.input[0].pipelineId,
+            attemptNumber: args.input[0].attemptNumber,
+          },
+        ],
+      };
+    },
+    update: async (args: any) => {
+      attemptUpdates.push(args);
+      return {};
+    },
+  };
   const models: any = {
     DownloadableFile: {
       ...model([file]),
@@ -74,11 +95,19 @@ function makeExecModels(edges: unknown[], file = fileNode) {
     },
     ServerConfig: model([serverConfig]),
     ServerSecret: empty(),
+    PluginPipelineRun,
     PluginRun,
     Plugin: empty(),
     PluginVersion: empty(),
   };
-  return { models, updates, creates, fileUpdates };
+  return {
+    models,
+    updates,
+    creates,
+    fileUpdates,
+    attemptCreates,
+    attemptUpdates,
+  };
 }
 
 const pluginReturning = (result: unknown) =>
@@ -107,6 +136,73 @@ test("runs a matching plugin to SUCCEEDED", async () => {
   assert.ok(statuses.includes("RUNNING"));
   assert.ok(statuses.includes("SUCCEEDED"));
   assert.equal(runs.length, 1);
+});
+
+test("creates and completes a first-class pipeline attempt", async () => {
+  const {
+    models,
+    attemptCreates,
+    attemptUpdates,
+  } = makeExecModels([installedEdge("mybot")]);
+
+  await execRun(
+    models,
+    loaderFor(pluginReturning({ success: true, result: { message: "ok" } }))
+  );
+
+  assert.deepEqual(
+    {
+      created: attemptCreates[0].input[0],
+      started: attemptUpdates[0].update,
+      completed: attemptUpdates[1].update,
+      matchingPipelineId:
+        attemptCreates[0].input[0].pipelineId ===
+        attemptUpdates[1].where.pipelineId,
+    },
+    {
+      created: {
+        pipelineId: attemptCreates[0].input[0].pipelineId,
+        targetId: "f-1",
+        targetType: "DownloadableFile",
+        eventType: EVENT,
+        scope: "SERVER",
+        channelId: "cats",
+        status: "QUEUED",
+        trigger: "EVENT",
+        initiatedByUsername: null,
+        retryOfPipelineRunId: null,
+        attemptNumber: 1,
+        configurationSnapshot: {
+          event: EVENT,
+          stopOnFirstFailure: true,
+          applicability: "ALL_FILES_IMMEDIATE",
+          effectiveAt: null,
+          steps: [
+            {
+              pluginId: "mybot",
+              version: "1.0.0",
+              order: 0,
+              condition: "ALWAYS",
+              continueOnError: false,
+            },
+          ],
+        },
+        applicability: "ALL_FILES_IMMEDIATE",
+        policyEffectiveAt: null,
+        queuedAt: attemptCreates[0].input[0].queuedAt,
+        updatedAt: attemptCreates[0].input[0].updatedAt,
+      },
+      started: {
+        status: "RUNNING",
+        startedAt: attemptUpdates[0].update.startedAt,
+      },
+      completed: {
+        status: "SUCCEEDED",
+        finishedAt: attemptUpdates[1].update.finishedAt,
+      },
+      matchingPipelineId: true,
+    }
+  );
 });
 
 test("gives plugins signed access to private objects without persisting the signature", async () => {

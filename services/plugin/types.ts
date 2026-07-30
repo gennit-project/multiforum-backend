@@ -7,6 +7,7 @@ import type {
   EventModel,
   IssueModel,
   PluginModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
@@ -19,6 +20,7 @@ export type Models = {
   DownloadableFile: DownloadableFileModel
   Plugin: PluginModel
   PluginVersion: PluginVersionModel
+  PluginPipelineRun: PluginPipelineRunModel
   PluginRun: PluginRunModel
   ServerConfig: ServerConfigModel
   ServerSecret: ServerSecretModel
@@ -37,7 +39,14 @@ export type EventPipeline = {
   event: string
   steps: PipelineStep[]
   stopOnFirstFailure?: boolean
+  effectiveAt?: string
+  applicability?: PipelineApplicability
 }
+
+export type PipelineApplicability =
+  | 'NEW_FILES_ONLY'
+  | 'ALL_FILES_GRADUAL'
+  | 'ALL_FILES_IMMEDIATE'
 
 // Plugin edge data from GraphQL connection
 export type PluginEdgeData = {
@@ -81,6 +90,7 @@ export type CommentTriggerArgs = {
     Discussion: DiscussionModel
     Event: EventModel
     Issue: IssueModel
+    PluginPipelineRun: PluginPipelineRunModel
     PluginRun: PluginRunModel
     ServerConfig: ServerConfigModel
     ServerSecret: ServerSecretModel

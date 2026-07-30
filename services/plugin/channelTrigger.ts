@@ -4,6 +4,11 @@ import { CHANNEL_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import {
+  completePipelineAttempt,
+  createPipelineAttempt,
+  type PipelineJobStatus,
+} from './pipelineAttempt.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
@@ -30,7 +35,15 @@ export const triggerChannelPluginPipeline = async (
     throw new Error(`Unsupported channel plugin event: ${event}`)
   }
 
-  const { Channel, Discussion, DownloadableFile, PluginRun, ServerConfig, ServerSecret } = models
+  const {
+    Channel,
+    Discussion,
+    DownloadableFile,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+  } = models
 
   // Get the channel with its pipeline configuration and enabled plugins (for channel-level settings)
   const channels = await Channel.find({
@@ -202,9 +215,24 @@ export const triggerChannelPluginPipeline = async (
 
   const pipelineId = generatePipelineId()
   const runs: unknown[] = []
+  const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
+
+  await createPipelineAttempt({
+    PluginPipelineRun,
+    context: {
+      pipelineId,
+      targetId: discussionId,
+      targetType: 'Discussion',
+      eventType: event,
+      scope: 'CHANNEL',
+      channelId: channelUniqueName,
+      eventPipeline,
+      pluginsToRun,
+    },
+  })
 
   // Create PENDING records for all plugins first
   const pendingRuns: PendingRun[] = []
@@ -264,6 +292,7 @@ export const triggerChannelPluginPipeline = async (
           message: 'Skipped: pipeline stopped'
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -291,6 +320,7 @@ export const triggerChannelPluginPipeline = async (
           message: `Skipped: ${reason}`
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -309,6 +339,7 @@ export const triggerChannelPluginPipeline = async (
       where: { id: pluginRunId },
       update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
+    jobStatuses[order] = 'RUNNING'
 
     const runStart = performance.now()
     const logs: string[] = []
@@ -465,6 +496,7 @@ export const triggerChannelPluginPipeline = async (
           })
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       // Check if we should stop the pipeline
       if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
@@ -504,6 +536,7 @@ export const triggerChannelPluginPipeline = async (
           })
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'FAILED'
 
       // Check if we should stop the pipeline
       if (stopOnFirstFailure && !step.continueOnError) {
@@ -524,6 +557,12 @@ export const triggerChannelPluginPipeline = async (
       }
     }
   }
+
+  await completePipelineAttempt({
+    PluginPipelineRun,
+    pipelineId,
+    statuses: jobStatuses,
+  })
 
   return runs
 }

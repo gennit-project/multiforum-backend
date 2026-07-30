@@ -9,6 +9,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import type {
   DiscussionModel,
   DownloadableFileModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   ServerConfigModel,
   ServerSecretModel,
@@ -19,6 +20,7 @@ import { logger } from "../../logger.js";
 type Input = {
   Discussion: DiscussionModel;
   DownloadableFile: DownloadableFileModel;
+  PluginPipelineRun: PluginPipelineRunModel;
   PluginRun: PluginRunModel;
   ServerConfig: ServerConfigModel;
   ServerSecret: ServerSecretModel;
@@ -51,6 +53,7 @@ const getResolver = (
   const {
     Discussion,
     DownloadableFile,
+    PluginPipelineRun,
     PluginRun,
     ServerConfig,
     ServerSecret,
@@ -145,6 +148,7 @@ const getResolver = (
               DownloadableFile,
               Plugin: null as any,
               PluginVersion: null as any,
+              PluginPipelineRun,
               PluginRun,
               ServerConfig,
               ServerSecret,

@@ -1,6 +1,7 @@
 import type {
   DownloadableFileModel,
   PluginModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
@@ -14,6 +15,7 @@ type Input = {
   DownloadableFile: DownloadableFileModel;
   Plugin: PluginModel;
   PluginVersion: PluginVersionModel;
+  PluginPipelineRun: PluginPipelineRunModel;
   PluginRun: PluginRunModel;
   ServerConfig: ServerConfigModel;
   ServerSecret: ServerSecretModel;

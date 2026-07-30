@@ -1,10 +1,16 @@
 import { performance } from 'perf_hooks'
 import { Storage } from '@google-cloud/storage'
-import type { TriggerArgs, PluginEdgeData, EventPipeline, PipelineStep, PluginToRun, PendingRun } from './types.js'
+import type { TriggerArgs, PluginEdgeData, EventPipeline, PendingRun } from './types.js'
 import { DOWNLOAD_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls } from './pipelineUtils.js'
+import { resolveDownloadPipelinePlan } from './downloadPipelinePlan.js'
+import {
+  completePipelineAttempt,
+  createPipelineAttempt,
+  type PipelineJobStatus,
+} from './pipelineAttempt.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import {
@@ -39,7 +45,13 @@ export const triggerPluginRunsForDownloadableFile = async (
     throw new Error(`Unsupported plugin event: ${event}`)
   }
 
-  const { DownloadableFile, PluginRun, ServerConfig, ServerSecret } = models
+  const {
+    DownloadableFile,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+  } = models
 
   const files = await DownloadableFile.find({
     where: { id: downloadableFileId },
@@ -49,6 +61,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       url
       kind
       size
+      uploadedAt
+      createdAt
       storageBucket
       storageObjectName
       Discussion {
@@ -124,67 +138,37 @@ export const triggerPluginRunsForDownloadableFile = async (
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
-  // Build version-aware plugin map (pluginName -> sorted array of versions).
-  // The generated relationship edge type is cast to the plugin layer's
-  // structurally-compatible PluginEdgeData at this consumer boundary.
-  const pluginVersionsMap = buildPluginVersionMaps(
-    edges as unknown as PluginEdgeData[]
-  )
-
-  // Check if there's a pipeline defined for this event
   const pipelines: EventPipeline[] = serverConfig.pluginPipelines || []
-  const eventPipeline = pipelines.find(p => p.event === event)
+  const plan = resolveDownloadPipelinePlan({
+    event,
+    pipelines,
+    installedPluginEdges: edges as unknown as PluginEdgeData[],
+    uploadedAt: fileData.uploadedAt || fileData.createdAt,
+  })
+  const { eventPipeline, pluginsToRun } = plan
 
   // Generate unique pipeline ID
   const pipelineId = generatePipelineId()
 
-  // Determine which plugins to run and in what order
-  let pluginsToRun: PluginToRun[] = []
-
-  if (eventPipeline && eventPipeline.steps.length > 0) {
-    // Use pipeline order - only run plugins that are both in the pipeline AND enabled
-    eventPipeline.steps.forEach((step, index) => {
-      // Get plugin for step, respecting version specification
-      const pluginMatch = getPluginForStep(pluginVersionsMap, step.pluginId, step.version)
-      if (pluginMatch) {
-        const { edgeData } = pluginMatch
-        // Also verify the plugin handles this event type
-        const manifest = parseManifest(edgeData.node.manifest)
-        const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
-        if (manifestEvents.includes(event)) {
-          pluginsToRun.push({
-            pluginId: step.pluginId,
-            edgeData,
-            step,
-            order: index
-          })
-        }
-      }
-    })
-  } else {
-    // No pipeline defined - fall back to running latest version of all enabled plugins that handle this event
-    let order = 0
-    for (const [pluginId, versions] of pluginVersionsMap) {
-      // Use latest version (first in sorted array)
-      const latestVersion = versions[0]
-      if (latestVersion) {
-        const manifest = parseManifest(latestVersion.edgeData.node.manifest)
-        const manifestEvents: string[] = Array.isArray(manifest.events) ? manifest.events : []
-        if (manifestEvents.includes(event)) {
-          pluginsToRun.push({
-            pluginId,
-            edgeData: latestVersion.edgeData,
-            step: { pluginId, condition: 'ALWAYS', continueOnError: false },
-            order: order++
-          })
-        }
-      }
-    }
-  }
-
-  if (pluginsToRun.length === 0) {
+  if (!plan.required || pluginsToRun.length === 0) {
     return []
   }
+
+  await createPipelineAttempt({
+    PluginPipelineRun,
+    context: {
+      pipelineId,
+      targetId: downloadableFile.id,
+      targetType: 'DownloadableFile',
+      eventType: event,
+      scope: 'SERVER',
+      channelId,
+      applicability: plan.applicability,
+      policyEffectiveAt: plan.effectiveAt,
+      eventPipeline,
+      pluginsToRun,
+    },
+  })
 
   const securityScanExpected = pluginsToRun.some(
     plugin => plugin.pluginId === SECURITY_SCAN_PLUGIN_ID
@@ -206,6 +190,7 @@ export const triggerPluginRunsForDownloadableFile = async (
   }
 
   const runs: unknown[] = []
+  const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
@@ -277,6 +262,7 @@ export const triggerPluginRunsForDownloadableFile = async (
           message: 'Skipped: pipeline stopped'
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -304,6 +290,7 @@ export const triggerPluginRunsForDownloadableFile = async (
           message: `Skipped: ${reason}`
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -322,6 +309,7 @@ export const triggerPluginRunsForDownloadableFile = async (
       where: { id: pluginRunId },
       update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
     })
+    jobStatuses[order] = 'RUNNING'
 
     const runStart = performance.now()
     const logs: string[] = []
@@ -445,6 +433,7 @@ export const triggerPluginRunsForDownloadableFile = async (
           })
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       // Check if we should stop the pipeline
       if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
@@ -488,6 +477,7 @@ export const triggerPluginRunsForDownloadableFile = async (
           })
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'FAILED'
 
       // Check if we should stop the pipeline
       if (stopOnFirstFailure && !step.continueOnError) {
@@ -522,6 +512,12 @@ export const triggerPluginRunsForDownloadableFile = async (
       } as DownloadableFileUpdateInput)
     })
   }
+
+  await completePipelineAttempt({
+    PluginPipelineRun,
+    pipelineId,
+    statuses: jobStatuses,
+  })
 
   return runs
 }

@@ -1763,6 +1763,12 @@ const typeDefinitions = gql`
     PREVIOUS_FAILED
   }
 
+  enum PipelineApplicability {
+    NEW_FILES_ONLY
+    ALL_FILES_GRADUAL
+    ALL_FILES_IMMEDIATE
+  }
+
   type PipelineStep {
     pluginId: String!
     version: String
@@ -1781,6 +1787,8 @@ const typeDefinitions = gql`
     event: String!
     steps: [PipelineStepInput!]!
     stopOnFirstFailure: Boolean
+    effectiveAt: DateTime
+    applicability: PipelineApplicability
   }
 
   type ChannelPluginProperties @relationshipProperties {
@@ -1806,6 +1814,47 @@ const typeDefinitions = gql`
     SUCCEEDED
     FAILED
     SKIPPED
+  }
+
+  enum PluginPipelineRunStatus {
+    QUEUED
+    RUNNING
+    SUCCEEDED
+    FAILED
+    TIMED_OUT
+    CANCELLED
+  }
+
+  enum PluginPipelineRunTrigger {
+    EVENT
+    OWNER_START
+    MODERATOR_START
+    OWNER_RETRY
+    MODERATOR_RETRY
+    AUTOMATIC_RETRY
+  }
+
+  type PluginPipelineRun {
+    id: ID! @id
+    pipelineId: String! @unique
+    targetId: String!
+    targetType: String!
+    eventType: String!
+    scope: String!
+    channelId: String
+    status: PluginPipelineRunStatus!
+    trigger: PluginPipelineRunTrigger!
+    initiatedByUsername: String
+    retryOfPipelineRunId: String
+    attemptNumber: Int!
+    configurationSnapshot: JSON!
+    applicability: String
+    policyEffectiveAt: DateTime
+    queuedAt: DateTime!
+    startedAt: DateTime
+    finishedAt: DateTime
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    updatedAt: DateTime! @timestamp(operations: [UPDATE])
   }
 
   type PluginRun {

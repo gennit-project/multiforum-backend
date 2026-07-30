@@ -1,6 +1,7 @@
 import type {
   DownloadableFileModel,
   PluginModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
@@ -14,6 +15,7 @@ type Input = {
   DownloadableFile: DownloadableFileModel
   Plugin: PluginModel
   PluginVersion: PluginVersionModel
+  PluginPipelineRun: PluginPipelineRunModel
   PluginRun: PluginRunModel
   ServerConfig: ServerConfigModel
   ServerSecret: ServerSecretModel
@@ -25,7 +27,15 @@ type Args = {
 }
 
 const getResolver = (input: Input) => {
-  const { DownloadableFile, Plugin, PluginVersion, PluginRun, ServerConfig, ServerSecret } = input
+  const {
+    DownloadableFile,
+    Plugin,
+    PluginVersion,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+  } = input
 
   return async (
     _parent: unknown,
@@ -46,6 +56,7 @@ const getResolver = (input: Input) => {
         DownloadableFile,
         Plugin,
         PluginVersion,
+        PluginPipelineRun,
         PluginRun,
         ServerConfig,
         ServerSecret

@@ -142,6 +142,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ServerConfig,
     Plugin,
     PluginVersion,
+    PluginPipelineRun,
     PluginRun,
     DownloadableFile,
     ServerSecret,
@@ -164,6 +165,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
         // Plugin pipeline support
         Channel,
         DownloadableFile,
+        PluginPipelineRun,
         PluginRun,
         ServerConfig,
         ServerSecret,
@@ -176,6 +178,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       updateDiscussionWithChannelConnections({
         Discussion,
         DownloadableFile,
+        PluginPipelineRun,
         PluginRun,
         ServerConfig,
         ServerSecret,
@@ -542,6 +545,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       DownloadableFile,
       Plugin,
       PluginVersion,
+      PluginPipelineRun,
       PluginRun,
       ServerConfig,
       ServerSecret
@@ -550,6 +554,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       DownloadableFile,
       Plugin,
       PluginVersion,
+      PluginPipelineRun,
       PluginRun,
       ServerConfig,
       ServerSecret
@@ -565,6 +570,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       DownloadableFile,
       Plugin,
       PluginVersion,
+      PluginPipelineRun,
       PluginRun,
       ServerConfig,
       ServerSecret,

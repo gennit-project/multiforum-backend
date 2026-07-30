@@ -12,6 +12,8 @@ export * from './pluginLoader.js'
 
 // Re-export pipeline utilities
 export * from './pipelineUtils.js'
+export * from './pipelineAttempt.js'
+export * from './downloadPipelinePlan.js'
 
 // Re-export trigger functions
 export * from './downloadTrigger.js'

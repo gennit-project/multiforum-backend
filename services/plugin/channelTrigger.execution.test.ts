@@ -60,12 +60,20 @@ function makeExecModels(steps: unknown[], edges: unknown[]) {
     },
     find: async (args: any) => [{ id: args?.where?.id ?? "run-1" }],
   };
+  const PluginPipelineRun = {
+    find: async () => [],
+    create: async (args: any) => ({
+      pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
+    }),
+    update: async () => ({}),
+  };
   const models: any = {
     Channel: model([channel]),
     Discussion: model([discussionWithFile]),
     ServerConfig: model([serverConfig]),
     ServerSecret: empty(),
     DownloadableFile: empty(),
+    PluginPipelineRun,
     PluginRun,
     Plugin: empty(),
     PluginVersion: empty(),

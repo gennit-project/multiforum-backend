@@ -15,11 +15,26 @@ export type EventPipelineInput = {
   event: string
   steps: PipelineStepInput[]
   stopOnFirstFailure?: boolean
+  effectiveAt?: string
+  applicability?: 'NEW_FILES_ONLY' | 'ALL_FILES_GRADUAL' | 'ALL_FILES_IMMEDIATE'
 }
 
 type Args = {
   pipelines: EventPipelineInput[]
 }
+
+export const normalizePipelinesForStorage = (
+  pipelines: EventPipelineInput[],
+  effectiveAt = new Date().toISOString()
+): EventPipelineInput[] =>
+  pipelines.map(pipeline => {
+    if (!pipeline.event.startsWith('downloadableFile.')) return pipeline
+    return {
+      ...pipeline,
+      applicability: pipeline.applicability || 'NEW_FILES_ONLY',
+      effectiveAt: pipeline.effectiveAt || effectiveAt,
+    }
+  })
 
 /**
  * Validates pipeline configuration structure.
@@ -32,6 +47,22 @@ export const validatePipelines = (pipelines: EventPipelineInput[]): string | nul
     }
     if (!pipeline.steps || pipeline.steps.length === 0) {
       return 'Invalid pipeline: each pipeline must have at least one step'
+    }
+    if (
+      pipeline.applicability &&
+      ![
+        'NEW_FILES_ONLY',
+        'ALL_FILES_GRADUAL',
+        'ALL_FILES_IMMEDIATE',
+      ].includes(pipeline.applicability)
+    ) {
+      return `Invalid pipeline applicability: ${pipeline.applicability}`
+    }
+    if (
+      pipeline.effectiveAt &&
+      !Number.isFinite(Date.parse(pipeline.effectiveAt))
+    ) {
+      return `Invalid pipeline effectiveAt: ${pipeline.effectiveAt}`
     }
     for (const step of pipeline.steps) {
       if (!step.pluginId) {
@@ -69,15 +100,17 @@ const getResolver = (input: Input) => {
 
     const serverConfig = existingConfigs[0]
 
+    const normalizedPipelines = normalizePipelinesForStorage(pipelines)
+
     // Update the pluginPipelines JSON field (serialized as string for Neo4j)
     await ServerConfig.update({
       where: { serverName: serverConfig.serverName },
       update: {
-        pluginPipelines: JSON.stringify(pipelines)
+        pluginPipelines: JSON.stringify(normalizedPipelines)
       }
     })
 
-    return pipelines
+    return normalizedPipelines
   }
 }
 

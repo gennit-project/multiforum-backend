@@ -80,11 +80,19 @@ function makeExecModels(edges: unknown[]) {
     },
     find: async (args: any) => [{ id: args?.where?.id ?? "run-1" }],
   };
+  const PluginPipelineRun = {
+    find: async () => [],
+    create: async (args: any) => ({
+      pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
+    }),
+    update: async () => ({}),
+  };
   const models: any = {
     Comment: model([discussionComment()]),
     Channel: model([channel]),
     ServerConfig: model([serverConfig]),
     ServerSecret: empty(),
+    PluginPipelineRun,
     PluginRun,
     Discussion: empty(),
     Event: empty(),
