@@ -143,6 +143,8 @@ export const triggerChannelPluginPipeline = async (
         url
         kind
         size
+        uploadedAt
+        createdAt
       }
     }`
   })
@@ -243,6 +245,8 @@ export const triggerChannelPluginPipeline = async (
       pipelineId,
       targetId: discussionId,
       targetType: 'Discussion',
+      targetVersion:
+        downloadableFile.uploadedAt || downloadableFile.createdAt || null,
       eventType: event,
       scope: 'CHANNEL',
       channelId: channelUniqueName,
@@ -250,6 +254,7 @@ export const triggerChannelPluginPipeline = async (
       pluginsToRun,
       trigger: execution?.trigger,
       initiatedByUsername: execution?.initiatedByUsername,
+      retryOfPipelineRunId: execution?.retryOfPipelineRunId,
     },
   })
 

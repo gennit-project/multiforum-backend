@@ -211,6 +211,7 @@ test("creates and completes a first-class pipeline attempt", async () => {
         pipelineId: attemptCreates[0].input[0].pipelineId,
         targetId: "f-1",
         targetType: "DownloadableFile",
+        targetVersion: null,
         eventType: EVENT,
         scope: "SERVER",
         channelId: "cats",
@@ -267,6 +268,7 @@ test("records manual-start metadata supplied by the caller", async () => {
         pipelineId: "manual-pipeline-1",
         trigger: "OWNER_START" as any,
         initiatedByUsername: "alice",
+        retryOfPipelineRunId: "previous-pipeline",
       },
     }
   );
@@ -276,11 +278,14 @@ test("records manual-start metadata supplied by the caller", async () => {
       pipelineId: attemptCreates[0].input[0].pipelineId,
       trigger: attemptCreates[0].input[0].trigger,
       initiatedByUsername: attemptCreates[0].input[0].initiatedByUsername,
+      retryOfPipelineRunId:
+        attemptCreates[0].input[0].retryOfPipelineRunId,
     },
     {
       pipelineId: "manual-pipeline-1",
       trigger: "OWNER_START",
       initiatedByUsername: "alice",
+      retryOfPipelineRunId: "previous-pipeline",
     }
   );
 });

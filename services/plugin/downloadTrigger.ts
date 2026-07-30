@@ -172,6 +172,7 @@ export const triggerPluginRunsForDownloadableFile = async (
       pipelineId,
       targetId: downloadableFile.id,
       targetType: 'DownloadableFile',
+      targetVersion: fileData.uploadedAt || fileData.createdAt || null,
       eventType: event,
       scope: 'SERVER',
       channelId,
@@ -181,6 +182,7 @@ export const triggerPluginRunsForDownloadableFile = async (
       pluginsToRun,
       trigger: execution?.trigger,
       initiatedByUsername: execution?.initiatedByUsername,
+      retryOfPipelineRunId: execution?.retryOfPipelineRunId,
     },
   })
 

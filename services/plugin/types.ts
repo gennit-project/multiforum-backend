@@ -85,6 +85,7 @@ export type PipelineExecutionMetadata = {
   pipelineId?: string
   trigger?: PluginPipelineRunTrigger
   initiatedByUsername?: string | null
+  retryOfPipelineRunId?: string | null
 }
 
 // Arguments for comment trigger

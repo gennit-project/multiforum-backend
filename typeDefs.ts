@@ -1447,12 +1447,14 @@ const typeDefinitions = gql`
       event: String!
     ): [PluginRun!]!
     retryDownloadableFileScan(downloadableFileId: ID!): [PluginRun!]!
+      @deprecated(reason: "Use rerunPluginPipeline")
     startPluginPipeline(
       targetId: ID!
       targetType: String!
       eventType: String!
       channelId: String
     ): PluginPipelineRun!
+    rerunPluginPipeline(pipelineRunId: ID!): PluginPipelineRun!
     clearDownloadableFileScan(
       downloadableFileId: ID!
       reason: String
@@ -1845,6 +1847,7 @@ const typeDefinitions = gql`
     pipelineId: String! @unique
     targetId: String!
     targetType: String!
+    targetVersion: String
     eventType: String!
     scope: String!
     channelId: String

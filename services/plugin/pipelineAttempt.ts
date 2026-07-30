@@ -24,6 +24,7 @@ export type PipelineAttemptContext = {
   pipelineId: string
   targetId: string
   targetType: string
+  targetVersion?: string | null
   eventType: string
   scope: 'SERVER' | 'CHANNEL'
   channelId?: string | null
@@ -115,6 +116,7 @@ export const createPipelineAttempt = async ({
         pipelineId: context.pipelineId,
         targetId: context.targetId,
         targetType: context.targetType,
+        targetVersion: context.targetVersion || null,
         eventType: context.eventType,
         scope: context.scope,
         channelId: context.channelId || null,

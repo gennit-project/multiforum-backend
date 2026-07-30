@@ -146,6 +146,7 @@ test("records channel manual-start metadata supplied by the caller", async () =>
         pipelineId: "manual-channel-pipeline",
         trigger: "MODERATOR_START" as any,
         initiatedByUsername: "moderator",
+        retryOfPipelineRunId: "previous-channel-pipeline",
       },
     }
   );
@@ -155,11 +156,13 @@ test("records channel manual-start metadata supplied by the caller", async () =>
       pipelineId: attemptCreates[0].input[0].pipelineId,
       trigger: attemptCreates[0].input[0].trigger,
       actor: attemptCreates[0].input[0].initiatedByUsername,
+      retryOf: attemptCreates[0].input[0].retryOfPipelineRunId,
     },
     {
       pipelineId: "manual-channel-pipeline",
       trigger: "MODERATOR_START",
       actor: "moderator",
+      retryOf: "previous-channel-pipeline",
     }
   );
 });

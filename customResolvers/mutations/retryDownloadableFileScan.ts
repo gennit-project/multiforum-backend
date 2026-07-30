@@ -1,4 +1,6 @@
 import type {
+  ChannelModel,
+  DiscussionModel,
   DownloadableFileModel,
   PluginModel,
   PluginPipelineRunModel,
@@ -7,11 +9,15 @@ import type {
   ServerConfigModel,
   ServerSecretModel,
 } from "../../ogm_types.js";
+import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
+import { createRerunPluginPipelineResolver } from "./rerunPluginPipeline.js";
 
 type Input = {
+  Channel: ChannelModel;
+  Discussion: DiscussionModel;
   DownloadableFile: DownloadableFileModel;
   Plugin: PluginModel;
   PluginVersion: PluginVersionModel;
@@ -30,7 +36,10 @@ type FileRecord = {
 export const createRetryDownloadableFileScanResolver = (
   input: Input,
   checkServerModPermission: typeof hasServerModPermission = hasServerModPermission,
-  triggerRuns: typeof triggerPluginRunsForDownloadableFile = triggerPluginRunsForDownloadableFile
+  triggerRuns: typeof triggerPluginRunsForDownloadableFile =
+    triggerPluginRunsForDownloadableFile,
+  createRerunResolver: typeof createRerunPluginPipelineResolver =
+    createRerunPluginPipelineResolver
 ) => {
   return async (
     _parent: unknown,
@@ -63,6 +72,48 @@ export const createRetryDownloadableFileScanResolver = (
         context
       );
       if (canReview !== true) throw new Error("Not authorized to retry this scan");
+    }
+
+    const attempts = await input.PluginPipelineRun.find({
+      where: {
+        targetId: downloadableFileId,
+        targetType: "DownloadableFile",
+        eventType_IN: [
+          "downloadableFile.created",
+          "downloadableFile.updated",
+        ],
+        status_IN: [
+          PluginPipelineRunStatus.Failed,
+          PluginPipelineRunStatus.TimedOut,
+          PluginPipelineRunStatus.Cancelled,
+        ],
+      },
+      selectionSet: `{ pipelineId createdAt }`,
+    });
+    const sourceAttempt = [...attempts].sort(
+      (left, right) =>
+        Date.parse(String(right.createdAt)) -
+        Date.parse(String(left.createdAt))
+    )[0];
+    if (sourceAttempt) {
+      const rerun = createRerunResolver(
+        input,
+        checkServerModPermission,
+        triggerRuns
+      );
+      const newAttempt = await rerun(
+        _parent,
+        { pipelineRunId: sourceAttempt.pipelineId },
+        context
+      );
+      return input.PluginRun.find({
+        where: { pipelineId: newAttempt.pipelineId },
+        selectionSet: `{
+          id pluginId pluginName version scope channelId eventType status message
+          durationMs targetId targetType payload pipelineId executionOrder
+          skippedReason createdAt updatedAt
+        }`,
+      });
     }
 
     return triggerRuns({

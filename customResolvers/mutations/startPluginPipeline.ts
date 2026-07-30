@@ -247,6 +247,7 @@ export const createStartPluginPipelineResolver = (
       where: {
         targetId,
         targetType,
+        ...(uploadedAt ? { targetVersion: uploadedAt } : {}),
         eventType,
         scope,
         ...(channelId ? { channelId } : {}),
@@ -293,10 +294,10 @@ export const createStartPluginPipelineResolver = (
     const attempts = await input.PluginPipelineRun.find({
       where: { pipelineId },
       selectionSet: `{
-        pipelineId targetId targetType eventType scope channelId status trigger
+        pipelineId targetId targetType targetVersion eventType scope channelId status trigger
         initiatedByUsername retryOfPipelineRunId attemptNumber
         configurationSnapshot applicability policyEffectiveAt
-        queuedAt startedAt heartbeatAt finishedAt timeoutAt createdAt updatedAt
+        queuedAt startedAt finishedAt createdAt updatedAt
       }`,
     });
     if (!attempts[0]) {

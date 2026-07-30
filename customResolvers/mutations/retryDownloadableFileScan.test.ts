@@ -4,10 +4,13 @@ import type { GraphQLContext } from "../../types/context.js";
 import { createRetryDownloadableFileScanResolver } from "./retryDownloadableFileScan.js";
 
 const baseInput = (file: unknown) => ({
+  Channel: {},
+  Discussion: {},
   DownloadableFile: { find: async () => file ? [file] : [] },
   Plugin: {},
   PluginVersion: {},
-  PluginRun: {},
+  PluginPipelineRun: { find: async () => [] },
+  PluginRun: { find: async () => [] },
   ServerConfig: {},
   ServerSecret: {},
 }) as any;
@@ -81,5 +84,47 @@ test("does not retry an already clean file", async () => {
   await assert.rejects(
     resolver(null, { downloadableFileId: "file-1" }, contextFor("alice")),
     /does not need another scan/
+  );
+});
+
+test("routes a modern failed scan through whole-pipeline retry", async () => {
+  const input = baseInput({
+    uploadedByUsername: "alice",
+    scanStatus: "FAILED",
+  });
+  input.PluginPipelineRun.find = async () => [
+    {
+      pipelineId: "failed-pipeline",
+      createdAt: "2026-07-30T00:00:00.000Z",
+    },
+  ];
+  input.PluginRun.find = async () => [{ id: "new-job" }];
+  let sourceId: string | undefined;
+  const resolver = createRetryDownloadableFileScanResolver(
+    input,
+    async () => false,
+    (async () => []) as any,
+    ((..._factoryArgs: unknown[]) =>
+      async (
+        _parent: unknown,
+        args: { pipelineRunId: string }
+      ) => {
+        sourceId = args.pipelineRunId;
+        return { pipelineId: "new-pipeline" };
+      }) as any
+  );
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1" },
+    contextFor("alice")
+  );
+
+  assert.deepEqual(
+    { sourceId, result },
+    {
+      sourceId: "failed-pipeline",
+      result: [{ id: "new-job" }],
+    }
   );
 });
