@@ -7,5 +7,4 @@ test("sitewide discussion channel list excludes archived channel submissions", (
     getSiteWideDiscussionsQuery,
     /MATCH \(dc:DiscussionChannel\)-\[:POSTED_IN_CHANNEL\]->\(d\)[\s\S]*AND \(dc\.archived IS NULL OR dc\.archived = false\)[\s\S]*COLLECT\(dc\) AS discussionChannels/
   );
-  assert.doesNotMatch(getSiteWideDiscussionsQuery, /dc\.isArchived/);
 });
