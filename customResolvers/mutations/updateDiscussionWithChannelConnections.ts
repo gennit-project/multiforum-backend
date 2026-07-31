@@ -9,9 +9,11 @@ import type { GraphQLContext } from "../../types/context.js";
 import type {
   DiscussionModel,
   DownloadableFileModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   ServerConfigModel,
   ServerSecretModel,
+  UserModel,
 } from "../../ogm_types.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { logger } from "../../logger.js";
@@ -19,9 +21,11 @@ import { logger } from "../../logger.js";
 type Input = {
   Discussion: DiscussionModel;
   DownloadableFile: DownloadableFileModel;
+  PluginPipelineRun: PluginPipelineRunModel;
   PluginRun: PluginRunModel;
   ServerConfig: ServerConfigModel;
   ServerSecret: ServerSecretModel;
+  User: UserModel;
   driver: Driver;
 };
 
@@ -51,9 +55,11 @@ const getResolver = (
   const {
     Discussion,
     DownloadableFile,
+    PluginPipelineRun,
     PluginRun,
     ServerConfig,
     ServerSecret,
+    User,
     driver,
   } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
@@ -143,11 +149,11 @@ const getResolver = (
             event: "downloadableFile.updated",
             models: {
               DownloadableFile,
-              Plugin: null as any,
-              PluginVersion: null as any,
+              PluginPipelineRun,
               PluginRun,
               ServerConfig,
               ServerSecret,
+              User,
             },
           });
         } catch (triggerError: unknown) {

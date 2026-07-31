@@ -1,10 +1,12 @@
 import type {
   DownloadableFileModel,
   PluginModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
-  ServerSecretModel
+  ServerSecretModel,
+  UserModel,
 } from '../../ogm_types.js'
 import { triggerPluginRunsForDownloadableFile, isSupportedEvent } from '../../services/pluginRunner.js'
 import type { GraphQLResolveInfo } from 'graphql'
@@ -14,9 +16,11 @@ type Input = {
   DownloadableFile: DownloadableFileModel
   Plugin: PluginModel
   PluginVersion: PluginVersionModel
+  PluginPipelineRun: PluginPipelineRunModel
   PluginRun: PluginRunModel
   ServerConfig: ServerConfigModel
   ServerSecret: ServerSecretModel
+  User?: UserModel
 }
 
 type Args = {
@@ -25,7 +29,16 @@ type Args = {
 }
 
 const getResolver = (input: Input) => {
-  const { DownloadableFile, Plugin, PluginVersion, PluginRun, ServerConfig, ServerSecret } = input
+  const {
+    DownloadableFile,
+    Plugin,
+    PluginVersion,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+    User,
+  } = input
 
   return async (
     _parent: unknown,
@@ -46,9 +59,11 @@ const getResolver = (input: Input) => {
         DownloadableFile,
         Plugin,
         PluginVersion,
+        PluginPipelineRun,
         PluginRun,
         ServerConfig,
-        ServerSecret
+        ServerSecret,
+        User,
       }
     })
 

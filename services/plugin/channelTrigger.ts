@@ -1,9 +1,31 @@
 import { performance } from 'perf_hooks'
-import type { ChannelTriggerArgs, PluginEdgeData, EventPipeline, PluginToRun, PendingRun } from './types.js'
+import type {
+  ChannelTriggerArgs,
+  PluginEdgeData,
+  EventPipeline,
+  PluginToRun,
+  PendingRun,
+  PipelineExecutionMetadata,
+} from './types.js'
 import { CHANNEL_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import {
+  completePipelineAttempt,
+  createPipelineAttempt,
+  type PipelineJobStatus,
+} from './pipelineAttempt.js'
+import {
+  claimPluginRunLease,
+  completePluginRunLease,
+  createQueuedPluginRunTiming,
+  startPluginRunHeartbeat,
+} from './executionLease.js'
+import {
+  createPublicDiagnosticCollector,
+  type PublicDiagnostic,
+} from './publicDiagnostics.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
@@ -24,13 +46,27 @@ export const triggerChannelPluginPipeline = async (
   }: ChannelTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
-  { loadPlugin = loadPluginImplementation }: { loadPlugin?: typeof loadPluginImplementation } = {}
+  {
+    loadPlugin = loadPluginImplementation,
+    execution,
+  }: {
+    loadPlugin?: typeof loadPluginImplementation
+    execution?: PipelineExecutionMetadata
+  } = {}
 ) => {
   if (!CHANNEL_EVENTS.has(event)) {
     throw new Error(`Unsupported channel plugin event: ${event}`)
   }
 
-  const { Channel, Discussion, DownloadableFile, PluginRun, ServerConfig, ServerSecret } = models
+  const {
+    Channel,
+    Discussion,
+    DownloadableFile,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+  } = models
 
   // Get the channel with its pipeline configuration and enabled plugins (for channel-level settings)
   const channels = await Channel.find({
@@ -113,6 +149,8 @@ export const triggerChannelPluginPipeline = async (
         url
         kind
         size
+        uploadedAt
+        createdAt
       }
     }`
   })
@@ -200,11 +238,31 @@ export const triggerChannelPluginPipeline = async (
     return []
   }
 
-  const pipelineId = generatePipelineId()
+  const pipelineId = execution?.pipelineId || generatePipelineId()
   const runs: unknown[] = []
+  const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
+
+  await createPipelineAttempt({
+    PluginPipelineRun,
+    context: {
+      pipelineId,
+      targetId: discussionId,
+      targetType: 'Discussion',
+      targetVersion:
+        downloadableFile.uploadedAt || downloadableFile.createdAt || null,
+      eventType: event,
+      scope: 'CHANNEL',
+      channelId: channelUniqueName,
+      eventPipeline,
+      pluginsToRun,
+      trigger: execution?.trigger,
+      initiatedByUsername: execution?.initiatedByUsername,
+      retryOfPipelineRunId: execution?.retryOfPipelineRunId,
+    },
+  })
 
   // Create PENDING records for all plugins first
   const pendingRuns: PendingRun[] = []
@@ -212,6 +270,7 @@ export const triggerChannelPluginPipeline = async (
     const pluginNode = edgeData.node.Plugin
     const pluginVersionData = edgeData.node
 
+    const timing = createQueuedPluginRunTiming()
     const runCreateResult = await PluginRun.create({
       input: [
         ({
@@ -226,6 +285,8 @@ export const triggerChannelPluginPipeline = async (
           targetType: 'Discussion',
           pipelineId,
           executionOrder: order,
+          queuedAt: timing.queuedAt,
+          timeoutAt: timing.timeoutAt,
           payload: JSON.stringify({
             discussionId,
             channelUniqueName,
@@ -261,9 +322,12 @@ export const triggerChannelPluginPipeline = async (
         update: ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
-          message: 'Skipped: pipeline stopped'
+          message: 'Skipped: pipeline stopped',
+          finishedAt: new Date().toISOString(),
+          timeoutAt: null,
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -288,9 +352,12 @@ export const triggerChannelPluginPipeline = async (
         update: ({
           status: 'SKIPPED',
           skippedReason: reason,
-          message: `Skipped: ${reason}`
+          message: `Skipped: ${reason}`,
+          finishedAt: new Date().toISOString(),
+          timeoutAt: null,
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -304,15 +371,25 @@ export const triggerChannelPluginPipeline = async (
       continue
     }
 
-    // Update status to RUNNING
-    await PluginRun.update({
-      where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
+    const lease = await claimPluginRunLease({
+      PluginRun,
+      PluginPipelineRun,
+      pluginRunId,
+      pipelineId,
     })
+    if (!lease) continue
+
+    const heartbeat = startPluginRunHeartbeat({
+      PluginRun,
+      PluginPipelineRun,
+      lease,
+    })
+    jobStatuses[order] = 'RUNNING'
 
     const runStart = performance.now()
     const logs: string[] = []
     const flags: unknown[] = []
+    let publicDiagnostics: PublicDiagnostic[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -362,6 +439,22 @@ export const triggerChannelPluginPipeline = async (
         mergeSettings(settingsDefaults, serverSettingsJson),
         channelSettingsJson
       )
+      const diagnosticCollector = createPublicDiagnosticCollector({
+        secrets: Object.values(decryptedSecrets),
+      })
+      publicDiagnostics = diagnosticCollector.entries
+      const internalLog = (...args: unknown[]) => {
+        const message = args
+          .map(arg =>
+            typeof arg === 'string' ? arg : JSON.stringify(arg)
+          )
+          .join(' ')
+        logs.push(message)
+        logger.info(
+          `[Plugin:${pluginId}:${channelUniqueName}]`,
+          message
+        )
+      }
 
       // Build channel context for plugins
       const channelContext = {
@@ -397,11 +490,10 @@ export const triggerChannelPluginPipeline = async (
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: unknown[]) => {
-          const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
-          logs.push(message)
-          logger.info(`[Plugin:${pluginId}:${channelUniqueName}]`, message)
+        diagnostics: {
+          public: diagnosticCollector.public,
         },
+        log: Object.assign(internalLog, { internal: internalLog }),
         storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
@@ -448,23 +540,26 @@ export const triggerChannelPluginPipeline = async (
       const succeeded = result?.success !== false
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await completePluginRunLease({
+        PluginRun,
+        lease,
+        update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
           message: succeeded
             ? (result?.result?.message || 'Plugin run completed')
             : (result?.error || 'Plugin reported failure'),
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             channel: channelContext,
             flags,
             logs,
             result
-          })
-        } as PluginRunUpdateInput)
+          }),
+        },
       })
+      jobStatuses[order] = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       // Check if we should stop the pipeline
       if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
@@ -490,20 +585,23 @@ export const triggerChannelPluginPipeline = async (
 
       previousStatus = 'FAILED'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await completePluginRunLease({
+        PluginRun,
+        lease,
+        update: {
           status: 'FAILED',
           message,
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             error: message,
             logs,
             flags
-          })
-        } as PluginRunUpdateInput)
+          }),
+        },
       })
+      jobStatuses[order] = 'FAILED'
 
       // Check if we should stop the pipeline
       if (stopOnFirstFailure && !step.continueOnError) {
@@ -522,8 +620,16 @@ export const triggerChannelPluginPipeline = async (
       if (updated[0]) {
         runs.push(updated[0])
       }
+    } finally {
+      heartbeat.stop()
     }
   }
+
+  await completePipelineAttempt({
+    PluginPipelineRun,
+    pipelineId,
+    statuses: jobStatuses,
+  })
 
   return runs
 }

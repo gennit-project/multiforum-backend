@@ -222,6 +222,40 @@ for (const { name, op } of authGatedImageMod) {
   });
 }
 
+test("startPluginPipeline is auth-gated rather than default-denied", async () => {
+  const result = await execUnauthenticated(`
+    mutation {
+      startPluginPipeline(
+        targetId: "file-1"
+        targetType: "DownloadableFile"
+        eventType: "downloadableFile.created"
+      ) {
+        pipelineId
+      }
+    }
+  `);
+
+  assert.equal(
+    result.errors?.[0]?.message,
+    ERROR_MESSAGES.channel.notAuthenticated
+  );
+});
+
+test("rerunPluginPipeline is auth-gated rather than default-denied", async () => {
+  const result = await execUnauthenticated(`
+    mutation {
+      rerunPluginPipeline(pipelineRunId: "pipeline-1") {
+        pipelineId
+      }
+    }
+  `);
+
+  assert.equal(
+    result.errors?.[0]?.message,
+    ERROR_MESSAGES.channel.notAuthenticated
+  );
+});
+
 const authGatedCommentSticky: Array<{ name: string; op: string }> = [
   {
     name: "stickyComment",

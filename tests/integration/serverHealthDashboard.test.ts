@@ -96,6 +96,61 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
       createdAt: datetime(),
       scanStatus: 'FAILED'
     })
+    CREATE (:PluginRun {
+      id: 'job-queued',
+      status: 'PENDING',
+      queuedAt: toString(datetime() - duration({seconds: 120}))
+    })
+    CREATE (:PluginRun {
+      id: 'job-running',
+      status: 'RUNNING',
+      queuedAt: toString(datetime() - duration({seconds: 30}))
+    })
+    CREATE (:PluginRun {
+      id: 'job-timeout',
+      status: 'TIMED_OUT',
+      queuedAt: toString(datetime() - duration({minutes: 10})),
+      finishedAt: toString(datetime())
+    })
+    CREATE (:PluginRun {
+      id: 'job-success',
+      status: 'SUCCEEDED',
+      queuedAt: toString(datetime() - duration({minutes: 1})),
+      finishedAt: toString(datetime())
+    })
+    CREATE (:PluginPipelineRun {
+      pipelineId: 'retry-1',
+      targetId: 'file-retrying',
+      targetType: 'DownloadableFile',
+      eventType: 'downloadableFile.created',
+      scope: 'SERVER',
+      status: 'FAILED',
+      trigger: 'OWNER_RETRY',
+      createdAt: toString(datetime()),
+      finishedAt: toString(datetime())
+    })
+    CREATE (:PluginPipelineRun {
+      pipelineId: 'retry-2',
+      targetId: 'file-retrying',
+      targetType: 'DownloadableFile',
+      eventType: 'downloadableFile.created',
+      scope: 'SERVER',
+      status: 'FAILED',
+      trigger: 'OWNER_RETRY',
+      createdAt: toString(datetime()),
+      finishedAt: toString(datetime())
+    })
+    CREATE (:PluginPipelineRun {
+      pipelineId: 'retry-3',
+      targetId: 'file-retrying',
+      targetType: 'DownloadableFile',
+      eventType: 'downloadableFile.created',
+      scope: 'SERVER',
+      status: 'TIMED_OUT',
+      trigger: 'OWNER_RETRY',
+      createdAt: toString(datetime()),
+      finishedAt: toString(datetime())
+    })
 
     CREATE (alice)-[:POSTED_DISCUSSION]->(discussion)
     CREATE (bob)-[:AUTHORED_COMMENT]->(comment)
@@ -130,6 +185,14 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
   assert.equal(result.summary.issueOpenedCount, 2);
   assert.equal(result.summary.moderationActionCount, 1);
   assert.equal(result.summary.failedDownloadScanCount, 1);
+  assert.equal(result.summary.queuedPluginJobCount, 1);
+  assert.equal(result.summary.runningPluginJobCount, 1);
+  assert.equal(result.summary.pluginTimeoutCount24h, 1);
+  assert.equal(result.summary.pluginTimeoutRate24h, 0.5);
+  assert.equal(result.summary.repeatedPluginFailureCount24h, 1);
+  assert.equal(result.summary.pluginRetryAttemptCount1h, 3);
+  assert.equal(result.summary.pluginRetryStormCount1h, 1);
+  assert.ok(result.summary.oldestQueuedPluginJobAgeSeconds >= 120);
 
   const general = result.channelHealth.find(
     (row: any) => row.channelUniqueName === "general"
@@ -149,6 +212,21 @@ test("getServerHealthDashboard returns summary, time series, channel rows, and a
   assert.ok(
     result.attentionItems.some((item: any) => item.title === "Download security scans failing"),
     `expected scan failure attention item, got ${JSON.stringify(result.attentionItems)}`
+  );
+  const pipelineAttentionItems = result.attentionItems as Array<{
+    title: string;
+  }>;
+  assert.ok(
+    pipelineAttentionItems.some((item) => item.title === "Plugin pipeline timeouts"),
+    `expected timeout attention item, got ${JSON.stringify(result.attentionItems)}`
+  );
+  assert.ok(
+    pipelineAttentionItems.some((item) => item.title === "Repeated plugin failures"),
+    `expected repeated failure attention item, got ${JSON.stringify(result.attentionItems)}`
+  );
+  assert.ok(
+    pipelineAttentionItems.some((item) => item.title === "Plugin retry storms"),
+    `expected retry storm attention item, got ${JSON.stringify(result.attentionItems)}`
   );
 });
 

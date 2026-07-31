@@ -1,4 +1,4 @@
-import { and, shield, allow, deny, or } from "graphql-shield";
+import { and, chain, shield, allow, deny, or } from "graphql-shield";
 import rules from "./rules/rules.js";
 
 const {
@@ -80,7 +80,32 @@ const permissionList = shield({
       getUploadedDownloadableFiles: and(isAuthenticated, allow),
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
+      getPluginRunsForDownloadableFile: chain(
+        isAuthenticated,
+        canManagePlugins
+      ),
+      getPipelineRuns: chain(isAuthenticated, canManagePlugins),
+      getInternalPluginPipelineRun: chain(
+        isAuthenticated,
+        canManagePlugins
+      ),
+      previewPluginPipelineCampaign: chain(isAuthenticated, canManagePlugins),
+      getPluginPipelineCampaigns: chain(isAuthenticated, canManagePlugins),
+      getPluginPipelineCampaignFailures: chain(isAuthenticated, canManagePlugins),
+      pluginRuns: deny,
+      pluginRunsAggregate: deny,
+      pluginPipelineRuns: deny,
+      pluginPipelineRunsAggregate: deny,
       getRankingSettings: and(isAuthenticated, canManageServerSettings),
+    },
+    PluginRun: {
+      payload: chain(isAuthenticated, canManagePlugins),
+      publicDiagnostics: chain(isAuthenticated, canManagePlugins),
+      "*": allow,
+    },
+    PluginPipelineRun: {
+      configurationSnapshot: chain(isAuthenticated, canManagePlugins),
+      "*": allow,
     },
     User: {
       // Public fields - anyone can access
@@ -337,6 +362,11 @@ const permissionList = shield({
       unarchiveImage: and(isAuthenticated, canArchiveAndUnarchiveImage),
       permanentlyRemoveImage: and(isAuthenticated, canPermanentlyRemoveImage),
       retryDownloadableFileScan: and(isAuthenticated, allow),
+      startPluginPipeline: and(isAuthenticated, allow),
+      rerunPluginPipeline: and(isAuthenticated, allow),
+      createPluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
+      pausePluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
+      resumePluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
       clearDownloadableFileScan: and(isAuthenticated, canPermanentlyRemoveImage),
       permanentlyDeleteImage: and(isAuthenticated, allow),
       permanentlyDeleteDownloadableFile: and(isAuthenticated, allow),

@@ -203,6 +203,7 @@ const typeDefinitions = gql`
     read: Boolean
     text: String
     notificationType: String # "feedback", "mention", "reply", "moderation", "scratchpad", etc.
+    link: String
     # Set for "scratchpad" (super upvote) notifications so the recipient can act
     # on the thank-you note (show on profile / ignore) straight from the bell.
     ScratchpadEntry: ScratchpadEntry
@@ -1451,6 +1452,21 @@ const typeDefinitions = gql`
       event: String!
     ): [PluginRun!]!
     retryDownloadableFileScan(downloadableFileId: ID!): [PluginRun!]!
+      @deprecated(reason: "Use rerunPluginPipeline")
+    startPluginPipeline(
+      targetId: ID!
+      targetType: String!
+      eventType: String!
+      channelId: String
+    ): PluginPipelineRun!
+    rerunPluginPipeline(pipelineRunId: ID!): PluginPipelineRun!
+    createPluginPipelineCampaign(
+      policyId: ID!
+      concurrency: Int! = 2
+      rateLimitPerMinute: Int! = 30
+    ): PluginPipelineCampaign!
+    pausePluginPipelineCampaign(campaignId: ID!): PluginPipelineCampaign!
+    resumePluginPipelineCampaign(campaignId: ID!): PluginPipelineCampaign!
     clearDownloadableFileScan(
       downloadableFileId: ID!
       reason: String
@@ -1767,6 +1783,12 @@ const typeDefinitions = gql`
     PREVIOUS_FAILED
   }
 
+  enum PipelineApplicability {
+    NEW_FILES_ONLY
+    ALL_FILES_GRADUAL
+    ALL_FILES_IMMEDIATE
+  }
+
   type PipelineStep {
     pluginId: String!
     version: String
@@ -1785,6 +1807,9 @@ const typeDefinitions = gql`
     event: String!
     steps: [PipelineStepInput!]!
     stopOnFirstFailure: Boolean
+    effectiveAt: DateTime
+    policyId: ID
+    applicability: PipelineApplicability
   }
 
   type ChannelPluginProperties @relationshipProperties {
@@ -1810,6 +1835,120 @@ const typeDefinitions = gql`
     SUCCEEDED
     FAILED
     SKIPPED
+    TIMED_OUT
+    CANCELLED
+  }
+
+  enum PluginPipelineRunStatus {
+    QUEUED
+    RUNNING
+    SUCCEEDED
+    FAILED
+    TIMED_OUT
+    CANCELLED
+  }
+
+  enum PluginPipelineRunTrigger {
+    EVENT
+    OWNER_START
+    MODERATOR_START
+    OWNER_RETRY
+    MODERATOR_RETRY
+    AUTOMATIC_RETRY
+    CAMPAIGN
+  }
+
+  type PluginPipelineRun {
+    id: ID! @id
+    pipelineId: String! @unique
+    targetId: String!
+    targetType: String!
+    targetVersion: String
+    eventType: String!
+    scope: String!
+    channelId: String
+    status: PluginPipelineRunStatus!
+    trigger: PluginPipelineRunTrigger!
+    initiatedByUsername: String
+    retryOfPipelineRunId: String
+    attemptNumber: Int!
+    configurationSnapshot: JSON!
+    applicability: String
+    policyEffectiveAt: DateTime
+    policyId: ID
+    campaignId: ID
+    notifiedAt: DateTime
+    queuedAt: DateTime
+    startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
+    finishedAt: DateTime
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    updatedAt: DateTime! @timestamp(operations: [UPDATE])
+  }
+
+  enum PluginPipelineCampaignStatus {
+    DRAFT
+    RUNNING
+    PAUSED
+    COMPLETED
+    CANCELLED
+  }
+
+  type PluginPipelineCampaign
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    id: ID! @id
+    policyId: ID!
+    eventType: String!
+    scope: String!
+    channelId: String
+    applicability: PipelineApplicability!
+    enforcementBehavior: String!
+    status: PluginPipelineCampaignStatus!
+    concurrency: Int!
+    rateLimitPerMinute: Int!
+    affectedFileCount: Int!
+    accessibleFileCount: Int!
+    unavailableFileCount: Int!
+    estimatedProviderRuns: Int!
+    completedCount: Int!
+    runningCount: Int!
+    failedCount: Int!
+    timedOutCount: Int!
+    createdByUsername: String!
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    updatedAt: DateTime! @timestamp(operations: [UPDATE])
+    startedAt: DateTime
+    pausedAt: DateTime
+    finishedAt: DateTime
+  }
+
+  type PluginPipelineCampaignPreview
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    policyId: ID!
+    eventType: String!
+    applicability: PipelineApplicability!
+    enforcementBehavior: String!
+    affectedFileCount: Int!
+    accessibleFileCount: Int!
+    unavailableFileCount: Int!
+    estimatedProviderRuns: Int!
+  }
+
+  type PluginPipelineCampaignFailure
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    pipelineId: ID!
+    targetId: ID!
+    discussionId: ID!
+    channelId: String!
+    status: PluginPipelineRunStatus!
+    attemptNumber: Int!
   }
 
   type PluginRun {
@@ -1826,11 +1965,117 @@ const typeDefinitions = gql`
     targetId: String
     targetType: String
     payload: JSON
+    publicDiagnostics: JSON
     pipelineId: String
     executionOrder: Int
     skippedReason: String
+    leaseId: String
+    queuedAt: DateTime
+    startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
+    finishedAt: DateTime
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime! @timestamp(operations: [UPDATE])
+  }
+
+  enum PublicPluginDiagnosticLevel {
+    INFO
+    WARNING
+    ERROR
+  }
+
+  type PublicPluginDiagnostic {
+    level: PublicPluginDiagnosticLevel!
+    code: String!
+    message: String!
+    details: JSON
+    helpUrl: String
+  }
+
+  type PublicExpectedPluginJob {
+    pluginId: String!
+    pluginName: String!
+    version: String!
+    order: Int!
+    condition: PipelineCondition!
+    continueOnError: Boolean!
+  }
+
+  type ApplicablePluginPipeline {
+    targetId: ID!
+    targetType: String!
+    eventType: String!
+    scope: String!
+    channelId: String
+    configured: Boolean!
+    applicability: PipelineApplicability!
+    effectiveAt: DateTime
+    policyId: ID
+    required: Boolean!
+    reason: String!
+    expectedJobs: [PublicExpectedPluginJob!]!
+  }
+
+  type PublicPluginJobRun {
+    id: ID!
+    pluginId: String!
+    pluginName: String!
+    version: String!
+    scope: String!
+    channelId: String
+    eventType: String!
+    status: PluginRunStatus!
+    message: String
+    durationMs: Int
+    executionOrder: Int!
+    skippedReason: String
+    diagnostics: [PublicPluginDiagnostic!]!
+    queuedAt: DateTime!
+    startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
+    finishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type PublicPluginPipelineRun {
+    id: ID!
+    pipelineId: String!
+    targetId: ID!
+    targetType: String!
+    eventType: String!
+    scope: String!
+    channelId: String
+    status: PluginPipelineRunStatus!
+    trigger: PluginPipelineRunTrigger!
+    initiatedByUsername: String
+    retryOfPipelineRunId: ID
+    attemptNumber: Int!
+    applicability: PipelineApplicability
+    policyEffectiveAt: DateTime
+    policyId: ID
+    campaignId: ID
+    queuedAt: DateTime!
+    startedAt: DateTime
+    heartbeatAt: DateTime
+    timeoutAt: DateTime
+    finishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    jobs: [PublicPluginJobRun!]!
+  }
+
+  type PluginPipelineSummary {
+    targetId: ID!
+    targetType: String!
+    attempts: [PublicPluginPipelineRun!]!
+  }
+
+  type InternalPluginPipelineRunDetail {
+    attempt: PluginPipelineRun!
+    jobs: [PluginRun!]!
   }
 
   type ServerConfig {
@@ -2106,6 +2351,14 @@ const typeDefinitions = gql`
     lockedContentCount: Int!
     suspensionCount: Int!
     failedDownloadScanCount: Int!
+    queuedPluginJobCount: Int!
+    runningPluginJobCount: Int!
+    pluginTimeoutCount24h: Int!
+    pluginTimeoutRate24h: Float!
+    repeatedPluginFailureCount24h: Int!
+    pluginRetryAttemptCount1h: Int!
+    pluginRetryStormCount1h: Int!
+    oldestQueuedPluginJobAgeSeconds: Int!
     medianOpenIssueAgeDays: Float
   }
 
@@ -2343,6 +2596,30 @@ const typeDefinitions = gql`
     getInstalledPlugins: [InstalledPlugin!]!
     getPluginRunsForDownloadableFile(downloadableFileId: ID!): [PluginRun!]!
     getPipelineRuns(targetId: ID!, targetType: String!): [PluginRun!]!
+    getApplicablePluginPipeline(
+      downloadableFileId: ID!
+      eventType: String = "downloadableFile.created"
+      scope: String = "SERVER"
+      discussionId: ID
+      channelUniqueName: String
+    ): ApplicablePluginPipeline!
+    getPipelineSummary(
+      targetId: ID!
+      targetType: String!
+    ): PluginPipelineSummary!
+    getPublicPipelineRun(
+      pipelineRunId: ID!
+    ): PublicPluginPipelineRun
+    getInternalPluginPipelineRun(
+      pipelineRunId: ID!
+    ): InternalPluginPipelineRunDetail
+    previewPluginPipelineCampaign(
+      policyId: ID!
+    ): PluginPipelineCampaignPreview!
+    getPluginPipelineCampaigns: [PluginPipelineCampaign!]!
+    getPluginPipelineCampaignFailures(
+      campaignId: ID!
+    ): [PluginPipelineCampaignFailure!]!
   }
 `
 

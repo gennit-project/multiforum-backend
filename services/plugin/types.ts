@@ -7,21 +7,27 @@ import type {
   EventModel,
   IssueModel,
   PluginModel,
+  PluginPipelineRunModel,
+  PluginPipelineCampaignModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
   ServerSecretModel,
   UserModel
 } from '../../ogm_types.js'
+import type { PluginPipelineRunTrigger } from '../../ogm_types.js'
 
 // Base Models type for server-scoped triggers
 export type Models = {
   DownloadableFile: DownloadableFileModel
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
+  Plugin?: PluginModel
+  PluginVersion?: PluginVersionModel
+  PluginPipelineRun: PluginPipelineRunModel
   PluginRun: PluginRunModel
   ServerConfig: ServerConfigModel
   ServerSecret: ServerSecretModel
+  User?: UserModel
+  PluginPipelineCampaign?: PluginPipelineCampaignModel
 }
 
 // Pipeline step configuration
@@ -37,7 +43,15 @@ export type EventPipeline = {
   event: string
   steps: PipelineStep[]
   stopOnFirstFailure?: boolean
+  effectiveAt?: string
+  applicability?: PipelineApplicability
+  policyId?: string
 }
+
+export type PipelineApplicability =
+  | 'NEW_FILES_ONLY'
+  | 'ALL_FILES_GRADUAL'
+  | 'ALL_FILES_IMMEDIATE'
 
 // Plugin edge data from GraphQL connection
 export type PluginEdgeData = {
@@ -71,6 +85,15 @@ export type TriggerArgs = {
   models: Models
 }
 
+export type PipelineExecutionMetadata = {
+  pipelineId?: string
+  trigger?: PluginPipelineRunTrigger
+  initiatedByUsername?: string | null
+  retryOfPipelineRunId?: string | null
+  policyId?: string | null
+  campaignId?: string | null
+}
+
 // Arguments for comment trigger
 export type CommentTriggerArgs = {
   commentId: string
@@ -81,6 +104,7 @@ export type CommentTriggerArgs = {
     Discussion: DiscussionModel
     Event: EventModel
     Issue: IssueModel
+    PluginPipelineRun: PluginPipelineRunModel
     PluginRun: PluginRunModel
     ServerConfig: ServerConfigModel
     ServerSecret: ServerSecretModel

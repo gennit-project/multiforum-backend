@@ -33,9 +33,11 @@ test("triggers the updated pipeline after connecting a replacement", async () =>
   const input = {
     Discussion,
     DownloadableFile: { name: "DownloadableFile" },
+    PluginPipelineRun: { name: "PluginPipelineRun" },
     PluginRun: { name: "PluginRun" },
     ServerConfig: { name: "ServerConfig" },
     ServerSecret: { name: "ServerSecret" },
+    User: { name: "User" },
     driver: { session: () => session },
   } as any;
   const resolver = getResolver(input, (async (args: unknown) => {
@@ -68,11 +70,11 @@ test("triggers the updated pipeline after connecting a replacement", async () =>
       event: "downloadableFile.updated",
       models: {
         DownloadableFile: input.DownloadableFile,
-        Plugin: null,
-        PluginVersion: null,
+        PluginPipelineRun: input.PluginPipelineRun,
         PluginRun: input.PluginRun,
         ServerConfig: input.ServerConfig,
         ServerSecret: input.ServerSecret,
+        User: input.User,
       },
     }]
   );

@@ -83,6 +83,13 @@ import refreshPlugins from "./mutations/refreshPlugins.js";
 import installPluginVersion from "./mutations/installPluginVersion.js";
 import triggerDownloadableFilePluginRuns from "./mutations/triggerDownloadableFilePluginRuns.js";
 import retryDownloadableFileScan from "./mutations/retryDownloadableFileScan.js";
+import startPluginPipeline from "./mutations/startPluginPipeline.js";
+import rerunPluginPipeline from "./mutations/rerunPluginPipeline.js";
+import {
+  createPluginPipelineCampaign,
+  pausePluginPipelineCampaign,
+  resumePluginPipelineCampaign,
+} from "./mutations/pluginPipelineCampaigns.js";
 import clearDownloadableFileScan from "./mutations/clearDownloadableFileScan.js";
 import trackDownload from "./mutations/trackDownload.js";
 import prepareDownload from "./mutations/prepareDownload.js";
@@ -143,6 +150,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ServerConfig,
     Plugin,
     PluginVersion,
+    PluginPipelineRun,
+    PluginPipelineCampaign,
     PluginRun,
     DownloadableFile,
     ServerSecret,
@@ -165,9 +174,11 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
         // Plugin pipeline support
         Channel,
         DownloadableFile,
+        PluginPipelineRun,
         PluginRun,
         ServerConfig,
         ServerSecret,
+        User,
       }),
     createIssue: createIssue({
       Issue,
@@ -177,9 +188,11 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       updateDiscussionWithChannelConnections({
         Discussion,
         DownloadableFile,
+        PluginPipelineRun,
         PluginRun,
         ServerConfig,
         ServerSecret,
+        User,
         driver,
       }),
     createEventWithChannelConnections: createEventWithChannelConnections({
@@ -543,17 +556,62 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       DownloadableFile,
       Plugin,
       PluginVersion,
+      PluginPipelineRun,
       PluginRun,
       ServerConfig,
-      ServerSecret
+      ServerSecret,
+      User,
     }),
     retryDownloadableFileScan: retryDownloadableFileScan({
+      Channel,
+      Discussion,
       DownloadableFile,
       Plugin,
       PluginVersion,
+      PluginPipelineRun,
       PluginRun,
       ServerConfig,
-      ServerSecret
+      ServerSecret,
+      User,
+    }),
+    startPluginPipeline: startPluginPipeline({
+      Channel,
+      Discussion,
+      DownloadableFile,
+      Plugin,
+      PluginVersion,
+      PluginPipelineRun,
+      PluginRun,
+      ServerConfig,
+      ServerSecret,
+      User,
+    }),
+    rerunPluginPipeline: rerunPluginPipeline({
+      Channel,
+      Discussion,
+      DownloadableFile,
+      Plugin,
+      PluginVersion,
+      PluginPipelineRun,
+      PluginRun,
+      ServerConfig,
+      ServerSecret,
+      User,
+    }),
+    createPluginPipelineCampaign: createPluginPipelineCampaign({
+      PluginPipelineCampaign,
+      DownloadableFile,
+      ServerConfig,
+    }),
+    pausePluginPipelineCampaign: pausePluginPipelineCampaign({
+      PluginPipelineCampaign,
+      DownloadableFile,
+      ServerConfig,
+    }),
+    resumePluginPipelineCampaign: resumePluginPipelineCampaign({
+      PluginPipelineCampaign,
+      DownloadableFile,
+      ServerConfig,
     }),
     clearDownloadableFileScan: clearDownloadableFileScan({
       DownloadableFile,
@@ -566,9 +624,11 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       DownloadableFile,
       Plugin,
       PluginVersion,
+      PluginPipelineRun,
       PluginRun,
       ServerConfig,
       ServerSecret,
+      User,
       driver
     }),
     updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({

@@ -1,0 +1,109 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import { modelStub } from '../../tests/fixtures/modelStub.js'
+import { assertPublicPipelineTargetVisible } from './pluginPipelineVisibility.js'
+
+test('allows a download attached to a visible discussion channel', async () => {
+  const result = await assertPublicPipelineTargetVisible({
+    DownloadableFile: modelStub<'DownloadableFile'>({
+      find: async () => [
+      {
+        id: 'file-1',
+        permanentlyRemoved: false,
+        Discussion: {
+          deleted: false,
+          DiscussionChannels: [{ archived: false }],
+        },
+      },
+      ],
+    }),
+    targetId: 'file-1',
+    targetType: 'DownloadableFile',
+  })
+
+  assert.equal(result.id, 'file-1')
+})
+
+test('allows channel-scoped history for a public download discussion', async () => {
+  const result = await assertPublicPipelineTargetVisible({
+    Discussion: modelStub<'Discussion'>({
+      find: async () => [
+      {
+        id: 'discussion-1',
+        deleted: false,
+        DownloadableFiles: [{ permanentlyRemoved: false }],
+        DiscussionChannels: [{ archived: false }],
+      },
+      ],
+    }),
+    DownloadableFile: modelStub<'DownloadableFile'>({
+      find: async () => [],
+    }),
+    targetId: 'discussion-1',
+    targetType: 'Discussion',
+  })
+
+  assert.equal(result.id, 'discussion-1')
+})
+
+test('hides removed, deleted, archived, missing, and unsupported targets', async () => {
+  const hiddenRows = [
+    [{ id: 'file-1', permanentlyRemoved: true }],
+    [{ id: 'file-1', Discussion: { deleted: true } }],
+    [
+      {
+        id: 'file-1',
+        Discussion: {
+          deleted: false,
+          DiscussionChannels: [{ archived: true }],
+        },
+      },
+    ],
+    [],
+  ]
+
+  const outcomes = await Promise.all(
+    hiddenRows.map(rows =>
+      assertPublicPipelineTargetVisible({
+        DownloadableFile: modelStub<'DownloadableFile'>({
+          find: async () => rows,
+        }),
+        targetId: 'file-1',
+        targetType: 'DownloadableFile',
+      }).then(
+        () => 'visible',
+        error => error.extensions?.code
+      )
+    )
+  )
+  outcomes.push(
+    await assertPublicPipelineTargetVisible({
+      Discussion: modelStub<'Discussion'>({
+        find: async () => [
+        {
+          id: 'discussion-1',
+          deleted: false,
+          DownloadableFiles: [{ permanentlyRemoved: true }],
+          DiscussionChannels: [{ archived: false }],
+        },
+        ],
+      }),
+      DownloadableFile: modelStub<'DownloadableFile'>({
+        find: async () => [],
+      }),
+      targetId: 'discussion-1',
+      targetType: 'Discussion',
+    }).then(
+      () => 'visible',
+      error => error.extensions?.code
+    )
+  )
+
+  assert.deepEqual(outcomes, [
+    'NOT_FOUND',
+    'NOT_FOUND',
+    'NOT_FOUND',
+    'NOT_FOUND',
+    'NOT_FOUND',
+  ])
+})

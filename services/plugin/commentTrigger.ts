@@ -4,6 +4,21 @@ import { COMMENT_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import {
+  completePipelineAttempt,
+  createPipelineAttempt,
+  type PipelineJobStatus,
+} from './pipelineAttempt.js'
+import {
+  claimPluginRunLease,
+  completePluginRunLease,
+  createQueuedPluginRunTiming,
+  startPluginRunHeartbeat,
+} from './executionLease.js'
+import {
+  createPublicDiagnosticCollector,
+  type PublicDiagnostic,
+} from './publicDiagnostics.js'
 import { createBotComment, buildBotUsername } from '../botUserService.js'
 import { createBotReport } from '../botReportService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
@@ -30,7 +45,18 @@ export const triggerPluginRunsForComment = async (
     throw new Error(`Unsupported comment plugin event: ${event}`)
   }
 
-  const { Channel, Comment, Discussion, Event, Issue, PluginRun, ServerConfig, ServerSecret, User } = models
+  const {
+    Channel,
+    Comment,
+    Discussion,
+    Event,
+    Issue,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+    User,
+  } = models
 
   const comments = await Comment.find({
     where: { id: commentId },
@@ -293,15 +319,31 @@ export const triggerPluginRunsForComment = async (
   }
 
   const runs: unknown[] = []
+  const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
+
+  await createPipelineAttempt({
+    PluginPipelineRun,
+    context: {
+      pipelineId,
+      targetId: comment.id,
+      targetType: 'Comment',
+      eventType: event,
+      scope: 'SERVER',
+      channelId: channelUniqueName,
+      eventPipeline,
+      pluginsToRun,
+    },
+  })
 
   const pendingRuns: PendingRun[] = []
   for (const { pluginId, edgeData, order } of pluginsToRun) {
     const pluginNode = edgeData.node.Plugin
     const pluginVersionData = edgeData.node
 
+    const timing = createQueuedPluginRunTiming()
     const runCreateResult = await PluginRun.create({
       input: [
         ({
@@ -316,6 +358,8 @@ export const triggerPluginRunsForComment = async (
           targetType: 'Comment',
           pipelineId,
           executionOrder: order,
+          queuedAt: timing.queuedAt,
+          timeoutAt: timing.timeoutAt,
           payload: JSON.stringify({
             event,
             commentId: comment.id,
@@ -348,9 +392,12 @@ export const triggerPluginRunsForComment = async (
         update: ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
-          message: 'Skipped: pipeline stopped'
+          message: 'Skipped: pipeline stopped',
+          finishedAt: new Date().toISOString(),
+          timeoutAt: null,
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -374,9 +421,12 @@ export const triggerPluginRunsForComment = async (
         update: ({
           status: 'SKIPPED',
           skippedReason: reason,
-          message: `Skipped: ${reason}`
+          message: `Skipped: ${reason}`,
+          finishedAt: new Date().toISOString(),
+          timeoutAt: null,
         } as PluginRunUpdateInput)
       })
+      jobStatuses[order] = 'SKIPPED'
 
       const skipped = await PluginRun.find({
         where: { id: pluginRunId },
@@ -390,14 +440,25 @@ export const triggerPluginRunsForComment = async (
       continue
     }
 
-    await PluginRun.update({
-      where: { id: pluginRunId },
-      update: ({ status: 'RUNNING' } as PluginRunUpdateInput)
+    const lease = await claimPluginRunLease({
+      PluginRun,
+      PluginPipelineRun,
+      pluginRunId,
+      pipelineId,
     })
+    if (!lease) continue
+
+    const heartbeat = startPluginRunHeartbeat({
+      PluginRun,
+      PluginPipelineRun,
+      lease,
+    })
+    jobStatuses[order] = 'RUNNING'
 
     const runStart = performance.now()
     const logs: string[] = []
     const flags: unknown[] = []
+    let publicDiagnostics: PublicDiagnostic[] = []
 
     try {
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
@@ -447,6 +508,19 @@ export const triggerPluginRunsForComment = async (
         mergeSettings(settingsDefaults, serverSettingsJson),
         channelSettingsJson
       )
+      const diagnosticCollector = createPublicDiagnosticCollector({
+        secrets: Object.values(decryptedSecrets),
+      })
+      publicDiagnostics = diagnosticCollector.entries
+      const internalLog = (...args: unknown[]) => {
+        const message = args
+          .map(arg =>
+            typeof arg === 'string' ? arg : JSON.stringify(arg)
+          )
+          .join(' ')
+        logs.push(message)
+        logger.info(`[Plugin:${pluginId}]`, message)
+      }
 
       const context = {
         scope: 'SERVER' as const,
@@ -455,11 +529,10 @@ export const triggerPluginRunsForComment = async (
         secrets: {
           server: decryptedSecrets
         },
-        log: (...args: unknown[]) => {
-          const message = args.map(arg => (typeof arg === 'string' ? arg : JSON.stringify(arg))).join(' ')
-          logs.push(message)
-          logger.info(`[Plugin:${pluginId}]`, message)
+        diagnostics: {
+          public: diagnosticCollector.public,
         },
+        log: Object.assign(internalLog, { internal: internalLog }),
         storeFlag: async (flag: unknown) => {
           flags.push(flag)
         },
@@ -641,22 +714,25 @@ export const triggerPluginRunsForComment = async (
       const succeeded = result?.success !== false
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await completePluginRunLease({
+        PluginRun,
+        lease,
+        update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
           message: succeeded
             ? (result?.result?.message || 'Plugin run completed')
             : (result?.error || 'Plugin reported failure'),
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             flags,
             logs,
             result
-          })
-        } as PluginRunUpdateInput)
+          }),
+        },
       })
+      jobStatuses[order] = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       if (!succeeded && stopOnFirstFailure && !step.continueOnError) {
         pipelineStopped = true
@@ -681,20 +757,23 @@ export const triggerPluginRunsForComment = async (
 
       previousStatus = 'FAILED'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await completePluginRunLease({
+        PluginRun,
+        lease,
+        update: {
           status: 'FAILED',
           message,
           durationMs,
+          publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({
             event,
             error: message,
             logs,
             flags
-          })
-        } as PluginRunUpdateInput)
+          }),
+        },
       })
+      jobStatuses[order] = 'FAILED'
 
       const updated = await PluginRun.find({
         where: { id: pluginRunId },
@@ -712,8 +791,16 @@ export const triggerPluginRunsForComment = async (
       if (stopOnFirstFailure && !step.continueOnError) {
         pipelineStopped = true
       }
+    } finally {
+      heartbeat.stop()
     }
   }
+
+  await completePipelineAttempt({
+    PluginPipelineRun,
+    pipelineId,
+    statuses: jobStatuses,
+  })
 
   return runs
 }

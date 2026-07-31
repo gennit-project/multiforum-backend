@@ -3,10 +3,12 @@ import type { Driver } from "neo4j-driver";
 import type {
   DownloadableFileModel,
   PluginModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   PluginVersionModel,
   ServerConfigModel,
   ServerSecretModel,
+  UserModel,
 } from "../../ogm_types.js";
 import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -20,9 +22,11 @@ type Input = {
   DownloadableFile: DownloadableFileModel;
   Plugin: PluginModel;
   PluginVersion: PluginVersionModel;
+  PluginPipelineRun: PluginPipelineRunModel;
   PluginRun: PluginRunModel;
   ServerConfig: ServerConfigModel;
   ServerSecret: ServerSecretModel;
+  User?: UserModel;
   driver: Driver;
 };
 

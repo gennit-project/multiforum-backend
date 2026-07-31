@@ -26,6 +26,15 @@ import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
 import getUploadedDownloadableFiles from "./queries/getUploadedDownloadableFiles.js";
 import getImageAlbumUsage from "./queries/getImageAlbumUsage.js";
 import getPluginConfigStatus from './queries/getPluginConfigStatus.js'
+import getApplicablePluginPipeline from './queries/getApplicablePluginPipeline.js'
+import getPipelineSummary from './queries/getPluginPipelineSummary.js'
+import getPublicPipelineRun from './queries/getPublicPluginPipelineRun.js'
+import getInternalPluginPipelineRun from './queries/getInternalPluginPipelineRun.js'
+import {
+  getPluginPipelineCampaigns,
+  getPluginPipelineCampaignFailures,
+  previewPluginPipelineCampaign,
+} from './queries/pluginPipelineCampaigns.js'
 import getRankingSettings from "./queries/getRankingSettings.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
@@ -43,7 +52,10 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     Plugin,
     ServerConfig,
     ServerSecret,
+    PluginPipelineRun,
+    PluginPipelineCampaign,
     PluginRun,
+    DownloadableFile,
     Email,
   } = deps;
 
@@ -124,6 +136,39 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getPipelineRuns: getPipelineRuns({
       PluginRun
+    }),
+    getApplicablePluginPipeline: getApplicablePluginPipeline({
+      Channel,
+      Discussion,
+      DownloadableFile,
+      ServerConfig,
+    }),
+    getPipelineSummary: getPipelineSummary({
+      Discussion,
+      DownloadableFile,
+      PluginPipelineRun,
+      PluginRun,
+    }),
+    getPublicPipelineRun: getPublicPipelineRun({
+      Discussion,
+      DownloadableFile,
+      PluginPipelineRun,
+      PluginRun,
+    }),
+    getInternalPluginPipelineRun: getInternalPluginPipelineRun({
+      PluginPipelineRun,
+      PluginRun,
+    }),
+    previewPluginPipelineCampaign: previewPluginPipelineCampaign({
+      DownloadableFile,
+      ServerConfig,
+    }),
+    getPluginPipelineCampaigns: getPluginPipelineCampaigns({
+      PluginPipelineCampaign,
+    }),
+    getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
+      DownloadableFile,
+      PluginPipelineRun,
     }),
     publicCollectionsContaining: publicCollectionsContaining({
       driver,

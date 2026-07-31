@@ -19,11 +19,12 @@ import type { GraphQLSchema } from "graphql";
 import typeDefs from "../../typeDefs.js";
 import permissions from "../../permissions.js";
 import getCustomResolvers from "../../customResolvers.js";
+import type { ResolverDeps } from "../../customResolvers/resolverDeps.js";
 
 export interface PermissionedSchema {
   schema: GraphQLSchema;
   driver: Driver;
-  ogm: any;
+  ogm: ResolverDeps["ogm"];
 }
 
 export async function buildPermissionedSchema(): Promise<PermissionedSchema> {
@@ -52,7 +53,7 @@ export function makeRequestContext(options: {
   authorization?: string;
   isMutation?: boolean;
   driver: Driver;
-  ogm: any;
+  ogm: ResolverDeps["ogm"];
 }) {
   return {
     driver: options.driver,

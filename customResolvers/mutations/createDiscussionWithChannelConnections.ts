@@ -12,9 +12,11 @@ import type {
   DiscussionModel,
   ChannelModel,
   DownloadableFileModel,
+  PluginPipelineRunModel,
   PluginRunModel,
   ServerConfigModel,
   ServerSecretModel,
+  UserModel,
 } from "../../ogm_types.js";
 
 type DiscussionCreateInputWithChannels = {
@@ -32,9 +34,11 @@ type Input = {
   // Additional models for plugin pipeline support
   Channel?: ChannelModel;
   DownloadableFile?: DownloadableFileModel;
+  PluginPipelineRun?: PluginPipelineRunModel;
   PluginRun?: PluginRunModel;
   ServerConfig?: ServerConfigModel;
   ServerSecret?: ServerSecretModel;
+  User?: UserModel;
 };
 
 // The reason why we cannot use the auto-generated resolver
@@ -101,9 +105,11 @@ export const createDiscussionsFromInput = async (
   pluginModels?: {
     Channel: ChannelModel;
     DownloadableFile: DownloadableFileModel;
+    PluginPipelineRun: PluginPipelineRunModel;
     PluginRun: PluginRunModel;
     ServerConfig: ServerConfigModel;
     ServerSecret: ServerSecretModel;
+    User?: UserModel;
   }
 ): Promise<unknown[]> => {
   if (!input || input.length === 0) {
@@ -199,6 +205,7 @@ export const createDiscussionsFromInput = async (
                   DownloadableFile: pluginModels.DownloadableFile,
                   Plugin: null as any, // Not used in channel pipeline
                   PluginVersion: null as any, // Not used directly
+                  PluginPipelineRun: pluginModels.PluginPipelineRun,
                   PluginRun: pluginModels.PluginRun,
                   ServerConfig: pluginModels.ServerConfig,
                   ServerSecret: pluginModels.ServerSecret,
@@ -240,11 +247,11 @@ export const createDiscussionsFromInput = async (
               event: "downloadableFile.created",
               models: {
                 DownloadableFile: pluginModels.DownloadableFile,
-                Plugin: null as any, // Not used by the download trigger
-                PluginVersion: null as any, // Not used by the download trigger
+                PluginPipelineRun: pluginModels.PluginPipelineRun,
                 PluginRun: pluginModels.PluginRun,
                 ServerConfig: pluginModels.ServerConfig,
                 ServerSecret: pluginModels.ServerSecret,
+                User: pluginModels.User,
               },
             });
           }
@@ -283,11 +290,21 @@ export const createDiscussionsFromInput = async (
  * Main resolver that uses createDiscussionsFromInput
  */
 const getResolver = (input: Input) => {
-  const { Discussion, driver, Channel, DownloadableFile, PluginRun, ServerConfig, ServerSecret } = input;
+  const {
+    Discussion,
+    driver,
+    Channel,
+    DownloadableFile,
+    PluginPipelineRun,
+    PluginRun,
+    ServerConfig,
+    ServerSecret,
+    User,
+  } = input;
 
   // Build plugin models object if all required models are provided
-  const pluginModels = Channel && DownloadableFile && PluginRun && ServerConfig && ServerSecret
-    ? { Channel, DownloadableFile, PluginRun, ServerConfig, ServerSecret }
+  const pluginModels = Channel && DownloadableFile && PluginPipelineRun && PluginRun && ServerConfig && ServerSecret
+    ? { Channel, DownloadableFile, PluginPipelineRun, PluginRun, ServerConfig, ServerSecret, User }
     : undefined;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
