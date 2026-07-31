@@ -283,6 +283,8 @@ test("creates and completes a first-class pipeline attempt", async () => {
         },
         applicability: "ALL_FILES_IMMEDIATE",
         policyEffectiveAt: null,
+        policyId: null,
+        campaignId: null,
         queuedAt: attemptCreates[0]!.input[0]!.queuedAt,
         timeoutAt: attemptCreates[0]!.input[0]!.timeoutAt,
         updatedAt: attemptCreates[0]!.input[0]!.updatedAt,
