@@ -127,6 +127,7 @@ import {
   unlockWikiPage,
 } from "./mutations/wikiPageLocks.js";
 import { setFeaturedWikiPages } from "./mutations/setFeaturedWikiPages.js";
+import setRankingSettings from "./mutations/setRankingSettings.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
@@ -714,6 +715,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     setFeaturedWikiPages: setFeaturedWikiPages({
       ServerConfig,
       WikiPage,
+    }),
+    setRankingSettings: setRankingSettings({
+      driver,
     }),
     updateDownloadLabels: updateDownloadLabels({
       Discussion,

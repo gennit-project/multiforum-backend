@@ -51,7 +51,7 @@ WITH parentComment, child, author, serverRoles, channelRoles, GrandchildComments
 
 WITH parentComment, child, author, serverRoles, channelRoles, UpvotedByUsers, SuperUpvotedByUsers, ageInMonths, weightedVotesCount,
      GrandchildCommentsCount, FilteredFeedbackComments, FilteredPastVersions, isFavoritedByUser,
-     10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
+     log10(weightedVotesCount + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) AS hotRank
 
 // Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
 // @cypher field + server-admin membership), so the author's roles are no longer

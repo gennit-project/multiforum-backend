@@ -8,6 +8,7 @@ import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.j
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
+import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 
 const eventSelectionSet = `
   {
@@ -36,6 +37,7 @@ const eventSelectionSet = `
 type Input = {
   Event: EventModel;
   driver: Driver;
+  serverName?: string;
 };
 
 type Args = {
@@ -46,7 +48,7 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Event } = input;
+  const { driver, Event, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { eventId, offset, limit, sort } = args;
     context.user = await setUserDataOnContext({
@@ -71,13 +73,22 @@ const getResolver = (input: Input) => {
       }
 
       const event = result[0];
+      const effectiveSort =
+        sort === "top" ? "top" : sort === "hot" ? "hot" : "new";
+      const rankingParams = await getHotRankingQueryParams({
+        executor: session,
+        profile: "comment",
+        sortOption: effectiveSort,
+        serverName,
+      });
 
       const commentsResult = await session.run(getEventCommentsQuery, {
         eventId,
         offset: parseInt(offset, 10),
         limit: parseInt(limit, 10),
-        sortOption: sort === "top" ? "top" : sort === "hot" ? "hot" : "new",
+        sortOption: effectiveSort,
         loggedInUsername,
+        ...rankingParams,
       });
 
       let comments = commentsResult.records.map((record: Neo4jRecord) => {

@@ -283,6 +283,8 @@ test("getSiteWideDiscussionList sorts by hot with sortOption=hot as default", as
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "hot");
+  assert.equal(driver.runCalls[0].params.hotAgeOffsetMonths, 2);
+  assert.equal(driver.runCalls[0].params.hotGravity, 1.8);
 });
 
 test("getSiteWideDiscussionList defaults to hot sort for unknown sort option", async () => {

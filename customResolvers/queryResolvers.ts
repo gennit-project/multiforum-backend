@@ -35,6 +35,7 @@ import {
   getPluginPipelineCampaignFailures,
   previewPluginPipelineCampaign,
 } from './queries/pluginPipelineCampaigns.js'
+import getRankingSettings from "./queries/getRankingSettings.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -61,6 +62,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
   return {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
       Discussion,
+      driver,
+    }),
+    getRankingSettings: getRankingSettings({
       driver,
     }),
     getSiteWideIssueList: getSiteWideIssueList({

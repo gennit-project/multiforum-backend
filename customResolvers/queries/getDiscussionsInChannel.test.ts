@@ -316,6 +316,8 @@ test("getDiscussionsInChannel sorts by hot with sortOption=hot as default", asyn
   );
 
   assert.equal(driver.runCalls[0].params.sortOption, "hot");
+  assert.equal(driver.runCalls[0].params.hotAgeOffsetMonths, 2);
+  assert.equal(driver.runCalls[0].params.hotGravity, 1.8);
 });
 
 test("getDiscussionsInChannel defaults to hot sort for unknown sort option", async () => {

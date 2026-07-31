@@ -36,7 +36,7 @@ WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, weighted
 
 WITH c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, weightedVotesCount, serverRole, channelRole, ageInMonths, PastVersions, isFavoritedByUser,
     [version IN PastVersions WHERE version.id IS NOT NULL] AS FilteredPastVersions,
-    10000 * log10(weightedVotesCount + 1) / ((ageInMonths + 2) ^ 1.8) AS hotRank
+    log10(weightedVotesCount + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) AS hotRank
 
 // Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
 // @cypher field + server-admin membership), so the author's roles are no longer

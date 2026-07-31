@@ -53,7 +53,7 @@ AND (
 WITH d, totalCount
 MATCH (dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d)
 WHERE (SIZE($selectedChannels) = 0 OR dc.channelUniqueName IN $selectedChannels)
-AND (dc.isArchived IS NULL OR dc.isArchived = false) // Only include non-archived channels
+AND (dc.archived IS NULL OR dc.archived = false) // Only include non-archived channels
 WITH d, COLLECT(dc) AS discussionChannels, totalCount
 
 // Unwind the discussion channels to work with them individually for fetching related data
@@ -129,7 +129,7 @@ WITH d, totalCount,
     serverRole,
     discussionChannels,
     CASE WHEN score < 0 THEN 0 ELSE score END AS score, 
-    CASE WHEN $sortOption = "hot" THEN 10000 * log10(score + 1) / ((ageInMonths + 2) ^ 1.8) ELSE NULL END AS rank
+    CASE WHEN $sortOption = "hot" THEN log10(score + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) ELSE NULL END AS rank
 
 WITH d, totalCount, tagsText, author, discussionChannels, score, rank,
     COLLECT(DISTINCT serverRole) AS serverRoles

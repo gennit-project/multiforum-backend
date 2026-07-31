@@ -96,6 +96,7 @@ const permissionList = shield({
       pluginRunsAggregate: deny,
       pluginPipelineRuns: deny,
       pluginPipelineRunsAggregate: deny,
+      getRankingSettings: and(isAuthenticated, canManageServerSettings),
     },
     PluginRun: {
       payload: chain(isAuthenticated, canManagePlugins),
@@ -342,6 +343,7 @@ const permissionList = shield({
       lockWikiPage: and(isAuthenticated, allow),
       unlockWikiPage: and(isAuthenticated, allow),
       setFeaturedWikiPages: and(isAuthenticated, canManageServerSettings),
+      setRankingSettings: and(isAuthenticated, canManageServerSettings),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
