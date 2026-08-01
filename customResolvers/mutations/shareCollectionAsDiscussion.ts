@@ -20,6 +20,7 @@ type Args = {
   title: string;
   content?: string | null;
   shareMessage?: string | null;
+  flairIds?: string[] | null;
 };
 
 type CollectionRecord = {
@@ -89,6 +90,7 @@ const getResolver = (input: Input) => {
     const channelUniqueName = getTrimmed(args.serverId);
     const title = getTrimmed(args.title);
     const body = getTrimmed(args.shareMessage) || getTrimmed(args.content);
+    const flairIds = args.flairIds ?? [];
 
     if (!collectionId) {
       throw new GraphQLError("Collection ID is required.");
@@ -179,6 +181,9 @@ const getResolver = (input: Input) => {
               },
             },
             channelConnections: [channelUniqueName],
+            channelFlairSelections: [
+              { channelUniqueName, flairIds },
+            ],
           },
         ],
         context
@@ -187,6 +192,9 @@ const getResolver = (input: Input) => {
       return discussions[0];
     } catch (error: unknown) {
       logger.error("Error sharing collection as discussion:", error);
+      if (error instanceof GraphQLError) {
+        throw error;
+      }
       const message = error instanceof Error ? error.message : String(error);
       throw new GraphQLError(`Failed to share collection: ${message}`);
     }

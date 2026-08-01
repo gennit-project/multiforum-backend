@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
+import getUpdateDiscussionWithChannelConnections from "./updateDiscussionWithChannelConnections.js";
 
 // Since the resolver is the default export wrapped in getResolver,
 // we test the key behaviors that the resolver should exhibit
@@ -62,8 +63,30 @@ class DiscussionModelStub {
 
 class SessionStub {
   runCalls: Array<{ query: string; params: Record<string, unknown> }> = [];
+  flairRequirements = new Map<
+    string,
+    { flairRequired: boolean; activeFlairIds: string[] }
+  >();
 
   async run(query: string, params: Record<string, unknown>) {
+    if (query.includes("requestedChannelUniqueName")) {
+      const channelUniqueNames = params.channelUniqueNames as string[];
+      return {
+        records: channelUniqueNames.map((channelUniqueName) => {
+          const requirements = this.flairRequirements.get(channelUniqueName) ?? {
+            flairRequired: false,
+            activeFlairIds: [],
+          };
+          const values: Record<string, unknown> = {
+            requestedChannelUniqueName: channelUniqueName,
+            channelExists: true,
+            ...requirements,
+          };
+          return { get: (key: string) => values[key] };
+        }),
+      };
+    }
+
     this.runCalls.push({ query, params });
     return { records: [] };
   }
@@ -285,6 +308,86 @@ test("updateDiscussionWithChannelConnections behaviors", async (t) => {
     assert.equal((result[0] as any).body, "Original body");
     // Title should be updated
     assert.equal((result[0] as any).title, "Only Title Changed");
+  });
+});
+
+test("updateDiscussionWithChannelConnections enforces and assigns flairs", async (t) => {
+  const buildResolver = (
+    discussionModel: DiscussionModelStub,
+    session: SessionStub
+  ) =>
+    getUpdateDiscussionWithChannelConnections({
+      Discussion: discussionModel as never,
+      DownloadableFile: {} as never,
+      PluginPipelineRun: {} as never,
+      PluginRun: {} as never,
+      ServerConfig: {} as never,
+      ServerSecret: {} as never,
+      User: {} as never,
+      driver: createDriver(session) as never,
+    });
+
+  await t.test("validates before changing the discussion", async () => {
+    const discussionModel = new DiscussionModelStub();
+    const session = new SessionStub();
+    session.flairRequirements.set("required", {
+      flairRequired: true,
+      activeFlairIds: ["question"],
+    });
+    const resolver = buildResolver(discussionModel, session);
+
+    await assert.rejects(
+      () =>
+        resolver(
+          null,
+          {
+            where: { id: "discussion-1" },
+            discussionUpdateInput: {},
+            channelConnections: ["required"],
+          },
+          createContext() as never,
+          {} as never
+        ),
+      /At least one flair is required for channel 'required'/
+    );
+
+    assert.equal(discussionModel.updateCalls.length, 0);
+    assert.equal(session.runCalls.length, 0);
+  });
+
+  await t.test("passes the selected flairs to the channel connection", async () => {
+    const discussionModel = new DiscussionModelStub();
+    const session = new SessionStub();
+    session.flairRequirements.set("required", {
+      flairRequired: true,
+      activeFlairIds: ["question", "help"],
+    });
+    const resolver = buildResolver(discussionModel, session);
+
+    await resolver(
+      null,
+      {
+        where: { id: "discussion-1" },
+        discussionUpdateInput: {},
+        channelConnections: ["required"],
+        channelFlairSelections: [
+          {
+            channelUniqueName: "required",
+            flairIds: ["question", "help"],
+          },
+        ],
+      },
+      createContext() as never,
+      {} as never
+    );
+
+    assert.equal(discussionModel.updateCalls.length, 1);
+    assert.deepEqual(session.runCalls[0].params, {
+      discussionId: "discussion-1",
+      channelUniqueName: "required",
+      flairIds: ["question", "help"],
+      flairSelectionProvided: true,
+    });
   });
 });
 

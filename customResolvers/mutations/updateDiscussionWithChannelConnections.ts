@@ -17,6 +17,11 @@ import type {
 } from "../../ogm_types.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { logger } from "../../logger.js";
+import {
+  loadChannelDiscussionFlairRequirements,
+  validateDiscussionFlairSelections,
+  type DiscussionChannelFlairSelectionInput,
+} from "../../services/discussionFlairSubmission.js";
 
 type Input = {
   Discussion: DiscussionModel;
@@ -34,6 +39,7 @@ type Args = {
   discussionUpdateInput: DiscussionUpdateInput;
   channelConnections?: string[];
   channelDisconnections?: string[];
+  channelFlairSelections?: DiscussionChannelFlairSelectionInput[] | null;
 };
 
 export const getConnectedDownloadableFileIds = (
@@ -67,8 +73,10 @@ const getResolver = (
       where,
       discussionUpdateInput,
       channelConnections = [],
-      channelDisconnections = []
+      channelDisconnections = [],
+      channelFlairSelections = [],
     } = args;
+    const normalizedChannelFlairSelections = channelFlairSelections ?? [];
 
     let sanitizedUpdateInput = discussionUpdateInput;
     const albumInput = discussionUpdateInput?.Album;
@@ -113,6 +121,28 @@ const getResolver = (
           ...discussionUpdateInput,
           Album: nextAlbumInput,
         };
+      }
+    }
+
+    let flairIdsByChannel = new Map<string, string[]>();
+    if (
+      channelConnections.length > 0 ||
+      normalizedChannelFlairSelections.length > 0
+    ) {
+      const flairValidationSession = driver.session();
+      try {
+        const requirementsByChannel =
+          await loadChannelDiscussionFlairRequirements({
+            executor: flairValidationSession,
+            channelUniqueNames: [...new Set(channelConnections)],
+          });
+        flairIdsByChannel = validateDiscussionFlairSelections({
+          channelConnections,
+          channelFlairSelections: normalizedChannelFlairSelections,
+          requirementsByChannel,
+        });
+      } finally {
+        await flairValidationSession.close();
       }
     }
     
@@ -172,6 +202,9 @@ const getResolver = (
       // Update the channel connections
       for (let i = 0; i < channelConnections.length; i++) {
         const channelUniqueName = channelConnections[i];
+        const flairSelectionProvided = normalizedChannelFlairSelections.some(
+          (selection) => selection.channelUniqueName.trim() === channelUniqueName
+        );
 
         // For each channel connection, create a DiscussionChannel node
         // if one does not already exist.
@@ -182,6 +215,8 @@ const getResolver = (
         await session.run(updateDiscussionChannelQuery, {
           discussionId: updatedDiscussionId,
           channelUniqueName: channelUniqueName,
+          flairIds: flairIdsByChannel.get(channelUniqueName) ?? [],
+          flairSelectionProvided,
         });
       }
 
@@ -214,6 +249,14 @@ const getResolver = (
             id
             channelUniqueName
             discussionId
+            Flairs {
+              id
+              channelUniqueName
+              displayName
+              color
+              order
+              archived
+            }
             Channel {
               uniqueName
             }
