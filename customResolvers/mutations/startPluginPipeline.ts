@@ -10,7 +10,10 @@ import {
   PluginPipelineRunTrigger,
 } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
+import {
+  hasChannelModPermission,
+  ModChannelPermission,
+} from "../../rules/permission/hasChannelModPermission.js";
 import {
   triggerChannelPluginPipeline,
   triggerPluginRunsForDownloadableFile,
@@ -44,7 +47,13 @@ type StartPluginPipelineArgs = {
 
 type FileRecord = DownloadableFileType & {
   uploadedByUsername?: string | null;
-  Discussion?: { Author?: { username?: string | null } | null } | null;
+  Discussion?: {
+    Author?: { username?: string | null } | null;
+    DiscussionChannels?: Array<{
+      channelUniqueName?: string | null;
+      archived?: boolean | null;
+    }>;
+  } | null;
 };
 
 type DiscussionRecord = {
@@ -66,7 +75,8 @@ const userInputError = (message: string) =>
 
 export const createStartPluginPipelineResolver = (
   input: StartPluginPipelineInput,
-  checkServerModPermission: typeof hasServerModPermission = hasServerModPermission,
+  checkChannelModPermission: typeof hasChannelModPermission =
+    hasChannelModPermission,
   triggerDownloadRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile,
   triggerChannelRuns: typeof triggerChannelPluginPipeline =
@@ -94,6 +104,7 @@ export const createStartPluginPipelineResolver = (
     let uploadedAt: string | null | undefined;
     let scope: "SERVER" | "CHANNEL";
     let channelId: string | null = null;
+    let moderationChannelNames: string[] = [];
     let pipelines: EventPipeline[] = [];
 
     if (targetType === "DownloadableFile") {
@@ -104,7 +115,13 @@ export const createStartPluginPipelineResolver = (
           uploadedAt
           createdAt
           uploadedByUsername
-          Discussion { Author { username } }
+          Discussion {
+            Author { username }
+            DiscussionChannels {
+              channelUniqueName
+              archived
+            }
+          }
         }`,
       })) as FileRecord[];
       const file = files[0];
@@ -117,6 +134,10 @@ export const createStartPluginPipelineResolver = (
       ownerUsername = file.Discussion?.Author?.username;
       uploaderUsername = file.uploadedByUsername;
       uploadedAt = file.uploadedAt || file.createdAt;
+      moderationChannelNames = (file.Discussion?.DiscussionChannels || [])
+        .filter(item => item.archived !== true)
+        .map(item => item.channelUniqueName)
+        .filter((name): name is string => Boolean(name));
     } else if (targetType === "Discussion") {
       if (!requestedChannelId) {
         throw userInputError(
@@ -162,6 +183,7 @@ export const createStartPluginPipelineResolver = (
       }
       scope = "CHANNEL";
       channelId = requestedChannelId;
+      moderationChannelNames = [requestedChannelId];
       pipelines = (channel.pluginPipelines || []) as EventPipeline[];
       ownerUsername = discussion.Author?.username;
       uploaderUsername = discussion.DownloadableFile?.uploadedByUsername;
@@ -177,10 +199,18 @@ export const createStartPluginPipelineResolver = (
     const isOwner =
       ownerUsername === username || uploaderUsername === username;
     if (!isOwner) {
-      const canModerate = await checkServerModPermission(
-        "canPermanentlyRemoveImage",
-        context
-      );
+      let canModerate = false;
+      for (const channelName of moderationChannelNames) {
+        const permissionResult = await checkChannelModPermission({
+          permission: ModChannelPermission.canEditDiscussions,
+          channelName,
+          context,
+        });
+        if (permissionResult === true) {
+          canModerate = true;
+          break;
+        }
+      }
       if (canModerate !== true) {
         throw new GraphQLError("Not authorized to start this pipeline", {
           extensions: { code: "FORBIDDEN" },

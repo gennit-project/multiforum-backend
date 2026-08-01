@@ -8,7 +8,7 @@ import {
   PluginPipelineRunTrigger,
 } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
+import { hasChannelModPermission } from "../../rules/permission/hasChannelModPermission.js";
 import {
   triggerChannelPluginPipeline,
   triggerPluginRunsForDownloadableFile,
@@ -63,7 +63,8 @@ const timestamp = (value: unknown): number => Date.parse(String(value));
 
 export const createRerunPluginPipelineResolver = (
   input: RerunPluginPipelineInput,
-  checkServerModPermission: typeof hasServerModPermission = hasServerModPermission,
+  checkChannelModPermission: typeof hasChannelModPermission =
+    hasChannelModPermission,
   triggerDownloadRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile,
   triggerChannelRuns: typeof triggerChannelPluginPipeline =
@@ -198,7 +199,7 @@ export const createRerunPluginPipelineResolver = (
     });
     const startResolver = createStartPluginPipelineResolver(
       input,
-      checkServerModPermission,
+      checkChannelModPermission,
       ((args, options) =>
         triggerDownloadRuns(args, withRetryMetadata(options))) as typeof triggerDownloadRuns,
       ((args, options) =>
