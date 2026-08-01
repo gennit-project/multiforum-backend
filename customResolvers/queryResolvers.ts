@@ -36,6 +36,7 @@ import {
   previewPluginPipelineCampaign,
 } from './queries/pluginPipelineCampaigns.js'
 import getRankingSettings from "./queries/getRankingSettings.js";
+import getChannelDiscussionFlairConfig from "./queries/getChannelDiscussionFlairConfig.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -65,6 +66,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     getRankingSettings: getRankingSettings({
+      driver,
+    }),
+    getChannelDiscussionFlairConfig: getChannelDiscussionFlairConfig({
       driver,
     }),
     getSiteWideIssueList: getSiteWideIssueList({

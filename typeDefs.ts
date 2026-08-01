@@ -492,6 +492,34 @@ const typeDefinitions = gql`
     group: FilterGroup! @relationship(type: "HAS_FILTER_OPTION", direction: IN)
   }
 
+  """
+  A channel-owned category that can be assigned to a discussion's submission
+  in that channel. Flairs are archived instead of deleted so historical
+  assignments can continue to render.
+  """
+  type DiscussionFlair
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    id: ID! @id
+    channelUniqueName: String!
+      @settable(onCreate: false, onUpdate: false)
+    displayName: String!
+      @settable(onCreate: false, onUpdate: false)
+    color: String
+      @settable(onCreate: false, onUpdate: false)
+    order: Int!
+      @settable(onCreate: false, onUpdate: false)
+    archived: Boolean! @default(value: false)
+      @settable(onCreate: false, onUpdate: false)
+    Channel: Channel!
+      @relationship(type: "HAS_DISCUSSION_FLAIR", direction: IN)
+      @settable(onCreate: false, onUpdate: false)
+    DiscussionChannels: [DiscussionChannel!]!
+      @relationship(type: "HAS_DISCUSSION_FLAIR", direction: IN)
+      @settable(onCreate: false, onUpdate: false)
+  }
+
   type Channel {
     uniqueName: String! @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -534,6 +562,8 @@ const typeDefinitions = gql`
     requireVerifiedPhoneForUploads: Boolean @default(value: false)
     requireVerifiedEmailToPost: Boolean @default(value: false)
     markAsAnsweredEnabled: Boolean @default(value: true)
+    discussionFlairRequired: Boolean @default(value: false)
+      @settable(onCreate: false, onUpdate: false)
 
     allowedFileTypes: [String]
     payoutPercent: Int @default(value: 98)
@@ -572,6 +602,9 @@ const typeDefinitions = gql`
     # wiki + filters
     WikiHomePage:  WikiPage   @relationship(type: "HAS_WIKI_HOME_PAGE", direction: OUT)
     FilterGroups: [FilterGroup!]! @relationship(type: "HAS_FILTER_GROUP", direction: OUT)
+    DiscussionFlairs: [DiscussionFlair!]!
+      @relationship(type: "HAS_DISCUSSION_FLAIR", direction: OUT)
+      @settable(onCreate: false, onUpdate: false)
 
     # plugins
     EnabledPlugins: [PluginVersion!]! @relationship(type: "ENABLED", direction: OUT, properties: "ChannelPluginProperties")
@@ -604,6 +637,9 @@ const typeDefinitions = gql`
       @relationship(type: "SUBSCRIBED_TO_NOTIFICATIONS", direction: IN)
     LabelOptions: [FilterOption!]! @relationship(type: "HAS_LABEL_OPTION", direction: OUT)
     LabelChangeHistory: [LabelChangeHistory!]! @relationship(type: "HAS_LABEL_CHANGE", direction: OUT)
+    Flairs: [DiscussionFlair!]!
+      @relationship(type: "HAS_DISCUSSION_FLAIR", direction: OUT)
+      @settable(onCreate: false, onUpdate: false)
   }
 
   type Discussion {
@@ -1071,6 +1107,39 @@ const typeDefinitions = gql`
     channelConnections: [String!]!
   }
 
+  """
+  A flair in the channel's authoritative configuration list. Existing flairs
+  omitted from a configuration update are archived rather than deleted.
+  """
+  input DiscussionFlairConfigInput {
+    id: ID
+    displayName: String!
+    color: String
+    order: Int!
+    archived: Boolean! = false
+  }
+
+  type DiscussionFlairOption
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    id: ID!
+    channelUniqueName: String!
+    displayName: String!
+    color: String
+    order: Int!
+    archived: Boolean!
+  }
+
+  type ChannelDiscussionFlairConfig
+    @query(read: false, aggregate: false)
+    @mutation(operations: [])
+    @subscription(events: []) {
+    channelUniqueName: String!
+    flairRequired: Boolean!
+    flairs: [DiscussionFlairOption!]!
+  }
+
   input NewUserInput {
     emailAddress: String!
     username: String!
@@ -1123,6 +1192,15 @@ const typeDefinitions = gql`
       serverName: String!
       input: RankingSettingsPatchInput!
     ): RankingSettings!
+    """
+    Replaces a channel's discussion flair configuration. Existing flairs not
+    included in flairs are archived. Only channel owners may call this mutation.
+    """
+    setChannelDiscussionFlairConfig(
+      channelUniqueName: String!
+      flairRequired: Boolean!
+      flairs: [DiscussionFlairConfigInput!]!
+    ): ChannelDiscussionFlairConfig!
 
     # Share collection as discussion
     shareCollectionAsDiscussion(
@@ -2497,6 +2575,10 @@ const typeDefinitions = gql`
       loggedInUsername: String
     ): SiteWideDiscussionListFormat
     getRankingSettings(serverName: String!): RankingSettings!
+    getChannelDiscussionFlairConfig(
+      channelUniqueName: String!
+      includeArchived: Boolean = false
+    ): ChannelDiscussionFlairConfig!
     getSiteWideIssueList(
       searchInput: String
       selectedChannels: [String]

@@ -344,6 +344,7 @@ const permissionList = shield({
       unlockWikiPage: and(isAuthenticated, allow),
       setFeaturedWikiPages: and(isAuthenticated, canManageServerSettings),
       setRankingSettings: and(isAuthenticated, canManageServerSettings),
+      setChannelDiscussionFlairConfig: and(isAuthenticated, isChannelOwner),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       unsuspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
