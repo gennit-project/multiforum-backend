@@ -8,6 +8,11 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { sanitizeAlbumCreateNode } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
+import {
+  loadChannelDiscussionFlairRequirements,
+  validateDiscussionFlairSelections,
+  type DiscussionChannelFlairSelectionInput,
+} from "../../services/discussionFlairSubmission.js";
 import type {
   DiscussionModel,
   ChannelModel,
@@ -22,6 +27,7 @@ import type {
 type DiscussionCreateInputWithChannels = {
   discussionCreateInput: DiscussionCreateInput;
   channelConnections: string[];
+  channelFlairSelections?: DiscussionChannelFlairSelectionInput[] | null;
 };
 
 type Args = {
@@ -73,6 +79,14 @@ const selectionSet = `
       channelUniqueName
       discussionId
       archived
+      Flairs {
+        id
+        channelUniqueName
+        displayName
+        color
+        order
+        archived
+      }
       Channel {
         uniqueName
       }
@@ -138,39 +152,72 @@ export const createDiscussionsFromInput = async (
       throw new GraphQLError("You must be logged in to create albums.");
     }
 
-    sanitizedInput = input.map(({ discussionCreateInput, channelConnections }) => {
-      const albumCreate = discussionCreateInput?.Album?.create;
-      const albumCreateNode = albumCreate?.node;
+    sanitizedInput = input.map(
+      ({
+        discussionCreateInput,
+        channelConnections,
+        channelFlairSelections,
+      }) => {
+        const albumCreate = discussionCreateInput?.Album?.create;
+        const albumCreateNode = albumCreate?.node;
 
-      if (!albumCreateNode) {
-        return { discussionCreateInput, channelConnections };
-      }
+        if (!albumCreateNode) {
+          return {
+            discussionCreateInput,
+            channelConnections,
+            channelFlairSelections,
+          };
+        }
 
-      return {
-        discussionCreateInput: {
-          ...discussionCreateInput,
-          Album: {
-            ...discussionCreateInput?.Album,
-            create: {
-              ...(albumCreate ?? {}),
-              node: sanitizeAlbumCreateNode(albumCreateNode, username),
+        return {
+          discussionCreateInput: {
+            ...discussionCreateInput,
+            Album: {
+              ...discussionCreateInput?.Album,
+              create: {
+                ...(albumCreate ?? {}),
+                node: sanitizeAlbumCreateNode(albumCreateNode, username),
+              },
             },
           },
-        },
-        channelConnections,
-      };
-    }) as DiscussionCreateInputWithChannels[];
+          channelConnections,
+          channelFlairSelections,
+        };
+      }
+    ) as DiscussionCreateInputWithChannels[];
   }
 
   const session = driver.session();
   const discussions: unknown[] = [];
 
   try {
-    for (const { discussionCreateInput, channelConnections } of sanitizedInput) {
+    for (const { channelConnections } of sanitizedInput) {
       if (!channelConnections || channelConnections.length === 0) {
         throw new Error("At least one channel must be selected");
       }
+    }
 
+    const uniqueChannelNames = [
+      ...new Set(
+        sanitizedInput.flatMap(({ channelConnections }) => channelConnections)
+      ),
+    ];
+    const requirementsByChannel =
+      await loadChannelDiscussionFlairRequirements({
+        executor: session,
+        channelUniqueNames: uniqueChannelNames,
+      });
+    const flairIdsByInput = sanitizedInput.map(
+      ({ channelConnections, channelFlairSelections }) =>
+        validateDiscussionFlairSelections({
+          channelConnections,
+          channelFlairSelections,
+          requirementsByChannel,
+        })
+    );
+
+    for (const [inputIndex, { discussionCreateInput, channelConnections }] of
+      sanitizedInput.entries()) {
       const response = await Discussion.create({
         input: [discussionCreateInput],
         selectionSet: `{ discussions ${selectionSet} }`,
@@ -189,6 +236,7 @@ export const createDiscussionsFromInput = async (
             discussionId: newDiscussionId,
             channelUniqueName,
             upvotedBy: newDiscussion.Author?.username,
+            flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
           });
 
           // Trigger channel plugin pipeline if discussion has a download
@@ -277,6 +325,9 @@ export const createDiscussionsFromInput = async (
     }
   } catch (error: unknown) {
     logger.error("Error creating discussions:", error);
+    if (error instanceof GraphQLError) {
+      throw error;
+    }
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to create discussions: ${message}`);
   } finally {
@@ -322,6 +373,9 @@ const getResolver = (input: Input) => {
       return discussions;
     } catch (error: unknown) {
       logger.error(error);
+      if (error instanceof GraphQLError) {
+        throw error;
+      }
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`An error occurred while creating discussions: ${message}`);
     }

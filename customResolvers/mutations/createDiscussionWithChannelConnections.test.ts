@@ -53,8 +53,30 @@ class DiscussionModelStub {
 class SessionStub {
   runCalls: Array<{ query: string; params: Record<string, unknown> }> = [];
   shouldFailConstraint = false;
+  flairRequirements = new Map<
+    string,
+    { flairRequired: boolean; activeFlairIds: string[] }
+  >();
 
   async run(query: string, params: Record<string, unknown>) {
+    if (query.includes("requestedChannelUniqueName")) {
+      const channelUniqueNames = params.channelUniqueNames as string[];
+      return {
+        records: channelUniqueNames.map((channelUniqueName) => {
+          const requirements = this.flairRequirements.get(channelUniqueName) ?? {
+            flairRequired: false,
+            activeFlairIds: [],
+          };
+          const values: Record<string, unknown> = {
+            requestedChannelUniqueName: channelUniqueName,
+            channelExists: true,
+            ...requirements,
+          };
+          return { get: (key: string) => values[key] };
+        }),
+      };
+    }
+
     this.runCalls.push({ query, params });
     if (this.shouldFailConstraint) {
       throw new Error("Constraint validation failed");
@@ -131,6 +153,77 @@ test("createDiscussionWithChannelConnections", async (t) => {
     assert.equal(discussionModel.createCalls.length, 1);
     assert.equal(session.runCalls.length, 1);
     assert.equal(session.runCalls[0].params.channelUniqueName, "test-channel");
+    assert.deepEqual(session.runCalls[0].params.flairIds, []);
+  });
+
+  await t.test("assigns active flairs independently for each channel", async () => {
+    const discussionModel = new DiscussionModelStub();
+    const session = new SessionStub();
+    session.flairRequirements.set("cats", {
+      flairRequired: true,
+      activeFlairIds: ["question", "help"],
+    });
+    session.flairRequirements.set("dogs", {
+      flairRequired: false,
+      activeFlairIds: ["showcase"],
+    });
+
+    await createDiscussionsFromInput(
+      discussionModel as unknown as DiscussionModel,
+      createDriver(session),
+      [
+        {
+          discussionCreateInput: { title: "Multi-forum post" },
+          channelConnections: ["cats", "dogs"],
+          channelFlairSelections: [
+            { channelUniqueName: "cats", flairIds: ["question", "help"] },
+            { channelUniqueName: "dogs", flairIds: ["showcase"] },
+          ],
+        },
+      ]
+    );
+
+    assert.deepEqual(
+      session.runCalls.map(({ params }) => [
+        params.channelUniqueName,
+        params.flairIds,
+      ]),
+      [
+        ["cats", ["question", "help"]],
+        ["dogs", ["showcase"]],
+      ]
+    );
+  });
+
+  await t.test("validates every batch item before creating any discussion", async () => {
+    const discussionModel = new DiscussionModelStub();
+    const session = new SessionStub();
+    session.flairRequirements.set("required", {
+      flairRequired: true,
+      activeFlairIds: ["question"],
+    });
+
+    await assert.rejects(
+      () =>
+        createDiscussionsFromInput(
+          discussionModel as unknown as DiscussionModel,
+          createDriver(session),
+          [
+            {
+              discussionCreateInput: { title: "Valid first item" },
+              channelConnections: ["optional"],
+            },
+            {
+              discussionCreateInput: { title: "Invalid second item" },
+              channelConnections: ["required"],
+            },
+          ]
+        ),
+      /At least one flair is required for channel 'required'/
+    );
+
+    assert.equal(discussionModel.createCalls.length, 0);
+    assert.equal(session.runCalls.length, 0);
   });
 
   await t.test("creates discussion with multiple channel connections", async () => {

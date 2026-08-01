@@ -1102,9 +1102,19 @@ const typeDefinitions = gql`
     values: [String!]!
   }
 
+  """
+  The flairs selected for one channel-specific submission of a discussion.
+  Every flair must be active and owned by channelUniqueName.
+  """
+  input DiscussionChannelFlairSelectionInput {
+    channelUniqueName: String!
+    flairIds: [ID!]!
+  }
+
   input DiscussionCreateInputWithChannels {
     discussionCreateInput: DiscussionCreateInput!
     channelConnections: [String!]!
+    channelFlairSelections: [DiscussionChannelFlairSelectionInput!] = []
   }
 
   """
@@ -1208,7 +1218,8 @@ const typeDefinitions = gql`
       serverId: ID!,
       title: String!,
       content: String,
-      shareMessage: String
+      shareMessage: String,
+      flairIds: [ID!] = []
     ): Discussion!
 
     # Library management
@@ -1253,6 +1264,7 @@ const typeDefinitions = gql`
       discussionUpdateInput: DiscussionUpdateInput!
       channelConnections: [String!]
       channelDisconnections: [String]
+      channelFlairSelections: [DiscussionChannelFlairSelectionInput!]
     ): Discussion
     createEventWithChannelConnections(
       input: [EventCreateInputWithChannels!]!

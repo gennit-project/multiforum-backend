@@ -8,6 +8,7 @@ import type {
   DiscussionModel,
 } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { GraphQLError } from "graphql";
 import shareCollectionAsDiscussion from "./shareCollectionAsDiscussion.js";
 
 let originalMockAuth: string | undefined;
@@ -128,6 +129,7 @@ test("shareCollectionAsDiscussion creates a discussion linked to a public owned 
       serverId: "sims4_builds",
       title: "Shared builds",
       shareMessage: "Some favorites from my library",
+      flairIds: ["showcase"],
     },
     buildContext(),
     {} as never
@@ -142,6 +144,12 @@ test("shareCollectionAsDiscussion creates a discussion linked to a public owned 
 
   const createInput = (calls.createDiscussions[0] as any)[2][0];
   assert.deepEqual(createInput.channelConnections, ["sims4_builds"]);
+  assert.deepEqual(createInput.channelFlairSelections, [
+    {
+      channelUniqueName: "sims4_builds",
+      flairIds: ["showcase"],
+    },
+  ]);
   assert.equal(createInput.discussionCreateInput.title, "Shared builds");
   assert.equal(createInput.discussionCreateInput.body, "Some favorites from my library");
   assert.deepEqual(
@@ -235,5 +243,33 @@ test("shareCollectionAsDiscussion rejects unknown target forums", async () => {
       {} as never
     ),
     /Forum not found/
+  );
+});
+
+test("shareCollectionAsDiscussion preserves flair validation error metadata", async () => {
+  const flairError = new GraphQLError("A flair is required.", {
+    extensions: {
+      code: "DISCUSSION_FLAIR_REQUIRED",
+      channelUniqueName: "sims4_builds",
+    },
+  });
+  const { resolver } = buildResolver({
+    createDiscussions: async () => {
+      throw flairError;
+    },
+  });
+
+  await assert.rejects(
+    resolver(
+      null,
+      {
+        collectionId: "collection-1",
+        serverId: "sims4_builds",
+        title: "Shared builds",
+      },
+      buildContext(),
+      {} as never
+    ),
+    (error: unknown) => error === flairError
   );
 });
