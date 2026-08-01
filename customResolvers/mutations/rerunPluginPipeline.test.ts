@@ -132,6 +132,12 @@ const makeInput = ({
         id: "file-1",
         uploadedByUsername: "alice",
         uploadedAt: "2025-01-01T00:00:00.000Z",
+        Discussion: {
+          Author: { username: "alice" },
+          DiscussionChannels: [
+            { channelUniqueName: "cats", archived: false },
+          ],
+        },
       },
     ],
   }),

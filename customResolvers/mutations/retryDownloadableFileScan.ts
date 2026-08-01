@@ -3,7 +3,10 @@ import type {
 } from "../../ogm_types.js";
 import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
+import {
+  hasChannelModPermission,
+  ModChannelPermission,
+} from "../../rules/permission/hasChannelModPermission.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { createRerunPluginPipelineResolver } from "./rerunPluginPipeline.js";
 
@@ -23,12 +26,19 @@ export type RetryDownloadableFileScanInput = Pick<
 type FileRecord = {
   uploadedByUsername?: string | null;
   scanStatus?: string | null;
-  Discussion?: { Author?: { username?: string | null } | null } | null;
+  Discussion?: {
+    Author?: { username?: string | null } | null;
+    DiscussionChannels?: Array<{
+      channelUniqueName?: string | null;
+      archived?: boolean | null;
+    }>;
+  } | null;
 };
 
 export const createRetryDownloadableFileScanResolver = (
   input: RetryDownloadableFileScanInput,
-  checkServerModPermission: typeof hasServerModPermission = hasServerModPermission,
+  checkChannelModPermission: typeof hasChannelModPermission =
+    hasChannelModPermission,
   triggerRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile,
   createRerunResolver: typeof createRerunPluginPipelineResolver =
@@ -44,7 +54,13 @@ export const createRetryDownloadableFileScanResolver = (
       selectionSet: `{
         uploadedByUsername
         scanStatus
-        Discussion { Author { username } }
+        Discussion {
+          Author { username }
+          DiscussionChannels {
+            channelUniqueName
+            archived
+          }
+        }
       }`,
     }) as FileRecord[];
     const file = files[0];
@@ -60,10 +76,22 @@ export const createRetryDownloadableFileScanResolver = (
       file.Discussion?.Author?.username === username
     );
     if (!isCreator) {
-      const canReview = await checkServerModPermission(
-        "canPermanentlyRemoveImage",
-        context
-      );
+      let canReview = false;
+      const channelNames = (file.Discussion?.DiscussionChannels || [])
+        .filter(item => item.archived !== true)
+        .map(item => item.channelUniqueName)
+        .filter((name): name is string => Boolean(name));
+      for (const channelName of channelNames) {
+        const permissionResult = await checkChannelModPermission({
+          permission: ModChannelPermission.canEditDiscussions,
+          channelName,
+          context,
+        });
+        if (permissionResult === true) {
+          canReview = true;
+          break;
+        }
+      }
       if (canReview !== true) throw new Error("Not authorized to retry this scan");
     }
 
@@ -91,7 +119,7 @@ export const createRetryDownloadableFileScanResolver = (
     if (sourceAttempt) {
       const rerun = createRerunResolver(
         input,
-        checkServerModPermission,
+        checkChannelModPermission,
         triggerRuns
       );
       const newAttempt = await rerun(

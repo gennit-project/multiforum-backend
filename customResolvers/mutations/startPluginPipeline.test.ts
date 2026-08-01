@@ -16,6 +16,9 @@ type ChannelTrigger = NonNullable<
 >;
 type DownloadTriggerOptions = NonNullable<Parameters<DownloadTrigger>[1]>;
 type ChannelTriggerOptions = NonNullable<Parameters<ChannelTrigger>[1]>;
+type CheckChannelModPermission = NonNullable<
+  Parameters<typeof createStartPluginPipelineResolver>[1]
+>;
 
 const EVENT = PLUGIN_EVENTS.DOWNLOADABLE_FILE_CREATED;
 
@@ -59,6 +62,12 @@ const makeInput = ({
     id: "file-1",
     uploadedByUsername: "alice",
     uploadedAt: "2025-01-01T00:00:00.000Z",
+    Discussion: {
+      Author: { username: "alice" },
+      DiscussionChannels: [
+        { channelUniqueName: "cats", archived: false },
+      ],
+    },
   },
   config = requiredConfig,
   activeAttempts = [] as unknown[],
@@ -144,13 +153,18 @@ test("lets the uploader start a required missing pipeline", async () => {
 test("records a moderator start for someone else's download", async () => {
   const { input } = makeInput();
   let trigger: string | undefined;
+  let permissionInput: Parameters<CheckChannelModPermission>[0] | undefined;
   const triggerDownloadRuns: DownloadTrigger = async (_args, options = {}) => {
     trigger = options.execution?.trigger;
     return [];
   };
+  const checkChannelModPermission: CheckChannelModPermission = async args => {
+    permissionInput = args;
+    return true;
+  };
   const resolver = createStartPluginPipelineResolver(
     input,
-    async () => true,
+    checkChannelModPermission,
     triggerDownloadRuns
   );
 
@@ -164,7 +178,18 @@ test("records a moderator start for someone else's download", async () => {
     contextFor("moderator")
   );
 
-  assert.equal(trigger, "MODERATOR_START");
+  assert.deepEqual(
+    {
+      trigger,
+      permission: permissionInput?.permission,
+      channelName: permissionInput?.channelName,
+    },
+    {
+      trigger: "MODERATOR_START",
+      permission: "canEditDiscussions",
+      channelName: "cats",
+    }
+  );
 });
 
 test("rejects a non-owner without moderation authority", async () => {
@@ -183,6 +208,39 @@ test("rejects a non-owner without moderation authority", async () => {
         eventType: EVENT,
       },
       contextFor("bob")
+    ),
+    /Not authorized/
+  );
+});
+
+test("does not use moderation authority from an unrelated channel", async () => {
+  const { input } = makeInput({
+    file: {
+      id: "file-1",
+      uploadedByUsername: "alice",
+      uploadedAt: "2025-01-01T00:00:00.000Z",
+      Discussion: {
+        Author: { username: "alice" },
+        DiscussionChannels: [
+          { channelUniqueName: "dogs", archived: false },
+        ],
+      },
+    },
+  });
+  const resolver = createStartPluginPipelineResolver(
+    input,
+    async ({ channelName }) => channelName === "cats"
+  );
+
+  await assert.rejects(
+    resolver(
+      null,
+      {
+        targetId: "file-1",
+        targetType: "DownloadableFile",
+        eventType: EVENT,
+      },
+      contextFor("cats-moderator")
     ),
     /Not authorized/
   );

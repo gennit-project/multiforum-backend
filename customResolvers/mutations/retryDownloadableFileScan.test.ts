@@ -85,7 +85,15 @@ test("lets an authorized moderator retry someone else's scan", async () => {
   };
   const resolver = createRetryDownloadableFileScanResolver(
     baseInput({
-      file: { uploadedByUsername: "alice", scanStatus: "SUSPICIOUS" },
+      file: {
+        uploadedByUsername: "alice",
+        scanStatus: "SUSPICIOUS",
+        Discussion: {
+          DiscussionChannels: [
+            { channelUniqueName: "cats", archived: false },
+          ],
+        },
+      },
     }),
     async () => true,
     triggerRuns
