@@ -13,8 +13,9 @@ jobs:
   # workflow-level `paths-ignore`, because `unit-tests` is a REQUIRED status
   # check on `main`: a path-filtered workflow never reports the check, which
   # would leave docs-only PRs stuck "pending" and unmergeable. Instead the
-  # required job always runs (so it always reports) but skips its heavy steps
-  # when only docs changed.
+  # required job always runs (so it always reports). For docs-only changes it
+  # still generates and uploads coverage so the required Codecov check reports,
+  # while the remaining code-quality and integration work is skipped.
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -59,36 +60,34 @@ jobs:
             echo "code=false" >> "$GITHUB_OUTPUT"
           fi
 
-  # Required check on `main`. Always runs so it always reports a status; the
-  # heavy steps are gated on a non-docs change.
+  # Required check on `main`. Always runs so it always reports a status.
+  # Coverage also runs for docs-only PRs because `codecov/patch` is required by
+  # branch protection and Codecov cannot report a status without an upload.
+  # Lint, type checking, circular checks, integration tests, and the build are
+  # still gated on a non-docs change.
   unit-tests:
     needs: changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        if: needs.changes.outputs.code == 'true'
         uses: actions/checkout@v4
 
       - name: Install pnpm
-        if: needs.changes.outputs.code == 'true'
         uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
-        if: needs.changes.outputs.code == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
 
       - name: Clean install dependencies
-        if: needs.changes.outputs.code == 'true'
         run: pnpm install --frozen-lockfile
 
       # Generated type files (ogm_types.ts, src/generated/graphql.ts) are no
       # longer committed; regenerate them from typeDefs.ts (no DB needed) before
       # type checking and tests so imports resolve.
       - name: Generate GraphQL/OGM types
-        if: needs.changes.outputs.code == 'true'
         run: pnpm run codegen
 
       - name: Lint (enforces no console.* in runtime code)
@@ -104,11 +103,9 @@ jobs:
         run: pnpm run lint:circular
 
       - name: Run unit tests with coverage
-        if: needs.changes.outputs.code == 'true'
         run: pnpm run coverage
 
       - name: Upload unit coverage to Codecov
-        if: needs.changes.outputs.code == 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
