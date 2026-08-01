@@ -128,6 +128,7 @@ import {
 } from "./mutations/wikiPageLocks.js";
 import { setFeaturedWikiPages } from "./mutations/setFeaturedWikiPages.js";
 import setRankingSettings from "./mutations/setRankingSettings.js";
+import setChannelDiscussionFlairConfig from "./mutations/setChannelDiscussionFlairConfig.js";
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
@@ -167,6 +168,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
   } = deps;
 
   return {
+    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
+      driver,
+    }),
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
         Discussion,

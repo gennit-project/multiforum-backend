@@ -165,6 +165,25 @@ const authGatedChannelLock: Array<{ name: string; op: string }> = [
   },
 ];
 
+test("setChannelDiscussionFlairConfig is auth-gated rather than default-denied", async () => {
+  const result = await execUnauthenticated(`
+    mutation {
+      setChannelDiscussionFlairConfig(
+        channelUniqueName: "gardening"
+        flairRequired: false
+        flairs: []
+      ) {
+        channelUniqueName
+      }
+    }
+  `);
+
+  assert.equal(
+    result.errors?.[0]?.message,
+    ERROR_MESSAGES.channel.notAuthenticated
+  );
+});
+
 for (const { name, op } of authGatedChannelLock) {
   test(`${name} is auth-gated (unauthenticated -> notAuthenticated, not default-deny)`, async () => {
     const result = await execUnauthenticated(op);
