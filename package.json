@@ -24,7 +24,7 @@
     "migrate:private-downloads": "node --loader ts-node/esm build_scripts/migratePrivateDownloads.ts",
     "provision": "node --loader ts-node/esm build_scripts/provisionServerDefaults.ts",
     "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",
-    "heroku-postbuild": "pnpm run build",
+    "heroku-postbuild": "NODE_OPTIONS=--max-old-space-size=2048 pnpm run build",
     "start": "node ./ts_emitted/index.js"
   },
   "keywords": [],
