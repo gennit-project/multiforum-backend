@@ -69,7 +69,7 @@ test/E2E environments the seeded admin test user also acts as root.
 | --- | --- | --- |
 | `PORT` | No | Port the Apollo server listens on (defaults are provided in code; Heroku sets this automatically). |
 | `NODE_ENV` | No | Standard Node environment (`development` / `production` / `test`). |
-| `NODE_OPTIONS` | Recommended on memory-limited hosts | Standard Node runtime flags. On a 1 GB Heroku dyno, use `--max-old-space-size=768` so schema generation triggers garbage collection before exceeding the dyno memory quota. Re-test this value after materially expanding the GraphQL schema or changing dyno size. |
+| `NODE_OPTIONS` | Recommended on memory-limited hosts | Standard Node runtime flags. On a 1 GB Heroku dyno, use `--max-old-space-size=768` so runtime schema generation triggers garbage collection before exceeding the dyno memory quota. The Heroku build script overrides this with a 2 GB heap because GraphQL/OGM type generation needs more memory during compilation. Re-test both values after materially expanding the GraphQL schema or changing dyno size. |
 | `GRAPHQL_MAX_DEPTH` | No | Maximum allowed GraphQL query nesting depth (default `15`). Deeper queries are rejected before execution to prevent one crafted query from generating a pathological Cypher query. |
 | `SERVER_CONFIG_NAME` | Yes | Name of the `ServerConfig` record this instance runs as (e.g. `Listical`). The special value `Cypress Test Server` enables test-only behavior. |
 | `FRONTEND_URL` | Yes | Base URL of the frontend, used to build links in outbound emails (e.g. mod-invite acceptance links). |
