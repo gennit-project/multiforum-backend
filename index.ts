@@ -36,6 +36,7 @@ import { CommentVersionHistoryService } from "./services/commentVersionHistorySe
 import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistoryService.js";
 import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdog.js";
 import { PluginPipelineCampaignService } from "./services/plugin/pipelineCampaign.js";
+import { ensureSchemaConstraints } from "./services/schemaConstraints.js";
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
 import type { GraphQLSchema } from "graphql";
 import type { Ogm, GraphQLRequest, GraphQLContext } from "./types/context.js";
@@ -202,9 +203,8 @@ async function initializeServer() {
       filterGroupValidationMiddleware as AppMiddleware
     );
     await ogm.init();
-    if (edition === "enterprise") {
-      await neoSchema.assertIndexesAndConstraints();
-    }
+    /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
+    await ensureSchemaConstraints(neoSchema);
 
     const app = express();
     const httpServer = http.createServer(app);
