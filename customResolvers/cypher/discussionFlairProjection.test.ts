@@ -37,3 +37,23 @@ test("channel discussion flair projection keeps configured ordering metadata", (
     /ORDER BY assignedFlair\.order ASC, assignedFlair\.displayName ASC/
   );
 });
+
+test("sitewide discussion lists project public download scan metadata", () => {
+  assert.match(
+    getSiteWideDiscussionsQuery,
+    /\(d\)-\[:HAS_DOWNLOADABLE_FILE\]->\(downloadableFile:DownloadableFile\)/
+  );
+  assert.match(
+    getSiteWideDiscussionsQuery,
+    /downloadableFile\.permanentlyRemoved IS NULL OR downloadableFile\.permanentlyRemoved = false/
+  );
+  assert.match(getSiteWideDiscussionsQuery, /id: downloadableFile\.id/);
+  assert.match(
+    getSiteWideDiscussionsQuery,
+    /scanStatus: downloadableFile\.scanStatus/
+  );
+  assert.match(
+    getSiteWideDiscussionsQuery,
+    /DownloadableFiles: downloadableFiles/
+  );
+});

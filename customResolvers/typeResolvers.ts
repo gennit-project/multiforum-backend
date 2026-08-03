@@ -49,8 +49,12 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
     },
     DiscussionChannelListItem: {
+      Flairs: emptyArrayFallback('Flairs'),
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
       UpvotedByUsers: emptyArrayFallback('UpvotedByUsers'),
+    },
+    SiteWideDiscussionListItem: {
+      DownloadableFiles: emptyArrayFallback('DownloadableFiles'),
     },
     Comment: {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
