@@ -109,6 +109,24 @@ test('increments the attempt number for the same target pipeline key', async () 
   })
 
   assert.equal(creates[0]?.input[0]?.attemptNumber, 4)
+  assert.deepEqual(
+    JSON.parse(String(creates[0]?.input[0]?.configurationSnapshot)),
+    {
+      event: 'downloadableFile.created',
+      stopOnFirstFailure: true,
+      applicability: null,
+      effectiveAt: null,
+      steps: [
+        {
+          pluginId: 'scan',
+          version: '2.0.0',
+          order: 0,
+          condition: 'ALWAYS',
+          continueOnError: false,
+        },
+      ],
+    }
+  )
 })
 
 test('derives failed before successful when a job fails', () => {

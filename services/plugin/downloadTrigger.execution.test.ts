@@ -279,7 +279,7 @@ test("creates and completes a first-class pipeline attempt", async () => {
         initiatedByUsername: null,
         retryOfPipelineRunId: null,
         attemptNumber: 1,
-        configurationSnapshot: {
+        configurationSnapshot: JSON.stringify({
           event: EVENT,
           stopOnFirstFailure: true,
           applicability: "ALL_FILES_IMMEDIATE",
@@ -293,7 +293,7 @@ test("creates and completes a first-class pipeline attempt", async () => {
               continueOnError: false,
             },
           ],
-        },
+        }),
         applicability: "ALL_FILES_IMMEDIATE",
         policyEffectiveAt: null,
         policyId: null,
