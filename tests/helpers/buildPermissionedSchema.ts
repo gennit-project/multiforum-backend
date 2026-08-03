@@ -27,7 +27,9 @@ export interface PermissionedSchema {
   ogm: ResolverDeps["ogm"];
 }
 
-export async function buildPermissionedSchema(): Promise<PermissionedSchema> {
+export async function buildPermissionedSchema(options?: {
+  transformSchema?: (schema: GraphQLSchema) => GraphQLSchema;
+}): Promise<PermissionedSchema> {
   // Pointed at a local address but never connected to: deny-path tests resolve
   // entirely within graphql-shield.
   const driver = neo4j.driver(
@@ -42,6 +44,7 @@ export async function buildPermissionedSchema(): Promise<PermissionedSchema> {
   const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers });
 
   let schema = await neoSchema.getSchema();
+  schema = options?.transformSchema?.(schema) ?? schema;
   schema = applyMiddleware(schema, permissions);
 
   return { schema, driver, ogm };

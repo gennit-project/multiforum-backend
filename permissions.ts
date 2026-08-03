@@ -1,5 +1,8 @@
-import { and, chain, shield, allow, deny, or } from "graphql-shield";
+import { isIntrospectionType, isObjectType } from "graphql";
+import { middleware } from "graphql-middleware";
+import { and, chain, shield, allow, deny, or, type IRules } from "graphql-shield";
 import rules from "./rules/rules.js";
+import typeDefs from "./typeDefs.js";
 
 const {
   isRoot,
@@ -70,7 +73,134 @@ const {
   canEditWikiHomePage,
 } = rules;
 
-const permissionList = shield({
+// These application-defined output types are intentionally readable. Keeping
+// this list explicit means a newly added schema type is denied by Shield's
+// fallback until its public surface has been reviewed and added here.
+const PUBLIC_READ_TYPES = [
+  "Activity",
+  "Album",
+  "ApplicablePluginPipeline",
+  "Channel",
+  "ChannelDiscussionFlairConfig",
+  "ChannelHealthRow",
+  "ChannelInfo",
+  "ChannelPluginProperties",
+  "ChannelRole",
+  "Collection",
+  "Comment",
+  "CommentAggregateResult",
+  "CommentInfo",
+  "CommentRepliesFormat",
+  "CommentSectionFormat",
+  "Contact",
+  "DayData",
+  "DeleteEventInSeriesResult",
+  "Discussion",
+  "DiscussionChannel",
+  "DiscussionChannelInfo",
+  "DiscussionChannelListFormat",
+  "DiscussionChannelListItem",
+  "DiscussionFlair",
+  "DiscussionFlairOption",
+  "DiscussionInfo",
+  "DownloadScanReviewItem",
+  "DownloadableFile",
+  "DropDataResponse",
+  "Emoji",
+  "EnvironmentInfo",
+  "Event",
+  "EventChannel",
+  "EventChannelInfo",
+  "EventCommentsFormat",
+  "EventInfo",
+  "EventSeries",
+  "Feed",
+  "FileVersion",
+  "FilterGroup",
+  "FilterOption",
+  "GetSortedChannelsResponse",
+  "HotRankingSettings",
+  "Image",
+  "ImageAlbumUsage",
+  "InstallationProperties",
+  "InstalledPlugin",
+  "InternalPluginPipelineRunDetail",
+  "Issue",
+  "IssueAgingBucket",
+  "IssueInfo",
+  "LabelChangeHistory",
+  "License",
+  "LinkFlair",
+  "Message",
+  "ModActivity",
+  "ModChannelRole",
+  "ModDayData",
+  "ModServerRole",
+  "ModerationAction",
+  "Notification",
+  "OwnEmail",
+  "PipelineStep",
+  "Plugin",
+  "PluginConfigFieldStatus",
+  "PluginConfigStatus",
+  "PluginPipelineCampaign",
+  "PluginPipelineCampaignFailure",
+  "PluginPipelineCampaignPreview",
+  "PluginPipelineSummary",
+  "PluginSecretStatus",
+  "PluginVersion",
+  "PrepareDownloadResult",
+  "PublicExpectedPluginJob",
+  "PublicPluginDiagnostic",
+  "PublicPluginJobRun",
+  "PublicPluginPipelineRun",
+  "Purchase",
+  "RankingSettings",
+  "RecurringEvent",
+  "RepeatEnds",
+  "RepeatEvery",
+  "RepeatPattern",
+  "SafetyCheckResponse",
+  "ScratchpadEntry",
+  "SeedDataResponse",
+  "ServerConfig",
+  "ServerHealthAttentionItem",
+  "ServerHealthDashboard",
+  "ServerHealthSummary",
+  "ServerHealthTimeSeriesPoint",
+  "ServerRole",
+  "ServerSecret",
+  "SignedURL",
+  "SiteWideDiscussionListFormat",
+  "SiteWideDiscussionListItem",
+  "SiteWideIssueListFormat",
+  "SiteWideIssueListItem",
+  "SiteWideWikiListFormat",
+  "Suspension",
+  "Tag",
+  "TextVersion",
+  "UndoSuperUpvoteResult",
+  "UploadedDownloadableFileDiscussion",
+  "UploadedDownloadableFileGroup",
+  "UserAggregateResult",
+  "UserContributionData",
+  "WikiEditInfo",
+  "WikiPage",
+  "WikiPageInfo",
+] as const;
+
+const publicReadRules = Object.fromEntries(
+  PUBLIC_READ_TYPES.map((typeName) => [typeName, { "*": allow }])
+);
+
+const declaredObjectTypes = new Set(
+  typeDefs.definitions
+    .filter((definition) => definition.kind === "ObjectTypeDefinition")
+    .map((definition) => definition.name.value)
+);
+
+const permissionRules: IRules = {
+    ...publicReadRules,
     Query: {
       "*": allow,
       // Enumerating all emails is denied for every role — only direct database
@@ -163,8 +293,38 @@ const permissionList = shield({
       notificationBundleEnabled: isAccountOwner,
       notificationBundleContent: isAccountOwner,
 
-      // Default rule for any unspecified fields - allow public access
-      "*": allow,
+      // Fields intentionally public under the previous fallback behavior.
+      Albums: allow,
+      Images: allow,
+      isBot: allow,
+      botProfileId: allow,
+      isDeprecated: allow,
+      deprecatedReason: allow,
+      Comments: allow,
+      Discussions: allow,
+      Events: allow,
+      AdminOfChannels: allow,
+      ModOfChannels: allow,
+      AdminOfServers: allow,
+      RecentlyVisitedChannels: allow,
+      UpvotedComments: allow,
+      UpvotedDiscussionChannels: allow,
+      Suspensions: allow,
+      AuthoredWikiPages: allow,
+      OriginalWikiPages: allow,
+      AuthoredWikiPageVersions: allow,
+      ChannelRoles: allow,
+      ServerRoles: allow,
+      ModChannelRoles: allow,
+      ModServerRoles: allow,
+      PendingModInvites: allow,
+      PendingOwnerInvites: allow,
+      PendingServerAdminInvites: allow,
+      PendingServerModInvites: allow,
+      deleted: allow,
+      notifyOnSuspensionBlocks: allow,
+      ScratchpadEntries: allow,
+      WrittenScratchpadEntries: allow,
     },
     ModerationProfile: {
       // The reverse of User.ModerationProfile: a mod profile must never resolve
@@ -173,9 +333,25 @@ const permissionList = shield({
       // Denied for everyone (including the account owner) — the pseudonymous
       // identity is one-way from the API's perspective.
       User: deny,
-      // Everything else on a moderation profile is public for transparency and
-      // audit: displayName, AuthoredIssues, AuthoredComments, ActivityFeed, etc.
-      "*": allow,
+      // Everything else currently on a moderation profile is public for
+      // transparency and audit. Enumerating these fields ensures a future
+      // identity-bearing edge does not silently inherit an allow wildcard.
+      createdAt: allow,
+      displayName: allow,
+      AuthoredIssues: allow,
+      AuthoredComments: allow,
+      ModChannelRoles: allow,
+      ModServerRoles: allow,
+      ModOfServers: allow,
+      ActivityFeed: allow,
+      Suspensions: allow,
+    },
+    Email: {
+      // Access to an Email node is already restricted at Query.emails and
+      // User.Email. Enumerate its current fields so future identity fields do
+      // not inherit a broad allow wildcard.
+      address: allow,
+      User: allow,
     },
     Mutation: {
       "*": deny,
@@ -409,10 +585,37 @@ const permissionList = shield({
       updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
       updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
     },
-  },{
-    debug: true,
-    allowExternalErrors: true
-  });
+  };
+
+// Neo4j GraphQL creates connection, edge, aggregate, and mutation-response
+// object types around the application types. They do not introduce independent
+// data access: access is already controlled at Query/Mutation and at the
+// application-defined relationship field. Allow those generated wrappers so
+// existing connection/aggregate queries continue to work with a deny fallback.
+const permissionList = middleware((schema) => {
+  const generatedTypeRules = Object.fromEntries(
+    Object.values(schema.getTypeMap())
+      .filter(
+        (type) =>
+          isObjectType(type) &&
+          !isIntrospectionType(type) &&
+          !declaredObjectTypes.has(type.name)
+      )
+      .map((type) => [type.name, { "*": allow }])
+  );
+
+  return shield(
+    {
+      ...generatedTypeRules,
+      ...permissionRules,
+    },
+    {
+      debug: true,
+      allowExternalErrors: true,
+      fallbackRule: deny,
+    }
+  ).generate(schema);
+});
   
   
   export default permissionList;
