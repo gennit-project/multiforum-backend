@@ -38,22 +38,24 @@ test("channel discussion flair projection keeps configured ordering metadata", (
   );
 });
 
-test("sitewide discussion lists project public download scan metadata", () => {
+const assertProjectsPublicDownloadScanMetadata = (query: string) => {
   assert.match(
-    getSiteWideDiscussionsQuery,
+    query,
     /\(d\)-\[:HAS_DOWNLOADABLE_FILE\]->\(downloadableFile:DownloadableFile\)/
   );
   assert.match(
-    getSiteWideDiscussionsQuery,
+    query,
     /downloadableFile\.permanentlyRemoved IS NULL OR downloadableFile\.permanentlyRemoved = false/
   );
-  assert.match(getSiteWideDiscussionsQuery, /id: downloadableFile\.id/);
-  assert.match(
-    getSiteWideDiscussionsQuery,
-    /scanStatus: downloadableFile\.scanStatus/
-  );
-  assert.match(
-    getSiteWideDiscussionsQuery,
-    /DownloadableFiles: downloadableFiles/
-  );
+  assert.match(query, /id: downloadableFile\.id/);
+  assert.match(query, /scanStatus: downloadableFile\.scanStatus/);
+  assert.match(query, /DownloadableFiles: downloadableFiles/);
+};
+
+test("sitewide discussion lists project public download scan metadata", () => {
+  assertProjectsPublicDownloadScanMetadata(getSiteWideDiscussionsQuery);
+});
+
+test("channel discussion lists project public download scan metadata", () => {
+  assertProjectsPublicDownloadScanMetadata(getDiscussionChannelsQuery);
 });

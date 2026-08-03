@@ -196,20 +196,30 @@ WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperU
          permanentlyRemoved: image.permanentlyRemoved
      } END) WHERE img IS NOT NULL] AS albumImages
 
+OPTIONAL MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(downloadableFile:DownloadableFile)
+WHERE downloadableFile.permanentlyRemoved IS NULL OR downloadableFile.permanentlyRemoved = false
+
+WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
+     weightedVotesCount, comments, hotRank, album, albumImages,
+     [file IN COLLECT(DISTINCT CASE WHEN downloadableFile IS NOT NULL THEN {
+         id: downloadableFile.id,
+         scanStatus: downloadableFile.scanStatus
+     } END) WHERE file IS NOT NULL] AS downloadableFiles
+
 // Check if the logged-in user has favorited this discussion
 OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, album, albumImages,
+     weightedVotesCount, comments, hotRank, album, albumImages, downloadableFiles,
      CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
 
 // Include every assigned flair, including archived flairs. Archiving prevents
 // future assignment but must not erase a historical discussion's category.
 OPTIONAL MATCH (dc)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair:DiscussionFlair)
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, album, albumImages, isFavorited, assignedFlair
+     weightedVotesCount, comments, hotRank, album, albumImages, downloadableFiles, isFavorited, assignedFlair
 ORDER BY assignedFlair.order ASC, assignedFlair.displayName ASC
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, album, albumImages, isFavorited,
+     weightedVotesCount, comments, hotRank, album, albumImages, downloadableFiles, isFavorited,
      [flair IN COLLECT(DISTINCT assignedFlair) WHERE flair IS NOT NULL | {
          id: flair.id,
          channelUniqueName: flair.channelUniqueName,
@@ -266,6 +276,7 @@ RETURN {
                 }
               END,
         Tags: [t IN tagsText | {text: t}],
+        DownloadableFiles: downloadableFiles,
         // Membership-derived MOD badge: is the author channel staff (owner or
         // moderator) of this channel? Computed inline because the @cypher field
         // of the same name only auto-resolves on the generated `discussions`
