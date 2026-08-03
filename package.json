@@ -9,10 +9,10 @@
     "node": "22.x"
   },
   "scripts": {
-    "test": "node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
-    "test:integration": "TESTCONTAINERS_REUSE_ENABLE=true node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
-    "coverage": "c8 node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
-    "coverage:integration": "TESTCONTAINERS_REUSE_ENABLE=true c8 node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
+    "test": "TS_NODE_TRANSPILE_ONLY=true node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
+    "test:integration": "TS_NODE_TRANSPILE_ONLY=true TESTCONTAINERS_REUSE_ENABLE=true node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
+    "coverage": "TS_NODE_TRANSPILE_ONLY=true c8 node --loader ts-node/esm --test $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
+    "coverage:integration": "TS_NODE_TRANSPILE_ONLY=true TESTCONTAINERS_REUSE_ENABLE=true c8 node --loader ts-node/esm --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
     "test:integration:shard": "bash build_scripts/integration-shard.sh",
     "coverage:merged": "bash build_scripts/coverage-merged.sh",
     "prepare": "husky",
