@@ -10,7 +10,14 @@ import type {
 import { CHANNEL_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
+import {
+  generatePipelineId,
+  shouldRunStep,
+  mergeSettings,
+  buildPluginVersionMaps,
+  getPluginForStep,
+  parseStoredPipelines,
+} from './pipelineUtils.js'
 import {
   completePipelineAttempt,
   createPipelineAttempt,
@@ -28,7 +35,14 @@ import {
 } from './publicDiagnostics.js'
 import { buildBotInvocationContext } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
-import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
+import {
+  SECURITY_SCAN_PLUGIN_ID,
+  failedDownloadScanOutcome,
+  resolveDownloadScanOutcome,
+  type DownloadScanOutcome,
+} from './downloadScanOutcome.js'
+import { createDownloadReadUrl } from '../downloadStorage.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFileUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
@@ -117,7 +131,7 @@ export const triggerChannelPluginPipeline = async (
   }
 
   const channel: Channel = channels[0]
-  const channelPipelines: EventPipeline[] = channel.pluginPipelines || []
+  const channelPipelines = parseStoredPipelines(channel.pluginPipelines)
   const eventPipeline = channelPipelines.find(p => p.event === event)
 
   // Build a map of channel-level plugin settings by plugin name
@@ -151,6 +165,8 @@ export const triggerChannelPluginPipeline = async (
         size
         uploadedAt
         createdAt
+        storageBucket
+        storageObjectName
       }
     }`
   })
@@ -176,6 +192,7 @@ export const triggerChannelPluginPipeline = async (
   const serverConfigs = await ServerConfig.find({
     selectionSet: `{
       serverName
+      pluginPipelines
       InstalledVersionsConnection {
         edges {
           properties {
@@ -210,6 +227,15 @@ export const triggerChannelPluginPipeline = async (
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
+  const serverUploadPipeline = parseStoredPipelines(
+    serverConfig.pluginPipelines
+  )
+    .find(pipeline => pipeline.event === 'downloadableFile.created')
+  const serverSecurityRequired = Boolean(
+    serverUploadPipeline?.steps.some(
+      step => step.pluginId === SECURITY_SCAN_PLUGIN_ID
+    )
+  )
 
   // Build version-aware plugin map (pluginName -> sorted array of versions).
   // The generated relationship edge type is cast to the plugin layer's
@@ -222,6 +248,11 @@ export const triggerChannelPluginPipeline = async (
   const pluginsToRun: PluginToRun[] = []
 
   eventPipeline.steps.forEach((step, index) => {
+    // A server-wide security requirement takes precedence. Do not scan the
+    // same bytes again merely because the channel also selected the scanner.
+    if (step.pluginId === SECURITY_SCAN_PLUGIN_ID && serverSecurityRequired) {
+      return
+    }
     // Get plugin for step, respecting version specification
     const pluginMatch = getPluginForStep(pluginVersionsMap, step.pluginId, step.version)
     if (pluginMatch) {
@@ -242,6 +273,21 @@ export const triggerChannelPluginPipeline = async (
   const runs: unknown[] = []
   const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
+  const securityScanExpected = pluginsToRun.some(
+    plugin => plugin.pluginId === SECURITY_SCAN_PLUGIN_ID
+  )
+  let securityScanOutcome: DownloadScanOutcome | null = null
+
+  if (securityScanExpected) {
+    await DownloadableFile.update({
+      where: { id: downloadableFile.id },
+      update: ({
+        scanStatus: 'PENDING',
+        scanReason: null,
+        scanCheckedAt: null,
+      } as DownloadableFileUpdateInput),
+    })
+  }
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
 
@@ -505,6 +551,7 @@ export const triggerChannelPluginPipeline = async (
       }
 
       const pluginInstance = new PluginClass(context)
+      const attachmentUrl = await createDownloadReadUrl({ file: downloadableFile })
       const eventEnvelope = {
         type: event,
         payload: {
@@ -515,6 +562,7 @@ export const triggerChannelPluginPipeline = async (
           fileName: downloadableFile.fileName,
           fileSize: downloadableFile.size,
           fileUrl: downloadableFile.url,
+          attachmentUrls: attachmentUrl ? [attachmentUrl] : [],
           channel: channelContext,
           context: buildBotInvocationContext({
             invocationType: 'discussion-created',
@@ -534,6 +582,9 @@ export const triggerChannelPluginPipeline = async (
       }
 
       const result = await pluginInstance.handleEvent(eventEnvelope)
+      if (pluginId === SECURITY_SCAN_PLUGIN_ID) {
+        securityScanOutcome = resolveDownloadScanOutcome(result)
+      }
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
 
@@ -583,6 +634,10 @@ export const triggerChannelPluginPipeline = async (
       const durationMs = Math.round(runEnd - runStart)
       const message = (error instanceof Error ? error.message : '') || 'Plugin execution failed'
 
+      if (pluginId === SECURITY_SCAN_PLUGIN_ID) {
+        securityScanOutcome = failedDownloadScanOutcome(message)
+      }
+
       previousStatus = 'FAILED'
 
       await completePluginRunLease({
@@ -623,6 +678,20 @@ export const triggerChannelPluginPipeline = async (
     } finally {
       heartbeat.stop()
     }
+  }
+
+  if (securityScanExpected) {
+    const outcome = securityScanOutcome || failedDownloadScanOutcome(
+      'The security scan was skipped before it could complete.'
+    )
+    await DownloadableFile.update({
+      where: { id: downloadableFile.id },
+      update: ({
+        scanStatus: outcome.status,
+        scanReason: outcome.reason,
+        scanCheckedAt: new Date().toISOString(),
+      } as DownloadableFileUpdateInput),
+    })
   }
 
   await completePipelineAttempt({

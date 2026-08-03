@@ -23,6 +23,7 @@ type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
 type AttemptCreateArgs =
   Parameters<ModelMap["PluginPipelineRun"]["create"]>[0];
+type FileUpdateArgs = Parameters<ModelMap["DownloadableFile"]["update"]>[0];
 
 const EVENT = "discussionChannel.created";
 
@@ -48,10 +49,15 @@ const discussionWithFile = {
   DownloadableFile: { id: "f-1", fileName: "a.zip", url: "http://x/a.zip", kind: "zip", size: 10 },
 };
 
-function makeExecModels(steps: unknown[], edges: unknown[]) {
+function makeExecModels(
+  steps: unknown[],
+  edges: unknown[],
+  serverPipelines: unknown[] = []
+) {
   const updates: RunUpdateArgs[] = [];
   const creates: RunCreateArgs[] = [];
   const attemptCreates: AttemptCreateArgs[] = [];
+  const fileUpdates: FileUpdateArgs[] = [];
   let seq = 0;
   const channel = {
     uniqueName: "cats",
@@ -63,7 +69,11 @@ function makeExecModels(steps: unknown[], edges: unknown[]) {
     FilterGroups: [],
     EnabledPluginsConnection: { edges: [] },
   };
-  const serverConfig = { serverName: "s", InstalledVersionsConnection: { edges } };
+  const serverConfig = {
+    serverName: "s",
+    pluginPipelines: serverPipelines,
+    InstalledVersionsConnection: { edges },
+  };
   const PluginRun = modelStub<"PluginRun">({
     create: async args => {
       creates.push(args);
@@ -95,13 +105,18 @@ function makeExecModels(steps: unknown[], edges: unknown[]) {
       find: async () => [serverConfig],
     }),
     ServerSecret: modelStub<"ServerSecret">(),
-    DownloadableFile: modelStub<"DownloadableFile">(),
+    DownloadableFile: modelStub<"DownloadableFile">({
+      update: async args => {
+        fileUpdates.push(args);
+        return { downloadableFiles: [] };
+      },
+    }),
     PluginPipelineRun,
     PluginRun,
     Plugin: modelStub<"Plugin">(),
     PluginVersion: modelStub<"PluginVersion">(),
   } satisfies Models;
-  return { models, updates, creates, attemptCreates };
+  return { models, updates, creates, attemptCreates, fileUpdates };
 }
 
 const pluginReturning = (result: PluginRunResult): PluginConstructor =>
@@ -143,6 +158,54 @@ test("marks the run FAILED when the plugin reports failure", async () => {
   );
   await execRun(models, loaderFor(pluginReturning({ success: false, error: "nope" })));
   assert.ok(statusesOf(updates).includes("FAILED"));
+});
+
+test("channel security scans receive the attachment and update the hold", async () => {
+  const { models, fileUpdates } = makeExecModels(
+    [{ pluginId: "security-attachment-scan", condition: "ALWAYS" }],
+    [installedEdge("security-attachment-scan")]
+  );
+  let receivedUrls: string[] = [];
+  const Plugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(event: unknown) {
+      const envelope = event as { payload?: { attachmentUrls?: string[] } };
+      receivedUrls = envelope.payload?.attachmentUrls || [];
+      return { success: true, result: { verdict: "clean", message: "Passed" } };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin));
+
+  assert.deepEqual({
+    receivedUrls,
+    statuses: fileUpdates.map(update => update.update?.scanStatus),
+  }, {
+    receivedUrls: ["http://x/a.zip"],
+    statuses: ["PENDING", "CLEAN"],
+  });
+});
+
+test("server-wide security policy prevents a duplicate channel scan", async () => {
+  const { models, creates, fileUpdates } = makeExecModels(
+    [{ pluginId: "security-attachment-scan", condition: "ALWAYS" }],
+    [installedEdge("security-attachment-scan")],
+    [{
+      event: "downloadableFile.created",
+      steps: [{ pluginId: "security-attachment-scan" }],
+    }]
+  );
+
+  const runs = await execRun(
+    models,
+    loaderFor(pluginReturning({ success: true }))
+  );
+
+  assert.deepEqual({ runs, creates: creates.length, fileUpdates }, {
+    runs: [],
+    creates: 0,
+    fileUpdates: [],
+  });
 });
 
 test("records channel manual-start metadata supplied by the caller", async () => {

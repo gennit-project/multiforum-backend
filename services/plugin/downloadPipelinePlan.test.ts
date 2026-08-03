@@ -117,7 +117,7 @@ test('reports no applicable plugins when configured jobs are unavailable', () =>
   )
 })
 
-test('builds an ordered fallback pipeline from installed event plugins', () => {
+test('does not run enabled plugins without an explicit event pipeline', () => {
   const secondPlugin = installedPlugin('content-metadata')
   const unrelatedPlugin = {
     ...installedPlugin('unrelated'),
@@ -138,26 +138,16 @@ test('builds an ordered fallback pipeline from installed event plugins', () => {
   })
 
   assert.deepEqual(
-    plan.pluginsToRun.map(({ pluginId, order, step }) => ({
-      pluginId,
-      order,
-      condition: step.condition,
-      continueOnError: step.continueOnError,
-    })),
-    [
-      {
-        pluginId: 'security-attachment-scan',
-        order: 0,
-        condition: 'ALWAYS',
-        continueOnError: false,
-      },
-      {
-        pluginId: 'content-metadata',
-        order: 1,
-        condition: 'ALWAYS',
-        continueOnError: false,
-      },
-    ]
+    {
+      required: plan.required,
+      reason: plan.reason,
+      pluginIds: plan.pluginsToRun.map(({ pluginId }) => pluginId),
+    },
+    {
+      required: false,
+      reason: 'NO_APPLICABLE_PLUGINS',
+      pluginIds: [],
+    }
   )
 })
 

@@ -69,7 +69,7 @@ test("returns [] when there is no server config", async () => {
   assert.deepEqual(await run(makeModels({ file: fileNode, serverConfig: null })), []);
 });
 
-test("returns [] when no plugins are installed (fallback path)", async () => {
+test("returns [] when no explicit pipeline is configured", async () => {
   const serverConfig = {
     serverName: "s",
     pluginPipelines: null,
@@ -78,7 +78,7 @@ test("returns [] when no plugins are installed (fallback path)", async () => {
   assert.deepEqual(await run(makeModels({ file: fileNode, serverConfig })), []);
 });
 
-test("returns [] when an installed plugin does not handle the event", async () => {
+test("returns [] when an enabled plugin is not explicitly configured", async () => {
   const serverConfig = {
     serverName: "s",
     pluginPipelines: null,

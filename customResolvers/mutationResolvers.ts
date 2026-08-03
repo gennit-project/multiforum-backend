@@ -91,6 +91,7 @@ import {
   resumePluginPipelineCampaign,
 } from "./mutations/pluginPipelineCampaigns.js";
 import clearDownloadableFileScan from "./mutations/clearDownloadableFileScan.js";
+import requestDownloadableFileReview from "./mutations/requestDownloadableFileReview.js";
 import trackDownload from "./mutations/trackDownload.js";
 import prepareDownload from "./mutations/prepareDownload.js";
 import updateDownloadableFileSupportSettings from "./mutations/updateDownloadableFileSupportSettings.js";
@@ -620,6 +621,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     clearDownloadableFileScan: clearDownloadableFileScan({
       DownloadableFile,
       driver
+    }),
+    requestDownloadableFileReview: requestDownloadableFileReview({
+      DownloadableFile
     }),
     trackDownload: trackDownload({
       driver

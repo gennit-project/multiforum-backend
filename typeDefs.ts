@@ -458,6 +458,9 @@ const typeDefinitions = gql`
     scanStatus: ScanStatus! @default(value: PENDING)
     scanCheckedAt: DateTime
     scanReason: String
+    reviewRequestedAt: DateTime
+    reviewRequestReason: String
+    reviewRequestedByUsername: String
 
     # purchases back‑ref
     purchasers: [Purchase!]! @relationship(type: "PURCHASED_FILE", direction: IN)
@@ -1561,6 +1564,10 @@ const typeDefinitions = gql`
       downloadableFileId: ID!
       reason: String
     ): DownloadableFile!
+    requestDownloadableFileReview(
+      downloadableFileId: ID!
+      reason: String
+    ): DownloadableFile!
     enableServerPlugin(
       pluginId: String!
       version: String!
@@ -2512,6 +2519,20 @@ const typeDefinitions = gql`
     attentionItems: [ServerHealthAttentionItem!]!
   }
 
+  type DownloadScanReviewItem @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    downloadableFileId: ID!
+    fileName: String!
+    scanStatus: ScanStatus!
+    scanReason: String
+    scanCheckedAt: DateTime
+    reviewRequestedAt: DateTime
+    reviewRequestReason: String
+    uploaderUsername: String
+    discussionId: ID!
+    discussionTitle: String
+    channelUniqueName: String
+  }
+
   type UserContributionData {
     username: String!
     displayName: String
@@ -2677,6 +2698,7 @@ const typeDefinitions = gql`
       sortBy: String
       sortDirection: String
     ): ServerHealthDashboard!
+    getDownloadScanReviewQueue(limit: Int = 50): [DownloadScanReviewItem!]!
     isOriginalPosterSuspended(issueId: String!): Boolean
     safetyCheck: SafetyCheckResponse
     getServerPluginSecrets(

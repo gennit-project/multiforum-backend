@@ -47,6 +47,81 @@ type Input = {
   User?: UserModel;
 };
 
+type PluginModels = {
+  Channel: ChannelModel;
+  DownloadableFile: DownloadableFileModel;
+  PluginPipelineRun: PluginPipelineRunModel;
+  PluginRun: PluginRunModel;
+  ServerConfig: ServerConfigModel;
+  ServerSecret: ServerSecretModel;
+  User?: UserModel;
+};
+
+export const triggerCreatedDownloadPipelines = async ({
+  discussionId,
+  downloadableFileId,
+  channelConnections,
+  Discussion,
+  pluginModels,
+  triggerDownload = triggerPluginRunsForDownloadableFile,
+  triggerChannel = triggerChannelPluginPipeline,
+}: {
+  discussionId: string;
+  downloadableFileId: string;
+  channelConnections: string[];
+  Discussion: DiscussionModel;
+  pluginModels: PluginModels;
+  triggerDownload?: typeof triggerPluginRunsForDownloadableFile;
+  triggerChannel?: typeof triggerChannelPluginPipeline;
+}) => {
+  try {
+    await triggerDownload({
+      downloadableFileId,
+      event: "downloadableFile.created",
+      models: {
+        DownloadableFile: pluginModels.DownloadableFile,
+        PluginPipelineRun: pluginModels.PluginPipelineRun,
+        PluginRun: pluginModels.PluginRun,
+        ServerConfig: pluginModels.ServerConfig,
+        ServerSecret: pluginModels.ServerSecret,
+        User: pluginModels.User,
+      },
+    });
+  } catch (triggerError: unknown) {
+    const message = triggerError instanceof Error
+      ? triggerError.message
+      : String(triggerError);
+    logger.error(
+      `downloadableFile.created plugin trigger error for ${discussionId}:`,
+      message
+    );
+  }
+
+  for (const channelUniqueName of channelConnections) {
+    try {
+      await triggerChannel({
+        discussionId,
+        channelUniqueName,
+        event: 'discussionChannel.created',
+        models: {
+          Channel: pluginModels.Channel,
+          Discussion,
+          DownloadableFile: pluginModels.DownloadableFile,
+          PluginPipelineRun: pluginModels.PluginPipelineRun,
+          PluginRun: pluginModels.PluginRun,
+          ServerConfig: pluginModels.ServerConfig,
+          ServerSecret: pluginModels.ServerSecret,
+        }
+      });
+    } catch (pipelineError: unknown) {
+      const message = pipelineError instanceof Error
+        ? pipelineError.message
+        : String(pipelineError);
+      logger.error(`Channel pipeline error for ${channelUniqueName}:`, message);
+    }
+  }
+};
+
 // The reason why we cannot use the auto-generated resolver
 // to create a Discussion with DiscussionChannels already linked
 // is because the creation of the DiscussionChannel nodes
@@ -116,15 +191,7 @@ export const createDiscussionsFromInput = async (
   driver: Driver,
   input: DiscussionCreateInputWithChannels[],
   context?: GraphQLContext,
-  pluginModels?: {
-    Channel: ChannelModel;
-    DownloadableFile: DownloadableFileModel;
-    PluginPipelineRun: PluginPipelineRunModel;
-    PluginRun: PluginRunModel;
-    ServerConfig: ServerConfigModel;
-    ServerSecret: ServerSecretModel;
-    User?: UserModel;
-  }
+  pluginModels?: PluginModels
 ): Promise<unknown[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
@@ -239,32 +306,6 @@ export const createDiscussionsFromInput = async (
             flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
           });
 
-          // Trigger channel plugin pipeline if discussion has a download
-          // and plugin models are available
-          if (hasDownload && pluginModels) {
-            try {
-              await triggerChannelPluginPipeline({
-                discussionId: newDiscussionId,
-                channelUniqueName,
-                event: 'discussionChannel.created',
-                models: {
-                  Channel: pluginModels.Channel,
-                  Discussion,
-                  DownloadableFile: pluginModels.DownloadableFile,
-                  Plugin: null as any, // Not used in channel pipeline
-                  PluginVersion: null as any, // Not used directly
-                  PluginPipelineRun: pluginModels.PluginPipelineRun,
-                  PluginRun: pluginModels.PluginRun,
-                  ServerConfig: pluginModels.ServerConfig,
-                  ServerSecret: pluginModels.ServerSecret,
-                }
-              });
-            } catch (pipelineError: unknown) {
-              // Log pipeline errors but don't fail the discussion creation
-              const message = pipelineError instanceof Error ? pipelineError.message : String(pipelineError);
-              logger.error(`Channel pipeline error for ${channelUniqueName}:`, message);
-            }
-          }
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error);
           if (message.includes("Constraint validation failed")) {
@@ -290,17 +331,12 @@ export const createDiscussionsFromInput = async (
             withFile?.[0] as unknown as { DownloadableFiles?: Array<{ id?: string }> }
           )?.DownloadableFiles?.[0]?.id;
           if (downloadableFileId) {
-            await triggerPluginRunsForDownloadableFile({
+            await triggerCreatedDownloadPipelines({
+              discussionId: newDiscussionId,
               downloadableFileId,
-              event: "downloadableFile.created",
-              models: {
-                DownloadableFile: pluginModels.DownloadableFile,
-                PluginPipelineRun: pluginModels.PluginPipelineRun,
-                PluginRun: pluginModels.PluginRun,
-                ServerConfig: pluginModels.ServerConfig,
-                ServerSecret: pluginModels.ServerSecret,
-                User: pluginModels.User,
-              },
+              channelConnections,
+              Discussion,
+              pluginModels,
             });
           }
         } catch (triggerError: unknown) {

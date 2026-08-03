@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
-import { modelStub } from "../../tests/fixtures/modelStub.js";
+import {
+  modelStub,
+  type ModelStubMethods,
+} from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
   createRetryDownloadableFileScanResolver,
@@ -18,10 +21,12 @@ type RerunResolverFactory = NonNullable<
 const baseInput = ({
   file,
   attempts = [],
+  findAttempts,
   jobs = [],
 }: {
   file: unknown;
   attempts?: unknown[];
+  findAttempts?: ModelStubMethods<"PluginPipelineRun">["find"];
   jobs?: unknown[];
 }): RetryDownloadableFileScanInput => ({
   Channel: modelStub<"Channel">(),
@@ -32,7 +37,7 @@ const baseInput = ({
   Plugin: modelStub<"Plugin">(),
   PluginVersion: modelStub<"PluginVersion">(),
   PluginPipelineRun: modelStub<"PluginPipelineRun">({
-    find: async () => attempts,
+    find: findAttempts ?? (async () => attempts),
   }),
   PluginRun: modelStub<"PluginRun">({
     find: async () => jobs,
@@ -174,4 +179,51 @@ test("routes a modern failed scan through whole-pipeline retry", async () => {
       result: [{ id: "new-job" }],
     }
   );
+});
+
+test("retries the latest failed channel scan for an optional channel policy", async () => {
+  const seenTargets: string[] = [];
+  const input = baseInput({
+    file: {
+      uploadedByUsername: "alice",
+      scanStatus: "FAILED",
+      Discussion: { id: "discussion-1" },
+    },
+    findAttempts: async ({ where } = {}) => {
+      seenTargets.push(String(where?.targetType));
+      return where?.targetType === "Discussion"
+        ? [{
+            pipelineId: "failed-channel-pipeline",
+            createdAt: "2026-07-31T00:00:00.000Z",
+          }]
+        : [];
+    },
+    jobs: [{ id: "new-channel-job" }],
+  });
+  let sourceId = "";
+  const createRerunResolver: RerunResolverFactory =
+    () => async (_parent, args) => {
+      sourceId = args.pipelineRunId;
+      return {
+        pipelineId: "new-channel-pipeline",
+      } as Awaited<ReturnType<ReturnType<RerunResolverFactory>>>;
+    };
+  const resolver = createRetryDownloadableFileScanResolver(
+    input,
+    async () => false,
+    async () => [],
+    createRerunResolver
+  );
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1" },
+    contextFor("alice")
+  );
+
+  assert.deepEqual({ seenTargets, sourceId, result }, {
+    seenTargets: ["DownloadableFile", "Discussion"],
+    sourceId: "failed-channel-pipeline",
+    result: [{ id: "new-channel-job" }],
+  });
 });

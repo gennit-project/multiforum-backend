@@ -58,6 +58,15 @@ test("clears a held scan and notifies the discussion author", async () => {
     },
     result: { id: "file-1", scanStatus: "CLEAN" },
   });
+  assert.deepEqual({
+    requestedAt: updates[0].update.reviewRequestedAt,
+    requestReason: updates[0].update.reviewRequestReason,
+    requestedBy: updates[0].update.reviewRequestedByUsername,
+  }, {
+    requestedAt: null,
+    requestReason: null,
+    requestedBy: null,
+  });
 });
 
 test("rejects a file that is already clean", async () => {
@@ -75,5 +84,23 @@ test("rejects a file that is already clean", async () => {
       { user: { username: "moderator" } } as GraphQLContext
     ),
     /already clean/
+  );
+});
+
+test("requires an audit reason before releasing quarantine", async () => {
+  const resolver = createClearDownloadableFileScanResolver({
+    DownloadableFile: {
+      find: async () => [{ id: "file-1", scanStatus: "SUSPICIOUS" }],
+    } as any,
+    driver: {} as any,
+  });
+
+  await assert.rejects(
+    resolver(
+      null,
+      { downloadableFileId: "file-1", reason: "  " },
+      { user: { username: "moderator" } } as GraphQLContext
+    ),
+    /review reason is required/
   );
 });

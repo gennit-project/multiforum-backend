@@ -1,7 +1,6 @@
 import type {
   EventPipeline,
   PipelineApplicability,
-  PipelineStep,
   PluginEdgeData,
   PluginToRun,
 } from './types.js'
@@ -60,37 +59,6 @@ const resolveConfiguredSteps = ({
   return pluginsToRun
 }
 
-const resolveFallbackSteps = ({
-  event,
-  pluginVersionsMap,
-}: {
-  event: string
-  pluginVersionsMap: ReturnType<typeof buildPluginVersionMaps>
-}): PluginToRun[] => {
-  const pluginsToRun: PluginToRun[] = []
-  let order = 0
-
-  for (const [pluginId, versions] of pluginVersionsMap) {
-    const latestVersion = versions[0]
-    if (!latestVersion || !handlesEvent(latestVersion.edgeData, event)) continue
-
-    const step: PipelineStep = {
-      pluginId,
-      condition: 'ALWAYS',
-      continueOnError: false,
-    }
-    pluginsToRun.push({
-      pluginId,
-      edgeData: latestVersion.edgeData,
-      step,
-      order,
-    })
-    order += 1
-  }
-
-  return pluginsToRun
-}
-
 const uploadedBeforePolicy = ({
   applicability,
   effectiveAt,
@@ -129,10 +97,12 @@ export const resolveDownloadPipelinePlan = ({
     eventPipeline?.applicability || DEFAULT_APPLICABILITY
   const effectiveAt = eventPipeline?.effectiveAt || null
   const pluginVersionsMap = buildPluginVersionMaps(installedPluginEdges)
-  const pluginsToRun =
-    eventPipeline && eventPipeline.steps.length > 0
-      ? resolveConfiguredSteps({ event, eventPipeline, pluginVersionsMap })
-      : resolveFallbackSteps({ event, pluginVersionsMap })
+  // Enabling a plugin makes it available to pipeline editors. It must not
+  // silently opt every channel into every event declared by its manifest.
+  // Only an explicitly configured event pipeline is executable/required.
+  const pluginsToRun = eventPipeline
+    ? resolveConfiguredSteps({ event, eventPipeline, pluginVersionsMap })
+    : []
 
   if (
     uploadedBeforePolicy({

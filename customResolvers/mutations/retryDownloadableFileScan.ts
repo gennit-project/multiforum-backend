@@ -27,6 +27,7 @@ type FileRecord = {
   uploadedByUsername?: string | null;
   scanStatus?: string | null;
   Discussion?: {
+    id?: string | null;
     Author?: { username?: string | null } | null;
     DiscussionChannels?: Array<{
       channelUniqueName?: string | null;
@@ -55,6 +56,7 @@ export const createRetryDownloadableFileScanResolver = (
         uploadedByUsername
         scanStatus
         Discussion {
+          id
           Author { username }
           DiscussionChannels {
             channelUniqueName
@@ -95,7 +97,7 @@ export const createRetryDownloadableFileScanResolver = (
       if (canReview !== true) throw new Error("Not authorized to retry this scan");
     }
 
-    const attempts = await input.PluginPipelineRun.find({
+    const serverAttempts = await input.PluginPipelineRun.find({
       where: {
         targetId: downloadableFileId,
         targetType: "DownloadableFile",
@@ -111,6 +113,22 @@ export const createRetryDownloadableFileScanResolver = (
       },
       selectionSet: `{ pipelineId createdAt }`,
     });
+    const channelAttempts = file.Discussion?.id
+      ? await input.PluginPipelineRun.find({
+          where: {
+            targetId: file.Discussion.id,
+            targetType: "Discussion",
+            eventType: "discussionChannel.created",
+            status_IN: [
+              PluginPipelineRunStatus.Failed,
+              PluginPipelineRunStatus.TimedOut,
+              PluginPipelineRunStatus.Cancelled,
+            ],
+          },
+          selectionSet: `{ pipelineId createdAt }`,
+        })
+      : [];
+    const attempts = [...serverAttempts, ...channelAttempts];
     const sourceAttempt = [...attempts].sort(
       (left, right) =>
         Date.parse(String(right.createdAt)) -
