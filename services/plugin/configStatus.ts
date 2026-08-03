@@ -24,6 +24,7 @@ export type PluginConfigStatus = {
 
 export type PluginManifestField = {
   key?: unknown
+  renamedFrom?: unknown
   label?: unknown
   type?: unknown
   required?: unknown
@@ -40,6 +41,7 @@ export type PluginManifestField = {
 
 type ManifestSecret = {
   key?: unknown
+  renamedFrom?: unknown
   label?: unknown
   scope?: unknown
   required?: unknown
