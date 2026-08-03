@@ -57,6 +57,8 @@ before(async () => {
   ({ schema, driver, ogm } = await buildPermissionedSchema());
   await ogm.init();
 
+  await run("MATCH (n) DETACH DELETE n");
+
   // Seed the admin caller and a ServerConfig with downloads enabled at the
   // SERVER level — so the server-level download gate (serverDownloadsEnabled)
   // always passes and the CHANNEL-level downloadsEnabled flag is the only thing

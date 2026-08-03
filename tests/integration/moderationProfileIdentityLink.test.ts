@@ -26,6 +26,7 @@ const USERNAME = "linkeduser";
 const MOD_PROFILE = "PseudoMod";
 const EMAIL = "secret@e2e.test";
 const OTHER_USERNAME = "otheruser";
+const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
@@ -33,10 +34,11 @@ let driver: Driver;
 let ogm: any;
 
 before(async () => {
-  container = await new Neo4jContainer("neo4j:5-community")
+  let builder = new Neo4jContainer("neo4j:5-community")
     .withApoc()
-    .withStartupTimeout(240000)
-    .start();
+    .withStartupTimeout(240000);
+  if (REUSE) builder = builder.withReuse();
+  container = await builder.start();
   process.env.NEO4J_URI = container.getBoltUri();
   process.env.NEO4J_USER = container.getUsername();
   process.env.NEO4J_PASSWORD = container.getPassword();
@@ -68,6 +70,7 @@ before(async () => {
 
   const session = driver.session();
   try {
+    await session.run("MATCH (n) DETACH DELETE n");
     // A user whose real identity (username + email) is linked to a pseudonymous
     // moderation profile, plus an unrelated second user used for the
     // authenticated-non-owner case.
@@ -87,7 +90,7 @@ before(async () => {
 
 after(async () => {
   await driver?.close();
-  await container?.stop();
+  if (!REUSE) await container?.stop();
 });
 
 const mockToken = (claims: Record<string, unknown>) =>

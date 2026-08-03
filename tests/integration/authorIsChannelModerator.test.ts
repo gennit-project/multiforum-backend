@@ -12,6 +12,7 @@ import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
 
 const SERVER_CONFIG_NAME = "ModTagTestServer";
 const CHANNEL = "cats";
+const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
@@ -19,7 +20,9 @@ let driver: Driver;
 let ogm: any;
 
 before(async () => {
-  container = await new Neo4jContainer("neo4j:5-community").withApoc().start();
+  let builder = new Neo4jContainer("neo4j:5-community").withApoc();
+  if (REUSE) builder = builder.withReuse();
+  container = await builder.start();
   process.env.NEO4J_URI = container.getBoltUri();
   process.env.NEO4J_USER = container.getUsername();
   process.env.NEO4J_PASSWORD = container.getPassword();
@@ -33,6 +36,7 @@ before(async () => {
 
   const session = driver.session();
   try {
+    await session.run("MATCH (n) DETACH DELETE n");
     await session.run("CREATE (:Channel { uniqueName: $ch })", { ch: CHANNEL });
 
     // Owner: ADMIN_OF_CHANNEL
@@ -79,7 +83,7 @@ before(async () => {
 
 after(async () => {
   await driver?.close();
-  await container?.stop();
+  if (!REUSE) await container?.stop();
 });
 
 const QUERY = /* GraphQL */ `
