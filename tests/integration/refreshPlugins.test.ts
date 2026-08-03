@@ -17,6 +17,7 @@ import {
   run,
   type ImageModEnv,
 } from "./imageModerationHarness.js";
+import { logger } from "../../logger.js";
 
 let env: ImageModEnv;
 const originalFetch = globalThis.fetch;
@@ -26,6 +27,16 @@ const RELEASES_API_URL = "https://api.github.com/repos/gennit-project/test-plugi
 const TARBALL_URL = "https://github.com/gennit-project/test-plugin/releases/download/v1.0.0/test-plugin-1.0.0.tgz";
 const MANIFEST_URL = "https://github.com/gennit-project/test-plugin/releases/download/v1.0.0/plugin.json";
 const CHECKSUM_URL = "https://github.com/gennit-project/test-plugin/releases/download/v1.0.0/test-plugin-1.0.0.tgz.sha256";
+const baseManifest = {
+  id: "test-plugin",
+  version: "1.0.0",
+  name: "Test Plugin",
+  description: "A test plugin",
+  entry: "index.js",
+  metadata: { author: { name: "Alice" }, tags: ["util"] },
+  source: { repoUrl: REPO_URL },
+  compatibility: { minServerVersion: "1.0.0", apiVersion: "1" },
+};
 
 const buildTarball = (manifest: object): Promise<Buffer> =>
   new Promise((resolve, reject) => {
@@ -42,6 +53,7 @@ const buildTarball = (manifest: object): Promise<Buffer> =>
 
 let tarball: Buffer;
 let tarballSha256: string;
+let currentManifest: Record<string, unknown>;
 
 const installFetchMock = () => {
   globalThis.fetch = (async (url: any) => {
@@ -65,21 +77,11 @@ const installFetchMock = () => {
       };
     }
     if (u === MANIFEST_URL) {
-      const manifest = {
-        id: "test-plugin",
-        version: "1.0.0",
-        name: "Test Plugin",
-        description: "A test plugin",
-        entry: "index.js",
-        metadata: { author: { name: "Alice" }, tags: ["util"] },
-        source: { repoUrl: REPO_URL },
-        compatibility: { minServerVersion: "1.0.0", apiVersion: "1" },
-      };
       return {
         ok: true,
         status: 200,
-        json: async () => manifest,
-        text: async () => JSON.stringify(manifest),
+        json: async () => currentManifest,
+        text: async () => JSON.stringify(currentManifest),
       };
     }
     if (u === CHECKSUM_URL) {
@@ -106,14 +108,7 @@ const installFetchMock = () => {
 
 before(async () => {
   env = await startImageModEnv();
-  tarball = await buildTarball({
-    id: "test-plugin",
-    version: "1.0.0",
-    name: "Test Plugin",
-    description: "A test plugin",
-    entry: "index.js",
-    metadata: { author: { name: "Alice" }, tags: ["util"] },
-  });
+  tarball = await buildTarball(baseManifest);
   tarballSha256 = crypto.createHash("sha256").update(tarball).digest("hex");
 }, { timeout: 240000 });
 
@@ -124,6 +119,9 @@ after(async () => {
 
 beforeEach(async () => {
   await resetDb();
+  currentManifest = structuredClone(baseManifest);
+  tarball = await buildTarball(currentManifest);
+  tarballSha256 = crypto.createHash("sha256").update(tarball).digest("hex");
   installFetchMock();
 });
 
@@ -157,4 +155,48 @@ test("creates Plugin + PluginVersion from the registry and tarball manifest", as
 test("throws when no plugin registries are configured", async () => {
   await run(`CREATE (:ServerConfig { serverName: 'test-server' })`);
   await assert.rejects(refreshPlugins(), /No plugin registries configured/i);
+});
+
+test("warns and skips versions with duplicate secret declarations", async () => {
+  currentManifest = {
+    ...structuredClone(baseManifest),
+    secrets: [{ key: "CHANNEL_TOKEN", scope: "channel" }],
+    ui: {
+      forms: {
+        channel: [{ fields: [{ key: "CHANNEL_TOKEN" }] }],
+      },
+    },
+  };
+  tarball = await buildTarball(currentManifest);
+  tarballSha256 = crypto.createHash("sha256").update(tarball).digest("hex");
+
+  await run(
+    `CREATE (:ServerConfig { serverName: 'test-server', pluginRegistries: [$url] })`,
+    { url: REPO_URL }
+  );
+
+  const warnings: string[] = [];
+  const originalWarn = logger.warn;
+  logger.warn = ((message: unknown, ...rest: unknown[]) => {
+    warnings.push([message, ...rest].map((value) => String(value)).join(" "));
+  }) as typeof logger.warn;
+
+  try {
+    await refreshPlugins();
+  } finally {
+    logger.warn = originalWarn;
+  }
+
+  assert.ok(
+    warnings.some((warning) =>
+      /test-plugin@1\.0\.0.*duplicate channel secret declarations.*CHANNEL_TOKEN/i.test(warning)
+    ),
+    `expected duplicate-secret warning, got: ${warnings.join("\n")}`
+  );
+
+  const versions = await run(
+    `MATCH (:Plugin { name: 'test-plugin' })-[:HAS_VERSION]->(pv:PluginVersion)
+     RETURN pv.version AS version`
+  );
+  assert.equal(versions.length, 0, "invalid plugin version should be skipped");
 });

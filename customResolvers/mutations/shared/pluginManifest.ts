@@ -12,6 +12,22 @@ type ManifestData = {
   [key: string]: unknown
 }
 
+type ManifestSecret = {
+  key?: string
+  scope?: string
+  [key: string]: unknown
+}
+
+type ManifestField = {
+  key?: string
+  [key: string]: unknown
+}
+
+type ManifestSection = {
+  fields?: ManifestField[]
+  [key: string]: unknown
+}
+
 export type ManifestArtifacts = {
   id: string
   version: string
@@ -19,6 +35,13 @@ export type ManifestArtifacts = {
   manifest: ManifestData
   readmePath?: string
   readmeMarkdown?: string
+}
+
+export type DuplicateManifestSecretDiagnostic = {
+  pluginId: string
+  version: string
+  scope: 'server' | 'channel'
+  duplicateKeys: string[]
 }
 
 const normalizeTarPath = (input: string) => {
@@ -53,6 +76,73 @@ const findBestReadme = (entries: Map<string, string>, declaredPath: string | und
   }
 
   return { path: undefined, markdown: undefined }
+}
+
+const collectFormFieldKeys = (manifest: ManifestData, scope: 'server' | 'channel') => {
+  const ui = manifest.ui as { forms?: { server?: ManifestSection[]; channel?: ManifestSection[] } } | undefined
+  const sections = ui?.forms?.[scope]
+  if (!Array.isArray(sections)) {
+    return []
+  }
+
+  const keys = new Set<string>()
+  for (const section of sections) {
+    if (!section || !Array.isArray(section.fields)) {
+      continue
+    }
+
+    for (const field of section.fields) {
+      if (field && typeof field.key === 'string' && field.key.trim().length > 0) {
+        keys.add(field.key)
+      }
+    }
+  }
+
+  return Array.from(keys)
+}
+
+export const findDuplicateManifestSecretDiagnostics = (manifest: ManifestData): DuplicateManifestSecretDiagnostic[] => {
+  const pluginId = manifest.id || 'unknown-plugin'
+  const version = manifest.version || 'unknown-version'
+  const secrets = Array.isArray(manifest.secrets) ? manifest.secrets as ManifestSecret[] : []
+
+  return (['server', 'channel'] as const)
+    .map((scope) => {
+      const secretKeys = new Set(
+        secrets
+          .filter((secret) => secret && secret.scope === scope && typeof secret.key === 'string' && secret.key.trim().length > 0)
+          .map((secret) => secret.key as string)
+      )
+      const formKeys = collectFormFieldKeys(manifest, scope)
+      const duplicateKeys = formKeys.filter((key) => secretKeys.has(key)).sort()
+
+      if (duplicateKeys.length === 0) {
+        return null
+      }
+
+      return {
+        pluginId,
+        version,
+        scope,
+        duplicateKeys,
+      }
+    })
+    .filter((diagnostic): diagnostic is DuplicateManifestSecretDiagnostic => diagnostic !== null)
+}
+
+export const formatDuplicateManifestSecretDiagnostic = (
+  diagnostic: DuplicateManifestSecretDiagnostic
+) => {
+  return `Plugin manifest validation failed for ${diagnostic.pluginId}@${diagnostic.version}: duplicate ${diagnostic.scope} secret declarations in secrets[] and ui.forms.${diagnostic.scope} for keys: ${diagnostic.duplicateKeys.join(', ')}`
+}
+
+const assertNoDuplicateSecretDeclarations = (manifest: ManifestData) => {
+  const diagnostics = findDuplicateManifestSecretDiagnostics(manifest)
+  if (diagnostics.length === 0) {
+    return
+  }
+
+  throw new Error(diagnostics.map(formatDuplicateManifestSecretDiagnostic).join('; '))
 }
 
 export async function parseManifestFromTarball(tarballBytes: Buffer): Promise<ManifestArtifacts> {
@@ -94,6 +184,12 @@ export async function parseManifestFromTarball(tarballBytes: Buffer): Promise<Ma
         manifestData = JSON.parse(manifestEntry[1])
       } catch (error) {
         return reject(new Error(`Invalid plugin.json: ${error instanceof Error ? error.message : String(error)}`))
+      }
+
+      try {
+        assertNoDuplicateSecretDeclarations(manifestData)
+      } catch (error) {
+        return reject(error)
       }
 
       const { path: readmePath, markdown: readmeMarkdown } = findBestReadme(
