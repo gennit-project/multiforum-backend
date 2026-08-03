@@ -37,6 +37,7 @@ import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistory
 import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdog.js";
 import { PluginPipelineCampaignService } from "./services/plugin/pipelineCampaign.js";
 import { ensureSchemaConstraints } from "./services/schemaConstraints.js";
+import { provisionInstanceOnStartup } from "./services/startupProvisioning.js";
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
 import type { GraphQLSchema } from "graphql";
 import type { Ogm, GraphQLRequest, GraphQLContext } from "./types/context.js";
@@ -205,6 +206,10 @@ async function initializeServer() {
     await ogm.init();
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
     await ensureSchemaConstraints(neoSchema);
+    await provisionInstanceOnStartup({
+      ogm,
+      log: (message) => logger.info(message),
+    });
 
     const app = express();
     const httpServer = http.createServer(app);
