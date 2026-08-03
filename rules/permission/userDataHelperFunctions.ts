@@ -13,6 +13,10 @@ import jwksClient from "jwks-rsa";
 import axios from "axios";
 import NodeCache from "node-cache";
 import { logger } from "../../logger.js";
+import {
+  getAuthenticationProvider,
+  verifyLocalDevToken,
+} from "../../services/localDevAuth.js";
 
 type CachedUserInfo = {
   email: string | null;
@@ -174,15 +178,19 @@ export const setUserDataOnContext = async (
   }
 
   let email: string | null = null;
+  let emailVerified = false;
   let decoded: any;
   let username: string | null | undefined = null;
   let modProfileName: string | null | undefined = null;
+  const mockAuthEnabled = isMockAuthEnabled();
+  const authProvider = mockAuthEnabled ? null : getAuthenticationProvider();
 
   if (token) {
-    if (isMockAuthEnabled()) {
+    if (mockAuthEnabled) {
       const mockPayload = decodeMockTokenPayload(token);
       email = mockPayload.email;
       username = mockPayload.username;
+      emailVerified = true;
 
       if (!username && email) {
         username = await getUserFromEmail(email, ogm.model("Email"));
@@ -193,7 +201,32 @@ export const setUserDataOnContext = async (
       }
     }
 
-    if (!username && !email) {
+    if (!username && !email && authProvider === "local-dev") {
+      try {
+        const localIdentity = verifyLocalDevToken(token);
+        email = localIdentity.email;
+        emailVerified = true;
+        username = await getUserFromEmail(email, ogm.model("Email"));
+        if (username) {
+          modProfileName = await getModProfileNameFromUsername(username, ogm);
+        }
+      } catch (error) {
+        const isExpired =
+          error instanceof Error && error.name === "TokenExpiredError";
+        const errorMessage = isExpired
+          ? ERROR_MESSAGES.channel.tokenExpired ||
+            "Your session has expired. Please sign in again."
+          : ERROR_MESSAGES.channel.invalidToken ||
+            "Your authentication token is invalid. Please sign in again.";
+
+        if (context.req?.isMutation === true) {
+          throw new Error(errorMessage);
+        }
+        context.jwtError = new Error(errorMessage);
+      }
+    }
+
+    if (!username && !email && authProvider === "auth0") {
       if (!process.env.AUTH0_DOMAIN) {
         throw new Error("AUTH0_DOMAIN environment variable is not defined.");
       }
@@ -309,7 +342,7 @@ export const setUserDataOnContext = async (
   return {
     username: username || null,
     email,
-    email_verified: isMockAuthEnabled() ? true : false,
+    email_verified: emailVerified,
     data: {
       ModerationProfile: modProfileName ? { displayName: modProfileName } : null,
     },
