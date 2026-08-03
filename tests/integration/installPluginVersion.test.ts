@@ -18,6 +18,13 @@ import {
 
 let env: ImageModEnv;
 const originalFetch = globalThis.fetch;
+const baseManifest = {
+  id: "test-plugin",
+  version: "1.0.0",
+  name: "Test Plugin",
+  entry: "index.js",
+  metadata: { author: { name: "Alice" } },
+};
 
 const REGISTRY_URL = "https://registry.test/registry.json";
 const TARBALL_URL = "https://registry.test/test-plugin-1.0.0.tgz";
@@ -38,6 +45,7 @@ const buildTarball = (manifest: object): Promise<Buffer> =>
 let tarball: Buffer;
 let registryJson: any;
 let correctSha: string;
+let currentManifest: Record<string, unknown>;
 
 const installFetchMock = () => {
   globalThis.fetch = (async (url: any) => {
@@ -62,13 +70,7 @@ const installFetchMock = () => {
 
 before(async () => {
   env = await startImageModEnv();
-  tarball = await buildTarball({
-    id: "test-plugin",
-    version: "1.0.0",
-    name: "Test Plugin",
-    entry: "index.js",
-    metadata: { author: { name: "Alice" } },
-  });
+  tarball = await buildTarball(baseManifest);
   correctSha = crypto.createHash("sha256").update(tarball).digest("hex");
   registryJson = {
     updatedAt: "2026-01-01T00:00:00Z",
@@ -90,6 +92,9 @@ after(async () => {
 
 beforeEach(async () => {
   await resetDb();
+  currentManifest = structuredClone(baseManifest);
+  tarball = await buildTarball(currentManifest);
+  correctSha = crypto.createHash("sha256").update(tarball).digest("hex");
   registryJson.plugins[0].versions[0].integritySha256 = correctSha; // reset after the mismatch test
   installFetchMock();
 });
@@ -128,5 +133,30 @@ test("rejects when the tarball SHA-256 does not match the registry", async () =>
   await assert.rejects(
     installPluginVersion({ pluginId: "test-plugin", version: "1.0.0" }),
     /integrity verification failed|SHA-256 mismatch/i
+  );
+});
+
+test("rejects duplicate secret declarations in plugin manifests", async () => {
+  currentManifest = {
+    ...structuredClone(baseManifest),
+    secrets: [{ key: "API_KEY", scope: "server" }],
+    ui: {
+      forms: {
+        server: [{ fields: [{ key: "API_KEY" }] }],
+      },
+    },
+  };
+  tarball = await buildTarball(currentManifest);
+  correctSha = crypto.createHash("sha256").update(tarball).digest("hex");
+  registryJson.plugins[0].versions[0].integritySha256 = correctSha;
+
+  await run(
+    `CREATE (:ServerConfig { serverName: 'test-server', pluginRegistries: [$url] })`,
+    { url: REGISTRY_URL }
+  );
+
+  await assert.rejects(
+    installPluginVersion({ pluginId: "test-plugin", version: "1.0.0" }),
+    /test-plugin@1\.0\.0.*duplicate server secret declarations.*API_KEY/i
   );
 });
