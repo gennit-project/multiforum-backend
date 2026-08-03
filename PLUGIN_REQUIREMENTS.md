@@ -92,6 +92,48 @@ To provide a richer admin experience, plugins may define the following additiona
 
 These fields are optional but recommended so administrators can configure plugins without manual frontend work.
 
+### Renaming settings and secrets
+
+An upgrade may preserve a value under a new key only when the new manifest explicitly
+declares the previous key with `renamedFrom`:
+
+```json
+{
+  "secrets": [
+    {
+      "key": "SERVICE_API_KEY",
+      "renamedFrom": "LEGACY_API_KEY",
+      "scope": "server",
+      "required": true
+    }
+  ],
+  "settingsDefaults": {
+    "server": { "serviceUrl": "https://service.example" }
+  },
+  "ui": {
+    "forms": {
+      "server": [{
+        "fields": [{
+          "key": "serviceUrl",
+          "renamedFrom": "endpoint",
+          "type": "text"
+        }]
+      }]
+    }
+  }
+}
+```
+
+Setting values are carried only if they pass the new field's type, option, and
+validation rules. A server secret rename updates only the stored secret's key; the
+encrypted value is neither selected nor decrypted. Secret renames must keep the same
+scope, and the source secret must have been declared by the installed version.
+
+Use `renamedFrom` for a single, unambiguous rename between adjacent releases. Duplicate
+sources or targets, a stored value under both names, and rename chains are rejected.
+When the value's meaning, representation, validation contract, or secret scope changes,
+declare a new key instead and require the administrator to configure it.
+
 ## Plugin Code Requirements
 
 ### Constructor Pattern
