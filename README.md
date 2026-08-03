@@ -117,8 +117,9 @@ breakdown, request lifecycle, data model, and the testing strategy.
 
 ## Common Commands
 
-This repo uses **pnpm** (pinned via the `packageManager` field) on **Node 22.x**.
-Enable it once with `corepack enable`, then `pnpm install`.
+This repo uses **pnpm** (pinned via the `packageManager` field) on **Node 26.x**.
+Run `nvm use` to select the version in `.nvmrc`, enable pnpm once with
+`corepack enable`, then run `pnpm install`.
 
 | Command | Description |
 | --- | --- |

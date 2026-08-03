@@ -1,5 +1,5 @@
-# Use a lightweight Node.js image (22.x, matching package.json "engines")
-FROM node:22-alpine
+# Keep the production runtime aligned with .nvmrc and CI.
+FROM node:26.5.1-alpine
 
 # Set working directory
 WORKDIR /app
@@ -7,8 +7,9 @@ WORKDIR /app
 # Enable pnpm via corepack (version pinned by package.json "packageManager")
 RUN corepack enable
 
-# Copy manifest and pnpm lockfile
+# Copy dependency metadata and local dependency patches
 COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -31,7 +32,7 @@ ENV CYPRESS_ADMIN_TEST_EMAIL ""
 ENV CYPRESS_ADMIN_TEST_USERNAME ""
 
 # Build the application
-RUN pnpm run build
+RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm run build
 
 # Expose the backend port
 EXPOSE 4000

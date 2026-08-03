@@ -1,0 +1,59 @@
+diff --git a/cjs/rules.js b/cjs/rules.js
+index b13a5cb3266f470d26983e2c76b8716bcc445f05..00d43038e40b9c1a5b8dcaeb41d7ee39a917748b 100644
+--- a/cjs/rules.js
++++ b/cjs/rules.js
+@@ -4,7 +4,6 @@ exports.RuleFalse = exports.RuleTrue = exports.RuleNot = exports.RuleRace = expo
+ const tslib_1 = require("tslib");
+ const Yup = tslib_1.__importStar(require("yup"));
+ const utils_js_1 = require("./utils.js");
+-const util_1 = require("util");
+ class Rule {
+     constructor(name, func, constructorOptions) {
+         const options = this.normalizeOptions(constructorOptions);
+@@ -268,7 +267,7 @@ class RuleChain extends LogicRule {
+         const rules = this.getRules();
+         return iterate(rules);
+         async function iterate([rule, ...otherRules]) {
+-            if ((0, util_1.isUndefined)(rule))
++            if (rule === undefined)
+                 return [];
+             return rule.resolve(parent, args, ctx, info, options).then((res) => {
+                 if (res !== true) {
+@@ -306,7 +305,7 @@ class RuleRace extends LogicRule {
+         const rules = this.getRules();
+         return iterate(rules);
+         async function iterate([rule, ...otherRules]) {
+-            if ((0, util_1.isUndefined)(rule))
++            if (rule === undefined)
+                 return [];
+             return rule.resolve(parent, args, ctx, info, options).then((res) => {
+                 if (res === true) {
+diff --git a/esm/rules.js b/esm/rules.js
+index 70530da07f5dc963cf0525df684fc470593cc626..3ae575b24a94427b82dabade374d8e57990187ca 100644
+--- a/esm/rules.js
++++ b/esm/rules.js
+@@ -1,6 +1,5 @@
+ import * as Yup from 'yup';
+ import { isLogicRule } from './utils.js';
+-import { isUndefined } from 'util';
+ export class Rule {
+     constructor(name, func, constructorOptions) {
+         const options = this.normalizeOptions(constructorOptions);
+@@ -259,7 +258,7 @@ export class RuleChain extends LogicRule {
+         const rules = this.getRules();
+         return iterate(rules);
+         async function iterate([rule, ...otherRules]) {
+-            if (isUndefined(rule))
++            if (rule === undefined)
+                 return [];
+             return rule.resolve(parent, args, ctx, info, options).then((res) => {
+                 if (res !== true) {
+@@ -296,7 +295,7 @@ export class RuleRace extends LogicRule {
+         const rules = this.getRules();
+         return iterate(rules);
+         async function iterate([rule, ...otherRules]) {
+-            if (isUndefined(rule))
++            if (rule === undefined)
+                 return [];
+             return rule.resolve(parent, args, ctx, info, options).then((res) => {
+                 if (res === true) {
