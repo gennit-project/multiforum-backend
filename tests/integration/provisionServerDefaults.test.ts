@@ -11,6 +11,7 @@ import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
 import { ROLE_NAMES } from "../../seedData/defaultRoles.js";
 
 const SERVER_CONFIG_NAME = "ProvisionTestServer";
+const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 let container: StartedNeo4jContainer;
 let driver: Driver;
@@ -21,7 +22,9 @@ const provision = () =>
   provisionServerDefaultsFromOgm(ogm, { serverName: SERVER_CONFIG_NAME });
 
 before(async () => {
-  container = await new Neo4jContainer("neo4j:5-community").withApoc().start();
+  let builder = new Neo4jContainer("neo4j:5-community").withApoc();
+  if (REUSE) builder = builder.withReuse();
+  container = await builder.start();
   process.env.NEO4J_URI = container.getBoltUri();
   process.env.NEO4J_USER = container.getUsername();
   process.env.NEO4J_PASSWORD = container.getPassword();
@@ -42,6 +45,7 @@ before(async () => {
   // "DefaultServerRole must be less than or equal to one").
   const session = driver.session();
   try {
+    await session.run("MATCH (n) DETACH DELETE n");
     await session.run(
       `CREATE (sc:ServerConfig { serverName: $name })
        CREATE (a:User { username: 'alice' })-[:ADMIN_OF_SERVER]->(sc)
@@ -57,7 +61,7 @@ before(async () => {
 
 after(async () => {
   await driver?.close();
-  await container?.stop();
+  if (!REUSE) await container?.stop();
 });
 
 const findRole = async (name: string) => {

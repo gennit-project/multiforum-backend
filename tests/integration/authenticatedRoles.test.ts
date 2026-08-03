@@ -24,6 +24,7 @@ import { ERROR_MESSAGES } from "../../rules/errorMessages.js";
 
 const ADMIN_EMAIL = "admin@e2e.test";
 const SERVER_CONFIG_NAME = "E2ETestServer";
+const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
@@ -33,7 +34,9 @@ let ogm: any;
 before(async () => {
   // APOC is required: the OGM queries the permission rules run (suspension
   // lookups) call apoc.date.convertFormat.
-  container = await new Neo4jContainer("neo4j:5-community").withApoc().start();
+  let builder = new Neo4jContainer("neo4j:5-community").withApoc();
+  if (REUSE) builder = builder.withReuse();
+  container = await builder.start();
 
   // The schema helper builds its driver from these, so set them before import.
   process.env.NEO4J_URI = container.getBoltUri();
@@ -51,6 +54,7 @@ before(async () => {
 
   const session = driver.session();
   try {
+    await session.run("MATCH (n) DETACH DELETE n");
     await session.run("CREATE (:User { username: 'adminuser' })");
     await session.run("CREATE (:User { username: 'normaluser' })");
     await session.run("CREATE (:ServerConfig { serverName: $name })", {
@@ -71,7 +75,7 @@ before(async () => {
 
 after(async () => {
   await driver?.close();
-  await container?.stop();
+  if (!REUSE) await container?.stop();
 });
 
 const mockToken = (claims: Record<string, unknown>) =>

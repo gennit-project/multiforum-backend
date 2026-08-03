@@ -51,6 +51,7 @@ before(async () => {
   ({ schema, driver, ogm } = await buildPermissionedSchema());
   await ogm.init();
 
+  await run("MATCH (n) DETACH DELETE n");
   await run(
     `CREATE (:ServerConfig { serverName: $name, enableDownloads: true, allowedFileTypes: [] })
      CREATE (:User { username: 'normaluser' })`,

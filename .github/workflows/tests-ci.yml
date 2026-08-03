@@ -114,9 +114,12 @@ jobs:
           fail_ci_if_error: false
           verbose: true
 
-      - name: Verify build (tsc + cypher copy)
+      # codegen and tsc already ran above, which covers the first two commands
+      # in the build script. Complete the remaining asset-copy step without
+      # regenerating and recompiling the entire project a second time.
+      - name: Complete build (copy Cypher assets)
         if: needs.changes.outputs.code == 'true'
-        run: pnpm run build
+        run: node build_scripts/copyCypherFiles.js
 
       - name: Docs-only change — tests skipped
         if: needs.changes.outputs.code != 'true'

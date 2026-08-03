@@ -1,0 +1,11 @@
+# Timing-based overrides for the four-shard CI matrix.
+#
+# Format: <shard> <test-file>
+# Files not listed here keep the deterministic round-robin assignment. These
+# four moves balance the process timings measured in CI run 30782915524 after
+# reusable-container startup is removed from the remaining direct-container
+# suites. Keep this list small and remeasure before adding more overrides.
+3 ./tests/integration/contentUnarchive.test.ts
+3 ./tests/integration/contributionsQueries.test.ts
+3 ./tests/integration/commentQueries.test.ts
+3 ./tests/integration/lockChannel.test.ts
