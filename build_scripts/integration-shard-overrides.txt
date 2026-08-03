@@ -2,9 +2,11 @@
 #
 # Format: <shard> <test-file>
 # Files not listed here keep the deterministic round-robin assignment. These
-# two moves balance the process timings measured in CI runs 30782915524 and
-# 30789127659 after reusable-container startup is removed from the remaining
-# direct-container suites. Keep this list small and remeasure before adding
-# more overrides.
+# These moves balance the process timings measured in CI runs 30782915524,
+# 30789127659, and 30790103563 after reusable-container startup is removed from
+# the remaining direct-container suites. Keep this list small and remeasure
+# before adding more overrides.
+1 ./tests/integration/authenticatedRoles.test.ts
+1 ./tests/integration/imagePermissions.test.ts
 3 ./tests/integration/commentQueries.test.ts
 3 ./tests/integration/lockChannel.test.ts
