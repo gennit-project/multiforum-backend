@@ -36,5 +36,6 @@ list_files
 # inline $(list_files) word-splits the newline-separated paths into args, the
 # same way the other coverage scripts use $(find ...).
 export TESTCONTAINERS_REUSE_ENABLE=true
+export TS_NODE_TRANSPILE_ONLY=true
 c8 --reporter=lcov --reporter=text-summary \
   node --loader ts-node/esm --test --test-concurrency=1 $(list_files)
