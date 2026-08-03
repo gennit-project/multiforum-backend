@@ -70,14 +70,14 @@ test('returns an applicable pipeline before any attempt exists', async () => {
     ServerConfig: modelStub<'ServerConfig'>({
       find: async () => [
         {
-          pluginPipelines: [
+          pluginPipelines: JSON.stringify([
             {
               event: 'downloadableFile.created',
               applicability: 'NEW_FILES_ONLY',
               effectiveAt: '2026-07-30T00:00:00.000Z',
               steps: [{ pluginId: 'scanner' }],
             },
-          ],
+          ]),
           InstalledVersionsConnection: {
             edges: [
               {
@@ -162,10 +162,10 @@ test('returns channel-scoped applicability for the download discussion', async (
     Channel: modelStub<'Channel'>({
       find: async () => [{
         uniqueName: 'cats',
-        pluginPipelines: [{
+        pluginPipelines: JSON.stringify([{
           event: 'discussionChannel.created',
           steps: [{ pluginId: 'scanner' }],
-        }],
+        }]),
       }],
     }),
     Discussion: discussionModel,

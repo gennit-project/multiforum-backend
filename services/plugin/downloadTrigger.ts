@@ -3,14 +3,19 @@ import { Storage } from '@google-cloud/storage'
 import type {
   TriggerArgs,
   PluginEdgeData,
-  EventPipeline,
   PendingRun,
   PipelineExecutionMetadata,
 } from './types.js'
 import { DOWNLOAD_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
-import { generatePipelineId, shouldRunStep, mergeSettings, getAttachmentUrls } from './pipelineUtils.js'
+import {
+  generatePipelineId,
+  shouldRunStep,
+  mergeSettings,
+  getAttachmentUrls,
+  parseStoredPipelines,
+} from './pipelineUtils.js'
 import { resolveDownloadPipelinePlan } from './downloadPipelinePlan.js'
 import {
   completePipelineAttempt,
@@ -158,7 +163,7 @@ export const triggerPluginRunsForDownloadableFile = async (
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
-  const pipelines: EventPipeline[] = serverConfig.pluginPipelines || []
+  const pipelines = parseStoredPipelines(serverConfig.pluginPipelines)
   const plan = resolveDownloadPipelinePlan({
     event,
     pipelines,

@@ -19,7 +19,10 @@ import {
   triggerPluginRunsForDownloadableFile,
 } from "../../services/pluginRunner.js";
 import { resolveDownloadPipelinePlan } from "../../services/plugin/downloadPipelinePlan.js";
-import { generatePipelineId } from "../../services/plugin/pipelineUtils.js";
+import {
+  generatePipelineId,
+  parseStoredPipelines,
+} from "../../services/plugin/pipelineUtils.js";
 import type {
   EventPipeline,
   PluginEdgeData,
@@ -184,7 +187,7 @@ export const createStartPluginPipelineResolver = (
       scope = "CHANNEL";
       channelId = requestedChannelId;
       moderationChannelNames = [requestedChannelId];
-      pipelines = (channel.pluginPipelines || []) as EventPipeline[];
+      pipelines = parseStoredPipelines(channel.pluginPipelines);
       ownerUsername = discussion.Author?.username;
       uploaderUsername = discussion.DownloadableFile?.uploadedByUsername;
       uploadedAt =
@@ -237,7 +240,7 @@ export const createStartPluginPipelineResolver = (
     });
     const config = configs[0] as ServerConfigType | undefined;
     if (scope === "SERVER") {
-      pipelines = (config?.pluginPipelines || []) as EventPipeline[];
+      pipelines = parseStoredPipelines(config?.pluginPipelines);
     }
     const pipelineConfigured =
       scope === "SERVER" ||

@@ -168,6 +168,13 @@ async function testParseStoredPipelinesWithObject() {
   assert.deepEqual(result, [], "Non-array object should return empty array");
 }
 
+async function testParseStoredPipelinesWithJsonObject() {
+  const stored = JSON.stringify({ event: "file.created", steps: [] });
+  const result = parseStoredPipelines(stored);
+
+  assert.deepEqual(result, [], "JSON that is not an array should return empty array");
+}
+
 async function testParseStoredPipelinesWithNull() {
   const result = parseStoredPipelines(null);
 
@@ -506,6 +513,7 @@ async function run() {
   await testParseStoredPipelinesWithInvalidJsonString();
   await testParseStoredPipelinesWithArray();
   await testParseStoredPipelinesWithObject();
+  await testParseStoredPipelinesWithJsonObject();
   await testParseStoredPipelinesWithNull();
   await testParseStoredPipelinesWithUndefined();
   await testParseStoredPipelinesWithEmptyString();
