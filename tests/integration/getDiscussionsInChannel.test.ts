@@ -128,3 +128,89 @@ test("download label filters include matching packs and exclude excluded packs f
   assert.deepEqual(titles, ["Vampire Manor"]);
   assert.equal(Number(result.aggregateDiscussionChannelsCount), 1);
 });
+
+test("channel and sitewide discussion lists return assigned flairs, including archived history", async () => {
+  await run(
+    `CREATE (owner:User { username: 'alice', createdAt: datetime() })
+     CREATE (cats:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })
+     CREATE (discussion:Discussion { id: 'discussion-1', title: 'Flair history', body: '', hasDownload: false, createdAt: datetime() })
+     CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'discussion-1', channelUniqueName: 'cats', createdAt: datetime(), archived: false })
+     CREATE (question:DiscussionFlair { id: 'question', channelUniqueName: 'cats', displayName: 'Question', color: '#112233', order: 0, archived: false })
+     CREATE (legacy:DiscussionFlair { id: 'legacy', channelUniqueName: 'cats', displayName: 'Legacy', color: null, order: 1, archived: true })
+     CREATE (owner)-[:POSTED_DISCUSSION]->(discussion)
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(cats)
+     CREATE (cats)-[:HAS_DISCUSSION_FLAIR]->(question)
+     CREATE (cats)-[:HAS_DISCUSSION_FLAIR]->(legacy)
+     CREATE (dc)-[:HAS_DISCUSSION_FLAIR]->(question)
+     CREATE (dc)-[:HAS_DISCUSSION_FLAIR]->(legacy)`
+  );
+
+  const channelResult = await env.resolvers.Query.getDiscussionsInChannel(
+    null,
+    {
+      channelUniqueName: "cats",
+      options: { offset: "0", limit: "10", sort: "new" },
+      selectedTags: [],
+      searchInput: "",
+      showArchived: false,
+      showUnanswered: false,
+      hasDownload: false,
+      labelFilters: [],
+    },
+    anon(),
+    {} as never
+  );
+
+  const sitewideResult = await env.resolvers.Query.getSiteWideDiscussionList(
+    null,
+    {
+      searchInput: "",
+      selectedChannels: [],
+      selectedTags: [],
+      showArchived: false,
+      hasDownload: false,
+      options: {
+        offset: "0",
+        limit: "10",
+        resultsOrder: "desc",
+        sort: "new",
+        timeFrame: "week",
+      },
+    },
+    anon(),
+    {} as never
+  );
+
+  const expectedFlairs = [
+    {
+      id: "question",
+      channelUniqueName: "cats",
+      displayName: "Question",
+      color: "#112233",
+      order: 0,
+      archived: false,
+    },
+    {
+      id: "legacy",
+      channelUniqueName: "cats",
+      displayName: "Legacy",
+      color: null,
+      order: 1,
+      archived: true,
+    },
+  ];
+  const normalizeFlairs = (flairs: Array<Record<string, unknown>>) =>
+    flairs
+      .map((flair) => ({ ...flair, order: Number(flair.order) }))
+      .sort((left, right) => left.order - right.order);
+
+  assert.deepEqual(
+    normalizeFlairs(channelResult.discussionChannels[0].Flairs),
+    expectedFlairs
+  );
+  assert.deepEqual(
+    normalizeFlairs(sitewideResult.discussions[0].DiscussionChannels[0].Flairs),
+    expectedFlairs
+  );
+});
