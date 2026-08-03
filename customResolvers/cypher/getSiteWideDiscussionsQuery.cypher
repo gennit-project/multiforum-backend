@@ -173,9 +173,18 @@ WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRol
          permanentlyRemoved: image.permanentlyRemoved
      } END) WHERE img IS NOT NULL] AS albumImages
 
+OPTIONAL MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(downloadableFile:DownloadableFile)
+WHERE downloadableFile.permanentlyRemoved IS NULL OR downloadableFile.permanentlyRemoved = false
+
+WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album, albumImages,
+     [file IN COLLECT(DISTINCT CASE WHEN downloadableFile IS NOT NULL THEN {
+         id: downloadableFile.id,
+         scanStatus: downloadableFile.scanStatus
+     } END) WHERE file IS NOT NULL] AS downloadableFiles
+
 // Check if the logged-in user has favorited this discussion
 OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
-WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album, albumImages,
+WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album, albumImages, downloadableFiles,
      CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
 
 // Return the results
@@ -209,5 +218,6 @@ RETURN {
         Images: albumImages
       }
     END,
+    DownloadableFiles: downloadableFiles,
     isFavorited: isFavorited
 } AS discussion, totalCount

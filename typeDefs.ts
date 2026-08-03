@@ -1647,6 +1647,7 @@ const typeDefinitions = gql`
     DiscussionChannels: [DiscussionChannel!]!
     Tags: [Tag!]!
     Album: Album
+    DownloadableFiles(where: DownloadableFileWhere): [DownloadableFile!]!
     isFavorited: Boolean
   }
 
@@ -1698,6 +1699,7 @@ const typeDefinitions = gql`
     discussionId: ID!
     createdAt: DateTime!
     channelUniqueName: String!
+    Flairs: [DiscussionFlair!]!
     weightedVotesCount: Float
     CommentsAggregate: CommentAggregateResult
     UpvotedByUsers: [User!]!
