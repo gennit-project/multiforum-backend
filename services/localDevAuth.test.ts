@@ -20,6 +20,31 @@ const localEnv = {
   SUPERADMIN_EMAIL: "admin@example.test",
 };
 
+const withProcessEnvironment = <T>(
+  values: NodeJS.ProcessEnv,
+  callback: () => T
+): T => {
+  const names = ["MULTIFORUM_AUTH_PROVIDER", ...Object.keys(localEnv)];
+  const previous = Object.fromEntries(
+    names.map((name) => [name, process.env[name]])
+  );
+  for (const name of names) {
+    delete process.env[name];
+  }
+  Object.assign(process.env, values);
+  try {
+    return callback();
+  } finally {
+    for (const [name, value] of Object.entries(previous)) {
+      if (value === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = value;
+      }
+    }
+  }
+};
+
 test("keeps Auth0 as the backwards-compatible default provider", () => {
   assert.equal(getAuthenticationProvider({}), "auth0");
   assert.equal(getAuthenticationProvider({ MULTIFORUM_AUTH_PROVIDER: "AUTH0" }), "auth0");
@@ -40,6 +65,37 @@ test("reports every missing local development setting", () => {
     "MULTIFORUM_BOOTSTRAP_PASSWORD",
     "SUPERADMIN_EMAIL",
   ]);
+});
+
+test("uses process.env when provider helpers omit an explicit environment", () => {
+  withProcessEnvironment(localEnv, () => {
+    assert.equal(getAuthenticationProvider(), "local-dev");
+    assert.deepEqual(getLocalDevAuthMissingVariables(), []);
+    assert.doesNotThrow(() => assertAuthenticationConfiguration());
+    assert.equal(isLocalDevAuthConfigured(), true);
+
+    const token = issueLocalDevToken("local-password");
+    assert.ok(token);
+    assert.deepEqual(verifyLocalDevToken(token), {
+      email: "admin@example.test",
+      username: "admin",
+    });
+  });
+});
+
+test("accepts the default Auth0 provider without requiring local settings", () => {
+  assert.doesNotThrow(() => assertAuthenticationConfiguration({}));
+  assert.equal(isLocalDevAuthConfigured({}), false);
+});
+
+test("names missing settings when an enabled local provider is incomplete", () => {
+  assert.throws(
+    () => assertAuthenticationConfiguration({
+      ...localEnv,
+      MULTIFORUM_BOOTSTRAP_PASSWORD: "",
+    }),
+    /MULTIFORUM_BOOTSTRAP_PASSWORD/
+  );
 });
 
 test("refuses local development authentication in production", () => {
@@ -146,6 +202,48 @@ test("rejects a correctly signed token for a different identity", () => {
   assert.throws(() => verifyLocalDevToken(token, localEnv), /does not match/);
 });
 
+test("rejects expired tokens", () => {
+  const token = jwt.sign(
+    {
+      email: localEnv.MULTIFORUM_BOOTSTRAP_EMAIL,
+      username: localEnv.MULTIFORUM_BOOTSTRAP_USERNAME,
+      email_verified: true,
+    },
+    localEnv.MULTIFORUM_BOOTSTRAP_PASSWORD,
+    {
+      algorithm: "HS256",
+      audience: "multiforum-backend",
+      issuer: "multiforum-local-dev",
+      subject: localEnv.MULTIFORUM_BOOTSTRAP_USERNAME,
+      expiresIn: -1,
+    }
+  );
+
+  assert.throws(
+    () => verifyLocalDevToken(token, localEnv),
+    (error: unknown) => error instanceof Error && error.name === "TokenExpiredError"
+  );
+});
+
+test("rejects tokens signed with an algorithm outside the HS256 allow-list", () => {
+  const token = jwt.sign(
+    {
+      email: localEnv.MULTIFORUM_BOOTSTRAP_EMAIL,
+      username: localEnv.MULTIFORUM_BOOTSTRAP_USERNAME,
+      email_verified: true,
+    },
+    localEnv.MULTIFORUM_BOOTSTRAP_PASSWORD,
+    {
+      algorithm: "HS384",
+      audience: "multiforum-backend",
+      issuer: "multiforum-local-dev",
+      subject: localEnv.MULTIFORUM_BOOTSTRAP_USERNAME,
+    }
+  );
+
+  assert.throws(() => verifyLocalDevToken(token, localEnv), /invalid algorithm/);
+});
+
 type ResponseResult = {
   status?: number;
   body?: unknown;
@@ -185,6 +283,14 @@ test("hides the token endpoint unless local auth is enabled", () => {
 
 test("returns an authorization failure without echoing credentials", () => {
   assert.deepEqual(invokeHandler(localEnv, { password: "wrong-password" }), {
+    status: 401,
+    body: { error: "Invalid credentials" },
+    headers: { "Cache-Control": "no-store" },
+  });
+});
+
+test("rejects a token request without a JSON body", () => {
+  assert.deepEqual(invokeHandler(localEnv, undefined), {
     status: 401,
     body: { error: "Invalid credentials" },
     headers: { "Cache-Control": "no-store" },
