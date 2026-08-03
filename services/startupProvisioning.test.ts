@@ -41,6 +41,27 @@ test("provisions an explicitly enabled instance", async () => {
   ]);
 });
 
+for (const value of ["1", "yes", "on", " YES "]) {
+  test(`accepts the documented opt-in value ${JSON.stringify(value)}`, async () => {
+    let provisionCalls = 0;
+
+    const result = await provisionInstanceOnStartup({
+      ogm: { model: () => ({}) },
+      env: {
+        MULTIFORUM_AUTO_PROVISION: value,
+        SERVER_CONFIG_NAME: "Community Forum",
+      },
+      provision: async () => {
+        provisionCalls += 1;
+        return provisionedResult;
+      },
+    });
+
+    assert.equal(result.status, "provisioned");
+    assert.equal(provisionCalls, 1);
+  });
+}
+
 for (const value of [undefined, "", "false", "0", "unexpected"]) {
   test(`skips provisioning when opt-in value is ${String(value)}`, async () => {
     let provisionCalls = 0;

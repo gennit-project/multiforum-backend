@@ -105,12 +105,30 @@ jobs:
       - name: Run unit tests with coverage
         run: pnpm run coverage
 
+      # ts-node labels transpiled code with the original .ts URL, so c8 cannot
+      # remap this new module's generated line numbers. Exercise its compiled
+      # output as a supplemental report with tsc's unambiguous source map.
+      - name: Collect source-mapped startup provisioning coverage
+        if: needs.changes.outputs.code == 'true'
+        run: pnpm run coverage:startup-provisioning
+
       - name: Upload unit coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
           flags: unit
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Upload source-mapped startup provisioning coverage to Codecov
+        if: needs.changes.outputs.code == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/startup-provisioning/lcov.info
+          flags: unit
+          name: startup-provisioning
           fail_ci_if_error: false
           verbose: true
 
