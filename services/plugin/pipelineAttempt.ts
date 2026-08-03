@@ -133,7 +133,9 @@ export const createPipelineAttempt = async ({
         initiatedByUsername: context.initiatedByUsername || null,
         retryOfPipelineRunId: context.retryOfPipelineRunId || null,
         attemptNumber,
-        configurationSnapshot: buildPipelineConfigurationSnapshot(context),
+        configurationSnapshot: JSON.stringify(
+          buildPipelineConfigurationSnapshot(context)
+        ),
         applicability: context.applicability || null,
         policyEffectiveAt: context.policyEffectiveAt || null,
         policyId: context.policyId || null,
