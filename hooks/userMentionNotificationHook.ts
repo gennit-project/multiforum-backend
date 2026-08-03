@@ -4,13 +4,13 @@ import { sendEmail } from '../services/mail/index.js';
 import { logger } from "../logger.js";
 import {
   buildDiscussionMentionContext,
-  MentionContextDiscussion,
-  DiscussionSnapshot,
+  type MentionContextDiscussion,
+  type DiscussionSnapshot,
 } from '../utils/buildDiscussionMentionContext.js';
 import {
   buildCommentMentionContext,
-  MentionContextComment,
-  CommentSnapshot,
+  type MentionContextComment,
+  type CommentSnapshot,
 } from '../utils/buildCommentMentionContext.js';
 import {
   createCommentMentionNotificationEmail,
@@ -23,11 +23,15 @@ import type { Record as Neo4jRecord } from 'neo4j-driver';
 export { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
 export {
   buildDiscussionMentionContext,
+} from '../utils/buildDiscussionMentionContext.js';
+export type {
   MentionContextDiscussion,
   DiscussionSnapshot,
 } from '../utils/buildDiscussionMentionContext.js';
 export {
   buildCommentMentionContext,
+} from '../utils/buildCommentMentionContext.js';
+export type {
   MentionContextComment,
   CommentSnapshot,
 } from '../utils/buildCommentMentionContext.js';
