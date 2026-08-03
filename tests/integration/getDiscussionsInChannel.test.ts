@@ -254,3 +254,39 @@ test("sitewide discussion lists return scan metadata only for non-removed downlo
     { id: "file-public", scanStatus: "CLEAN" },
   ]);
 });
+
+test("channel discussion lists return scan metadata only for non-removed downloads", async () => {
+  await run(
+    `CREATE (owner:User { username: 'alice', createdAt: datetime() })
+     CREATE (channel:Channel { uniqueName: 'downloads', displayName: 'Downloads', createdAt: datetime() })
+     CREATE (discussion:Discussion { id: 'download-1', title: 'Safe download', body: '', hasDownload: true, createdAt: datetime() })
+     CREATE (dc:DiscussionChannel { id: 'dc-download-1', discussionId: 'download-1', channelUniqueName: 'downloads', createdAt: datetime(), archived: false })
+     CREATE (publicFile:DownloadableFile { id: 'file-public', scanStatus: 'CLEAN', permanentlyRemoved: false })
+     CREATE (removedFile:DownloadableFile { id: 'file-removed', scanStatus: 'INFECTED', permanentlyRemoved: true })
+     CREATE (owner)-[:POSTED_DISCUSSION]->(discussion)
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(channel)
+     CREATE (discussion)-[:HAS_DOWNLOADABLE_FILE]->(publicFile)
+     CREATE (discussion)-[:HAS_DOWNLOADABLE_FILE]->(removedFile)`
+  );
+
+  const result = await env.resolvers.Query.getDiscussionsInChannel(
+    null,
+    {
+      channelUniqueName: "downloads",
+      options: { offset: "0", limit: "10", sort: "new", timeFrame: "week" },
+      selectedTags: [],
+      searchInput: "",
+      showArchived: false,
+      showUnanswered: false,
+      hasDownload: true,
+      labelFilters: [],
+    },
+    anon(),
+    {} as never
+  );
+
+  assert.deepEqual(result.discussionChannels[0].Discussion.DownloadableFiles, [
+    { id: "file-public", scanStatus: "CLEAN" },
+  ]);
+});
