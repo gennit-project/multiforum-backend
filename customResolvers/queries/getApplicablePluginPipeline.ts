@@ -8,8 +8,9 @@ import type {
   ServerConfig as ServerConfigType,
   ServerConfigModel,
 } from '../../ogm_types.js'
-import type { EventPipeline, PluginEdgeData } from '../../services/plugin/types.js'
+import type { PluginEdgeData } from '../../services/plugin/types.js'
 import { resolveDownloadPipelinePlan } from '../../services/plugin/downloadPipelinePlan.js'
+import { parseStoredPipelines } from '../../services/plugin/pipelineUtils.js'
 import { assertPublicPipelineTargetVisible } from './pluginPipelineVisibility.js'
 
 type ApplicablePipelineArgs = {
@@ -105,7 +106,7 @@ const getResolver = ({
     }`,
   })
   const config = configs[0] as ServerConfigType | undefined
-  let pipelines = (config?.pluginPipelines || []) as EventPipeline[]
+  let pipelines = parseStoredPipelines(config?.pluginPipelines)
   let pipelineConfigured = false
 
   if (scope === 'CHANNEL') {
@@ -119,7 +120,7 @@ const getResolver = ({
         extensions: { code: 'NOT_FOUND' },
       })
     }
-    pipelines = (channel.pluginPipelines || []) as EventPipeline[]
+    pipelines = parseStoredPipelines(channel.pluginPipelines)
     pipelineConfigured = Boolean(
       pipelines.find(pipeline => pipeline.event === eventType)?.steps.length
     )

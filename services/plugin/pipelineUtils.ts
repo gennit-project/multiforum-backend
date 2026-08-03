@@ -60,12 +60,13 @@ export const parseStoredPipelines = (stored: unknown): EventPipeline[] => {
   if (!stored) return []
   if (typeof stored === 'string') {
     try {
-      return JSON.parse(stored)
+      const parsed: unknown = JSON.parse(stored)
+      return Array.isArray(parsed) ? parsed as EventPipeline[] : []
     } catch {
       return []
     }
   }
-  return Array.isArray(stored) ? stored : []
+  return Array.isArray(stored) ? stored as EventPipeline[] : []
 }
 
 export const parseManifest = (manifest: unknown): Record<string, unknown> => {

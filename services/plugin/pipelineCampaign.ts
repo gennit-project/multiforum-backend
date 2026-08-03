@@ -14,6 +14,7 @@ import {
 } from "../../ogm_types.js";
 import type { EventPipeline, Models } from "./types.js";
 import { triggerPluginRunsForDownloadableFile } from "./downloadTrigger.js";
+import { parseStoredPipelines } from "./pipelineUtils.js";
 import { logger } from "../../logger.js";
 
 export const DOWNLOAD_CREATED_EVENT = "downloadableFile.created";
@@ -60,7 +61,7 @@ export const getCampaignPolicy = async ({
   const configs = await ServerConfig.find({
     selectionSet: `{ pluginPipelines }`,
   });
-  const pipelines = (configs[0]?.pluginPipelines || []) as EventPipeline[];
+  const pipelines = parseStoredPipelines(configs[0]?.pluginPipelines);
   const policy = pipelines.find(item => item.policyId === policyId);
   if (
     !policy ||
