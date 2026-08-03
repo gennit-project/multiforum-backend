@@ -76,6 +76,16 @@ test/E2E environments the seeded admin test user also acts as root.
 | `FRONTEND_URL` | Yes | Base URL of the frontend, used to build links in outbound emails (e.g. mod-invite acceptance links). |
 | `PLUGIN_SECRET_ENCRYPTION_KEY` | If plugins store secrets | 32-character key used to encrypt plugin secrets at rest. Set a strong value in production (the in-code fallback is a placeholder only). |
 
+### Capability reporting
+
+The public `getInstanceSetupStatus` query reports whether optional integrations
+are configured and enabled. It returns missing environment-variable names but
+never their values. Because maps and geocoding currently execute in the Nuxt
+frontend, pass `VITE_GOOGLE_MAPS_API_KEY` and `VITE_OPEN_CAGE_API_KEY` through
+to the backend process as presence-only signals when using this query. The
+Docker Compose quick-start profile will pass these through when it enables the
+capability-based frontend.
+
 ## Build / development / test
 
 | Variable | Required | Description |

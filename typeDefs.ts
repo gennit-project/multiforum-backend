@@ -2576,6 +2576,25 @@ const typeDefinitions = gql`
     otherAlbums: [Album!]!
   }
 
+  type InstanceCapabilityStatus @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    configured: Boolean!
+    enabled: Boolean!
+    requiredEnvVarsMissing: [String!]!
+    setupUrl: String!
+    docsPath: String!
+  }
+
+  type InstanceSetupStatus @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    auth: InstanceCapabilityStatus!
+    mail: InstanceCapabilityStatus!
+    maps: InstanceCapabilityStatus!
+    geocoding: InstanceCapabilityStatus!
+    uploads: InstanceCapabilityStatus!
+    downloads: InstanceCapabilityStatus!
+    events: InstanceCapabilityStatus!
+    plugins: InstanceCapabilityStatus!
+  }
+
   type Query {
     # Discovery
     """
@@ -2589,6 +2608,9 @@ const typeDefinitions = gql`
     can support multiple albums per image.
     """
     getImageAlbumUsage(imageId: ID!): ImageAlbumUsage!
+
+    """Return public setup capabilities without exposing environment values."""
+    getInstanceSetupStatus: InstanceSetupStatus!
 
     getDiscussionsInChannel(
       channelUniqueName: String!

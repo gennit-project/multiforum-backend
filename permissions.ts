@@ -81,6 +81,9 @@ const permissionList = shield({
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
       getDownloadScanReviewQueue: and(isAuthenticated, canPermanentlyRemoveImage),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
+      // Public, non-secret capability metadata used to degrade optional UI
+      // integrations cleanly before authentication is available.
+      getInstanceSetupStatus: allow,
       getPluginRunsForDownloadableFile: chain(
         isAuthenticated,
         canManagePlugins
