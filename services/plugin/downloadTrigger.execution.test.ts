@@ -72,7 +72,20 @@ function makeExecModels(edges: unknown[], file = fileNode) {
   let seq = 0;
   const serverConfig = {
     serverName: "s",
-    pluginPipelines: null,
+    pluginPipelines: [
+      {
+        event: EVENT,
+        steps: edges.map((edge) => ({
+          pluginId: (edge as ReturnType<typeof installedEdge>).node.Plugin.name,
+        })),
+      },
+      {
+        event: "downloadableFile.updated",
+        steps: edges.map((edge) => ({
+          pluginId: (edge as ReturnType<typeof installedEdge>).node.Plugin.name,
+        })),
+      },
+    ],
     InstalledVersionsConnection: { edges },
   };
   const PluginRun = modelStub<"PluginRun">({

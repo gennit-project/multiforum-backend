@@ -10,7 +10,7 @@ const getDownloadScanReviewQueue = ({ driver }: Input) => {
       const result = await session.run(
         `
         MATCH (discussion:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile)
-        WHERE file.scanStatus IN ['SUSPICIOUS', 'INFECTED']
+        WHERE file.scanStatus IN ['SUSPICIOUS', 'INFECTED', 'FAILED']
           AND coalesce(file.permanentlyRemoved, false) = false
         OPTIONAL MATCH (author:User)-[:AUTHORED_DISCUSSION]->(discussion)
         OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
@@ -18,6 +18,11 @@ const getDownloadScanReviewQueue = ({ driver }: Input) => {
         ORDER BY
           CASE WHEN file.reviewRequestedAt IS NULL THEN 1 ELSE 0 END,
           file.reviewRequestedAt DESC,
+          CASE file.scanStatus
+            WHEN 'INFECTED' THEN 0
+            WHEN 'SUSPICIOUS' THEN 1
+            ELSE 2
+          END,
           file.scanCheckedAt DESC
         LIMIT toInteger($limit)
         RETURN {

@@ -30,7 +30,7 @@ test("returns held files with creator requests first", async () => {
   assert.deepEqual({
     result,
     limit: calls[0].params.limit,
-    includesHeldStatuses: calls[0].query.includes("['SUSPICIOUS', 'INFECTED']"),
+    includesHeldStatuses: calls[0].query.includes("['SUSPICIOUS', 'INFECTED', 'FAILED']"),
     prioritizesRequests: calls[0].query.includes("file.reviewRequestedAt IS NULL"),
     closed,
   }, {

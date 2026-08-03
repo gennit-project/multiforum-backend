@@ -28,14 +28,16 @@ export const createClearDownloadableFileScanResolver = ({
       throw new Error("The downloadable file is already clean");
     }
 
+    const explanation = args.reason?.trim();
+    if (!explanation) {
+      throw new Error("A review reason is required to release quarantine");
+    }
+
     const reviewer =
       context.user?.data?.ModerationProfile?.displayName ||
       context.user?.username ||
       "a moderator";
-    const explanation = args.reason?.trim();
-    const scanReason = explanation
-      ? `Cleared by ${reviewer}: ${explanation}`
-      : `Cleared by ${reviewer} after human review`;
+    const scanReason = `Cleared by ${reviewer}: ${explanation}`;
     const scanCheckedAt = new Date().toISOString();
 
     await DownloadableFile.update({

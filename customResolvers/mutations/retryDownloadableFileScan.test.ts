@@ -175,3 +175,50 @@ test("routes a modern failed scan through whole-pipeline retry", async () => {
     }
   );
 });
+
+test("retries the latest failed channel scan for an optional channel policy", async () => {
+  const seenTargets: string[] = [];
+  const input = baseInput({
+    file: {
+      uploadedByUsername: "alice",
+      scanStatus: "FAILED",
+      Discussion: { id: "discussion-1" },
+    },
+    jobs: [{ id: "new-channel-job" }],
+  });
+  input.PluginPipelineRun.find = async ({ where } = {}) => {
+    seenTargets.push(String(where?.targetType));
+    return where?.targetType === "Discussion"
+      ? [{
+          pipelineId: "failed-channel-pipeline",
+          createdAt: "2026-07-31T00:00:00.000Z",
+        }]
+      : [];
+  };
+  let sourceId = "";
+  const createRerunResolver: RerunResolverFactory =
+    () => async (_parent, args) => {
+      sourceId = args.pipelineRunId;
+      return {
+        pipelineId: "new-channel-pipeline",
+      } as Awaited<ReturnType<ReturnType<RerunResolverFactory>>>;
+    };
+  const resolver = createRetryDownloadableFileScanResolver(
+    input,
+    async () => false,
+    async () => [],
+    createRerunResolver
+  );
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: "file-1" },
+    contextFor("alice")
+  );
+
+  assert.deepEqual({ seenTargets, sourceId, result }, {
+    seenTargets: ["DownloadableFile", "Discussion"],
+    sourceId: "failed-channel-pipeline",
+    result: [{ id: "new-channel-job" }],
+  });
+});

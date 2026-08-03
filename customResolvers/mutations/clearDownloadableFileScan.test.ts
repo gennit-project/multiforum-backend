@@ -86,3 +86,21 @@ test("rejects a file that is already clean", async () => {
     /already clean/
   );
 });
+
+test("requires an audit reason before releasing quarantine", async () => {
+  const resolver = createClearDownloadableFileScanResolver({
+    DownloadableFile: {
+      find: async () => [{ id: "file-1", scanStatus: "SUSPICIOUS" }],
+    } as any,
+    driver: {} as any,
+  });
+
+  await assert.rejects(
+    resolver(
+      null,
+      { downloadableFileId: "file-1", reason: "  " },
+      { user: { username: "moderator" } } as GraphQLContext
+    ),
+    /review reason is required/
+  );
+});
