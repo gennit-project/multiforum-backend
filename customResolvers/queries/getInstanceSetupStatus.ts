@@ -1,4 +1,9 @@
 import type { ServerConfigModel } from "../../ogm_types.js";
+import {
+  getAuthenticationProvider,
+  getLocalDevAuthMissingVariables,
+  isLocalDevAuthConfigured,
+} from "../../services/localDevAuth.js";
 
 type Environment = NodeJS.ProcessEnv;
 
@@ -69,11 +74,15 @@ export const buildInstanceSetupStatus = ({
   env: Environment;
   serverConfig: ServerFeatureConfig | null;
 }): InstanceSetupStatus => {
-  const authMissing = missingVariables(env, [
-    "AUTH0_DOMAIN",
-    "AUTH0_CLIENT_ID",
-    "AUTH0_AUDIENCE",
-  ]);
+  const authProvider = getAuthenticationProvider(env);
+  const authMissing =
+    authProvider === "local-dev"
+      ? getLocalDevAuthMissingVariables(env)
+      : missingVariables(env, [
+          "AUTH0_DOMAIN",
+          "AUTH0_CLIENT_ID",
+          "AUTH0_AUDIENCE",
+        ]);
   const mailMissing = missingMailVariables(env);
   const mapsMissing = missingVariables(env, ["VITE_GOOGLE_MAPS_API_KEY"]);
   const geocodingMissing = missingVariables(env, ["VITE_OPEN_CAGE_API_KEY"]);
@@ -85,7 +94,10 @@ export const buildInstanceSetupStatus = ({
     "PLUGIN_SECRET_ENCRYPTION_KEY",
   ]);
 
-  const authConfigured = authMissing.length === 0;
+  const authConfigured =
+    authProvider === "local-dev"
+      ? isLocalDevAuthConfigured(env)
+      : authMissing.length === 0;
   const mailConfigured = mailMissing.length === 0;
   const mapsConfigured = mapsMissing.length === 0;
   const geocodingConfigured = geocodingMissing.length === 0;

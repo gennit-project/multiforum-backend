@@ -4,7 +4,14 @@ Configuration is supplied via environment variables (e.g. a `.env` file locally,
 or Heroku config vars in production). The variables the server reads are grouped
 below.
 
-## Authentication (Auth0)
+## Authentication
+
+`MULTIFORUM_AUTH_PROVIDER` selects the authentication provider. Leave it unset
+or set it to `auth0` for the production Auth0 flow. The alternative
+`local-dev` provider is a single-identity convenience for local Docker Compose
+evaluation only: server startup rejects it when `NODE_ENV=production`.
+
+### Auth0
 
 | Variable | Required | Description |
 | --- | --- | --- |
@@ -24,6 +31,36 @@ Why `AUTH0_AUDIENCE` matters: the Nuxt frontend's server-session SDK
 tokens fall through the audience checks and server-side user lookups are
 rejected — users appear logged in but resolve with no username/profile. The
 value must match the frontend's `NUXT_AUTH0_AUDIENCE`.
+
+### Local development authentication
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `MULTIFORUM_AUTH_PROVIDER` | Yes | Set to `local-dev`. Any other non-Auth0 value fails startup. Requires `NODE_ENV=development`; an unset, test, or production environment is rejected. |
+| `MULTIFORUM_BOOTSTRAP_EMAIL` | Yes | Verified email placed in the signed development token. |
+| `MULTIFORUM_BOOTSTRAP_USERNAME` | Yes | Fixed subject/username claim for the development token. The permission layer still resolves the persisted user through the email relationship. |
+| `MULTIFORUM_BOOTSTRAP_PASSWORD` | Yes | Password used both to authenticate the local sign-in request and sign HS256 tokens. Must contain at least 12 characters. |
+| `SUPERADMIN_EMAIL` | Yes | Must exactly match `MULTIFORUM_BOOTSTRAP_EMAIL`, ensuring the one local identity can bootstrap and recover administration. |
+
+When enabled, `POST /auth/local-dev/token` accepts a small JSON body and returns
+a 12-hour bearer token:
+
+```bash
+curl --request POST http://localhost:4000/auth/local-dev/token \
+  --header 'Content-Type: application/json' \
+  --data '{"password":"your-local-password"}'
+```
+
+Responses include `Cache-Control: no-store`. Tokens accept only HS256, require
+the Multiforum local issuer and backend audience, and must exactly match the
+configured email, username, and verified-email claims. Invalid tokens are
+handled like invalid Auth0 tokens. The route returns 404 when local auth is not
+enabled.
+
+This mode is intentionally a single development identity. It has no password
+reset, account database, multi-user credential management, or production
+security support. Use Auth0 (and later a supported OIDC provider) for public
+deployments.
 
 ## Break-glass root (`SUPERADMIN_EMAIL`)
 

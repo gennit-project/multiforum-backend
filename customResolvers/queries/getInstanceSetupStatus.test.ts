@@ -127,6 +127,43 @@ test("reports invalid email providers as needing EMAIL_PROVIDER", () => {
   assert.deepEqual(status.mail.requiredEnvVarsMissing, ["EMAIL_PROVIDER"]);
 });
 
+test("reports a complete local development auth provider as configured", () => {
+  const status = buildInstanceSetupStatus({
+    env: {
+      NODE_ENV: "development",
+      MULTIFORUM_AUTH_PROVIDER: "local-dev",
+      MULTIFORUM_BOOTSTRAP_EMAIL: "admin@example.test",
+      MULTIFORUM_BOOTSTRAP_USERNAME: "admin",
+      MULTIFORUM_BOOTSTRAP_PASSWORD: "local-password",
+      SUPERADMIN_EMAIL: "admin@example.test",
+    },
+    serverConfig: null,
+  });
+
+  assert.deepEqual(status.auth, {
+    configured: true,
+    enabled: true,
+    requiredEnvVarsMissing: [],
+    setupUrl: "/admin/setup#authentication",
+    docsPath: "/authentication",
+  });
+});
+
+test("reports missing local development auth settings instead of Auth0 settings", () => {
+  const status = buildInstanceSetupStatus({
+    env: { MULTIFORUM_AUTH_PROVIDER: "local-dev" },
+    serverConfig: null,
+  });
+
+  assert.deepEqual(status.auth.requiredEnvVarsMissing, [
+    "NODE_ENV",
+    "MULTIFORUM_BOOTSTRAP_EMAIL",
+    "MULTIFORUM_BOOTSTRAP_USERNAME",
+    "MULTIFORUM_BOOTSTRAP_PASSWORD",
+    "SUPERADMIN_EMAIL",
+  ]);
+});
+
 test("resolves the named ServerConfig before building status", async () => {
   const calls: unknown[] = [];
   const ServerConfig = {

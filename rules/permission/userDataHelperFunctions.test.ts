@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { issueLocalDevToken } from "../../services/localDevAuth.js";
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import type { AuthContextForUserLookup } from "./userDataHelperFunctions.js";
 
@@ -55,4 +56,106 @@ test("does no DB work for an unauthenticated request (no token)", async () => {
   const result = await setUserDataOnContext({ context });
   assert.equal(modelCalls, 0);
   assert.equal(result.username, null);
+});
+
+const localAuthEnvironment = {
+  NODE_ENV: "development",
+  MULTIFORUM_AUTH_PROVIDER: "local-dev",
+  MULTIFORUM_BOOTSTRAP_EMAIL: "admin@example.test",
+  MULTIFORUM_BOOTSTRAP_USERNAME: "bootstrap_admin",
+  MULTIFORUM_BOOTSTRAP_PASSWORD: "local-password",
+  SUPERADMIN_EMAIL: "admin@example.test",
+};
+
+const withLocalAuthEnvironment = async (callback: () => Promise<void>) => {
+  const previous = Object.fromEntries(
+    Object.keys(localAuthEnvironment).map((name) => [name, process.env[name]])
+  );
+  Object.assign(process.env, localAuthEnvironment);
+  try {
+    await callback();
+  } finally {
+    for (const [name, value] of Object.entries(previous)) {
+      if (value === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = value;
+      }
+    }
+  }
+};
+
+test("resolves a signed local token through the persisted email relationship", async () => {
+  await withLocalAuthEnvironment(async () => {
+    const token = issueLocalDevToken(
+      localAuthEnvironment.MULTIFORUM_BOOTSTRAP_PASSWORD,
+      localAuthEnvironment
+    );
+    assert.ok(token);
+
+    const context = {
+      ogm: {
+        model(name: string) {
+          if (name === "Email") {
+            return {
+              find: async () => [{ User: { username: "persisted_admin" } }],
+            };
+          }
+          if (name === "User") {
+            return {
+              find: async () => [
+                { ModerationProfile: { displayName: "Local Admin" } },
+              ],
+            };
+          }
+          throw new Error(`Unexpected model ${name}`);
+        },
+      },
+      req: { headers: { authorization: `Bearer ${token}` } },
+    } as unknown as AuthContextForUserLookup;
+
+    const result = await setUserDataOnContext({ context });
+    assert.deepEqual(result, {
+      username: "persisted_admin",
+      email: "admin@example.test",
+      email_verified: true,
+      data: { ModerationProfile: { displayName: "Local Admin" } },
+    });
+  });
+});
+
+test("rejects an invalid local token on mutations", async () => {
+  await withLocalAuthEnvironment(async () => {
+    const context = {
+      ogm: { model: () => ({}) },
+      req: {
+        headers: { authorization: "Bearer invalid-token" },
+        isMutation: true,
+      },
+    } as unknown as AuthContextForUserLookup;
+
+    await assert.rejects(
+      setUserDataOnContext({ context }),
+      /authentication token is invalid/i
+    );
+  });
+});
+
+test("marks an invalid local token on query context without throwing", async () => {
+  await withLocalAuthEnvironment(async () => {
+    const context = {
+      ogm: { model: () => ({}) },
+      req: {
+        headers: { authorization: "Bearer invalid-token" },
+        isMutation: false,
+      },
+    } as unknown as AuthContextForUserLookup;
+
+    const result = await setUserDataOnContext({ context });
+    assert.equal(result.username, null);
+    assert.match(
+      context.jwtError?.message ?? "",
+      /authentication token is invalid/i
+    );
+  });
 });

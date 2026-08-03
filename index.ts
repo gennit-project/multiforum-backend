@@ -38,6 +38,10 @@ import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdo
 import { PluginPipelineCampaignService } from "./services/plugin/pipelineCampaign.js";
 import { ensureSchemaConstraints } from "./services/schemaConstraints.js";
 import { provisionInstanceOnStartup } from "./services/startupProvisioning.js";
+import {
+  assertAuthenticationConfiguration,
+  createLocalDevTokenHandler,
+} from "./services/localDevAuth.js";
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
 import type { GraphQLSchema } from "graphql";
 import type { Ogm, GraphQLRequest, GraphQLContext } from "./types/context.js";
@@ -163,6 +167,10 @@ async function initializeServer() {
   try {
     logger.info("🚀 Initializing server...");
 
+    // Fail before connecting to external services if a development-only auth
+    // provider is incomplete or was accidentally enabled in production.
+    assertAuthenticationConfiguration();
+
     await connectToNeo4jWithRetry(driver);
 
     const session = driver.session();
@@ -213,6 +221,19 @@ async function initializeServer() {
 
     const app = express();
     const httpServer = http.createServer(app);
+
+    // This route is invisible unless MULTIFORUM_AUTH_PROVIDER=local-dev. The
+    // provider configuration guard above ensures it can never start in
+    // production, and the handler returns only short-lived signed tokens.
+    app.use(
+      "/auth/local-dev/token",
+      cors({ origin: "*", credentials: false })
+    );
+    app.post(
+      "/auth/local-dev/token",
+      express.json({ limit: "16kb" }),
+      createLocalDevTokenHandler()
+    );
 
     // Reject pathologically deep queries before they reach the schema. Neo4jGraphQL
     // translates a nested GraphQL selection into one Cypher query, so an
