@@ -202,6 +202,23 @@ WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperU
      weightedVotesCount, comments, hotRank, album, albumImages,
      CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
 
+// Include every assigned flair, including archived flairs. Archiving prevents
+// future assignment but must not erase a historical discussion's category.
+OPTIONAL MATCH (dc)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair:DiscussionFlair)
+WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
+     weightedVotesCount, comments, hotRank, album, albumImages, isFavorited, assignedFlair
+ORDER BY assignedFlair.order ASC, assignedFlair.displayName ASC
+WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
+     weightedVotesCount, comments, hotRank, album, albumImages, isFavorited,
+     [flair IN COLLECT(DISTINCT assignedFlair) WHERE flair IS NOT NULL | {
+         id: flair.id,
+         channelUniqueName: flair.channelUniqueName,
+         displayName: flair.displayName,
+         color: flair.color,
+         order: flair.order,
+         archived: flair.archived
+     }] AS assignedFlairs
+
 // Return the results with modified UpvotedByUsers
 RETURN {
     id: dc.id,
@@ -212,6 +229,7 @@ RETURN {
     createdAt: dc.createdAt,
     channelUniqueName: dc.channelUniqueName,
     weightedVotesCount: weightedVotesCount,
+    Flairs: assignedFlairs,
     CommentsAggregate: {
         count: SIZE(comments)
     },
