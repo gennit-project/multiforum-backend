@@ -15,6 +15,7 @@ import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
 import neo4j, { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
 import getCustomResolvers from "../../customResolvers.js";
+import { CHANNEL_FULLTEXT_CREATE_CYPHER } from "../../services/channelFulltext.js";
 
 let container: StartedNeo4jContainer | undefined;
 let driver: Driver | undefined;
@@ -45,6 +46,19 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
 
   const { ogm, resolvers } = getCustomResolvers(driver);
   await ogm.init();
+
+  // Production creates full-text indexes on startup via ensureSchemaConstraints
+  // (the OGM's assertIndexesAndConstraints). This harness wires resolvers
+  // directly and skips that bootstrap, so create the channel search index here
+  // — getSortedChannels' search path queries it by name. It survives resetDb
+  // (which only deletes nodes) and updates transactionally as rows are seeded.
+  const indexSession = driver.session();
+  try {
+    await indexSession.run(CHANNEL_FULLTEXT_CREATE_CYPHER);
+    await indexSession.run("CALL db.awaitIndexes(30000)");
+  } finally {
+    await indexSession.close();
+  }
 
   return { driver, ogm, resolvers };
 }
