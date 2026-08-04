@@ -163,3 +163,108 @@ test("fails startup when enabled local auth is incomplete", async () => {
     /Local development authentication requires/
   );
 });
+
+test("uses the production default role provisioner when no seam is injected", async () => {
+  const requestedModels: string[] = [];
+  const roleModel = {
+    find: async () => [],
+    create: async () => ({}),
+    update: async () => ({}),
+  };
+  const serverConfigModel = {
+    find: async () => [],
+    create: async () => ({}),
+    update: async () => ({}),
+  };
+
+  const result = await provisionInstanceOnStartup({
+    ogm: {
+      model: (name) => {
+        requestedModels.push(name);
+        return name === "ServerConfig" ? serverConfigModel : roleModel;
+      },
+    },
+    env: {
+      MULTIFORUM_AUTO_PROVISION: "true",
+      SERVER_CONFIG_NAME: "Community Forum",
+    },
+  });
+
+  assert.deepEqual(requestedModels, [
+    "ServerRole",
+    "ModServerRole",
+    "ServerConfig",
+  ]);
+  assert.equal(result.status, "provisioned");
+  if (result.status === "provisioned") {
+    assert.equal(result.result.serverConfigCreated, true);
+    assert.deepEqual(result.bootstrapAdmin, {
+      status: "skipped",
+      reason: "auth-provider",
+    });
+  }
+});
+
+test("uses the default bootstrap provisioner and forwards its logs", async () => {
+  let userFindCalls = 0;
+  let userCreateCalls = 0;
+  let configUpdateCalls = 0;
+  const messages: string[] = [];
+  const models = {
+    User: {
+      find: async () => {
+        userFindCalls += 1;
+        return [];
+      },
+      create: async () => {
+        userCreateCalls += 1;
+      },
+    },
+    Email: { find: async () => [] },
+    ServerConfig: {
+      find: async () => [{ SuperAdmins: [] }],
+      update: async () => {
+        configUpdateCalls += 1;
+      },
+    },
+  };
+
+  const result = await provisionInstanceOnStartup({
+    ogm: {
+      model: (name) => models[name as keyof typeof models],
+    },
+    env: {
+      MULTIFORUM_AUTO_PROVISION: "true",
+      SERVER_CONFIG_NAME: "Community Forum",
+      NODE_ENV: "development",
+      MULTIFORUM_AUTH_PROVIDER: "local-dev",
+      MULTIFORUM_BOOTSTRAP_EMAIL: "admin@example.test",
+      MULTIFORUM_BOOTSTRAP_USERNAME: "admin",
+      MULTIFORUM_BOOTSTRAP_PASSWORD: "local-password",
+      SUPERADMIN_EMAIL: "admin@example.test",
+    },
+    provision: async () => provisionedResult,
+    log: (message) => messages.push(message),
+  });
+
+  assert.deepEqual({ userFindCalls, userCreateCalls, configUpdateCalls }, {
+    userFindCalls: 2,
+    userCreateCalls: 1,
+    configUpdateCalls: 1,
+  });
+  assert.equal(result.status, "provisioned");
+  if (result.status === "provisioned") {
+    assert.deepEqual(result.bootstrapAdmin, {
+      status: "created",
+      username: "admin",
+    });
+  }
+  assert.ok(
+    messages.includes("[startup-provision] Created bootstrap user 'admin'.")
+  );
+  assert.ok(
+    messages.includes(
+      "[startup-provision] Connected bootstrap user 'admin' as a SuperAdmin."
+    )
+  );
+});

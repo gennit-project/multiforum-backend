@@ -187,6 +187,32 @@ test("rejects username and email collisions", async () => {
   );
 });
 
+test("rejects matching records whose identity relationships are missing", async () => {
+  await assert.rejects(
+    provisionBootstrapAdmin({
+      ...baseInput(),
+      User: {
+        find: async () => [{ username: "admin", Email: null }],
+      },
+      Email: { find: async () => [] },
+      ServerConfig: { find: async () => [] },
+    }),
+    /username is linked to a different email/
+  );
+
+  await assert.rejects(
+    provisionBootstrapAdmin({
+      ...baseInput(),
+      User: { find: async () => [] },
+      Email: {
+        find: async () => [{ address: "admin@example.test", User: null }],
+      },
+      ServerConfig: { find: async () => [] },
+    }),
+    /admin@example\.test.*linked to a different username/
+  );
+});
+
 test("rejects an incomplete existing user/email relationship", async () => {
   await assert.rejects(
     provisionBootstrapAdmin({
@@ -251,6 +277,36 @@ test("fails clearly when required model mutations are unavailable", async () => 
     }),
     /ServerConfig model does not support bootstrap updates/
   );
+});
+
+test("ignores malformed SuperAdmin entries while reconciling the identity", async () => {
+  let updateCalls = 0;
+  const result = await provisionBootstrapAdmin({
+    ...baseInput(),
+    User: {
+      find: async () => [
+        { username: "admin", Email: { address: "admin@example.test" } },
+      ],
+    },
+    Email: {
+      find: async () => [
+        { address: "admin@example.test", User: { username: "admin" } },
+      ],
+    },
+    ServerConfig: {
+      find: async () => [
+        { SuperAdmins: [null, {}, { username: "someone-else" }] },
+      ],
+      update: async () => {
+        updateCalls += 1;
+      },
+    },
+  });
+
+  assert.deepEqual({ result, updateCalls }, {
+    result: { status: "connected", username: "admin" },
+    updateCalls: 1,
+  });
 });
 
 test("resolves the required models from OGM", async () => {
