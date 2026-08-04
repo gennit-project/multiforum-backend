@@ -102,6 +102,13 @@ export const assertAuthenticationConfiguration = (
   }
 };
 
+export const getLocalDevBootstrapIdentity = (
+  env: Environment = process.env
+): LocalDevIdentity => {
+  const { email, username } = requireLocalDevConfiguration(env);
+  return { email, username };
+};
+
 export const isLocalDevAuthConfigured = (
   env: Environment = process.env
 ): boolean => {
