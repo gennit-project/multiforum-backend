@@ -523,7 +523,16 @@ const typeDefinitions = gql`
       @settable(onCreate: false, onUpdate: false)
   }
 
-  type Channel {
+  # Full-text (Lucene) index over the channel's searchable text fields. Backs the
+  # search in getSortedChannels; created on startup by ensureSchemaConstraints.
+  # The indexName must stay in sync with CHANNEL_FULLTEXT_INDEX in
+  # services/channelFulltext.ts.
+  type Channel
+    @fulltext(
+      indexes: [
+        { indexName: "channelFulltext", fields: ["uniqueName", "description"] }
+      ]
+    ) {
     uniqueName: String! @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     displayName: String
