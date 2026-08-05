@@ -1,475 +1,130 @@
+// Unit tests for the channel creator-moderator middleware. After createChannels
+// runs, it resolves the logged-in user's ModerationProfile and connects them as a
+// moderator of each newly created channel. setUserDataOnContext short-circuits on
+// a pre-set context.user (no DB), so these tests drive the middleware's branching
+// — anonymous caller, no mod profile, no channels, per-channel update, the
+// unique-name skip, and both the inner (per-channel) and outer error paths —
+// against the REAL middleware with a stubbed resolver and a permissive in-memory
+// OGM. (Replaces an older test that exercised an inline copy of the logic and so
+// covered none of the real module.)
 import assert from "node:assert/strict";
+import test from "node:test";
+import middleware from "./channelCreatorModeratorMiddleware.js";
 
-// Mock the setUserDataOnContext function
-let mockUserData: { username: string | null } | null = null;
+const M: any = (middleware as any).Mutation;
 
-// Since we can't easily mock ES modules, we'll test the middleware logic by
-// creating a test version that accepts dependencies as parameters.
-
-interface MockContext {
-  ogm: {
-    model: (name: string) => MockModel;
-  };
-  req: any;
-}
-
-interface MockModel {
-  find: (params: any) => Promise<any[]>;
-  update: (params: any) => Promise<any>;
-}
-
-interface CreateChannelsResult {
-  channels?: Array<{ uniqueName: string }>;
-}
-
-// This is a testable version of the middleware logic
-async function addCreatorAsModerator(
-  result: CreateChannelsResult,
-  context: MockContext,
-  getUserData: () => Promise<{ username: string | null } | null>
-): Promise<void> {
-  const userData = await getUserData();
-
-  if (!userData?.username) {
-    return;
-  }
-
-  const User = context.ogm.model('User');
-  const userWithProfile = await User.find({
-    where: { username: userData.username },
-    selectionSet: `{
-      ModerationProfile {
-        displayName
+// Build a ctx. `user` is placed on context.user so setUserDataOnContext returns
+// it without a DB lookup. User.find/Channel.update come from `models`. `updates`
+// records the channels a Moderator connect was attempted on.
+function makeCtx(opts: {
+  user?: { username: string } | undefined;
+  userRows?: unknown[];
+  channelUpdate?: (args: any) => Promise<unknown>;
+} = {}) {
+  const updates: string[] = [];
+  const ogm = {
+    model(name: string) {
+      if (name === "User") {
+        return { find: async () => opts.userRows ?? [] };
       }
-    }`,
-  });
-
-  const displayName = userWithProfile[0]?.ModerationProfile?.displayName;
-
-  if (!displayName) {
-    return;
-  }
-
-  const channels = result?.channels;
-  if (!channels || channels.length === 0) {
-    return;
-  }
-
-  const Channel = context.ogm.model('Channel');
-
-  for (const channel of channels) {
-    if (!channel?.uniqueName) {
-      continue;
-    }
-
-    await Channel.update({
-      where: { uniqueName: channel.uniqueName },
-      update: {
-        Moderators: [
-          {
-            connect: [
-              {
-                where: {
-                  node: {
-                    displayName,
-                  },
-                },
-              },
-            ],
+      if (name === "Channel") {
+        return {
+          update: async (args: any) => {
+            updates.push(args?.where?.uniqueName);
+            return opts.channelUpdate ? opts.channelUpdate(args) : {};
           },
-        ],
+        };
+      }
+      return { find: async () => [], update: async () => ({}) };
+    },
+  };
+  const ctx: any = { ogm, driver: {}, req: { headers: {} } };
+  if (opts.user) ctx.user = opts.user;
+  return { ctx, updates };
+}
+
+function resolveReturning(result: unknown) {
+  const state = { calls: 0 };
+  const resolve = async () => {
+    state.calls += 1;
+    return result;
+  };
+  return { resolve, state };
+}
+
+const withProfile = [{ ModerationProfile: { displayName: "Mod Alice" } }];
+
+test("connects the creator as moderator of each created channel", async () => {
+  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: withProfile });
+  const { resolve, state } = resolveReturning({
+    channels: [{ uniqueName: "cats" }, { uniqueName: "dogs" }],
+  });
+  const out = await M.createChannels(resolve, null, {}, ctx, {});
+  assert.equal(state.calls, 1);
+  assert.deepEqual(updates, ["cats", "dogs"]);
+  assert.deepEqual(out, { channels: [{ uniqueName: "cats" }, { uniqueName: "dogs" }] });
+});
+
+test("skips moderator assignment for an anonymous caller", async () => {
+  const { ctx, updates } = makeCtx({ user: undefined }); // no context.user, no token
+  const { resolve } = resolveReturning({ channels: [{ uniqueName: "cats" }] });
+  const out = await M.createChannels(resolve, null, {}, ctx, {});
+  assert.deepEqual(updates, []); // never reached the update
+  assert.deepEqual(out, { channels: [{ uniqueName: "cats" }] });
+});
+
+test("skips when the user has no ModerationProfile", async () => {
+  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: [{}] });
+  const { resolve } = resolveReturning({ channels: [{ uniqueName: "cats" }] });
+  const out = await M.createChannels(resolve, null, {}, ctx, {});
+  assert.deepEqual(updates, []);
+  assert.deepEqual(out, { channels: [{ uniqueName: "cats" }] });
+});
+
+test("returns early when there are no created channels", async () => {
+  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: withProfile });
+  const { resolve } = resolveReturning({ channels: [] });
+  const out = await M.createChannels(resolve, null, {}, ctx, {});
+  assert.deepEqual(updates, []);
+  assert.deepEqual(out, { channels: [] });
+});
+
+test("skips channels without a uniqueName", async () => {
+  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: withProfile });
+  const { resolve } = resolveReturning({ channels: [{}, { uniqueName: "cats" }] as any });
+  await M.createChannels(resolve, null, {}, ctx, {});
+  assert.deepEqual(updates, ["cats"]); // only the named channel updated
+});
+
+test("a failed Channel.update is logged but does not fail channel creation", async () => {
+  const { ctx } = makeCtx({
+    user: { username: "alice" },
+    userRows: withProfile,
+    channelUpdate: async () => {
+      throw new Error("update boom");
+    },
+  });
+  const { resolve, state } = resolveReturning({ channels: [{ uniqueName: "cats" }] });
+  const out = await M.createChannels(resolve, null, {}, ctx, {});
+  assert.equal(state.calls, 1);
+  assert.deepEqual(out, { channels: [{ uniqueName: "cats" }] }); // still returns
+});
+
+test("an error while resolving the moderator profile is swallowed", async () => {
+  // User.find throws -> caught by the outer try/catch; the result still returns.
+  const ctx: any = {
+    ogm: {
+      model(name: string) {
+        if (name === "User") return { find: async () => { throw new Error("db down"); } };
+        return { find: async () => [], update: async () => ({}) };
       },
-    });
-  }
-}
-
-// ============================================
-// Test: Creator is added as moderator
-// ============================================
-
-async function testCreatorAddedAsModerator() {
-  const channelUpdateCalls: any[] = [];
-
-  const mockContext: MockContext = {
-    ogm: {
-      model: (name: string) => {
-        if (name === 'User') {
-          return {
-            find: async () => [
-              { ModerationProfile: { displayName: 'testmod' } }
-            ],
-            update: async () => ({})
-          };
-        }
-        if (name === 'Channel') {
-          return {
-            find: async () => [],
-            update: async (params: any) => {
-              channelUpdateCalls.push(params);
-              return { channels: [{ uniqueName: params.where.uniqueName }] };
-            }
-          };
-        }
-        return { find: async () => [], update: async () => ({}) };
-      }
     },
-    req: {}
+    driver: {},
+    req: { headers: {} },
+    user: { username: "alice" },
   };
-
-  const result: CreateChannelsResult = {
-    channels: [{ uniqueName: 'test-forum' }]
-  };
-
-  await addCreatorAsModerator(
-    result,
-    mockContext,
-    async () => ({ username: 'testuser' })
-  );
-
-  assert.equal(channelUpdateCalls.length, 1, 'Should call Channel.update once');
-  assert.equal(
-    channelUpdateCalls[0].where.uniqueName,
-    'test-forum',
-    'Should update the correct channel'
-  );
-  assert.deepEqual(
-    channelUpdateCalls[0].update.Moderators[0].connect[0].where.node.displayName,
-    'testmod',
-    'Should connect the correct moderator'
-  );
-}
-
-// ============================================
-// Test: Handles user without ModerationProfile
-// ============================================
-
-async function testHandlesUserWithoutModProfile() {
-  const channelUpdateCalls: any[] = [];
-
-  const mockContext: MockContext = {
-    ogm: {
-      model: (name: string) => {
-        if (name === 'User') {
-          return {
-            find: async () => [
-              { ModerationProfile: null }
-            ],
-            update: async () => ({})
-          };
-        }
-        if (name === 'Channel') {
-          return {
-            find: async () => [],
-            update: async (params: any) => {
-              channelUpdateCalls.push(params);
-              return {};
-            }
-          };
-        }
-        return { find: async () => [], update: async () => ({}) };
-      }
-    },
-    req: {}
-  };
-
-  const result: CreateChannelsResult = {
-    channels: [{ uniqueName: 'test-forum' }]
-  };
-
-  await addCreatorAsModerator(
-    result,
-    mockContext,
-    async () => ({ username: 'testuser' })
-  );
-
-  assert.equal(
-    channelUpdateCalls.length,
-    0,
-    'Should not call Channel.update when user has no ModerationProfile'
-  );
-}
-
-// ============================================
-// Test: Handles no logged-in user
-// ============================================
-
-async function testHandlesNoLoggedInUser() {
-  const channelUpdateCalls: any[] = [];
-
-  const mockContext: MockContext = {
-    ogm: {
-      model: (name: string) => {
-        if (name === 'Channel') {
-          return {
-            find: async () => [],
-            update: async (params: any) => {
-              channelUpdateCalls.push(params);
-              return {};
-            }
-          };
-        }
-        return { find: async () => [], update: async () => ({}) };
-      }
-    },
-    req: {}
-  };
-
-  const result: CreateChannelsResult = {
-    channels: [{ uniqueName: 'test-forum' }]
-  };
-
-  await addCreatorAsModerator(
-    result,
-    mockContext,
-    async () => null
-  );
-
-  assert.equal(
-    channelUpdateCalls.length,
-    0,
-    'Should not call Channel.update when no user is logged in'
-  );
-}
-
-// ============================================
-// Test: Handles multiple channels
-// ============================================
-
-async function testHandlesMultipleChannels() {
-  const channelUpdateCalls: any[] = [];
-
-  const mockContext: MockContext = {
-    ogm: {
-      model: (name: string) => {
-        if (name === 'User') {
-          return {
-            find: async () => [
-              { ModerationProfile: { displayName: 'testmod' } }
-            ],
-            update: async () => ({})
-          };
-        }
-        if (name === 'Channel') {
-          return {
-            find: async () => [],
-            update: async (params: any) => {
-              channelUpdateCalls.push(params);
-              return { channels: [{ uniqueName: params.where.uniqueName }] };
-            }
-          };
-        }
-        return { find: async () => [], update: async () => ({}) };
-      }
-    },
-    req: {}
-  };
-
-  const result: CreateChannelsResult = {
-    channels: [
-      { uniqueName: 'forum-1' },
-      { uniqueName: 'forum-2' },
-      { uniqueName: 'forum-3' }
-    ]
-  };
-
-  await addCreatorAsModerator(
-    result,
-    mockContext,
-    async () => ({ username: 'testuser' })
-  );
-
-  assert.equal(
-    channelUpdateCalls.length,
-    3,
-    'Should call Channel.update for each channel'
-  );
-  assert.equal(
-    channelUpdateCalls[0].where.uniqueName,
-    'forum-1',
-    'Should update first channel'
-  );
-  assert.equal(
-    channelUpdateCalls[1].where.uniqueName,
-    'forum-2',
-    'Should update second channel'
-  );
-  assert.equal(
-    channelUpdateCalls[2].where.uniqueName,
-    'forum-3',
-    'Should update third channel'
-  );
-}
-
-// ============================================
-// Test: Handles empty channels array
-// ============================================
-
-async function testHandlesEmptyChannelsArray() {
-  const channelUpdateCalls: any[] = [];
-
-  const mockContext: MockContext = {
-    ogm: {
-      model: (name: string) => {
-        if (name === 'User') {
-          return {
-            find: async () => [
-              { ModerationProfile: { displayName: 'testmod' } }
-            ],
-            update: async () => ({})
-          };
-        }
-        if (name === 'Channel') {
-          return {
-            find: async () => [],
-            update: async (params: any) => {
-              channelUpdateCalls.push(params);
-              return {};
-            }
-          };
-        }
-        return { find: async () => [], update: async () => ({}) };
-      }
-    },
-    req: {}
-  };
-
-  const result: CreateChannelsResult = {
-    channels: []
-  };
-
-  await addCreatorAsModerator(
-    result,
-    mockContext,
-    async () => ({ username: 'testuser' })
-  );
-
-  assert.equal(
-    channelUpdateCalls.length,
-    0,
-    'Should not call Channel.update when channels array is empty'
-  );
-}
-
-// ============================================
-// Test: Handles null channels
-// ============================================
-
-async function testHandlesNullChannels() {
-  const channelUpdateCalls: any[] = [];
-
-  const mockContext: MockContext = {
-    ogm: {
-      model: (name: string) => {
-        if (name === 'User') {
-          return {
-            find: async () => [
-              { ModerationProfile: { displayName: 'testmod' } }
-            ],
-            update: async () => ({})
-          };
-        }
-        if (name === 'Channel') {
-          return {
-            find: async () => [],
-            update: async (params: any) => {
-              channelUpdateCalls.push(params);
-              return {};
-            }
-          };
-        }
-        return { find: async () => [], update: async () => ({}) };
-      }
-    },
-    req: {}
-  };
-
-  const result: CreateChannelsResult = {};
-
-  await addCreatorAsModerator(
-    result,
-    mockContext,
-    async () => ({ username: 'testuser' })
-  );
-
-  assert.equal(
-    channelUpdateCalls.length,
-    0,
-    'Should not call Channel.update when channels is undefined'
-  );
-}
-
-// ============================================
-// Test: Skips channels without uniqueName
-// ============================================
-
-async function testSkipsChannelsWithoutUniqueName() {
-  const channelUpdateCalls: any[] = [];
-
-  const mockContext: MockContext = {
-    ogm: {
-      model: (name: string) => {
-        if (name === 'User') {
-          return {
-            find: async () => [
-              { ModerationProfile: { displayName: 'testmod' } }
-            ],
-            update: async () => ({})
-          };
-        }
-        if (name === 'Channel') {
-          return {
-            find: async () => [],
-            update: async (params: any) => {
-              channelUpdateCalls.push(params);
-              return { channels: [{ uniqueName: params.where.uniqueName }] };
-            }
-          };
-        }
-        return { find: async () => [], update: async () => ({}) };
-      }
-    },
-    req: {}
-  };
-
-  const result: CreateChannelsResult = {
-    channels: [
-      { uniqueName: '' },
-      { uniqueName: 'valid-forum' }
-    ]
-  };
-
-  await addCreatorAsModerator(
-    result,
-    mockContext,
-    async () => ({ username: 'testuser' })
-  );
-
-  assert.equal(
-    channelUpdateCalls.length,
-    1,
-    'Should only call Channel.update for channels with uniqueName'
-  );
-  assert.equal(
-    channelUpdateCalls[0].where.uniqueName,
-    'valid-forum',
-    'Should update the valid channel'
-  );
-}
-
-// Run all tests
-async function run() {
-  await testCreatorAddedAsModerator();
-  await testHandlesUserWithoutModProfile();
-  await testHandlesNoLoggedInUser();
-  await testHandlesMultipleChannels();
-  await testHandlesEmptyChannelsArray();
-  await testHandlesNullChannels();
-  await testSkipsChannelsWithoutUniqueName();
-
-  console.log("channelCreatorModeratorMiddleware tests passed");
-}
-
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
+  const { resolve, state } = resolveReturning({ channels: [{ uniqueName: "cats" }] });
+  const out = await M.createChannels(resolve, null, {}, ctx, {});
+  assert.equal(state.calls, 1);
+  assert.deepEqual(out, { channels: [{ uniqueName: "cats" }] });
 });

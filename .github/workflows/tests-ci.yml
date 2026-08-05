@@ -117,6 +117,11 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
+          # Upload ONLY the remapped lcov. Without this, the uploader also
+          # auto-discovers c8's raw coverage/tmp/*.json V8 files and sends them;
+          # Codecov ingests those un-remapped, inflating the line denominator and
+          # diluting covered lines (~7pt badge undercount vs the true merged %).
+          disable_search: true
           flags: unit
           fail_ci_if_error: false
           verbose: true
@@ -127,6 +132,9 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/startup-provisioning/lcov.info
+          # See the unit upload above: only send the specified lcov, never the
+          # raw c8 coverage/tmp/*.json files the uploader would otherwise sweep up.
+          disable_search: true
           flags: unit
           name: startup-provisioning
           fail_ci_if_error: false
@@ -191,6 +199,9 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
+          # See the unit upload: only send the shard's remapped lcov, not the raw
+          # c8 coverage/tmp/*.json files the uploader would otherwise sweep up.
+          disable_search: true
           flags: integration
           name: integration-shard-${{ matrix.shard }}
           fail_ci_if_error: false
