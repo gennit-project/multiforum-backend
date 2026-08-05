@@ -98,6 +98,8 @@ jobs:
             --name multiforum-neo4j-smoke \
             --network multiforum-image-smoke \
             --env NEO4J_AUTH=neo4j/multiforum-smoke-neo4j \
+            --env 'NEO4J_PLUGINS=["apoc"]' \
+            --env NEO4J_dbms_security_procedures_unrestricted=apoc.* \
             --health-cmd='cypher-shell -u neo4j -p multiforum-smoke-neo4j "RETURN 1"' \
             --health-interval=5s \
             --health-timeout=5s \
