@@ -169,6 +169,12 @@ The image contains no deployment credentials or functional database defaults.
 Supply the required settings described in
 [Environment variables and running the app](./docs/environment-variables.md).
 
+Maintainers: GHCR creates the package as private on its first publication, and
+the workflow's repository-scoped token cannot change organization package
+visibility. An organization owner must make the package public once in GitHub's
+package settings. Subsequent image runs verify an anonymous pull before they
+pass.
+
 ## Status
 
 This project is in active development.
