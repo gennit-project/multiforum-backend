@@ -112,33 +112,28 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         run: pnpm run coverage:startup-provisioning
 
-      - name: Upload unit coverage to Codecov
-        uses: codecov/codecov-action@v5
+      # Coverage is NOT uploaded to Codecov here. Each test job saves its lcov as
+      # an artifact; the `coverage-report` job merges all of them into one report
+      # and does a single Codecov upload. Uploading the pieces separately (unit +
+      # shards, under flags) let Codecov's cross-upload combination lose real
+      # coverage — a line covered by one shard but 0 in the others didn't reliably
+      # count as covered, and mismatched file lists inflated the denominator.
+      - name: Save unit coverage report
+        uses: actions/upload-artifact@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          # Upload ONLY the remapped lcov. Without this, the uploader also
-          # auto-discovers c8's raw coverage/tmp/*.json V8 files and sends them;
-          # Codecov ingests those un-remapped, inflating the line denominator and
-          # diluting covered lines (~7pt badge undercount vs the true merged %).
-          disable_search: true
-          flags: unit
-          fail_ci_if_error: false
-          verbose: true
+          name: coverage-unit
+          path: coverage/lcov.info
+          if-no-files-found: error
+          retention-days: 1
 
-      - name: Upload source-mapped startup provisioning coverage to Codecov
+      - name: Save startup-provisioning coverage report
         if: needs.changes.outputs.code == 'true'
-        uses: codecov/codecov-action@v5
+        uses: actions/upload-artifact@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/startup-provisioning/lcov.info
-          # See the unit upload above: only send the specified lcov, never the
-          # raw c8 coverage/tmp/*.json files the uploader would otherwise sweep up.
-          disable_search: true
-          flags: unit
-          name: startup-provisioning
-          fail_ci_if_error: false
-          verbose: true
+          name: coverage-startup
+          path: coverage/startup-provisioning/lcov.info
+          if-no-files-found: error
+          retention-days: 1
 
       # codegen and tsc already ran above, which covers the first two commands
       # in the build script. Complete the remaining asset-copy step without
@@ -191,18 +186,50 @@ jobs:
           SHARD: ${{ matrix.shard }}
           SHARD_TOTAL: 4
 
-      # Each shard uploads under the `integration` flag with a distinct name;
-      # Codecov unions the shards (and merges with the unit upload), so a line
-      # covered by any shard or the unit suite counts as covered.
-      - name: Upload integration coverage to Codecov
+      # Save this shard's lcov as an artifact; coverage-report merges all shards
+      # with the unit report and does the single Codecov upload (see that job).
+      - name: Save integration shard ${{ matrix.shard }} coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration-${{ matrix.shard }}
+          path: coverage/lcov.info
+          if-no-files-found: error
+          retention-days: 1
+
+  # Merge every test job's lcov into ONE report and upload it to Codecov once.
+  # This reproduces the local `coverage:merged` number: a line covered by ANY
+  # job counts as covered, over a single consistent file list. Runs whenever the
+  # unit job succeeded — including docs-only PRs (integration is skipped then, so
+  # only the unit report is merged) — so the required Codecov status still posts.
+  coverage-report:
+    needs: [unit-tests, integration-tests]
+    if: ${{ always() && needs.unit-tests.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      # Downloads every coverage-* artifact from this run into subfolders under
+      # coverage-artifacts/ (unit, startup, and each integration shard that ran).
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage-artifacts
+          pattern: coverage-*
+
+      - name: Merge coverage reports
+        run: node build_scripts/mergeLcov.js --dir coverage-artifacts --out coverage/merged.lcov
+
+      - name: Upload merged coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          # See the unit upload: only send the shard's remapped lcov, not the raw
-          # c8 coverage/tmp/*.json files the uploader would otherwise sweep up.
+          files: ./coverage/merged.lcov
           disable_search: true
-          flags: integration
-          name: integration-shard-${{ matrix.shard }}
           fail_ci_if_error: false
           verbose: true
