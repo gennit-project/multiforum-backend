@@ -1,0 +1,185 @@
+name: Container image
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+concurrency:
+  group: container-image-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+jobs:
+  build-publish-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          tags: |
+            type=ref,event=pr
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Build and optionally publish image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: ${{ github.event_name != 'pull_request' && 'mode=max' || 'false' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
+
+      - name: Select image for smoke test
+        id: smoke-image
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "value=${IMAGE_NAME}:pr-${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${IMAGE_NAME}@${DIGEST}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Start Neo4j
+        run: |
+          set -euo pipefail
+          docker network create multiforum-image-smoke
+          docker run --detach \
+            --name multiforum-neo4j-smoke \
+            --network multiforum-image-smoke \
+            --env NEO4J_AUTH=neo4j/multiforum-smoke-neo4j \
+            --health-cmd='cypher-shell -u neo4j -p multiforum-smoke-neo4j "RETURN 1"' \
+            --health-interval=5s \
+            --health-timeout=5s \
+            --health-retries=30 \
+            neo4j:5.1.0
+
+      - name: Wait for Neo4j
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 30); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' multiforum-neo4j-smoke)"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            if [ "$status" = "unhealthy" ]; then
+              docker logs multiforum-neo4j-smoke
+              exit 1
+            fi
+            sleep 5
+          done
+          docker logs multiforum-neo4j-smoke
+          exit 1
+
+      - name: Start Multiforum backend image
+        env:
+          SMOKE_IMAGE: ${{ steps.smoke-image.outputs.value }}
+        run: |
+          set -euo pipefail
+          docker run --detach \
+            --name multiforum-backend-smoke \
+            --network multiforum-image-smoke \
+            --publish 127.0.0.1:4000:4000 \
+            --env NODE_ENV=development \
+            --env ENVIRONMENT=local \
+            --env MULTIFORUM_AUTH_PROVIDER=local-dev \
+            --env MULTIFORUM_AUTO_PROVISION=true \
+            --env MULTIFORUM_BOOTSTRAP_EMAIL=admin@multiforum.local \
+            --env MULTIFORUM_BOOTSTRAP_USERNAME=admin \
+            --env MULTIFORUM_BOOTSTRAP_PASSWORD=multiforum-local-admin \
+            --env SUPERADMIN_EMAIL=admin@multiforum.local \
+            --env SERVER_CONFIG_NAME='Image Smoke Test' \
+            --env NEO4J_URI=bolt://multiforum-neo4j-smoke:7687 \
+            --env NEO4J_USER=neo4j \
+            --env NEO4J_PASSWORD=multiforum-smoke-neo4j \
+            "$SMOKE_IMAGE"
+
+      - name: Verify backend health check
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 60); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' multiforum-backend-smoke)"
+            if [ "$status" = "healthy" ]; then
+              curl --fail --silent --show-error \
+                --header 'content-type: application/json' \
+                --data '{"query":"query ImageSmoke { __typename }"}' \
+                http://127.0.0.1:4000/ >/dev/null
+              exit 0
+            fi
+            if [ "$status" = "unhealthy" ]; then
+              docker logs multiforum-backend-smoke
+              exit 1
+            fi
+            sleep 5
+          done
+          docker logs multiforum-backend-smoke
+          exit 1
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          docker logs multiforum-neo4j-smoke || true
+          docker logs multiforum-backend-smoke || true
+
+      - name: Make the GHCR package public
+        if: github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.request('PATCH /orgs/{org}/packages/{package_type}/{package_name}', {
+              org: context.repo.owner,
+              package_type: 'container',
+              package_name: context.repo.repo,
+              visibility: 'public',
+            })

@@ -134,6 +134,41 @@ Run `nvm use` to select the version in `.nvmrc`, enable pnpm once with
 See [Environment variables and running the app](./docs/environment-variables.md)
 for the configuration needed before starting the server.
 
+## Official container image
+
+Release and main-branch images are published to GitHub Container Registry:
+
+```text
+ghcr.io/gennit-project/multiforum-backend
+```
+
+The supported tags are:
+
+| Tag | Meaning | Recommended use |
+| --- | --- | --- |
+| `1.2.3`, `1.2`, `1` | A semantic-version release | Pin an exact release tag in production |
+| `latest` | The most recent semantic-version release | Evaluation only; it moves on each release |
+| `sha-<commit>` | An immutable build of one Git commit | Auditing or exact rollback |
+| `edge` | The latest successful build from `main` | Development and pre-release testing |
+
+`latest` deliberately follows stable version tags, not `main`. Production
+deployments should pin the full release version or an immutable `sha-` tag.
+
+Pull an image with:
+
+```bash
+docker pull ghcr.io/gennit-project/multiforum-backend:1.2.3
+```
+
+Images support `linux/amd64` and `linux/arm64`, run as a non-root user, and
+include a TCP health check on `PORT` (4000 by default). Each published manifest
+includes OCI source, revision, and version labels together with build
+provenance and an SBOM.
+
+The image contains no deployment credentials or functional database defaults.
+Supply the required settings described in
+[Environment variables and running the app](./docs/environment-variables.md).
+
 ## Status
 
 This project is in active development.
