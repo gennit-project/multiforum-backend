@@ -1,4 +1,9 @@
 .git
+.github
+.env
+.env.*
+.DS_Store
+*.log
 coverage
 node_modules
 ts_emitted
