@@ -18,17 +18,23 @@ coverage:
         threshold: 0%
         informational: false
 
-# Coverage arrives as ONE already-merged report (the `coverage-report` CI job
-# runs build_scripts/mergeLcov.js over the unit + integration-shard lcovs and
-# uploads the union). We deliberately do NOT use flags: uploading the pieces
-# separately let Codecov's cross-flag/cross-upload combination lose real coverage
-# (a line covered by one shard but 0 in the others didn't reliably count) and
-# inflate the denominator via mismatched file lists. One merged upload == the
-# local `coverage:merged` number.
+# The `coverage-report` CI job builds ONE merged report (c8 report over every
+# job's raw coverage == the local `coverage:merged` number) and uploads that SAME
+# complete report under both flags below. We do NOT upload partial per-suite
+# reports: Codecov's cross-upload combination lost real coverage (a line covered
+# by one shard but 0 in the others didn't reliably count) and inflated the
+# denominator. Both flags carry the full merged coverage, so the project total
+# equals the merged number; carryforward just preserves the last good value if a
+# run fails to upload.
+flags:
+  unit:
+    carryforward: true
+  integration:
+    carryforward: true
 
 # Comment settings for PR coverage reports
 comment:
-  layout: "reach,diff,files"
+  layout: "reach,diff,flags,files"
   behavior: default
   require_changes: false
   require_base: false
