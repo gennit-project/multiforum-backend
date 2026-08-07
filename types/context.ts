@@ -42,6 +42,15 @@ export type UserDataOnContext = {
 };
 
 /**
+ * Minimal decoded identity passed to @neo4j/graphql authorization rules.
+ * `sub` is the application username, not the identity-provider subject: graph
+ * ownership relationships are keyed by username in this schema.
+ */
+export type Neo4jAuthorizationJwt = {
+  sub: string;
+};
+
+/**
  * The Express request as seen by GraphQL resolvers and permission rules. A few
  * fields are attached by the context factory / permission layer at runtime.
  */
@@ -65,5 +74,6 @@ export type GraphQLContext = {
   ogm: Ogm;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
+  jwt?: Neo4jAuthorizationJwt;
   jwtError?: Error;
 };
