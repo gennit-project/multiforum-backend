@@ -264,8 +264,11 @@ const permissionRules: IRules = {
       FavoriteChannels: isAccountOwner,
       OwnedDownloads: isAccountOwner,
 
-      // Notifications - only the account owner may list their own notifications
-      Notifications: isAccountOwner,
+      // Notification ownership is filtered inside the generated Cypher by the
+      // Notification @authorization rule. Keeping this field open in shield is
+      // intentional: otherwise shield would reject after the database query and
+      // defeat filter semantics (empty list instead of an authorization error).
+      Notifications: allow,
 
       // Other private fields
       Email: isAccountOwner,
