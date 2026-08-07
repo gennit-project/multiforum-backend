@@ -1,6 +1,6 @@
 import type { Driver } from "neo4j-driver";
 import { updateDiscussionChannelQuery, severConnectionBetweenDiscussionAndChannelQuery } from "../cypher/cypherQueries.js";
-import { DiscussionWhere, DiscussionUpdateInput } from "../../src/generated/graphql";
+import { DiscussionWhere, DiscussionUpdateInput } from "../../src/generated/graphql.js";
 import { discussionVersionHistoryHandler } from "../../hooks/discussionVersionHistoryHook.js";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
