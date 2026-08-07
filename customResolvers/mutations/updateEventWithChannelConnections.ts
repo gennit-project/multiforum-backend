@@ -1,7 +1,7 @@
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import { updateEventChannelQuery, severConnectionBetweenEventAndChannelQuery } from "../cypher/cypherQueries.js";
-import { EventWhere, EventUpdateInput } from "../../src/generated/graphql";
+import { EventWhere, EventUpdateInput } from "../../src/generated/graphql.js";
 import { sendBatchEmails } from "../../services/mail/index.js";
 import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";

@@ -32,10 +32,10 @@ them; the upgrades must be rejected until Neo4j ships support.
   passes. Worked around with `ts-node.compilerOptions.types: ["node"]` in
   tsconfig.json (scoped to ts-node; the main `tsc` program is untouched). Do not
   remove it or the unit tests crash on load.
-- **tsconfig `ignoreDeprecations: "6.0"`**: silences TS6's deprecation of
-  `moduleResolution: node10`. The real migration is `moduleResolution/module:
-  nodenext` (the code is already ~99% `.js`-extension imports), deferred to avoid
-  interop fallout in a dependency-bump PR.
+- **TypeScript module resolution**: `module` and `moduleResolution` use
+  `nodenext` to match the package's ESM runtime. Relative imports must include
+  the emitted `.js` extension, and CommonJS dependencies may require explicit
+  named imports when their declaration files expose them.
 
 ## Code Style
 - **Imports**: ES modules with .js extensions, grouped (third-party first, then local)
@@ -45,7 +45,7 @@ them; the upgrades must be rejected until Neo4j ships support.
 - **Error Handling**: Early returns, explicit error messages, proper error propagation
 - **GraphQL**: Separate Cypher queries in .cypher files, custom resolvers for complex operations
 - **Conventions**: 
-  - ES2018 target with ESNext modules
+  - ES2018 target with NodeNext modules
   - Use Neo4j GraphQL library and OGM for database operations
   - Follow existing permission system architecture (see README.md)
   - Database sessions use the driver's default (leader) routing. Do NOT switch

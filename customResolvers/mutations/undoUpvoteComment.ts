@@ -1,4 +1,4 @@
-import { User } from "../../src/generated/graphql";
+import { User } from "../../src/generated/graphql.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { CommentModel, UserModel } from "../../ogm_types.js";

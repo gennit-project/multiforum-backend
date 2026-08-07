@@ -1,7 +1,7 @@
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import { createDiscussionChannelQuery } from "../cypher/cypherQueries.js";
-import { DiscussionCreateInput } from "../../src/generated/graphql";
+import { DiscussionCreateInput } from "../../src/generated/graphql.js";
 import { triggerChannelPluginPipeline, triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { GraphQLError } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";

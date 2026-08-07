@@ -26,7 +26,7 @@ import { createEventsFromInput } from "./createEventWithChannelConnections.js";
 import {
   DiscussionCreateInputWithChannels,
   EventCreateInputWithChannels,
-} from "../../src/generated/graphql";
+} from "../../src/generated/graphql.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";

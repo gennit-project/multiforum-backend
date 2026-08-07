@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { User } from "../../src/generated/graphql";
+import { User } from "../../src/generated/graphql.js";
 import { log } from "mathjs";
 
 export const getAccountAgeInMonths = (createdAt: Date) => {
