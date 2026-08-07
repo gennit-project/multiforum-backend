@@ -57,6 +57,8 @@ import {
   assertAuthenticationConfiguration,
   createLocalDevTokenHandler,
 } from "./services/localDevAuth.js";
+import { getNeo4jAuthorizationJwt } from "./services/neo4jAuthorization.js";
+import { setUserDataOnContext } from "./rules/permission/userDataHelperFunctions.js";
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
 import type { GraphQLSchema } from "graphql";
 import type { Ogm, GraphQLRequest, GraphQLContext } from "./types/context.js";
@@ -328,11 +330,23 @@ async function initializeServer() {
 
           enrichContext({ operationName: req.body.operationName || undefined });
 
-          return {
+          const context: GraphQLContext = {
             driver,
             req,
             ogm,
           };
+
+          // @neo4j/graphql accepts a decoded identity in context.jwt. Reuse the
+          // application's existing provider-aware verification and username
+          // lookup so authorization predicates compare graph usernames rather
+          // than Auth0 subjects. graphql-shield reuses context.user, avoiding
+          // duplicate identity lookups later in the same request.
+          if (req.headers.authorization) {
+            context.user = await setUserDataOnContext({ context });
+            context.jwt = getNeo4jAuthorizationJwt(context.user, context.jwt);
+          }
+
+          return context;
         },
       })
     );

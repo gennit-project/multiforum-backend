@@ -78,6 +78,8 @@ const typeDefinitions = gql`
   # Populated only by server middleware; never trusted from a client token.
   type JWTPayload @jwt {
     mayAccessSensitiveContent: Boolean!
+    # Verified application username used by owner-scoped authorization rules.
+    sub: String
   }
 
   input RuleInput {
@@ -243,7 +245,12 @@ const typeDefinitions = gql`
     detailImagesPageInfo: DetailCollectionPageInfo! @customResolver
   }
 
-  type Notification @limit(default: 25, max: 100) {
+  type Notification
+    @limit(default: 25, max: 100)
+    @authorization(filter: [{
+      operations: [READ, AGGREGATE]
+      where: { node: { User: { username: "$jwt.sub" } } }
+    }]) {
     id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     read: Boolean
@@ -254,6 +261,12 @@ const typeDefinitions = gql`
     # on the thank-you note (show on profile / ignore) straight from the bell.
     ScratchpadEntry: ScratchpadEntry
       @relationship(type: "NOTIFICATION_FOR_SCRATCHPAD_ENTRY", direction: OUT)
+    # Inverse of User.Notifications. The authorization filter uses this edge so
+    # ownership is enforced in the generated Cypher before rows are returned.
+    # It is read-only so generated nested mutations cannot reassign ownership.
+    User: User
+      @relationship(type: "HAS_NOTIFICATION", direction: IN)
+      @settable(onCreate: false, onUpdate: false)
   }
 
   type Message {
