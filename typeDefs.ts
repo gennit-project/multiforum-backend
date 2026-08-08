@@ -78,6 +78,13 @@ const typeDefinitions = gql`
   type Image {
     id: ID! @id
     url: String
+    variantUrls: JSON
+    list80Url: String
+    list160Url: String
+    list320Url: String
+    detail640Url: String
+    detail960Url: String
+    detail1280Url: String
     storageBucket: String
     storageObjectName: String
     storageUrl: String
@@ -239,6 +246,11 @@ const typeDefinitions = gql`
     location: String
     bio: String
     profilePicURL: String
+    variantUrls: JSON
+    avatar32Url: String
+    avatar48Url: String
+    avatar64Url: String
+    avatar96Url: String
     enableSensitiveContentByDefault: Boolean
     isBot: Boolean @default(value: false)
     botProfileId: String
@@ -814,6 +826,7 @@ const typeDefinitions = gql`
     location: Point
     isHostedByOP: Boolean
     coverImageURL: String
+    variantUrls: JSON
     canceled: Boolean
     deleted: Boolean
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -859,6 +872,7 @@ const typeDefinitions = gql`
     isHostedByOP: Boolean
     isAllDay: Boolean
     coverImageURL: String
+    variantUrls: JSON
     locked: Boolean
     PastTitleVersions: [TextVersion!]!
       @relationship(type: "HAS_TITLE_VERSION", direction: OUT)

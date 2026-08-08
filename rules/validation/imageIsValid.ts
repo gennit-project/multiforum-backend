@@ -5,6 +5,10 @@ import {
   getAttemptedUploadAuditFields,
   uploadAuditFieldsError,
 } from "./uploadAuditFields.js";
+import {
+  getAttemptedImageVariantFields,
+  imageVariantFieldsError,
+} from "./variantFieldUpdates.js";
 
 type UpdateImageArgs = {
   update?: Record<string, unknown> | null;
@@ -21,6 +25,14 @@ export const updateImageInputIsValid = rule({ cache: "contextual" })(
 
     if (attemptedUploadAuditFields.length > 0) {
       return uploadAuditFieldsError(attemptedUploadAuditFields);
+    }
+
+    const attemptedImageVariantFields = getAttemptedImageVariantFields(
+      args.update
+    );
+
+    if (attemptedImageVariantFields.length > 0) {
+      return imageVariantFieldsError(attemptedImageVariantFields);
     }
 
     return true;

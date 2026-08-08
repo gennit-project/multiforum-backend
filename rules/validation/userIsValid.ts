@@ -10,6 +10,10 @@ import {
   MAX_CHARS_IN_USER_DISPLAY_NAME,
   MAX_CHARS_IN_USER_BIO,
 } from "./constants.js";
+import {
+  getAttemptedUserVariantFields,
+  userVariantFieldsError,
+} from "./variantFieldUpdates.js";
 
 type UserInput = {
   username?: string | null;
@@ -48,6 +52,18 @@ export const validateNoRoleRelationshipUpdates = (
     return `Roles cannot be assigned through updateUsers (${attempted.join(
       ", "
     )}). Use the dedicated invite workflows instead.`;
+  }
+
+  return true;
+};
+
+export const validateNoVariantFieldUpdates = (
+  update: Record<string, unknown> | null | undefined
+): true | string => {
+  const attempted = getAttemptedUserVariantFields(update);
+
+  if (attempted.length > 0) {
+    return userVariantFieldsError(attempted);
   }
 
   return true;
@@ -106,6 +122,12 @@ export const updateUserInputIsValid = rule({ cache: "contextual" })(
     );
     if (roleCheck !== true) {
       return roleCheck;
+    }
+    const variantCheck = validateNoVariantFieldUpdates(
+      args.update as Record<string, unknown>
+    );
+    if (variantCheck !== true) {
+      return variantCheck;
     }
     return validateUserInput({
       ...args.update,

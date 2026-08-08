@@ -6,6 +6,10 @@ import {
   MAX_CHARS_IN_EVENT_DESCRIPTION,
   MAX_CHARS_IN_EVENT_TITLE,
 } from "./constants.js";
+import {
+  eventVariantFieldsError,
+  getAttemptedEventVariantFields,
+} from "./variantFieldUpdates.js";
 
 type EventInput = {
   title?: string | null;
@@ -136,6 +140,14 @@ export const updateEventInputIsValid = rule({ cache: "contextual" })(
 
     if (validationResult !== true) {
       throw new Error(validationResult);
+    }
+
+    const attemptedEventVariantFields = getAttemptedEventVariantFields(
+      args.eventUpdateInput as Record<string, unknown>
+    );
+
+    if (attemptedEventVariantFields.length > 0) {
+      throw new Error(eventVariantFieldsError(attemptedEventVariantFields));
     }
 
     return true;
