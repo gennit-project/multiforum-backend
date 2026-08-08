@@ -7,7 +7,9 @@ below.
 ## Authentication
 
 `MULTIFORUM_AUTH_PROVIDER` selects the authentication provider. Leave it unset
-or set it to `auth0` for the production Auth0 flow. The alternative
+or set it to `auth0` for the production Auth0 flow. The production `oidc`
+provider accepts standards-compatible issuers such as Keycloak or Zitadel. The
+alternative
 `local-dev` provider is a single-identity convenience for local Docker Compose
 evaluation only: server startup rejects it when `NODE_ENV=production`.
 
@@ -31,6 +33,26 @@ Why `AUTH0_AUDIENCE` matters: the Nuxt frontend's server-session SDK
 tokens fall through the audience checks and server-side user lookups are
 rejected — users appear logged in but resolve with no username/profile. The
 value must match the frontend's `NUXT_AUTH0_AUDIENCE`.
+
+### Generic OpenID Connect
+
+Set `MULTIFORUM_AUTH_PROVIDER=oidc` to validate access tokens from a
+standards-compatible OpenID Provider. This backend contract is the foundation
+for generic OIDC frontend sessions; selecting it before the corresponding
+frontend support is deployed will not create login routes.
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `OIDC_ISSUER_URL` | Yes | Exact HTTPS issuer identifier expected in the access token's `iss` claim. |
+| `OIDC_AUDIENCE` | Yes | API/resource-server audience required in the access token's `aud` claim. |
+| `OIDC_JWKS_URL` | Yes | HTTPS JSON Web Key Set endpoint used to verify token signatures and key rotation. |
+| `OIDC_USERINFO_URL` | Yes | HTTPS UserInfo endpoint used to resolve the authenticated email. It must return the same `sub` as the access token and `email_verified: true`. |
+
+OIDC access tokens must be RS256-signed, unexpired, and contain a subject. The
+backend validates the signature, issuer, and audience before calling UserInfo,
+then requires the UserInfo subject to match the token. Email addresses that the
+provider has not affirmatively verified are rejected. Endpoint URLs must use
+HTTPS and cannot contain embedded credentials, queries, or fragments.
 
 ### Local development authentication
 
