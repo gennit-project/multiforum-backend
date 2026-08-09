@@ -78,6 +78,8 @@ const typeDefinitions = gql`
   type Image {
     id: ID! @id
     url: String
+    width: Int
+    height: Int
     variantUrls: JSON
     list80Url: String
     list160Url: String
@@ -555,6 +557,11 @@ const typeDefinitions = gql`
     LockedBy: ModerationProfile @relationship(type: "LOCKED_CHANNEL", direction: IN)
     deleted: Boolean
     channelIconURL: String
+    variantUrls: JSON
+    icon32Url: String
+    icon48Url: String
+    icon64Url: String
+    icon96Url: String
     channelBannerURL: String
     rules: JSON
 
@@ -1481,7 +1488,10 @@ const typeDefinitions = gql`
     ): Issue
     permanentlyDeleteImage(imageId: ID!): Image
     permanentlyDeleteDownloadableFile(downloadableFileId: ID!): DownloadableFile
+    setProfileImage(username: String!, imageUrl: String!): User
+    setChannelIcon(channelUniqueName: String!, imageUrl: String!): Channel
     permanentlyDeleteProfileImage(username: String!, imageUrl: String!): User
+    permanentlyDeleteChannelIcon(channelUniqueName: String!, imageUrl: String!): Channel
     permanentlyDeleteChannelBanner(channelUniqueName: String!, imageUrl: String!): Channel
     lockChannel(
       channelUniqueName: String!

@@ -60,7 +60,10 @@ import permanentlyRemoveImage from "./mutations/permanentlyRemoveImage.js";
 import permanentlyDeleteImage from "./mutations/permanentlyDeleteImage.js";
 import permanentlyDeleteDownloadableFile from "./mutations/permanentlyDeleteDownloadableFile.js";
 import permanentlyDeleteProfileImage from "./mutations/permanentlyDeleteProfileImage.js";
+import permanentlyDeleteChannelIcon from "./mutations/permanentlyDeleteChannelIcon.js";
 import permanentlyDeleteChannelBanner from "./mutations/permanentlyDeleteChannelBanner.js";
+import setProfileImage from "./mutations/setProfileImage.js";
+import setChannelIcon from "./mutations/setChannelIcon.js";
 import createIssue from "./mutations/createIssue.js";
 import suspendUser from "./mutations/suspendUser.js";
 import suspendMod from "./mutations/suspendMod.js";
@@ -257,6 +260,14 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     createSignedStorageURL: createSignedStorageURL(),
+    setProfileImage: setProfileImage({
+      User,
+      driver,
+    }),
+    setChannelIcon: setChannelIcon({
+      Channel,
+      driver,
+    }),
     createEmailAndUser: getCreateEmailAndUserResolver({
       User,
       Email,
@@ -412,6 +423,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
+      driver
+    }),
+    permanentlyDeleteChannelIcon: permanentlyDeleteChannelIcon({
       driver
     }),
     permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({

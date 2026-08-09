@@ -27,12 +27,14 @@ export type StorageClient = {
 };
 
 type DeleteStoredObjectInput = StoredObjectMetadata & {
+  additionalStorageObjectNames?: string[] | null;
   storage?: StorageClient;
 };
 
 export const deleteStoredObject = async ({
   storageBucket,
   storageObjectName,
+  additionalStorageObjectNames,
   storage,
 }: DeleteStoredObjectInput): Promise<StorageDeletionResult> => {
   if (!storageBucket || !storageObjectName) {
@@ -45,10 +47,20 @@ export const deleteStoredObject = async ({
   }
 
   const storageClient = storage || new Storage();
-  await storageClient
-    .bucket(storageBucket)
-    .file(storageObjectName)
-    .delete({ ignoreNotFound: true });
+  const uniqueStorageObjectNames = [
+    storageObjectName,
+    ...(additionalStorageObjectNames || []),
+  ].filter(
+    (value, index, allValues): value is string =>
+      Boolean(value) && allValues.indexOf(value) === index
+  );
+
+  for (const currentStorageObjectName of uniqueStorageObjectNames) {
+    await storageClient
+      .bucket(storageBucket)
+      .file(currentStorageObjectName)
+      .delete({ ignoreNotFound: true });
+  }
 
   return {
     status: "deleted",

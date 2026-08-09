@@ -25,6 +25,13 @@ const userVariantUrls = createVariantUrlsResolver({
   avatar96: "avatar96Url",
 });
 
+const channelVariantUrls = createVariantUrlsResolver({
+  avatar32: "icon32Url",
+  avatar48: "icon48Url",
+  avatar64: "icon64Url",
+  avatar96: "icon96Url",
+});
+
 export default function buildTypeResolvers(deps: ResolverDeps) {
   const { ogm } = deps;
 
@@ -88,6 +95,7 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       Images: emptyArrayFallback('Images'),
     },
     Channel: {
+      variantUrls: channelVariantUrls,
       Moderators: emptyArrayFallback('Moderators'),
       Admins: emptyArrayFallback('Admins'),
       Bots: emptyArrayFallback('Bots'),

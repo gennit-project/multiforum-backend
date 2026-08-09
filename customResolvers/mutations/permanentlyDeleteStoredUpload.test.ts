@@ -138,6 +138,14 @@ test("permanentlyDeleteImage lets an uploader delete their own image and storage
       permanentlyRemoved: true,
       deleted: [
         {
+          additionalStorageObjectNames: [
+            "uploads/alice/file__list80.webp",
+            "uploads/alice/file__list160.webp",
+            "uploads/alice/file__list320.webp",
+            "uploads/alice/file__detail640.webp",
+            "uploads/alice/file__detail960.webp",
+            "uploads/alice/file__detail1280.webp",
+          ],
           storageBucket: "bucket",
           storageObjectName: "uploads/alice/file.stl",
         },

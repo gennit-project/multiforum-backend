@@ -190,3 +190,15 @@ test("rejects a malformed file type", () => {
     '"pdf/exe" is not a valid file type.'
   );
 });
+
+test("rejects backend-managed channel icon variant fields", () => {
+  assert.equal(
+    validateChannelInput({
+      uniqueName: "cats",
+      // @ts-expect-error - backend-managed field must not be client writable
+      icon32Url: "https://storage.example/icon32.webp",
+      isEditMode: true,
+    }),
+    "Image variant fields cannot be assigned through updateChannels (icon32Url). They are managed by backend image processing."
+  );
+});

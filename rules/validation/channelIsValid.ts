@@ -11,6 +11,10 @@ import {
   MAX_CHARS_IN_DISPLAY_NAME,
   MAX_CHARS_IN_CHANNEL_DESCRIPTION,
 } from "./constants.js";
+import {
+  channelVariantFieldsError,
+  getAttemptedChannelVariantFields,
+} from "./variantFieldUpdates.js";
 
 type ChannelRule = {
   summary: string;
@@ -54,6 +58,13 @@ const FILE_TYPE_PATTERN = /^\.?[A-Za-z0-9]+$/;
 
 export const validateChannelInput = (input: ChannelInput): true | string => {
   const { uniqueName, description, displayName, isEditMode } = input;
+  const attemptedVariantFields = getAttemptedChannelVariantFields(
+    input as Record<string, unknown>
+  );
+
+  if (attemptedVariantFields.length > 0) {
+    return channelVariantFieldsError(attemptedVariantFields);
+  }
 
   if (!isEditMode) {
     if (!uniqueName) {

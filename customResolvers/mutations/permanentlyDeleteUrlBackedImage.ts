@@ -7,11 +7,15 @@ import {
   deleteStoredObject,
   type StoredObjectMetadata,
 } from "../../services/storageDeletion.js";
+import {
+  USER_AVATAR_VARIANT_KEYS,
+  getGeneratedImageVariantObjectNames,
+} from "../../services/imageVariants.js";
 
 type DeleteObject = typeof deleteStoredObject;
 type CheckServerModPermission = typeof hasServerModPermission;
 
-type ReferenceType = "ProfileImage" | "ChannelBanner";
+type ReferenceType = "ProfileImage" | "ChannelIcon" | "ChannelBanner";
 
 type UrlBackedImageTarget = StoredObjectMetadata & {
   ownerUsername?: string | null;
@@ -73,12 +77,20 @@ const readTarget = async ({
           `
         : `
           MATCH (target:Channel {uniqueName: $channelUniqueName})
-          WHERE target.channelBannerURL = $imageUrl
+          WHERE ${
+            referenceType === "ChannelIcon"
+              ? "target.channelIconURL"
+              : "target.channelBannerURL"
+          } = $imageUrl
           OPTIONAL MATCH (admin:User)-[:ADMIN_OF_CHANNEL]->(target)
           OPTIONAL MATCH (audit:UploadedFileAudit {storageUrl: $imageUrl})
           RETURN
             null AS ownerUsername,
-            target.channelBannerURL AS currentUrl,
+            ${
+              referenceType === "ChannelIcon"
+                ? "target.channelIconURL"
+                : "target.channelBannerURL"
+            } AS currentUrl,
             audit.storageBucket AS storageBucket,
             audit.storageObjectName AS storageObjectName,
             target.uniqueName AS channelUniqueName,
@@ -182,7 +194,26 @@ const clearReference = async ({
           RETURN target.username AS username,
                  target.profilePicURL AS profilePicURL
           `
-        : `
+        : referenceType === "ChannelIcon"
+          ? `
+          MATCH (target:Channel {uniqueName: $channelUniqueName})
+          WHERE target.channelIconURL = $imageUrl
+          SET target.channelIconURL = null,
+              target.variantUrls = null,
+              target.icon32Url = null,
+              target.icon48Url = null,
+              target.icon64Url = null,
+              target.icon96Url = null
+          WITH target
+          OPTIONAL MATCH (audit:UploadedFileAudit {storageUrl: $imageUrl})
+          SET audit.permanentlyRemoved = true,
+              audit.permanentlyRemovedAt = datetime($removedAt),
+              audit.permanentlyRemovedByUsername = $removedByUsername,
+              audit.permanentlyRemovedByModName = $removedByModName
+          RETURN target.uniqueName AS uniqueName,
+                 target.channelIconURL AS channelIconURL
+          `
+          : `
           MATCH (target:Channel {uniqueName: $channelUniqueName})
           WHERE target.channelBannerURL = $imageUrl
           SET target.channelBannerURL = null
@@ -233,7 +264,7 @@ const getResolver = ({
         ? getRequiredArg(args.username, "Username is required")
         : undefined;
     const channelUniqueName =
-      referenceType === "ChannelBanner"
+      referenceType === "ChannelIcon" || referenceType === "ChannelBanner"
         ? getRequiredArg(args.channelUniqueName, "Channel unique name is required")
         : undefined;
 
@@ -262,6 +293,14 @@ const getResolver = ({
     await deleteObject({
       storageBucket: target.storageBucket,
       storageObjectName: target.storageObjectName,
+      additionalStorageObjectNames:
+        (referenceType === "ProfileImage" || referenceType === "ChannelIcon") &&
+        target.storageObjectName
+          ? getGeneratedImageVariantObjectNames(
+              target.storageObjectName,
+              USER_AVATAR_VARIANT_KEYS
+            )
+          : undefined,
     });
 
     return clearReference({

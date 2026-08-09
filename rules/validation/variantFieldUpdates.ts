@@ -12,10 +12,18 @@ const getAttemptedFields = (
 };
 
 const formatVariantFieldsError = (
-  context: "updateUsers" | "image updates" | "event updates",
+  context:
+    | "updateUsers"
+    | "updateChannels"
+    | "image updates"
+    | "event updates",
   attempted: string[]
 ) =>
-  `Image variant fields cannot be assigned through ${context} (${attempted.join(
+  `${
+    context === "image updates"
+      ? "Backend-managed image fields"
+      : "Image variant fields"
+  } cannot be assigned through ${context} (${attempted.join(
     ", "
   )}). They are managed by backend image processing.`;
 
@@ -28,6 +36,8 @@ const userVariantFieldNames = [
 ] as const;
 
 const imageVariantFieldNames = [
+  "width",
+  "height",
   "variantUrls",
   "list80Url",
   "list160Url",
@@ -38,6 +48,14 @@ const imageVariantFieldNames = [
 ] as const;
 
 const eventVariantFieldNames = ["variantUrls"] as const;
+
+const channelVariantFieldNames = [
+  "variantUrls",
+  "icon32Url",
+  "icon48Url",
+  "icon64Url",
+  "icon96Url",
+] as const;
 
 export const getAttemptedUserVariantFields = (
   input: Record<string, unknown> | null | undefined
@@ -59,3 +77,10 @@ export const getAttemptedEventVariantFields = (
 
 export const eventVariantFieldsError = (attempted: string[]) =>
   formatVariantFieldsError("event updates", attempted);
+
+export const getAttemptedChannelVariantFields = (
+  input: Record<string, unknown> | null | undefined
+): string[] => getAttemptedFields(input, channelVariantFieldNames);
+
+export const channelVariantFieldsError = (attempted: string[]) =>
+  formatVariantFieldsError("updateChannels", attempted);
