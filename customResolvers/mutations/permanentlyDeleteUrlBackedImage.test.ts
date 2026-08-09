@@ -63,6 +63,11 @@ const buildDriver = ({ target }: { target: TargetRecord | null }) => {
                     username: params.username,
                     profilePicURL: null,
                   }
+                : query.includes("channelIconURL")
+                  ? {
+                      uniqueName: params.channelUniqueName,
+                      channelIconURL: null,
+                    }
                 : {
                     uniqueName: params.channelUniqueName,
                     channelBannerURL: null,
@@ -189,6 +194,64 @@ test("permanentlyDeleteChannelBanner lets a channel owner delete the active bann
         uniqueName: "cats",
         channelBannerURL: null,
       },
+      writeCount: 1,
+    }
+  );
+});
+
+test("permanentlyDeleteChannelIcon deletes generated icon variants with the original upload", async () => {
+  const { driver, calls } = buildDriver({
+    target: {
+      channelUniqueName: "cats",
+      channelOwnerUsernames: ["alice"],
+      storageObjectName: "uploads/alice/icon.png",
+    },
+  });
+  const deleted: Record<string, unknown>[] = [];
+  const resolver = getResolver({
+    driver,
+    referenceType: "ChannelIcon",
+    deleteObject: async (input) => {
+      deleted.push(input);
+      return { status: "deleted" };
+    },
+    checkServerModPermission: async () => {
+      throw new Error("permission should not be checked for owner");
+    },
+  });
+
+  const result = await resolver(
+    null,
+    {
+      channelUniqueName: "cats",
+      imageUrl: "https://storage.example/image.png",
+    },
+    contextFor("alice")
+  );
+
+  assert.deepEqual(
+    {
+      result,
+      deleted,
+      writeCount: calls.writes.length,
+    },
+    {
+      result: {
+        uniqueName: "cats",
+        channelIconURL: null,
+      },
+      deleted: [
+        {
+          additionalStorageObjectNames: [
+            "uploads/alice/icon__avatar32.webp",
+            "uploads/alice/icon__avatar48.webp",
+            "uploads/alice/icon__avatar64.webp",
+            "uploads/alice/icon__avatar96.webp",
+          ],
+          storageBucket: "bucket",
+          storageObjectName: "uploads/alice/icon.png",
+        },
+      ],
       writeCount: 1,
     }
   );

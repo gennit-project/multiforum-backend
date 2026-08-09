@@ -134,7 +134,7 @@ export const buildImageVariantPersistenceFields = ({
   detail1280Url: variantUrls.detail1280,
 });
 
-export const buildUserAvatarVariantPersistenceFields = ({
+export const buildAvatarVariantPersistenceFields = ({
   variantUrls,
 }: ImageVariantGenerationResult): {
   variantUrls?: Partial<Record<ImageVariantKey, string>>;
@@ -149,6 +149,26 @@ export const buildUserAvatarVariantPersistenceFields = ({
   avatar48Url: variantUrls.avatar48,
   avatar64Url: variantUrls.avatar64,
   avatar96Url: variantUrls.avatar96,
+});
+
+export const buildUserAvatarVariantPersistenceFields =
+  buildAvatarVariantPersistenceFields;
+
+export const buildChannelIconVariantPersistenceFields = ({
+  variantUrls,
+}: ImageVariantGenerationResult): {
+  variantUrls?: Partial<Record<ImageVariantKey, string>>;
+  icon32Url?: string;
+  icon48Url?: string;
+  icon64Url?: string;
+  icon96Url?: string;
+} => ({
+  variantUrls:
+    Object.keys(variantUrls).length > 0 ? { ...variantUrls } : undefined,
+  icon32Url: variantUrls.avatar32,
+  icon48Url: variantUrls.avatar48,
+  icon64Url: variantUrls.avatar64,
+  icon96Url: variantUrls.avatar96,
 });
 
 export const generateImageVariants = async ({

@@ -529,6 +529,8 @@ const permissionRules: IRules = {
       unlockWikiPage: and(isAuthenticated, allow),
       setFeaturedWikiPages: and(isAuthenticated, canManageServerSettings),
       setRankingSettings: and(isAuthenticated, canManageServerSettings),
+      setProfileImage: and(isAuthenticated, isAccountOwner),
+      setChannelIcon: and(isAuthenticated, isChannelOwner),
       setChannelDiscussionFlairConfig: and(isAuthenticated, isChannelOwner),
       suspendMod: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
       suspendUser: and(isAuthenticated, or(isChannelOwner, canSuspendAndUnsuspendUser)),
@@ -557,6 +559,18 @@ const permissionRules: IRules = {
       requestDownloadableFileReview: and(isAuthenticated, allow),
       permanentlyDeleteImage: and(isAuthenticated, allow),
       permanentlyDeleteDownloadableFile: and(isAuthenticated, allow),
+      permanentlyDeleteProfileImage: and(
+        isAuthenticated,
+        or(isAccountOwner, canPermanentlyRemoveImage)
+      ),
+      permanentlyDeleteChannelIcon: and(
+        isAuthenticated,
+        or(isChannelOwner, canPermanentlyRemoveImage)
+      ),
+      permanentlyDeleteChannelBanner: and(
+        isAuthenticated,
+        or(isChannelOwner, canPermanentlyRemoveImage)
+      ),
 
       subscribeToDiscussionChannel: and(isAuthenticated, allow),
       unsubscribeFromDiscussionChannel: and(isAuthenticated, allow),

@@ -28,7 +28,11 @@ type ClaimUploadAuditInput = {
   driver: Driver;
   storageObjectName?: string | null;
   username: string;
-  claimedByType: "Image" | "DownloadableFile" | "UserProfileImage";
+  claimedByType:
+    | "Image"
+    | "DownloadableFile"
+    | "UserProfileImage"
+    | "ChannelIcon";
   claimedById: string;
 };
 
