@@ -7,6 +7,10 @@ import {
   deleteStoredObject,
   type StoredObjectMetadata,
 } from "../../services/storageDeletion.js";
+import {
+  USER_AVATAR_VARIANT_KEYS,
+  getGeneratedImageVariantObjectNames,
+} from "../../services/imageVariants.js";
 
 type DeleteObject = typeof deleteStoredObject;
 type CheckServerModPermission = typeof hasServerModPermission;
@@ -262,6 +266,13 @@ const getResolver = ({
     await deleteObject({
       storageBucket: target.storageBucket,
       storageObjectName: target.storageObjectName,
+      additionalStorageObjectNames:
+        referenceType === "ProfileImage" && target.storageObjectName
+          ? getGeneratedImageVariantObjectNames(
+              target.storageObjectName,
+              USER_AVATAR_VARIANT_KEYS
+            )
+          : undefined,
     });
 
     return clearReference({

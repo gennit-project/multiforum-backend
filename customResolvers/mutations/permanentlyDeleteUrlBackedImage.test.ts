@@ -102,10 +102,10 @@ test("permanentlyDeleteProfileImage lets the profile owner delete the active sto
   const resolver = getResolver({
     driver,
     referenceType: "ProfileImage",
-    deleteObject: async (input) => {
-      deleted.push(input);
-      return { status: "deleted" };
-    },
+      deleteObject: async (input) => {
+        deleted.push(input);
+        return { status: "deleted" };
+      },
     checkServerModPermission: async () => {
       throw new Error("permission should not be checked for owner");
     },
@@ -131,6 +131,12 @@ test("permanentlyDeleteProfileImage lets the profile owner delete the active sto
       },
       deleted: [
         {
+          additionalStorageObjectNames: [
+            "uploads/alice/image__avatar32.webp",
+            "uploads/alice/image__avatar48.webp",
+            "uploads/alice/image__avatar64.webp",
+            "uploads/alice/image__avatar96.webp",
+          ],
           storageBucket: "bucket",
           storageObjectName: "uploads/alice/image.png",
         },

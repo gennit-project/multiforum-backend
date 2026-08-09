@@ -61,6 +61,7 @@ import permanentlyDeleteImage from "./mutations/permanentlyDeleteImage.js";
 import permanentlyDeleteDownloadableFile from "./mutations/permanentlyDeleteDownloadableFile.js";
 import permanentlyDeleteProfileImage from "./mutations/permanentlyDeleteProfileImage.js";
 import permanentlyDeleteChannelBanner from "./mutations/permanentlyDeleteChannelBanner.js";
+import setProfileImage from "./mutations/setProfileImage.js";
 import createIssue from "./mutations/createIssue.js";
 import suspendUser from "./mutations/suspendUser.js";
 import suspendMod from "./mutations/suspendMod.js";
@@ -257,6 +258,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     createSignedStorageURL: createSignedStorageURL(),
+    setProfileImage: setProfileImage({
+      User,
+      driver,
+    }),
     createEmailAndUser: getCreateEmailAndUserResolver({
       User,
       Email,

@@ -8,6 +8,7 @@ import {
   createUploadAuditRecord,
   getRequesterIp,
   getUnclaimedUploadAuditMetadata,
+  getUnclaimedUploadAuditMetadataByUrl,
 } from "./uploadStorageMetadata.js";
 
 const buildDriver = (recordData?: Record<string, unknown>) => {
@@ -167,4 +168,30 @@ test("claimUploadAuditMetadata records the claiming entity", async () => {
       claimedById: "file-1",
     }
   );
+});
+
+test("getUnclaimedUploadAuditMetadataByUrl returns matching metadata", async () => {
+  const { driver } = buildDriver({
+    storageBucket: "bucket",
+    storageObjectName: "uploads/alice/file.stl",
+    storageUrl: "https://storage.googleapis.com/bucket/uploads/alice/file.stl",
+    uploadedAt: "2026-07-01T12:00:00.000000000Z",
+    uploadedByUsername: "alice",
+    uploadedByIp: "203.0.113.10",
+  });
+
+  const metadata = await getUnclaimedUploadAuditMetadataByUrl({
+    driver,
+    storageUrl: "https://storage.googleapis.com/bucket/uploads/alice/file.stl",
+    username: "alice",
+  });
+
+  assert.deepEqual(metadata, {
+    storageBucket: "bucket",
+    storageObjectName: "uploads/alice/file.stl",
+    storageUrl: "https://storage.googleapis.com/bucket/uploads/alice/file.stl",
+    uploadedAt: "2026-07-01T12:00:00.000000000Z",
+    uploadedByUsername: "alice",
+    uploadedByIp: "203.0.113.10",
+  });
 });

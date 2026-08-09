@@ -3,6 +3,10 @@ import sharp from "sharp";
 import { buildStorageUrl } from "./uploadStorageMetadata.js";
 
 export const IMAGE_VARIANT_WIDTHS = {
+  avatar32: 32,
+  avatar48: 48,
+  avatar64: 64,
+  avatar96: 96,
   list80: 80,
   list160: 160,
   list320: 320,
@@ -12,6 +16,22 @@ export const IMAGE_VARIANT_WIDTHS = {
 } as const;
 
 export type ImageVariantKey = keyof typeof IMAGE_VARIANT_WIDTHS;
+
+export const USER_AVATAR_VARIANT_KEYS = [
+  "avatar32",
+  "avatar48",
+  "avatar64",
+  "avatar96",
+] as const satisfies readonly ImageVariantKey[];
+
+export const IMAGE_CONTENT_VARIANT_KEYS = [
+  "list80",
+  "list160",
+  "list320",
+  "detail640",
+  "detail960",
+  "detail1280",
+] as const satisfies readonly ImageVariantKey[];
 
 export type ImageVariantGenerationResult = {
   originalWidth?: number;
@@ -80,9 +100,10 @@ export const buildImageVariantStorageObjectName = ({
 };
 
 export const getGeneratedImageVariantObjectNames = (
-  storageObjectName: string
+  storageObjectName: string,
+  variantKeys: readonly ImageVariantKey[] = IMAGE_CONTENT_VARIANT_KEYS
 ): string[] =>
-  (Object.keys(IMAGE_VARIANT_WIDTHS) as ImageVariantKey[]).map((variantKey) =>
+  variantKeys.map((variantKey) =>
     buildImageVariantStorageObjectName({ storageObjectName, variantKey })
   );
 
@@ -113,13 +134,32 @@ export const buildImageVariantPersistenceFields = ({
   detail1280Url: variantUrls.detail1280,
 });
 
+export const buildUserAvatarVariantPersistenceFields = ({
+  variantUrls,
+}: ImageVariantGenerationResult): {
+  variantUrls?: Partial<Record<ImageVariantKey, string>>;
+  avatar32Url?: string;
+  avatar48Url?: string;
+  avatar64Url?: string;
+  avatar96Url?: string;
+} => ({
+  variantUrls:
+    Object.keys(variantUrls).length > 0 ? { ...variantUrls } : undefined,
+  avatar32Url: variantUrls.avatar32,
+  avatar48Url: variantUrls.avatar48,
+  avatar64Url: variantUrls.avatar64,
+  avatar96Url: variantUrls.avatar96,
+});
+
 export const generateImageVariants = async ({
   storageBucket,
   storageObjectName,
+  variantKeys = IMAGE_CONTENT_VARIANT_KEYS,
   storage,
 }: {
   storageBucket: string;
   storageObjectName: string;
+  variantKeys?: readonly ImageVariantKey[];
   storage?: StorageReadClient;
 }): Promise<ImageVariantGenerationResult> => {
   const storageClient = storage || new Storage();
@@ -155,9 +195,8 @@ export const generateImageVariants = async ({
   const variantUrls: Partial<Record<ImageVariantKey, string>> = {};
   const variantStorageObjectNames: Partial<Record<ImageVariantKey, string>> = {};
 
-  for (const [variantKey, targetWidth] of Object.entries(
-    IMAGE_VARIANT_WIDTHS
-  ) as Array<[ImageVariantKey, number]>) {
+  for (const variantKey of variantKeys) {
+    const targetWidth = IMAGE_VARIANT_WIDTHS[variantKey];
     const variantStorageObjectName = buildImageVariantStorageObjectName({
       storageObjectName,
       variantKey,

@@ -28,13 +28,19 @@ type ClaimUploadAuditInput = {
   driver: Driver;
   storageObjectName?: string | null;
   username: string;
-  claimedByType: "Image" | "DownloadableFile";
+  claimedByType: "Image" | "DownloadableFile" | "UserProfileImage";
   claimedById: string;
 };
 
 type GetUploadAuditMetadataInput = {
   driver: Driver;
   storageObjectName?: string | null;
+  username: string;
+};
+
+type GetUploadAuditMetadataByUrlInput = {
+  driver: Driver;
+  storageUrl?: string | null;
   username: string;
 };
 
@@ -173,6 +179,57 @@ export const getUnclaimedUploadAuditMetadata = async ({
       `,
       {
         storageObjectName,
+        username,
+      }
+    );
+
+    const record = result.records[0];
+    if (!record) {
+      return null;
+    }
+
+    return {
+      storageBucket: record.get("storageBucket"),
+      storageObjectName: record.get("storageObjectName"),
+      storageUrl: record.get("storageUrl"),
+      uploadedAt: record.get("uploadedAt"),
+      uploadedByUsername: record.get("uploadedByUsername"),
+      uploadedByIp: record.get("uploadedByIp"),
+    };
+  } finally {
+    await session.close();
+  }
+};
+
+export const getUnclaimedUploadAuditMetadataByUrl = async ({
+  driver,
+  storageUrl,
+  username,
+}: GetUploadAuditMetadataByUrlInput): Promise<StorageUploadMetadata | null> => {
+  if (!storageUrl) {
+    return null;
+  }
+
+  const session = driver.session({ defaultAccessMode: "READ" });
+
+  try {
+    const result = await session.run(
+      `
+      MATCH (audit:UploadedFileAudit {
+        storageUrl: $storageUrl,
+        uploadedByUsername: $username
+      })
+      WHERE audit.claimedAt IS NULL
+      RETURN
+        audit.storageBucket AS storageBucket,
+        audit.storageObjectName AS storageObjectName,
+        audit.storageUrl AS storageUrl,
+        toString(audit.uploadedAt) AS uploadedAt,
+        audit.uploadedByUsername AS uploadedByUsername,
+        audit.uploadedByIp AS uploadedByIp
+      `,
+      {
+        storageUrl,
         username,
       }
     );
