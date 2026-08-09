@@ -7,6 +7,23 @@ import type { ResolverDeps } from "./resolverDeps.js";
 import userCollections from "./fields/userCollections.js";
 import createDownloadableFileUrlResolver from "./fields/downloadableFileUrl.js";
 import emptyArrayFallback from "./fields/emptyArrayFallback.js";
+import { createVariantUrlsResolver } from "./fields/variantUrls.js";
+
+const imageVariantUrls = createVariantUrlsResolver({
+  list80: "list80Url",
+  list160: "list160Url",
+  list320: "list320Url",
+  detail640: "detail640Url",
+  detail960: "detail960Url",
+  detail1280: "detail1280Url",
+});
+
+const userVariantUrls = createVariantUrlsResolver({
+  avatar32: "avatar32Url",
+  avatar48: "avatar48Url",
+  avatar64: "avatar64Url",
+  avatar96: "avatar96Url",
+});
 
 export default function buildTypeResolvers(deps: ResolverDeps) {
   const { ogm } = deps;
@@ -41,6 +58,10 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
     },
     User: {
       Collections: userCollections({ ogm }),
+      variantUrls: userVariantUrls,
+    },
+    Image: {
+      variantUrls: imageVariantUrls,
     },
     DownloadableFile: {
       url: createDownloadableFileUrlResolver(),
