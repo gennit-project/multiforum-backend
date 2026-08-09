@@ -15,7 +15,11 @@ const formatVariantFieldsError = (
   context: "updateUsers" | "image updates" | "event updates",
   attempted: string[]
 ) =>
-  `Image variant fields cannot be assigned through ${context} (${attempted.join(
+  `${
+    context === "image updates"
+      ? "Backend-managed image fields"
+      : "Image variant fields"
+  } cannot be assigned through ${context} (${attempted.join(
     ", "
   )}). They are managed by backend image processing.`;
 
@@ -28,6 +32,8 @@ const userVariantFieldNames = [
 ] as const;
 
 const imageVariantFieldNames = [
+  "width",
+  "height",
   "variantUrls",
   "list80Url",
   "list160Url",

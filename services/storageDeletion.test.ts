@@ -110,3 +110,45 @@ test("deleteStoredObject propagates storage client errors", async () => {
     /storage unavailable/
   );
 });
+
+test("deleteStoredObject deletes deterministic sibling objects when provided", async () => {
+  const { storage, calls } = buildStorageClient();
+
+  const result = await deleteStoredObject({
+    storageBucket: "bucket",
+    storageObjectName: "uploads/alice/file.png",
+    additionalStorageObjectNames: [
+      "uploads/alice/file__list80.webp",
+      "uploads/alice/file__list160.webp",
+      "uploads/alice/file__list80.webp",
+    ],
+    storage,
+  });
+
+  assert.deepEqual(
+    {
+      result,
+      calls,
+    },
+    {
+      result: {
+        status: "deleted",
+        storageBucket: "bucket",
+        storageObjectName: "uploads/alice/file.png",
+      },
+      calls: {
+        bucket: ["bucket", "bucket", "bucket"],
+        file: [
+          "uploads/alice/file.png",
+          "uploads/alice/file__list80.webp",
+          "uploads/alice/file__list160.webp",
+        ],
+        delete: [
+          { ignoreNotFound: true },
+          { ignoreNotFound: true },
+          { ignoreNotFound: true },
+        ],
+      },
+    }
+  );
+});

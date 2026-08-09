@@ -59,8 +59,8 @@ test("detects attempted image variant field updates", () => {
 
 test("formats a useful image variant field error", () => {
   assert.equal(
-    imageVariantFieldsError(["variantUrls", "detail960Url"]),
-    "Image variant fields cannot be assigned through image updates (variantUrls, detail960Url). They are managed by backend image processing."
+    imageVariantFieldsError(["width", "variantUrls", "detail960Url"]),
+    "Backend-managed image fields cannot be assigned through image updates (width, variantUrls, detail960Url). They are managed by backend image processing."
   );
 });
 

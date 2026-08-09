@@ -78,6 +78,8 @@ const typeDefinitions = gql`
   type Image {
     id: ID! @id
     url: String
+    width: Int
+    height: Int
     variantUrls: JSON
     list80Url: String
     list160Url: String

@@ -9,6 +9,10 @@ import {
   getUnclaimedUploadAuditMetadata,
   type StorageUploadMetadata,
 } from "../../services/uploadStorageMetadata.js";
+import {
+  buildImageVariantPersistenceFields,
+  generateImageVariants,
+} from "../../services/imageVariants.js";
 
 type Args = {
   input: ImageCreateInput[];
@@ -18,6 +22,7 @@ type Input = {
   Image: ImageModel;
   User: UserModel;
   driver?: Driver;
+  generateVariants?: typeof generateImageVariants;
 };
 
 const selectionSet = `
@@ -27,6 +32,8 @@ const selectionSet = `
     storageBucket
     storageObjectName
     storageUrl
+    width
+    height
     uploadedAt
     uploadedByUsername
     uploadedByIp
@@ -48,7 +55,7 @@ const selectionSet = `
 `;
 
 const getResolver = (input: Input) => {
-  const { Image, User, driver } = input;
+  const { Image, User, driver, generateVariants = generateImageVariants } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input: imageInputs } = args;
@@ -95,9 +102,33 @@ const getResolver = (input: Input) => {
       })
     );
 
+    const imageVariantDataByIndex = await Promise.all(
+      uploadMetadataByIndex.map(async (uploadMetadata) => {
+        if (!uploadMetadata?.storageBucket || !uploadMetadata.storageObjectName) {
+          return null;
+        }
+
+        try {
+          return await generateVariants({
+            storageBucket: uploadMetadata.storageBucket,
+            storageObjectName: uploadMetadata.storageObjectName,
+          });
+        } catch (error) {
+          logger.error("Failed to generate image variants:", error);
+          return null;
+        }
+      })
+    );
+
     const sanitizedInputs = (imageInputs || []).map((imageInput, index) => {
-      const { Uploader, ...rest } = imageInput || ({} as ImageCreateInput);
+      const {
+        Uploader,
+        width: _ignoredWidth,
+        height: _ignoredHeight,
+        ...rest
+      } = imageInput || ({} as ImageCreateInput);
       const uploadMetadata = uploadMetadataByIndex[index] as StorageUploadMetadata | null;
+      const imageVariantData = imageVariantDataByIndex[index];
       return {
         ...rest,
         storageBucket: uploadMetadata?.storageBucket,
@@ -106,6 +137,11 @@ const getResolver = (input: Input) => {
         uploadedAt: uploadMetadata?.uploadedAt,
         uploadedByUsername: uploadMetadata?.uploadedByUsername,
         uploadedByIp: uploadMetadata?.uploadedByIp,
+        ...(
+          imageVariantData
+            ? buildImageVariantPersistenceFields(imageVariantData)
+            : {}
+        ),
         Uploader: {
           connect: {
             where: {

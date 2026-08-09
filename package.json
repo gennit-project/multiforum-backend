@@ -63,6 +63,7 @@
     "node-cache": "^5.1.2",
     "random-word-slugs": "^0.1.7",
     "resend": "^6.18.0",
+    "sharp": "^0.35.3",
     "tar-stream": "^3.1.7"
   },
   "devDependencies": {

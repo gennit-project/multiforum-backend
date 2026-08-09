@@ -8,6 +8,7 @@ import {
   type StoredObjectMetadata,
   type StorageDeletionResult,
 } from "../../services/storageDeletion.js";
+import { getGeneratedImageVariantObjectNames } from "../../services/imageVariants.js";
 
 type MediaType = "Image" | "DownloadableFile";
 
@@ -275,10 +276,17 @@ const getResolver = ({
       checkServerModPermission,
     });
 
-    const storageDeletion = await deleteObject({
+    const deleteInput: Parameters<DeleteObject>[0] = {
       storageBucket: target.storageBucket,
       storageObjectName: target.storageObjectName,
-    });
+    };
+
+    if (mediaType === "Image" && target.storageObjectName) {
+      deleteInput.additionalStorageObjectNames =
+        getGeneratedImageVariantObjectNames(target.storageObjectName);
+    }
+
+    const storageDeletion = await deleteObject(deleteInput);
 
     const username = context.user?.username || "";
     const modProfileName = context.user?.data?.ModerationProfile?.displayName || null;
