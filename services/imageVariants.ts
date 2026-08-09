@@ -6,6 +6,9 @@ export const IMAGE_VARIANT_WIDTHS = {
   list80: 80,
   list160: 160,
   list320: 320,
+  detail640: 640,
+  detail960: 960,
+  detail1280: 1280,
 } as const;
 
 export type ImageVariantKey = keyof typeof IMAGE_VARIANT_WIDTHS;
@@ -94,6 +97,9 @@ export const buildImageVariantPersistenceFields = ({
   list80Url?: string;
   list160Url?: string;
   list320Url?: string;
+  detail640Url?: string;
+  detail960Url?: string;
+  detail1280Url?: string;
 } => ({
   width: originalWidth,
   height: originalHeight,
@@ -102,6 +108,9 @@ export const buildImageVariantPersistenceFields = ({
   list80Url: variantUrls.list80,
   list160Url: variantUrls.list160,
   list320Url: variantUrls.list320,
+  detail640Url: variantUrls.detail640,
+  detail960Url: variantUrls.detail960,
+  detail1280Url: variantUrls.detail1280,
 });
 
 export const generateImageVariants = async ({

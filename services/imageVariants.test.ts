@@ -73,6 +73,9 @@ test("getGeneratedImageVariantObjectNames returns all deterministic siblings", (
     "uploads/alice/hero__list80.webp",
     "uploads/alice/hero__list160.webp",
     "uploads/alice/hero__list320.webp",
+    "uploads/alice/hero__detail640.webp",
+    "uploads/alice/hero__detail960.webp",
+    "uploads/alice/hero__detail1280.webp",
   ]);
 });
 
@@ -84,6 +87,7 @@ test("buildImageVariantPersistenceFields maps semantic keys to direct schema fie
       variantUrls: {
         list80: "https://img.test/list80.webp",
         list160: "https://img.test/list160.webp",
+        detail640: "https://img.test/detail640.webp",
       },
       variantStorageObjectNames: {},
     }),
@@ -93,10 +97,14 @@ test("buildImageVariantPersistenceFields maps semantic keys to direct schema fie
       variantUrls: {
         list80: "https://img.test/list80.webp",
         list160: "https://img.test/list160.webp",
+        detail640: "https://img.test/detail640.webp",
       },
       list80Url: "https://img.test/list80.webp",
       list160Url: "https://img.test/list160.webp",
       list320Url: undefined,
+      detail640Url: "https://img.test/detail640.webp",
+      detail960Url: undefined,
+      detail1280Url: undefined,
     }
   );
 });
@@ -127,11 +135,20 @@ test("generateImageVariants creates list-sized webp assets and returns public UR
       "https://storage.googleapis.com/media-bucket/uploads/alice/hero__list160.webp",
     list320:
       "https://storage.googleapis.com/media-bucket/uploads/alice/hero__list320.webp",
+    detail640:
+      "https://storage.googleapis.com/media-bucket/uploads/alice/hero__detail640.webp",
+    detail960:
+      "https://storage.googleapis.com/media-bucket/uploads/alice/hero__detail960.webp",
+    detail1280:
+      "https://storage.googleapis.com/media-bucket/uploads/alice/hero__detail1280.webp",
   });
   assert.deepEqual(result.variantStorageObjectNames, {
     list80: "uploads/alice/hero__list80.webp",
     list160: "uploads/alice/hero__list160.webp",
     list320: "uploads/alice/hero__list320.webp",
+    detail640: "uploads/alice/hero__detail640.webp",
+    detail960: "uploads/alice/hero__detail960.webp",
+    detail1280: "uploads/alice/hero__detail1280.webp",
   });
   assert.equal(result.originalWidth, 400);
   assert.equal(result.originalHeight, 200);
@@ -143,6 +160,9 @@ test("generateImageVariants creates list-sized webp assets and returns public UR
       "uploads/alice/hero__list80.webp",
       "uploads/alice/hero__list160.webp",
       "uploads/alice/hero__list320.webp",
+      "uploads/alice/hero__detail640.webp",
+      "uploads/alice/hero__detail960.webp",
+      "uploads/alice/hero__detail1280.webp",
     ]
   );
   assert.ok(calls.save.every((call) => call.contentType === "image/webp"));

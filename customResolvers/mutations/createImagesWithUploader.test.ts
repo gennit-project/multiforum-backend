@@ -114,11 +114,20 @@ test("createImages persists generated variant URLs alongside verified upload met
           "https://storage.googleapis.com/bucket/uploads/alice/pic__list160.webp",
         list320:
           "https://storage.googleapis.com/bucket/uploads/alice/pic__list320.webp",
+        detail640:
+          "https://storage.googleapis.com/bucket/uploads/alice/pic__detail640.webp",
+        detail960:
+          "https://storage.googleapis.com/bucket/uploads/alice/pic__detail960.webp",
+        detail1280:
+          "https://storage.googleapis.com/bucket/uploads/alice/pic__detail1280.webp",
       },
       variantStorageObjectNames: {
         list80: "uploads/alice/pic__list80.webp",
         list160: "uploads/alice/pic__list160.webp",
         list320: "uploads/alice/pic__list320.webp",
+        detail640: "uploads/alice/pic__detail640.webp",
+        detail960: "uploads/alice/pic__detail960.webp",
+        detail1280: "uploads/alice/pic__detail1280.webp",
       },
     }),
   });
@@ -165,6 +174,12 @@ test("createImages persists generated variant URLs alongside verified upload met
             "https://storage.googleapis.com/bucket/uploads/alice/pic__list160.webp",
           list320:
             "https://storage.googleapis.com/bucket/uploads/alice/pic__list320.webp",
+          detail640:
+            "https://storage.googleapis.com/bucket/uploads/alice/pic__detail640.webp",
+          detail960:
+            "https://storage.googleapis.com/bucket/uploads/alice/pic__detail960.webp",
+          detail1280:
+            "https://storage.googleapis.com/bucket/uploads/alice/pic__detail1280.webp",
         },
         list80Url:
           "https://storage.googleapis.com/bucket/uploads/alice/pic__list80.webp",
@@ -172,6 +187,12 @@ test("createImages persists generated variant URLs alongside verified upload met
           "https://storage.googleapis.com/bucket/uploads/alice/pic__list160.webp",
         list320Url:
           "https://storage.googleapis.com/bucket/uploads/alice/pic__list320.webp",
+        detail640Url:
+          "https://storage.googleapis.com/bucket/uploads/alice/pic__detail640.webp",
+        detail960Url:
+          "https://storage.googleapis.com/bucket/uploads/alice/pic__detail960.webp",
+        detail1280Url:
+          "https://storage.googleapis.com/bucket/uploads/alice/pic__detail1280.webp",
         Uploader: {
           connect: {
             where: {
