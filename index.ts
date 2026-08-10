@@ -37,6 +37,7 @@ import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistory
 import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdog.js";
 import { PluginPipelineCampaignService } from "./services/plugin/pipelineCampaign.js";
 import { ensureSchemaConstraints } from "./services/schemaConstraints.js";
+import { initializeOgmFromExistingSchema } from "./services/initializeOgmFromExistingSchema.js";
 import { provisionInstanceOnStartup } from "./services/startupProvisioning.js";
 import {
   assertAuthenticationConfiguration,
@@ -192,7 +193,9 @@ async function initializeServer() {
       await driver.session().run(ensureUniqueIssueWikiRevisionPerChannel);
     }
 
-    let schema = await neoSchema.getSchema();
+    const ogmSchema = await neoSchema.getSchema();
+    initializeOgmFromExistingSchema(ogm, neoSchema, ogmSchema);
+    let schema = ogmSchema;
     type AppMiddleware = IMiddleware<unknown, GraphQLContext>;
     schema = applyMiddleware(
       schema,
@@ -211,7 +214,6 @@ async function initializeServer() {
       channelCreatorModeratorMiddleware as AppMiddleware,
       filterGroupValidationMiddleware as AppMiddleware
     );
-    await ogm.init();
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
     await ensureSchemaConstraints(neoSchema);
     await provisionInstanceOnStartup({

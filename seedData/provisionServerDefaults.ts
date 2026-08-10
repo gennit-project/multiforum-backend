@@ -42,6 +42,12 @@ export type ProvisionServerDefaultsResult = {
   adminsBackfilledToSuperAdmins: string[];
 };
 
+// OGM's create/update return the mutation-response type
+// (Create/UpdateServerConfigsMutationResponse), so the selection must reach
+// through the `serverConfigs` node accessor rather than selecting node fields
+// directly (unlike `find`, whose selection is applied at the node level).
+const SERVER_CONFIG_MINIMAL_SELECTION = "{ serverConfigs { serverName } }";
+
 // Upsert a role by its unique `name`: update when present, create otherwise.
 const upsertByName = async (
   model: AnyModel,
@@ -94,7 +100,10 @@ export const provisionServerDefaults = async (
   let currentConfig: Record<string, { name?: string | null } | null> = {};
 
   if (existingConfigs.length === 0) {
-    await ServerConfig.create({ input: [{ serverName }] });
+    await ServerConfig.create({
+      input: [{ serverName }],
+      selectionSet: SERVER_CONFIG_MINIMAL_SELECTION,
+    });
     serverConfigCreated = true;
     log(`Created ServerConfig '${serverName}'.`);
   } else {
@@ -133,7 +142,11 @@ export const provisionServerDefaults = async (
     rolesWired.push(relationship);
   }
   if (Object.keys(wiringUpdate).length > 0) {
-    await ServerConfig.update({ where: { serverName }, update: wiringUpdate });
+    await ServerConfig.update({
+      where: { serverName },
+      update: wiringUpdate,
+      selectionSet: SERVER_CONFIG_MINIMAL_SELECTION,
+    });
   }
   log(`Wired ${rolesWired.length} default-role links on '${serverName}'.`);
 
@@ -149,6 +162,7 @@ export const provisionServerDefaults = async (
           connect: [{ where: { node: { username } } }],
         })),
       },
+      selectionSet: SERVER_CONFIG_MINIMAL_SELECTION,
     });
     log(
       `Backfilled ${adminsToPromote.length} admin(s) into SuperAdmins: ${adminsToPromote.join(", ")}.`
