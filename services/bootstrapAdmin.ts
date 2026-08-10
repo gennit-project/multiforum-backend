@@ -22,7 +22,10 @@ export type BootstrapAdminInput = {
   log?: (message: string) => void;
 };
 
-const SERVER_CONFIG_MINIMAL_SELECTION = "{ serverName }";
+// OGM's update returns the UpdateServerConfigsMutationResponse type, so the
+// selection must reach through the `serverConfigs` node accessor rather than
+// selecting node fields directly.
+const SERVER_CONFIG_MINIMAL_SELECTION = "{ serverConfigs { serverName } }";
 
 const linkedEmail = (user: any): string | null =>
   typeof user?.Email?.address === "string" ? user.Email.address : null;

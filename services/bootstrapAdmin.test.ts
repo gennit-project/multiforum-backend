@@ -50,7 +50,7 @@ test("creates the first user and connects it as SuperAdmin", async () => {
   ]);
   assert.deepEqual(configUpdates, [
     {
-      selectionSet: "{ serverName }",
+      selectionSet: "{ serverConfigs { serverName } }",
       where: { serverName: "Community Forum" },
       update: {
         SuperAdmins: [

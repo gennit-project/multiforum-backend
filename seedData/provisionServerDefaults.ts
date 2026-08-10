@@ -42,7 +42,11 @@ export type ProvisionServerDefaultsResult = {
   adminsBackfilledToSuperAdmins: string[];
 };
 
-const SERVER_CONFIG_MINIMAL_SELECTION = "{ serverName }";
+// OGM's create/update return the mutation-response type
+// (Create/UpdateServerConfigsMutationResponse), so the selection must reach
+// through the `serverConfigs` node accessor rather than selecting node fields
+// directly (unlike `find`, whose selection is applied at the node level).
+const SERVER_CONFIG_MINIMAL_SELECTION = "{ serverConfigs { serverName } }";
 
 // Upsert a role by its unique `name`: update when present, create otherwise.
 const upsertByName = async (
