@@ -42,7 +42,7 @@
     "@neo4j/graphql-ogm": "^5.9.1",
     "@sendgrid/mail": "^8.1.4",
     "@types/tar-stream": "^3.1.4",
-    "axios": "^1.18.1",
+    "axios": "^1.19.0",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -70,7 +70,7 @@
     "@graphql-codegen/cli": "7.2.0",
     "@graphql-codegen/typescript": "6.1.0",
     "@graphql-codegen/typescript-resolvers": "6.1.0",
-    "@testcontainers/neo4j": "^12.0.4",
+    "@testcontainers/neo4j": "^12.1.0",
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -84,10 +84,10 @@
     "eslint": "^10.8.0",
     "husky": "^9.1.7",
     "madge": "^8.0.0",
-    "testcontainers": "^12.0.4",
+    "testcontainers": "^12.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.66.0"
   },
   "pnpm": {
     "overrides": {
