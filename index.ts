@@ -193,7 +193,9 @@ async function initializeServer() {
       await driver.session().run(ensureUniqueIssueWikiRevisionPerChannel);
     }
 
-    let schema = await neoSchema.getSchema();
+    const ogmSchema = await neoSchema.getSchema();
+    initializeOgmFromExistingSchema(ogm, neoSchema, ogmSchema);
+    let schema = ogmSchema;
     type AppMiddleware = IMiddleware<unknown, GraphQLContext>;
     schema = applyMiddleware(
       schema,
@@ -212,7 +214,6 @@ async function initializeServer() {
       channelCreatorModeratorMiddleware as AppMiddleware,
       filterGroupValidationMiddleware as AppMiddleware
     );
-    initializeOgmFromExistingSchema(ogm, neoSchema, schema);
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
     await ensureSchemaConstraints(neoSchema);
     await provisionInstanceOnStartup({
