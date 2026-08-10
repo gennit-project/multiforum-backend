@@ -96,6 +96,10 @@ test("fresh provisioning creates roles and the server config", async () => {
   assert.equal(result.serverConfigCreated, true);
   // The config is created, then updated to wire the default-role links.
   assert.equal(ServerConfig.calls.create.length, 1);
+  assert.equal(
+    ServerConfig.calls.create[0].selectionSet,
+    "{ serverName }"
+  );
   assert.ok(result.rolesWired.includes("DefaultSuperAdminRole"));
   assert.ok(result.rolesWired.includes("DefaultAdminRole"));
 });
@@ -138,6 +142,7 @@ test("backfill promotes only admins that are not already super-admins", async ()
     (u) => u.update?.SuperAdmins
   );
   assert.ok(backfillUpdate, "expected a SuperAdmins backfill update");
+  assert.equal(backfillUpdate.selectionSet, "{ serverName }");
 });
 
 test("provisionServerDefaultsFromOgm resolves the three models off the OGM and delegates", async () => {

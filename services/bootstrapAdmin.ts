@@ -22,6 +22,8 @@ export type BootstrapAdminInput = {
   log?: (message: string) => void;
 };
 
+const SERVER_CONFIG_MINIMAL_SELECTION = "{ serverName }";
+
 const linkedEmail = (user: any): string | null =>
   typeof user?.Email?.address === "string" ? user.Email.address : null;
 
@@ -121,6 +123,7 @@ export const provisionBootstrapAdmin = async (
         { connect: [{ where: { node: { username } } }] },
       ],
     },
+    selectionSet: SERVER_CONFIG_MINIMAL_SELECTION,
   });
   log(`Connected bootstrap user '${username}' as a SuperAdmin.`);
 

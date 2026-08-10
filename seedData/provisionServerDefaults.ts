@@ -42,6 +42,8 @@ export type ProvisionServerDefaultsResult = {
   adminsBackfilledToSuperAdmins: string[];
 };
 
+const SERVER_CONFIG_MINIMAL_SELECTION = "{ serverName }";
+
 // Upsert a role by its unique `name`: update when present, create otherwise.
 const upsertByName = async (
   model: AnyModel,
@@ -94,7 +96,10 @@ export const provisionServerDefaults = async (
   let currentConfig: Record<string, { name?: string | null } | null> = {};
 
   if (existingConfigs.length === 0) {
-    await ServerConfig.create({ input: [{ serverName }] });
+    await ServerConfig.create({
+      input: [{ serverName }],
+      selectionSet: SERVER_CONFIG_MINIMAL_SELECTION,
+    });
     serverConfigCreated = true;
     log(`Created ServerConfig '${serverName}'.`);
   } else {
@@ -133,7 +138,11 @@ export const provisionServerDefaults = async (
     rolesWired.push(relationship);
   }
   if (Object.keys(wiringUpdate).length > 0) {
-    await ServerConfig.update({ where: { serverName }, update: wiringUpdate });
+    await ServerConfig.update({
+      where: { serverName },
+      update: wiringUpdate,
+      selectionSet: SERVER_CONFIG_MINIMAL_SELECTION,
+    });
   }
   log(`Wired ${rolesWired.length} default-role links on '${serverName}'.`);
 
@@ -149,6 +158,7 @@ export const provisionServerDefaults = async (
           connect: [{ where: { node: { username } } }],
         })),
       },
+      selectionSet: SERVER_CONFIG_MINIMAL_SELECTION,
     });
     log(
       `Backfilled ${adminsToPromote.length} admin(s) into SuperAdmins: ${adminsToPromote.join(", ")}.`
