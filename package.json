@@ -37,7 +37,7 @@
     "@as-integrations/express5": "^1.1.2",
     "@google-cloud/storage": "^7.7.0",
     "@graphql-tools/delegate": "12.1.0",
-    "@graphql-tools/schema": "^10.0.36",
+    "@graphql-tools/schema": "^10.0.38",
     "@neo4j/graphql": "^5.12.11",
     "@neo4j/graphql-ogm": "^5.9.1",
     "@sendgrid/mail": "^8.1.4",

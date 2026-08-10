@@ -39,8 +39,8 @@ importers:
         specifier: 12.1.0
         version: 12.1.0(graphql@16.14.2)
       '@graphql-tools/schema':
-        specifier: ^10.0.36
-        version: 10.0.36(graphql@16.14.2)
+        specifier: ^10.0.38
+        version: 10.0.38(graphql@16.14.2)
       '@neo4j/graphql':
         specifier: ^5.12.11
         version: 5.12.11(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
@@ -720,12 +720,6 @@ packages:
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@graphql-tools/merge@9.2.0':
-    resolution: {integrity: sha512-kChDH/sOxm3TCICup5NgTiz/aJBk+5GAuC0lfJS8FcRfsqZvlCkNwpsYTGAATBCJMrgZ9+csRugCjS97jPcNMw==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-
   '@graphql-tools/merge@9.2.2':
     resolution: {integrity: sha512-DSLLAztOIQId7QE3m8Ehk5lV+0pjxNSSRDHPzlYQ9E4KJ9AoUMBprC4C+eX3v4srh05S2ujm5/veqAr5yEWFSQ==}
     engines: {node: '>=16.0.0'}
@@ -746,12 +740,6 @@ packages:
 
   '@graphql-tools/resolvers-composition@7.0.32':
     resolution: {integrity: sha512-WfhyuynCnNzKvHKUDQoYGxnK5iGxCaTnNvUgvBfk5YZXKq8UBrGQv7lC+Uh/HFrHF2a46WXHoaCrqjIBStDtww==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-
-  '@graphql-tools/schema@10.0.36':
-    resolution: {integrity: sha512-g8S5aLirZInoi3NojzmBxwsZfVawOE0UBlVWYe8kDAR0FxS0riBDiyW7JnlAKayooHMRAMwGaze4RQU3VTTyig==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
@@ -781,12 +769,6 @@ packages:
 
   '@graphql-tools/utils@11.0.1':
     resolution: {integrity: sha512-pNyCOb95ab/z3zkkiPwIPYxigX7IcpyFVcgD1XACDEvg/7yGnKCESx3k/XHEeneKYx/aWKGzEh/uuf6M6Q8HOw==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-
-  '@graphql-tools/utils@11.2.0':
-    resolution: {integrity: sha512-eu9h1R3j/wWc4rvmYJF5AKtlwniDzstrZ/c6KSz+HdI+n7I7iog9xyKmBfpUwSbG1TqPNZBzWjFMkzdYOKq6Bg==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
@@ -4155,7 +4137,7 @@ snapshots:
       '@apollo/utils.logger': 3.0.0
       '@apollo/utils.usagereporting': 2.1.0(graphql@16.14.2)
       '@apollo/utils.withrequired': 3.0.0
-      '@graphql-tools/schema': 10.0.36(graphql@16.14.2)
+      '@graphql-tools/schema': 10.0.38(graphql@16.14.2)
       async-retry: 1.3.3
       body-parser: 2.3.0
       content-type: 1.0.5
@@ -4529,7 +4511,7 @@ snapshots:
   '@graphql-codegen/core@4.0.2(graphql@16.14.2)':
     dependencies:
       '@graphql-codegen/plugin-helpers': 5.1.1(graphql@16.14.2)
-      '@graphql-tools/schema': 10.0.36(graphql@16.14.2)
+      '@graphql-tools/schema': 10.0.38(graphql@16.14.2)
       '@graphql-tools/utils': 10.11.0(graphql@16.14.2)
       graphql: 16.14.2
       tslib: 2.6.3
@@ -4537,7 +4519,7 @@ snapshots:
   '@graphql-codegen/core@6.2.0(graphql@16.14.2)':
     dependencies:
       '@graphql-codegen/plugin-helpers': 7.1.0(graphql@16.14.2)
-      '@graphql-tools/schema': 10.0.36(graphql@16.14.2)
+      '@graphql-tools/schema': 10.0.38(graphql@16.14.2)
       '@graphql-tools/utils': 11.2.2(graphql@16.14.2)
       graphql: 16.14.2
       tslib: 2.8.1
@@ -4681,7 +4663,7 @@ snapshots:
       '@graphql-tools/utils': 8.9.0(graphql@16.14.2)
       dataloader: 2.1.0
       graphql: 16.14.2
-      tslib: 2.4.1
+      tslib: 2.8.1
       value-or-promise: 1.0.11
 
   '@graphql-tools/code-file-loader@8.1.36(graphql@16.14.2)':
@@ -4699,7 +4681,7 @@ snapshots:
     dependencies:
       '@graphql-tools/batch-execute': 10.0.9(graphql@16.14.2)
       '@graphql-tools/executor': 1.5.7(graphql@16.14.2)
-      '@graphql-tools/schema': 10.0.36(graphql@16.14.2)
+      '@graphql-tools/schema': 10.0.38(graphql@16.14.2)
       '@graphql-tools/utils': 11.2.2(graphql@16.14.2)
       '@repeaterjs/repeater': 3.1.0
       '@whatwg-node/promise-helpers': 1.3.2
@@ -4871,12 +4853,6 @@ snapshots:
       graphql: 16.14.2
       tslib: 2.8.1
 
-  '@graphql-tools/merge@9.2.0(graphql@16.14.2)':
-    dependencies:
-      '@graphql-tools/utils': 11.2.0(graphql@16.14.2)
-      graphql: 16.14.2
-      tslib: 2.8.1
-
   '@graphql-tools/merge@9.2.2(graphql@16.14.2)':
     dependencies:
       '@graphql-tools/utils': 11.2.2(graphql@16.14.2)
@@ -4901,13 +4877,6 @@ snapshots:
       graphql: 16.14.2
       lodash: 4.18.1
       micromatch: 4.0.8
-      tslib: 2.8.1
-
-  '@graphql-tools/schema@10.0.36(graphql@16.14.2)':
-    dependencies:
-      '@graphql-tools/merge': 9.2.0(graphql@16.14.2)
-      '@graphql-tools/utils': 11.2.0(graphql@16.14.2)
-      graphql: 16.14.2
       tslib: 2.8.1
 
   '@graphql-tools/schema@10.0.38(graphql@16.14.2)':
@@ -4953,17 +4922,9 @@ snapshots:
       '@whatwg-node/promise-helpers': 1.3.2
       cross-inspect: 1.0.1
       graphql: 16.14.2
-      tslib: 2.6.3
-
-  '@graphql-tools/utils@11.0.1(graphql@16.14.2)':
-    dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.14.2)
-      '@whatwg-node/promise-helpers': 1.3.2
-      cross-inspect: 1.0.1
-      graphql: 16.14.2
       tslib: 2.8.1
 
-  '@graphql-tools/utils@11.2.0(graphql@16.14.2)':
+  '@graphql-tools/utils@11.0.1(graphql@16.14.2)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.14.2)
       '@whatwg-node/promise-helpers': 1.3.2
@@ -4987,7 +4948,7 @@ snapshots:
   '@graphql-tools/wrap@11.1.20(graphql@16.14.2)':
     dependencies:
       '@graphql-tools/delegate': 12.1.0(graphql@16.14.2)
-      '@graphql-tools/schema': 10.0.36(graphql@16.14.2)
+      '@graphql-tools/schema': 10.0.38(graphql@16.14.2)
       '@graphql-tools/utils': 11.2.2(graphql@16.14.2)
       '@whatwg-node/promise-helpers': 1.3.2
       graphql: 16.14.2
@@ -5323,7 +5284,7 @@ snapshots:
       '@as-integrations/express4': 1.1.2(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)
       '@graphql-tools/merge': 9.1.10(graphql@16.14.2)
       '@graphql-tools/resolvers-composition': 7.0.32(graphql@16.14.2)
-      '@graphql-tools/schema': 10.0.36(graphql@16.14.2)
+      '@graphql-tools/schema': 10.0.38(graphql@16.14.2)
       '@graphql-tools/utils': 11.0.1(graphql@16.14.2)
       '@neo4j/cypher-builder': 2.12.0
       camelcase: 6.3.0
@@ -6015,7 +5976,7 @@ snapshots:
   camel-case@4.1.2:
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   camelcase@6.3.0: {}
 
@@ -6024,7 +5985,7 @@ snapshots:
   capital-case@1.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   chalk@4.1.2:
@@ -6067,7 +6028,7 @@ snapshots:
       path-case: 3.0.4
       sentence-case: 3.0.4
       snake-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   change-case@5.4.4: {}
 
@@ -6164,7 +6125,7 @@ snapshots:
   constant-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case: 2.0.2
 
   content-disposition@1.1.0: {}
@@ -6374,7 +6335,7 @@ snapshots:
   dot-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   dot-prop@6.0.1:
     dependencies:
@@ -6940,7 +6901,7 @@ snapshots:
   header-case@2.0.4:
     dependencies:
       capital-case: 1.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   html-entities@2.6.0: {}
 
@@ -7042,7 +7003,7 @@ snapshots:
 
   is-lower-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   is-number@7.0.0: {}
 
@@ -7076,7 +7037,7 @@ snapshots:
 
   is-upper-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   is-url-superb@4.0.0: {}
 
@@ -7276,11 +7237,11 @@ snapshots:
 
   lower-case-first@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   lower-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   lru-cache@10.4.3: {}
 
@@ -7455,7 +7416,7 @@ snapshots:
   no-case@3.0.4:
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   node-cache@5.1.2:
     dependencies:
@@ -7543,7 +7504,7 @@ snapshots:
   param-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   parent-module@1.0.1:
     dependencies:
@@ -7569,12 +7530,12 @@ snapshots:
   pascal-case@3.1.2:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   path-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   path-exists@4.0.0: {}
 
@@ -7874,7 +7835,7 @@ snapshots:
   sentence-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   serve-static@2.2.1:
@@ -7991,7 +7952,7 @@ snapshots:
   snake-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   source-map-js@1.2.1: {}
 
@@ -8002,7 +7963,7 @@ snapshots:
 
   sponge-case@1.0.1:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   sponge-case@2.0.3: {}
 
@@ -8116,7 +8077,7 @@ snapshots:
 
   swap-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   swap-case@3.0.3: {}
 
@@ -8362,11 +8323,11 @@ snapshots:
 
   upper-case-first@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   upper-case@2.0.2:
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   uri-js@4.4.1:
     dependencies:
