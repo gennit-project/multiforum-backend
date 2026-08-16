@@ -2,14 +2,16 @@
 
 # Multiforum Backend
 
-The GraphQL/Neo4j backend for Multiforum. The frontend lives in a separate
-repository: [gennit-project/multiforum-nuxt](https://github.com/gennit-project/multiforum-nuxt).
+The GraphQL/Neo4j backend for Multiforum.
 
-📖 **Hosted documentation: [docs.multiforum.net](https://docs.multiforum.net/)** — product
+- **Frontend:** lives in a separate
+repository: [gennit-project/multiforum-nuxt](https://github.com/gennit-project/multiforum-nuxt).
+- **Hosted documentation:** [docs.multiforum.net](https://docs.multiforum.net/) product
 docs and guides. This README and the [`docs/`](./docs) folder cover the backend
 internals.
+- **Website:** [multiforum.net](https://www.multiforum.net/)
+- **Hosted demo:** [topical.space](https://www.topical.space/discussions)
 
-> Multiforum is under active development; test coverage is being expanded as core features stabilize.
 
 ## About
 
