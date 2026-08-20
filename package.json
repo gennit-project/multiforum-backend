@@ -80,7 +80,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^26.2.0",
     "c8": "^11.0.0",
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.4",
     "eslint": "^10.8.0",
     "husky": "^9.1.7",
     "madge": "^8.0.0",
