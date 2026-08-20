@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { RequestHandler } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
+import { getOidcConfiguration } from "./oidcAuth.js";
 
 const LOCAL_DEV_PROVIDER = "local-dev";
 const TOKEN_ISSUER = "multiforum-local-dev";
@@ -9,7 +10,7 @@ const TOKEN_LIFETIME_SECONDS = 12 * 60 * 60;
 
 type Environment = NodeJS.ProcessEnv;
 
-export type AuthenticationProvider = "auth0" | typeof LOCAL_DEV_PROVIDER;
+export type AuthenticationProvider = "auth0" | "oidc" | typeof LOCAL_DEV_PROVIDER;
 
 export type LocalDevIdentity = {
   email: string;
@@ -31,9 +32,9 @@ export const getAuthenticationProvider = (
   env: Environment = process.env
 ): AuthenticationProvider => {
   const provider = env.MULTIFORUM_AUTH_PROVIDER?.trim().toLowerCase() || "auth0";
-  if (provider !== "auth0" && provider !== LOCAL_DEV_PROVIDER) {
+  if (provider !== "auth0" && provider !== "oidc" && provider !== LOCAL_DEV_PROVIDER) {
     throw new Error(
-      `Unsupported MULTIFORUM_AUTH_PROVIDER '${provider}'. Use 'auth0' or 'local-dev'.`
+      `Unsupported MULTIFORUM_AUTH_PROVIDER '${provider}'. Use 'auth0', 'oidc', or 'local-dev'.`
     );
   }
   return provider;
@@ -97,8 +98,12 @@ const requireLocalDevConfiguration = (env: Environment) => {
 export const assertAuthenticationConfiguration = (
   env: Environment = process.env
 ): void => {
-  if (getAuthenticationProvider(env) === LOCAL_DEV_PROVIDER) {
+  const provider = getAuthenticationProvider(env);
+  if (provider === LOCAL_DEV_PROVIDER) {
     requireLocalDevConfiguration(env);
+  }
+  if (provider === "oidc") {
+    getOidcConfiguration(env);
   }
 };
 

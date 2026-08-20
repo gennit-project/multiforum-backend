@@ -4,6 +4,10 @@ import {
   getLocalDevAuthMissingVariables,
   isLocalDevAuthConfigured,
 } from "../../services/localDevAuth.js";
+import {
+  getOidcAuthMissingVariables,
+  isOidcAuthConfigured,
+} from "../../services/oidcAuth.js";
 
 type Environment = NodeJS.ProcessEnv;
 
@@ -75,9 +79,10 @@ export const buildInstanceSetupStatus = ({
   serverConfig: ServerFeatureConfig | null;
 }): InstanceSetupStatus => {
   const authProvider = getAuthenticationProvider(env);
-  const authMissing =
-    authProvider === "local-dev"
-      ? getLocalDevAuthMissingVariables(env)
+  const authMissing = authProvider === "local-dev"
+    ? getLocalDevAuthMissingVariables(env)
+    : authProvider === "oidc"
+      ? getOidcAuthMissingVariables(env)
       : missingVariables(env, [
           "AUTH0_DOMAIN",
           "AUTH0_CLIENT_ID",
@@ -94,9 +99,10 @@ export const buildInstanceSetupStatus = ({
     "PLUGIN_SECRET_ENCRYPTION_KEY",
   ]);
 
-  const authConfigured =
-    authProvider === "local-dev"
-      ? isLocalDevAuthConfigured(env)
+  const authConfigured = authProvider === "local-dev"
+    ? isLocalDevAuthConfigured(env)
+    : authProvider === "oidc"
+      ? isOidcAuthConfigured(env)
       : authMissing.length === 0;
   const mailConfigured = mailMissing.length === 0;
   const mapsConfigured = mapsMissing.length === 0;

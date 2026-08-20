@@ -17,6 +17,7 @@ import {
   getAuthenticationProvider,
   verifyLocalDevToken,
 } from "../../services/localDevAuth.js";
+import { verifyOidcToken } from "../../services/oidcAuth.js";
 
 type CachedUserInfo = {
   email: string | null;
@@ -142,6 +143,7 @@ export type AuthContextForUserLookup = {
 
 type SetUserDataInput = {
   context: AuthContextForUserLookup;
+  oidcTokenVerifier?: typeof verifyOidcToken;
 };
 
 // UserDataOnContext now lives in types/context.ts (single source of truth for
@@ -153,6 +155,7 @@ export const setUserDataOnContext = async (
   input: SetUserDataInput
 ): Promise<UserDataOnContext> => {
   const { context } = input;
+  const oidcTokenVerifier = input.oidcTokenVerifier ?? verifyOidcToken;
 
   // Identity is stable for the lifetime of a single request. graphql-shield
   // invokes this once per rule, and ~40 mutation resolvers call it again
@@ -205,6 +208,31 @@ export const setUserDataOnContext = async (
       try {
         const localIdentity = verifyLocalDevToken(token);
         email = localIdentity.email;
+        emailVerified = true;
+        username = await getUserFromEmail(email, ogm.model("Email"));
+        if (username) {
+          modProfileName = await getModProfileNameFromUsername(username, ogm);
+        }
+      } catch (error) {
+        const isExpired =
+          error instanceof Error && error.name === "TokenExpiredError";
+        const errorMessage = isExpired
+          ? ERROR_MESSAGES.channel.tokenExpired ||
+            "Your session has expired. Please sign in again."
+          : ERROR_MESSAGES.channel.invalidToken ||
+            "Your authentication token is invalid. Please sign in again.";
+
+        if (context.req?.isMutation === true) {
+          throw new Error(errorMessage);
+        }
+        context.jwtError = new Error(errorMessage);
+      }
+    }
+
+    if (!username && !email && authProvider === "oidc") {
+      try {
+        const oidcIdentity = await oidcTokenVerifier(token);
+        email = oidcIdentity.email;
         emailVerified = true;
         username = await getUserFromEmail(email, ogm.model("Email"));
         if (username) {
