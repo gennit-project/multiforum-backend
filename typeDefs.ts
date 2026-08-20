@@ -206,7 +206,11 @@ const typeDefinitions = gql`
     Discussions: [Discussion!]! @relationship(type: "HAS_ALBUM", direction: IN)
   }
 
-  type Notification {
+  type Notification
+    @authorization(filter: [{
+      operations: [READ, AGGREGATE]
+      where: { node: { User: { username: "$jwt.sub" } } }
+    }]) {
     id: ID! @id
     createdAt: DateTime! @timestamp(operations: [CREATE])
     read: Boolean
@@ -217,6 +221,9 @@ const typeDefinitions = gql`
     # on the thank-you note (show on profile / ignore) straight from the bell.
     ScratchpadEntry: ScratchpadEntry
       @relationship(type: "NOTIFICATION_FOR_SCRATCHPAD_ENTRY", direction: OUT)
+    # Inverse of User.Notifications. The authorization filter uses this edge so
+    # ownership is enforced in the generated Cypher before rows are returned.
+    User: User @relationship(type: "HAS_NOTIFICATION", direction: IN)
   }
 
   type Message {
