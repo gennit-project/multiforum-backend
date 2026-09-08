@@ -4,13 +4,16 @@ import { getCommentRepliesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { CommentModel } from "../../ogm_types.js";
+import type { CommentModel, ServerConfigModel } from "../../ogm_types.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
+import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 
 type Input = {
   Comment: CommentModel;
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
   serverName?: string;
 };
 
@@ -23,13 +26,25 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Comment, serverName } = input;
+  const { driver, Comment, ServerConfig, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { commentId, modName, offset, limit, sort } = args;
     context.user = await setUserDataOnContext({
       context,
     });
     const loggedInUsername = context.user?.username || null;
+
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver,
+      ServerConfig,
+    });
+    if (
+      !canViewSensitiveContent &&
+      await isSensitiveContentTarget(driver, { commentId })
+    ) {
+      return { ChildComments: [], aggregateChildCommentCount: 0 };
+    }
 
     const session = driver.session();
 

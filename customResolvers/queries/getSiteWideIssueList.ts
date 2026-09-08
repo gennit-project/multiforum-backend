@@ -5,9 +5,12 @@ import { getSiteWideIssuesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
+import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
+import type { ServerConfigModel } from "../../ogm_types.js";
 
 type Input = {
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
 };
 
 type Args = {
@@ -64,7 +67,7 @@ const normalizePaginationValue = (
 };
 
 const getResolver = (input: Input) => {
-  const { driver } = input;
+  const { driver, ServerConfig } = input;
 
   return async (
     parent: unknown,
@@ -88,6 +91,11 @@ const getResolver = (input: Input) => {
     const loggedInUsername = context.user?.username || null;
     const loggedInModProfileName =
       context.user?.data?.ModerationProfile?.displayName || null;
+    const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
+      context,
+      driver,
+      ServerConfig,
+    });
 
     // A filter that needs an identity is a no-op (matches nothing) when the
     // caller is not logged in, rather than silently returning every issue.
@@ -131,6 +139,7 @@ const getResolver = (input: Input) => {
         filterIReported,
         loggedInUsername,
         loggedInModProfileName,
+        mayAccessSensitiveContent,
         offset,
         limit,
         sort,

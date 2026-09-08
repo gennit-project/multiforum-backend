@@ -7,7 +7,9 @@ import {
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { DiscussionChannelModel } from "../../ogm_types.js";
+import type { DiscussionChannelModel, ServerConfigModel } from "../../ogm_types.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
+import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 
@@ -77,6 +79,7 @@ const discussionChannelSelectionSet = `
 type Input = {
   driver: Driver
   DiscussionChannel: DiscussionChannelModel
+  ServerConfig?: ServerConfigModel
   serverName?: string
 }
 
@@ -90,7 +93,7 @@ type Args = {
 }
 
 const getResolver = (input: Input) => {
-  const { driver, DiscussionChannel, serverName } = input
+  const { driver, DiscussionChannel, ServerConfig, serverName } = input
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, discussionId, modName, offset, limit, sort } =
       args
@@ -98,6 +101,18 @@ const getResolver = (input: Input) => {
       context,
     });
     const loggedInUsername = context.user?.username || null;
+
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver,
+      ServerConfig,
+    });
+    if (
+      !canViewSensitiveContent &&
+      await isSensitiveContentTarget(driver, { discussionId })
+    ) {
+      return { DiscussionChannel: null, Comments: [] };
+    }
 
     const session = driver.session()
 

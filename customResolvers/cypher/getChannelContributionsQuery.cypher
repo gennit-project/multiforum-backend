@@ -11,6 +11,7 @@ CALL {
   MATCH (u:User)-[:POSTED_DISCUSSION]->(d)
   WHERE date(datetime(d.createdAt)) >= date($startDate)
     AND date(datetime(d.createdAt)) <= date($endDate)
+    AND ($mayAccessSensitiveContent OR coalesce(d.hasSensitiveContent, false) = false)
   RETURN u, d.createdAt AS createdAt, 'discussion' AS type, d AS item, dc
 
   UNION
@@ -21,6 +22,7 @@ CALL {
   MATCH (c)<-[:CONTAINS_COMMENT]-(commentDc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(channel)
   WHERE date(datetime(c.createdAt)) >= date($startDate)
     AND date(datetime(c.createdAt)) <= date($endDate)
+    AND ($mayAccessSensitiveContent OR NOT EXISTS { MATCH (commentDc)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
   RETURN u, c.createdAt AS createdAt, 'comment' AS type, c AS item, commentDc AS dc
 }
 

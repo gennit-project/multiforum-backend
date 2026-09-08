@@ -20,7 +20,15 @@ OPTIONAL MATCH (relatedEventForComment)<-[:POSTED_IN_CHANNEL]-(relatedEventForCo
 OPTIONAL MATCH (relatedEventForCommentChannel)-[:POSTED_IN_CHANNEL]->(relatedEventForCommentChannelNode:Channel)
 WITH mod, startDate, endDate,
   collect(
-    CASE WHEN action IS NULL THEN null ELSE {
+    CASE WHEN action IS NULL OR (NOT $mayAccessSensitiveContent AND (
+      coalesce(relatedDiscussion.hasSensitiveContent, false) = true
+      OR EXISTS { MATCH (actionComment)-[:IS_REPLY_TO*0..]->(actionThreadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(actionDiscussion:Discussion) WHERE coalesce(actionDiscussion.hasSensitiveContent, false) = true }
+      OR EXISTS { MATCH (actionComment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(actionThreadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(actionDiscussion:Discussion) WHERE coalesce(actionDiscussion.hasSensitiveContent, false) = true }
+      OR EXISTS { MATCH (relatedComment)-[:IS_REPLY_TO*0..]->(relatedThreadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(commentDiscussion:Discussion) WHERE coalesce(commentDiscussion.hasSensitiveContent, false) = true }
+      OR EXISTS { MATCH (relatedComment)-[:HAS_FEEDBACK_COMMENT]->(commentDiscussion:Discussion) WHERE coalesce(commentDiscussion.hasSensitiveContent, false) = true }
+      OR EXISTS { MATCH (relatedComment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(relatedThreadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(commentDiscussion:Discussion) WHERE coalesce(commentDiscussion.hasSensitiveContent, false) = true }
+      OR EXISTS { MATCH (:Image {id: issue.relatedImageId, hasSensitiveContent: true}) }
+    )) THEN null ELSE {
       id: action.id,
       actionType: action.actionType,
       actionDescription: action.actionDescription,
@@ -104,7 +112,10 @@ OPTIONAL MATCH (feedbackEventForComment)<-[:POSTED_IN_CHANNEL]-(feedbackEventFor
 OPTIONAL MATCH (feedbackEventForCommentChannel)-[:POSTED_IN_CHANNEL]->(feedbackEventForCommentChannelNode:Channel)
 WITH actionActivities,
   collect(
-    CASE WHEN feedbackComment IS NULL THEN null ELSE {
+    CASE WHEN feedbackComment IS NULL OR (NOT $mayAccessSensitiveContent AND (
+      coalesce(feedbackDiscussion.hasSensitiveContent, false) = true
+      OR EXISTS { MATCH (feedbackOnComment)-[:IS_REPLY_TO*0..]->(feedbackThreadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(feedbackCommentDiscussion:Discussion) WHERE coalesce(feedbackCommentDiscussion.hasSensitiveContent, false) = true }
+    )) THEN null ELSE {
       id: feedbackComment.id,
       actionType: 'feedback',
       actionDescription: CASE

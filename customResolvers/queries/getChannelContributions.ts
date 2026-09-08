@@ -2,12 +2,15 @@ import { getChannelContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
 import type { Driver } from "neo4j-driver";
 import type { Record as Neo4jRecord } from "neo4j-driver";
-import type { ChannelModel } from "../../ogm_types.js";
+import type { ChannelModel, ServerConfigModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import { logger } from "../../logger.js";
 
 interface Input {
   Channel: ChannelModel;
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
 }
 
 interface Args {
@@ -19,10 +22,15 @@ interface Args {
 }
 
 const getChannelContributionsResolver = (input: Input) => {
-  const { driver, Channel } = input;
+  const { driver, Channel, ServerConfig } = input;
 
-  return async (_parent: unknown, args: Args) => {
+  return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { channelUniqueName, year, startDate, endDate, limit } = args;
+    const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
+      context,
+      driver,
+      ServerConfig,
+    });
     const session = driver.session({ defaultAccessMode: 'READ' });
 
     try {
@@ -143,6 +151,7 @@ const getChannelContributionsResolver = (input: Input) => {
         startDate: effectiveStartDate,
         endDate: effectiveEndDate,
         limit: parseInt(String(limit || 10), 10),
+        mayAccessSensitiveContent,
       });
 
       logger.info('Query returned', result.records.length, 'records');

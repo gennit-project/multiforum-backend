@@ -66,4 +66,8 @@ export type GraphQLContext = {
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;
+  /** Request-scoped result of the server's sensitive-content age policy. */
+  mayAccessSensitiveContent?: boolean;
+  /** Claims consumed internally by Neo4j GraphQL authorization directives. */
+  jwt?: Record<string, unknown>;
 };

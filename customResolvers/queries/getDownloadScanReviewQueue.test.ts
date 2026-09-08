@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import getDownloadScanReviewQueue from "./getDownloadScanReviewQueue.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 test("returns held files with creator requests first", async () => {
   const calls: any[] = [];
@@ -25,7 +26,7 @@ test("returns held files with creator requests first", async () => {
     } as any,
   });
 
-  const result = await resolver(null, { limit: 500 });
+  const result = await resolver(null, { limit: 500 }, { mayAccessSensitiveContent: true } as GraphQLContext);
 
   assert.deepEqual({
     result,

@@ -5,6 +5,13 @@ AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
+AND ($mayAccessSensitiveContent OR (
+  NOT EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
+))
 AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })
 AND ($filterIAmOP = false OR issue.relatedUsername = $loggedInUsername OR issue.relatedModProfileName = $loggedInModProfileName)
 AND ($filterIReported = false OR EXISTS { (issue)-[:ACTIVITY_ON_ISSUE]->(:ModerationAction {actionType: "report"})<-[:PERFORMED_MODERATION_ACTION]-(reporter) WHERE reporter.username = $loggedInUsername OR reporter.displayName = $loggedInModProfileName })
@@ -17,6 +24,13 @@ AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
+AND ($mayAccessSensitiveContent OR (
+  NOT EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
+))
 AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })
 AND ($filterIAmOP = false OR issue.relatedUsername = $loggedInUsername OR issue.relatedModProfileName = $loggedInModProfileName)
 AND ($filterIReported = false OR EXISTS { (issue)-[:ACTIVITY_ON_ISSUE]->(:ModerationAction {actionType: "report"})<-[:PERFORMED_MODERATION_ACTION]-(reporter) WHERE reporter.username = $loggedInUsername OR reporter.displayName = $loggedInModProfileName })

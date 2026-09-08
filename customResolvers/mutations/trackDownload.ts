@@ -5,6 +5,8 @@ import {
   type UserDataOnContext
 } from '../../rules/permission/userDataHelperFunctions.js'
 import type { GraphQLContext } from '../../types/context.js'
+import type { ServerConfigModel } from '../../ogm_types.js'
+import { mayAccessSensitiveContent } from '../../services/sensitiveContentAccess.js'
 
 type Args = {
   downloadableFileId: string
@@ -15,6 +17,7 @@ type GetUserData = typeof setUserDataOnContext
 
 type Input = {
   driver: Driver
+  ServerConfig?: ServerConfigModel
   getUserData?: GetUserData
 }
 
@@ -51,7 +54,8 @@ const getCurrentUser = async (input: {
 
 const trackDownload = ({
   driver,
-  getUserData = setUserDataOnContext
+  getUserData = setUserDataOnContext,
+  ServerConfig
 }: Input) => {
   return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { downloadableFileId, discussionId } = args
@@ -66,6 +70,11 @@ const trackDownload = ({
 
     const currentUser = await getCurrentUser({ context, getUserData })
     const username = currentUser?.username || null
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver,
+      ServerConfig,
+    })
 
     const session = driver.session({ defaultAccessMode: 'WRITE' })
 
@@ -74,13 +83,15 @@ const trackDownload = ({
         const result = await session.run(
           `
           MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
-          WHERE coalesce(file.scanStatus, 'PENDING') = 'CLEAN'
+          WHERE ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
+            AND coalesce(file.scanStatus, 'PENDING') = 'CLEAN'
           SET file.downloadCountTotal = coalesce(file.downloadCountTotal, 0) + 1
           RETURN count(file) AS updated
           `,
           {
             downloadableFileId,
-            discussionId
+            discussionId,
+            mayAccessSensitiveContent: canViewSensitiveContent
           }
         )
 
@@ -99,9 +110,11 @@ const trackDownload = ({
         MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
         OPTIONAL MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion)
         WITH user, discussion, file, collect(DISTINCT author.username) AS authorUsernames
-        WHERE coalesce(file.scanStatus, 'PENDING') = 'CLEAN'
+        WHERE ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
+          AND (coalesce(file.scanStatus, 'PENDING') = 'CLEAN'
           OR file.uploadedByUsername = $username
           OR $username IN authorUsernames
+          )
         OPTIONAL MATCH (user)-[existingDownload:DOWNLOADED_FILE]->(file)
         MERGE (user)<-[:CREATED_BY]-(downloadsCollection:Collection {
           name: $downloadsCollectionName,
@@ -132,6 +145,7 @@ const trackDownload = ({
         `,
         {
           username,
+          mayAccessSensitiveContent: canViewSensitiveContent,
           downloadsCollectionName: AUTO_SAVED_DOWNLOADS_COLLECTION_NAME,
           downloadsCollectionDescription:
             AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION,

@@ -48,6 +48,7 @@ const {
   serverRoleInputDoesNotEscalate,
   modServerRoleInputDoesNotEscalate,
   serverConfigInputDoesNotEscalate,
+  serverAgeConfigIsValid,
   channelRoleInputDoesNotEscalate,
   modChannelRoleInputDoesNotEscalate,
   canReport,
@@ -78,6 +79,7 @@ const {
 // fallback until its public surface has been reviewed and added here.
 const PUBLIC_READ_TYPES = [
   "Activity",
+  "AgePolicy",
   "Album",
   "ApplicablePluginPipeline",
   "Channel",
@@ -138,6 +140,7 @@ const PUBLIC_READ_TYPES = [
   "ModServerRole",
   "ModerationAction",
   "Notification",
+  "OwnAgeProfile",
   "OwnEmail",
   "PipelineStep",
   "Plugin",
@@ -380,17 +383,18 @@ const permissionRules: IRules = {
 
       createModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       createServerRoles: and(isAuthenticated, canManageRoles, serverRoleInputDoesNotEscalate),
-      createServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate),
+      createServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate, serverAgeConfigIsValid),
       deleteServerConfigs: and(isAuthenticated, canManageServerSettings),
 
       // canManageServerSettings additionally must not be used to escalate a tier
       // role via a nested role create/update/connect (see §5 / PR-4b).
-      updateServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate),
+      updateServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate, serverAgeConfigIsValid),
       updateModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       deleteChannelRoles: and(isAuthenticated, or(canManageRoles, isChannelOwner)),
       deleteServerRoles: and(isAuthenticated, canManageRoles),
       
-      createEmailAndUser: allow, // Keep this as-is since this is for user registration
+      createEmailAndUser: allow, // Self-scoped to the verified token in the resolver.
+      setMyBirthday: allow, // Self-scoped and write-once in the resolver.
       // Self-only: a user may edit their own account, never another's. The
       // role-assignment fields are additionally blocked in the resolver to
       // prevent privilege escalation. Server admins do NOT get a blanket edit

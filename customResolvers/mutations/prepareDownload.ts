@@ -16,6 +16,7 @@ import { SECURITY_SCAN_PLUGIN_ID } from "../../services/plugin/downloadScanOutco
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { createDownloadReadUrl } from "../../services/downloadStorage.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import trackDownload from "./trackDownload.js";
 
 type Input = {
@@ -42,6 +43,7 @@ type FileRecord = {
   Discussion?: {
     id?: string | null;
     Author?: { username?: string | null } | null;
+    hasSensitiveContent?: boolean | null;
   } | null;
 };
 
@@ -101,7 +103,7 @@ const selectFile = async (
       scanReason
       scanCheckedAt
       uploadedByUsername
-      Discussion { id Author { username } }
+      Discussion { id hasSensitiveContent Author { username } }
     }`,
   }) as FileRecord[];
 
@@ -157,8 +159,17 @@ export const createPrepareDownloadResolver = (
     const username = context.user?.username;
     if (!username) throw new Error("You must be logged in to download files");
 
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver: input.driver,
+      ServerConfig: input.ServerConfig,
+    });
+
     const originalFile = await selectFile(input.DownloadableFile, downloadableFileId);
     if (!originalFile || originalFile.Discussion?.id !== discussionId) {
+      throw new Error("Downloadable file not found for this discussion");
+    }
+    if (!canViewSensitiveContent && originalFile.Discussion?.hasSensitiveContent) {
       throw new Error("Downloadable file not found for this discussion");
     }
 

@@ -6,6 +6,10 @@ WHERE
         MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
         WHERE d.title =~ $titleRegex OR d.body =~ $bodyRegex
     })
+    AND EXISTS {
+        MATCH (dc)-[:POSTED_IN_CHANNEL]->(visibleDiscussion:Discussion)
+        WHERE $mayAccessSensitiveContent OR coalesce(visibleDiscussion.hasSensitiveContent, false) = false
+    }
     AND (CASE WHEN $sortOption = "top" THEN (datetime(dc.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis OR $startOfTimeFrame IS NULL ) ELSE TRUE END)
     AND (
         SIZE($selectedTags) = 0 OR 
@@ -66,6 +70,10 @@ WHERE
         MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion) 
         WHERE d.title =~ $titleRegex OR d.body =~ $bodyRegex
     })
+    AND EXISTS {
+        MATCH (dc)-[:POSTED_IN_CHANNEL]->(visibleDiscussion:Discussion)
+        WHERE $mayAccessSensitiveContent OR coalesce(visibleDiscussion.hasSensitiveContent, false) = false
+    }
     AND (CASE WHEN $sortOption = "top" THEN (datetime(dc.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis OR $startOfTimeFrame IS NULL ) ELSE TRUE END)
     AND (
         SIZE($selectedTags) = 0 OR 
@@ -183,6 +191,7 @@ OPTIONAL MATCH (album)-[:HAS_IMAGE]->(image:Image)
 WHERE image.id IS NOT NULL
   AND (image.archived IS NULL OR image.archived = false)
   AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
+  AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
 
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
      weightedVotesCount, comments, hotRank,

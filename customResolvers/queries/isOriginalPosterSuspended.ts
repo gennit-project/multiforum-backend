@@ -6,11 +6,14 @@ import type {
   DiscussionModel,
   EventModel,
   ChannelModel,
-  UserModel
+  UserModel,
+  ServerConfigModel
 } from '../../ogm_types.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import { getActiveServerSuspension } from '../../rules/permission/getActiveServerSuspension.js'
 import { resolveIssueTarget } from '../shared/resolveIssueTarget.js'
+import { mayAccessSensitiveContent } from '../../services/sensitiveContentAccess.js'
+import { isSensitiveContentTarget } from '../../services/sensitiveContentTarget.js'
 
 type Input = {
   Channel: ChannelModel
@@ -19,14 +22,24 @@ type Input = {
   Discussion: DiscussionModel
   Event: EventModel
   User: UserModel
+  ServerConfig?: ServerConfigModel
 }
 
 export default function getResolver (input: Input) {
-  const { Issue, Event, Comment, Discussion, User } = input
+  const { Issue, Event, Comment, Discussion, User, ServerConfig } = input
   return async (parent: unknown, args: { issueId: string }, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { issueId } = args
     if (!issueId) {
       throw new Error('All arguments (issueId) are required')
+    }
+
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver: context.driver,
+      ServerConfig,
+    })
+    if (!canViewSensitiveContent && await isSensitiveContentTarget(context.driver, { issueId })) {
+      return false
     }
 
     const target = await resolveIssueTarget({

@@ -1,12 +1,15 @@
 import { getModContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
-import type { ModerationProfileModel } from "../../ogm_types.js";
+import type { ModerationProfileModel, ServerConfigModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import { logger } from "../../logger.js";
 
 interface Input {
   ModerationProfile: ModerationProfileModel;
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
 }
 
 interface Args {
@@ -17,10 +20,15 @@ interface Args {
 }
 
 const getModContributionsResolver = (input: Input) => {
-  const { driver, ModerationProfile } = input;
+  const { driver, ModerationProfile, ServerConfig } = input;
 
-  return async (_parent: unknown, args: Args) => {
+  return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { displayName, year, startDate, endDate } = args;
+    const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
+      context,
+      driver,
+      ServerConfig,
+    });
     const session = driver.session({ defaultAccessMode: 'READ' });
 
     try {
@@ -45,6 +53,7 @@ const getModContributionsResolver = (input: Input) => {
         displayName,
         startDate: effectiveStartDate,
         endDate: effectiveEndDate,
+        mayAccessSensitiveContent,
       });
 
       const contributions = result.records

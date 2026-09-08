@@ -7,6 +7,8 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionChannelModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
+import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
+import type { ServerConfigModel } from "../../ogm_types.js";
 
 enum timeFrameOptionKeys {
   year = "year",
@@ -18,6 +20,7 @@ enum timeFrameOptionKeys {
 type Input = {
   DiscussionChannel: DiscussionChannelModel;
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
   serverName?: string;
 };
 
@@ -43,7 +46,7 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, serverName } = input;
+  const { driver, ServerConfig, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, options, selectedTags, searchInput, showArchived, showUnanswered, hasDownload, labelFilters } = args;
     const { offset, limit, sort, timeFrame } = options || {};
@@ -54,6 +57,11 @@ const getResolver = (input: Input) => {
   
     const loggedInUsername = context.user?.username || null;
     const hasDownloadFilter = typeof hasDownload === "boolean" ? hasDownload : null;
+    const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
+      context,
+      driver,
+      ServerConfig,
+    });
     const searchValue = searchInput ?? "";
 
     const session = driver.session();
@@ -85,6 +93,7 @@ const getResolver = (input: Input) => {
         startOfTimeFrame: null,
         sortOption: "new",
         loggedInUsername,
+        mayAccessSensitiveContent,
         ...rankingParams,
       };
 

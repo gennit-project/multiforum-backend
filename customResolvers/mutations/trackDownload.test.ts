@@ -214,3 +214,27 @@ test('trackDownload throws when the file does not belong to the discussion', asy
     /Downloadable file is unavailable or not found for this discussion/
   )
 })
+
+test('trackDownload excludes sensitive discussions for an ineligible caller', async () => {
+  const { driver, calls } = buildDriver(0)
+  const resolver = trackDownload({ driver })
+  const context = {
+    user: { username: 'minor' },
+    mayAccessSensitiveContent: false
+  } as unknown as GraphQLContext
+
+  await assert.rejects(
+    resolver(
+      null,
+      { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+      context
+    ),
+    /unavailable or not found/
+  )
+
+  assert.equal((calls.run[0][1] as any).mayAccessSensitiveContent, false)
+  assert.match(
+    calls.run[0][0],
+    /\$mayAccessSensitiveContent OR coalesce\(discussion\.hasSensitiveContent, false\) = false/
+  )
+})

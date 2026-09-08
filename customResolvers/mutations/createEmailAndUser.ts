@@ -1,18 +1,27 @@
-import { EmailModel, UserModel, UserCreateInput } from "../../ogm_types.js";
+import { EmailModel, ServerConfigModel, UserModel, UserCreateInput } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { generateSlug } from "random-word-slugs";
 import { validateUserInput } from "../../rules/validation/userIsValid.js";
 import { logger } from "../../logger.js";
+import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import {
+  DEFAULT_AGE_POLICY,
+  type AgePolicy,
+  loadAgePolicy,
+  validateRegistrationBirthday,
+} from "../../services/agePolicy.js";
 
 type Args = {
   emailAddress: string;
   username: string;
+  birthday?: string | null;
 };
 
 type Input = {
   User: UserModel;
   Email: EmailModel;
+  ServerConfig: ServerConfigModel;
 };
 
 /**
@@ -22,11 +31,15 @@ export const createUsersWithEmails = async (
   User: UserModel,
   Email: EmailModel,
   emailAddress: string,
-  username: string
+  username: string,
+  birthday?: string | null,
+  agePolicy: AgePolicy = DEFAULT_AGE_POLICY
 ) => {
   if (!emailAddress || !username) {
     throw new Error("Both emailAddress and username are required");
   }
+  validateRegistrationBirthday({ birthday, policy: agePolicy });
+
   if (username.toLowerCase().startsWith("bot-")) {
     throw new Error("Usernames starting with \"bot-\" are reserved");
   }
@@ -77,6 +90,7 @@ export const createUsersWithEmails = async (
   // Prepare user creation input
   const userCreateInput: UserCreateInput = {
     username,
+    ...(birthday ? { dateOfBirth: birthday } : {}),
     Email: {
       create: {
         node: { address: emailAddress },
@@ -132,14 +146,30 @@ export const createUsersWithEmails = async (
  * Main resolver that uses createUsersWithEmails
  */
 const getCreateEmailAndUserResolver = (input: Input) => {
-  const { User, Email } = input;
+  const { User, Email, ServerConfig } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
-    const { emailAddress, username } = args;
+    const { emailAddress, username, birthday } = args;
 
     try {
-      // Use the extracted function to create a user
-      const newUser = await createUsersWithEmails(User, Email, emailAddress, username);
+      context.user = await setUserDataOnContext({ context });
+      const verifiedEmail = context.user?.email;
+      if (!verifiedEmail || !context.user?.email_verified) {
+        throw new Error("A verified login is required to create an account");
+      }
+      if (verifiedEmail.toLowerCase() !== emailAddress.toLowerCase()) {
+        throw new Error("Account email must match the verified login");
+      }
+
+      const agePolicy = await loadAgePolicy(ServerConfig);
+      const newUser = await createUsersWithEmails(
+        User,
+        Email,
+        verifiedEmail,
+        username,
+        birthday,
+        agePolicy
+      );
       return newUser;
     } catch (e: unknown) {
       logger.error(e);
