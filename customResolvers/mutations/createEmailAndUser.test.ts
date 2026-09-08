@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { isDate } from "neo4j-driver";
 import { createUsersWithEmails } from "./createEmailAndUser.js";
 
 // Validation runs before any DB access, so these stubs are never reached.
@@ -79,5 +80,6 @@ test("persists birthday only through account creation", async () => {
     "2000-01-01"
   );
 
-  assert.equal(createdInput[0].dateOfBirth, "2000-01-01");
+  assert.equal(isDate(createdInput[0].dateOfBirth), true);
+  assert.equal(createdInput[0].dateOfBirth.toString(), "2000-01-01");
 });
