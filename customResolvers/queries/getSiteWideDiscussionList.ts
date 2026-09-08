@@ -6,10 +6,13 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
+import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
+import type { ServerConfigModel } from "../../ogm_types.js";
 
 type Input = {
   Discussion: DiscussionModel;
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
   serverName?: string;
 };
 
@@ -37,11 +40,16 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Discussion, serverName } = input;
+  const { driver, Discussion, ServerConfig, serverName } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, loggedInUsername, options } = args;
     const { offset, limit, resultsOrder, sort, timeFrame } = options || {};
+    const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
+      context,
+      driver,
+      ServerConfig,
+    });
 
     const session = driver.session();
     let titleRegex = `(?i).*${searchInput}.*`;
@@ -76,6 +84,7 @@ const getResolver = (input: Input) => {
               startOfTimeFrame: null,
               sortOption: "new",
               loggedInUsername: loggedInUsername || null,
+              mayAccessSensitiveContent,
               ...rankingParams,
             }
           );
@@ -120,6 +129,7 @@ const getResolver = (input: Input) => {
               startOfTimeFrame: selectedTimeFrame,
               sortOption: "top",
               loggedInUsername: loggedInUsername || null,
+              mayAccessSensitiveContent,
               ...rankingParams,
             }
           );
@@ -157,6 +167,7 @@ const getResolver = (input: Input) => {
               startOfTimeFrame: null,
               sortOption: "hot",
               loggedInUsername: loggedInUsername || null,
+              mayAccessSensitiveContent,
               ...rankingParams,
             }
           );

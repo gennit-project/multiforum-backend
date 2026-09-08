@@ -1,8 +1,13 @@
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
+import type { ServerConfigModel } from "../../ogm_types.js";
+import type { GraphQLContext } from "../../types/context.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
+import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 
 type Input = {
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
 };
 
 type Args = {
@@ -16,13 +21,23 @@ type AlbumUsage = {
   otherAlbums: Array<Record<string, unknown>>;
 };
 
-const getImageAlbumUsage = ({ driver }: Input) => {
+const getImageAlbumUsage = ({ driver, ServerConfig }: Input) => {
   return async (
     _parent: unknown,
-    args: Args
+    args: Args,
+    context: GraphQLContext
   ): Promise<AlbumUsage> => {
     if (!args.imageId) {
       throw new GraphQLError("You must provide an image id.");
+    }
+
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver,
+      ServerConfig,
+    });
+    if (!canViewSensitiveContent && await isSensitiveContentTarget(driver, { imageId: args.imageId })) {
+      throw new GraphQLError("Image not found.");
     }
 
     const session = driver.session({ defaultAccessMode: "READ" });
@@ -33,10 +48,12 @@ const getImageAlbumUsage = ({ driver }: Input) => {
         MATCH (image:Image { id: $imageId })
         WHERE coalesce(image.archived, false) = false
           AND coalesce(image.permanentlyRemoved, false) = false
+          AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
         OPTIONAL MATCH (uploader:User)-[:UPLOADED_IMAGE]->(image)
         OPTIONAL MATCH (album:Album)-[:HAS_IMAGE]->(image)
         OPTIONAL MATCH (owner:User)-[:HAS_ALBUM]->(album)
         OPTIONAL MATCH (album)<-[:HAS_ALBUM]-(discussion:Discussion)
+        WHERE $mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false
         OPTIONAL MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion)
         OPTIONAL MATCH (discussion)-[:POSTED_IN_CHANNEL]->(discussionChannel:DiscussionChannel)
         WITH image, uploader, album, owner, discussion, author,
@@ -81,7 +98,7 @@ const getImageAlbumUsage = ({ driver }: Input) => {
           ]
         } AS usage
         `,
-        { imageId: args.imageId }
+        { imageId: args.imageId, mayAccessSensitiveContent: canViewSensitiveContent }
       );
 
       const usage = result.records[0]?.get("usage") as AlbumUsage | undefined;

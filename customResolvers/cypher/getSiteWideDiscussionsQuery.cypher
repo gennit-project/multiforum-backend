@@ -5,6 +5,7 @@ WHERE EXISTS {
   MATCH (d)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
   WHERE dc.archived IS NULL OR dc.archived = false
 }
+AND ($mayAccessSensitiveContent OR coalesce(d.hasSensitiveContent, false) = false)
 AND (CASE WHEN $sortOption = "top" THEN datetime(d.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis ELSE TRUE END)
 AND ($searchInput = "" OR d.title =~ $titleRegex OR d.body =~ $bodyRegex)
 AND (SIZE($selectedTags) = 0 OR ANY(t IN $selectedTags WHERE EXISTS((d)-[:HAS_TAG]->(:Tag {text: t}))))
@@ -31,6 +32,7 @@ WHERE EXISTS {
   MATCH (d)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
   WHERE dc.archived IS NULL OR dc.archived = false
 }
+AND ($mayAccessSensitiveContent OR coalesce(d.hasSensitiveContent, false) = false)
 AND (CASE WHEN $sortOption = "top" THEN datetime(d.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis ELSE TRUE END)
 AND ($searchInput = "" OR d.title =~ $titleRegex OR d.body =~ $bodyRegex)
 AND (SIZE($selectedTags) = 0 OR ANY(t IN $selectedTags WHERE EXISTS((d)-[:HAS_TAG]->(:Tag {text: t}))))
@@ -162,6 +164,7 @@ OPTIONAL MATCH (album)-[:HAS_IMAGE]->(image:Image)
 WHERE image.id IS NOT NULL
   AND (image.archived IS NULL OR image.archived = false)
   AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
+  AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
 
 WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album,
      [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {

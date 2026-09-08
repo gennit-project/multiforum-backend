@@ -18,6 +18,7 @@ import neo4j, { Driver } from "neo4j-driver";
 import type { GraphQLSchema } from "graphql";
 import typeDefs from "../../typeDefs.js";
 import permissions from "../../permissions.js";
+import sensitiveContentPolicyMiddleware from "../../middleware/sensitiveContentPolicyMiddleware.js";
 import getCustomResolvers from "../../customResolvers.js";
 import type { ResolverDeps } from "../../customResolvers/resolverDeps.js";
 
@@ -45,7 +46,7 @@ export async function buildPermissionedSchema(options?: {
 
   let schema = await neoSchema.getSchema();
   schema = options?.transformSchema?.(schema) ?? schema;
-  schema = applyMiddleware(schema, permissions);
+  schema = applyMiddleware(schema, sensitiveContentPolicyMiddleware, permissions);
 
   return { schema, driver, ogm };
 }

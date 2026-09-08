@@ -1,12 +1,15 @@
 import type { Driver } from "neo4j-driver";
-import type { Ogm } from "../../types/context.js";
+import type { GraphQLContext, Ogm } from "../../types/context.js";
 import { SortDirection } from "../../src/generated/graphql.js";
-import type { CollectionWhere } from "../../ogm_types.js";
+import type { CollectionWhere, ServerConfigModel } from "../../ogm_types.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
+import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
   ogm: Ogm;
+  ServerConfig?: ServerConfigModel;
 };
 
 const itemTypeWhereMap: Record<string, CollectionWhere> = {
@@ -17,7 +20,7 @@ const itemTypeWhereMap: Record<string, CollectionWhere> = {
   CHANNEL: { Channels_SOME: { uniqueName: undefined } },
 };
 
-const selectionSet = `
+const selectionSetTemplate = `
 {
   id
   name
@@ -34,7 +37,7 @@ const selectionSet = `
     displayName
     profilePicURL
   }
-  Downloads(options: { limit: 5 }) {
+  Downloads(options: { limit: 5 }__DISCUSSION_AGE_FILTER__) {
     id
     title
     createdAt
@@ -42,7 +45,7 @@ const selectionSet = `
     Album {
       id
       imageOrder
-      Images {
+      Images__IMAGE_AGE_FILTER__ {
         id
         url
         caption
@@ -74,13 +77,36 @@ const selectionSet = `
 }
 `;
 
-const publicCollectionsContaining = ({ ogm }: Input) => {
-  return async (_parent: unknown, args: { itemId: string; itemType: string }) => {
+const getSelectionSet = (canViewSensitiveContent: boolean) =>
+  selectionSetTemplate
+    .replace("__DISCUSSION_AGE_FILTER__", canViewSensitiveContent ? "" : ", where: { ageGateSensitive: false }")
+    .replace("__IMAGE_AGE_FILTER__", canViewSensitiveContent ? "" : "(where: { ageGateSensitive: false })");
+
+const publicCollectionsContaining = ({ driver, ogm, ServerConfig }: Input) => {
+  return async (_parent: unknown, args: { itemId: string; itemType: string }, context: GraphQLContext) => {
     const { itemId, itemType } = args;
     const whereTemplate = itemTypeWhereMap[itemType];
 
     if (!whereTemplate) {
       throw new Error(`Unsupported itemType: ${itemType}`);
+    }
+
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver,
+      ServerConfig,
+    });
+    const target = itemType === "DISCUSSION"
+      ? { discussionId: itemId }
+      : itemType === "DOWNLOAD"
+        ? { downloadableFileId: itemId }
+      : itemType === "COMMENT"
+        ? { commentId: itemId }
+        : itemType === "IMAGE"
+          ? { imageId: itemId }
+          : null;
+    if (target && !canViewSensitiveContent && await isSensitiveContentTarget(driver, target)) {
+      return [];
     }
 
     const where = JSON.parse(JSON.stringify(whereTemplate));
@@ -101,7 +127,7 @@ const publicCollectionsContaining = ({ ogm }: Input) => {
           ...where,
         },
         options: { sort: [{ createdAt: SortDirection.Desc }] },
-        selectionSet,
+        selectionSet: getSelectionSet(canViewSensitiveContent),
       });
 
       return collections;

@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import getImageAlbumUsage from "./getImageAlbumUsage.js";
+import type { GraphQLContext } from "../../types/context.js";
+
+const context = { mayAccessSensitiveContent: true } as GraphQLContext;
 
 const record = (usage: unknown) => ({
   get: (key: string) => (key === "usage" ? usage : undefined),
@@ -51,10 +54,10 @@ test("getImageAlbumUsage returns grouped uploader and non-uploader albums", asyn
   const { driver, runCalls, isClosed } = createDriver([record(usage)]);
   const resolver = getImageAlbumUsage({ driver: driver as never });
 
-  const result = await resolver(null, { imageId: "image-1" });
+  const result = await resolver(null, { imageId: "image-1" }, context);
 
   assert.deepEqual(result, usage);
-  assert.deepEqual(runCalls[0].params, { imageId: "image-1" });
+  assert.deepEqual(runCalls[0].params, { imageId: "image-1", mayAccessSensitiveContent: true });
   assert.equal(isClosed(), true);
 });
 
@@ -63,7 +66,7 @@ test("getImageAlbumUsage throws when the image does not exist", async () => {
   const resolver = getImageAlbumUsage({ driver: driver as never });
 
   await assert.rejects(
-    () => resolver(null, { imageId: "missing" }),
+    () => resolver(null, { imageId: "missing" }, context),
     /Image not found/
   );
   assert.equal(isClosed(), true);
@@ -74,7 +77,7 @@ test("getImageAlbumUsage rejects missing image id before querying", async () => 
   const resolver = getImageAlbumUsage({ driver: driver as never });
 
   await assert.rejects(
-    () => resolver(null, { imageId: "" }),
+    () => resolver(null, { imageId: "" }, context),
     /You must provide an image id/
   );
   assert.equal(runCalls.length, 0);

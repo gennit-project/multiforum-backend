@@ -2,9 +2,12 @@ import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import type { ServerConfigModel } from "../../ogm_types.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 
 type GetUploadedDownloadableFilesInput = {
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
 };
 
 type Args = {
@@ -24,6 +27,7 @@ type UploadedDownloadableFileRecord = {
 
 const getUploadedDownloadableFiles = ({
   driver,
+  ServerConfig,
 }: GetUploadedDownloadableFilesInput) => {
   return async (
     parent: unknown,
@@ -42,6 +46,12 @@ const getUploadedDownloadableFiles = ({
       throw new GraphQLError("Not authorized to view uploaded downloadable files");
     }
 
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver,
+      ServerConfig,
+    });
+
     const session = driver.session({ defaultAccessMode: "READ" });
 
     try {
@@ -50,6 +60,7 @@ const getUploadedDownloadableFiles = ({
         MATCH (discussion:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile)
         WHERE file.uploadedByUsername = $username
           AND coalesce(file.permanentlyRemoved, false) = false
+          AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
         OPTIONAL MATCH (discussion)-[:POSTED_IN_CHANNEL]->(discussionChannel:DiscussionChannel)
         WITH discussion, file, collect(DISTINCT discussionChannel.channelUniqueName) AS channelUniqueNames
         ORDER BY coalesce(file.createdAt, file.uploadedAt) DESC, file.fileName ASC
@@ -71,7 +82,7 @@ const getUploadedDownloadableFiles = ({
           files: files
         } AS group
         `,
-        { username: args.username }
+        { username: args.username, mayAccessSensitiveContent: canViewSensitiveContent }
       );
 
       return result.records.map((record) => record.get("group"));

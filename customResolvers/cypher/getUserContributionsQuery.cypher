@@ -4,6 +4,11 @@ WITH u, date($startDate) AS startDate, date($endDate) AS endDate
 // Match comments and related data
 OPTIONAL MATCH (u)-[:AUTHORED_COMMENT]->(comment:Comment)
 WHERE date(datetime(comment.createdAt)) >= startDate AND date(datetime(comment.createdAt)) <= endDate
+  AND ($mayAccessSensitiveContent OR (
+    NOT EXISTS { MATCH (comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+    AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+    AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  ))
 OPTIONAL MATCH (comment)<-[:AUTHORED_COMMENT]-(commentAuthor:User)
 
 // Match DiscussionChannel and its Channel (for permalink info)
@@ -38,6 +43,7 @@ WITH u, startDate, endDate, collect({
 // Match discussions
 OPTIONAL MATCH (u)-[:POSTED_DISCUSSION]->(discussion:Discussion)
 WHERE date(datetime(discussion.createdAt)) >= startDate AND date(datetime(discussion.createdAt)) <= endDate
+  AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
 OPTIONAL MATCH (discussion)<-[:POSTED_DISCUSSION]-(discussionAuthor:User)
 OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(discussionChannel:DiscussionChannel)
 OPTIONAL MATCH (discussionChannel)-[:POSTED_IN_CHANNEL]->(discussionChannelNode:Channel)

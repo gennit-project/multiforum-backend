@@ -25,6 +25,7 @@ import issueSubscriptionNotificationMiddleware from "./middleware/issueSubscript
 import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
 import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
+import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import path from "path";
 import dotenv from "dotenv";
 import getCustomResolvers from "./customResolvers.js";
@@ -199,6 +200,7 @@ async function initializeServer() {
     type AppMiddleware = IMiddleware<unknown, GraphQLContext>;
     schema = applyMiddleware(
       schema,
+      sensitiveContentPolicyMiddleware as AppMiddleware,
       permissions as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,

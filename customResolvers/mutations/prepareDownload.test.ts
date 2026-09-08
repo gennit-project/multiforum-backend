@@ -382,3 +382,33 @@ test("rejects a file that does not belong to the requested discussion", async ()
     /Downloadable file not found for this discussion/
   );
 });
+
+test("denies a sensitive download before scanning or URL generation", async () => {
+  const { input } = buildInput({
+    ...baseFile,
+    Discussion: {
+      ...baseFile.Discussion,
+      hasSensitiveContent: true,
+    },
+  });
+  let scanned = 0;
+  const resolver = createPrepareDownloadResolver(
+    input,
+    (async () => { scanned += 1; return []; }) as any,
+    async () => true,
+    (() => { throw new Error("storage must not run"); }) as any,
+    (async () => { throw new Error("tracking must not run"); }) as any
+  );
+  const context = contextFor("alice");
+  context.mayAccessSensitiveContent = false;
+
+  await assert.rejects(
+    resolver(
+      null,
+      { downloadableFileId: "file-1", discussionId: "discussion-1" },
+      context
+    ),
+    /Downloadable file not found for this discussion/
+  );
+  assert.equal(scanned, 0);
+});

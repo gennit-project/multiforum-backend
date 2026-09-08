@@ -644,7 +644,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       DownloadableFile
     }),
     trackDownload: trackDownload({
-      driver
+      driver,
+      ServerConfig
     }),
     prepareDownload: prepareDownload({
       DownloadableFile,

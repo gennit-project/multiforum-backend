@@ -2,10 +2,14 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
+import type { ServerConfigModel } from "../../ogm_types.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
+import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
+  ServerConfig?: ServerConfigModel;
 };
 
 type Args = {
@@ -13,9 +17,17 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver } = input;
+  const { driver, ServerConfig } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { commentId } = args;
+    const canViewSensitiveContent = await mayAccessSensitiveContent({
+      context,
+      driver,
+      ServerConfig,
+    });
+    if (!canViewSensitiveContent && await isSensitiveContentTarget(driver, { commentId })) {
+      return false;
+    }
 
     context.user = await setUserDataOnContext({
       context,

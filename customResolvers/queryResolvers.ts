@@ -68,6 +68,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
       Discussion,
       driver,
+      ServerConfig,
     }),
     getRankingSettings: getRankingSettings({
       driver,
@@ -80,6 +81,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getSiteWideIssueList: getSiteWideIssueList({
       driver,
+      ServerConfig,
     }),
     getSiteWideWikiList: getSiteWideWikiList({
       driver,
@@ -87,10 +89,12 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getDiscussionsInChannel: getDiscussionsInChannel({
       driver,
       DiscussionChannel,
+      ServerConfig,
     }),
     getCommentSection: getCommentSection({
       driver,
       DiscussionChannel,
+      ServerConfig,
     }),
     getEventComments: getEventComments({
       driver,
@@ -99,9 +103,11 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getCommentReplies: getCommentReplies({
       driver,
       Comment,
+      ServerConfig,
     }),
     getUserFavoriteComment: getUserFavoriteComment({
       driver,
+      ServerConfig,
     }),
     getSortedChannels: getSortedChannels({
       driver,
@@ -109,6 +115,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getUserContributions: getUserContributions({
       User,
       driver,
+      ServerConfig,
     }),
     getUserWikiEditsCount: getUserWikiEditsCount({
       User,
@@ -117,10 +124,12 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getChannelContributions: getChannelContributions({
       Channel,
       driver,
+      ServerConfig,
     }),
     getModContributions: getModContributions({
       ModerationProfile,
       driver,
+      ServerConfig,
     }),
     isOriginalPosterSuspended: isOriginalPosterSuspended({
       Issue,
@@ -128,7 +137,8 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       Event,
       Comment,
       Channel,
-      User
+      User,
+      ServerConfig
     }),
     safetyCheck: safetyCheck,
     getServerPluginSecrets: getServerPluginSecrets({
@@ -183,7 +193,8 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     publicCollectionsContaining: publicCollectionsContaining({
       driver,
-      ogm
+      ogm,
+      ServerConfig
     }),
     getOwnEmail: getOwnEmail({
       Email
@@ -191,14 +202,16 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getAgePolicy: getAgePolicy({ ServerConfig }),
     getMyAgeProfile: getMyAgeProfile({ driver, ServerConfig }),
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
-      driver
+      driver,
+      ServerConfig
     }),
     getImageAlbumUsage: getImageAlbumUsage({
-      driver
+      driver,
+      ServerConfig
     }),
     getServerHealthDashboard: getServerHealthDashboard({
       driver
     }),
-    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver })
+    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, ServerConfig })
   };
 }
