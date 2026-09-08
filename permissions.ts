@@ -49,6 +49,7 @@ const {
   modServerRoleInputDoesNotEscalate,
   serverConfigInputDoesNotEscalate,
   serverAgeConfigIsValid,
+  serverBrandingIsValid,
   channelRoleInputDoesNotEscalate,
   modChannelRoleInputDoesNotEscalate,
   canReport,
@@ -383,12 +384,12 @@ const permissionRules: IRules = {
 
       createModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       createServerRoles: and(isAuthenticated, canManageRoles, serverRoleInputDoesNotEscalate),
-      createServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate, serverAgeConfigIsValid),
+      createServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate, serverAgeConfigIsValid, serverBrandingIsValid),
       deleteServerConfigs: and(isAuthenticated, canManageServerSettings),
 
       // canManageServerSettings additionally must not be used to escalate a tier
       // role via a nested role create/update/connect (see §5 / PR-4b).
-      updateServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate, serverAgeConfigIsValid),
+      updateServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate, serverAgeConfigIsValid, serverBrandingIsValid),
       updateModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       deleteChannelRoles: and(isAuthenticated, or(canManageRoles, isChannelOwner)),
       deleteServerRoles: and(isAuthenticated, canManageRoles),

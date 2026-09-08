@@ -2304,6 +2304,24 @@ const typeDefinitions = gql`
     SuspendedUsers: [Suspension!]! @relationship(type: "SUSPENDED_AS_USER", direction: OUT)
     SuspendedMods: [Suspension!]! @relationship(type: "SUSPENDED_AS_MOD", direction: OUT)
 
+    # Instance branding. Lets a self-hosted deployment present its own
+    # documentation, source and support links instead of the upstream
+    # project's. Written only by admins (see canManageServerSettings) and
+    # validated by serverBrandingIsValid, which rejects unsafe URL schemes so
+    # an admin-supplied value can never become a javascript: link in a client.
+    brandingProductName: String
+    brandingDocsURL: String
+    brandingSourceURL: String
+    brandingIssuesURL: String
+    brandingSupportEmail: String
+    brandingShowUpstreamLinks: Boolean @default(value: true)
+    brandingCustomFooterLinks: JSON
+    # serverIconURL above doubles as the light-mode logo.
+    brandingLogoDarkURL: String
+    brandingLogoAlt: String
+    brandingFaviconURL: String
+    brandingPrimaryColor: String
+
     # plugins
     pluginRegistries: [String]
     pluginPipelines: JSON
