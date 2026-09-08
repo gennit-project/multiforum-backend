@@ -164,6 +164,34 @@ test("reports missing local development auth settings instead of Auth0 settings"
   ]);
 });
 
+test("reports generic OIDC authentication readiness", () => {
+  const missing = buildInstanceSetupStatus({
+    env: { MULTIFORUM_AUTH_PROVIDER: "oidc" },
+    serverConfig: null,
+  });
+  assert.deepEqual(missing.auth.requiredEnvVarsMissing, [
+    "OIDC_ISSUER_URL",
+    "OIDC_AUDIENCE",
+    "OIDC_JWKS_URL",
+    "OIDC_USERINFO_URL",
+  ]);
+
+  const configured = buildInstanceSetupStatus({
+    env: {
+      MULTIFORUM_AUTH_PROVIDER: "oidc",
+      OIDC_ISSUER_URL: "https://identity.example.test/realms/multiforum",
+      OIDC_AUDIENCE: "multiforum-api",
+      OIDC_JWKS_URL: "https://identity.example.test/realms/multiforum/certs",
+      OIDC_USERINFO_URL:
+        "https://identity.example.test/realms/multiforum/userinfo",
+    },
+    serverConfig: null,
+  });
+  assert.deepEqual(configured.auth.requiredEnvVarsMissing, []);
+  assert.equal(configured.auth.configured, true);
+  assert.equal(configured.auth.enabled, true);
+});
+
 test("resolves the named ServerConfig before building status", async () => {
   const calls: unknown[] = [];
   const ServerConfig = {

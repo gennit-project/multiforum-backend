@@ -48,6 +48,7 @@ const withProcessEnvironment = <T>(
 test("keeps Auth0 as the backwards-compatible default provider", () => {
   assert.equal(getAuthenticationProvider({}), "auth0");
   assert.equal(getAuthenticationProvider({ MULTIFORUM_AUTH_PROVIDER: "AUTH0" }), "auth0");
+  assert.equal(getAuthenticationProvider({ MULTIFORUM_AUTH_PROVIDER: "OIDC" }), "oidc");
 });
 
 test("rejects unknown authentication providers", () => {
@@ -86,6 +87,23 @@ test("uses process.env when provider helpers omit an explicit environment", () =
 test("accepts the default Auth0 provider without requiring local settings", () => {
   assert.doesNotThrow(() => assertAuthenticationConfiguration({}));
   assert.equal(isLocalDevAuthConfigured({}), false);
+});
+
+test("validates generic OIDC settings at startup", () => {
+  assert.throws(
+    () => assertAuthenticationConfiguration({ MULTIFORUM_AUTH_PROVIDER: "oidc" }),
+    /OIDC_ISSUER_URL/
+  );
+  assert.doesNotThrow(() =>
+    assertAuthenticationConfiguration({
+      MULTIFORUM_AUTH_PROVIDER: "oidc",
+      OIDC_ISSUER_URL: "https://identity.example.test/realms/multiforum",
+      OIDC_AUDIENCE: "multiforum-api",
+      OIDC_JWKS_URL: "https://identity.example.test/realms/multiforum/certs",
+      OIDC_USERINFO_URL:
+        "https://identity.example.test/realms/multiforum/userinfo",
+    })
+  );
 });
 
 test("names missing settings when an enabled local provider is incomplete", () => {
