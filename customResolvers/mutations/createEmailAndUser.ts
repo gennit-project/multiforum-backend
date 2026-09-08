@@ -1,6 +1,7 @@
 import { EmailModel, ServerConfigModel, UserModel, UserCreateInput } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+import neo4j from "neo4j-driver";
 import { generateSlug } from "random-word-slugs";
 import { validateUserInput } from "../../rules/validation/userIsValid.js";
 import { logger } from "../../logger.js";
@@ -22,6 +23,11 @@ type Input = {
   User: UserModel;
   Email: EmailModel;
   ServerConfig: ServerConfigModel;
+};
+
+const toNeo4jDate = (birthday: string) => {
+  const [year, month, day] = birthday.split("-").map(Number);
+  return new neo4j.types.Date(year, month, day);
 };
 
 /**
@@ -90,7 +96,10 @@ export const createUsersWithEmails = async (
   // Prepare user creation input
   const userCreateInput: UserCreateInput = {
     username,
-    ...(birthday ? { dateOfBirth: birthday } : {}),
+    // Neo4j GraphQL 5 parses yyyy-mm-dd through JavaScript Date and then uses
+    // local date components. On servers west of UTC that shifts the stored
+    // birthday back one day. Construct the driver's date-only value directly.
+    ...(birthday ? { dateOfBirth: toNeo4jDate(birthday) } : {}),
     Email: {
       create: {
         node: { address: emailAddress },
