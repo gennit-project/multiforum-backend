@@ -146,13 +146,16 @@ for (const [label, username] of [
 ] as const) {
   test(`${label} cannot read sensitive nodes through direct, aggregate, or nested paths`, async () => {
     const data = await visibleIds(username);
-    assert.deepEqual(data.discussions, [{ id: "discussion-public" }]);
-    assert.deepEqual(data.discussionChannels, [{ id: "dc-public" }]);
-    assert.deepEqual(data.comments, [{ id: "comment-public" }]);
-    assert.deepEqual(data.issues, [{ id: "issue-public" }]);
-    assert.deepEqual(data.images, [{ id: "image-public" }]);
+    assert.deepEqual(data.discussions.map((item: any) => item.id), ["discussion-public"]);
+    assert.deepEqual(data.discussionChannels.map((item: any) => item.id), ["dc-public"]);
+    assert.deepEqual(data.comments.map((item: any) => item.id), ["comment-public"]);
+    assert.deepEqual(data.issues.map((item: any) => item.id), ["issue-public"]);
+    assert.deepEqual(data.images.map((item: any) => item.id), ["image-public"]);
     assert.equal(data.discussionsAggregate.count, 1);
-    assert.deepEqual(data.channels[0].DiscussionChannels, [{ id: "dc-public" }]);
+    assert.deepEqual(
+      data.channels[0].DiscussionChannels.map((item: any) => item.id),
+      ["dc-public"]
+    );
   });
 }
 
