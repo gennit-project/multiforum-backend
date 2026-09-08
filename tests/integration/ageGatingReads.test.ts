@@ -10,6 +10,10 @@ import { mockToken } from "./imageModerationHarness.js";
 
 const SERVER_CONFIG_NAME = "AgeGatingReadTestServer";
 const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
+const CURRENT_YEAR = new Date().getUTCFullYear();
+const ADULT_BIRTHDAY = `${CURRENT_YEAR - 25}-01-01`;
+const MINOR_BIRTHDAY = `${CURRENT_YEAR - 10}-01-01`;
+const UNDERAGE_ACCOUNT_BIRTHDAY = `${CURRENT_YEAR - 5}-01-01`;
 
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
@@ -45,11 +49,13 @@ beforeEach(async () => {
     await session.run(
       `CREATE (config:ServerConfig {
          serverName: $serverName,
+         accountAgeGateEnabled: true,
+         minimumAccountAge: 13,
          sensitiveContentAgeGateEnabled: true,
          minimumSensitiveContentAge: 18
        })
-       CREATE (adult:User {username: 'adult', dateOfBirth: date('2000-01-01')})
-       CREATE (minor:User {username: 'minor', dateOfBirth: date('2010-01-01')})
+       CREATE (adult:User {username: 'adult', dateOfBirth: date($adultBirthday)})
+       CREATE (minor:User {username: 'minor', dateOfBirth: date($minorBirthday)})
        CREATE (unknownAge:User {username: 'unknown-age'})
        CREATE (channel:Channel {uniqueName: 'general', displayName: 'General'})
        CREATE (publicDiscussion:Discussion {
@@ -92,13 +98,25 @@ beforeEach(async () => {
          id: 'image-sensitive', url: 'https://example.test/sensitive.png',
          hasSensitiveContent: true
        })
+       CREATE (publicFile:DownloadableFile {id: 'file-public'})
+       CREATE (sensitiveFile:DownloadableFile {id: 'file-sensitive'})
+       CREATE (publicFileVersion:FileVersion {id: 'file-version-public'})
+       CREATE (sensitiveFileVersion:FileVersion {id: 'file-version-sensitive'})
        CREATE (publicDc)-[:POSTED_IN_CHANNEL]->(publicDiscussion)
        CREATE (publicDc)-[:POSTED_IN_CHANNEL]->(channel)
        CREATE (sensitiveDc)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion)
        CREATE (sensitiveDc)-[:POSTED_IN_CHANNEL]->(channel)
        CREATE (publicDc)-[:CONTAINS_COMMENT]->(publicComment)
-       CREATE (sensitiveDc)-[:CONTAINS_COMMENT]->(sensitiveComment)`,
-      { serverName: SERVER_CONFIG_NAME }
+       CREATE (sensitiveDc)-[:CONTAINS_COMMENT]->(sensitiveComment)
+       CREATE (publicDiscussion)-[:HAS_DOWNLOADABLE_FILE]->(publicFile)
+       CREATE (sensitiveDiscussion)-[:HAS_DOWNLOADABLE_FILE]->(sensitiveFile)
+       CREATE (publicFile)-[:HAS_VERSION]->(publicFileVersion)
+       CREATE (sensitiveFile)-[:HAS_VERSION]->(sensitiveFileVersion)`,
+      {
+        serverName: SERVER_CONFIG_NAME,
+        adultBirthday: ADULT_BIRTHDAY,
+        minorBirthday: MINOR_BIRTHDAY,
+      }
     );
   } finally {
     await session.close();
@@ -119,6 +137,38 @@ const contextFor = (username?: string) => ({
 const execute = (source: string, username?: string) =>
   graphql({ schema, source, contextValue: contextFor(username) });
 
+const executeAsVerifiedEmail = (source: string, email: string) =>
+  graphql({
+    schema,
+    source,
+    contextValue: {
+      driver,
+      ogm,
+      req: {
+        headers: { authorization: `Bearer ${mockToken({ email })}` },
+        body: {},
+        isMutation: true,
+      },
+    },
+  });
+
+const nodeCount = async (
+  label: "User" | "Email",
+  property: string,
+  value: string
+) => {
+  const session = driver.session();
+  try {
+    const result = await session.run(
+      `MATCH (node:${label}) WHERE node[$property] = $value RETURN count(node) AS count`,
+      { property, value }
+    );
+    return result.records[0]?.get("count").toNumber() ?? 0;
+  } finally {
+    await session.close();
+  }
+};
+
 const visibleIds = async (username?: string) => {
   const result = await execute(
     `query {
@@ -127,6 +177,8 @@ const visibleIds = async (username?: string) => {
       comments(options: { sort: [{ id: ASC }] }) { id }
       issues(options: { sort: [{ id: ASC }] }) { id }
       images(options: { sort: [{ id: ASC }] }) { id }
+      downloadableFiles(options: { sort: [{ id: ASC }] }) { id }
+      fileVersions(options: { sort: [{ id: ASC }] }) { id }
       discussionsAggregate { count }
       channels(where: { uniqueName: "general" }) {
         DiscussionChannels(options: { sort: [{ id: ASC }] }) { id }
@@ -151,6 +203,12 @@ for (const [label, username] of [
     assert.deepEqual(data.comments.map((item: any) => item.id), ["comment-public"]);
     assert.deepEqual(data.issues.map((item: any) => item.id), ["issue-public"]);
     assert.deepEqual(data.images.map((item: any) => item.id), ["image-public"]);
+    assert.deepEqual(data.downloadableFiles.map((item: any) => item.id), [
+      "file-public",
+    ]);
+    assert.deepEqual(data.fileVersions.map((item: any) => item.id), [
+      "file-version-public",
+    ]);
     assert.equal(data.discussionsAggregate.count, 1);
     assert.deepEqual(
       data.channels[0].DiscussionChannels.map((item: any) => item.id),
@@ -181,5 +239,122 @@ test("an age-eligible caller can read sensitive nodes", async () => {
     "image-public",
     "image-sensitive",
   ]);
+  assert.deepEqual(data.downloadableFiles.map((item: any) => item.id), [
+    "file-public",
+    "file-sensitive",
+  ]);
+  assert.deepEqual(data.fileVersions.map((item: any) => item.id), [
+    "file-version-public",
+    "file-version-sensitive",
+  ]);
   assert.equal(data.discussionsAggregate.count, 2);
+});
+
+test("the public API rejects account creation without a birthday when gating is enabled", async () => {
+  const result = await executeAsVerifiedEmail(
+    `mutation {
+      createEmailAndUser(
+        emailAddress: "missing-birthday@example.test"
+        username: "missingbirthday"
+      ) { username }
+    }`,
+    "missing-birthday@example.test"
+  );
+
+  assert.match(result.errors?.[0]?.message ?? "", /BIRTHDAY_REQUIRED/);
+  assert.equal(await nodeCount("User", "username", "missingbirthday"), 0);
+  assert.equal(
+    await nodeCount("Email", "address", "missing-birthday@example.test"),
+    0
+  );
+});
+
+test("the public API rejects an underage account without creating identity data", async () => {
+  const result = await executeAsVerifiedEmail(
+    `mutation {
+      createEmailAndUser(
+        emailAddress: "underage@example.test"
+        username: "underageperson"
+        birthday: "${UNDERAGE_ACCOUNT_BIRTHDAY}"
+      ) { username }
+    }`,
+    "underage@example.test"
+  );
+
+  assert.match(result.errors?.[0]?.message ?? "", /MINIMUM_AGE_NOT_MET/);
+  assert.equal(await nodeCount("User", "username", "underageperson"), 0);
+  assert.equal(await nodeCount("Email", "address", "underage@example.test"), 0);
+});
+
+test("an eligible account can be created and read its own birthday", async () => {
+  const mutation = await executeAsVerifiedEmail(
+    `mutation {
+      createEmailAndUser(
+        emailAddress: "eligible@example.test"
+        username: "eligibleperson"
+        birthday: "2000-01-01"
+      ) { username }
+    }`,
+    "eligible@example.test"
+  );
+
+  assert.equal(mutation.errors, undefined, JSON.stringify(mutation.errors));
+  assert.equal(
+    (mutation.data as any)?.createEmailAndUser?.username,
+    "eligibleperson"
+  );
+
+  const profile = await execute(
+    `query {
+      getMyAgeProfile {
+        birthday
+        meetsAccountMinimumAge
+        mayAccessSensitiveContent
+      }
+    }`,
+    "eligibleperson"
+  );
+  assert.equal(profile.errors, undefined, JSON.stringify(profile.errors));
+  assert.deepEqual({ ...(profile.data as any)?.getMyAgeProfile }, {
+    birthday: "2000-01-01",
+    meetsAccountMinimumAge: true,
+    mayAccessSensitiveContent: true,
+  });
+});
+
+test("birthday reads are self-scoped and anonymous callers receive no profile", async () => {
+  const adultProfile = await execute(
+    `query { getMyAgeProfile { birthday } }`,
+    "adult"
+  );
+  const minorProfile = await execute(
+    `query { getMyAgeProfile { birthday } }`,
+    "minor"
+  );
+  const anonymousProfile = await execute(
+    `query { getMyAgeProfile { birthday } }`
+  );
+
+  assert.equal(
+    (adultProfile.data as any)?.getMyAgeProfile?.birthday,
+    ADULT_BIRTHDAY
+  );
+  assert.equal(
+    (minorProfile.data as any)?.getMyAgeProfile?.birthday,
+    MINOR_BIRTHDAY
+  );
+  assert.equal((anonymousProfile.data as any)?.getMyAgeProfile, null);
+});
+
+test("birthday is absent from generated user query fields", async () => {
+  const result = await execute(
+    `query { users { username dateOfBirth } }`,
+    "adult"
+  );
+
+  assert.match(
+    result.errors?.[0]?.message ?? "",
+    /Cannot query field "dateOfBirth" on type "User"/
+  );
+  assert.equal(result.data, undefined);
 });
