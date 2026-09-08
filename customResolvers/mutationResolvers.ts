@@ -19,6 +19,7 @@ import upvoteDiscussionChannel from "./mutations/upvoteDiscussionChannel.js";
 import undoUpvoteDiscussionChannel from "./mutations/undoUpvoteDiscussionChannel.js";
 import createSignedStorageURL from "./mutations/createSignedStorageURL.js";
 import getCreateEmailAndUserResolver from "./mutations/createEmailAndUser.js";
+import setMyBirthday from "./mutations/setMyBirthday.js";
 import dropDataForCypressTestsResolver from "./mutations/dropDataForCypressTests.js";
 import seedDataForCypressTestsResolver from "./mutations/seedDataForCypressTests.js";
 import inviteForumOwner from "./mutations/inviteForumOwner.js";
@@ -271,7 +272,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createEmailAndUser: getCreateEmailAndUserResolver({
       User,
       Email,
+      ServerConfig,
     }),
+    setMyBirthday: setMyBirthday({ driver, ServerConfig }),
     inviteForumOwner: inviteForumOwner({
       Channel,
       User

@@ -253,6 +253,15 @@ const typeDefinitions = gql`
     avatar48Url: String
     avatar64Url: String
     avatar96Url: String
+    # Private age-attestation data. It is accepted only while the account is
+    # created, and is deliberately absent from every generated read, filter,
+    # aggregate, sort, and update surface. Owner access goes through the
+    # self-scoped getMyAgeProfile query below.
+    dateOfBirth: Date
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
+      @sortable(byValue: false)
+      @settable(onCreate: true, onUpdate: false)
     enableSensitiveContentByDefault: Boolean
     isBot: Boolean @default(value: false)
     botProfileId: String
@@ -1359,7 +1368,13 @@ const typeDefinitions = gql`
       channelConnections: [String!]
       uploadTarget: StorageUploadTarget = PUBLIC_MEDIA
     ): SignedURL
-    createEmailAndUser(emailAddress: String!, username: String!): User
+    createEmailAndUser(
+      emailAddress: String!
+      username: String!
+      birthday: String
+    ): User
+    """Set the authenticated caller's birthday once."""
+    setMyBirthday(birthday: String!): OwnAgeProfile!
     dropDataForCypressTests: DropDataResponse
     seedDataForCypressTests(
       channels: [ChannelCreateInput!]!
@@ -2228,6 +2243,10 @@ const typeDefinitions = gql`
     featuredWikiPageIds: [ID]
     enableDownloads: Boolean
     enableEvents: Boolean
+    accountAgeGateEnabled: Boolean @default(value: false)
+    minimumAccountAge: Int @default(value: 13)
+    sensitiveContentAgeGateEnabled: Boolean @default(value: false)
+    minimumSensitiveContentAge: Int @default(value: 18)
     DefaultServerRole: ServerRole
       @relationship(type: "HAS_DEFAULT_SERVER_ROLE", direction: OUT)
     DefaultModRole: ModServerRole
@@ -2589,6 +2608,21 @@ const typeDefinitions = gql`
     unreadNotificationCount: Int
   }
 
+  """Public, non-identifying age policy for this server."""
+  type AgePolicy {
+    accountAgeGateEnabled: Boolean!
+    minimumAccountAge: Int!
+    sensitiveContentAgeGateEnabled: Boolean!
+    minimumSensitiveContentAge: Int!
+  }
+
+  """The authenticated caller's private age-attestation status."""
+  type OwnAgeProfile {
+    birthday: String
+    meetsAccountMinimumAge: Boolean
+    mayAccessSensitiveContent: Boolean!
+  }
+
   type UploadedDownloadableFileDiscussion @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
     id: ID!
     title: String!
@@ -2718,6 +2752,10 @@ const typeDefinitions = gql`
     with username: null when authenticated but no account exists yet.
     """
     getOwnEmail: OwnEmail
+    """Return the server's public age-gating configuration."""
+    getAgePolicy: AgePolicy!
+    """Return only the authenticated caller's private age profile."""
+    getMyAgeProfile: OwnAgeProfile
     getUploadedDownloadableFiles(username: String!): [UploadedDownloadableFileGroup!]!
     getUserFavoriteComment(commentId: ID!): Boolean
     getSortedChannels(

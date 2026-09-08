@@ -21,6 +21,8 @@ import getPluginRunsForDownloadableFile from "./queries/getPluginRunsForDownload
 import getPipelineRuns from "./queries/getPipelineRuns.js";
 import publicCollectionsContaining from "./queries/publicCollectionsContaining.js";
 import getOwnEmail from "./queries/getOwnEmail.js";
+import getAgePolicy from "./queries/getAgePolicy.js";
+import getMyAgeProfile from "./queries/getMyAgeProfile.js";
 import getServerHealthDashboard from "./queries/getServerHealthDashboard.js";
 import getDownloadScanReviewQueue from "./queries/getDownloadScanReviewQueue.js";
 import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
@@ -186,6 +188,8 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getOwnEmail: getOwnEmail({
       Email
     }),
+    getAgePolicy: getAgePolicy({ ServerConfig }),
+    getMyAgeProfile: getMyAgeProfile({ driver, ServerConfig }),
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
       driver
     }),
