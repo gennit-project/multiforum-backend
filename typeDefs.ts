@@ -2420,6 +2420,49 @@ const typeDefinitions = gql`
     fields: [PluginConfigFieldStatus!]!
   }
 
+  input DesiredServerPluginInput {
+    pluginId: String!
+    version: String!
+    enabled: Boolean!
+    settingsJson: JSON
+    requiredSecrets: [String!]
+  }
+
+  input PluginConfigurationDesiredStateInput {
+    apiVersion: String!
+    plugins: [DesiredServerPluginInput!]!
+    """Omit to leave server pipelines unmanaged; pass an empty list to clear them."""
+    pipelines: [EventPipelineInput!]
+  }
+
+  enum PluginConfigurationChangeKind {
+    INSTALL_VERSION
+    UPDATE_SETTINGS
+    ENABLE_PLUGIN
+    DISABLE_PLUGIN
+    SET_SECRET
+    REPLACE_SECRET
+    VALIDATE_SECRET
+    UPDATE_PIPELINES
+  }
+
+  type PluginConfigurationChange {
+    kind: PluginConfigurationChangeKind!
+    path: String!
+    message: String!
+    current: JSON
+    desired: JSON
+    """True when applying this change requires secret material not present in the manifest."""
+    blocked: Boolean!
+  }
+
+  type PluginConfigurationReconciliationPlan {
+    apiVersion: String!
+    inSync: Boolean!
+    changes: [PluginConfigurationChange!]!
+    warnings: [String!]!
+  }
+
   type GetSortedChannelsResponse {
     channels: [Channel]
     aggregateChannelCount: Int
@@ -2852,6 +2895,10 @@ const typeDefinitions = gql`
       scope: String = "server"
     ): PluginConfigStatus!
     getInstalledPlugins: [InstalledPlugin!]!
+    """Preview additive server plugin drift without changing live configuration."""
+    previewPluginConfigurationReconciliation(
+      manifest: PluginConfigurationDesiredStateInput!
+    ): PluginConfigurationReconciliationPlan!
     getPluginRunsForDownloadableFile(downloadableFileId: ID!): [PluginRun!]!
     getPipelineRuns(targetId: ID!, targetType: String!): [PluginRun!]!
     getApplicablePluginPipeline(

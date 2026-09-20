@@ -41,6 +41,7 @@ import {
 import getRankingSettings from "./queries/getRankingSettings.js";
 import getChannelDiscussionFlairConfig from "./queries/getChannelDiscussionFlairConfig.js";
 import getInstanceSetupStatus from "./queries/getInstanceSetupStatus.js";
+import previewPluginConfigurationReconciliation from "./queries/previewPluginConfigurationReconciliation.js";
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
@@ -151,6 +152,10 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getInstalledPlugins: getInstalledPlugins({
       ServerConfig
+    }),
+    previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
+      ServerConfig,
+      ServerSecret,
     }),
     getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
       PluginRun
