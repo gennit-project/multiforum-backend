@@ -1659,6 +1659,10 @@ const typeDefinitions = gql`
     updatePluginPipelines(
       pipelines: [EventPipelineInput!]!
     ): JSON!
+    applyPluginConfiguration(
+      manifest: PluginConfigurationDesiredStateInput!
+      secretResolutions: [PluginSecretResolutionInput!]! = []
+    ): PluginConfigurationApplyResult!
     updateChannelPluginPipelines(
       channelUniqueName: String!
       pipelines: [EventPipelineInput!]!
@@ -2420,12 +2424,19 @@ const typeDefinitions = gql`
     fields: [PluginConfigFieldStatus!]!
   }
 
+  input PluginSecretReferenceInput {
+    key: String!
+    """Opaque reference resolved by the apply client, for example env:SCAN_API_KEY."""
+    valueFrom: String!
+  }
+
   input DesiredServerPluginInput {
     pluginId: String!
     version: String!
     enabled: Boolean!
     settingsJson: JSON
     requiredSecrets: [String!]
+    secretRefs: [PluginSecretReferenceInput!]
   }
 
   input PluginConfigurationDesiredStateInput {
@@ -2442,7 +2453,6 @@ const typeDefinitions = gql`
     DISABLE_PLUGIN
     SET_SECRET
     REPLACE_SECRET
-    VALIDATE_SECRET
     UPDATE_PIPELINES
   }
 
@@ -2461,6 +2471,39 @@ const typeDefinitions = gql`
     inSync: Boolean!
     changes: [PluginConfigurationChange!]!
     warnings: [String!]!
+  }
+
+  input PluginSecretResolutionInput {
+    valueFrom: String!
+    value: String!
+  }
+
+  enum PluginConfigurationApplyStatus {
+    NO_CHANGES
+    BLOCKED
+    SUCCEEDED
+    FAILED
+  }
+
+  enum PluginConfigurationOperationStatus {
+    APPLIED
+    BLOCKED
+    FAILED
+  }
+
+  type PluginConfigurationOperationResult {
+    kind: PluginConfigurationChangeKind!
+    path: String!
+    status: PluginConfigurationOperationStatus!
+    message: String!
+  }
+
+  type PluginConfigurationApplyResult {
+    status: PluginConfigurationApplyStatus!
+    message: String!
+    planBefore: PluginConfigurationReconciliationPlan!
+    planAfter: PluginConfigurationReconciliationPlan!
+    operations: [PluginConfigurationOperationResult!]!
   }
 
   type GetSortedChannelsResponse {

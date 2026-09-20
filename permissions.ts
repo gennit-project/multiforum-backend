@@ -147,7 +147,9 @@ const PUBLIC_READ_TYPES = [
   "Plugin",
   "PluginConfigFieldStatus",
   "PluginConfigStatus",
+  "PluginConfigurationApplyResult",
   "PluginConfigurationChange",
+  "PluginConfigurationOperationResult",
   "PluginConfigurationReconciliationPlan",
   "PluginPipelineCampaign",
   "PluginPipelineCampaignFailure",
@@ -616,6 +618,7 @@ const permissionRules: IRules = {
       setServerPluginSecret: and(isAuthenticated, canManagePlugins),
       deletePluginVersions: and(isAuthenticated, canManagePlugins),
       updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
+      applyPluginConfiguration: chain(isAuthenticated, canManagePlugins),
       updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
     },
   };
