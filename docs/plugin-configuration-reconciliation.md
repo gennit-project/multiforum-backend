@@ -8,7 +8,8 @@ then inspect drift without changing production.
 The current manifest version is `multiforum.gennit.dev/v1alpha1`. Manifests are
 additive: plugins omitted from the manifest are not disabled or uninstalled.
 For each listed plugin, only the exact version named by the manifest is
-managed. `settingsJson` and `requiredSecrets` are independently optional.
+managed. `settingsJson`, legacy `requiredSecrets`, and resolvable `secretRefs`
+are independently optional.
 
 Pipeline handling is intentionally explicit:
 
@@ -57,7 +58,12 @@ Example variables for the security scanner:
         "settingsJson": {
           "serviceUrl": "https://security-scan-service.example.run.app"
         },
-        "requiredSecrets": ["SCAN_SERVICE_API_KEY"]
+        "secretRefs": [
+          {
+            "key": "SCAN_SERVICE_API_KEY",
+            "valueFrom": "env:SCAN_API_KEY"
+          }
+        ]
       }
     ],
     "pipelines": [
@@ -76,10 +82,48 @@ Example variables for the security scanner:
 }
 ```
 
-The preview never returns secret values. A missing, invalid, or untested secret
-appears as a blocked change because the API received only the required key
-name. A later apply client can resolve secret references at execution time
-without putting plaintext values in a committed manifest.
+The preview never returns secret values. Missing or explicitly invalid secrets
+appear as blocked changes. A set-but-untested secret satisfies declarative
+presence because Multiforum has no separate secret-validation operation; the
+plugin still validates credentials when it uses them.
 
-This endpoint does not mutate configuration. An apply operation, secret-source
-references, and CI policy checks belong to the next work slice.
+## Apply drift
+
+`applyPluginConfiguration` uses the same manifest and accepts secret values in
+a separate, ephemeral variable. The caller resolves each opaque `valueFrom`
+reference (for example from a CI environment secret) and sends only the
+resolutions needed for the request:
+
+```graphql
+mutation ApplyPluginConfiguration(
+  $manifest: PluginConfigurationDesiredStateInput!
+  $secretResolutions: [PluginSecretResolutionInput!]!
+) {
+  applyPluginConfiguration(
+    manifest: $manifest
+    secretResolutions: $secretResolutions
+  ) {
+    status
+    message
+    operations { kind path status message }
+    planAfter { inSync changes { kind path message } }
+  }
+}
+```
+
+```json
+{
+  "secretResolutions": [
+    {
+      "valueFrom": "env:SCAN_API_KEY",
+      "value": "resolved-at-runtime-and-never-committed"
+    }
+  ]
+}
+```
+
+Apply performs a complete preflight before mutating anything, then installs
+versions, sets required secrets, configures/enables plugins, and updates
+pipelines in that order. It stops on the first failure and returns the
+successfully applied operations plus a fresh drift plan. Secret values are
+redacted from failure messages and never returned.

@@ -8,6 +8,7 @@ export type DesiredServerPlugin = {
   enabled: boolean
   settingsJson?: Record<string, unknown> | null
   requiredSecrets?: string[] | null
+  secretRefs?: Array<{ key: string; valueFrom: string }> | null
 }
 
 export type PluginConfigurationDesiredState = {
@@ -42,7 +43,6 @@ export type PluginConfigurationChangeKind =
   | 'DISABLE_PLUGIN'
   | 'SET_SECRET'
   | 'REPLACE_SECRET'
-  | 'VALIDATE_SECRET'
   | 'UPDATE_PIPELINES'
 
 export type PluginConfigurationChange = {
@@ -153,7 +153,14 @@ const validateDesiredState = (
     }
     identities.add(identity)
 
-    const secretKeys = plugin.requiredSecrets ?? []
+    const secretRefs = plugin.secretRefs ?? []
+    if (secretRefs.some(secret => !secret.key.trim() || !secret.valueFrom.trim())) {
+      throw new Error(`Secret references require non-empty key and valueFrom: ${plugin.pluginId}`)
+    }
+    const secretKeys = [
+      ...(plugin.requiredSecrets ?? []),
+      ...secretRefs.map(secret => secret.key),
+    ]
     if (secretKeys.some(key => !key.trim())) {
       throw new Error(`Required secret keys must be non-empty: ${plugin.pluginId}`)
     }
@@ -225,7 +232,11 @@ export const buildPluginConfigurationReconciliationPlan = ({
       }
     }
 
-    for (const key of plugin.requiredSecrets ?? []) {
+    const secretKeys = [
+      ...(plugin.requiredSecrets ?? []),
+      ...(plugin.secretRefs ?? []).map(secret => secret.key),
+    ]
+    for (const key of secretKeys) {
       const secret = live.secrets.find(
         candidate => candidate.pluginId === plugin.pluginId && candidate.key === key
       )
@@ -243,15 +254,6 @@ export const buildPluginConfigurationReconciliationPlan = ({
           kind: 'REPLACE_SECRET',
           path: `${path}.secrets.${key}`,
           message: `Replace invalid secret ${key} for ${plugin.pluginId}`,
-          current: secret.status,
-          desired: 'VALID',
-          blocked: true,
-        })
-      } else if (secret.status === 'SET_UNTESTED') {
-        changes.push({
-          kind: 'VALIDATE_SECRET',
-          path: `${path}.secrets.${key}`,
-          message: `Validate secret ${key} for ${plugin.pluginId}`,
           current: secret.status,
           desired: 'VALID',
           blocked: true,

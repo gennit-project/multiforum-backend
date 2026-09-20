@@ -62,7 +62,7 @@ const mapApplicability = (
   }
 }
 
-const mapDesiredState = (
+export const mapPluginConfigurationDesiredStateInput = (
   manifest: PluginConfigurationDesiredStateInput
 ): PluginConfigurationDesiredState => ({
   apiVersion: manifest.apiVersion,
@@ -75,6 +75,9 @@ const mapDesiredState = (
       : {}),
     ...(plugin.requiredSecrets !== undefined
       ? { requiredSecrets: plugin.requiredSecrets }
+      : {}),
+    ...(plugin.secretRefs !== undefined
+      ? { secretRefs: plugin.secretRefs }
       : {}),
   })),
   ...(manifest.pipelines !== undefined
@@ -149,7 +152,7 @@ const getResolver = ({ ServerConfig, ServerSecret }: Input) =>
     })
 
     return buildPluginConfigurationReconciliationPlan({
-      desired: mapDesiredState(args.manifest),
+      desired: mapPluginConfigurationDesiredStateInput(args.manifest),
       live: {
         plugins: edges.flatMap(edge => {
           const pluginId = edge.node?.Plugin?.name

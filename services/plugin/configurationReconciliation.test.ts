@@ -17,7 +17,10 @@ const desired = (
     version: '0.4.0',
     enabled: true,
     settingsJson: { serviceUrl: 'https://scanner.example.test' },
-    requiredSecrets: ['SCAN_SERVICE_API_KEY'],
+    secretRefs: [{
+      key: 'SCAN_SERVICE_API_KEY',
+      valueFrom: 'env:SCAN_API_KEY',
+    }],
   }],
   pipelines: [{
     event: 'downloadableFile.created',
@@ -108,7 +111,7 @@ test('plans disabling and settings changes for an installed version', () => {
   ])
 })
 
-test('reports invalid and untested secrets without exposing values', () => {
+test('reports invalid secrets while accepting present untested secrets', () => {
   const plan = buildPluginConfigurationReconciliationPlan({
     desired: desired({
       plugins: [{
@@ -127,10 +130,7 @@ test('reports invalid and untested secrets without exposing values', () => {
     }),
   })
 
-  assert.deepEqual(plan.changes.map(change => change.kind), [
-    'REPLACE_SECRET',
-    'VALIDATE_SECRET',
-  ])
+  assert.deepEqual(plan.changes.map(change => change.kind), ['REPLACE_SECRET'])
   assert.ok(plan.changes.every(change => change.blocked))
 })
 
@@ -200,6 +200,14 @@ test('rejects unsupported versions and duplicate declarations', () => {
         version: '0.4.0',
         enabled: true,
         requiredSecrets: [''],
+      }],
+    }),
+    desired({
+      plugins: [{
+        pluginId: 'security-attachment-scan',
+        version: '0.4.0',
+        enabled: true,
+        secretRefs: [{ key: '', valueFrom: '' }],
       }],
     }),
     desired({ pipelines: [{ event: '', steps: [] }] }),

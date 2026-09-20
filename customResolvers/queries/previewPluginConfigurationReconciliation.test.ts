@@ -20,7 +20,10 @@ const args: QueryPreviewPluginConfigurationReconciliationArgs = {
       version: '0.4.0',
       enabled: true,
       settingsJson: { serviceUrl: 'https://scanner.example.test' },
-      requiredSecrets: ['SCAN_SERVICE_API_KEY'],
+      secretRefs: [{
+        key: 'SCAN_SERVICE_API_KEY',
+        valueFrom: 'env:SCAN_API_KEY',
+      }],
     }],
     pipelines: [{
       event: 'downloadableFile.created',
@@ -84,7 +87,7 @@ test('builds a preview from persisted plugin, secret, and pipeline state', async
   assert.deepEqual(result.changes, [])
 })
 
-test('reports untested secrets and missing server configuration', async () => {
+test('accepts untested secrets and reports missing server configuration', async () => {
   const models = {
     ServerConfig: {
       find: async () => [{
@@ -108,7 +111,7 @@ test('reports untested secrets and missing server configuration', async () => {
     {} as never
   )
 
-  assert.ok(result.changes.some(change => change.kind === 'VALIDATE_SECRET'))
+  assert.ok(result.changes.every(change => change.kind !== 'SET_SECRET'))
 
   const missingConfigModels = {
     ...models,

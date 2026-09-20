@@ -27,11 +27,32 @@ type Args = {
   settingsJson?: Record<string, unknown>
 }
 
+type InstallationEdge = {
+  properties?: { settingsJson?: unknown } | null
+}
+
+export const parsePluginSettings = (value: unknown): Record<string, unknown> => {
+  if (!value) return {}
+  if (typeof value === 'string') {
+    try {
+      const parsed: unknown = JSON.parse(value)
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed as Record<string, unknown>
+        : {}
+    } catch {
+      return {}
+    }
+  }
+  return typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
 const getResolver = (input: Input) => {
   const { Plugin, PluginVersion, ServerConfig, ServerSecret } = input
 
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
-    const { pluginId, version, enabled, settingsJson = {} } = args
+    const { pluginId, version, enabled, settingsJson } = args
 
     try {
       // 1. Find the plugin and version
@@ -88,6 +109,9 @@ const getResolver = (input: Input) => {
             id
             version
           }
+          InstalledVersionsConnection(where: { node: { id: "${pluginVersion.id}" } }) {
+            edges { properties { settingsJson } }
+          }
         }`
       })
 
@@ -101,6 +125,12 @@ const getResolver = (input: Input) => {
       if (!isInstalled) {
         throw new Error(`Plugin ${pluginId} version ${version} is not installed. Please install it first.`)
       }
+
+      const installationEdge = serverConfig.InstalledVersionsConnection
+        ?.edges?.[0] as InstallationEdge | undefined
+      const settingsToApply = settingsJson ?? parsePluginSettings(
+        installationEdge?.properties?.settingsJson
+      )
 
       // 3. If enabling, validate all required server-scoped configuration.
       if (enabled) {
@@ -116,7 +146,7 @@ const getResolver = (input: Input) => {
 
         const configStatus = buildPluginConfigStatus({
           manifest,
-          settingsJson,
+          settingsJson: settingsToApply,
           secretStatuses: secrets.map(secret => ({
             key: secret.key,
             status: resolveSecretValidationStatus(secret)
@@ -134,8 +164,8 @@ const getResolver = (input: Input) => {
 
       // 4. Update the installation relationship
       const settingsJsonValue =
-        settingsJson && Object.keys(settingsJson).length > 0
-          ? JSON.stringify(settingsJson)
+        Object.keys(settingsToApply).length > 0
+          ? JSON.stringify(settingsToApply)
           : null
 
       await ServerConfig.update({
@@ -171,7 +201,7 @@ const getResolver = (input: Input) => {
         version,
         scope: 'SERVER',
         enabled,
-        settingsJson,
+        settingsJson: settingsToApply,
         manifest: manifest || null,
         settingsDefaults: pluginVersion.settingsDefaults || null,
         uiSchema: pluginVersion.uiSchema || null,
