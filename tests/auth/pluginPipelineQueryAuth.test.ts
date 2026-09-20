@@ -66,3 +66,19 @@ test('anonymous callers cannot use the internal pipeline detail query', async ()
     /Not Authoris/i
   )
 })
+
+test('anonymous callers cannot preview plugin configuration reconciliation', async () => {
+  const result = await execute(`{
+    previewPluginConfigurationReconciliation(manifest: {
+      apiVersion: "multiforum.gennit.dev/v1alpha1"
+      plugins: []
+    }) {
+      inSync
+    }
+  }`)
+
+  assert.match(
+    result.errors?.map(error => error.message).join(' | ') || '',
+    /Not Authoris/i
+  )
+})

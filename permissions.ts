@@ -147,6 +147,8 @@ const PUBLIC_READ_TYPES = [
   "Plugin",
   "PluginConfigFieldStatus",
   "PluginConfigStatus",
+  "PluginConfigurationChange",
+  "PluginConfigurationReconciliationPlan",
   "PluginPipelineCampaign",
   "PluginPipelineCampaignFailure",
   "PluginPipelineCampaignPreview",
@@ -215,6 +217,10 @@ const permissionRules: IRules = {
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
       getDownloadScanReviewQueue: and(isAuthenticated, canPermanentlyRemoveImage),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
+      previewPluginConfigurationReconciliation: chain(
+        isAuthenticated,
+        canManagePlugins
+      ),
       // Public, non-secret capability metadata used to degrade optional UI
       // integrations cleanly before authentication is available.
       getInstanceSetupStatus: allow,
