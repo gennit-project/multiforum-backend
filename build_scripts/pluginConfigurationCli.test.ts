@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   EXIT,
+  getAccessToken,
   parseManifest,
   resolveManifestSecrets,
   runPluginConfigurationCli,
@@ -210,6 +211,117 @@ test("apply fails when the server remains out of sync", async () => {
       subject.dependencies
     ),
     EXIT.ERROR
+  );
+});
+
+test("obtains a scoped client-credentials token when no token is supplied", async () => {
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+  const token = await getAccessToken(
+    {
+      MULTIFORUM_OAUTH_TOKEN_URL: "https://identity.example/oauth/token",
+      MULTIFORUM_OAUTH_CLIENT_ID: "ci-client",
+      MULTIFORUM_OAUTH_CLIENT_SECRET: "client-secret",
+      MULTIFORUM_OAUTH_AUDIENCE: "https://api.example",
+    },
+    async (url, init) => {
+      requests.push({ url: String(url), init });
+      return response({
+        access_token: "service-access-token",
+        token_type: "Bearer",
+      });
+    }
+  );
+  assert.equal(token, "service-access-token");
+  assert.equal(requests[0].url, "https://identity.example/oauth/token");
+  const body = requests[0].init?.body;
+  assert.ok(body instanceof URLSearchParams);
+  assert.equal(body.get("grant_type"), "client_credentials");
+  assert.equal(body.get("client_id"), "ci-client");
+  assert.equal(body.get("client_secret"), "client-secret");
+  assert.equal(body.get("audience"), "https://api.example");
+  assert.equal(body.get("scope"), "plugin-configuration:write");
+});
+
+test("uses the client-credentials token for the GraphQL request", async () => {
+  const authorizations: string[] = [];
+  const subject = fixture({
+    env: {
+      MULTIFORUM_ACCESS_TOKEN: "",
+      MULTIFORUM_OAUTH_TOKEN_URL: "https://identity.example/oauth/token",
+      MULTIFORUM_OAUTH_CLIENT_ID: "ci-client",
+      MULTIFORUM_OAUTH_CLIENT_SECRET: "client-secret",
+      MULTIFORUM_OAUTH_AUDIENCE: "https://api.example",
+      MULTIFORUM_OAUTH_SCOPE: "plugins:reconcile",
+    },
+    fetch: async (url, init) => {
+      if (String(url).includes("/oauth/token")) {
+        const body = init?.body;
+        assert.ok(body instanceof URLSearchParams);
+        assert.equal(body.get("scope"), "plugins:reconcile");
+        return response({ access_token: "m2m-token", token_type: "bearer" });
+      }
+      authorizations.push(
+        (init?.headers as Record<string, string>).authorization
+      );
+      return response({ data: {
+        previewPluginConfigurationReconciliation: {
+          apiVersion: manifest.apiVersion,
+          inSync: true,
+          warnings: [],
+          changes: [],
+        },
+      } });
+    },
+  });
+  assert.equal(
+    await runPluginConfigurationCli(
+      ["plugin-config", "plan", "--manifest", "manifest.json"],
+      subject.dependencies
+    ),
+    EXIT.SUCCESS
+  );
+  assert.deepEqual(authorizations, ["Bearer m2m-token"]);
+  assert.doesNotMatch(subject.output().stdout, /m2m-token|client-secret/);
+});
+
+test("reports safe client-credentials failures", async () => {
+  const environment = {
+    MULTIFORUM_OAUTH_TOKEN_URL: "https://identity.example/oauth/token",
+    MULTIFORUM_OAUTH_CLIENT_ID: "ci-client",
+    MULTIFORUM_OAUTH_CLIENT_SECRET: "client-secret",
+    MULTIFORUM_OAUTH_AUDIENCE: "https://api.example",
+  };
+  await assert.rejects(
+    getAccessToken(environment, async () => response({}, 401)),
+    /HTTP 401/
+  );
+  await assert.rejects(
+    getAccessToken(environment, async () => new Response("not-json")),
+    /invalid JSON/
+  );
+  await assert.rejects(
+    getAccessToken(environment, async () => response({ token_type: "Bearer" })),
+    /access token/
+  );
+  await assert.rejects(
+    getAccessToken(
+      environment,
+      async () => response({ access_token: "secret", token_type: "MAC" })
+    ),
+    /bearer token/
+  );
+  await assert.rejects(
+    getAccessToken(environment, async () => {
+      throw new Error("offline");
+    }),
+    /Could not reach OAuth token endpoint: offline/
+  );
+  await assert.rejects(
+    getAccessToken(
+      { ...environment, MULTIFORUM_OAUTH_TOKEN_URL: "http://identity.example/token" },
+      async () => response({})
+    ),
+    /must use HTTPS/
   );
 });
 

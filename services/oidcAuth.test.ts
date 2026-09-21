@@ -4,9 +4,11 @@ import { createServer } from "node:http";
 import test from "node:test";
 import jwt from "jsonwebtoken";
 import {
+  getAuth0OidcConfiguration,
   getOidcAuthMissingVariables,
   getOidcConfiguration,
   isOidcAuthConfigured,
+  verifyOidcAccessToken,
   verifyOidcToken,
 } from "./oidcAuth.js";
 
@@ -60,6 +62,30 @@ test("reports and validates the generic OIDC configuration", () => {
         OIDC_USERINFO_URL: "https://user:secret@identity.example.test/userinfo",
       }),
     /must not contain credentials/
+  );
+});
+
+test("validates Auth0 as an OIDC issuer for service tokens", () => {
+  assert.deepEqual(
+    getAuth0OidcConfiguration({
+      AUTH0_DOMAIN: "tenant.example.test",
+      AUTH0_AUDIENCE: "https://api.example.test",
+    }),
+    {
+      issuerUrl: "https://tenant.example.test/",
+      audience: "https://api.example.test",
+      jwksUrl: "https://tenant.example.test/.well-known/jwks.json",
+      userInfoUrl: "https://tenant.example.test/userinfo",
+    }
+  );
+  assert.throws(() => getAuth0OidcConfiguration({}), /requires/);
+  assert.throws(
+    () =>
+      getAuth0OidcConfiguration({
+        AUTH0_DOMAIN: "https://tenant.example.test",
+        AUTH0_AUDIENCE: "api",
+      }),
+    /hostname/
   );
 });
 
@@ -123,6 +149,8 @@ test("verifies issuer, audience, signature, subject, and UserInfo identity", asy
       });
 
     const token = sign();
+    const claims = await verifyOidcAccessToken(token, getOidcConfiguration(env));
+    assert.equal(claims.sub, "identity-user-1");
     assert.deepEqual(await verifyOidcToken(token, env), {
       email: "member@example.test",
       subject: "identity-user-1",

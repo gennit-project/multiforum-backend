@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import type { RequestHandler } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { getOidcConfiguration } from "./oidcAuth.js";
+import { assertPluginConfigurationAutomationConfiguration } from "./pluginConfigurationAutomationAuth.js";
 
 const LOCAL_DEV_PROVIDER = "local-dev";
 const TOKEN_ISSUER = "multiforum-local-dev";
@@ -105,6 +106,7 @@ export const assertAuthenticationConfiguration = (
   if (provider === "oidc") {
     getOidcConfiguration(env);
   }
+  assertPluginConfigurationAutomationConfiguration(env);
 };
 
 export const getLocalDevBootstrapIdentity = (

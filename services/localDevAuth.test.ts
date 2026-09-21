@@ -89,6 +89,24 @@ test("accepts the default Auth0 provider without requiring local settings", () =
   assert.equal(isLocalDevAuthConfigured({}), false);
 });
 
+test("validates plugin configuration automation only when enabled", () => {
+  assert.doesNotThrow(() =>
+    assertAuthenticationConfiguration({
+      AUTH0_DOMAIN: "tenant.example.test",
+      AUTH0_AUDIENCE: "https://api.example.test",
+      PLUGIN_CONFIGURATION_AUTOMATION_SUBJECTS: "ci-client@clients",
+    })
+  );
+  assert.throws(
+    () =>
+      assertAuthenticationConfiguration({
+        AUTH0_DOMAIN: "tenant.example.test",
+        PLUGIN_CONFIGURATION_AUTOMATION_SUBJECTS: "ci-client@clients",
+      }),
+    /AUTH0_AUDIENCE/
+  );
+});
+
 test("validates generic OIDC settings at startup", () => {
   assert.throws(
     () => assertAuthenticationConfiguration({ MULTIFORUM_AUTH_PROVIDER: "oidc" }),

@@ -70,4 +70,12 @@ export type GraphQLContext = {
   mayAccessSensitiveContent?: boolean;
   /** Claims consumed internally by Neo4j GraphQL authorization directives. */
   jwt?: Record<string, unknown>;
+  /**
+   * A verified workload identity accepted only by the plugin-configuration
+   * reconciliation permission rule. It is not a Multiforum user.
+   */
+  pluginConfigurationAutomation?: {
+    subject: string;
+    scope: string;
+  };
 };
