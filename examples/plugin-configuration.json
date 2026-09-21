@@ -1,0 +1,31 @@
+{
+  "apiVersion": "multiforum.gennit.dev/v1alpha1",
+  "plugins": [
+    {
+      "pluginId": "security-attachment-scan",
+      "version": "0.4.0",
+      "enabled": true,
+      "settingsJson": {
+        "serviceUrl": "https://security-scan-service.example.run.app"
+      },
+      "secretRefs": [
+        {
+          "key": "SCAN_SERVICE_API_KEY",
+          "valueFrom": "env:SCAN_API_KEY"
+        }
+      ]
+    }
+  ],
+  "pipelines": [
+    {
+      "event": "downloadableFile.created",
+      "steps": [
+        {
+          "pluginId": "security-attachment-scan",
+          "version": "0.4.0"
+        }
+      ],
+      "applicability": "NEW_FILES_ONLY"
+    }
+  ]
+}
