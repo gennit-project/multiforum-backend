@@ -423,6 +423,11 @@ export const triggerPluginRunsForDownloadableFile = async (
       const context = {
         scope: 'SERVER' as const,
         channelId,
+        execution: {
+          correlationId: pluginRunId,
+          pluginRunId,
+          pipelineRunId: pipelineId,
+        },
         settings: runtimeSettings,
         secrets: {
           server: decryptedSecrets

@@ -179,6 +179,29 @@ test("runs a matching plugin to SUCCEEDED", async () => {
   assert.equal(runs.length, 1);
 });
 
+test("exposes stable execution identifiers to the plugin", async () => {
+  const { models, attemptCreates } = makeExecModels([installedEdge("mybot")]);
+  let execution: unknown;
+  const Plugin = class {
+    constructor(...args: unknown[]) {
+      const context = args[0] as { execution: unknown };
+      execution = context.execution;
+    }
+
+    async handleEvent() {
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin));
+
+  assert.deepEqual(execution, {
+    correlationId: "run-1",
+    pluginRunId: "run-1",
+    pipelineRunId: attemptCreates[0]!.input[0]!.pipelineId,
+  });
+});
+
 test("stores structured public diagnostics separately from internal logs", async () => {
   const { models, updates } = makeExecModels([installedEdge("mybot")]);
   type DiagnosticContext = {
