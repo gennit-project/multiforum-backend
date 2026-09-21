@@ -16,7 +16,7 @@ export type OidcIdentity = {
   subject: string;
 };
 
-type OidcConfiguration = {
+export type OidcConfiguration = {
   issuerUrl: string;
   audience: string;
   jwksUrl: string;
@@ -96,6 +96,35 @@ export const getOidcConfiguration = (
   };
 };
 
+export const getAuth0OidcConfiguration = (
+  env: Environment = process.env
+): OidcConfiguration => {
+  const domain = env.AUTH0_DOMAIN?.trim();
+  const audience = env.AUTH0_AUDIENCE?.trim();
+  if (!domain || !audience) {
+    throw new Error(
+      "Auth0 service authentication requires: AUTH0_DOMAIN, AUTH0_AUDIENCE."
+    );
+  }
+  if (
+    domain.includes("/") ||
+    domain.includes(":") ||
+    domain.includes("@") ||
+    domain.includes("?") ||
+    domain.includes("#")
+  ) {
+    throw new Error("AUTH0_DOMAIN must be a hostname without a scheme or path.");
+  }
+
+  const issuerUrl = "https://" + domain + "/";
+  return {
+    issuerUrl,
+    audience,
+    jwksUrl: issuerUrl + ".well-known/jwks.json",
+    userInfoUrl: issuerUrl + "userinfo",
+  };
+};
+
 export const isOidcAuthConfigured = (
   env: Environment = process.env
 ): boolean => {
@@ -136,9 +165,9 @@ const createKeyResolver = (jwksUrl: string): GetPublicKeyOrSecret =>
     });
   };
 
-const verifyJwt = (
+export const verifyOidcAccessToken = (
   token: string,
-  config: OidcConfiguration
+  config: OidcConfiguration = getOidcConfiguration()
 ): Promise<JwtPayload> =>
   new Promise((resolve, reject) => {
     jwt.verify(
@@ -196,7 +225,7 @@ export const verifyOidcToken = async (
   env: Environment = process.env
 ): Promise<OidcIdentity> => {
   const config = getOidcConfiguration(env);
-  const decoded = await verifyJwt(token, config);
+  const decoded = await verifyOidcAccessToken(token, config);
   if (typeof decoded.sub !== "string" || !decoded.sub) {
     throw new Error("OIDC access token does not contain a subject.");
   }

@@ -1,6 +1,15 @@
 import { isIntrospectionType, isObjectType } from "graphql";
 import { middleware } from "graphql-middleware";
-import { and, chain, shield, allow, deny, or, type IRules } from "graphql-shield";
+import {
+  and,
+  chain,
+  shield,
+  allow,
+  deny,
+  or,
+  race,
+  type IRules,
+} from "graphql-shield";
 import rules from "./rules/rules.js";
 import typeDefs from "./typeDefs.js";
 
@@ -65,6 +74,7 @@ const {
   canEditEvents,
   isAuthenticatedAndVerified,
   isAuthenticated,
+  isPluginConfigurationAutomation,
   canBecomeForumAdmin,
   canLockChannel,
   isCollectionOwner,
@@ -219,9 +229,11 @@ const permissionRules: IRules = {
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
       getDownloadScanReviewQueue: and(isAuthenticated, canPermanentlyRemoveImage),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
-      previewPluginConfigurationReconciliation: chain(
-        isAuthenticated,
-        canManagePlugins
+      // race evaluates sequentially, so a verified workload identity does not
+      // fall through to user authentication and its UserInfo lookup.
+      previewPluginConfigurationReconciliation: race(
+        isPluginConfigurationAutomation,
+        chain(isAuthenticated, canManagePlugins)
       ),
       // Public, non-secret capability metadata used to degrade optional UI
       // integrations cleanly before authentication is available.
@@ -618,7 +630,10 @@ const permissionRules: IRules = {
       setServerPluginSecret: and(isAuthenticated, canManagePlugins),
       deletePluginVersions: and(isAuthenticated, canManagePlugins),
       updateChannelPluginPipelines: and(isAuthenticated, isChannelOwner),
-      applyPluginConfiguration: chain(isAuthenticated, canManagePlugins),
+      applyPluginConfiguration: race(
+        isPluginConfigurationAutomation,
+        chain(isAuthenticated, canManagePlugins)
+      ),
       updateDownloadLabels: and(isAuthenticated, allow), // Permission logic handled in resolver
     },
   };

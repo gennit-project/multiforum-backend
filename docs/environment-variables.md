@@ -54,6 +54,30 @@ then requires the UserInfo subject to match the token. Email addresses that the
 provider has not affirmatively verified are rejected. Endpoint URLs must use
 HTTPS and cannot contain embedded credentials, queries, or fragments.
 
+### Plugin configuration automation
+
+Plugin reconciliation can optionally accept OAuth/OIDC machine identities.
+This is a narrow exception: service tokens can call only
+`previewPluginConfigurationReconciliation` and
+`applyPluginConfiguration`. They do not become Multiforum users and cannot
+use other authenticated or administrative operations.
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `PLUGIN_CONFIGURATION_AUTOMATION_SUBJECTS` | To enable | Comma-separated allowlist of exact access-token `sub` claims. For an Auth0 machine-to-machine application this is normally `<client-id>@clients`. If unset, service-token reconciliation is disabled. |
+| `PLUGIN_CONFIGURATION_AUTOMATION_SCOPE` | No | Single required scope or permission. Defaults to `plugin-configuration:write`. |
+
+Every service token must be RS256-signed and pass the same issuer, audience,
+expiry, and JWKS validation as other API tokens. Its subject must be allowlisted
+and its `scope` string or Auth0 `permissions` array must include the required
+scope. Invalid automation configuration fails server startup. Multiforum stores
+neither the OAuth client ID nor client secret.
+
+For Auth0, define the `plugin-configuration:write` permission on the API named
+by `AUTH0_AUDIENCE`, authorize the machine-to-machine application for that
+permission, and add its token subject to
+`PLUGIN_CONFIGURATION_AUTOMATION_SUBJECTS`.
+
 ### Local development authentication
 
 | Variable | Required | Description |

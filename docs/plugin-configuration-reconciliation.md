@@ -132,7 +132,9 @@ redacted from failure messages and never returned.
 
 The bundled `mfctl` command turns these GraphQL operations into a repeatable
 local or CI workflow. Keep the JSON manifest in source control while storing
-its referenced values and the Multiforum access token in the CI secret store:
+its referenced values and credentials in the CI secret store.
+
+For interactive use, supply an existing user token:
 
 ```bash
 export MULTIFORUM_GRAPHQL_URL=https://forum.example/graphql
@@ -143,11 +145,32 @@ pnpm mfctl plugin-config plan --manifest examples/plugin-configuration.json
 pnpm mfctl plugin-config apply --manifest examples/plugin-configuration.json
 ```
 
-The access token must belong to an existing Multiforum user whose server role
-grants `canManagePlugins`. It is sent as a bearer token and is never written
-to CLI output. `plan` does not resolve or transmit referenced secrets.
-`apply` currently supports `env:NAME` references and sends those values only
-in the apply request; neither values nor the request body are logged.
+That token must belong to an existing Multiforum user whose server role grants
+`canManagePlugins`. For CI, `mfctl` can instead obtain a short-lived token
+using OAuth client credentials:
+
+```bash
+export MULTIFORUM_GRAPHQL_URL=https://forum.example/graphql
+export MULTIFORUM_OAUTH_TOKEN_URL=https://your-tenant.auth0.com/oauth/token
+export MULTIFORUM_OAUTH_CLIENT_ID=stored-in-ci
+export MULTIFORUM_OAUTH_CLIENT_SECRET=stored-in-ci
+export MULTIFORUM_OAUTH_AUDIENCE=https://api.example
+export MULTIFORUM_OAUTH_SCOPE=plugin-configuration:write
+export SCAN_API_KEY=resolved-only-at-runtime
+
+pnpm mfctl plugin-config apply --manifest examples/plugin-configuration.json
+```
+
+Configure the backend's exact service-token subject in
+`PLUGIN_CONFIGURATION_AUTOMATION_SUBJECTS` as described in
+[environment variables](./environment-variables.md#plugin-configuration-automation).
+For Auth0 this is normally `<client-id>@clients`. The client ID and secret
+stay in CI; they are not configured on Multiforum.
+
+Tokens and client secrets are never written to CLI output. `plan` does not
+resolve or transmit referenced plugin secrets. `apply` currently supports
+`env:NAME` references and sends those values only in the apply request;
+neither values nor the request body are logged.
 
 Use `--endpoint` to override `MULTIFORUM_GRAPHQL_URL` and `--json` for
 machine-readable output. Exit codes are suitable for CI:
@@ -156,9 +179,7 @@ machine-readable output. Exit codes are suitable for CI:
 - `1`: invalid input, request failure, blocked/failed apply, or remaining drift
 - `2`: plan succeeded and found drift
 
-The example manifest is at `examples/plugin-configuration.json`. This first
-CLI version deliberately reuses the existing user authorization boundary.
-Workload identity or an Auth0 machine-to-machine credential needs a separately
-reviewed backend identity and role mapping: client-credentials tokens generally
-do not identify a Multiforum user and cannot safely inherit
-`canManagePlugins` implicitly.
+The example manifest is at `examples/plugin-configuration.json`. Machine
+identities are intentionally narrower than `canManagePlugins`: even a valid
+allowlisted service token is accepted only by the two reconciliation
+operations.

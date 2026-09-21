@@ -52,7 +52,11 @@ const USAGE =
   "  pnpm mfctl plugin-config apply --manifest <file> [--endpoint <url>] [--json]\n\n" +
   "Environment:\n" +
   "  MULTIFORUM_GRAPHQL_URL   GraphQL endpoint (unless --endpoint is supplied)\n" +
-  "  MULTIFORUM_ACCESS_TOKEN Bearer token for a user with canManagePlugins\n\n" +
+  "  MULTIFORUM_ACCESS_TOKEN Existing user or service bearer token\n" +
+  "  MULTIFORUM_OAUTH_TOKEN_URL, MULTIFORUM_OAUTH_CLIENT_ID,\n" +
+  "  MULTIFORUM_OAUTH_CLIENT_SECRET, MULTIFORUM_OAUTH_AUDIENCE\n" +
+  "                           Client-credentials settings used when no token is supplied\n" +
+  "  MULTIFORUM_OAUTH_SCOPE  Defaults to plugin-configuration:write\n\n" +
   "Exit codes: 0 success/in sync, 1 error or failed apply, 2 plan found drift.\n";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -178,6 +182,92 @@ const request = async <T>(
   return payload.data;
 };
 
+export const getAccessToken = async (
+  env: NodeJS.ProcessEnv,
+  fetchImplementation: typeof globalThis.fetch
+): Promise<string> => {
+  if (env.MULTIFORUM_ACCESS_TOKEN) return env.MULTIFORUM_ACCESS_TOKEN;
+
+  const required = [
+    "MULTIFORUM_OAUTH_TOKEN_URL",
+    "MULTIFORUM_OAUTH_CLIENT_ID",
+    "MULTIFORUM_OAUTH_CLIENT_SECRET",
+    "MULTIFORUM_OAUTH_AUDIENCE",
+  ] as const;
+  const missing = required.filter(name => !env[name]?.trim());
+  if (missing.length > 0) {
+    throw new Error(
+      "Authentication requires MULTIFORUM_ACCESS_TOKEN or: " +
+        missing.join(", ") + "."
+    );
+  }
+
+  let tokenUrl: URL;
+  try {
+    tokenUrl = new URL(env.MULTIFORUM_OAUTH_TOKEN_URL!);
+  } catch {
+    throw new Error("MULTIFORUM_OAUTH_TOKEN_URL must be an absolute HTTPS URL.");
+  }
+  if (
+    tokenUrl.protocol !== "https:" ||
+    tokenUrl.username ||
+    tokenUrl.password ||
+    tokenUrl.hash
+  ) {
+    throw new Error(
+      "MULTIFORUM_OAUTH_TOKEN_URL must use HTTPS and contain no credentials or fragment."
+    );
+  }
+
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: env.MULTIFORUM_OAUTH_CLIENT_ID!,
+    client_secret: env.MULTIFORUM_OAUTH_CLIENT_SECRET!,
+    audience: env.MULTIFORUM_OAUTH_AUDIENCE!,
+    scope:
+      env.MULTIFORUM_OAUTH_SCOPE?.trim() ||
+      "plugin-configuration:write",
+  });
+  let response: Response;
+  try {
+    response = await fetchImplementation(tokenUrl, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body,
+    });
+  } catch (error: unknown) {
+    throw new Error(
+      "Could not reach OAuth token endpoint: " +
+        (error instanceof Error ? error.message : "network error")
+    );
+  }
+  if (!response.ok) {
+    throw new Error("OAuth token endpoint returned HTTP " + response.status + ".");
+  }
+
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("OAuth token endpoint returned invalid JSON.");
+  }
+  if (
+    !isRecord(payload) ||
+    typeof payload.access_token !== "string" ||
+    !payload.access_token
+  ) {
+    throw new Error("OAuth token response did not contain an access token.");
+  }
+  if (
+    payload.token_type !== undefined &&
+    (typeof payload.token_type !== "string" ||
+      payload.token_type.toLowerCase() !== "bearer")
+  ) {
+    throw new Error("OAuth token response did not contain a bearer token.");
+  }
+  return payload.access_token;
+};
+
 const formatPlan = (plan: Plan): string => {
   const lines = [
     plan.inSync
@@ -219,11 +309,10 @@ export const runPluginConfigurationCli = async (
   try {
     const parsed = parseArguments(args);
     const endpoint = parsed.endpoint ?? dependencies.env.MULTIFORUM_GRAPHQL_URL;
-    const token = dependencies.env.MULTIFORUM_ACCESS_TOKEN;
     if (!endpoint) {
       throw new Error("MULTIFORUM_GRAPHQL_URL or --endpoint is required.");
     }
-    if (!token) throw new Error("MULTIFORUM_ACCESS_TOKEN is required.");
+    const token = await getAccessToken(dependencies.env, dependencies.fetch);
     const manifest = parseManifest(
       await dependencies.readFile(resolve(parsed.manifestPath), "utf8")
     );

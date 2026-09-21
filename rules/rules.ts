@@ -96,6 +96,7 @@ import {
   canRemoveDiscussionChannel,
   canRemoveEventChannel,
 } from "./definitions/serverRules.js";
+import { isPluginConfigurationAutomation } from "./definitions/pluginConfigurationAutomationRule.js";
 
 // Re-exported for tests and the validation modules that import from "./rules".
 export { evaluateCanCreateChannelRule } from "./definitions/contentCreationRules.js";
@@ -122,6 +123,7 @@ const ruleList = {
   issueIsNotLocked,
   isAuthenticatedAndVerified,
   isAuthenticated,
+  isPluginConfigurationAutomation,
   issueIsValid,
   canCreateChannel,
   canCreateComment,
