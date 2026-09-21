@@ -127,3 +127,38 @@ versions, sets required secrets, configures/enables plugins, and updates
 pipelines in that order. It stops on the first failure and returns the
 successfully applied operations plus a fresh drift plan. Secret values are
 redacted from failure messages and never returned.
+
+## Operator CLI
+
+The bundled `mfctl` command turns these GraphQL operations into a repeatable
+local or CI workflow. Keep the JSON manifest in source control while storing
+its referenced values and the Multiforum access token in the CI secret store:
+
+```bash
+export MULTIFORUM_GRAPHQL_URL=https://forum.example/graphql
+export MULTIFORUM_ACCESS_TOKEN=your-existing-user-access-token
+export SCAN_API_KEY=resolved-only-at-runtime
+
+pnpm mfctl plugin-config plan --manifest examples/plugin-configuration.json
+pnpm mfctl plugin-config apply --manifest examples/plugin-configuration.json
+```
+
+The access token must belong to an existing Multiforum user whose server role
+grants `canManagePlugins`. It is sent as a bearer token and is never written
+to CLI output. `plan` does not resolve or transmit referenced secrets.
+`apply` currently supports `env:NAME` references and sends those values only
+in the apply request; neither values nor the request body are logged.
+
+Use `--endpoint` to override `MULTIFORUM_GRAPHQL_URL` and `--json` for
+machine-readable output. Exit codes are suitable for CI:
+
+- `0`: in sync, or apply converged successfully
+- `1`: invalid input, request failure, blocked/failed apply, or remaining drift
+- `2`: plan succeeded and found drift
+
+The example manifest is at `examples/plugin-configuration.json`. This first
+CLI version deliberately reuses the existing user authorization boundary.
+Workload identity or an Auth0 machine-to-machine credential needs a separately
+reviewed backend identity and role mapping: client-credentials tokens generally
+do not identify a Multiforum user and cannot safely inherit
+`canManagePlugins` implicitly.
