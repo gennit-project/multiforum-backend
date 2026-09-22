@@ -166,7 +166,7 @@ test("apply resolves secrets at runtime without printing them", async () => {
       requestBody = String(init?.body);
       return response({ data: {
         applyPluginConfiguration: {
-          status: "APPLIED",
+          status: "SUCCEEDED",
           message: "done",
           operations: [],
           planAfter: {
