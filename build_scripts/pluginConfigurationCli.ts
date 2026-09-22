@@ -346,7 +346,7 @@ export const runPluginConfigurationCli = async (
     dependencies.stdout.write(
       parsed.json ? JSON.stringify(result, null, 2) + "\n" : formatApply(result)
     );
-    return ["APPLIED", "NO_CHANGES"].includes(result.status) &&
+    return ["SUCCEEDED", "NO_CHANGES"].includes(result.status) &&
       result.planAfter.inSync
       ? EXIT.SUCCESS
       : EXIT.ERROR;
