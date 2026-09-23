@@ -410,6 +410,23 @@ export const triggerPluginRunsForDownloadableFile = async (
         secrets: Object.values(decryptedSecrets),
       })
       publicDiagnostics = diagnosticCollector.entries
+      if (
+        pluginId === SECURITY_SCAN_PLUGIN_ID &&
+        attachments.length === 0
+      ) {
+        const reason =
+          'No readable downloadable attachment is available to scan.'
+        diagnosticCollector.public({
+          level: 'ERROR',
+          code: 'SCAN_ATTACHMENT_UNAVAILABLE',
+          message: reason,
+          details: {
+            downloadableFileId: fileData.id,
+            recovery: 'Replace the download file before running the scan again.'
+          }
+        })
+        throw new Error(reason)
+      }
       const internalLog = (...args: unknown[]) => {
         const message = args
           .map(arg =>
@@ -479,7 +496,12 @@ export const triggerPluginRunsForDownloadableFile = async (
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
 
-      const succeeded = result?.success !== false
+      const succeeded =
+        result?.success !== false &&
+        !(
+          pluginId === SECURITY_SCAN_PLUGIN_ID &&
+          securityScanOutcome?.status === 'FAILED'
+        )
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       await completePluginRunLease({
@@ -489,7 +511,11 @@ export const triggerPluginRunsForDownloadableFile = async (
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
           message: succeeded
             ? (result?.result?.message || 'Plugin run completed')
-            : (result?.error || 'Plugin reported failure'),
+            : (
+                securityScanOutcome?.reason ||
+                result?.error ||
+                'Plugin reported failure'
+              ),
           durationMs,
           publicDiagnostics: JSON.stringify(publicDiagnostics),
           payload: JSON.stringify({

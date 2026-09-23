@@ -455,6 +455,113 @@ test("skips later plugins after a failure (stopOnFirstFailure)", async () => {
   assert.ok(statuses.includes("SKIPPED"));
 });
 
+test("fails the security pipeline when no readable attachment is available", async () => {
+  const missingAttachment = {
+    ...fileNode,
+    url: "",
+    storageBucket: null,
+    storageObjectName: null,
+  };
+  const {
+    models,
+    updates,
+    fileUpdates,
+    attemptUpdates,
+  } = makeExecModels(
+    [installedEdge("security-attachment-scan")],
+    missingAttachment
+  );
+  let handled = false;
+  const Plugin = class {
+    async handleEvent() {
+      handled = true;
+      return { success: true, result: { verdict: "clean" } };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin));
+
+  const completedRun = updates.find(
+    update => update.update?.status === "FAILED"
+  )?.update;
+  assert.equal(handled, false);
+  assert.equal(
+    completedRun?.message,
+    "No readable downloadable attachment is available to scan."
+  );
+  assert.deepEqual(JSON.parse(String(completedRun?.publicDiagnostics)), [
+    {
+      level: "ERROR",
+      code: "SCAN_ATTACHMENT_UNAVAILABLE",
+      message: "No readable downloadable attachment is available to scan.",
+      details: {
+        downloadableFileId: "f-1",
+        recovery: "Replace the download file before running the scan again.",
+      },
+      helpUrl: null,
+    },
+  ]);
+  assert.equal(
+    attemptUpdates[attemptUpdates.length - 1]?.update?.status,
+    "FAILED"
+  );
+  assert.deepEqual(fileUpdates[1], {
+    where: { id: "f-1" },
+    update: {
+      scanStatus: "FAILED",
+      scanReason: "No readable downloadable attachment is available to scan.",
+      scanCheckedAt: fileUpdates[1]!.update?.scanCheckedAt,
+    },
+  });
+});
+
+test("fails the security pipeline when a successful plugin omits its verdict", async () => {
+  const { models, updates, fileUpdates, attemptUpdates } = makeExecModels([
+    installedEdge("security-attachment-scan"),
+  ]);
+
+  await execRun(
+    models,
+    loaderFor(
+      pluginReturning({ success: true, result: { message: "Scan complete" } })
+    )
+  );
+
+  const completedRun = updates.find(
+    update => update.update?.status === "FAILED"
+  )?.update;
+  assert.equal(completedRun?.message, "Scan complete");
+  assert.equal(attemptUpdates[attemptUpdates.length - 1]?.update?.status, "FAILED");
+  assert.equal(fileUpdates[1]?.update?.scanStatus, "FAILED");
+});
+
+test("clears the quarantine after a clean scanner verdict", async () => {
+  const { models, updates, fileUpdates, attemptUpdates } = makeExecModels([
+    installedEdge("security-attachment-scan"),
+  ]);
+
+  await execRun(
+    models,
+    loaderFor(
+      pluginReturning({
+        success: true,
+        result: { verdict: "clean", message: "No threats found" },
+      })
+    )
+  );
+
+  assert.ok(statusesOf(updates).includes("SUCCEEDED"));
+  assert.equal(attemptUpdates[attemptUpdates.length - 1]?.update?.status, "SUCCEEDED");
+  assert.deepEqual(fileUpdates[1], {
+    where: { id: "f-1" },
+    update: {
+      scanStatus: "CLEAN",
+      scanReason: null,
+      scanCheckedAt: fileUpdates[1]!.update?.scanCheckedAt,
+    },
+  });
+});
+
 test("persists the scanner verdict on the downloadable file", async () => {
   const { models, fileUpdates } = makeExecModels([
     installedEdge("security-attachment-scan"),
