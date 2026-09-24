@@ -663,7 +663,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
-      DownloadableFile,
       driver
     }),
     enableServerPlugin: enableServerPlugin({

@@ -2,26 +2,34 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
 import type { Driver } from "neo4j-driver";
-import createDownloadableFilesWithUploadMetadata from "./createDownloadableFilesWithUploadMetadata.js";
+import {
+  FileKind,
+  PriceModel,
+  ScanStatus,
+  type DownloadableFileCreateInput,
+} from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
+import createDownloadableFilesWithUploadMetadata from "./createDownloadableFilesWithUploadMetadata.js";
 
 process.env.PLAYWRIGHT_MOCK_AUTH = "true";
 
-class DownloadableFileModelStub {
-  createCalls: any[] = [];
+type QueryCall = {
+  query: string;
+  params: Record<string, unknown>;
+};
 
-  constructor(private createImpl: (args: any) => any) {}
+type DriverOptions = {
+  uploadMetadata?: Record<string, unknown>;
+  createError?: Error;
+};
 
-  async create(args: any) {
-    this.createCalls.push(args);
-    return this.createImpl(args);
-  }
-}
-
-const buildDriver = (recordData?: Record<string, unknown>) => {
+const buildDriver = ({
+  uploadMetadata,
+  createError,
+}: DriverOptions = {}) => {
   const calls = {
     sessions: [] as string[],
-    run: [] as Array<{ query: string; params: Record<string, unknown> }>,
+    run: [] as QueryCall[],
     close: 0,
   };
 
@@ -31,15 +39,46 @@ const buildDriver = (recordData?: Record<string, unknown>) => {
       return {
         run: async (query: string, params: Record<string, unknown>) => {
           calls.run.push({ query, params });
-          return {
-            records: recordData
-              ? [
-                  {
-                    get: (key: string) => recordData[key],
-                  },
-                ]
-              : [],
-          };
+
+          if (query.includes("CREATE (file:DownloadableFile")) {
+            if (createError) throw createError;
+
+            const inputs = params.inputs as Array<Record<string, unknown>>;
+            const file = {
+              id: "file-1",
+              createdAt: "2026-07-01T12:01:00.000Z",
+              priceModel: "FREE",
+              priceCurrency: "USD",
+              downloadCountTotal: 0,
+              downloadCountUnique: 0,
+              scanStatus: "PENDING",
+              ...inputs[0],
+            };
+
+            return {
+              records: [
+                {
+                  get: (key: string) => (key === "file" ? file : undefined),
+                },
+              ],
+            };
+          }
+
+          if (query.includes("MATCH (audit:UploadedFileAudit")) {
+            const isClaim = query.includes("audit.claimedAt =");
+            return {
+              records:
+                uploadMetadata && (!isClaim || uploadMetadata)
+                  ? [
+                      {
+                        get: (key: string) => uploadMetadata[key],
+                      },
+                    ]
+                  : [],
+            };
+          }
+
+          throw new Error("Unexpected query");
         },
         close: async () => {
           calls.close += 1;
@@ -79,94 +118,176 @@ const createMockContext = (username: string) =>
     },
   }) as unknown as GraphQLContext;
 
-test("createDownloadableFiles copies verified upload metadata into the file", async () => {
-  const { driver, calls } = buildDriver({
+const createInput = (
+  overrides: Partial<DownloadableFileCreateInput> = {}
+): DownloadableFileCreateInput => ({
+  fileName: "model.stl",
+  kind: FileKind.Stl,
+  url: "https://storage.googleapis.com/bucket/uploads/alice/model.stl",
+  storageObjectName: "uploads/alice/model.stl",
+  ...overrides,
+});
+
+test("createDownloadableFiles persists directly with verified upload metadata", async () => {
+  const uploadMetadata = {
     storageBucket: "bucket",
     storageObjectName: "uploads/alice/model.stl",
     storageUrl: "https://storage.googleapis.com/bucket/uploads/alice/model.stl",
     uploadedAt: "2026-07-01T12:00:00.000000000Z",
     uploadedByUsername: "alice",
     uploadedByIp: "203.0.113.10",
-  });
-  const DownloadableFile = new DownloadableFileModelStub((args) => ({
-    downloadableFiles: [
-      {
-        id: "file-1",
-        ...args.input[0],
-      },
-    ],
-  }));
-  const resolver = createDownloadableFilesWithUploadMetadata({
-    DownloadableFile: DownloadableFile as any,
-    driver,
-  });
+  };
+  const { driver, calls } = buildDriver({ uploadMetadata });
+  const resolver = createDownloadableFilesWithUploadMetadata({ driver });
 
   const result = await resolver(
     null,
-    {
-      input: [
-        {
-          fileName: "model.stl",
-          kind: "STL",
-          url: "https://storage.googleapis.com/bucket/uploads/alice/model.stl",
-          storageObjectName: "uploads/alice/model.stl",
-        } as any,
-      ],
-    },
+    { input: [createInput()] },
     createMockContext("alice")
   );
 
+  const persistedInputs = calls.run[1].params.inputs as Array<
+    Record<string, unknown>
+  >;
+  assert.match(calls.run[1].query, /CREATE \(file:DownloadableFile/);
   assert.deepEqual(
     {
-      fileMetadata: DownloadableFile.createCalls[0].input[0],
-      claimedByType: calls.run[1].params.claimedByType,
-      claimedById: calls.run[1].params.claimedById,
+      fileMetadata: persistedInputs[0],
+      claimedByType: calls.run[2].params.claimedByType,
+      claimedById: calls.run[2].params.claimedById,
       resultId: result.downloadableFiles[0].id,
+      sessionsClosed: calls.close,
     },
     {
       fileMetadata: {
         fileName: "model.stl",
         kind: "STL",
+        size: null,
         url: "https://storage.googleapis.com/bucket/uploads/alice/model.stl",
-        storageObjectName: "uploads/alice/model.stl",
         storageBucket: "bucket",
-        storageUrl: "https://storage.googleapis.com/bucket/uploads/alice/model.stl",
+        storageObjectName: "uploads/alice/model.stl",
+        storageUrl:
+          "https://storage.googleapis.com/bucket/uploads/alice/model.stl",
         uploadedAt: "2026-07-01T12:00:00.000000000Z",
         uploadedByUsername: "alice",
         uploadedByIp: "203.0.113.10",
+        permanentlyRemoved: null,
+        priceModel: null,
+        priceCents: null,
+        priceCurrency: null,
+        downloadCountTotal: null,
+        downloadCountUnique: null,
+        attributionOverride: null,
+        supportPatreonUrl: null,
+        supportBuyMeACoffeeUrl: null,
+        supportKoFiUrl: null,
+        supportPayPalMeUrl: null,
+        scanStatus: null,
+        scanCheckedAt: null,
+        scanReason: null,
       },
       claimedByType: "DownloadableFile",
       claimedById: "file-1",
       resultId: "file-1",
+      sessionsClosed: 3,
     }
   );
 });
 
 test("createDownloadableFiles rejects an unverified storage object", async () => {
-  const { driver } = buildDriver();
-  const DownloadableFile = new DownloadableFileModelStub(() => ({
-    downloadableFiles: [],
-  }));
-  const resolver = createDownloadableFilesWithUploadMetadata({
-    DownloadableFile: DownloadableFile as any,
-    driver,
+  const { driver, calls } = buildDriver();
+  const resolver = createDownloadableFilesWithUploadMetadata({ driver });
+
+  await assert.rejects(
+    resolver(
+      null,
+      { input: [createInput()] },
+      createMockContext("alice")
+    ),
+    /Upload metadata not found/
+  );
+
+  assert.equal(
+    calls.run.some(({ query }) =>
+      query.includes("CREATE (file:DownloadableFile")
+    ),
+    false
+  );
+});
+
+test("createDownloadableFiles persists optional fields for a legacy URL", async () => {
+  const { driver, calls } = buildDriver();
+  const resolver = createDownloadableFilesWithUploadMetadata({ driver });
+
+  const result = await resolver(
+    null,
+    {
+      input: [
+        createInput({
+          storageObjectName: null,
+          url: "https://example.com/legacy.zip",
+          size: 42,
+          permanentlyRemoved: false,
+          priceModel: PriceModel.Free,
+          priceCents: 0,
+          priceCurrency: "USD",
+          downloadCountTotal: 2,
+          downloadCountUnique: 1,
+          attributionOverride: "Sample creator",
+          supportPatreonUrl: "https://patreon.com/sample",
+          supportBuyMeACoffeeUrl: "https://buymeacoffee.com/sample",
+          supportKoFiUrl: "https://ko-fi.com/sample",
+          supportPayPalMeUrl: "https://paypal.me/sample",
+          scanStatus: ScanStatus.Clean,
+          scanCheckedAt: "2026-07-01T12:02:00.000Z",
+          scanReason: "No threats found",
+        }),
+      ],
+    },
+    createMockContext("alice")
+  );
+
+  assert.equal(result.downloadableFiles[0].id, "file-1");
+  assert.equal(calls.run.length, 1);
+  assert.match(calls.run[0].query, /CREATE \(file:DownloadableFile/);
+  const inputs = calls.run[0].params.inputs as Array<Record<string, unknown>>;
+  assert.deepEqual(
+    {
+      size: inputs[0].size,
+      priceModel: inputs[0].priceModel,
+      scanStatus: inputs[0].scanStatus,
+      scanCheckedAt: inputs[0].scanCheckedAt,
+    },
+    {
+      size: 42,
+      priceModel: "FREE",
+      scanStatus: "CLEAN",
+      scanCheckedAt: "2026-07-01T12:02:00.000Z",
+    }
+  );
+});
+
+test("createDownloadableFiles wraps persistence failures and closes the session", async () => {
+  const { driver, calls } = buildDriver({
+    createError: new Error("database unavailable"),
   });
+  const resolver = createDownloadableFilesWithUploadMetadata({ driver });
 
   await assert.rejects(
     resolver(
       null,
       {
         input: [
-          {
-            fileName: "model.stl",
-            kind: "STL",
-            url: "https://storage.googleapis.com/bucket/uploads/alice/model.stl",
-            storageObjectName: "uploads/alice/model.stl",
-          } as any,
+          createInput({
+            storageObjectName: null,
+            url: "https://example.com/legacy.zip",
+          }),
         ],
       },
       createMockContext("alice")
     ),
-    /Upload metadata not found/
+    /Failed to create downloadable files: database unavailable/
   );
+
+  assert.equal(calls.close, 1);
 });
