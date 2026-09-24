@@ -80,7 +80,7 @@ const invoke = async ({
   return resolver({}, args, context, info)
 }
 
-test('returns NO_CHANGES without invoking mutating operations', async () => {
+test('returns NO_CHANGES without resolutions or mutating operations', async () => {
   let mutationCalls = 0
   const operations: PluginConfigurationApplyOperations = {
     preview: async () => plan([]),
@@ -91,16 +91,85 @@ test('returns NO_CHANGES without invoking mutating operations', async () => {
   }
 
   const result = await invoke({
-    args: {
-      manifest,
-      secretResolutions: [{ valueFrom: 'env:SCAN_API_KEY', value: 'secret' }],
-    },
+    args: { manifest },
     operations,
   })
 
   assert.equal(result.status, 'NO_CHANGES')
   assert.equal(mutationCalls, 0)
   assert.deepEqual(result.operations, [])
+})
+
+test('refreshes a supplied secret when configuration is already in sync', async () => {
+  const setSecretCalls: Array<{ pluginId: string; key: string; value: string }> = []
+  let previewCount = 0
+  const operations: PluginConfigurationApplyOperations = {
+    preview: async () => {
+      previewCount += 1
+      return plan([])
+    },
+    install: async () => assert.fail('install should not run'),
+    setSecret: async args => { setSecretCalls.push(args) },
+    configure: async () => assert.fail('configure should not run'),
+    updatePipelines: async () => assert.fail('updatePipelines should not run'),
+  }
+
+  const result = await invoke({
+    args: {
+      manifest,
+      secretResolutions: [{
+        valueFrom: 'env:SCAN_API_KEY',
+        value: 'rotated-secret',
+      }],
+    },
+    operations,
+  })
+
+  assert.equal(result.status, 'SUCCEEDED')
+  assert.equal(previewCount, 2)
+  assert.deepEqual(setSecretCalls, [{
+    pluginId: 'security-attachment-scan',
+    key: 'SCAN_SERVICE_API_KEY',
+    value: 'rotated-secret',
+  }])
+  assert.deepEqual(result.operations, [{
+    kind: 'REPLACE_SECRET',
+    path: 'plugins.security-attachment-scan@0.4.0.secrets.SCAN_SERVICE_API_KEY',
+    status: 'APPLIED',
+    message: 'Refresh resolved secret SCAN_SERVICE_API_KEY for security-attachment-scan',
+  }])
+})
+
+test('redacts a failed in-sync secret refresh', async () => {
+  const operations: PluginConfigurationApplyOperations = {
+    preview: async () => plan([]),
+    install: async () => undefined,
+    setSecret: async () => {
+      throw new Error('scanner rejected rotated-secret')
+    },
+    configure: async () => undefined,
+    updatePipelines: async () => undefined,
+  }
+
+  const result = await invoke({
+    args: {
+      manifest,
+      secretResolutions: [{
+        valueFrom: 'env:SCAN_API_KEY',
+        value: 'rotated-secret',
+      }],
+    },
+    operations,
+  })
+
+  assert.equal(result.status, 'FAILED')
+  assert.deepEqual(result.operations, [{
+    kind: 'REPLACE_SECRET',
+    path: 'plugins.security-attachment-scan@0.4.0.secrets.SCAN_SERVICE_API_KEY',
+    status: 'FAILED',
+    message: 'scanner rejected [REDACTED]',
+  }])
+  assert.doesNotMatch(JSON.stringify(result), /rotated-secret/)
 })
 
 test('blocks before mutation when a required resolution is missing', async () => {

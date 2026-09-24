@@ -135,7 +135,7 @@ export const createApplyPluginConfigurationResolver = (
       )
     }
 
-    if (planBefore.inSync) {
+    if (planBefore.inSync && resolutions.size === 0) {
       return {
         status: 'NO_CHANGES',
         message: 'Plugin configuration is already in sync',
@@ -205,9 +205,17 @@ export const createApplyPluginConfigurationResolver = (
               change.path === secretPath &&
               (change.kind === 'SET_SECRET' || change.kind === 'REPLACE_SECRET')
           )
-          if (!secretChange) continue
-          activeChange = secretChange
           const value = resolutions.get(secret.valueFrom)
+          if (!secretChange && value === undefined) continue
+          const appliedChange: PluginConfigurationChange = secretChange ?? {
+            kind: 'REPLACE_SECRET',
+            path: secretPath,
+            message: `Refresh resolved secret ${secret.key} for ${plugin.pluginId}`,
+            current: '[REDACTED]',
+            desired: '[REDACTED]',
+            blocked: false,
+          }
+          activeChange = appliedChange
           if (value === undefined) {
             throw new Error(`Missing preflighted resolution for ${secret.valueFrom}`)
           }
@@ -217,10 +225,10 @@ export const createApplyPluginConfigurationResolver = (
             value,
           })
           operationResults.push({
-            kind: secretChange.kind,
-            path: secretChange.path,
+            kind: appliedChange.kind,
+            path: appliedChange.path,
             status: 'APPLIED',
-            message: secretChange.message,
+            message: appliedChange.message,
           })
         }
 

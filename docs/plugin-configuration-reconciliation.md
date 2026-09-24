@@ -128,6 +128,14 @@ pipelines in that order. It stops on the first failure and returns the
 successfully applied operations plus a fresh drift plan. Secret values are
 redacted from failure messages and never returned.
 
+Secret values are intentionally write-only, so reconciliation cannot compare
+an existing value with a newly resolved value. When a caller supplies a
+resolution for a declared `secretRef`, apply always writes it, even if the
+preview reports no structural drift. This makes CI-driven secret rotation
+reliable: rerunning apply refreshes the backend value from the current secret
+store. `NO_CHANGES` is returned only when the configuration is in sync and the
+request supplies no secret resolutions.
+
 ## Operator CLI
 
 The bundled `mfctl` command turns these GraphQL operations into a repeatable
