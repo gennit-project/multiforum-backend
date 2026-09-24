@@ -25,6 +25,7 @@ before(
           parse(`
             extend type Query {
               permissionFallbackProbe: User
+              instanceSetupStatusPermissionProbe: InstanceSetupStatus
             }
 
             extend type User {
@@ -62,5 +63,42 @@ test("an unruled field is denied by the shield fallback", async () => {
   assert.match(result.errors?.[0]?.message ?? "", /Not Authoris/i);
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
     permissionFallbackProbe: { permissionFallbackProbe: null },
+  });
+});
+
+test("instance setup status fields are publicly readable", async () => {
+  const capability = {
+    configured: true,
+    enabled: true,
+    requiredEnvVarsMissing: [],
+    setupUrl: "/admin/setup#file-uploads",
+    docsPath: "/roles/admins/image-hosting",
+  };
+  const result = await graphql({
+    schema,
+    source: `
+      query {
+        instanceSetupStatusPermissionProbe {
+          uploads {
+            configured
+            enabled
+            requiredEnvVarsMissing
+            setupUrl
+            docsPath
+          }
+        }
+      }
+    `,
+    rootValue: {
+      instanceSetupStatusPermissionProbe: {
+        uploads: capability,
+      },
+    },
+    contextValue: makeRequestContext({ driver, ogm }),
+  });
+
+  assert.deepEqual(result.errors, undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
+    instanceSetupStatusPermissionProbe: { uploads: capability },
   });
 });

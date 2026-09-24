@@ -138,6 +138,8 @@ const PUBLIC_READ_TYPES = [
   "InstallationProperties",
   "InstalledPlugin",
   "InternalPluginPipelineRunDetail",
+  "InstanceCapabilityStatus",
+  "InstanceSetupStatus",
   "Issue",
   "IssueAgingBucket",
   "IssueInfo",
