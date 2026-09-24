@@ -539,6 +539,7 @@ const permissionRules: IRules = {
       createDownloadableFiles: and(isAuthenticated, createDownloadableFileInputIsValid, canUploadFile),
       updateDownloadableFiles: and(isAuthenticated, updateDownloadableFileInputIsValid, canUploadFile),
       deleteDownloadableFiles: and(isAuthenticated, canUploadFile),
+      prepareDownload: and(isAuthenticated, allow),
 
       reportDiscussion: and(isAuthenticated, or(isChannelOwner, canReport)),
       reportComment: and(isAuthenticated, or(isChannelOwner, canReport)),
