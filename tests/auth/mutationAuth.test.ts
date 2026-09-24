@@ -293,6 +293,24 @@ test("applyPluginConfiguration is auth-gated rather than default-denied", async 
   );
 });
 
+test("prepareDownload is auth-gated rather than default-denied", async () => {
+  const result = await execUnauthenticated(`
+    mutation {
+      prepareDownload(
+        downloadableFileId: "file-1"
+        discussionId: "discussion-1"
+      ) {
+        ready
+      }
+    }
+  `);
+
+  assert.equal(
+    result.errors?.[0]?.message,
+    ERROR_MESSAGES.channel.notAuthenticated
+  );
+});
+
 const authGatedCommentSticky: Array<{ name: string; op: string }> = [
   {
     name: "stickyComment",
