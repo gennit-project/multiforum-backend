@@ -143,6 +143,10 @@ test('trackDownload updates counters and saves the download discussion', async (
   assert.match(calls.run[0][0], /CREATED_BY/)
   assert.match(calls.run[0][0], /CONTAINS_DOWNLOAD/)
   assert.match(calls.run[0][0], /itemOrder/)
+  assert.match(
+    calls.run[0][0],
+    /MERGE \(user\)-\[download:DOWNLOADED_FILE\]->\(file\)[\s\S]*ON CREATE SET download\.createdAt = datetime\(\)[\s\S]*WITH user, discussion, file, downloadsCollection, download, isUnique[\s\S]*OPTIONAL MATCH \(downloadsCollection\)-\[existingCollectionDownload:CONTAINS_DOWNLOAD\]->\(discussion\)/
+  )
   assert.equal(
     calls.run[0][1].downloadsCollectionName,
     AUTO_SAVED_DOWNLOADS_COLLECTION_NAME

@@ -130,6 +130,7 @@ const trackDownload = ({
         WITH user, discussion, file, downloadsCollection, existingDownload IS NULL AS isUnique
         MERGE (user)-[download:DOWNLOADED_FILE]->(file)
           ON CREATE SET download.createdAt = datetime()
+        WITH user, discussion, file, downloadsCollection, download, isUnique
         OPTIONAL MATCH (downloadsCollection)-[existingCollectionDownload:CONTAINS_DOWNLOAD]->(discussion)
         FOREACH (_ IN CASE WHEN existingCollectionDownload IS NULL THEN [1] ELSE [] END |
           MERGE (downloadsCollection)-[:CONTAINS_DOWNLOAD]->(discussion)
