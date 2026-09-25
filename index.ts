@@ -55,6 +55,12 @@ dotenv.config();
 import neo4j, { Driver } from "neo4j-driver";
 import { randomUUID } from "node:crypto";
 import { logger, runWithContext, enrichContext } from "./logger.js";
+import {
+  instrumentDriver,
+  requestTimingPlugin,
+  runWithRequestTiming,
+  startEventLoopMonitor,
+} from "./services/requestTiming.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -103,7 +109,10 @@ const password = process.env.NEO4J_PASSWORD;
 const port = process.env.PORT || 4000;
 const user = process.env.NEO4J_USER || "neo4j";
 
-const driver = neo4j.driver(uri, neo4j.auth.basic(user, password as string));
+// Timed so each request can report how long it spent in Neo4j.
+const driver = instrumentDriver(
+  neo4j.driver(uri, neo4j.auth.basic(user, password as string))
+);
 
 const {
   ogm,
@@ -255,6 +264,8 @@ async function initializeServer() {
         // Drains in-flight requests before the HTTP server shuts down.
         ApolloServerPluginDrainHttpServer({ httpServer }),
         errorHandlingPlugin as ApolloServerPlugin,
+        // Per-operation latency breakdown (log line + Server-Timing header).
+        requestTimingPlugin,
       ],
     });
 
@@ -263,7 +274,9 @@ async function initializeServer() {
     // Bind a correlation id to every request so all log lines emitted while
     // handling it can be traced back to the same operation.
     app.use((req, _res, next) => {
-      runWithContext({ requestId: randomUUID() }, () => next());
+      runWithContext({ requestId: randomUUID() }, () =>
+        runWithRequestTiming(() => next())
+      );
     });
 
     app.use(
@@ -311,6 +324,8 @@ async function initializeServer() {
     logger.info(`🚀 Server ready at ${url}`);
     logger.info(`📊 GraphQL endpoint available at ${url}`);
     logger.info(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+    startEventLoopMonitor();
 
     // Start services with enhanced error handling
     startBackgroundServices(schema, ogm);
