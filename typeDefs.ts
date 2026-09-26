@@ -162,6 +162,12 @@ const typeDefinitions = gql`
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile)-[:HAS_VERSION]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
+    # Stored age-gate result: true when under content marked sensitive;
+    # null/false means clear (see docs/age-gate-materialization-design.md).
+    # Maintained by the server; never settable through the API.
+    ageGateRestricted: Boolean
+      @settable(onCreate: false, onUpdate: false)
+      @selectable(onRead: false, onAggregate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
 
     fileName: String!
@@ -391,6 +397,12 @@ const typeDefinitions = gql`
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_TITLE_VERSION|HAS_BODY_VERSION]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
+    # Stored age-gate result: true when under content marked sensitive;
+    # null/false means clear (see docs/age-gate-materialization-design.md).
+    # Maintained by the server; never settable through the API.
+    ageGateRestricted: Boolean
+      @settable(onCreate: false, onUpdate: false)
+      @selectable(onRead: false, onAggregate: false)
     body: String
     editReason: String
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -452,6 +464,12 @@ const typeDefinitions = gql`
     id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
+      @selectable(onRead: false, onAggregate: false)
+    # Stored age-gate result: true when under content marked sensitive;
+    # null/false means clear (see docs/age-gate-materialization-design.md).
+    # Maintained by the server; never settable through the API.
+    ageGateRestricted: Boolean
+      @settable(onCreate: false, onUpdate: false)
       @selectable(onRead: false, onAggregate: false)
     fileName: String!
     kind:     FileKind!
@@ -672,6 +690,12 @@ const typeDefinitions = gql`
     id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (this)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
+      @selectable(onRead: false, onAggregate: false)
+    # Stored age-gate result: true when under content marked sensitive;
+    # null/false means clear (see docs/age-gate-materialization-design.md).
+    # Maintained by the server; never settable through the API.
+    ageGateRestricted: Boolean
+      @settable(onCreate: false, onUpdate: false)
       @selectable(onRead: false, onAggregate: false)
     locked: Boolean
     discussionId: ID! # used for uniqueness constraint
@@ -959,6 +983,12 @@ const typeDefinitions = gql`
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (this)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (this)-[:HAS_FEEDBACK_COMMENT]->(feedbackDiscussion:Discussion) WHERE coalesce(feedbackDiscussion.hasSensitiveContent, false) = true } OR EXISTS { MATCH (this)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
+    # Stored age-gate result: true when under content marked sensitive;
+    # null/false means clear (see docs/age-gate-materialization-design.md).
+    # Maintained by the server; never settable through the API.
+    ageGateRestricted: Boolean
+      @settable(onCreate: false, onUpdate: false)
+      @selectable(onRead: false, onAggregate: false)
     CommentAuthor: CommentAuthor
       @relationship(type: "AUTHORED_COMMENT", direction: IN)
     DiscussionChannel: DiscussionChannel
@@ -1058,6 +1088,12 @@ const typeDefinitions = gql`
     id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion {id: this.relatedDiscussionId}) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment {id: this.relatedCommentId})-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (image:Image {id: this.relatedImageId}) WHERE coalesce(image.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
+      @selectable(onRead: false, onAggregate: false)
+    # Stored age-gate result: true when under content marked sensitive;
+    # null/false means clear (see docs/age-gate-materialization-design.md).
+    # Maintained by the server; never settable through the API.
+    ageGateRestricted: Boolean
+      @settable(onCreate: false, onUpdate: false)
       @selectable(onRead: false, onAggregate: false)
     issueNumber: Int!
     channelUniqueName: String
