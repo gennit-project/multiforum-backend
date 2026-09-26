@@ -26,6 +26,7 @@ import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
 import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
+import ageGateInterlockMiddleware from "./middleware/ageGateInterlockMiddleware.js";
 import path from "path";
 import dotenv from "dotenv";
 import getCustomResolvers from "./customResolvers.js";
@@ -209,6 +210,9 @@ async function initializeServer() {
     type AppMiddleware = IMiddleware<unknown, GraphQLContext>;
     schema = applyMiddleware(
       schema,
+      // Temporary: rejects marking content sensitive and enabling the gate
+      // until write paths maintain the stored age-gate flags.
+      ageGateInterlockMiddleware as AppMiddleware,
       sensitiveContentPolicyMiddleware as AppMiddleware,
       permissions as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
