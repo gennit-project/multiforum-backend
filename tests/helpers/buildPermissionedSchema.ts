@@ -15,6 +15,8 @@
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import { applyMiddleware } from "graphql-middleware";
 import neo4j, { Driver } from "neo4j-driver";
+import { getAgeGateStatements } from "../../services/ageGate/definitions.js";
+import { installAgeGateReconcile } from "../../services/ageGate/reconcile.js";
 import type { GraphQLSchema } from "graphql";
 import typeDefs from "../../typeDefs.js";
 import permissions from "../../permissions.js";
@@ -34,12 +36,17 @@ export async function buildPermissionedSchema(options?: {
 }): Promise<PermissionedSchema> {
   // Pointed at a local address but never connected to: deny-path tests resolve
   // entirely within graphql-shield.
-  const driver = neo4j.driver(
-    process.env.NEO4J_URI || "bolt://localhost:7687",
-    neo4j.auth.basic(
-      process.env.NEO4J_USER || "neo4j",
-      process.env.NEO4J_PASSWORD || "test-password"
-    )
+  // Wrapped like production: write transactions reconcile age-gate flags
+  // before they commit.
+  const driver = installAgeGateReconcile(
+    neo4j.driver(
+      process.env.NEO4J_URI || "bolt://localhost:7687",
+      neo4j.auth.basic(
+        process.env.NEO4J_USER || "neo4j",
+        process.env.NEO4J_PASSWORD || "test-password"
+      )
+    ),
+    getAgeGateStatements(typeDefs)
   );
 
   const { ogm, resolvers } = getCustomResolvers(driver);

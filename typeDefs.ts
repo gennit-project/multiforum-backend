@@ -82,6 +82,13 @@ const typeDefinitions = gql`
 
   type Image @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     url: String
     width: Int
     height: Int
@@ -159,6 +166,13 @@ const typeDefinitions = gql`
   """Older revision of a downloadable file"""
   type FileVersion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile)-[:HAS_VERSION]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -394,8 +408,15 @@ const typeDefinitions = gql`
 
   type TextVersion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     ageGateSensitive: Boolean!
-      @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_TITLE_VERSION|HAS_BODY_VERSION]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
+      @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_TITLE_VERSION|HAS_BODY_VERSION]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this), (comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this), (comment)-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this), (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
     # Stored age-gate result: true when under content marked sensitive;
     # null/false means clear (see docs/age-gate-materialization-design.md).
@@ -462,6 +483,13 @@ const typeDefinitions = gql`
 
    type DownloadableFile @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -688,6 +716,13 @@ const typeDefinitions = gql`
 
   type DiscussionChannel @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (this)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -728,6 +763,13 @@ const typeDefinitions = gql`
 
   type Discussion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     Author: User @relationship(type: "POSTED_DISCUSSION", direction: IN)
     body: String
     editReason: String
@@ -980,6 +1022,13 @@ const typeDefinitions = gql`
 
   type Comment @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (this)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (this)-[:HAS_FEEDBACK_COMMENT]->(feedbackDiscussion:Discussion) WHERE coalesce(feedbackDiscussion.hasSensitiveContent, false) = true } OR EXISTS { MATCH (this)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -1086,6 +1135,13 @@ const typeDefinitions = gql`
 
   type Issue @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
+    # Stamped whenever this node is created or updated, so the age-gate
+    # reconcile step can find what changed in the current transaction
+    # (docs/age-gate-materialization-design.md). Server-only.
+    ageGateTouchedAt: DateTime
+      @timestamp(operations: [CREATE, UPDATE])
+      @selectable(onRead: false, onAggregate: false)
+      @filterable(byValue: false, byAggregate: false)
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion {id: this.relatedDiscussionId}) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment {id: this.relatedCommentId})-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (image:Image {id: this.relatedImageId}) WHERE coalesce(image.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)

@@ -10,6 +10,9 @@ CREATE (newDc:DiscussionChannel {
     channelUniqueName: $channelUniqueName, 
     id: apoc.create.uuid(), 
     createdAt: datetime(),
+    // Lets the age-gate reconcile step find this node in the writing
+    // transaction (services/ageGate/reconcile.ts).
+    ageGateTouchedAt: datetime(),
     archived: false
 })
 MERGE (newDc)-[:POSTED_IN_CHANNEL]->(d)

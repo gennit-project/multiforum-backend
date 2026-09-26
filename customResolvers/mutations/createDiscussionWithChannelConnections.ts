@@ -299,12 +299,15 @@ export const createDiscussionsFromInput = async (
       // Link the discussion to channels
       for (const channelUniqueName of channelConnections) {
         try {
-          await session.run(createDiscussionChannelQuery, {
-            discussionId: newDiscussionId,
-            channelUniqueName,
-            upvotedBy: newDiscussion.Author?.username,
-            flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
-          });
+          // A managed write, so the age-gate reconcile step runs before commit.
+          await session.executeWrite((tx) =>
+            tx.run(createDiscussionChannelQuery, {
+              discussionId: newDiscussionId,
+              channelUniqueName,
+              upvotedBy: newDiscussion.Author?.username,
+              flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
+            })
+          );
 
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error);

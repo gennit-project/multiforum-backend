@@ -27,6 +27,9 @@ import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModera
 import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateInterlockMiddleware from "./middleware/ageGateInterlockMiddleware.js";
+import { getAgeGateStatements } from "./services/ageGate/definitions.js";
+import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
+import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
 import dotenv from "dotenv";
 import getCustomResolvers from "./customResolvers.js";
@@ -111,8 +114,12 @@ const port = process.env.PORT || 4000;
 const user = process.env.NEO4J_USER || "neo4j";
 
 // Timed so each request can report how long it spent in Neo4j.
-const driver = instrumentDriver(
-  neo4j.driver(uri, neo4j.auth.basic(user, password as string))
+// Timed so each request can report how long it spent in Neo4j, and wrapped
+// so every write transaction keeps stored age-gate flags correct before it
+// commits (services/ageGate/reconcile.ts).
+const driver = installAgeGateReconcile(
+  instrumentDriver(neo4j.driver(uri, neo4j.auth.basic(user, password as string))),
+  getAgeGateStatements(typesDefinitions)
 );
 
 const {
@@ -231,6 +238,7 @@ async function initializeServer() {
     );
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
     await ensureSchemaConstraints(neoSchema);
+    await ensureAgeGateIndexes(driver);
     await provisionInstanceOnStartup({
       ogm,
       log: (message) => logger.info(message),
