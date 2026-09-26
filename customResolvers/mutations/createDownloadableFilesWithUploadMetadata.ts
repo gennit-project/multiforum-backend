@@ -86,7 +86,9 @@ const createDownloadableFiles = async ({
   }));
 
   try {
-    const result = await session.run(
+    // A managed write, so the age-gate reconcile step runs before commit.
+    const result = await session.executeWrite((tx) =>
+      tx.run(
       `
       UNWIND $inputs AS input
       CREATE (file:DownloadableFile {
@@ -105,6 +107,9 @@ const createDownloadableFiles = async ({
         uploadedByUsername: input.uploadedByUsername,
         uploadedByIp: input.uploadedByIp,
         createdAt: datetime(),
+        // Lets the age-gate reconcile step find this node in the writing
+        // transaction (services/ageGate/reconcile.ts).
+        ageGateTouchedAt: datetime(),
         permanentlyRemoved: coalesce(input.permanentlyRemoved, false),
         priceModel: coalesce(input.priceModel, "FREE"),
         priceCents: input.priceCents,
@@ -152,6 +157,7 @@ const createDownloadableFiles = async ({
       } AS file
       `,
       { inputs: persistenceInputs }
+      )
     );
 
     return result.records.map(

@@ -212,12 +212,15 @@ const getResolver = (
         // Join the DiscussionChannel to the Discussion and Channel nodes.
         // If there was an existing one, join that. If we just created one,
         // join that.
-        await session.run(updateDiscussionChannelQuery, {
-          discussionId: updatedDiscussionId,
-          channelUniqueName: channelUniqueName,
-          flairIds: flairIdsByChannel.get(channelUniqueName) ?? [],
-          flairSelectionProvided,
-        });
+        // A managed write, so the age-gate reconcile step runs before commit.
+        await session.executeWrite((tx) =>
+          tx.run(updateDiscussionChannelQuery, {
+            discussionId: updatedDiscussionId,
+            channelUniqueName: channelUniqueName,
+            flairIds: flairIdsByChannel.get(channelUniqueName) ?? [],
+            flairSelectionProvided,
+          })
+        );
       }
 
       // Update the channel disconnections

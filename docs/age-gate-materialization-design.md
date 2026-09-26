@@ -80,13 +80,8 @@ While the gate is **off** (topical.space today), everyone may see sensitive cont
 
 A derived node's result can change in three ways. All three are leak-relevant.
 
-1. **A new node is created under marked content**, for example a reply on a sensitive discussion. The creating path must set `ageGateRestricted = true` in the same transaction. Paths:
-   - comment creation (root comments, replies, feedback comments)
-   - the version-history services that create `TextVersion`s
-   - discussion and channel creation (`DiscussionChannel`)
-   - issue creation (related discussion, comment or image)
-   - downloadable file and file-version upload
-2. **A Discussion's or Image's `hasSensitiveContent` changes.** Every derived node beneath it is re-evaluated in the same transaction: marked on `true`, re-evaluated on `false`. A descendant can still be restricted through another route, such as a feedback comment on a different sensitive discussion.
+1. **A new node is created under marked content**, for example a reply on a sensitive discussion. It must be marked `ageGateRestricted = true` in the same transaction. **Handled by the reconcile step below**, for every creation path.
+2. **A Discussion's or Image's `hasSensitiveContent` changes.** Every derived node beneath it is re-evaluated in the same transaction: marked on `true`, re-evaluated on `false`. A descendant can still be restricted through another route, such as a feedback comment on a different sensitive discussion. **Handled by the reconcile step below.**
 3. **An existing derived node is attached to a different root**, or an identifier its definition uses changes. From the generated inputs:
    - reconnecting `DiscussionChannel.Discussion`, or connecting an existing channel entry through `Discussion.DiscussionChannels`
    - reparenting a Comment through `DiscussionChannel`, `ParentComment`, `GivesFeedbackOnDiscussion` or `GivesFeedbackOnComment`, or connecting an existing comment through `DiscussionChannel.Comments`, `Comment.ChildComments`, `Discussion.FeedbackComments` or `Comment.FeedbackComments`
@@ -94,7 +89,7 @@ A derived node's result can change in three ways. All three are leak-relevant.
    - connecting an existing TextVersion through a Discussion's title/body history or a Comment's version history
    - changing an Issue's `relatedDiscussionId`, `relatedCommentId` or `relatedImageId`
 
-   **Creating** a new node that connects to its parent is covered by (1). The risk is an **existing** node moving under marked content.
+   **Creating** a new node that connects to its parent is covered by (1). The risk is an **existing** node moving under marked content. Changing an Issue's related-ids is a plain-value update, so the reconcile step handles it. **Relationship-only moves** are the part the reconcile step can't see (below), so they go through the validator.
 
 The safe write surface is kept small and explicit:
 
@@ -104,13 +99,24 @@ The safe write surface is kept small and explicit:
 
 Over-marking is safe (content is hidden from restricted viewers until re-evaluated). Under-marking is the leak.
 
-#### Transaction ownership
+#### Reconcile at the driver (implemented)
 
-An ordinary GraphQL middleware that calls `resolve()` and then runs Cypher is **not** inside the mutation's transaction: the generated resolver has committed before it returns. The implementation therefore uses explicit transaction ownership, not a post-resolver hook:
+Hooks per write path, or GraphQL middleware, would miss writes that don't come through a GraphQL request: the background version-history services, bot and notification services, and custom resolvers that open their own sessions. Under "clear unless marked", anything missed is a leak. So the guarantee lives at the one place every write passes through, the Neo4j driver (`services/ageGate/reconcile.ts`, installed in `index.ts`):
 
-- For handled generated mutations, transaction-coordinating middleware begins a Neo4j transaction before `resolve()`, installs it as `context.executionContext`, runs the generated resolver and the shared re-evaluation helper on that transaction, then commits. Any error rolls the transaction back.
-- Handled custom resolvers own the same transaction explicitly. Every participating OGM call receives it through `context.executionContext`, and raw Cypher uses it rather than opening another session. The current discussion create/update resolvers use independent OGM and session transactions, so they must be refactored. Post-commit work such as plugin triggering stays outside the transaction.
-- If a path cannot share the transaction, it cannot write a sensitivity root or dependency field. A standalone follow-up query is not sufficient.
+- **Stamp.** The eight age-gate types carry a hidden `ageGateTouchedAt: DateTime @timestamp(operations: [CREATE, UPDATE])`. It isn't settable or selectable through the API. Generated mutations and the OGM set it on every create and every plain-value update. Raw Cypher that creates or reconnects these nodes sets it explicitly (`ageGateTouchedAt: datetime()`).
+- **Reconcile before commit.** The driver wrapper runs one Cypher statement inside every write transaction, just before it commits: managed `executeWrite`/`writeTransaction` work, and explicit `beginTransaction` … `commit` (not read-only sessions). The statement:
+  1. finds the nodes stamped in this transaction (`ageGateTouchedAt >= datetime.transaction()`), using range indexes
+  2. walks everything whose result can depend on them (APOC `subgraphNodes` along the inheritance links, plus issues that reference them)
+  3. re-evaluates those against the reference definitions and writes the flag only where it changed
+
+  Because it runs inside the writing transaction, content and its flag commit or roll back together.
+- **No auto-commit writes of age-gated content.** An auto-commit `session.run` can't be extended this way. The three that created age-gated content (new and cross-posted `DiscussionChannel`s, uploaded `DownloadableFile`s) now use `executeWrite`. `tests/ageGateAutoCommitWrites.test.ts` fails if any auto-commit `session.run` in resolver or service code creates or merges an age-gated node, including queries loaded from `.cypher` files.
+
+**What it can't see:** `@neo4j/graphql` does **not** stamp `@timestamp` fields on relationship-only updates (verified 2026-09-26). That covers connecting or moving an existing node, from either side, for example `updateComments { ParentComment: { connect } }` or `updateDiscussions { DiscussionChannels: { connect } }`. Those are the validator's job: reject unless a path handles them. **Connecting while creating** is covered, because the new node is stamped and the walk from it reaches whatever was connected.
+
+**Remaining work (step 4):**
+- The validator (log-only, then enforcing) for relationship-only moves of existing age-gated nodes, and for `hasSensitiveContent: true` outside the allowed paths.
+- `updateDiscussionWithChannelConnections` attaches existing downloadable files (a relationship-only connect). It must stamp them, or re-evaluate them, in the same transaction.
 
 ### 4. Sweep (manual)
 
@@ -153,8 +159,8 @@ Performance first, made safe by an interlock:
 
 1. **Stored flag and sweep.** Add `ageGateRestricted` and the sweep command, then run the backfill. No read behavior changes.
 2. **Filter switch, with an interlock.** Switch the eight `@authorization` filters to the stored properties. This is the performance win; measure `getIssue` and the discussion page with Server-Timing before and after. Until steps 3–4 ship, the backend **rejects marking content sensitive** (`hasSensitiveContent: true` on any write) **and enabling the sensitive-content gate**. That's safe to ship now because nothing is marked and the gate is off, and it prevents the flags going stale before the write paths maintain them.
-3. **Mark at write time:** new nodes under marked content.
-4. **Transaction-owned re-evaluation** on the allowed paths, plus the validator (log-only, then enforcing).
+3. **Mark at write time:** the driver-level reconcile step, the stamps, and no auto-commit writes of age-gated content.
+4. **The validator** (log-only, then enforcing) for relationship-only moves, plus file attachments in `updateDiscussionWithChannelConnections`.
 5. **Remove the interlock.** Marking content sensitive and enabling the gate work again, now with correct flags.
 6. **Just-in-time age check:** the "requires age check" query and the frontend gate.
 7. Optional: remove the `ageGateSensitive` `@cypher` fields once nothing references them.

@@ -26,4 +26,7 @@ FOREACH (selectedFlair IN selectedFlairs |
   MERGE (dc)-[:HAS_DISCUSSION_FLAIR]->(selectedFlair)
 )
 MERGE (dc)-[:POSTED_IN_CHANNEL]->(d)
+// New or reconnected to its discussion: stamp it so the age-gate reconcile
+// step re-evaluates it in this transaction (services/ageGate/reconcile.ts).
+SET dc.ageGateTouchedAt = datetime()
 RETURN dc, d, c, selectedFlairs

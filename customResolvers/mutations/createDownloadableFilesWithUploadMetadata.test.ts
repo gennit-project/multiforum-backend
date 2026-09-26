@@ -36,8 +36,7 @@ const buildDriver = ({
   const driver = {
     session: ({ defaultAccessMode }: { defaultAccessMode: string }) => {
       calls.sessions.push(defaultAccessMode);
-      return {
-        run: async (query: string, params: Record<string, unknown>) => {
+      const run = async (query: string, params: Record<string, unknown>) => {
           calls.run.push({ query, params });
 
           if (query.includes("CREATE (file:DownloadableFile")) {
@@ -79,11 +78,17 @@ const buildDriver = ({
           }
 
           throw new Error("Unexpected query");
-        },
+      };
+      const session = {
+        run,
         close: async () => {
           calls.close += 1;
         },
+        // Managed writes run their work against this same session's run.
+        executeWrite: async <T,>(work: (tx: { run: typeof run }) => Promise<T>) =>
+          work({ run }),
       };
+      return session;
     },
   };
 

@@ -84,6 +84,11 @@ class SessionStub {
     return { records: [] };
   }
 
+  // Managed writes run their work against this same stub.
+  async executeWrite<T>(work: (tx: { run: SessionStub["run"] }) => Promise<T>) {
+    return work({ run: this.run.bind(this) });
+  }
+
   async close() {}
 }
 
