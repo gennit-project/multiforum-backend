@@ -1437,7 +1437,13 @@ const typeDefinitions = gql`
       channelUniqueName: String!
       inviteeUsername: String!
     ): Boolean
-    removeForumMod(channelUniqueName: String!, username: String!): Boolean
+    # Identify the moderator by modProfileName (preferred) or, deprecated,
+    # username. Exactly one is required.
+    removeForumMod(
+      channelUniqueName: String!
+      modProfileName: String
+      username: String
+    ): Boolean
     acceptForumModInvite(channelUniqueName: String!): Boolean
     # Server admin/mod invite workflow
     inviteServerAdmin(

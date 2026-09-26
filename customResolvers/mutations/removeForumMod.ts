@@ -4,8 +4,14 @@ import type { GraphQLResolveInfo } from "graphql";
 import { logger } from "../../logger.js";
 
 type Args = {
-  username: string;
   channelUniqueName: string;
+  // Preferred: moderators are identified by their public mod-profile name.
+  // ModerationProfile.User is denied to everyone, so clients cannot know the
+  // username behind a profile.
+  modProfileName?: string | null;
+  // Deprecated: kept so frontends deployed before modProfileName existed keep
+  // working. Remove once no client sends it.
+  username?: string | null;
 };
 
 type Input = {
@@ -16,27 +22,32 @@ type Input = {
 const getResolver = (input: Input) => {
   const { Channel, User } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
-    const { channelUniqueName, username } = args;
+    const { channelUniqueName, modProfileName, username } = args;
 
-    if (!channelUniqueName || !username) {
-      throw new Error(
-        "All arguments (channelUniqueName, username) are required"
-      );
+    if (!channelUniqueName) {
+      throw new Error("channelUniqueName is required");
     }
-    // get mod name from username
-    const userData = await User.find({
-      where: {
-        username
-      },
-      selectionSet: `{
-        ModerationProfile {
-          displayName
-        }
-      }`
-    })
-    const displayName = userData[0]?.ModerationProfile?.displayName || null;
+    if (Boolean(modProfileName) === Boolean(username)) {
+      throw new Error("Provide exactly one of modProfileName or username");
+    }
+
+    let displayName = modProfileName || null;
     if (!displayName) {
-      throw new Error(`User ${username} is not a moderator`);
+      // Legacy path: resolve the username to its mod profile server-side.
+      const userData = await User.find({
+        where: {
+          username,
+        },
+        selectionSet: `{
+          ModerationProfile {
+            displayName
+          }
+        }`,
+      });
+      displayName = userData[0]?.ModerationProfile?.displayName || null;
+      if (!displayName) {
+        throw new Error(`User ${username} is not a moderator`);
+      }
     }
 
     const channelUpdateInput: ChannelUpdateInput = {
