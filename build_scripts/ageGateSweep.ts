@@ -3,8 +3,16 @@
  * reference definitions. Content is clear unless marked, so a missing flag
  * means clear. Dry run by default; pass --apply to write.
  *
- *   pnpm run age-gate:sweep              # report only
+ *   pnpm run age-gate:sweep              # report only (compiled; run `pnpm run build` first locally)
  *   pnpm run age-gate:sweep -- --apply   # mark / unmark as needed
+ *   pnpm run age-gate:sweep:dev          # same, from TypeScript via ts-node (local only)
+ *
+ * On Heroku, ts-node is pruned with the dev dependencies, so use the
+ * compiled script and pass the command as one quoted string (Heroku CLI 11
+ * mangles unquoted multi-word commands):
+ *
+ *   heroku run -a topical-backend-dev -- 'pnpm run age-gate:sweep'
+ *   heroku run -a topical-backend-dev -- 'pnpm run age-gate:sweep -- --apply'
  *
  * Run it as the backfill, before enabling the age gate on an instance, and
  * whenever a dry run reports mismatches. See
