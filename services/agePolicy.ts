@@ -24,7 +24,7 @@ type ServerAgeConfig = Partial<{
   minimumSensitiveContentAge: number | null;
 }>;
 
-type ServerConfigReader = {
+export type ServerConfigReader = {
   find(options: {
     where: { serverName: string };
     selectionSet: string;

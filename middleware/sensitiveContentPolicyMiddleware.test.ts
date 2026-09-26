@@ -1,11 +1,20 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { beforeEach } from "node:test";
 import { buildSchema, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../types/context.js";
 import {
   applySensitiveContentPolicy,
   buildSensitiveContentPolicyMiddleware,
 } from "./sensitiveContentPolicyMiddleware.js";
+import {
+  invalidateAgePolicyCache,
+  loadCachedAgePolicy,
+} from "../services/agePolicyCache.js";
+
+// The age policy is cached per process; isolate each test's policy.
+beforeEach(() => {
+  invalidateAgePolicyCache();
+});
 
 const resolver = async (
   _parent: unknown,
@@ -50,4 +59,30 @@ test("only registers middleware for operation types present in the schema", () =
     buildSchema("type Query { health: Boolean }")
   );
   assert.deepEqual(Object.keys(middleware), ["Query"]);
+});
+
+test.describe("clears the cached age policy after ServerConfig writes", () => {
+  for (const [fieldName, parentType, expectedLoads] of [
+    ["updateServerConfigs", "Mutation", 2],
+    ["createServerConfigs", "Mutation", 2],
+    ["updateDiscussions", "Mutation", 1],
+    ["serverConfigs", "Query", 1],
+  ] as const) {
+    test(`${parentType}.${fieldName} -> ${expectedLoads} policy load(s)`, async () => {
+      let loads = 0;
+      const ServerConfig = { find: async () => { loads += 1; return []; } } as any;
+      await loadCachedAgePolicy({ ServerConfig, serverName: "s" });
+
+      await applySensitiveContentPolicy(
+        resolver,
+        null,
+        {},
+        contextWithAccess(true),
+        { parentType: { name: parentType }, fieldName } as unknown as GraphQLResolveInfo
+      );
+      await loadCachedAgePolicy({ ServerConfig, serverName: "s" });
+
+      assert.equal(loads, expectedLoads);
+    });
+  }
 });

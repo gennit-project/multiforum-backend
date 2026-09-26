@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { beforeEach } from "node:test";
 import type { Driver } from "neo4j-driver";
 import type { ServerConfigModel } from "../ogm_types.js";
 import type { GraphQLContext } from "../types/context.js";
 import { mayAccessSensitiveContent } from "./sensitiveContentAccess.js";
+import { invalidateAgePolicyCache } from "./agePolicyCache.js";
+
+// The age policy is cached per process; isolate each test's policy.
+beforeEach(() => {
+  invalidateAgePolicyCache();
+});
 
 const policyModel = (enabled: boolean, minimumAge = 18) =>
   ({
