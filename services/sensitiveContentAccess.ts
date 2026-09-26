@@ -2,11 +2,8 @@ import type { Driver } from "neo4j-driver";
 import type { ServerConfigModel } from "../ogm_types.js";
 import type { GraphQLContext } from "../types/context.js";
 import { setUserDataOnContext } from "../rules/permission/userDataHelperFunctions.js";
-import {
-  DEFAULT_AGE_POLICY,
-  getAgeEligibility,
-  loadAgePolicy,
-} from "./agePolicy.js";
+import { DEFAULT_AGE_POLICY, getAgeEligibility } from "./agePolicy.js";
+import { loadCachedAgePolicy } from "./agePolicyCache.js";
 
 type Input = {
   context?: GraphQLContext;
@@ -34,8 +31,10 @@ export async function mayAccessSensitiveContent({
     return context.mayAccessSensitiveContent;
   }
 
+  // Runs on every GraphQL operation, so the policy is cached briefly; see
+  // agePolicyCache.ts for how staleness is bounded.
   const policy = ServerConfig
-    ? await loadAgePolicy(ServerConfig, serverName)
+    ? await loadCachedAgePolicy({ ServerConfig, serverName })
     : DEFAULT_AGE_POLICY;
 
   if (!policy.sensitiveContentAgeGateEnabled) {

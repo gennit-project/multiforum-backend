@@ -3,6 +3,7 @@ import { middleware } from "graphql-middleware";
 import type { IMiddlewareTypeMap } from "graphql-middleware";
 import type { GraphQLContext } from "../types/context.js";
 import { mayAccessSensitiveContent } from "../services/sensitiveContentAccess.js";
+import { invalidateAgePolicyCache } from "../services/agePolicyCache.js";
 
 type Resolver = (
   parent: unknown,
@@ -32,7 +33,19 @@ export const applySensitiveContentPolicy = async (
     mayAccessSensitiveContent: access,
   };
 
-  return resolve(parent, args, context, info);
+  const result = await resolve(parent, args, context, info);
+
+  // The age policy lives on ServerConfig and is cached for the per-request
+  // check above; drop it as soon as this process writes a ServerConfig so a
+  // changed policy applies to the next request.
+  if (
+    info?.parentType?.name === "Mutation" &&
+    /ServerConfigs?$/.test(info.fieldName)
+  ) {
+    invalidateAgePolicyCache();
+  }
+
+  return result;
 };
 
 export const buildSensitiveContentPolicyMiddleware = (schema: GraphQLSchema) => {
