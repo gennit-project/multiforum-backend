@@ -49,7 +49,17 @@ A node that has never been evaluated (`null`) is **hidden from restricted viewer
 - A write path that forgets to set the flag causes **delayed visibility for restricted viewers**, not a leak. Correctness doesn't depend on hooking every creation path.
 - Viewers allowed to see sensitive content, including everyone when the gate is off (today's production setting), are unaffected by the flag.
 
-Discussion and Image keep filtering on their own `hasSensitiveContent`, but it moves out of `@cypher` into a plain property filter (`hasSensitiveContent_NOT: true`, where null means not sensitive, the same as today's `coalesce(…, false)`).
+Discussion and Image keep filtering on their own `hasSensitiveContent`, but it moves out of `@cypher` into a plain property filter. The filter must preserve today's `coalesce(…, false)` behavior explicitly:
+
+```graphql
+where: { OR: [
+  { node: { hasSensitiveContent: false } },
+  { node: { hasSensitiveContent: null } },
+  { jwt: { mayAccessSensitiveContent: true } }
+] }
+```
+
+`hasSensitiveContent_NOT: true` is not equivalent: in Cypher, `NOT (null = true)` evaluates to null and is rejected by `WHERE`, so it would hide legacy nodes with no property. An alternative is to add `@coalesce(value: false)` to the schema field and verify the generated authorization query, but the rollout must include a null-property test either way.
 
 The `ageGateSensitive` `@cypher` fields stay in the schema for now as the **reference definition** that the sweep command and the tests compare against. They're just no longer used by `@authorization`.
 
@@ -84,20 +94,39 @@ While the gate is **off** (topical.space today), everyone may see sensitive cont
 
 ### 3. Un-clearing when content becomes sensitive (the part that must be exact)
 
-When a Discussion's or Image's `hasSensitiveContent` changes to `true`, every derived node beneath it must lose `ageGateCleared` **in the same transaction**. Otherwise restricted viewers could see it. This is the only leak-relevant path, so it's kept small and explicit:
+A stored result can become stale in two ways, and both are leak-relevant:
 
-- **Allowed write paths**, handled by one middleware that runs the un-clear Cypher after the mutation, inside its transaction:
+1. A Discussion's or Image's `hasSensitiveContent` changes.
+2. A previously cleared derived node is attached to a sensitive root, or an identifier used by its reference definition changes. Examples exposed by the generated inputs include:
+   - reconnecting `DiscussionChannel.Discussion`;
+   - reparenting a Comment through `DiscussionChannel`, `ParentComment`, `GivesFeedbackOnDiscussion`, or `GivesFeedbackOnComment`;
+   - reconnecting `DownloadableFile.Discussion` or `FileVersion.mainFile`;
+   - connecting an existing TextVersion through a Discussion's title/body history or a Comment's version history; and
+   - changing an Issue's `relatedDiscussionId`, `relatedCommentId`, or `relatedImageId`.
+
+Every derived node affected by either transition must have its `ageGateCleared` value re-evaluated **in the same transaction as the transition**. Otherwise restricted viewers can see a stale `true` value. The safe write surface is kept small and explicit:
+
+- **Allowed root-sensitivity paths:**
   - `createDiscussionWithChannelConnections`
   - `updateDiscussionWithChannelConnections`
   - `updateDiscussions`
   - `createImageWithUploader`
   - `updateImages`
-- **Everything else is rejected.** A validation rule rejects any other mutation whose input sets `hasSensitiveContent`, including nested writes through `@neo4j/graphql`'s relationship inputs, for example `updateChannels { Discussions: { update: { node: { hasSensitiveContent } } } }`. Without this rule, generated nested inputs would make the un-clear path impossible to enumerate.
-- **Backstop:** the sweep command also re-checks *cleared* nodes against the reference definition and un-clears any mismatch. It prints each one, since a mismatch means a write path was missed.
+- **Allowed dependency-changing paths:** creation flows may attach new derived nodes because their flag starts null. Any flow that attaches an existing derived node, reparents it, or changes an Issue related-id must either re-evaluate the affected node and its derived descendants atomically or be rejected. `updateDiscussionWithChannelConnections` is expected to remain allowed for downloadable-file and album edits, so its atomic step covers newly attached existing files and sensitivity changes to nested images as well as the Discussion itself.
+- **Everything else is rejected.** A schema-aware validation rule walks the complete mutation input and rejects `hasSensitiveContent` writes and changes to the dependency fields above unless the top-level operation is explicitly handled. This includes nested writes through `@neo4j/graphql` relationship inputs. Generated input types are snapshot-tested so adding a new writable route fails CI until it is classified.
+- **Backstop:** the sweep command also re-checks *cleared* nodes against the reference definition and fixes any mismatch. It prints each one, since a mismatch means a write path was missed. This detects defects but is not part of the confidentiality guarantee.
 
 Un-clearing is safe to over-apply. At worst, content stays hidden from restricted viewers until it's re-cleared.
 
-When sensitivity changes back to `false`, the same middleware re-evaluates the descendants against the reference definition and re-clears them in the same transaction. There's no timer to rely on, and a descendant can still be sensitive through another route, such as a feedback comment on a different sensitive discussion.
+When sensitivity changes back to `false`, the same atomic path re-evaluates descendants against the reference definition and re-clears them. A descendant can still be sensitive through another route, such as a feedback comment on a different sensitive discussion.
+
+#### Transaction ownership
+
+An ordinary GraphQL middleware that calls `resolve()` and then runs Cypher is **not** inside the mutation's transaction: the generated resolver has committed before it returns. The implementation therefore uses explicit transaction ownership, not a post-resolver hook:
+
+- For handled generated mutations, transaction-coordinating middleware begins a Neo4j transaction before `resolve()`, installs it as `context.executionContext`, runs the generated resolver and the shared re-evaluation helper on that transaction, then commits. Any error rolls the transaction back.
+- Handled custom resolvers own the same transaction explicitly. Every participating OGM call receives it through `context.executionContext`, and raw Cypher uses it rather than opening another session. The current discussion create/update resolvers use independent OGM and session transactions, so they must be refactored before the filter switch. Post-commit work such as plugin triggering stays outside the transaction.
+- If a path cannot share the transaction, it cannot write a sensitivity root or dependency field. A standalone follow-up query is not sufficient.
 
 ### 4. What stays exactly the same
 
@@ -107,7 +136,7 @@ When sensitivity changes back to `false`, the same middleware re-evaluates the d
 
 ## Rollout
 
-1. **Ship the property, the write-time clearing, the sweep command and the un-clear middleware and validation, but keep the filters on `ageGateSensitive`.** Run the sweep once as the backfill, then `--check` until it reports zero mismatches.
+1. **Ship the property, write-time clearing, sweep command, transaction-coordinated re-evaluation, and validation, but keep the filters on `ageGateSensitive`.** Run the sweep once as the backfill, then `--check` until it reports zero mismatches.
 2. **Switch the eight `@authorization` filters to the stored properties.** This is the step that removes the planning cost; measure `getIssue` and the discussion page with Server-Timing before and after.
 3. Optional: remove the `ageGateSensitive` `@cypher` fields once nothing references them.
 
@@ -117,16 +146,19 @@ Each step is its own PR; step 1 changes no read behavior.
 
 - Per type: a node under a sensitive discussion/image is never cleared, and one under a non-sensitive parent is cleared at write time (fast-path types) and by the sweep (all types). Parameterized over all six types and their inheritance routes (reply chains, feedback comments, issue related-ids).
 - The sweep's `--check` mode reports mismatches without writing.
-- Marking a discussion or image sensitive un-clears every descendant within the same mutation, for each allowed path.
-- Nested writes of `hasSensitiveContent` through any other mutation are rejected.
+- Marking a discussion or image sensitive re-evaluates every descendant within the same transaction, for each allowed path. An injected failure after re-evaluation proves that the root change and all flag changes roll back together.
+- Reparenting/reconnecting a cleared node to sensitive content and changing Issue related-ids are either atomically re-evaluated on an allowed path or rejected. Cover every dependency listed above, including nested inputs.
+- Nested writes of `hasSensitiveContent` or sensitivity dependencies through any other mutation are rejected.
 - Filter behavior: restricted viewers don't see uncleared nodes, and allowed viewers see everything.
+- Discussion and Image filter behavior includes an absent/null `hasSensitiveContent` property and matches the current `coalesce(..., false)` result.
 - Integration (testcontainers): the backfill converges and matches the reference definition.
 
 ## Open questions for review
 
 1. ~~Delay for restricted viewers.~~ Resolved: no timer. Clearing happens at write time, and the sweep is a manual command, run as the backfill, before enabling the gate, and whenever `--check` reports mismatches.
-2. **Rejecting nested sensitivity writes.** Checked against the frontend so far:
+2. **Rejecting nested sensitivity/dependency writes.** Checked against the frontend so far:
    - The discussion sensitivity toggle uses top-level `updateDiscussions` (allowed).
    - Image uploads use `createImageWithUploader` (allowed).
-   - **Album edits may set `Image.hasSensitiveContent` through nested image inputs inside `updateDiscussionWithChannelConnections`.** The album edit form tracks the flag per image. So that allowed path's un-clear step must also cover images changed inside it, not just the discussion. I'll trace the exact input shape before step 1, and nested sensitivity writes anywhere else stay rejected.
+   - **Album edits may set `Image.hasSensitiveContent` through nested image inputs inside `updateDiscussionWithChannelConnections`.** The album edit form tracks the flag per image. That allowed path's transaction must cover images changed inside it and any Issue that references them, not just the discussion. Trace the exact input shape before step 1; nested sensitivity and dependency writes anywhere else stay rejected.
+   - Existing clients may reconnect files or other derived nodes. Inventory production operations before enforcing the validator; each one must be moved to an allowed atomic path or intentionally rejected.
 3. ~~Sweep cadence.~~ Resolved: manual only. On topical.space's current data, the full backfill is a few thousand nodes, so a single run.
