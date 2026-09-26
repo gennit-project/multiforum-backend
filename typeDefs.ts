@@ -81,7 +81,7 @@ const typeDefinitions = gql`
   }
 
   type Image @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     url: String
     width: Int
     height: Int
@@ -158,7 +158,7 @@ const typeDefinitions = gql`
 
   """Older revision of a downloadable file"""
   type FileVersion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile)-[:HAS_VERSION]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -387,7 +387,7 @@ const typeDefinitions = gql`
   }
 
   type TextVersion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_TITLE_VERSION|HAS_BODY_VERSION]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment)-[:HAS_VERSION]->(this) MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -449,7 +449,7 @@ const typeDefinitions = gql`
   }
 
    type DownloadableFile @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(this) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -544,7 +544,7 @@ const typeDefinitions = gql`
     @query(read: false, aggregate: false)
     @mutation(operations: [])
     @subscription(events: []) {
-    id: ID! @id
+    id: ID! @id @unique
     channelUniqueName: String!
       @settable(onCreate: false, onUpdate: false)
     displayName: String!
@@ -2085,7 +2085,7 @@ const typeDefinitions = gql`
     @query(read: false, aggregate: false)
     @mutation(operations: [])
     @subscription(events: []) {
-    id: ID! @id
+    id: ID! @id @unique
     policyId: ID!
     eventType: String!
     scope: String!
