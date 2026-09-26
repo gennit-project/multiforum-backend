@@ -1,9 +1,10 @@
 /**
- * Bring stored age-gate flags (`ageGateCleared`) in line with their reference
- * definitions. Dry run by default; pass --apply to write.
+ * Bring stored age-gate flags (`ageGateRestricted`) in line with their
+ * reference definitions. Content is clear unless marked, so a missing flag
+ * means clear. Dry run by default; pass --apply to write.
  *
  *   pnpm run age-gate:sweep              # report only
- *   pnpm run age-gate:sweep -- --apply   # clear / un-clear as needed
+ *   pnpm run age-gate:sweep -- --apply   # mark / unmark as needed
  *
  * Run it as the backfill, before enabling the age gate on an instance, and
  * whenever a dry run reports mismatches. See
@@ -38,20 +39,20 @@ try {
   console.log(apply ? "Age-gate sweep (applied):" : "Age-gate sweep (dry run):");
   for (const result of results) {
     console.log(
-      `  ${result.type.padEnd(18)} to clear: ${String(result.toClear).padStart(6)}` +
-        `  to un-clear: ${String(result.toUnclear).padStart(6)}` +
+      `  ${result.type.padEnd(18)} to restrict: ${String(result.toRestrict).padStart(6)}` +
+        `  to unrestrict: ${String(result.toUnrestrict).padStart(6)}` +
         (apply ? `  updated: ${result.applied}` : "")
     );
-    if (result.toUnclear > 0) {
-      // A cleared node that is sensitive by definition means some write path
-      // did not un-clear it: restricted viewers could see it until now.
+    if (result.toRestrict > 0) {
+      // Content under marked content without the flag is visible to
+      // restricted viewers: some write path failed to mark it.
       console.warn(
-        `  ! ${result.type}: cleared but sensitive (a write path missed an un-clear): ${result.unclearIds.join(", ")}`
+        `  ! ${result.type}: under marked content but not restricted (a write path missed marking it): ${result.toRestrictIds.join(", ")}`
       );
     }
   }
   if (!apply) {
-    const pending = results.some((r) => r.toClear + r.toUnclear > 0);
+    const pending = results.some((r) => r.toRestrict + r.toUnrestrict > 0);
     console.log(pending ? "Run with --apply to update." : "Everything is in line.");
   }
 } finally {

@@ -28,12 +28,12 @@ test("fails loudly when a derived type has no definition", () => {
 
 // The stored flag decides what restricted viewers can see, so no API client
 // may ever set it: it must be absent from every generated mutation input.
-test("ageGateCleared is not settable through any mutation input", async () => {
+test("ageGateRestricted is not settable through any mutation input", async () => {
   const schema = await new Neo4jGraphQL({ typeDefs: typeDefinitions }).getSchema();
   const settableIn = Object.values(schema.getTypeMap())
     .filter(isInputObjectType)
     .filter((type) => /(Create|Update)Input$/.test(type.name))
-    .filter((type) => "ageGateCleared" in type.getFields())
+    .filter((type) => "ageGateRestricted" in type.getFields())
     .map((type) => type.name);
 
   assert.deepEqual(settableIn, []);

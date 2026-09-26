@@ -73,11 +73,11 @@ beforeEach(async () => {
   }
 });
 
-const clearedIds = async (): Promise<string[]> => {
+const restrictedIds = async (): Promise<string[]> => {
   const session = driver.session();
   try {
     const result = await session.run(
-      "MATCH (n) WHERE n.ageGateCleared = true RETURN n.id AS id ORDER BY id"
+      "MATCH (n) WHERE n.ageGateRestricted = true RETURN n.id AS id ORDER BY id"
     );
     return result.records.map((record) => record.get("id") as string);
   } finally {
@@ -85,33 +85,56 @@ const clearedIds = async (): Promise<string[]> => {
   }
 };
 
-const ORDINARY_IDS = [
-  "o-body-v1",
-  "o-file",
-  "o-file-v1",
-  "o-issue-comment",
-  "o-reply",
-  "o-reply-v1",
-  "o-root",
-  "odc",
+// Every derived node that inherits from the sensitive discussion or image.
+const SENSITIVE_IDS = [
+  "s-body-v1",
+  "s-deep",
+  "s-feedback",
+  "s-feedback-on-comment",
+  "s-file",
+  "s-file-v1",
+  "s-issue-comment",
+  "s-issue-discussion",
+  "s-issue-image",
+  "s-reply",
+  "s-reply-v1",
+  "s-root",
+  "sdc",
 ];
 
-test("a dry run reports what would be cleared and writes nothing", async () => {
+test("a dry run reports what would be restricted and writes nothing", async () => {
   const results = await sweepAgeGate({ driver, statements, apply: false });
 
   assert.deepEqual(
     {
-      toClear: results.reduce((sum, r) => sum + r.toClear, 0),
-      cleared: await clearedIds(),
+      toRestrict: results.reduce((sum, r) => sum + r.toRestrict, 0),
+      restricted: await restrictedIds(),
     },
-    { toClear: ORDINARY_IDS.length, cleared: [] }
+    { toRestrict: SENSITIVE_IDS.length, restricted: [] }
   );
 });
 
-test("applying clears exactly the content that inherits from nothing sensitive", async () => {
+test("applying restricts exactly the content under marked content", async () => {
   await sweepAgeGate({ driver, statements, apply: true });
 
-  assert.deepEqual(await clearedIds(), ORDINARY_IDS);
+  assert.deepEqual(await restrictedIds(), SENSITIVE_IDS);
+});
+
+test("unmarked content needs no flag at all", async () => {
+  const session = driver.session();
+  try {
+    await session.run("MATCH (d:Discussion {id: 'sd'}) REMOVE d.hasSensitiveContent");
+    await session.run("MATCH (i:Image) REMOVE i.hasSensitiveContent");
+  } finally {
+    await session.close();
+  }
+
+  const results = await sweepAgeGate({ driver, statements, apply: false });
+
+  assert.deepEqual(
+    results.filter((r) => r.toRestrict + r.toUnrestrict > 0),
+    []
+  );
 });
 
 test("a second dry run after applying finds no mismatches", async () => {
@@ -119,12 +142,12 @@ test("a second dry run after applying finds no mismatches", async () => {
   const results = await sweepAgeGate({ driver, statements, apply: false });
 
   assert.deepEqual(
-    results.filter((r) => r.toClear + r.toUnclear > 0),
+    results.filter((r) => r.toRestrict + r.toUnrestrict > 0),
     []
   );
 });
 
-test("a cleared node under newly sensitive content is reported and un-cleared", async () => {
+test("content under a newly marked discussion is reported and restricted", async () => {
   await sweepAgeGate({ driver, statements, apply: true });
   const session = driver.session();
   try {
@@ -140,15 +163,32 @@ test("a cleared node under newly sensitive content is reported and un-cleared", 
 
   assert.deepEqual(
     {
-      reportedComments: dryRun.find((r) => r.type === "Comment")?.unclearIds.sort(),
-      clearedAfter: await clearedIds(),
+      reportedComments: dryRun
+        .find((r) => r.type === "Comment")
+        ?.toRestrictIds.sort(),
+      restrictedAfter: (await restrictedIds()).length,
     },
-    { reportedComments: ["o-reply", "o-root"], clearedAfter: [] }
+    { reportedComments: ["o-reply", "o-root"], restrictedAfter: 21 }
   );
+});
+
+test("unmarking a discussion lets the sweep unrestrict its content", async () => {
+  await sweepAgeGate({ driver, statements, apply: true });
+  const session = driver.session();
+  try {
+    await session.run("MATCH (d:Discussion {id: 'sd'}) SET d.hasSensitiveContent = false");
+  } finally {
+    await session.close();
+  }
+
+  await sweepAgeGate({ driver, statements, apply: true });
+
+  // Only the issue about the still-sensitive image stays restricted.
+  assert.deepEqual(await restrictedIds(), ["s-issue-image"]);
 });
 
 test("batching reaches every node", async () => {
   await sweepAgeGate({ driver, statements, apply: true, batchSize: 1 });
 
-  assert.deepEqual(await clearedIds(), ORDINARY_IDS);
+  assert.deepEqual(await restrictedIds(), SENSITIVE_IDS);
 });

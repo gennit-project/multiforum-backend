@@ -3,7 +3,7 @@ import { Kind, type DocumentNode, type StringValueNode } from "graphql";
 /**
  * Types whose age-gate result is derived from other nodes (a parent
  * discussion, a reply chain, a related image, ...). Each stores the result in
- * `ageGateCleared`; see docs/age-gate-materialization-design.md.
+ * `ageGateRestricted`; see docs/age-gate-materialization-design.md.
  *
  * Discussion and Image are not listed: their result is their own
  * `hasSensitiveContent` property.

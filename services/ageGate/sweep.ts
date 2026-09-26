@@ -5,21 +5,22 @@ import {
 } from "./definitions.js";
 
 /**
- * Brings each derived type's stored `ageGateCleared` flag in line with its
- * reference `ageGateSensitive` definition. Run manually (see
- * build_scripts/ageGateSweep.ts): as the backfill, before enabling the age
- * gate, and whenever a dry run reports mismatches.
+ * Brings each derived type's stored `ageGateRestricted` flag in line with its
+ * reference `ageGateSensitive` definition. Content is clear unless marked, so
+ * a missing flag means clear. Run manually (see build_scripts/ageGateSweep.ts):
+ * as the backfill, before enabling the age gate, and whenever a dry run
+ * reports mismatches.
  *
- * - toClear: not sensitive, but not yet cleared (new or never-evaluated
- *   nodes). Restricted viewers don't see these until cleared.
- * - toUnclear: cleared, but sensitive by definition. Restricted viewers can
- *   see these, so a non-zero count means a write path failed to un-clear.
+ * - toRestrict: under marked content, but not flagged. Restricted viewers can
+ *   see these, so a non-zero count means a write path failed to mark them.
+ * - toUnrestrict: flagged, but no longer under marked content. Over-marking
+ *   only hides content from restricted viewers, so this is not a leak.
  */
 export type SweepTypeResult = {
   type: DerivedAgeGateType;
-  toClear: number;
-  toUnclear: number;
-  unclearIds: string[];
+  toRestrict: number;
+  toUnrestrict: number;
+  toRestrictIds: string[];
   applied: number;
 };
 
@@ -40,8 +41,8 @@ const mismatchQuery = (type: DerivedAgeGateType, statement: string) => `
     WITH this
     ${statement}
   }
-  WITH this, NOT ageGateSensitive AS shouldBeCleared
-  WHERE coalesce(this.ageGateCleared, false) <> shouldBeCleared
+  WITH this, ageGateSensitive AS shouldBeRestricted
+  WHERE coalesce(this.ageGateRestricted, false) <> shouldBeRestricted
 `;
 
 const toNumber = (value: unknown): number =>
@@ -59,17 +60,17 @@ async function countMismatches(
     const result = await session.run(`
       ${mismatchQuery(type, statement)}
       RETURN
-        sum(CASE WHEN shouldBeCleared THEN 1 ELSE 0 END) AS toClear,
-        sum(CASE WHEN shouldBeCleared THEN 0 ELSE 1 END) AS toUnclear,
-        [id IN collect(CASE WHEN shouldBeCleared THEN null ELSE this.id END)
-          WHERE id IS NOT NULL][0..${SAMPLE_IDS}] AS unclearIds
+        sum(CASE WHEN shouldBeRestricted THEN 1 ELSE 0 END) AS toRestrict,
+        sum(CASE WHEN shouldBeRestricted THEN 0 ELSE 1 END) AS toUnrestrict,
+        [id IN collect(CASE WHEN shouldBeRestricted THEN this.id ELSE null END)
+          WHERE id IS NOT NULL][0..${SAMPLE_IDS}] AS toRestrictIds
     `);
     const record = result.records[0];
     return {
       type,
-      toClear: toNumber(record?.get("toClear") ?? 0),
-      toUnclear: toNumber(record?.get("toUnclear") ?? 0),
-      unclearIds: (record?.get("unclearIds") as string[] | undefined) ?? [],
+      toRestrict: toNumber(record?.get("toRestrict") ?? 0),
+      toUnrestrict: toNumber(record?.get("toUnrestrict") ?? 0),
+      toRestrictIds: (record?.get("toRestrictIds") as string[] | undefined) ?? [],
     };
   } finally {
     await session.close();
@@ -90,8 +91,8 @@ async function applyMismatches(
         tx.run(
           `
           ${mismatchQuery(type, statement)}
-          WITH this, shouldBeCleared LIMIT toInteger($batchSize)
-          SET this.ageGateCleared = shouldBeCleared
+          WITH this, shouldBeRestricted LIMIT toInteger($batchSize)
+          SET this.ageGateRestricted = shouldBeRestricted
           RETURN count(this) AS updated
           `,
           { batchSize }
@@ -119,7 +120,7 @@ export async function sweepAgeGate({
   const results: SweepTypeResult[] = [];
   for (const type of types) {
     const counts = await countMismatches(driver, type, statements[type]);
-    const hasMismatches = counts.toClear + counts.toUnclear > 0;
+    const hasMismatches = counts.toRestrict + counts.toUnrestrict > 0;
     const applied =
       apply && hasMismatches
         ? await applyMismatches(driver, type, statements[type], batchSize)
