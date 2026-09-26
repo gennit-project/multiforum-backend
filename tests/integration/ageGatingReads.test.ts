@@ -7,6 +7,9 @@ import {
   type StartedNeo4jContainer,
 } from "@testcontainers/neo4j";
 import { mockToken } from "./imageModerationHarness.js";
+import typeDefinitions from "../../typeDefs.js";
+import { getAgeGateStatements } from "../../services/ageGate/definitions.js";
+import { sweepAgeGate } from "../../services/ageGate/sweep.js";
 
 const SERVER_CONFIG_NAME = "AgeGatingReadTestServer";
 const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
@@ -121,6 +124,13 @@ beforeEach(async () => {
   } finally {
     await session.close();
   }
+  // The filters read stored flags, so seeded data is swept the same way an
+  // instance is swept before enabling the gate.
+  await sweepAgeGate({
+    driver,
+    statements: getAgeGateStatements(typeDefinitions),
+    apply: true,
+  });
 });
 
 const contextFor = (username?: string) => ({
@@ -216,6 +226,29 @@ for (const [label, username] of [
     );
   });
 }
+
+// Content is clear unless marked: a discussion or image that never had the
+// property set must stay visible to restricted viewers.
+test("restricted callers can read discussions and images with no sensitivity property", async () => {
+  const session = driver.session();
+  try {
+    await session.run(
+      "MATCH (n) WHERE n.id IN ['discussion-public', 'image-public'] REMOVE n.hasSensitiveContent"
+    );
+  } finally {
+    await session.close();
+  }
+
+  const data = await visibleIds();
+
+  assert.deepEqual(
+    {
+      discussions: data.discussions.map((item: any) => item.id),
+      images: data.images.map((item: any) => item.id),
+    },
+    { discussions: ["discussion-public"], images: ["image-public"] }
+  );
+});
 
 test("an age-eligible caller can read sensitive nodes", async () => {
   const data = await visibleIds("adult");
