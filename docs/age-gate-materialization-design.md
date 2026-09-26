@@ -79,8 +79,8 @@ Any path that isn't covered leaves its new nodes uncleared: hidden from restrict
 **Sweep (manual).** A command evaluates nodes against the reference definition and brings the stored flags in line:
 
 ```bash
-pnpm run age-gate:sweep            # clear/un-clear as needed, in batches
-pnpm run age-gate:sweep -- --check # read-only: report mismatches, change nothing
+pnpm run age-gate:sweep              # dry run: report mismatches, change nothing
+pnpm run age-gate:sweep -- --apply   # clear/un-clear as needed, in batches
 ```
 
 On production: `heroku run -a topical-backend-dev pnpm run age-gate:sweep`.
@@ -88,7 +88,7 @@ On production: `heroku run -a topical-backend-dev pnpm run age-gate:sweep`.
 When to run it:
 - **once as the backfill**, after step 1 of the rollout ships
 - **before turning the age gate on** for an instance, so existing content is cleared
-- **whenever `--check` reports mismatches**, which also indicates a write path is missing its fast path
+- **whenever a dry run reports mismatches**, which also indicates a write path is missing its fast path
 
 While the gate is **off** (topical.space today), everyone may see sensitive content, so the flags have no visible effect. A stale flag is invisible until the gate is turned on, which is why "sweep before enabling" is the rule.
 
@@ -136,7 +136,7 @@ An ordinary GraphQL middleware that calls `resolve()` and then runs Cypher is **
 
 ## Rollout
 
-1. **Ship the property, write-time clearing, sweep command, transaction-coordinated re-evaluation, and validation, but keep the filters on `ageGateSensitive`.** Run the sweep once as the backfill, then `--check` until it reports zero mismatches.
+1. **Ship the property, write-time clearing, sweep command, transaction-coordinated re-evaluation, and validation, but keep the filters on `ageGateSensitive`.** Run the sweep once with `--apply` as the backfill, then dry runs until they report zero mismatches.
 2. **Switch the eight `@authorization` filters to the stored properties.** This is the step that removes the planning cost; measure `getIssue` and the discussion page with Server-Timing before and after.
 3. Optional: remove the `ageGateSensitive` `@cypher` fields once nothing references them.
 
@@ -145,7 +145,7 @@ Each step is its own PR; step 1 changes no read behavior.
 ## Tests
 
 - Per type: a node under a sensitive discussion/image is never cleared, and one under a non-sensitive parent is cleared at write time (fast-path types) and by the sweep (all types). Parameterized over all six types and their inheritance routes (reply chains, feedback comments, issue related-ids).
-- The sweep's `--check` mode reports mismatches without writing.
+- A dry run (the default, without `--apply`) reports mismatches without writing.
 - Marking a discussion or image sensitive re-evaluates every descendant within the same transaction, for each allowed path. An injected failure after re-evaluation proves that the root change and all flag changes roll back together.
 - Reparenting/reconnecting a cleared node to sensitive content and changing Issue related-ids are either atomically re-evaluated on an allowed path or rejected. Cover every dependency listed above, including nested inputs.
 - Nested writes of `hasSensitiveContent` or sensitivity dependencies through any other mutation are rejected.
@@ -155,7 +155,7 @@ Each step is its own PR; step 1 changes no read behavior.
 
 ## Open questions for review
 
-1. ~~Delay for restricted viewers.~~ Resolved: no timer. Clearing happens at write time, and the sweep is a manual command, run as the backfill, before enabling the gate, and whenever `--check` reports mismatches.
+1. ~~Delay for restricted viewers.~~ Resolved: no timer. Clearing happens at write time, and the sweep is a manual command, run as the backfill, before enabling the gate, and whenever a dry run reports mismatches.
 2. **Rejecting nested sensitivity/dependency writes.** Checked against the frontend so far:
    - The discussion sensitivity toggle uses top-level `updateDiscussions` (allowed).
    - Image uploads use `createImageWithUploader` (allowed).
