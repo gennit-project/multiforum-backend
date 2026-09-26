@@ -127,7 +127,14 @@ pnpm run age-gate:sweep              # dry run: report mismatches, change nothin
 pnpm run age-gate:sweep -- --apply   # mark/unmark as needed, in batches
 ```
 
-On production: `heroku run -a topical-backend-dev pnpm run age-gate:sweep`.
+On production the script runs the compiled build (`ts-node` isn't installed there). Pass the command as **one quoted string**, because Heroku CLI 11 mangles unquoted multi-word commands:
+
+```bash
+heroku run -a topical-backend-dev -- 'pnpm run age-gate:sweep'
+heroku run -a topical-backend-dev -- 'pnpm run age-gate:sweep -- --apply'
+```
+
+Locally, `pnpm run age-gate:sweep:dev` runs the TypeScript source through ts-node.
 
 Run it:
 - **once as the backfill**, before the filter switch
