@@ -138,7 +138,7 @@ const typeDefinitions = gql`
 
   """SPDX or custom content licence"""
   type License {
-    id: ID! @id
+    id: ID! @id @unique
     name:      String!  # human‑readable name ("Creative Commons BY 4.0")
     shortName: String   # SPDX‑style short code ("CC‑BY‑4.0")
     url:       String
@@ -147,7 +147,7 @@ const typeDefinitions = gql`
 
   """Single checkout / acquisition (free or paid)"""
   type Purchase {
-    id: ID! @id
+    id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     priceCents: Int
     priceCurrency: String
@@ -175,7 +175,7 @@ const typeDefinitions = gql`
 
 
   type Collection {
-    id: ID! @id
+    id: ID! @id @unique
     name: String!
     description: String
     visibility: CollectionVisibility!
@@ -210,7 +210,7 @@ const typeDefinitions = gql`
   }
 
   type Album {
-    id: ID! @id
+    id: ID! @id @unique
     Owner: User @relationship(type: "HAS_ALBUM", direction: IN)
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
     imageOrder: [ID]
@@ -218,7 +218,7 @@ const typeDefinitions = gql`
   }
 
   type Notification {
-    id: ID! @id
+    id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     read: Boolean
     text: String
@@ -231,14 +231,14 @@ const typeDefinitions = gql`
   }
 
   type Message {
-    id: ID! @id
+    id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     text: String
     Contact: Contact @relationship(type: "HAS_MESSAGE", direction: IN)
   }
 
   type Contact {
-    id: ID! @id
+    id: ID! @id @unique
     MessageAuthor: CommentAuthor
       @relationship(type: "AUTHORED_MESSAGE", direction: IN)
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -366,7 +366,7 @@ const typeDefinitions = gql`
   }
 
   type ScratchpadEntry {
-    id: ID! @id
+    id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     text: String!
     isPublic: Boolean! @default(value: false)
@@ -399,7 +399,7 @@ const typeDefinitions = gql`
   }
 
   type LabelChangeHistory {
-    id: ID! @id
+    id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     actionType: String! # "added" or "removed"
     labelDisplayName: String!
@@ -411,7 +411,7 @@ const typeDefinitions = gql`
   }
 
   type WikiPage {
-    id: ID! @id
+    id: ID! @id @unique
     title: String!
     body: String
     editReason: String
@@ -434,7 +434,7 @@ const typeDefinitions = gql`
   }
 
   type Suspension {
-    id: ID! @id
+    id: ID! @id @unique
     channelUniqueName: String
     serverName: String
     username: String
@@ -669,7 +669,7 @@ const typeDefinitions = gql`
   }
 
   type DiscussionChannel @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (this)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -703,7 +703,7 @@ const typeDefinitions = gql`
   }
 
   type Discussion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     Author: User @relationship(type: "POSTED_DISCUSSION", direction: IN)
     body: String
     editReason: String
@@ -767,7 +767,7 @@ const typeDefinitions = gql`
   }
 
   type EventChannel {
-    id: ID! @id
+    id: ID! @id @unique
     locked: Boolean
     eventId: ID! # used for uniqueness constraint
     channelUniqueName: String! # used for uniqueness constraint
@@ -828,7 +828,7 @@ const typeDefinitions = gql`
   # A repeat pattern is its own node (Neo4j can't store a nested object as a
   # property), linked to its EventSeries via HAS_REPEAT_PATTERN.
   type RepeatPattern {
-    id: ID! @id
+    id: ID! @id @unique
     type: RepeatPatternType!
     count: Int
     daysOfWeek: [Int]
@@ -852,7 +852,7 @@ const typeDefinitions = gql`
   }
 
   type EventSeries {
-    id: ID! @id
+    id: ID! @id @unique
     title: String!
     description: String
     locationName: String
@@ -881,14 +881,14 @@ const typeDefinitions = gql`
 
   # Legacy type - keeping for backward compatibility during migration
   type RecurringEvent {
-    id: ID! @id
+    id: ID! @id @unique
     repeatEvery: RepeatEvery
     repeatEnds: RepeatEnds
     Events: [Event!]! @relationship(type: "HAS_RECURRING_EVENT", direction: OUT)
   }
 
   type Event {
-    id: ID! @id
+    id: ID! @id @unique
     title: String!
     description: String
     editReason: String
@@ -955,7 +955,7 @@ const typeDefinitions = gql`
   }
 
   type Comment @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (this)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (this)-[:HAS_FEEDBACK_COMMENT]->(feedbackDiscussion:Discussion) WHERE coalesce(feedbackDiscussion.hasSensitiveContent, false) = true } OR EXISTS { MATCH (this)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -1010,7 +1010,7 @@ const typeDefinitions = gql`
   }
 
   type Emoji {
-    id: ID! @id
+    id: ID! @id @unique
     name: String! @unique
     PostedByUser: User @relationship(type: "POSTED_EMOJI", direction: IN)
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -1042,7 +1042,7 @@ const typeDefinitions = gql`
   }
 
   type ModerationAction {
-    id: ID! @id
+    id: ID! @id @unique
     ModerationProfile: ModerationProfile
       @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
     User: User @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
@@ -1055,7 +1055,7 @@ const typeDefinitions = gql`
   }
 
   type Issue @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateSensitive: false } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id
+    id: ID! @id @unique
     ageGateSensitive: Boolean!
       @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion {id: this.relatedDiscussionId}) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment {id: this.relatedCommentId})-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (image:Image {id: this.relatedImageId}) WHERE coalesce(image.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
@@ -1094,7 +1094,7 @@ const typeDefinitions = gql`
   }
 
   type Feed {
-    id: ID! @id
+    id: ID! @id @unique
     title: String
     description: String
     Owner: User @relationship(type: "CREATED_FEED", direction: IN)
@@ -1924,7 +1924,7 @@ const typeDefinitions = gql`
   }
 
   type Plugin {
-    id: ID! @id
+    id: ID! @id @unique
     name: String!
     displayName: String
     description: String
@@ -1938,7 +1938,7 @@ const typeDefinitions = gql`
   }
 
   type PluginVersion {
-    id: ID! @id
+    id: ID! @id @unique
     version: String!
     repoUrl: String!
     tarballGsUri: String
@@ -2004,7 +2004,7 @@ const typeDefinitions = gql`
   }
 
   type ServerSecret {
-    id: ID! @id
+    id: ID! @id @unique
     pluginId: String!
     key: String!
     ciphertext: String!
@@ -2045,7 +2045,7 @@ const typeDefinitions = gql`
   }
 
   type PluginPipelineRun {
-    id: ID! @id
+    id: ID! @id @unique
     pipelineId: String! @unique
     targetId: String!
     targetType: String!
@@ -2138,7 +2138,7 @@ const typeDefinitions = gql`
   }
 
   type PluginRun {
-    id: ID! @id
+    id: ID! @id @unique
     pluginId: String!
     pluginName: String
     version: String!
