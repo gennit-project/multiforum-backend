@@ -28,6 +28,8 @@ test("triggers the updated pipeline after connecting a replacement", async () =>
   } as any;
   const session = {
     run: async () => ({ records: [] }),
+    executeWrite: async (work: (tx: unknown) => unknown) =>
+      work({ run: async () => ({ records: [] }) }),
     close: async () => {},
   };
   const input = {
@@ -92,7 +94,12 @@ test("does not retrigger scans for unrelated discussion edits", async () => {
     ServerConfig: {},
     ServerSecret: {},
     driver: {
-      session: () => ({ run: async () => ({}), close: async () => {} }),
+      session: () => ({
+        run: async () => ({}),
+        executeWrite: async (work: (tx: unknown) => unknown) =>
+          work({ run: async () => ({}) }),
+        close: async () => {},
+      }),
     },
   } as any, (async () => {
     triggerCount += 1;

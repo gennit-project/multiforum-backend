@@ -42,6 +42,12 @@ type Args = {
   channelFlairSelections?: DiscussionChannelFlairSelectionInput[] | null;
 };
 
+const stampAttachedDownloadableFilesQuery = `
+  MATCH (file:DownloadableFile)
+  WHERE file.id IN $ids
+  SET file.ageGateTouchedAt = datetime()
+`;
+
 export const getConnectedDownloadableFileIds = (
   updateInput: DiscussionUpdateInput
 ): string[] => {
@@ -158,20 +164,38 @@ const getResolver = (
         });
       }
       
-      // Update the discussion
-      await Discussion.update({
-        where: where,
-        update: sanitizedUpdateInput,
-      });
+      const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
+        sanitizedUpdateInput
+      );
+
+      // Update the discussion in a managed write so the age-gate reconcile step
+      // runs before commit. Attaching an existing file is a relationship-only
+      // connect, which @neo4j/graphql doesn't stamp, so stamp the attached files
+      // here: the reconcile step then flags them in this same transaction.
+      const updateSession = driver.session();
+      try {
+        await updateSession.executeWrite(async (tx) => {
+          await Discussion.update({
+            where: where,
+            update: sanitizedUpdateInput,
+            // The OGM runs its query in this transaction.
+            context: { executionContext: tx },
+          });
+          if (connectedDownloadableFileIds.length > 0) {
+            await tx.run(stampAttachedDownloadableFilesQuery, {
+              ids: connectedDownloadableFileIds,
+            });
+          }
+        });
+      } finally {
+        await updateSession.close();
+      }
       const updatedDiscussionId = where.id;
 
       // The edit form uploads replacement files before connecting them to the
       // discussion. Trigger only newly connected file IDs after Discussion.update
       // has created that relationship, so the scanner receives discussion and
       // channel context and the replacement cannot remain PENDING indefinitely.
-      const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
-        sanitizedUpdateInput
-      );
       for (const downloadableFileId of connectedDownloadableFileIds) {
         try {
           await triggerDownloadRuns({

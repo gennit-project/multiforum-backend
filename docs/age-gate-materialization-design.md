@@ -114,9 +114,20 @@ Hooks per write path, or GraphQL middleware, would miss writes that don't come t
 
 **What it can't see:** `@neo4j/graphql` does **not** stamp `@timestamp` fields on relationship-only updates (verified 2026-09-26). That covers connecting or moving an existing node, from either side, for example `updateComments { ParentComment: { connect } }` or `updateDiscussions { DiscussionChannels: { connect } }`. Those are the validator's job: reject unless a path handles them. **Connecting while creating** is covered, because the new node is stamped and the walk from it reaches whatever was connected.
 
-**Remaining work (step 4):**
-- The validator (log-only, then enforcing) for relationship-only moves of existing age-gated nodes, and for `hasSensitiveContent: true` outside the allowed paths.
-- `updateDiscussionWithChannelConnections` attaches existing downloadable files (a relationship-only connect). It must stamp them, or re-evaluate them, in the same transaction.
+#### Write validator (step 4, implemented)
+
+`middleware/ageGateWriteValidatorMiddleware.ts` checks every mutation's input against the schema (`services/ageGate/writeGuard.ts`) and flags:
+
+- **Relationship moves:** `connect`/`connectOrCreate` inside an update input, or anything in a connect input (including the top-level `connect` argument and connects nested inside other connects), on one of the relationship fields an age-gate definition follows (`GUARDED_RELATIONSHIP_FIELDS`). Connecting while **creating** isn't flagged: the new node is stamped and the reconcile walk reaches what it connects to. Disconnecting isn't flagged either, since it can only over-restrict.
+- **Sensitivity writes:** `hasSensitiveContent` in a create or update input outside the five allowed mutations above. Filters (`where`) aren't writes.
+
+Tests fail if a definition starts following a relationship with no guarded field, or if a field on a followed relationship between age-gated types is neither guarded nor exempt (`EXEMPT_RELATIONSHIP_FIELDS`, currently only `DiscussionChannel.Answers`).
+
+It runs **log-only** by default and logs `age-gate write validator: unhandled write (log-only)`. Set `AGE_GATE_WRITE_VALIDATOR=enforce` to reject flagged writes (`AGE_GATE_UNSAFE_WRITE`) once the logs show no legitimate traffic would break.
+
+`updateDiscussionWithChannelConnections` attaches existing downloadable files with a relationship-only connect. It now runs `Discussion.update` inside a managed write (the OGM runs in that transaction through `executionContext`) and stamps the attached files there, so the reconcile step flags them before commit. The validator lists this as a handled move (`HANDLED_RELATIONSHIP_MOVES`).
+
+Not covered: relationship moves made by custom resolvers or services in raw Cypher. They don't pass through GraphQL input, so each must stamp what it moves, as the DiscussionChannel queries do.
 
 ### 4. Sweep (manual)
 
@@ -167,7 +178,7 @@ Performance first, made safe by an interlock:
 1. **Stored flag and sweep.** Add `ageGateRestricted` and the sweep command, then run the backfill. No read behavior changes.
 2. **Filter switch, with an interlock.** Switch the eight `@authorization` filters to the stored properties. This is the performance win; measure `getIssue` and the discussion page with Server-Timing before and after. Until steps 3–4 ship, the backend **rejects marking content sensitive** (`hasSensitiveContent: true` on any write) **and enabling the sensitive-content gate**. That's safe to ship now because nothing is marked and the gate is off, and it prevents the flags going stale before the write paths maintain them.
 3. **Mark at write time:** the driver-level reconcile step, the stamps, and no auto-commit writes of age-gated content.
-4. **The validator** (log-only, then enforcing) for relationship-only moves, plus file attachments in `updateDiscussionWithChannelConnections`.
+4. **The validator** (log-only, then enforcing) for relationship-only moves, plus file attachments in `updateDiscussionWithChannelConnections`. Implemented log-only; switch to `AGE_GATE_WRITE_VALIDATOR=enforce` after reviewing the logs.
 5. **Remove the interlock.** Marking content sensitive and enabling the gate work again, now with correct flags.
 6. **Just-in-time age check:** the "requires age check" query and the frontend gate.
 7. Optional: remove the `ageGateSensitive` `@cypher` fields once nothing references them.
