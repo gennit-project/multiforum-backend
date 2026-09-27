@@ -61,3 +61,17 @@ test("discussion comments select their page before hydrating related records", (
   assert.ok(voterHydration > pageSelection);
   assert.doesNotMatch(getCommentsQuery, /HAS_SERVER_ROLE|HAS_CHANNEL_ROLE/);
 });
+
+for (const [name, query] of Object.entries({
+  commentReplies: getCommentRepliesQuery,
+  eventComments: getEventCommentsQuery,
+})) {
+  test(`${name} selects its page before hydrating related records`, () => {
+    const pageSelection = query.indexOf("SKIP toInteger($offset)");
+    const voterHydration = query.indexOf("UPVOTED_COMMENT");
+
+    assert.ok(pageSelection > -1);
+    assert.ok(voterHydration > pageSelection);
+    assert.doesNotMatch(query, /HAS_SERVER_ROLE|HAS_CHANNEL_ROLE/);
+  });
+}

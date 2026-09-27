@@ -44,6 +44,11 @@ const createDriver = () => {
               records: [{ get: () => ({ id: "discussion-channel-1" }) }],
             };
           }
+          if (query.includes("AS Event")) {
+            return {
+              records: [{ get: () => ({ id: "event-1" }) }],
+            };
+          }
           return { records: [] };
         };
         return {
@@ -103,9 +108,6 @@ test("getEventComments passes stored comment ranking settings to Cypher", async 
   const resolver = getEventComments({
     driver: mock.driver as never,
     serverName: "test-server",
-    Event: {
-      find: async () => [{ id: "event-1" }],
-    } as never,
   });
 
   await resolver(
@@ -128,9 +130,6 @@ test("getCommentReplies passes stored comment ranking settings to Cypher", async
   const resolver = getCommentReplies({
     driver: mock.driver as never,
     serverName: "test-server",
-    Comment: {
-      aggregate: async () => ({ count: 0 }),
-    } as never,
   });
 
   await resolver(

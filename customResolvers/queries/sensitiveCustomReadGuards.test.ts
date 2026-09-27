@@ -50,9 +50,6 @@ test("comment reply lists return empty before aggregate or content queries", asy
   const { driver, runs } = sensitiveDriver();
   const resolver = getCommentReplies({
     driver,
-    Comment: {
-      aggregate: async () => { throw new Error("aggregate must not run"); },
-    },
   } as any);
 
   const result = await resolver(null, {

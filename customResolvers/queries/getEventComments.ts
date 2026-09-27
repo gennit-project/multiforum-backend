@@ -1,42 +1,16 @@
 import type { GraphQLResolveInfo } from "graphql";
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { Driver } from "neo4j-driver";
 import {
-    getEventCommentsQuery,
-  }from "../cypher/cypherQueries.js";
+  getEventCommentsMetadataQuery,
+  getEventCommentsQuery,
+} from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { EventModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { normalizePagination } from "../../services/pagination.js";
 
-const eventSelectionSet = `
-  {
-    id
-    title
-    description
-    startTime
-    endTime
-    locationName
-    address
-    virtualEventUrl
-    startTimeDayOfWeek
-    startTimeHourOfDay
-    canceled
-    isHostedByOP
-    isAllDay
-    coverImageURL
-    createdAt
-    updatedAt
-    placeId
-    isInPrivateResidence
-    cost
-  }
-  `;
-
 type Input = {
-  Event: EventModel;
   driver: Driver;
   serverName?: string;
 };
@@ -49,8 +23,13 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Event, serverName } = input;
-  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
+  const { driver, serverName } = input;
+  return async (
+    _parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    _info: GraphQLResolveInfo
+  ) => {
     const { eventId, sort } = args;
     const { offset, limit } = normalizePagination(args);
     context.user = await setUserDataOnContext({
@@ -61,20 +40,6 @@ const getResolver = (input: Input) => {
     const session = driver.session();
 
     try {
-      const result = await Event.find({
-        where: {
-          id: eventId,
-        },
-        // get everything about the Event
-        // except the comments
-        selectionSet: eventSelectionSet,
-      });
-
-      if (result.length === 0) {
-        throw new Error("Event not found");
-      }
-
-      const event = result[0];
       const effectiveSort =
         sort === "top" ? "top" : sort === "hot" ? "hot" : "new";
       const rankingParams = await getHotRankingQueryParams({
@@ -84,35 +49,37 @@ const getResolver = (input: Input) => {
         serverName,
       });
 
-      const commentsResult = await session.run(getEventCommentsQuery, {
-        eventId,
-        offset,
-        limit,
-        sortOption: effectiveSort,
-        loggedInUsername,
-        ...rankingParams,
-      });
+      return await session.executeWrite(async (transaction) => {
+        const eventResult = await transaction.run(
+          getEventCommentsMetadataQuery,
+          {
+            eventId,
+            loggedInUsername,
+          }
+        );
+        const event = eventResult.records[0]?.get("Event");
+        if (!event) return { Event: null, Comments: [] };
 
-      let comments = commentsResult.records.map((record: Neo4jRecord) => {
-        return record.get("comment");
-      });
+        const commentsResult = await transaction.run(getEventCommentsQuery, {
+          eventId,
+          offset,
+          limit,
+          sortOption: effectiveSort,
+          loggedInUsername,
+          ...rankingParams,
+        });
 
-      comments = await populateCommentSubscriptionStatus({
-        comments,
-        loggedInUsername,
-        session,
+        return {
+          Event: event,
+          Comments: commentsResult.records.map((record) => record.get("comment")),
+        };
       });
-
-      return {
-        Event: event,
-        Comments: comments,
-      };
     } catch (error: unknown) {
-      logger.error("Error getting comment section:", error);
+      logger.error("Error getting event comments:", error);
       return {
         Event: null,
-        Comments: []
-      }
+        Comments: [],
+      };
     } finally {
       await session.close();
     }

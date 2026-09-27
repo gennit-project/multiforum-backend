@@ -1,7 +1,7 @@
 // Integration tests for the getCommentReplies query resolver against a live
 // Neo4j container. It fetches the direct replies (IS_REPLY_TO children) of a
 // parent comment via Cypher with top/hot/new sorting + pagination, and returns
-// an OGM aggregate count of all children. Runs through the anonymous-tolerant
+// a scoped aggregate count of all children. Runs through the anonymous-tolerant
 // auth seam.
 
 import test, { before, after, beforeEach } from "node:test";
@@ -46,8 +46,14 @@ const seedParentWithReplies = () =>
     `CREATE (p:Comment { id: 'p1', text: 'parent', isRootComment: true, createdAt: datetime() })
      CREATE (r1:Comment { id: 'r1', text: 'reply 1', isRootComment: false, weightedVotesCount: 1, createdAt: datetime() })
      CREATE (r2:Comment { id: 'r2', text: 'reply 2', isRootComment: false, weightedVotesCount: 5, createdAt: datetime() })
+     CREATE (grandchild:Comment { id: 'g1', text: 'nested reply', isRootComment: false, createdAt: datetime() })
+     CREATE (author:User { username: 'alice' })
+     CREATE (voter:User { username: 'bob' })
      CREATE (r1)-[:IS_REPLY_TO]->(p)
-     CREATE (r2)-[:IS_REPLY_TO]->(p)`
+     CREATE (r2)-[:IS_REPLY_TO]->(p)
+     CREATE (grandchild)-[:IS_REPLY_TO]->(r2)
+     CREATE (author)-[:AUTHORED_COMMENT]->(r2)
+     CREATE (voter)-[:UPVOTED_COMMENT]->(r2)`
   );
 
 test("returns the parent comment's replies sorted by top, with an aggregate count", async () => {
@@ -62,6 +68,9 @@ test("returns the parent comment's replies sorted by top, with an aggregate coun
     "higher weighted-votes reply first under top sort"
   );
   assert.equal(result.aggregateChildCommentCount, 2);
+  assert.equal(result.ChildComments[0].CommentAuthor.username, "alice");
+  assert.equal(result.ChildComments[0].UpvotedByUsersAggregate.count.toNumber(), 1);
+  assert.equal(result.ChildComments[0].ChildCommentsAggregate.count.toNumber(), 1);
 });
 
 test("paginates replies with limit", async () => {
