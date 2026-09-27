@@ -17,4 +17,5 @@ They are distributed under the MIT license in `neo4j-skills-LICENSE`.
 When updating them, replace each complete directory from a single upstream
 revision, move upstream `version` and `compatibility` frontmatter fields under
 `metadata` for Codex compatibility, omit the installation-only `README.md`
-files, and update the commit recorded above.
+files, retain the local v5 compatibility guardrail in the JavaScript driver
+skill, and update the commit recorded above.
