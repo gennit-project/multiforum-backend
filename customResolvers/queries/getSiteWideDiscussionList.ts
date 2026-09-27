@@ -1,6 +1,10 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { getSiteWideDiscussionsQuery } from "../cypher/cypherQueries.js";
+import {
+  buildSiteWideDiscussionPageQueries,
+  type SiteWideDiscussionSortOption,
+} from "../cypher/buildSiteWideDiscussionPageQueries.js";
 import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionModel } from "../../ogm_types.js";
@@ -29,7 +33,7 @@ type Args = {
   selectedChannels: string[];
   selectedTags: string[];
   showArchived: boolean;
-  hasDownload: boolean;
+  hasDownload: boolean | null;
   loggedInUsername?: string;
   options: {
     offset: string;
@@ -41,11 +45,24 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Discussion, ServerConfig, serverName } = input;
+  const { driver, ServerConfig, serverName } = input;
 
-  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
-    const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, loggedInUsername, options } = args;
-    const { resultsOrder, sort, timeFrame } = options || {};
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    info: GraphQLResolveInfo
+  ) => {
+    const {
+      searchInput = "",
+      selectedChannels = [],
+      selectedTags = [],
+      showArchived,
+      hasDownload,
+      loggedInUsername,
+      options,
+    } = args;
+    const { sort, timeFrame } = options || {};
     const { offset, limit } = normalizePagination({
       offset: options?.offset,
       limit: options?.limit,
@@ -55,142 +72,81 @@ const getResolver = (input: Input) => {
       driver,
       ServerConfig,
     });
-
     const session = driver.session();
-    let titleRegex = `(?i).*${searchInput}.*`;
-    let bodyRegex = `(?i).*${searchInput}.*`;
-    let totalCount = 0;
 
     try {
-      const effectiveSort =
+      const effectiveSort: SiteWideDiscussionSortOption =
         sort === "new" || sort === "top" ? sort : "hot";
+      const selectedTimeFrame =
+        effectiveSort === "top"
+          ? (timeFrameOptions[timeFrame] ?? timeFrameOptions.year).start
+          : null;
       const rankingParams = await getHotRankingQueryParams({
         executor: session,
         profile: "discussion",
         sortOption: effectiveSort,
         serverName,
       });
+      const { countQuery, pageQuery } = buildSiteWideDiscussionPageQueries({
+        hasDownload:
+          typeof hasDownload === "boolean" ? hasDownload : null,
+        hasSearch: searchInput !== "",
+        hasSelectedChannels: selectedChannels.length > 0,
+        hasSelectedTags: selectedTags.length > 0,
+        showArchived,
+        sortOption: effectiveSort,
+      });
+      const queryParams = {
+        searchInput,
+        titleRegex: `(?i).*${searchInput}.*`,
+        bodyRegex: `(?i).*${searchInput}.*`,
+        selectedChannels,
+        selectedTags,
+        showArchived,
+        hasDownload,
+        offset,
+        limit,
+        resultsOrder: options?.resultsOrder,
+        sortOption: effectiveSort,
+        startOfTimeFrame: selectedTimeFrame,
+        loggedInUsername: loggedInUsername || null,
+        mayAccessSensitiveContent,
+        ...rankingParams,
+      };
 
-      switch (sort) {
-        case "new":
-          let newDiscussionResult = await session.run(
-            getSiteWideDiscussionsQuery,
-            {
-              searchInput,
-              titleRegex,
-              bodyRegex,
-              selectedChannels,
-              selectedTags,
-              showArchived,
-              hasDownload,
-              offset,
-              limit,
-              resultsOrder,
-              startOfTimeFrame: null,
-              sortOption: "new",
-              loggedInUsername: loggedInUsername || null,
-              mayAccessSensitiveContent,
-              ...rankingParams,
-            }
-          );
+      // These are read-only queries, but executeWrite intentionally keeps the
+      // transaction on the leader. Switching to executeRead would route to an
+      // Aura reader and could break read-your-own-writes without bookmarks.
+      return await session.executeWrite(async (transaction) => {
+        const countResult = await transaction.run(countQuery, queryParams);
+        const aggregateDiscussionCount =
+          countResult.records[0]?.get("totalCount") ?? 0;
 
-          // For each record, do record.get("discussion") to get the discussions
-          let newRecord = newDiscussionResult.records[0]; // Assuming there's only one result row
-          if (newRecord) {
-            totalCount = newRecord.get("totalCount");
+        const pageResult = await transaction.run(pageQuery, queryParams);
+        const discussionIds = pageResult.records.map(
+          (record: Neo4jRecord) => record.get("discussionId") as string
+        );
+
+        if (discussionIds.length === 0) {
+          return { discussions: [], aggregateDiscussionCount };
+        }
+
+        const discussionsResult = await transaction.run(
+          getSiteWideDiscussionsQuery,
+          {
+            discussionIds,
+            selectedChannels,
+            showArchived,
+            loggedInUsername: loggedInUsername || null,
+            mayAccessSensitiveContent,
           }
-          let discussions = newDiscussionResult.records.map((record: Neo4jRecord) => {
-            return record.get("discussion");
-          });
+        );
+        const discussions = discussionsResult.records.map(
+          (record: Neo4jRecord) => record.get("discussion")
+        );
 
-          return {
-            discussions,
-            aggregateDiscussionCount: totalCount,
-          };
-
-        case "top":
-          // if sort is "top", get the Discussions sorted by the sum of the
-          // weightedVotesCounts of the related DiscussionChannels.
-          // Treat a null weightedVotesCount as 0.
-          let selectedTimeFrame = timeFrameOptions.year.start;
-
-          if (timeFrameOptions[timeFrame]) {
-            selectedTimeFrame = timeFrameOptions[timeFrame].start;
-          }
-
-          let topDiscussionsResult = await session.run(
-            getSiteWideDiscussionsQuery,
-            {
-              searchInput,
-              titleRegex,
-              bodyRegex,
-              selectedChannels,
-              selectedTags,
-              showArchived,
-              hasDownload,
-              offset,
-              limit,
-              resultsOrder,
-              startOfTimeFrame: selectedTimeFrame,
-              sortOption: "top",
-              loggedInUsername: loggedInUsername || null,
-              mayAccessSensitiveContent,
-              ...rankingParams,
-            }
-          );
-
-          // Extract the total count and the discussions from the query result
-          let topRecord = topDiscussionsResult.records[0]; // Assuming there's only one result row
-          if (topRecord) {
-            totalCount = topRecord.get("totalCount");
-          }
-          let topDiscussions = topDiscussionsResult.records.map(
-            (record: Neo4jRecord) => record.get("discussion")
-          );
-
-          return {
-            discussions: topDiscussions,
-            aggregateDiscussionCount: totalCount,
-          };
-
-        default:
-          // By default, and if sort is "hot", get the DiscussionChannels sorted by hot,
-          // which takes into account both weightedVotesCount and createdAt.
-          let hotDiscussionsResult = await session.run(
-            getSiteWideDiscussionsQuery,
-            {
-              searchInput,
-              titleRegex,
-              bodyRegex,
-              selectedChannels,
-              selectedTags,
-              showArchived,
-              hasDownload,
-              offset,
-              limit,
-              resultsOrder,
-              startOfTimeFrame: null,
-              sortOption: "hot",
-              loggedInUsername: loggedInUsername || null,
-              mayAccessSensitiveContent,
-              ...rankingParams,
-            }
-          );
-
-          // Extract the total count and the discussions from the query result
-          let hotRecord = hotDiscussionsResult.records[0]; // Assuming there's only one result row
-          if (hotRecord) {
-            totalCount = hotRecord.get("totalCount");
-          }
-          let hotDiscussions = hotDiscussionsResult.records.map(
-            (record: Neo4jRecord) => record.get("discussion")
-          );
-
-          return {
-            discussions: hotDiscussions,
-            aggregateDiscussionCount: totalCount,
-          };
-      }
+        return { discussions, aggregateDiscussionCount };
+      });
     } catch (error: unknown) {
       logger.error("Error getting discussions:", error);
       const message = error instanceof Error ? error.message : String(error);

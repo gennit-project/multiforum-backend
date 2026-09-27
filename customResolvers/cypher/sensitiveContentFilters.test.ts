@@ -9,6 +9,7 @@ import {
   getModContributionsQuery,
 } from "./cypherQueries.js";
 import { buildDiscussionChannelPageQuery } from "./buildDiscussionChannelPageQuery.js";
+import { buildSiteWideDiscussionPageQueries } from "./buildSiteWideDiscussionPageQueries.js";
 
 const discussionChannelPageQuery = buildDiscussionChannelPageQuery({
   hasDownload: null,
@@ -19,18 +20,28 @@ const discussionChannelPageQuery = buildDiscussionChannelPageQuery({
   showUnanswered: false,
   sortOption: "hot",
 });
+const sitewideDiscussionQueries = buildSiteWideDiscussionPageQueries({
+  hasDownload: null,
+  hasSearch: false,
+  hasSelectedChannels: false,
+  hasSelectedTags: false,
+  showArchived: false,
+  sortOption: "hot",
+});
 
 const occurrences = (source: string, pattern: RegExp) =>
   [...source.matchAll(pattern)].length;
 
-test("site-wide discussion count and result queries filter sensitive records", () => {
-  assert.equal(
-    occurrences(
-      getSiteWideDiscussionsQuery,
-      /\$mayAccessSensitiveContent OR coalesce\(d\.hasSensitiveContent, false\) = false/g
-    ),
-    2
-  );
+test("site-wide discussion count and page queries filter sensitive records", () => {
+  for (const query of Object.values(sitewideDiscussionQueries)) {
+    assert.equal(
+      occurrences(
+        query,
+        /\$mayAccessSensitiveContent OR coalesce\(d\.hasSensitiveContent, false\) = false/g
+      ),
+      1
+    );
+  }
 });
 
 test("channel discussion page selection filters sensitive records once", () => {

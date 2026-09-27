@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  getSiteWideDiscussionsQuery,
   getUserContributionsQuery,
 } from "./cypherQueries.js";
 import { buildDiscussionChannelPageQuery } from "./buildDiscussionChannelPageQuery.js";
+import { buildSiteWideDiscussionPageQueries } from "./buildSiteWideDiscussionPageQueries.js";
 
 const downloadPageQuery = buildDiscussionChannelPageQuery({
   hasDownload: true,
@@ -29,13 +29,18 @@ const downloadListRequirementPattern =
   /d\.hasDownload = true[\s\S]*HAS_DOWNLOADABLE_FILE/;
 const channelDownloadListRequirementPattern =
   /discussion\.hasDownload = true[\s\S]*HAS_DOWNLOADABLE_FILE/;
+const { countQuery: sitewideDownloadCountQuery } =
+  buildSiteWideDiscussionPageQueries({
+    hasDownload: true,
+    hasSearch: false,
+    hasSelectedChannels: false,
+    hasSelectedTags: false,
+    showArchived: false,
+    sortOption: "hot",
+  });
 
 test("sitewide download list query requires an attached downloadable file when hasDownload is true", () => {
-  assert.match(getSiteWideDiscussionsQuery, downloadListRequirementPattern);
-  assert.match(
-    getSiteWideDiscussionsQuery,
-    /hasDownload controls discussion presentation[\s\S]*download list membership/
-  );
+  assert.match(sitewideDownloadCountQuery, downloadListRequirementPattern);
 });
 
 test("channel download list query requires an attached downloadable file when hasDownload is true", () => {

@@ -8,6 +8,7 @@ import {
   getSiteWideDiscussionsQuery,
 } from "./cypherQueries.js";
 import { buildDiscussionChannelPageQuery } from "./buildDiscussionChannelPageQuery.js";
+import { buildSiteWideDiscussionPageQueries } from "./buildSiteWideDiscussionPageQueries.js";
 
 const channelDiscussionPageQuery = buildDiscussionChannelPageQuery({
   hasDownload: null,
@@ -18,9 +19,18 @@ const channelDiscussionPageQuery = buildDiscussionChannelPageQuery({
   showUnanswered: false,
   sortOption: "hot",
 });
+const { pageQuery: sitewideDiscussionPageQuery } =
+  buildSiteWideDiscussionPageQueries({
+    hasDownload: null,
+    hasSearch: false,
+    hasSelectedChannels: false,
+    hasSelectedTags: false,
+    showArchived: false,
+    sortOption: "hot",
+  });
 
 const rankingQueries = {
-  sitewideDiscussions: getSiteWideDiscussionsQuery,
+  sitewideDiscussions: sitewideDiscussionPageQuery,
   channelDiscussions: channelDiscussionPageQuery,
   discussionComments: getCommentsQuery,
   commentReplies: getCommentRepliesQuery,
@@ -51,6 +61,17 @@ test("channel discussions select page IDs before expanding related records", () 
     getDiscussionChannelsQuery,
     /OPTIONAL MATCH \(d\)-\[:HAS_TAG\]->\(tag:Tag\)/
   );
+});
+
+test("sitewide discussions select IDs before hydrating related records", () => {
+  assert.match(sitewideDiscussionPageQuery, /RETURN d\.id AS discussionId/);
+  assert.match(sitewideDiscussionPageQuery, /SKIP.*LIMIT/s);
+  assert.doesNotMatch(sitewideDiscussionPageQuery, /UPVOTED_DISCUSSION|CONTAINS_COMMENT/);
+  assert.match(
+    getSiteWideDiscussionsQuery,
+    /UNWIND range\(0, size\(\$discussionIds\) - 1\)/
+  );
+  assert.match(getSiteWideDiscussionsQuery, /UPVOTED_DISCUSSION/);
 });
 
 test("discussion comments select their page before hydrating related records", () => {
