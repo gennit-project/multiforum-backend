@@ -1,6 +1,7 @@
 # Optional timing-based overrides for the integration CI matrix.
 #
 # Format: <shard> <test-file>
-# Files not listed here keep the deterministic round-robin assignment. Keep this
-# Add only the measured slow files needed to reduce the longest shard.
+# Files not listed here keep the deterministic round-robin assignment. These
+# measured swaps balance the longest pair from the first eight-shard CI runs.
+4 ./tests/integration/downloadScanReviewQueue.test.ts
 8 ./tests/integration/channelPreferenceEnforcement.test.ts
