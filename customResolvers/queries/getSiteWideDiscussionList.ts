@@ -8,6 +8,7 @@ import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import type { ServerConfigModel } from "../../ogm_types.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 type Input = {
   Discussion: DiscussionModel;
@@ -44,7 +45,11 @@ const getResolver = (input: Input) => {
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { searchInput, selectedChannels, selectedTags, showArchived, hasDownload, loggedInUsername, options } = args;
-    const { offset, limit, resultsOrder, sort, timeFrame } = options || {};
+    const { resultsOrder, sort, timeFrame } = options || {};
+    const { offset, limit } = normalizePagination({
+      offset: options?.offset,
+      limit: options?.limit,
+    });
     const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
       context,
       driver,
@@ -191,7 +196,7 @@ const getResolver = (input: Input) => {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch discussions. ${message}`);
     } finally {
-      session.close();
+      await session.close();
     }
   };
 };

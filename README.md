@@ -131,6 +131,7 @@ Run `nvm use` to select the version in `.nvmrc`, enable pnpm once with
 | `pnpm run start` | Start the server |
 | `pnpm test` | Run the unit test suite |
 | `pnpm run test:integration` | Run integration tests against a real Neo4j (Testcontainers) |
+| `pnpm run neo4j:audit` | Read-only check of production schema and graph invariants |
 | `pnpm run logSchema` | Log the GraphQL schema to the console |
 
 See [Environment variables and running the app](./docs/environment-variables.md)

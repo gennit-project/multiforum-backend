@@ -3,9 +3,13 @@ import neo4j from 'neo4j-driver'
 import { createOgmAndModels } from '../customResolvers/resolverDeps.js'
 import { materializeLegacyDownloadPipelines } from '../services/plugin/legacyPipelineMigration.js'
 import type { PluginEdgeData } from '../services/plugin/types.js'
+import {
+  installDefaultNeo4jDatabase,
+  resolveNeo4jDatabase,
+} from '../services/neo4jDatabase.js'
 
 const uri = process.env.NEO4J_URI || 'bolt://localhost:7687'
-const user = process.env.NEO4J_USER || 'neo4j'
+const user = process.env.NEO4J_USERNAME || process.env.NEO4J_USER || 'neo4j'
 const password = process.env.NEO4J_PASSWORD
 
 if (!password) {
@@ -13,7 +17,10 @@ if (!password) {
 }
 
 const run = async () => {
-  const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
+  const driver = installDefaultNeo4jDatabase(
+    neo4j.driver(uri, neo4j.auth.basic(user, password)),
+    resolveNeo4jDatabase()
+  )
   const deps = createOgmAndModels(driver)
   await deps.ogm.init()
 

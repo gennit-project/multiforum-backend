@@ -9,6 +9,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 const eventSelectionSet = `
   {
@@ -50,7 +51,8 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver, Event, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
-    const { eventId, offset, limit, sort } = args;
+    const { eventId, sort } = args;
+    const { offset, limit } = normalizePagination(args);
     context.user = await setUserDataOnContext({
       context,
     });
@@ -84,8 +86,8 @@ const getResolver = (input: Input) => {
 
       const commentsResult = await session.run(getEventCommentsQuery, {
         eventId,
-        offset: parseInt(offset, 10),
-        limit: parseInt(limit, 10),
+        offset,
+        limit,
         sortOption: effectiveSort,
         loggedInUsername,
         ...rankingParams,
@@ -112,7 +114,7 @@ const getResolver = (input: Input) => {
         Comments: []
       }
     } finally {
-      session.close();
+      await session.close();
     }
   };
 };

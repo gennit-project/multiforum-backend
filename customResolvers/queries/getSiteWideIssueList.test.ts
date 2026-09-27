@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLResolveInfo } from "graphql";
-import neo4j, { type Driver, type Integer } from "neo4j-driver";
+import type { Driver } from "neo4j-driver";
 import { getSiteWideIssuesQuery } from "../cypher/cypherQueries.js";
 import type { GraphQLContext } from "../../types/context.js";
 import getSiteWideIssueListResolver from "./getSiteWideIssueList.js";
@@ -84,13 +84,8 @@ test("getSiteWideIssueList passes the default params to the query", async () => 
   assert.equal(driver.runCalls[0].params.sort, "newest");
   assert.equal(driver.runCalls[0].params.isOpen, true);
   assert.deepEqual(driver.runCalls[0].params.selectedChannels, []);
-  assert.equal(neo4j.isInt(driver.runCalls[0].params.offset), true);
-  assert.equal((driver.runCalls[0].params.offset as Integer).toNumber(), 0);
-  assert.equal(neo4j.isInt(driver.runCalls[0].params.limit), true);
-  assert.equal(
-    (driver.runCalls[0].params.limit as Integer).toNumber(),
-    1_000_000_000
-  );
+  assert.equal(driver.runCalls[0].params.offset, 0);
+  assert.equal(driver.runCalls[0].params.limit, 25);
 });
 
 test("getSiteWideIssueList normalizes date filters to full-day UTC bounds", async () => {
@@ -150,8 +145,8 @@ test("getSiteWideIssueList passes sort options through", async () => {
   );
 
   assert.equal(driver.runCalls[0].params.sort, "mostReports");
-  assert.equal((driver.runCalls[0].params.offset as Integer).toNumber(), 3);
-  assert.equal((driver.runCalls[0].params.limit as Integer).toNumber(), 25);
+  assert.equal(driver.runCalls[0].params.offset, 3);
+  assert.equal(driver.runCalls[0].params.limit, 25);
 });
 
 test("getSiteWideIssueList falls back to newest for unknown sort", async () => {

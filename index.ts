@@ -31,6 +31,7 @@ import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorM
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
 import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
 import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
+import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
 import dotenv from "dotenv";
@@ -58,7 +59,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 
-import neo4j, { Driver } from "neo4j-driver";
+import neo4j, { Driver, type Session } from "neo4j-driver";
 import { randomUUID } from "node:crypto";
 import { logger, runWithContext, enrichContext } from "./logger.js";
 import {
@@ -68,15 +69,20 @@ import {
   startEventLoopMonitor,
 } from "./services/requestTiming.js";
 import { neo4jDriverConfig } from "./services/neo4jDriverConfig.js";
+import {
+  installDefaultNeo4jDatabase,
+  resolveNeo4jDatabase,
+} from "./services/neo4jDatabase.js";
+import { paginationLimitPlugin } from "./services/graphqlPaginationLimit.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let session: Session | undefined;
     try {
       logger.info(`🔌 Attempting to connect to Neo4j (Attempt ${attempt}/${maxRetries})...`);
-      const session = driver.session();
+      session = driver.session();
       await session.run("RETURN 1");
       logger.info("✅ Connected to Neo4j!");
-      session.close();
       return; // Exit loop on successful connection
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -100,6 +106,8 @@ async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDel
       }
       logger.info(`⏳ Retrying in ${retryDelay / 1000} seconds...`);
       await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    } finally {
+      await session?.close();
     }
   }
 }
@@ -114,18 +122,21 @@ if (process.env.GOOGLE_CREDENTIALS_BASE64) {
 const uri = process.env.NEO4J_URI || "bolt://localhost:7687";
 const password = process.env.NEO4J_PASSWORD;
 const port = process.env.PORT || 4000;
-const user = process.env.NEO4J_USER || "neo4j";
+const user = process.env.NEO4J_USERNAME || process.env.NEO4J_USER || "neo4j";
+const database = resolveNeo4jDatabase();
 
-// Timed so each request can report how long it spent in Neo4j.
 // Timed so each request can report how long it spent in Neo4j, and wrapped
 // so every write transaction keeps stored age-gate flags correct before it
 // commits (services/ageGate/reconcile.ts).
 const driver = installAgeGateReconcile(
   instrumentDriver(
-    neo4j.driver(
-      uri,
-      neo4j.auth.basic(user, password as string),
-      neo4jDriverConfig
+    installDefaultNeo4jDatabase(
+      neo4j.driver(
+        uri,
+        neo4j.auth.basic(user, password as string),
+        neo4jDriverConfig
+      ),
+      database
     )
   ),
   getAgeGateStatements(typesDefinitions)
@@ -156,41 +167,6 @@ const neoSchema = new Neo4jGraphQL({
   features,
 });
 
-const ensureUniqueDiscussionChannelRelationship = `
-CREATE CONSTRAINT discussion_channel_unique IF NOT EXISTS FOR (dc:DiscussionChannel)
-REQUIRE (dc.discussionId, dc.channelUniqueName) IS NODE KEY
-`;
-
-const ensureUniqueEventChannelRelationship = `
-CREATE CONSTRAINT event_channel_unique IF NOT EXISTS FOR (ec:EventChannel)
-REQUIRE (ec.eventId, ec.channelUniqueName) IS NODE KEY
-`;
-
-const ensureUniqueIssueNumberPerChannel = `
-CREATE CONSTRAINT issue_channel_issueNumber_unique IF NOT EXISTS FOR (i:Issue)
-REQUIRE (i.channelUniqueName, i.issueNumber) IS NODE KEY
-`;
-
-const ensureUniqueIssueDiscussionPerChannel = `
-CREATE CONSTRAINT issue_channel_discussion_unique IF NOT EXISTS FOR (i:Issue)
-REQUIRE (i.channelUniqueName, i.relatedDiscussionId) IS UNIQUE
-`;
-
-const ensureUniqueIssueEventPerChannel = `
-CREATE CONSTRAINT issue_channel_event_unique IF NOT EXISTS FOR (i:Issue)
-REQUIRE (i.channelUniqueName, i.relatedEventId) IS UNIQUE
-`;
-
-const ensureUniqueIssueCommentPerChannel = `
-CREATE CONSTRAINT issue_channel_comment_unique IF NOT EXISTS FOR (i:Issue)
-REQUIRE (i.channelUniqueName, i.relatedCommentId) IS UNIQUE
-`;
-
-const ensureUniqueIssueWikiRevisionPerChannel = `
-CREATE CONSTRAINT issue_channel_wiki_revision_unique IF NOT EXISTS FOR (i:Issue)
-REQUIRE (i.channelUniqueName, i.relatedWikiPageId, i.relatedWikiRevisionId) IS UNIQUE
-`;
-
 async function initializeServer() {
   try {
     logger.info("🚀 Initializing server...");
@@ -202,22 +178,20 @@ async function initializeServer() {
     await connectToNeo4jWithRetry(driver);
 
     const session = driver.session();
-    const result = await session.run("CALL dbms.components()");
-    const edition = result.records[0].get("edition");
-    logger.info(`✅ Connected to Neo4j Edition: ${edition}`);
-    session.close();
+    let edition: string;
+    try {
+      const result = await session.run("CALL dbms.components()");
+      edition = result.records[0].get("edition");
+      logger.info(`✅ Connected to Neo4j Edition: ${edition}`);
+    } finally {
+      await session.close();
+    }
 
     if (edition === "enterprise") {
       // These constraints are needed for data integrity, but can be skipped
       // for the purpose of running Cypress tests against a local backend and
       // a local instance of neo4j community edition.
-      await driver.session().run(ensureUniqueDiscussionChannelRelationship);
-      await driver.session().run(ensureUniqueEventChannelRelationship);
-      await driver.session().run(ensureUniqueIssueNumberPerChannel);
-      await driver.session().run(ensureUniqueIssueDiscussionPerChannel);
-      await driver.session().run(ensureUniqueIssueEventPerChannel);
-      await driver.session().run(ensureUniqueIssueCommentPerChannel);
-      await driver.session().run(ensureUniqueIssueWikiRevisionPerChannel);
+      await ensureCoreSchemaConstraints(driver);
     }
 
     const ogmSchema = await neoSchema.getSchema();
@@ -292,6 +266,7 @@ async function initializeServer() {
         errorHandlingPlugin as ApolloServerPlugin,
         // Per-operation latency breakdown (log line + Server-Timing header).
         requestTimingPlugin,
+        paginationLimitPlugin,
       ],
     });
 

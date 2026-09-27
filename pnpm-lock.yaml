@@ -42,11 +42,11 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(graphql@16.14.2)
       '@neo4j/graphql':
-        specifier: ^5.12.11
-        version: 5.12.11(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
+        specifier: ^5.12.15
+        version: 5.12.15(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
       '@neo4j/graphql-ogm':
-        specifier: ^5.9.1
-        version: 5.11.4(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
+        specifier: ^5.12.15
+        version: 5.12.15(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
       '@sendgrid/mail':
         specifier: ^8.1.4
         version: 8.1.6
@@ -708,18 +708,6 @@ packages:
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@graphql-tools/merge@9.1.10':
-    resolution: {integrity: sha512-CsUCcPXv/HMWpPZ/xoOioSWFuAaAsGGPIdqQbjDv9X1sHGs0muQRW5FK7vUBN4OH/D7aPqpiHvKmRsrHz+ScuQ==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-
-  '@graphql-tools/merge@9.1.9':
-    resolution: {integrity: sha512-iHUWNjRHeQRYdgIMIuChThOwoKzA9vrzYeslgfBo5eUYEyHGZCoDPjAavssoYXLwstYt1dZj2J22jSzc2DrN0Q==}
-    engines: {node: '>=16.0.0'}
-    peerDependencies:
-      graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-
   '@graphql-tools/merge@9.2.2':
     resolution: {integrity: sha512-DSLLAztOIQId7QE3m8Ehk5lV+0pjxNSSRDHPzlYQ9E4KJ9AoUMBprC4C+eX3v4srh05S2ujm5/veqAr5yEWFSQ==}
     engines: {node: '>=16.0.0'}
@@ -1174,15 +1162,15 @@ packages:
     resolution: {integrity: sha512-rBpMSoSPNVq2S8ayfTZcd1TNBwE8GWdFYoy8Sbk4xtB4X6L6y2y9/CQ/L7dj5mtbNBK1FmUlrNWub/1FuakeTA==}
     engines: {node: '>=16.0.0'}
 
-  '@neo4j/graphql-ogm@5.11.4':
-    resolution: {integrity: sha512-yzwgTkk7BaFvOPqGTGlk8btd8zXX83ccMcb/fCyuhIqetYXsUlmQw7lydAM+ttX9E9qB7Vo2l5iQ39fBbAmAzg==}
+  '@neo4j/graphql-ogm@5.12.15':
+    resolution: {integrity: sha512-xdJsSlovBny0Ldw/8eUWhaB9SuDtTW4Z13uUvdzZg17mcEcoPJAnk6LTB+WgH6/MXIiwzVK0gstZupN+c3m/TA==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^16.0.0
       neo4j-driver: ^5.8.0
 
-  '@neo4j/graphql@5.12.11':
-    resolution: {integrity: sha512-5BpxfZDMQIDupFfEZR9SQezIFq9bqTAFYJmqd2Nwg22dSFZpJZPkLpxO/0TLMgs91ZFsHWhByOvZfzQJW22KCA==}
+  '@neo4j/graphql@5.12.15':
+    resolution: {integrity: sha512-gAU2vkC1oN13NrTpXNpoJ0yyDmJxCRUahHdpyLY8iaT48BvuTYa6jYRP+PJXt98CreB7qoSkoWvctngTrFZ1iw==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^16.0.0
@@ -4876,18 +4864,6 @@ snapshots:
       graphql: 16.14.2
       tslib: 2.8.1
 
-  '@graphql-tools/merge@9.1.10(graphql@16.14.2)':
-    dependencies:
-      '@graphql-tools/utils': 11.2.2(graphql@16.14.2)
-      graphql: 16.14.2
-      tslib: 2.8.1
-
-  '@graphql-tools/merge@9.1.9(graphql@16.14.2)':
-    dependencies:
-      '@graphql-tools/utils': 11.2.2(graphql@16.14.2)
-      graphql: 16.14.2
-      tslib: 2.8.1
-
   '@graphql-tools/merge@9.2.2(graphql@16.14.2)':
     dependencies:
       '@graphql-tools/utils': 11.2.2(graphql@16.14.2)
@@ -5312,13 +5288,13 @@ snapshots:
 
   '@neo4j/cypher-builder@2.12.0': {}
 
-  '@neo4j/graphql-ogm@5.11.4(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)':
+  '@neo4j/graphql-ogm@5.12.15(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)':
     dependencies:
       '@graphql-codegen/core': 4.0.2(graphql@16.14.2)
       '@graphql-codegen/plugin-helpers': 5.1.1(graphql@16.14.2)
       '@graphql-codegen/typescript': 4.1.6(graphql@16.14.2)
-      '@graphql-tools/merge': 9.1.9(graphql@16.14.2)
-      '@neo4j/graphql': 5.12.11(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
+      '@graphql-tools/merge': 9.2.3(graphql@16.14.2)
+      '@neo4j/graphql': 5.12.15(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
       graphql: 16.14.2
       neo4j-driver: 5.28.3
       prettier: 2.8.8
@@ -5327,11 +5303,11 @@ snapshots:
       - express
       - supports-color
 
-  '@neo4j/graphql@5.12.11(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)':
+  '@neo4j/graphql@5.12.15(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)':
     dependencies:
       '@apollo/subgraph': 2.14.2(graphql@16.14.2)
       '@as-integrations/express4': 1.1.2(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)
-      '@graphql-tools/merge': 9.1.10(graphql@16.14.2)
+      '@graphql-tools/merge': 9.2.3(graphql@16.14.2)
       '@graphql-tools/resolvers-composition': 7.0.32(graphql@16.14.2)
       '@graphql-tools/schema': 10.1.0(graphql@16.14.2)
       '@graphql-tools/utils': 11.0.1(graphql@16.14.2)

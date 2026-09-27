@@ -162,8 +162,8 @@ test("applies default limit and offset when not provided", async () => {
   const driver = createMockDriver();
   await call(driver, {});
 
-  assert.equal(driver.runCalls[0].params.limit, "25");
-  assert.equal(driver.runCalls[0].params.offset, "0");
+  assert.equal(driver.runCalls[0].params.limit, 25);
+  assert.equal(driver.runCalls[0].params.offset, 0);
 });
 
 test("passes through provided pagination, tags, and countDownloads", async () => {
@@ -176,8 +176,8 @@ test("passes through provided pagination, tags, and countDownloads", async () =>
   });
 
   const { params } = driver.runCalls[0];
-  assert.equal(params.limit, "5");
-  assert.equal(params.offset, "10");
+  assert.equal(params.limit, 5);
+  assert.equal(params.offset, 10);
   assert.deepEqual(params.tags, ["pets", "vehicles"]);
   assert.equal(params.countDownloads, true);
 });

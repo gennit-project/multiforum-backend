@@ -6,6 +6,7 @@ import {
   CHANNEL_FULLTEXT_INDEX,
   buildChannelFulltextQuery,
 } from "../../services/channelFulltext.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 type Input = {
   driver: Driver;
@@ -19,15 +20,14 @@ type Args = {
   countDownloads?: boolean | null;
 };
 
-const DEFAULT_LIMIT = "25";
-const DEFAULT_OFFSET = "0";
-
 const getSortedChannelsResolver = (input: Input) => {
   const { driver } = input;
 
   return async (_parent: unknown, args: Args, context?: GraphQLContext) => {
-    const limit = args.limit || DEFAULT_LIMIT;
-    const offset = args.offset || DEFAULT_OFFSET;
+    const { limit, offset } = normalizePagination({
+      limit: args.limit,
+      offset: args.offset,
+    });
     const tags = args.tags || [];
     const searchInput = args.searchInput || "";
     const countDownloads = args.countDownloads;

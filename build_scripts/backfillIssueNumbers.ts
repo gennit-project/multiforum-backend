@@ -1,14 +1,21 @@
 import neo4j from "neo4j-driver";
+import {
+  installDefaultNeo4jDatabase,
+  resolveNeo4jDatabase,
+} from "../services/neo4jDatabase.js";
 
 const uri = process.env.NEO4J_URI || "bolt://localhost:7687";
-const user = process.env.NEO4J_USER || "neo4j";
+const user = process.env.NEO4J_USERNAME || process.env.NEO4J_USER || "neo4j";
 const password = process.env.NEO4J_PASSWORD;
 
 if (!password) {
   throw new Error("NEO4J_PASSWORD is required to run the backfill script");
 }
 
-const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
+const driver = installDefaultNeo4jDatabase(
+  neo4j.driver(uri, neo4j.auth.basic(user, password)),
+  resolveNeo4jDatabase()
+);
 
 const backfillIssueNumbersForChannel = async (channelUniqueName: string) => {
   const session = driver.session();
