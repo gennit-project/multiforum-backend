@@ -2,5 +2,5 @@
 #
 # Format: <shard> <test-file>
 # Files not listed here keep the deterministic round-robin assignment. Keep this
-# list empty until repeated eight-shard runs show a stable imbalance; then assign
-# only the consistently slow files needed to reduce the longest shard.
+# Add only the measured slow files needed to reduce the longest shard.
+8 ./tests/integration/channelPreferenceEnforcement.test.ts
