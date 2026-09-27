@@ -12,6 +12,7 @@ import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 const discussionChannelSelectionSet = `
 {
@@ -95,8 +96,9 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver, DiscussionChannel, ServerConfig, serverName } = input
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
-    const { channelUniqueName, discussionId, modName, offset, limit, sort } =
+    const { channelUniqueName, discussionId, modName, sort } =
       args
+    const { offset, limit } = normalizePagination(args)
     context.user = await setUserDataOnContext({
       context,
     });
@@ -164,8 +166,8 @@ const getResolver = (input: Input) => {
         const queryResult = await session.run(getNewCommentsQuery, {
           discussionChannelId,
           modName,
-          offset: parseInt(offset, 10),
-          limit: parseInt(limit, 10),
+          offset,
+          limit,
           loggedInUsername
         })
 
@@ -178,8 +180,8 @@ const getResolver = (input: Input) => {
         const queryResult = await session.run(getCommentsQuery, {
           discussionChannelId,
           modName,
-          offset: parseInt(offset, 10),
-          limit: parseInt(limit, 10),
+          offset,
+          limit,
           sortOption: 'top',
           loggedInUsername,
           ...rankingParams,
@@ -194,8 +196,8 @@ const getResolver = (input: Input) => {
         const queryResult = await session.run(getCommentsQuery, {
           discussionChannelId,
           modName,
-          offset: parseInt(offset, 10),
-          limit: parseInt(limit, 10),
+          offset,
+          limit,
           sortOption: 'hot',
           loggedInUsername,
           ...rankingParams,
@@ -221,7 +223,7 @@ const getResolver = (input: Input) => {
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(`Failed to fetch comment section. ${message}`)
     } finally {
-      session.close()
+      await session.close()
     }
   }
 }

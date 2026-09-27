@@ -2,12 +2,16 @@ import { Storage } from "@google-cloud/storage";
 import dotenv from "dotenv";
 import neo4j from "neo4j-driver";
 import { buildStorageUrl } from "../services/uploadStorageMetadata.js";
+import {
+  installDefaultNeo4jDatabase,
+  resolveNeo4jDatabase,
+} from "../services/neo4jDatabase.js";
 
 dotenv.config();
 
 const apply = process.argv.includes("--apply");
 const uri = process.env.NEO4J_URI || "bolt://localhost:7687";
-const user = process.env.NEO4J_USER || "neo4j";
+const user = process.env.NEO4J_USERNAME || process.env.NEO4J_USER || "neo4j";
 const password = process.env.NEO4J_PASSWORD;
 const targetBucket = process.env.GCS_PRIVATE_DOWNLOAD_BUCKET_NAME;
 
@@ -24,7 +28,10 @@ const credentials = process.env.GOOGLE_CREDENTIALS_BASE64
     )
   : undefined;
 const storage = new Storage(credentials ? { credentials } : undefined);
-const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
+const driver = installDefaultNeo4jDatabase(
+  neo4j.driver(uri, neo4j.auth.basic(user, password)),
+  resolveNeo4jDatabase()
+);
 
 type DownloadRecord = {
   id: string;

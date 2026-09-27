@@ -9,6 +9,7 @@ import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 type Input = {
   Comment: CommentModel;
@@ -28,7 +29,8 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver, Comment, ServerConfig, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
-    const { commentId, modName, offset, limit, sort } = args;
+    const { commentId, modName, sort } = args;
+    const { offset, limit } = normalizePagination(args);
     context.user = await setUserDataOnContext({
       context,
     });
@@ -63,8 +65,8 @@ const getResolver = (input: Input) => {
       const commentRepliesResult = await session.run(getCommentRepliesQuery, {
         commentId,
         modName,
-        offset: parseInt(offset, 10),
-        limit: parseInt(limit, 10),
+        offset,
+        limit,
         sortOption: effectiveSort,
         loggedInUsername,
         ...rankingParams,
@@ -109,7 +111,7 @@ const getResolver = (input: Input) => {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch comment section. ${message}`);
     } finally {
-      session.close();
+      await session.close();
     }
   };
 };

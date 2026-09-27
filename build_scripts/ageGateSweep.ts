@@ -23,6 +23,10 @@ import neo4j from "neo4j-driver";
 import typeDefinitions from "../typeDefs.js";
 import { getAgeGateStatements } from "../services/ageGate/definitions.js";
 import { sweepAgeGate } from "../services/ageGate/sweep.js";
+import {
+  installDefaultNeo4jDatabase,
+  resolveNeo4jDatabase,
+} from "../services/neo4jDatabase.js";
 
 dotenv.config();
 
@@ -35,7 +39,10 @@ if (!password) {
   throw new Error("NEO4J_PASSWORD is required to sweep age-gate flags");
 }
 
-const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
+const driver = installDefaultNeo4jDatabase(
+  neo4j.driver(uri, neo4j.auth.basic(user, password)),
+  resolveNeo4jDatabase()
+);
 
 try {
   const results = await sweepAgeGate({

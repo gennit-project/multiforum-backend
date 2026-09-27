@@ -122,8 +122,14 @@ test/E2E environments the seeded admin test user also acts as root.
 | Variable | Required | Description |
 | --- | --- | --- |
 | `NEO4J_URI` | Yes | Bolt connection URI for the Neo4j database, e.g. `neo4j+s://<id>.databases.neo4j.io` or `bolt://127.0.0.1:7687`. |
-| `NEO4J_USER` | Yes | Neo4j username (typically `neo4j`). |
+| `NEO4J_USERNAME` | Yes | Neo4j username (typically `neo4j`). `NEO4J_USER` remains supported as a legacy alias. |
 | `NEO4J_PASSWORD` | Yes | Neo4j password. |
+| `NEO4J_DATABASE` | No | Explicit database name used for every session. Defaults to `neo4j`; setting it avoids per-session home-database discovery and supports non-default database names. |
+
+Run `pnpm run neo4j:audit` with these variables configured to print a read-only
+JSON report of required constraints, online indexes, and core graph-integrity
+invariants. The command exits non-zero when it finds a problem, making it
+suitable for a deployment check. It never repairs or deletes data.
 
 ## Email
 

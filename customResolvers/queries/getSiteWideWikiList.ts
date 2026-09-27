@@ -1,6 +1,7 @@
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { getSiteWideWikiPagesQuery } from "../cypher/cypherQueries.js";
 import { logger } from "../../logger.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 type WikiPageListItem = {
   id?: string | null;
@@ -39,8 +40,10 @@ const getResolver = (input: Input) => {
       selectedChannels = [],
       options,
     } = args;
-    const offset = options?.offset ?? 0;
-    const limit = options?.limit ?? 25;
+    const { offset, limit } = normalizePagination({
+      offset: options?.offset,
+      limit: options?.limit,
+    });
     const titleRegex = `(?i).*${searchInput}.*`;
     const bodyRegex = `(?i).*${searchInput}.*`;
 
@@ -77,7 +80,7 @@ const getResolver = (input: Input) => {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch wiki pages. ${message}`);
     } finally {
-      session.close();
+      await session.close();
     }
   };
 };

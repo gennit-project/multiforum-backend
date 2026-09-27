@@ -13,6 +13,7 @@ import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import type { ServerConfigModel } from "../../ogm_types.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 enum timeFrameOptionKeys {
   year = "year",
@@ -53,7 +54,11 @@ const getResolver = (input: Input) => {
   const { driver, ServerConfig, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, options, selectedTags, searchInput, showArchived, showUnanswered, hasDownload, labelFilters } = args;
-    const { offset, limit, sort, timeFrame } = options || {};
+    const { sort, timeFrame } = options || {};
+    const { offset, limit } = normalizePagination({
+      offset: options?.offset,
+      limit: options?.limit,
+    });
     // Set loggedInUsername to null explicitly if not present
     context.user = await setUserDataOnContext({
       context,
@@ -98,8 +103,8 @@ const getResolver = (input: Input) => {
       });
       const pageQueryParams: Record<string, unknown> = {
         channelUniqueName,
-        offset: parseInt(offset, 10),
-        limit: parseInt(limit, 10),
+        offset,
+        limit,
         mayAccessSensitiveContent,
       };
       if (searchValue !== "") {
@@ -164,7 +169,7 @@ const getResolver = (input: Input) => {
         `Failed to fetch discussionChannels in channel. ${message}`
       );
     } finally {
-      session.close();
+      await session.close();
     }
   };
 };

@@ -319,8 +319,8 @@ test("getSiteWideDiscussionList passes offset and limit from options", async () 
     mockInfo
   );
 
-  assert.equal(driver.runCalls[0].params.offset, "50");
-  assert.equal(driver.runCalls[0].params.limit, "25");
+  assert.equal(driver.runCalls[0].params.offset, 50);
+  assert.equal(driver.runCalls[0].params.limit, 25);
 });
 
 test("getSiteWideDiscussionList passes resultsOrder from options", async () => {
@@ -491,8 +491,8 @@ test("getSiteWideDiscussionList applies multiple filters together", async () => 
   assert.equal(params.showArchived, true);
   assert.equal(params.hasDownload, true);
   assert.equal(params.loggedInUsername, "alice");
-  assert.equal(params.offset, "10");
-  assert.equal(params.limit, "20");
+  assert.equal(params.offset, 10);
+  assert.equal(params.limit, 20);
   assert.equal(params.resultsOrder, "desc");
   assert.equal(params.sortOption, "top");
   assert.ok(params.startOfTimeFrame !== null);

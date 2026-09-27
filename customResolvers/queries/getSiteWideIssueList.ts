@@ -7,6 +7,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import type { ServerConfigModel } from "../../ogm_types.js";
+import { normalizePagination } from "../../services/pagination.js";
 
 type Input = {
   driver: Driver;
@@ -31,7 +32,6 @@ type Args = {
 };
 
 const VALID_SORTS = new Set(["newest", "oldest", "mostReports"]);
-const DEFAULT_LIMIT = 1_000_000_000;
 
 const sanitize = (value: unknown): unknown => {
   if (neo4j.isInt(value)) return value.toNumber();
@@ -56,16 +56,6 @@ const normalizeDateEnd = (value: string | null | undefined) => {
   return parsed.isValid ? parsed.endOf("day").toISO() : null;
 };
 
-const normalizePaginationValue = (
-  value: number | null | undefined,
-  fallback: number
-) => {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return neo4j.int(fallback);
-  }
-  return neo4j.int(Math.max(0, Math.trunc(value)));
-};
-
 const getResolver = (input: Input) => {
   const { driver, ServerConfig } = input;
 
@@ -79,8 +69,10 @@ const getResolver = (input: Input) => {
     const selectedChannels = args.selectedChannels ?? [];
     const showOnlyServerRuleViolations =
       args.showOnlyServerRuleViolations ?? true;
-    const offset = normalizePaginationValue(args.options?.offset, 0);
-    const limit = normalizePaginationValue(args.options?.limit, DEFAULT_LIMIT);
+    const { offset, limit } = normalizePagination({
+      offset: args.options?.offset,
+      limit: args.options?.limit,
+    });
     const sort = VALID_SORTS.has(args.options?.sort || "")
       ? args.options?.sort || "newest"
       : "newest";
@@ -162,7 +154,7 @@ const getResolver = (input: Input) => {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to fetch site wide issues. ${message}`);
     } finally {
-      session.close();
+      await session.close();
     }
   };
 };
