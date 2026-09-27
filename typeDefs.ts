@@ -1342,6 +1342,9 @@ const typeDefinitions = gql`
     hasSensitiveContent: Boolean
     hasSpoiler: Boolean
     albumId: ID
+    # Object name returned by createSignedStorageURL, so the resolver can
+    # attach the upload's audit metadata to the new Image.
+    storageObjectName: String
   }
 
   type Mutation {
