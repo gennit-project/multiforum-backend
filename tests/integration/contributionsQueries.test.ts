@@ -61,6 +61,36 @@ test("getUserContributions returns nothing for a user with no activity", async (
   assert.equal(total, 0, "a user with no authored content has no contributions");
 });
 
+test("getUserContributions counts a cross-posted discussion once", async () => {
+  await run(
+    `CREATE (alice:User { username: 'alice' })
+     CREATE (cats:Channel { uniqueName: 'cats' })
+     CREATE (dogs:Channel { uniqueName: 'dogs' })
+     CREATE (discussion:Discussion { id: 'cross-post', title: 'Hello', createdAt: datetime(), hasDownload: false })
+     CREATE (catsPost:DiscussionChannel { id: 'cats-post', discussionId: 'cross-post', channelUniqueName: 'cats' })
+     CREATE (dogsPost:DiscussionChannel { id: 'dogs-post', discussionId: 'cross-post', channelUniqueName: 'dogs' })
+     CREATE (alice)-[:POSTED_DISCUSSION]->(discussion)
+     CREATE (catsPost)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (catsPost)-[:POSTED_IN_CHANNEL]->(cats)
+     CREATE (dogsPost)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (dogsPost)-[:POSTED_IN_CHANNEL]->(dogs)`
+  );
+
+  const result = await env.resolvers.Query.getUserContributions(null, {
+    username: "alice",
+  });
+  const discussions = result.flatMap((day: any) =>
+    day.activities.flatMap((activity: any) => activity.Discussions)
+  );
+
+  assert.equal(
+    result.reduce((sum: number, day: any) => sum + Number(day.count), 0),
+    1
+  );
+  assert.equal(discussions.length, 1);
+  assert.equal(discussions[0].DiscussionChannels.length, 2);
+});
+
 test("getUserWikiEditsCount counts current and historical wiki edits only", async () => {
   await run(
     `CREATE (alice:User { username: 'alice' })
@@ -150,6 +180,37 @@ test("getModContributions throws when the moderation profile does not exist", as
     env.resolvers.Query.getModContributions(null, { displayName: "Nobody" }),
     /not found|Failed to fetch/i
   );
+});
+
+test("getModContributions counts an action once when related content is cross-posted", async () => {
+  await run(
+    `CREATE (mod:ModerationProfile { displayName: 'Mod One' })
+     CREATE (action:ModerationAction { id: 'action-1', actionType: 'archive', actionDescription: 'Archived', createdAt: datetime() })
+     CREATE (issue:Issue { id: 'issue-1', relatedDiscussionId: 'discussion-1' })
+     CREATE (discussion:Discussion { id: 'discussion-1', title: 'Cross-posted', createdAt: datetime() })
+     CREATE (cats:Channel { uniqueName: 'cats' })
+     CREATE (dogs:Channel { uniqueName: 'dogs' })
+     CREATE (catsPost:DiscussionChannel { id: 'cats-post', discussionId: 'discussion-1', channelUniqueName: 'cats' })
+     CREATE (dogsPost:DiscussionChannel { id: 'dogs-post', discussionId: 'discussion-1', channelUniqueName: 'dogs' })
+     CREATE (mod)-[:PERFORMED_MODERATION_ACTION]->(action)
+     CREATE (issue)-[:ACTIVITY_ON_ISSUE]->(action)
+     CREATE (catsPost)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (catsPost)-[:POSTED_IN_CHANNEL]->(cats)
+     CREATE (dogsPost)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (dogsPost)-[:POSTED_IN_CHANNEL]->(dogs)`
+  );
+
+  const result = await env.resolvers.Query.getModContributions(null, {
+    displayName: "Mod One",
+  });
+  const activities = result.flatMap((day: any) => day.activities);
+
+  assert.equal(
+    result.reduce((sum: number, day: any) => sum + Number(day.count), 0),
+    1
+  );
+  assert.equal(activities.length, 1);
+  assert.equal(activities[0].RelatedDiscussion.DiscussionChannels.length, 2);
 });
 
 // --- getChannelContributions ---
