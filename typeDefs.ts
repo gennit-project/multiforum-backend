@@ -2862,7 +2862,7 @@ const typeDefinitions = gql`
   Whether a discussion is behind the sensitive-content age gate for this
   viewer. Carries no content fields.
   """
-  type AgeGateCheck {
+  type AgeGateCheck @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
     requiresAgeCheck: Boolean!
     status: AgeGateCheckStatus!
     minimumAge: Int
