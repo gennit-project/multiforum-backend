@@ -1,7 +1,6 @@
-# Timing-based overrides for the four-shard CI matrix.
+# Optional timing-based overrides for the integration CI matrix.
 #
 # Format: <shard> <test-file>
-# Files not listed here keep the deterministic round-robin assignment. CI runs
-# 30782915524, 30789127659, 30790103563, 30790926765, and 30791666071 showed
-# enough runner variance that no measured override was consistently faster than
-# round-robin. Keep this list empty unless repeated runs show a stable imbalance.
+# Files not listed here keep the deterministic round-robin assignment. Keep this
+# list empty until repeated eight-shard runs show a stable imbalance; then assign
+# only the consistently slow files needed to reduce the longest shard.

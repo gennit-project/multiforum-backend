@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: tests-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   # Detect whether anything other than documentation changed. We do NOT use a
   # workflow-level `paths-ignore`, because `unit-tests` is a REQUIRED status
@@ -112,17 +116,16 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         run: pnpm run coverage:startup-provisioning
 
-      # Coverage is NOT uploaded to Codecov here. Each test job saves its RAW c8
-      # coverage (coverage/tmp/*.json) as an artifact; the `coverage-report` job
-      # runs a single `c8 report` over all of them, so every file is counted once
-      # — reproducing the local `coverage:merged` number. (Merging the finished
-      # lcovs instead let all:true's per-run line-count differences inflate the
-      # denominator; merging the raw data avoids that.)
-      - name: Save unit coverage data
+      # The unit report is the one authoritative all:true coverage denominator.
+      # Integration shards report only files they execute, and coverage-report
+      # unions their hits into this complete report. That preserves the local
+      # coverage denominator without regenerating LCOV from all raw V8 data in a
+      # separate job.
+      - name: Save unit coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: cov-v8-unit
-          path: coverage/tmp
+          name: cov-lcov-unit
+          path: coverage/lcov.info
           if-no-files-found: error
           retention-days: 1
 
@@ -152,13 +155,14 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
-    # The integration suite is the CI bottleneck (serial, real Neo4j). Split it
-    # into parallel shards — each matrix job runs ~1/N of the files against its
-    # own Testcontainers Neo4j — so wall-clock is roughly the suite divided by N.
+    # The integration suite is the CI bottleneck (serial, real Neo4j). Eight
+    # parallel shards keep its critical path below the ten-minute CI budget.
+    # Each matrix job runs ~1/N of the files against its own Testcontainers
+    # Neo4j, so wall-clock is roughly the suite divided by N.
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -182,28 +186,27 @@ jobs:
       # Testcontainers manages the Neo4j container itself via the Docker daemon
       # available on GitHub-hosted Ubuntu runners. Run under c8 so the resolver
       # coverage these tests provide is reported too.
-      - name: Run integration shard ${{ matrix.shard }}/4 against live Neo4j (with coverage)
+      - name: Run integration shard ${{ matrix.shard }}/8 against live Neo4j (with coverage)
         run: pnpm run test:integration:shard
         env:
           SHARD: ${{ matrix.shard }}
-          SHARD_TOTAL: 4
+          SHARD_TOTAL: 8
 
-      # Save this shard's RAW c8 coverage; coverage-report runs one c8 report over
-      # every shard's data plus the unit data (see that job).
-      - name: Save integration shard ${{ matrix.shard }} coverage data
+      # Each shard reports only the files it executes. coverage-report unions
+      # those hits into the unit suite's authoritative all:true report.
+      - name: Save integration shard ${{ matrix.shard }} coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: cov-v8-integration-${{ matrix.shard }}
-          path: coverage/tmp
+          name: cov-lcov-integration-${{ matrix.shard }}
+          path: coverage/lcov.info
           if-no-files-found: error
           retention-days: 1
 
-  # Combine every test job's RAW coverage into ONE report and upload it to
-  # Codecov. `c8 report` over all the shards' + unit's v8 data counts each file
-  # exactly once, reproducing the local `coverage:merged` number (a line covered
-  # by ANY job counts as covered). Runs whenever the unit job succeeded —
-  # including docs-only PRs (integration skipped → only the unit data) — so the
-  # required Codecov status still posts.
+  # Union the complete unit LCOV report with the hit-only integration reports and
+  # upload the result to Codecov. A line covered by ANY job counts as covered,
+  # while the unit report's all:true file list supplies one stable denominator.
+  # Runs whenever the unit job succeeded — including docs-only PRs (integration
+  # skipped → only the unit data) — so the required Codecov status still posts.
   #
   # The merged report is uploaded under BOTH the `unit` and `integration` flags
   # (the same complete report each). Codecov keeps carrying a flag forward once
@@ -219,21 +222,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'pnpm'
 
-      # c8 (and the .c8rc.json all:true source scan) needs the dependencies.
-      - name: Clean install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # Downloads every cov-* artifact from this run into subfolders under
-      # coverage-artifacts/ (unit v8, each integration shard's v8, and startup).
+      # Downloads the unit, integration-shard, and startup LCOV artifacts into
+      # subfolders under coverage-artifacts/.
       - name: Download coverage artifacts
         uses: actions/download-artifact@v4
         with:
@@ -241,29 +236,7 @@ jobs:
           pattern: cov-*
 
       - name: Merge coverage into one report
-        run: |
-          set -euo pipefail
-          # Gather every shard's + the unit run's raw v8 json into one temp dir.
-          # Prefix by source dir so identically-named files never collide.
-          mkdir -p combined-tmp merge-src
-          i=0
-          for d in coverage-artifacts/cov-v8-*; do
-            [ -d "$d" ] || continue
-            find "$d" -name '*.json' -print0 | while IFS= read -r -d '' f; do
-              cp "$f" "combined-tmp/${i}-$(basename "$f")"
-            done
-            i=$((i + 1))
-          done
-          echo "Combined $(ls combined-tmp | wc -l) coverage data files."
-          # One c8 report over all of it → the single-process merged lcov.
-          NODE_OPTIONS=--max-old-space-size=6144 pnpm exec c8 report \
-            --temp-directory=combined-tmp --reporter=lcov --reports-dir=coverage-main
-          cp coverage-main/lcov.info merge-src/main.lcov
-          # Union in the source-mapped startup-provisioning supplement, if present.
-          if [ -f coverage-artifacts/cov-lcov-startup/lcov.info ]; then
-            cp coverage-artifacts/cov-lcov-startup/lcov.info merge-src/startup.lcov
-          fi
-          node build_scripts/mergeLcov.js --dir merge-src --out coverage/merged.lcov
+        run: node build_scripts/mergeLcov.js --dir coverage-artifacts --out coverage/merged.lcov
 
       - name: Upload merged coverage to Codecov (unit flag)
         uses: codecov/codecov-action@v5
