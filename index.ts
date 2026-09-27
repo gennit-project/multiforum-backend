@@ -25,6 +25,7 @@ import issueSubscriptionNotificationMiddleware from "./middleware/issueSubscript
 import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
 import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
+import ownershipCreateMiddleware from "./middleware/ownershipCreateMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateInterlockMiddleware from "./middleware/ageGateInterlockMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
@@ -222,6 +223,10 @@ async function initializeServer() {
       ageGateInterlockMiddleware as AppMiddleware,
       sensitiveContentPolicyMiddleware as AppMiddleware,
       permissions as AppMiddleware,
+      // Runs after the permission checks. Kept out of the custom resolvers so
+      // the OGM, which shares the unwrapped schema, still reaches the
+      // generated createAlbums/createCollections.
+      ownershipCreateMiddleware as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,
       commentVersionHistoryMiddleware as AppMiddleware,

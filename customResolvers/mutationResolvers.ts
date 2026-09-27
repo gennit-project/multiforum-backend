@@ -106,9 +106,6 @@ import updatePluginPipelines from "./mutations/updatePluginPipelines.js";
 import applyPluginConfiguration from "./mutations/applyPluginConfiguration.js";
 import updateChannelPluginPipelines from "./mutations/updateChannelPluginPipelines.js";
 import createImageWithUploader from "./mutations/createImageWithUploader.js";
-import createImagesWithUploader from "./mutations/createImagesWithUploader.js";
-import createAlbumsWithOwner from "./mutations/createAlbumsWithOwner.js";
-import createCollectionsWithOwner from "./mutations/createCollectionsWithOwner.js";
 import updateDownloadLabels from "./mutations/updateDownloadLabels.js";
 import createScratchpadEntry from "./mutations/createScratchpadEntry.js";
 import undoSuperUpvote from "./mutations/undoSuperUpvote.js";
@@ -163,7 +160,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     DownloadableFile,
     ServerSecret,
     Image,
-    Album,
     Collection,
     WikiPage,
     TextVersion,
@@ -692,19 +688,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Image,
       User,
       driver
-    }),
-    createImages: createImagesWithUploader({
-      Image,
-      User,
-      driver
-    }),
-    createAlbums: createAlbumsWithOwner({
-      Album,
-      User
-    }),
-    createCollections: createCollectionsWithOwner({
-      Collection,
-      User
     }),
     addToCollection: addToCollection({
       driver

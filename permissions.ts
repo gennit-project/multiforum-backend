@@ -503,7 +503,7 @@ const permissionRules: IRules = {
         )
       ),
 
-      createAlbums: and(isAuthenticated, allow), // Owner forced server-side in createAlbumsWithOwner
+      createAlbums: and(isAuthenticated, allow), // Owner forced server-side in ownershipCreateMiddleware
       updateAlbums: and(isAuthenticated, isAlbumOwner),
       deleteAlbums: and(isAuthenticated, isAlbumOwner),
 
