@@ -34,7 +34,7 @@ test("sitewide discussion lists project each channel's assigned flair metadata",
 test("channel discussion flair projection keeps configured ordering metadata", () => {
   assert.match(
     getDiscussionChannelsQuery,
-    /ORDER BY assignedFlair\.order ASC, assignedFlair\.displayName ASC/
+    /ORDER BY pagePosition, assignedFlair\.order ASC, assignedFlair\.displayName ASC/
   );
 });
 

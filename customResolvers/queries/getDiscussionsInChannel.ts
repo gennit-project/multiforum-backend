@@ -2,6 +2,10 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { getDiscussionChannelsQuery } from "../cypher/cypherQueries.js";
+import {
+  buildDiscussionChannelPageQuery,
+  type DiscussionChannelSortOption,
+} from "../cypher/buildDiscussionChannelPageQuery.js";
 import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { DiscussionChannelModel } from "../../ogm_types.js";
@@ -65,117 +69,94 @@ const getResolver = (input: Input) => {
     const searchValue = searchInput ?? "";
 
     const session = driver.session();
-    let titleRegex = `(?i).*${searchValue}.*`;
-    let bodyRegex = `(?i).*${searchValue}.*`;
+    const titleRegex = `(?i).*${searchValue}.*`;
+    const bodyRegex = `(?i).*${searchValue}.*`;
 
     try {
-      let aggregateCount = 0;
-      const effectiveSort =
+      const effectiveSort: DiscussionChannelSortOption =
         sort === "new" || sort === "top" ? sort : "hot";
+      const normalizedSelectedTags = selectedTags || [];
+      const normalizedLabelFilters = labelFilters || [];
+      const selectedTimeFrame =
+        effectiveSort === "top" && timeFrameOptions[timeFrame]
+          ? timeFrameOptions[timeFrame].start
+          : null;
       const rankingParams = await getHotRankingQueryParams({
         executor: session,
         profile: "discussion",
         sortOption: effectiveSort,
         serverName,
       });
-      const queryParams = {
-        searchInput: searchValue,
+      const pageQuery = buildDiscussionChannelPageQuery({
+        hasDownload: hasDownloadFilter,
+        hasLabelFilters: normalizedLabelFilters.length > 0,
+        hasSearch: searchValue !== "",
+        hasSelectedTags: normalizedSelectedTags.length > 0,
         showArchived,
         showUnanswered: showUnanswered ?? false,
-        hasDownload: hasDownloadFilter,
-        titleRegex,
-        bodyRegex,
-        selectedTags: selectedTags || [],
-        labelFilters: labelFilters || [],
+        sortOption: effectiveSort,
+      });
+      const pageQueryParams: Record<string, unknown> = {
         channelUniqueName,
         offset: parseInt(offset, 10),
         limit: parseInt(limit, 10),
-        startOfTimeFrame: null,
-        sortOption: "new",
-        loggedInUsername,
         mayAccessSensitiveContent,
-        ...rankingParams,
       };
-
-      switch (sort) {
-        case "new":
-          const newDiscussionChannelsResult = await session.run(
-            getDiscussionChannelsQuery,
-            queryParams
-          );
-
-          const newDiscussionChannels = newDiscussionChannelsResult.records.map(
-            (record: Neo4jRecord) => {
-              return record.get("DiscussionChannel");
-            }
-          );
-          const firstResult = newDiscussionChannelsResult.records[0];
-          if (firstResult) {
-            aggregateCount = firstResult.get("totalCount");
-          }
-
-          return {
-            discussionChannels: newDiscussionChannels,
-            aggregateDiscussionChannelsCount: aggregateCount,
-          };
-
-        case "top":
-          let selectedTimeFrame = null;
-
-          if (timeFrameOptions[timeFrame]) {
-            selectedTimeFrame = timeFrameOptions[timeFrame].start;
-          }
-
-          const topDiscussionChannelsResult = await session.run(
-            getDiscussionChannelsQuery,
-            {
-              ...queryParams,
-              startOfTimeFrame: selectedTimeFrame,
-              sortOption: "top"
-            }
-          );
-
-          const topDiscussionChannels = topDiscussionChannelsResult.records.map(
-            (record: Neo4jRecord) => {
-              return record.get("DiscussionChannel");
-            }
-          );
-
-          const firstTopResult = topDiscussionChannelsResult.records[0];
-          if (firstTopResult) {
-            aggregateCount = firstTopResult.get("totalCount");
-          }
-
-          return {
-            discussionChannels: topDiscussionChannels,
-            aggregateDiscussionChannelsCount: aggregateCount,
-          };
-
-        default:
-          const hotDiscussionChannelsResult = await session.run(
-            getDiscussionChannelsQuery,
-            {
-              ...queryParams,
-              sortOption: "hot"
-            }
-          );
-
-          const hotDiscussionChannels = hotDiscussionChannelsResult.records.map(
-            (record: Neo4jRecord) => {
-              return record.get("DiscussionChannel");
-            }
-          );
-
-          const firstHotResult = hotDiscussionChannelsResult.records[0];
-          if (firstHotResult) {
-            aggregateCount = firstHotResult.get("totalCount");
-          }
-
-          return {
-            discussionChannels: hotDiscussionChannels,
-            aggregateDiscussionChannelsCount: aggregateCount,
-          };
+      if (searchValue !== "") {
+        pageQueryParams.titleRegex = titleRegex;
+        pageQueryParams.bodyRegex = bodyRegex;
       }
+      if (normalizedSelectedTags.length > 0) {
+        pageQueryParams.selectedTags = normalizedSelectedTags;
+      }
+      if (normalizedLabelFilters.length > 0) {
+        pageQueryParams.labelFilters = normalizedLabelFilters;
+      }
+      if (effectiveSort === "top") {
+        pageQueryParams.startOfTimeFrame = selectedTimeFrame;
+      }
+      if (effectiveSort === "hot") {
+        Object.assign(pageQueryParams, rankingParams);
+      }
+
+      // These are read-only queries, but executeWrite intentionally keeps the
+      // transaction on the leader. Switching to executeRead would route to an
+      // Aura reader and could break read-your-own-writes without bookmarks.
+      return await session.executeWrite(async (transaction) => {
+        const pageResult = await transaction.run(
+          pageQuery,
+          pageQueryParams
+        );
+        const pageRecord = pageResult.records[0];
+        const aggregateCount = pageRecord?.get("totalCount") ?? 0;
+        const discussionChannelIds = (pageRecord?.get(
+          "discussionChannelIds"
+        ) ?? []) as string[];
+
+        if (discussionChannelIds.length === 0) {
+          return {
+            discussionChannels: [],
+            aggregateDiscussionChannelsCount: aggregateCount,
+          };
+        }
+
+        const discussionChannelsResult = await transaction.run(
+          getDiscussionChannelsQuery,
+          {
+            discussionChannelIds,
+            loggedInUsername,
+            mayAccessSensitiveContent,
+          }
+        );
+        const discussionChannels = discussionChannelsResult.records.map(
+          (record: Neo4jRecord) => record.get("DiscussionChannel")
+        );
+
+        return {
+          discussionChannels,
+          aggregateDiscussionChannelsCount: aggregateCount,
+        };
+      });
     } catch (error: unknown) {
       logger.error("Error getting discussionChannels:", error);
       const message = error instanceof Error ? error.message : String(error);

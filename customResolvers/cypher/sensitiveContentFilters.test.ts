@@ -8,6 +8,17 @@ import {
   getChannelContributionsQuery,
   getModContributionsQuery,
 } from "./cypherQueries.js";
+import { buildDiscussionChannelPageQuery } from "./buildDiscussionChannelPageQuery.js";
+
+const discussionChannelPageQuery = buildDiscussionChannelPageQuery({
+  hasDownload: null,
+  hasLabelFilters: false,
+  hasSearch: false,
+  hasSelectedTags: false,
+  showArchived: false,
+  showUnanswered: false,
+  sortOption: "hot",
+});
 
 const occurrences = (source: string, pattern: RegExp) =>
   [...source.matchAll(pattern)].length;
@@ -22,13 +33,13 @@ test("site-wide discussion count and result queries filter sensitive records", (
   );
 });
 
-test("channel discussion count and result queries filter sensitive records", () => {
+test("channel discussion page selection filters sensitive records once", () => {
   assert.equal(
     occurrences(
-      getDiscussionChannelsQuery,
-      /\$mayAccessSensitiveContent OR coalesce\(visibleDiscussion\.hasSensitiveContent, false\) = false/g
+      discussionChannelPageQuery,
+      /\$mayAccessSensitiveContent OR coalesce\(discussion\.hasSensitiveContent, false\) = false/g
     ),
-    2
+    1
   );
 });
 

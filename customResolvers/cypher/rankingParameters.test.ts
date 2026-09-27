@@ -7,10 +7,21 @@ import {
   getEventCommentsQuery,
   getSiteWideDiscussionsQuery,
 } from "./cypherQueries.js";
+import { buildDiscussionChannelPageQuery } from "./buildDiscussionChannelPageQuery.js";
+
+const channelDiscussionPageQuery = buildDiscussionChannelPageQuery({
+  hasDownload: null,
+  hasLabelFilters: false,
+  hasSearch: false,
+  hasSelectedTags: false,
+  showArchived: false,
+  showUnanswered: false,
+  sortOption: "hot",
+});
 
 const rankingQueries = {
   sitewideDiscussions: getSiteWideDiscussionsQuery,
-  channelDiscussions: getDiscussionChannelsQuery,
+  channelDiscussions: channelDiscussionPageQuery,
   discussionComments: getCommentsQuery,
   commentReplies: getCommentRepliesQuery,
   eventComments: getEventCommentsQuery,
@@ -25,15 +36,19 @@ for (const [name, query] of Object.entries(rankingQueries)) {
   });
 }
 
-test("channel discussions paginate before expanding related records", () => {
-  const pagination = getDiscussionChannelsQuery.indexOf(
-    "SKIP toInteger($offset)"
+test("channel discussions select page IDs before expanding related records", () => {
+  assert.match(channelDiscussionPageQuery, /collect\(dc\.id\)/);
+  assert.match(channelDiscussionPageQuery, /\$offset.*\$limit/s);
+  assert.doesNotMatch(
+    channelDiscussionPageQuery,
+    /OPTIONAL MATCH \(d\)-\[:HAS_TAG\]->\(tag:Tag\)/
   );
-  const relationshipExpansion = getDiscussionChannelsQuery.indexOf(
-    "OPTIONAL MATCH (d)-[:HAS_TAG]->(tag:Tag)"
+  assert.match(
+    getDiscussionChannelsQuery,
+    /UNWIND range\(0, size\(\$discussionChannelIds\) - 1\)/
   );
-
-  assert.ok(pagination >= 0);
-  assert.ok(relationshipExpansion >= 0);
-  assert.ok(pagination < relationshipExpansion);
+  assert.match(
+    getDiscussionChannelsQuery,
+    /OPTIONAL MATCH \(d\)-\[:HAS_TAG\]->\(tag:Tag\)/
+  );
 });

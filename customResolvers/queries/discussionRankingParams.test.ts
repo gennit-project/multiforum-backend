@@ -40,6 +40,26 @@ const createDriver = () => {
           }
           return { records: [] };
         },
+        executeWrite: async (
+          work: (transaction: {
+            run: (query: string, params: Record<string, unknown>) => Promise<{
+              records: Array<{ get: (key: string) => unknown }>;
+            }>;
+          }) => Promise<unknown>
+        ) =>
+          work({
+            run: async (query: string, params: Record<string, unknown>) => {
+              runCalls.push({ query, params });
+              return {
+                records: [
+                  {
+                    get: (key: string) =>
+                      key === "discussionChannelIds" ? [] : 0,
+                  },
+                ],
+              };
+            },
+          }),
         close: async () => {},
       }),
     },
@@ -47,10 +67,11 @@ const createDriver = () => {
 };
 
 const assertDiscussionRankingParams = (
-  runCalls: Array<{ params: Record<string, unknown> }>
+  runCalls: Array<{ query: string; params: Record<string, unknown> }>
 ) => {
   const rankingCall = runCalls.find(
-    (call) => call.params.sortOption === "hot"
+    (call) =>
+      call.params.sortOption === "hot" || call.query.includes("AS hotRank")
   );
   assert.ok(rankingCall);
   assert.equal(rankingCall.params.hotAgeOffsetMonths, 3.5);

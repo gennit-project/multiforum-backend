@@ -1,13 +1,34 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  getDiscussionChannelsQuery,
   getSiteWideDiscussionsQuery,
   getUserContributionsQuery,
 } from "./cypherQueries.js";
+import { buildDiscussionChannelPageQuery } from "./buildDiscussionChannelPageQuery.js";
+
+const downloadPageQuery = buildDiscussionChannelPageQuery({
+  hasDownload: true,
+  hasLabelFilters: false,
+  hasSearch: false,
+  hasSelectedTags: false,
+  showArchived: false,
+  showUnanswered: false,
+  sortOption: "hot",
+});
+const labelFilterPageQuery = buildDiscussionChannelPageQuery({
+  hasDownload: null,
+  hasLabelFilters: true,
+  hasSearch: false,
+  hasSelectedTags: false,
+  showArchived: false,
+  showUnanswered: false,
+  sortOption: "hot",
+});
 
 const downloadListRequirementPattern =
   /d\.hasDownload = true[\s\S]*HAS_DOWNLOADABLE_FILE/;
+const channelDownloadListRequirementPattern =
+  /discussion\.hasDownload = true[\s\S]*HAS_DOWNLOADABLE_FILE/;
 
 test("sitewide download list query requires an attached downloadable file when hasDownload is true", () => {
   assert.match(getSiteWideDiscussionsQuery, downloadListRequirementPattern);
@@ -18,27 +39,26 @@ test("sitewide download list query requires an attached downloadable file when h
 });
 
 test("channel download list query requires an attached downloadable file when hasDownload is true", () => {
-  assert.match(getDiscussionChannelsQuery, downloadListRequirementPattern);
   assert.match(
-    getDiscussionChannelsQuery,
-    /hasDownload controls discussion presentation[\s\S]*attached DownloadableFile/
+    downloadPageQuery,
+    channelDownloadListRequirementPattern
   );
 });
 
 test("channel download label filters honor include and exclude filter group modes", () => {
   assert.match(
-    getDiscussionChannelsQuery,
+    labelFilterPageQuery,
     /fg\.mode = "EXCLUDE"[\s\S]*NOT EXISTS[\s\S]*excludedOption\.value IN labelFilter\.values/
   );
   assert.match(
-    getDiscussionChannelsQuery,
+    labelFilterPageQuery,
     /ELSE EXISTS[\s\S]*includedOption\.value IN labelFilter\.values/
   );
 });
 
 test("channel download label filters are scoped to the current channel's filter groups", () => {
   assert.match(
-    getDiscussionChannelsQuery,
+    labelFilterPageQuery,
     /:Channel \{uniqueName: dc\.channelUniqueName\}\)-\[:HAS_FILTER_GROUP\]->\(fg:FilterGroup \{key: labelFilter\.groupKey\}\)/
   );
 });
