@@ -28,6 +28,7 @@
     "age-gate:sweep": "node ts_emitted/build_scripts/ageGateSweep.js",
     "age-gate:sweep:dev": "node --loader ts-node/esm build_scripts/ageGateSweep.ts",
     "neo4j:audit": "node --loader ts-node/esm build_scripts/neo4jSchemaAudit.ts",
+    "neo4j:cleanup-intermediate-nodes": "node --loader ts-node/esm build_scripts/cleanupIntermediateNodes.ts",
     "mfctl": "node --loader ts-node/esm build_scripts/pluginConfigurationCli.ts",
     "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",
     "heroku-postbuild": "NODE_OPTIONS=--max-old-space-size=2048 pnpm run build",

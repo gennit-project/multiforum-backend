@@ -36,6 +36,7 @@ import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
 import dotenv from "dotenv";
 import getCustomResolvers from "./customResolvers.js";
+import intermediateNodeDeleteMiddleware from "./middleware/intermediateNodeDeleteMiddleware.js";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import { CommentNotificationService } from "./services/commentNotificationService.js";
@@ -205,6 +206,7 @@ async function initializeServer() {
       ageGateWriteValidatorMiddleware as AppMiddleware,
       sensitiveContentPolicyMiddleware as AppMiddleware,
       permissions as AppMiddleware,
+      intermediateNodeDeleteMiddleware as AppMiddleware,
       // Runs after the permission checks. Kept out of the custom resolvers so
       // the OGM, which shares the unwrapped schema, still reaches the
       // generated createAlbums/createCollections.
