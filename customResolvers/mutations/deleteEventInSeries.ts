@@ -3,6 +3,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel, EventSeriesModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
+import { quarantineConnectorsForDeletedParents } from "../../services/intermediateNodeQuarantine.js";
 
 type Input = {
   Event: EventModel;
@@ -21,7 +22,7 @@ const getResolver = (input: Input) => {
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const { eventId, scope } = args;
 
-    const session = driver.session();
+    const deletedEventIds: string[] = [];
 
     try {
       // Fetch the event and its series relationship
@@ -58,6 +59,7 @@ const getResolver = (input: Input) => {
           await Event.delete({
             where: { id: eventId },
           });
+          deletedEventIds.push(eventId);
           deletedCount = 1;
           break;
         }
@@ -68,6 +70,7 @@ const getResolver = (input: Input) => {
             await Event.delete({
               where: { id: eventId },
             });
+            deletedEventIds.push(eventId);
             deletedCount = 1;
           } else {
             // Get all events with occurrenceIndex >= this event's index
@@ -81,6 +84,7 @@ const getResolver = (input: Input) => {
               await Event.delete({
                 where: { id: occ.id },
               });
+              deletedEventIds.push(occ.id);
               deletedCount++;
             }
 
@@ -101,6 +105,7 @@ const getResolver = (input: Input) => {
             await Event.delete({
               where: { id: eventId },
             });
+            deletedEventIds.push(eventId);
             deletedCount = 1;
           } else {
             // Delete all events in the series
@@ -108,6 +113,7 @@ const getResolver = (input: Input) => {
               await Event.delete({
                 where: { id: occ.id },
               });
+              deletedEventIds.push(occ.id);
               deletedCount++;
             }
 
@@ -123,17 +129,31 @@ const getResolver = (input: Input) => {
           throw new Error(`Invalid scope: ${scope}`);
       }
 
+      await quarantineConnectorsForDeletedParents(
+        driver,
+        deletedEventIds.map((id) => ({ kind: "event" as const, id }))
+      );
+      deletedEventIds.length = 0;
+
       return {
         success: true,
         deletedCount,
         message: `Successfully deleted ${deletedCount} event(s)`,
       };
     } catch (error: unknown) {
+      if (deletedEventIds.length > 0) {
+        try {
+          await quarantineConnectorsForDeletedParents(
+            driver,
+            deletedEventIds.map((id) => ({ kind: "event" as const, id }))
+          );
+        } catch (quarantineError: unknown) {
+          logger.error("Failed to quarantine connectors after a partial event-series delete:", quarantineError);
+        }
+      }
       logger.error("Error deleting event in series:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to delete event in series. ${message}`);
-    } finally {
-      await session.close();
     }
   };
 };

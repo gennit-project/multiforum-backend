@@ -17,6 +17,18 @@ const buildDriver = () => {
         };
         sessions.push(sessionState);
         return {
+          async executeWrite(work: (tx: {
+            run: (query: string, params: Record<string, unknown>) => Promise<unknown>;
+          }) => unknown) {
+            return work({
+              run: async (query: string, params: Record<string, unknown>) => {
+                sessionState.runCalls.push({ query, params });
+                return {
+                  records: [{ get: () => ({ toNumber: () => 1 }) }],
+                };
+              },
+            });
+          },
           async run(query: string, params: Record<string, unknown>) {
             sessionState.runCalls.push({ query, params });
             return {};
@@ -414,7 +426,7 @@ test("deleteEventInSeries closes session on success", async () => {
   assert.equal(sessions[0].closeCalls, 1);
 });
 
-test("deleteEventInSeries closes session on error", async () => {
+test("deleteEventInSeries does not open cleanup session before a failed delete", async () => {
   const { driver, sessions } = buildDriver();
 
   const Event = {
@@ -432,5 +444,5 @@ test("deleteEventInSeries closes session on error", async () => {
     resolver(null, { eventId: "event-1", scope: "THIS_ONLY" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
   );
 
-  assert.equal(sessions[0].closeCalls, 1);
+  assert.equal(sessions.length, 0);
 });
