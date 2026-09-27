@@ -26,8 +26,8 @@ const createDriver = () => {
   return {
     runCalls,
     driver: {
-      session: () => ({
-        run: async (query: string, params: Record<string, unknown>) => {
+      session: () => {
+        const run = async (query: string, params: Record<string, unknown>) => {
           runCalls.push({ query, params });
           if (query.includes("RETURN serverConfig.rankingSettingsJson")) {
             return {
@@ -39,10 +39,20 @@ const createDriver = () => {
               ],
             };
           }
+          if (query.includes("AS DiscussionChannel")) {
+            return {
+              records: [{ get: () => ({ id: "discussion-channel-1" }) }],
+            };
+          }
           return { records: [] };
-        },
-        close: async () => {},
-      }),
+        };
+        return {
+          run,
+          executeWrite: async (work: (transaction: { run: typeof run }) => unknown) =>
+            work({ run }),
+          close: async () => {},
+        };
+      },
     },
   };
 };
@@ -69,14 +79,6 @@ test("getCommentSection passes stored comment ranking settings to Cypher", async
   const resolver = getCommentSection({
     driver: mock.driver as never,
     serverName: "test-server",
-    DiscussionChannel: {
-      find: async () => [
-        {
-          id: "discussion-channel-1",
-          SubscribedToNotifications: [],
-        },
-      ],
-    } as never,
   });
 
   await resolver(

@@ -52,3 +52,12 @@ test("channel discussions select page IDs before expanding related records", () 
     /OPTIONAL MATCH \(d\)-\[:HAS_TAG\]->\(tag:Tag\)/
   );
 });
+
+test("discussion comments select their page before hydrating related records", () => {
+  const pageSelection = getCommentsQuery.indexOf("SKIP toInteger($offset)");
+  const voterHydration = getCommentsQuery.indexOf("UPVOTED_COMMENT");
+
+  assert.ok(pageSelection > -1);
+  assert.ok(voterHydration > pageSelection);
+  assert.doesNotMatch(getCommentsQuery, /HAS_SERVER_ROLE|HAS_CHANNEL_ROLE/);
+});

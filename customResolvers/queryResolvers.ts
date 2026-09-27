@@ -100,7 +100,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getCommentSection: getCommentSection({
       driver,
-      DiscussionChannel,
       ServerConfig,
     }),
     getEventComments: getEventComments({

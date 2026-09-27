@@ -1,98 +1,101 @@
-MATCH (dc:DiscussionChannel { id: $discussionChannelId })-[:CONTAINS_COMMENT]->(c:Comment)
-WHERE c.isRootComment = true
-AND NOT EXISTS((c)-[:HAS_FEEDBACK_COMMENT]->(:Discussion)) 
+MATCH (entry:DiscussionChannel {id: $discussionChannelId})
 
-OPTIONAL MATCH (c)<-[:AUTHORED_COMMENT]-(author:User)
-OPTIONAL MATCH (author)-[:HAS_SERVER_ROLE]->(serverRole:ServerRole)
-OPTIONAL MATCH (author)-[:HAS_CHANNEL_ROLE]->(channelRole:ChannelRole)
-OPTIONAL MATCH (c)-[:IS_REPLY_TO]->(parent:Comment)
-OPTIONAL MATCH (c)<-[:IS_REPLY_TO]-(child:Comment)
-OPTIONAL MATCH (c)<-[:UPVOTED_COMMENT]-(upvoter:User)
-OPTIONAL MATCH (c)<-[:SUPER_UPVOTED_COMMENT]-(superUpvoter:User)
-OPTIONAL MATCH (c)-[:HAS_VERSION]->(pastVersion:TextVersion)<-[:AUTHORED_VERSION]-(pastVersionAuthor:User)
-OPTIONAL MATCH (favUser:User { username: $loggedInUsername })-[:DEFAULT_FAVORITES_COMMENTS]->(c)
+// Select the requested page before expanding any one-to-many relationships.
+CALL {
+  WITH entry
+  MATCH (entry)-[:CONTAINS_COMMENT]->(comment:Comment)
+  WHERE comment.isRootComment = true
+    AND NOT EXISTS { (comment)-[:HAS_FEEDBACK_COMMENT]->(:Discussion) }
+  WITH comment,
+    CASE
+      WHEN coalesce(comment.weightedVotesCount, 0) < 0 THEN 0
+      ELSE coalesce(comment.weightedVotesCount, 0)
+    END AS rankingVotes,
+    duration.between(comment.createdAt, datetime()).months
+      + duration.between(comment.createdAt, datetime()).days / 30.0 AS ageInMonths
+  WITH comment, rankingVotes,
+    log10(rankingVotes + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) AS hotRank
+  ORDER BY
+    coalesce(comment.isSticky, false) DESC,
+    CASE WHEN $sortOption = 'top' THEN rankingVotes END DESC,
+    CASE WHEN $sortOption = 'hot' THEN hotRank END DESC,
+    comment.createdAt DESC
+  SKIP toInteger($offset)
+  LIMIT toInteger($limit)
+  RETURN comment
+}
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, superUpvoter, $modName AS modName, pastVersion, pastVersionAuthor, favUser
+OPTIONAL MATCH (author:User|ModerationProfile)-[:AUTHORED_COMMENT]->(comment)
 
-OPTIONAL MATCH (c)<-[:HAS_FEEDBACK_COMMENT]-(feedbackComment:Comment)<-[:AUTHORED_COMMENT]-(feedbackAuthor:ModerationProfile)
+CALL {
+  WITH comment
+  OPTIONAL MATCH (upvoter:User)-[:UPVOTED_COMMENT]->(comment)
+  RETURN count(upvoter) AS upvoteCount,
+    [username IN collect(upvoter.username) WHERE username IS NOT NULL | {username: username}] AS upvoters
+}
 
-WITH c, author, serverRole, channelRole, parent, child, upvoter, superUpvoter, modName, feedbackComment, feedbackAuthor, pastVersion, pastVersionAuthor, favUser,
-     CASE WHEN modName IS NOT NULL AND feedbackAuthor.displayName = modName THEN feedbackComment
-          ELSE NULL END AS filteredFeedbackComment
+CALL {
+  WITH comment
+  OPTIONAL MATCH (superUpvoter:User)-[:SUPER_UPVOTED_COMMENT]->(comment)
+  RETURN [username IN collect(superUpvoter.username) WHERE username IS NOT NULL | {username: username}] AS superUpvoters
+}
 
-WITH c, author, serverRole, channelRole, parent,
-     COLLECT(DISTINCT upvoter{.*, createdAt: toString(upvoter.createdAt)}) AS UpvotedByUsers,
-     COLLECT(DISTINCT superUpvoter{.*, createdAt: toString(superUpvoter.createdAt)}) AS SuperUpvotedByUsers,
-     COLLECT(DISTINCT parent.id) AS parentIds,
-     COLLECT(DISTINCT filteredFeedbackComment {id: feedbackComment.id}) AS FeedbackComments,
-     COLLECT(DISTINCT CASE WHEN child IS NOT NULL THEN {id: child.id, text: child.text} ELSE null END) AS NonFilteredChildComments,
-     COLLECT(DISTINCT CASE WHEN pastVersion IS NOT NULL THEN {
-       id: pastVersion.id,
-       body: pastVersion.body,
-       createdAt: pastVersion.createdAt,
-       Author: CASE WHEN pastVersionAuthor IS NOT NULL THEN {
-         username: pastVersionAuthor.username
-       } ELSE null END
-     } ELSE null END) AS PastVersions,
-     COUNT(DISTINCT favUser) > 0 AS isFavoritedByUser,
-     // Compute the age in months from the createdAt timestamp.
-     duration.between(c.createdAt, datetime()).months +
-     duration.between(c.createdAt, datetime()).days / 30.0 AS ageInMonths,
-     CASE WHEN coalesce(c.weightedVotesCount, 0) < 0 THEN 0 ELSE coalesce(c.weightedVotesCount, 0) END AS weightedVotesCount
+CALL {
+  WITH comment
+  OPTIONAL MATCH (child:Comment)-[:IS_REPLY_TO]->(comment)
+  RETURN count(child) AS childCommentCount
+}
 
-WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, weightedVotesCount, ageInMonths, isFavoritedByUser,
-    [comment IN NonFilteredChildComments WHERE comment.id IS NOT NULL] AS ChildComments,
-    [version IN PastVersions WHERE version.id IS NOT NULL] AS FilteredPastVersions,
-    FeedbackComments
+CALL {
+  WITH comment
+  OPTIONAL MATCH (comment)-[:HAS_VERSION]->(version:TextVersion)
+  OPTIONAL MATCH (versionAuthor:User)-[:AUTHORED_VERSION]->(version)
+  WITH version, versionAuthor
+  ORDER BY version.createdAt DESC, version.id ASC
+  RETURN [value IN collect(CASE WHEN version IS NULL THEN null ELSE version {
+    .id, .body, .editReason, .createdAt,
+    Author: CASE WHEN versionAuthor IS NULL THEN null ELSE versionAuthor {.username} END
+  } END) WHERE value IS NOT NULL] AS pastVersions
+}
 
-WITH c, author, serverRole, channelRole, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, isFavoritedByUser,
-    log10(weightedVotesCount + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) AS hotRank
+CALL {
+  WITH comment
+  OPTIONAL MATCH (feedback:Comment)-[:HAS_FEEDBACK_COMMENT]->(comment)
+  OPTIONAL MATCH (feedbackAuthor:ModerationProfile)-[:AUTHORED_COMMENT]->(feedback)
+  WHERE feedback IS NULL
+    OR ($modName IS NOT NULL AND feedbackAuthor.displayName = $modName)
+  RETURN [value IN collect(CASE WHEN feedback IS NULL THEN null ELSE {id: feedback.id} END)
+    WHERE value IS NOT NULL] AS feedbackComments
+}
 
-// Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
-// @cypher field + server-admin membership), so the author's roles are no longer
-// projected onto the comment. Collapse the serverRole/channelRole fan-out from the
-// OPTIONAL MATCHes above so each comment yields a single row.
-WITH DISTINCT c, author, parent, UpvotedByUsers, SuperUpvotedByUsers, parentIds, ChildComments, FeedbackComments, FilteredPastVersions, ageInMonths, weightedVotesCount, hotRank, isFavoritedByUser
+CALL {
+  WITH comment
+  OPTIONAL MATCH (viewer:User {username: $loggedInUsername})
+  RETURN CASE WHEN viewer IS NULL THEN false
+    ELSE EXISTS { (viewer)-[:DEFAULT_FAVORITES_COMMENTS]->(comment) }
+  END AS isFavoritedByUser,
+  CASE WHEN viewer IS NULL OR NOT EXISTS { (viewer)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(comment) }
+    THEN []
+    ELSE [{username: viewer.username}]
+  END AS viewerSubscription
+}
 
-RETURN {
-    id: c.id,
-    text: c.text,
-    emoji: c.emoji,
-    weightedVotesCount: c.weightedVotesCount,
-    createdAt: c.createdAt,
-    updatedAt: c.updatedAt,
-    archived: c.archived,
-    isSticky: coalesce(c.isSticky, false),
-    stickyAt: c.stickyAt,
-    stickyByUsername: c.stickyByUsername,
-    // If the author is null, return null, otherwise return the author object.
-    CommentAuthor: CASE WHEN author IS NULL THEN null ELSE {
-        username: author.username,
-        displayName: author.displayName,
-        profilePicURL: author.profilePicURL,
-        discussionKarma: author.discussionKarma,
-        commentKarma: author.commentKarma,
-        createdAt: author.createdAt
-    } END,
-    isFavoritedByUser: isFavoritedByUser,
-    ParentComment: CASE WHEN SIZE(parentIds) > 0 THEN {id: parentIds[0]} ELSE null END,
-    UpvotedByUsers: UpvotedByUsers,
-    UpvotedByUsersAggregate: {
-        count: SIZE(UpvotedByUsers)
-    },
-    SuperUpvotedByUsers: SuperUpvotedByUsers,
-    ChildComments: CASE WHEN SIZE(ChildComments) > 0 THEN ChildComments ELSE [] END,
-    ChildCommentsAggregate: {
-        count: SIZE(ChildComments)
-    },
-    FeedbackComments: FeedbackComments,
-    PastVersions: FilteredPastVersions
-} AS comment, weightedVotesCount, hotRank
-
-ORDER BY 
-    coalesce(c.isSticky, false) DESC,
-    CASE WHEN $sortOption = "top" THEN weightedVotesCount END DESC,
-    CASE WHEN $sortOption = "hot" THEN hotRank END DESC,
-    c.createdAt DESC
-SKIP toInteger($offset)
-LIMIT toInteger($limit)
+RETURN comment {
+  .id, .text, .emoji, .weightedVotesCount, .createdAt, .updatedAt,
+  .textLastEdited, .archived,
+  isSticky: coalesce(comment.isSticky, false),
+  .stickyAt, .stickyByUsername,
+  CommentAuthor: CASE WHEN author IS NULL THEN null ELSE author {
+    .username, .displayName, .profilePicURL, .discussionKarma,
+    .commentKarma, .createdAt, .isBot
+  } END,
+  isFavoritedByUser: isFavoritedByUser,
+  ParentComment: null,
+  UpvotedByUsers: upvoters,
+  UpvotedByUsersAggregate: {count: upvoteCount},
+  SuperUpvotedByUsers: superUpvoters,
+  ChildCommentsAggregate: {count: childCommentCount},
+  FeedbackComments: feedbackComments,
+  PastVersions: pastVersions,
+  SubscribedToNotifications: viewerSubscription
+} AS comment
