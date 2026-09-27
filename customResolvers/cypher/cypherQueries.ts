@@ -24,6 +24,7 @@ export const getSiteWideIssuesQuery = fs.readFileSync(path.resolve(__dirname, '.
 export const getSiteWideWikiPagesQuery = fs.readFileSync(path.resolve(__dirname, './getSiteWideWikiPagesQuery.cypher'), 'utf8');
 export const getCommentRepliesQuery = fs.readFileSync(path.resolve(__dirname, './getCommentRepliesQuery.cypher'), 'utf8');
 export const getEventCommentsQuery = fs.readFileSync(path.resolve(__dirname, './getEventCommentsQuery.cypher'), 'utf8');
+export const getEventCommentsMetadataQuery = fs.readFileSync(path.resolve(__dirname, './getEventCommentsMetadataQuery.cypher'), 'utf8');
 export const getUserContributionsQuery = fs.readFileSync(path.resolve(__dirname, './getUserContributionsQuery.cypher'), 'utf8');
 export const getUserWikiEditsCountQuery = fs.readFileSync(path.resolve(__dirname, './getUserWikiEditsCountQuery.cypher'), 'utf8');
 export const getChannelContributionsQuery = fs.readFileSync(path.resolve(__dirname, './getChannelContributionsQuery.cypher'), 'utf8');

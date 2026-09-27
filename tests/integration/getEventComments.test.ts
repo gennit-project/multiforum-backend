@@ -1,6 +1,6 @@
 // Integration tests for the getEventComments query resolver against a live
-// Neo4j container. It fetches the Event via the OGM and its root comments via a
-// Cypher query that supports top/hot/new sorting and pagination. Runs through
+// Neo4j container. It fetches bounded Event metadata and root comments via
+// Cypher queries that support top/hot/new sorting and pagination. Runs through
 // the (anonymous-tolerant) auth seam.
 
 import test, { before, after, beforeEach } from "node:test";
@@ -43,12 +43,21 @@ const getEventComments = (args: Record<string, unknown>) =>
 const seedEventWithComments = () =>
   run(
     `CREATE (e:Event { id: 'e1', title: 'Meetup', startTime: datetime(), endTime: datetime(), canceled: false, createdAt: datetime() })
+     CREATE (poster:User { username: 'alice', createdAt: datetime() })
+     CREATE (tag:Tag { text: 'music' })
+     CREATE (channel:Channel { uniqueName: 'events', displayName: 'Events' })
+     CREATE (entry:EventChannel { id: 'ec1', eventId: 'e1', channelUniqueName: 'events' })
      CREATE (c1:Comment { id: 'cm1', text: 'first', isRootComment: true, weightedVotesCount: 1, createdAt: datetime() })
      CREATE (c2:Comment { id: 'cm2', text: 'second', isRootComment: true, weightedVotesCount: 5, createdAt: datetime() })
      CREATE (reply:Comment { id: 'cm3', text: 'a reply', isRootComment: false, weightedVotesCount: 0, createdAt: datetime() })
      CREATE (e)-[:HAS_COMMENT]->(c1)
      CREATE (e)-[:HAS_COMMENT]->(c2)
-     CREATE (e)-[:HAS_COMMENT]->(reply)`
+     CREATE (e)-[:HAS_COMMENT]->(reply)
+     CREATE (reply)-[:IS_REPLY_TO]->(c1)
+     CREATE (poster)-[:POSTED_BY]->(e)
+     CREATE (e)-[:HAS_TAG]->(tag)
+     CREATE (entry)-[:POSTED_IN_CHANNEL]->(e)
+     CREATE (entry)-[:POSTED_IN_CHANNEL]->(channel)`
   );
 
 test("returns the event and its root comments, sorted by top (weighted votes)", async () => {
@@ -57,12 +66,25 @@ test("returns the event and its root comments, sorted by top (weighted votes)", 
   const result = await getEventComments({ eventId: "e1", sort: "top" });
 
   assert.equal(result.Event?.id, "e1");
+  assert.deepEqual(result.Event?.Tags, [{ text: "music" }]);
+  assert.equal(result.Event?.EventChannels[0].channelUniqueName, "events");
+  assert.equal(result.Event?.Poster.username, "alice");
   assert.equal(result.Comments.length, 2, "only root comments are returned");
   assert.deepEqual(
     result.Comments.map((c: any) => c.id),
     ["cm2", "cm1"],
     "higher weighted-votes comment comes first under top sort"
   );
+});
+
+test("returns bounded child projections for event root comments", async () => {
+  await seedEventWithComments();
+
+  const result = await getEventComments({ eventId: "e1", sort: "top" });
+  const firstComment = result.Comments.find((comment: any) => comment.id === "cm1");
+
+  assert.equal(firstComment.ChildCommentsAggregate.count.toNumber(), 1);
+  assert.deepEqual(firstComment.ChildComments, [{ id: "cm3", text: "a reply" }]);
 });
 
 test("excludes non-root comments (replies)", async () => {

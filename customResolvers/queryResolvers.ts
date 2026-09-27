@@ -104,11 +104,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getEventComments: getEventComments({
       driver,
-      Event,
     }),
     getCommentReplies: getCommentReplies({
       driver,
-      Comment,
       ServerConfig,
     }),
     getUserFavoriteComment: getUserFavoriteComment({

@@ -1,10 +1,9 @@
 import type { GraphQLResolveInfo } from "graphql";
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { Driver, Integer } from "neo4j-driver";
 import { getCommentRepliesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { CommentModel, ServerConfigModel } from "../../ogm_types.js";
+import type { ServerConfigModel } from "../../ogm_types.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
@@ -12,7 +11,6 @@ import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js
 import { normalizePagination } from "../../services/pagination.js";
 
 type Input = {
-  Comment: CommentModel;
   driver: Driver;
   ServerConfig?: ServerConfigModel;
   serverName?: string;
@@ -27,8 +25,13 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, Comment, ServerConfig, serverName } = input;
-  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
+  const { driver, ServerConfig, serverName } = input;
+  return async (
+    _parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    _info: GraphQLResolveInfo
+  ) => {
     const { commentId, modName, sort } = args;
     const { offset, limit } = normalizePagination(args);
     context.user = await setUserDataOnContext({
@@ -51,8 +54,6 @@ const getResolver = (input: Input) => {
     const session = driver.session();
 
     try {
-      let commentsResult = [];
-      let aggregateCount = 0;
       const effectiveSort =
         sort === "top" ? "top" : sort === "hot" ? "hot" : "new";
       const rankingParams = await getHotRankingQueryParams({
@@ -72,44 +73,24 @@ const getResolver = (input: Input) => {
         ...rankingParams,
       });
 
-      if (commentRepliesResult.records.length === 0) {
+      const record = commentRepliesResult.records[0];
+      if (!record) {
         return {
           ChildComments: [],
           aggregateChildCommentCount: 0,
         };
       }
 
-      commentsResult = commentRepliesResult.records.map((record: Neo4jRecord) => {
-        return record.get("ChildComments");
-      });
-
-      commentsResult = await populateCommentSubscriptionStatus({
-        comments: commentsResult,
-        loggedInUsername,
-        session,
-      });
-
-      aggregateCount = await Comment.aggregate({
-        where: {
-          ParentComment: {
-            id: commentId,
-          },
-        },
-        aggregate: {
-          count: true,
-        },
-      }).then((result: { count: number }) => {
-        return result.count;
-      });
+      const aggregateCount = record.get("aggregateChildCommentCount") as Integer;
 
       return {
-        ChildComments: commentsResult,
-        aggregateChildCommentCount: aggregateCount || 0,
+        ChildComments: record.get("ChildComments") || [],
+        aggregateChildCommentCount: aggregateCount?.toNumber() || 0,
       };
     } catch (error: unknown) {
-      logger.error("Error getting comment section:", error);
+      logger.error("Error getting comment replies:", error);
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to fetch comment section. ${message}`);
+      throw new Error(`Failed to fetch comment replies. ${message}`);
     } finally {
       await session.close();
     }
