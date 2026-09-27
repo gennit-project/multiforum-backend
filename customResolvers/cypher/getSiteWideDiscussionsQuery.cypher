@@ -1,226 +1,141 @@
-// First, calculate the total count of discussions matching the criteria
-// Only count discussions that have at least one non-archived discussion channel
-MATCH (d:Discussion)
-WHERE EXISTS {
-  MATCH (d)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
-  WHERE dc.archived IS NULL OR dc.archived = false
+// Hydrate only the IDs selected by the lightweight page query. Keeping each
+// one-to-many relationship in its own scoped subquery prevents row products.
+UNWIND range(0, size($discussionIds) - 1) AS pagePosition
+WITH pagePosition, $discussionIds[pagePosition] AS discussionId
+MATCH (d:Discussion {id: discussionId})
+
+CALL {
+  WITH d
+  MATCH (dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d)
+  WHERE ($showArchived OR coalesce(dc.archived, false) = false)
+    AND (size($selectedChannels) = 0 OR dc.channelUniqueName IN $selectedChannels)
+  OPTIONAL MATCH (channelNode:Channel {uniqueName: dc.channelUniqueName})
+
+  CALL {
+    WITH dc
+    OPTIONAL MATCH (upvoter:User)-[:UPVOTED_DISCUSSION]->(dc)
+    RETURN [up IN collect(DISTINCT upvoter) WHERE up IS NOT NULL |
+      {username: up.username}] AS upvotedByUsers
+  }
+  CALL {
+    WITH dc
+    OPTIONAL MATCH (superUpvoter:User)-[:SUPER_UPVOTED_DISCUSSION]->(dc)
+    RETURN [up IN collect(DISTINCT superUpvoter) WHERE up IS NOT NULL |
+      {username: up.username}] AS superUpvotedByUsers
+  }
+  CALL {
+    WITH dc
+    OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(comment:Comment)
+    WHERE comment.isFeedbackComment IS NULL OR comment.isFeedbackComment = false
+    RETURN count(DISTINCT comment) AS commentsCount
+  }
+  CALL {
+    WITH dc
+    OPTIONAL MATCH (dc)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair:DiscussionFlair)
+    WITH assignedFlair
+    ORDER BY assignedFlair.order ASC, assignedFlair.displayName ASC
+    RETURN [flair IN collect(DISTINCT assignedFlair) WHERE flair IS NOT NULL | {
+      id: flair.id,
+      channelUniqueName: flair.channelUniqueName,
+      displayName: flair.displayName,
+      color: flair.color,
+      order: flair.order,
+      archived: flair.archived
+    }] AS assignedFlairs
+  }
+
+  WITH d, dc, channelNode, upvotedByUsers, superUpvotedByUsers,
+       commentsCount, assignedFlairs
+  ORDER BY dc.createdAt ASC, dc.id ASC
+  RETURN collect({
+    id: dc.id,
+    createdAt: dc.createdAt,
+    channelUniqueName: dc.channelUniqueName,
+    discussionId: d.id,
+    weightedVotesCount: dc.weightedVotesCount,
+    archived: dc.archived,
+    answered: dc.answered,
+    locked: dc.locked,
+    Flairs: assignedFlairs,
+    Channel: {
+      uniqueName: dc.channelUniqueName,
+      displayName: channelNode.displayName,
+      channelIconURL: channelNode.channelIconURL
+    },
+    UpvotedByUsers: upvotedByUsers,
+    SuperUpvotedByUsers: superUpvotedByUsers,
+    CommentsAggregate: {count: commentsCount}
+  }) AS discussionChannels
 }
-AND ($mayAccessSensitiveContent OR coalesce(d.hasSensitiveContent, false) = false)
-AND (CASE WHEN $sortOption = "top" THEN datetime(d.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis ELSE TRUE END)
-AND ($searchInput = "" OR d.title =~ $titleRegex OR d.body =~ $bodyRegex)
-AND (SIZE($selectedTags) = 0 OR ANY(t IN $selectedTags WHERE EXISTS((d)-[:HAS_TAG]->(:Tag {text: t}))))
-// hasDownload controls discussion presentation, but download list membership
-// additionally requires at least one attached DownloadableFile.
-AND (
-  $hasDownload IS NULL OR
-  (
-    $hasDownload = true AND
-    d.hasDownload = true AND
-    EXISTS { MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile) }
-  ) OR
-  (
-    $hasDownload = false AND
-    (d.hasDownload = false OR d.hasDownload IS NULL)
-  )
-)
-WITH COUNT(d) AS totalCount
 
-// Now, fetch the discussions with pagination and other filters
-// Only match discussions that have at least one non-archived discussion channel
-MATCH (d:Discussion)
-WHERE EXISTS {
-  MATCH (d)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
-  WHERE dc.archived IS NULL OR dc.archived = false
+CALL {
+  WITH d
+  OPTIONAL MATCH (d)-[:HAS_TAG]->(tag:Tag)
+  RETURN [tagText IN collect(DISTINCT tag.text) WHERE tagText IS NOT NULL |
+    {text: tagText}] AS tags
 }
-AND ($mayAccessSensitiveContent OR coalesce(d.hasSensitiveContent, false) = false)
-AND (CASE WHEN $sortOption = "top" THEN datetime(d.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis ELSE TRUE END)
-AND ($searchInput = "" OR d.title =~ $titleRegex OR d.body =~ $bodyRegex)
-AND (SIZE($selectedTags) = 0 OR ANY(t IN $selectedTags WHERE EXISTS((d)-[:HAS_TAG]->(:Tag {text: t}))))
-// hasDownload controls discussion presentation, but download list membership
-// additionally requires at least one attached DownloadableFile.
-AND (
-  $hasDownload IS NULL OR
-  (
-    $hasDownload = true AND
-    d.hasDownload = true AND
-    EXISTS { MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile) }
-  ) OR
-  (
-    $hasDownload = false AND
-    (d.hasDownload = false OR d.hasDownload IS NULL)
-  )
-)
-
-// Collect all discussion channels associated with a discussion
-WITH d, totalCount
-MATCH (dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d)
-WHERE (SIZE($selectedChannels) = 0 OR dc.channelUniqueName IN $selectedChannels)
-AND (dc.archived IS NULL OR dc.archived = false) // Only include non-archived channels
-WITH d, COLLECT(dc) AS discussionChannels, totalCount
-
-// Unwind the discussion channels to work with them individually for fetching related data
-UNWIND discussionChannels AS dc
-OPTIONAL MATCH (channelNode:Channel {uniqueName: dc.channelUniqueName})
-OPTIONAL MATCH (dc)-[:UPVOTED_DISCUSSION]->(upvoter:User)
-OPTIONAL MATCH (dc)<-[:SUPER_UPVOTED_DISCUSSION]-(superUpvoter:User)
-OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(c:Comment)
-WHERE c.isFeedbackComment IS NULL OR c.isFeedbackComment = false
-OPTIONAL MATCH (dc)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair:DiscussionFlair)
-WITH d, dc, channelNode, COLLECT(DISTINCT upvoter) AS upvotedByUsers, COLLECT(DISTINCT superUpvoter) AS superUpvotedByUsers, COUNT(DISTINCT c) AS commentsCount, COLLECT(DISTINCT assignedFlair) AS assignedFlairs, totalCount
-WITH d, COLLECT({dc: dc, channelIconURL: channelNode.channelIconURL, upvotedByUsers: upvotedByUsers, superUpvotedByUsers: superUpvotedByUsers, commentsCount: commentsCount, assignedFlairs: assignedFlairs}) AS channelData, totalCount
-
-// Now, you can proceed with calculating the score and other aggregations at the discussion level
-WITH d, channelData, totalCount,
-     REDUCE(s = 0, channel IN channelData | s + CASE WHEN coalesce(channel.dc.weightedVotesCount, 0) < 0 THEN 0 ELSE coalesce(channel.dc.weightedVotesCount, 0) END) AS score
-WITH d, score, totalCount,
-     [channel IN channelData |
-      {
-        id: channel.dc.id,
-        createdAt: channel.dc.createdAt,
-        channelUniqueName: channel.dc.channelUniqueName,
-        discussionId: channel.dc.discussionId,
-        Flairs: [flair IN channel.assignedFlairs WHERE flair IS NOT NULL | {
-          id: flair.id,
-          channelUniqueName: flair.channelUniqueName,
-          displayName: flair.displayName,
-          color: flair.color,
-          order: flair.order,
-          archived: flair.archived
-        }],
-        Channel: {
-          uniqueName: channel.dc.channelUniqueName,
-          channelIconURL: channel.channelIconURL
-        },
-        UpvotedByUsers: [up in channel.upvotedByUsers | { username: up.username }],
-        SuperUpvotedByUsers: [sup in channel.superUpvotedByUsers | { username: sup.username }],
-        CommentsAggregate: {
-            count: channel.commentsCount
-        }
-      }] AS discussionChannels
-
-WITH d, discussionChannels, score, totalCount
-
-// Handle tags
-OPTIONAL MATCH (d)-[:HAS_TAG]->(tag:Tag)
-
-WITH d, totalCount,
-    COLLECT(DISTINCT tag.text) AS tagsText,
-    discussionChannels,
-    score
-
-// Filter by tag
-WHERE SIZE($selectedTags) = 0 OR ANY(t IN tagsText WHERE t IN $selectedTags)
 
 OPTIONAL MATCH (d)<-[:POSTED_DISCUSSION]-(author:User)
-OPTIONAL MATCH (author)-[:HAS_SERVER_ROLE]->(serverRole:ServerRole)
 
-// Calculate the discussion's age in months
-WITH d, totalCount, 
-  tagsText, 
-  author, 
-  serverRole,
-  discussionChannels, 
-  score,
-  duration.between(d.createdAt, datetime()).months + 
-    duration.between(d.createdAt, datetime()).days / 30.0 AS ageInMonths
+CALL {
+  WITH d
+  OPTIONAL MATCH (d)-[:HAS_ALBUM]->(album:Album)
+  OPTIONAL MATCH (album)-[:HAS_IMAGE]->(image:Image)
+  WHERE image.id IS NOT NULL
+    AND coalesce(image.archived, false) = false
+    AND coalesce(image.permanentlyRemoved, false) = false
+    AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
+  RETURN head(collect(DISTINCT album)) AS album,
+         [img IN collect(DISTINCT image) WHERE img IS NOT NULL | {
+           id: img.id,
+           url: img.url,
+           alt: img.alt,
+           caption: img.caption,
+           archived: img.archived,
+           permanentlyRemoved: img.permanentlyRemoved
+         }] AS albumImages
+}
 
-// Give a default value for the age in months if it's null
-WITH d, totalCount, 
-  tagsText, 
-  author, 
-  serverRole,
-  discussionChannels, 
-  score,
-  CASE WHEN ageInMonths IS NULL THEN 0 ELSE ageInMonths END AS ageInMonths
+CALL {
+  WITH d
+  OPTIONAL MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(downloadableFile:DownloadableFile)
+  WHERE downloadableFile.permanentlyRemoved IS NULL OR downloadableFile.permanentlyRemoved = false
+  RETURN [downloadableFile IN collect(DISTINCT downloadableFile)
+    WHERE downloadableFile IS NOT NULL | {
+    id: downloadableFile.id,
+    scanStatus: downloadableFile.scanStatus
+  }] AS downloadableFiles
+}
 
-// Calculate the rank based on the age in months and the score
-WITH d, totalCount,
-    tagsText,
-    author, 
-    serverRole,
-    discussionChannels,
-    CASE WHEN score < 0 THEN 0 ELSE score END AS score, 
-    CASE WHEN $sortOption = "hot" THEN log10(score + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) ELSE NULL END AS rank
-
-WITH d, totalCount, tagsText, author, discussionChannels, score, rank,
-    COLLECT(DISTINCT serverRole) AS serverRoles
-
-WITH d, totalCount, tagsText, author, discussionChannels, score, rank, serverRoles
-
-// Sort based on individual elements, not the collection
-ORDER BY 
-    CASE WHEN $sortOption = "new" THEN d.createdAt END DESC,
-    CASE WHEN $sortOption = "top" THEN score END DESC,
-    CASE WHEN $sortOption = "hot" THEN rank END DESC,
-    d.createdAt DESC
-
-// Apply pagination
-WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles
-SKIP toInteger($offset)
-LIMIT toInteger($limit)
-
-OPTIONAL MATCH (d)-[:HAS_ALBUM]->(album:Album)
-OPTIONAL MATCH (album)-[:HAS_IMAGE]->(image:Image)
-WHERE image.id IS NOT NULL
-  AND (image.archived IS NULL OR image.archived = false)
-  AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
-  AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
-
-WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album,
-     [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
-         id: image.id,
-         url: image.url,
-         alt: image.alt,
-         caption: image.caption,
-         archived: image.archived,
-         permanentlyRemoved: image.permanentlyRemoved
-     } END) WHERE img IS NOT NULL] AS albumImages
-
-OPTIONAL MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(downloadableFile:DownloadableFile)
-WHERE downloadableFile.permanentlyRemoved IS NULL OR downloadableFile.permanentlyRemoved = false
-
-WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album, albumImages,
-     [file IN COLLECT(DISTINCT CASE WHEN downloadableFile IS NOT NULL THEN {
-         id: downloadableFile.id,
-         scanStatus: downloadableFile.scanStatus
-     } END) WHERE file IS NOT NULL] AS downloadableFiles
-
-// Check if the logged-in user has favorited this discussion
-OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
-WITH totalCount, d, tagsText, author, discussionChannels, score, rank, serverRoles, album, albumImages, downloadableFiles,
-     CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
-
-// Return the results
 RETURN {
-    id: d.id,
-    title: d.title,
-    body: d.body,
-    createdAt: d.createdAt,
-    updatedAt: d.updatedAt,
-    hasSensitiveContent: d.hasSensitiveContent,
-    hasSpoiler: d.hasSpoiler,
-    Author: CASE
-                WHEN author IS NULL THEN null
-                ELSE {
-                    username: author.username,
-                    displayName: author.displayName,
-                    profilePicURL: author.profilePicURL,
-                    createdAt: author.createdAt,
-                    discussionKarma: author.commentKarma,
-                    commentKarma: author.discussionKarma,
-                    ServerRoles: serverRoles
-                }
-              END,
-    DiscussionChannels: discussionChannels,
-    Tags: [t IN tagsText | {text: t}],
-    Album: CASE
-      WHEN album IS NULL THEN null
-      ELSE {
-        id: album.id,
-        imageOrder: album.imageOrder,
-        Images: albumImages
-      }
-    END,
-    DownloadableFiles: downloadableFiles,
-    isFavorited: isFavorited
-} AS discussion, totalCount
+  id: d.id,
+  title: d.title,
+  body: d.body,
+  createdAt: d.createdAt,
+  updatedAt: d.updatedAt,
+  hasSensitiveContent: d.hasSensitiveContent,
+  hasSpoiler: d.hasSpoiler,
+  Author: CASE WHEN author IS NULL THEN null ELSE {
+    username: author.username,
+    displayName: author.displayName,
+    profilePicURL: author.profilePicURL,
+    createdAt: author.createdAt,
+    discussionKarma: author.discussionKarma,
+    commentKarma: author.commentKarma
+  } END,
+  DiscussionChannels: discussionChannels,
+  Tags: tags,
+  Album: CASE WHEN album IS NULL THEN null ELSE {
+    id: album.id,
+    imageOrder: album.imageOrder,
+    Images: albumImages
+  } END,
+  DownloadableFiles: downloadableFiles,
+  isFavorited: CASE
+    WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null
+    ELSE EXISTS {
+      MATCH (:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
+    }
+  END
+} AS discussion
+ORDER BY pagePosition

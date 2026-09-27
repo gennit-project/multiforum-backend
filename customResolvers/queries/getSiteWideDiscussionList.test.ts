@@ -12,18 +12,39 @@ type SessionRunCall = {
 
 const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
   const runCalls: SessionRunCall[] = [];
+  const run = async (query: string, params: Record<string, unknown>) => {
+    runCalls.push({ query, params });
+    const records: Array<Record<string, unknown>> = query.includes(
+      "RETURN count(d) AS totalCount"
+    )
+      ? mockRecords.slice(0, 1).map((record) => ({
+          totalCount: record.totalCount,
+        }))
+      : query.includes("RETURN d.id AS discussionId")
+        ? mockRecords.map((record) => ({
+            discussionId: (record.discussion as { id?: string } | undefined)?.id,
+          }))
+        : mockRecords;
+
+    return {
+      records: records.map((record) => ({
+        get: (key: string) => record[key],
+      })),
+    };
+  };
 
   return {
     runCalls,
     session: () => ({
-      run: async (query: string, params: Record<string, unknown>) => {
-        runCalls.push({ query, params });
-        return {
-          records: mockRecords.map((record) => ({
-            get: (key: string) => record[key],
-          })),
-        };
-      },
+      run,
+      executeWrite: async (
+        work: (transaction: {
+          run: (query: string, params: Record<string, unknown>) => Promise<unknown>;
+        }) => Promise<unknown>
+      ) =>
+        work({
+          run,
+        }),
       close: async () => {},
     }),
   } as unknown as Driver & { runCalls: SessionRunCall[] };
@@ -64,7 +85,7 @@ test("getSiteWideDiscussionList passes empty search input when not provided", as
 
   await resolver(null, { ...baseArgs, searchInput: "" } as any, createMockContext(), mockInfo);
 
-  assert.equal(driver.runCalls.length, 1);
+  assert.equal(driver.runCalls.length, 2);
   assert.equal(driver.runCalls[0].params.searchInput, "");
   assert.equal(driver.runCalls[0].params.titleRegex, "(?i).*.*");
   assert.equal(driver.runCalls[0].params.bodyRegex, "(?i).*.*");
@@ -429,15 +450,23 @@ test("getSiteWideDiscussionList returns multiple discussions", async () => {
   assert.equal(result.discussions[0].id, "d-1");
   assert.equal(result.discussions[1].id, "d-2");
   assert.equal(result.discussions[2].id, "d-3");
+  assert.deepEqual(driver.runCalls[2].params.discussionIds, [
+    "d-1",
+    "d-2",
+    "d-3",
+  ]);
 });
 
 // Error handling tests
 test("getSiteWideDiscussionList throws error with message when query fails", async () => {
   const driver = {
     session: () => ({
-      run: async () => {
-        throw new Error("Database unavailable");
-      },
+      executeWrite: async (work: (transaction: { run: () => Promise<never> }) => Promise<unknown>) =>
+        work({
+          run: async () => {
+            throw new Error("Database unavailable");
+          },
+        }),
       close: async () => {},
     }),
   } as unknown as Driver;
