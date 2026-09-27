@@ -30,6 +30,7 @@ import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolic
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
 import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
+import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
 import dotenv from "dotenv";
@@ -251,6 +252,7 @@ async function initializeServer() {
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
     await ensureSchemaConstraints(neoSchema);
     await ensureAgeGateIndexes(driver);
+    await ensureDiscussionListIndexes(driver);
     await provisionInstanceOnStartup({
       ogm,
       log: (message) => logger.info(message),
