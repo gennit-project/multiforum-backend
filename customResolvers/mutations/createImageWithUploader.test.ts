@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import createImageWithUploaderResolver from "./createImageWithUploader.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
+import type { ImageVariantGenerationResult } from "../../services/imageVariants.js";
 
 // The resolver's 4th argument is GraphQLResolveInfo; the tests don't use it,
 // so pass a null cast to the real type instead of an untyped null.
@@ -531,4 +533,114 @@ test("createImageWithUploader works with only url provided", async () => {
   assert.equal(createInput.url, "https://example.com/minimal.jpg");
   assert.equal(createInput.alt, undefined);
   assert.equal(createInput.caption, undefined);
+});
+
+// Stored image variants
+const uploadMetadata = {
+  storageBucket: "bucket",
+  storageObjectName: "uploads/alice/photo.jpg",
+  storageUrl: "https://storage.googleapis.com/bucket/uploads/alice/photo.jpg",
+  uploadedAt: "2026-09-27T00:00:00.000Z",
+  uploadedByUsername: "alice",
+  uploadedByIp: "203.0.113.10",
+};
+
+// Serves the upload audit record for both the lookup and the claim.
+const buildUploadDriver = () =>
+  ({
+    session: () => ({
+      run: async () => ({
+        records: [
+          { get: (key: string) => uploadMetadata[key as keyof typeof uploadMetadata] },
+        ],
+      }),
+      close: async () => undefined,
+    }),
+  }) as unknown as Driver;
+
+const variantResult: ImageVariantGenerationResult = {
+  originalWidth: 1200,
+  originalHeight: 800,
+  variantUrls: {
+    list80: "https://storage.googleapis.com/bucket/uploads/alice/photo__list80.webp",
+    list160: "https://storage.googleapis.com/bucket/uploads/alice/photo__list160.webp",
+  },
+  variantStorageObjectNames: {},
+};
+
+type UploadCallParams = {
+  generateVariants: (args: { storageBucket: string; storageObjectName: string }) => Promise<ImageVariantGenerationResult>;
+  input?: Record<string, unknown>;
+};
+
+const createWithUpload = async ({ generateVariants, input }: UploadCallParams) => {
+  const Image = new ModelStub(
+    () => [],
+    () => ({ images: [{ id: "img-1", url: uploadMetadata.storageUrl }] })
+  );
+  const resolver = createImageWithUploaderResolver({
+    Image: Image as any,
+    User: createUserOgmModel("alice") as any,
+    driver: buildUploadDriver(),
+    generateVariants: generateVariants as any,
+  });
+  const result = await resolver(
+    null,
+    {
+      input: input ?? {
+        url: uploadMetadata.storageUrl,
+        storageObjectName: uploadMetadata.storageObjectName,
+      },
+    },
+    createMockContext("alice"),
+    mockInfo
+  );
+  return { Image, result };
+};
+
+test("createImageWithUploader persists generated variants for uploaded images", async () => {
+  const { Image } = await createWithUpload({ generateVariants: async () => variantResult });
+
+  const created = Image.createCalls[0].input[0];
+  assert.deepEqual(
+    {
+      width: created.width,
+      height: created.height,
+      variantUrls: created.variantUrls,
+      list80Url: created.list80Url,
+      list160Url: created.list160Url,
+      list320Url: created.list320Url,
+    },
+    {
+      width: 1200,
+      height: 800,
+      variantUrls: variantResult.variantUrls,
+      list80Url: variantResult.variantUrls.list80,
+      list160Url: variantResult.variantUrls.list160,
+      list320Url: undefined,
+    }
+  );
+});
+
+test("createImageWithUploader still creates the image when variant generation throws", async () => {
+  const { result } = await createWithUpload({
+    generateVariants: async () => {
+      throw new Error("storage unavailable");
+    },
+  });
+
+  assert.equal((result as { id: string }).id, "img-1");
+});
+
+test("createImageWithUploader skips variant generation for URL-only images", async () => {
+  const calls: unknown[] = [];
+  await createWithUpload({
+    generateVariants: async (args) => {
+      calls.push(args);
+      return variantResult;
+    },
+    input: { url: "https://example.com/linked.jpg" },
+  });
+
+  assert.equal(calls.length, 0);
 });

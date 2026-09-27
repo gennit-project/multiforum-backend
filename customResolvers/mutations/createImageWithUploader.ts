@@ -9,6 +9,10 @@ import {
   claimUploadAuditMetadata,
   getUnclaimedUploadAuditMetadata,
 } from "../../services/uploadStorageMetadata.js";
+import {
+  buildImageVariantPersistenceFields,
+  generateImageVariants,
+} from "../../services/imageVariants.js";
 
 // Input type for image creation (excluding Uploader since we set it automatically)
 type ImageInput = {
@@ -31,6 +35,7 @@ type Input = {
   Image: ImageModel;
   User: UserModel;
   driver?: Driver;
+  generateVariants?: typeof generateImageVariants;
 };
 
 const selectionSet = `
@@ -61,7 +66,7 @@ const selectionSet = `
 `;
 
 const getResolver = (input: Input) => {
-  const { Image, User, driver } = input;
+  const { Image, User, driver, generateVariants = generateImageVariants } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input: imageInput } = args;
@@ -101,6 +106,22 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("Upload metadata not found for this image.");
     }
 
+    // Stored list/detail variants are an optimization: an upload whose
+    // variants fail to generate still succeeds and falls back to its url.
+    let variantFields: ReturnType<typeof buildImageVariantPersistenceFields> = {};
+    if (uploadMetadata?.storageBucket && uploadMetadata.storageObjectName) {
+      try {
+        variantFields = buildImageVariantPersistenceFields(
+          await generateVariants({
+            storageBucket: uploadMetadata.storageBucket,
+            storageObjectName: uploadMetadata.storageObjectName,
+          })
+        );
+      } catch (error) {
+        logger.error("Failed to generate image variants:", error);
+      }
+    }
+
     // Build the create input with the Uploader relationship
     const createInput: any = {
       url: imageInput.url,
@@ -110,6 +131,7 @@ const getResolver = (input: Input) => {
       uploadedAt: uploadMetadata?.uploadedAt,
       uploadedByUsername: uploadMetadata?.uploadedByUsername,
       uploadedByIp: uploadMetadata?.uploadedByIp,
+      ...variantFields,
       alt: imageInput.alt,
       caption: imageInput.caption,
       longDescription: imageInput.longDescription,
