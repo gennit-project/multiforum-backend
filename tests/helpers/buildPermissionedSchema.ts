@@ -21,7 +21,7 @@ import type { GraphQLSchema } from "graphql";
 import typeDefs from "../../typeDefs.js";
 import permissions from "../../permissions.js";
 import sensitiveContentPolicyMiddleware from "../../middleware/sensitiveContentPolicyMiddleware.js";
-import ageGateInterlockMiddleware from "../../middleware/ageGateInterlockMiddleware.js";
+import ageGateWriteValidatorMiddleware from "../../middleware/ageGateWriteValidatorMiddleware.js";
 import getCustomResolvers from "../../customResolvers.js";
 import type { ResolverDeps } from "../../customResolvers/resolverDeps.js";
 
@@ -56,7 +56,7 @@ export async function buildPermissionedSchema(options?: {
   schema = options?.transformSchema?.(schema) ?? schema;
   schema = applyMiddleware(
     schema,
-    ageGateInterlockMiddleware,
+    ageGateWriteValidatorMiddleware,
     sensitiveContentPolicyMiddleware,
     permissions
   );
