@@ -90,6 +90,7 @@ const {
 // fallback until its public surface has been reviewed and added here.
 const PUBLIC_READ_TYPES = [
   "Activity",
+  "AgeGateCheck",
   "AgePolicy",
   "Album",
   "ApplicablePluginPipeline",

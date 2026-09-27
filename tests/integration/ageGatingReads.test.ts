@@ -391,3 +391,50 @@ test("birthday is absent from generated user query fields", async () => {
   );
   assert.equal(result.data, undefined);
 });
+
+// The just-in-time age check a detail page makes when it can't load a
+// discussion. It must say what each viewer needs without returning content.
+const ageGateCheck = async (discussionId: string, username?: string) => {
+  const result = await execute(
+    `query {
+      getDiscussionAgeGateCheck(discussionId: "${discussionId}") {
+        requiresAgeCheck
+        status
+        minimumAge
+      }
+    }`,
+    username
+  );
+  assert.equal(result.errors, undefined, JSON.stringify(result.errors));
+  return { ...(result.data as any)?.getDiscussionAgeGateCheck };
+};
+
+test("the age check tells each viewer what they need to open a sensitive discussion", async () => {
+  assert.deepEqual(
+    {
+      anonymous: await ageGateCheck("discussion-sensitive"),
+      unknownAge: await ageGateCheck("discussion-sensitive", "unknown-age"),
+      minor: await ageGateCheck("discussion-sensitive", "minor"),
+      adult: await ageGateCheck("discussion-sensitive", "adult"),
+    },
+    {
+      anonymous: { requiresAgeCheck: true, status: "SIGN_IN_REQUIRED", minimumAge: 18 },
+      unknownAge: { requiresAgeCheck: true, status: "BIRTHDAY_REQUIRED", minimumAge: 18 },
+      minor: { requiresAgeCheck: true, status: "UNDER_MINIMUM_AGE", minimumAge: 18 },
+      adult: { requiresAgeCheck: false, status: "ALLOWED", minimumAge: null },
+    }
+  );
+});
+
+test("the age check reports nothing for public or missing discussions", async () => {
+  assert.deepEqual(
+    {
+      public: await ageGateCheck("discussion-public"),
+      missing: await ageGateCheck("no-such-discussion"),
+    },
+    {
+      public: { requiresAgeCheck: false, status: "ALLOWED", minimumAge: null },
+      missing: { requiresAgeCheck: false, status: "ALLOWED", minimumAge: null },
+    }
+  );
+});

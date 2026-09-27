@@ -161,7 +161,7 @@ Restricted viewers don't see gated content in lists, feeds or search. When someo
 - **Under the minimum age:** "You can't view this content."
 - **Allowed:** the content.
 
-The page needs to know that gated content exists without receiving any of it, since even the title may be the sensitive part. A small query answers "does this exist, and does it need an age check?" for a discussion, comment or download id, and returns no content fields. The frontend adds the gate UI (sign-in prompt, birthday form, refusal).
+The page needs to know that gated content exists without receiving any of it, since even the title may be the sensitive part. `getDiscussionAgeGateCheck(discussionId)` answers this for a discussion or download (downloads are discussions). It returns only `requiresAgeCheck`, a `status` (`ALLOWED`, `SIGN_IN_REQUIRED`, `BIRTHDAY_REQUIRED`, `UNDER_MINIMUM_AGE`) and the `minimumAge`. It reads the discussion's mark directly, since the authorization filter hides the discussion from exactly these viewers. It reports `ALLOWED` when the gate is off, the discussion isn't marked or doesn't exist, or the viewer is old enough, so it reveals only that a marked discussion with that id exists, and only while the gate is on. Comments inherit their discussion's mark, so a comment link opens the discussion page and gets the same check. The frontend adds the gate UI (sign-in prompt, birthday form, refusal) where it would otherwise show "not found".
 
 A self-entered birthday is a self-declaration, similar to Reddit's opt-in, and suits "mature/NSFW" content. Some jurisdictions require stronger age verification for explicit adult content (for example the UK Online Safety Act and several US state laws). Revisit before hosting that kind of content.
 
@@ -180,7 +180,7 @@ Performance first, made safe by an interlock:
 3. **Mark at write time:** the driver-level reconcile step, the stamps, and no auto-commit writes of age-gated content.
 4. **The validator** (log-only, then enforcing) for relationship-only moves, plus file attachments in `updateDiscussionWithChannelConnections`. Implemented log-only; switch to `AGE_GATE_WRITE_VALIDATOR=enforce` after reviewing the logs.
 5. **Remove the interlock.** Marking content sensitive and enabling the gate work again, now with correct flags. Done once the validator was enforcing in production (`AGE_GATE_WRITE_VALIDATOR=enforce`, after a log-only period with no flagged writes). Run `age-gate:sweep` before turning the gate on for an instance.
-6. **Just-in-time age check:** the "requires age check" query and the frontend gate.
+6. **Just-in-time age check:** the "requires age check" query (`getDiscussionAgeGateCheck`) and the frontend gate.
 7. Optional: remove the `ageGateSensitive` `@cypher` fields once nothing references them.
 
 Each step is its own PR.

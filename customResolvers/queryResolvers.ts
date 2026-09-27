@@ -23,6 +23,7 @@ import publicCollectionsContaining from "./queries/publicCollectionsContaining.j
 import getOwnEmail from "./queries/getOwnEmail.js";
 import getAgePolicy from "./queries/getAgePolicy.js";
 import getMyAgeProfile from "./queries/getMyAgeProfile.js";
+import getDiscussionAgeGateCheck from "./queries/getDiscussionAgeGateCheck.js";
 import getServerHealthDashboard from "./queries/getServerHealthDashboard.js";
 import getDownloadScanReviewQueue from "./queries/getDownloadScanReviewQueue.js";
 import getSiteWideIssueList from "./queries/getSiteWideIssueList.js";
@@ -206,6 +207,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getAgePolicy: getAgePolicy({ ServerConfig }),
     getMyAgeProfile: getMyAgeProfile({ driver, ServerConfig }),
+    getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, ServerConfig }),
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
       driver,
       ServerConfig
