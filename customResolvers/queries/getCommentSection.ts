@@ -1,88 +1,25 @@
 import type { GraphQLResolveInfo } from 'graphql'
-import type { Driver, Record as Neo4jRecord } from 'neo4j-driver'
+import type { Driver } from 'neo4j-driver'
 import {
+  getCommentSectionChannelQuery,
   getCommentsQuery,
-  getNewCommentsQuery
 } from '../cypher/cypherQueries.js'
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import { populateCommentSubscriptionStatus } from "./commentSubscriptionStatus.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { DiscussionChannelModel, ServerConfigModel } from "../../ogm_types.js";
+import type { ServerConfigModel } from "../../ogm_types.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { normalizePagination } from "../../services/pagination.js";
 
-const discussionChannelSelectionSet = `
-{
-    id
-    createdAt
-    weightedVotesCount
-    discussionId
-    channelUniqueName
-    emoji
-    answered
-    archived
-    Channel {
-        uniqueName
-        feedbackEnabled
-        Bots {
-            username
-            displayName
-            botProfileId
-            isDeprecated
-        }
-    }
-    Discussion {
-        id
-        title
-        Author {
-            username
-            displayName
-            profilePicURL
-            commentKarma
-            createdAt
-            discussionKarma
-        }
-    }
-    CommentsAggregate(where: { isFeedbackComment: false }) {
-        count
-    }
-    UpvotedByUsers {
-        username
-    }
-    UpvotedByUsersAggregate {
-        count
-    }
-    SuperUpvotedByUsers {
-        username
-    }
-    Answers {
-        id
-        text
-        createdAt
-        CommentAuthor {
-          ... on User {
-              username
-          }
-          ... on ModerationProfile {
-              displayName
-          }
-        }
-    }
-    SubscribedToNotifications {
-        username
-    }
-}
-`
-
 type Input = {
   driver: Driver
-  DiscussionChannel: DiscussionChannelModel
   ServerConfig?: ServerConfigModel
   serverName?: string
 }
+
+const ANSWER_LIMIT = 20
 
 type Args = {
   channelUniqueName: string
@@ -94,8 +31,8 @@ type Args = {
 }
 
 const getResolver = (input: Input) => {
-  const { driver, DiscussionChannel, ServerConfig, serverName } = input
-  return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
+  const { driver, ServerConfig, serverName } = input
+  return async (_parent: unknown, args: Args, context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const { channelUniqueName, discussionId, modName, sort } =
       args
     const { offset, limit } = normalizePagination(args)
@@ -119,26 +56,6 @@ const getResolver = (input: Input) => {
     const session = driver.session()
 
     try {
-      const result = await DiscussionChannel.find({
-        where: {
-          discussionId,
-          channelUniqueName
-        },
-        // get everything about the DiscussionChannel
-        // except the comments
-        selectionSet: discussionChannelSelectionSet
-      })
-
-      if (result.length === 0) {
-        // If no DiscussionChannel is found, return null and an empty array
-        return {
-          DiscussionChannel: null,
-          Comments: []
-        }
-      }
-
-      const discussionChannel = result[0]
-      const discussionChannelId = discussionChannel.id
       const effectiveSort = sort === 'top' ? 'top' : sort === 'new' ? 'new' : 'hot'
       const rankingParams = await getHotRankingQueryParams({
         executor: session,
@@ -147,77 +64,40 @@ const getResolver = (input: Input) => {
         serverName,
       })
 
-      // Filter SubscribedToNotifications to only show current user's subscription status
-      if (loggedInUsername && discussionChannel.SubscribedToNotifications) {
-        const isSubscribed = discussionChannel.SubscribedToNotifications.some((sub: { username: string }) => sub.username === loggedInUsername)
-        discussionChannel.SubscribedToNotifications = (isSubscribed ? [{ username: loggedInUsername }] : []) as typeof discussionChannel.SubscribedToNotifications
-      } else {
-        discussionChannel.SubscribedToNotifications = []
-      }
+      // Keep metadata and page hydration on one leader transaction. The root
+      // comment query selects the page before expanding votes, versions, or
+      // replies, so the amount of hydration work is bounded by `limit`.
+      return await session.executeWrite(async (transaction) => {
+        const channelResult = await transaction.run(
+          getCommentSectionChannelQuery,
+          {
+            discussionId,
+            channelUniqueName,
+            loggedInUsername,
+            answerLimit: ANSWER_LIMIT,
+          }
+        )
+        const discussionChannel = channelResult.records[0]?.get('DiscussionChannel')
 
-      let commentsResult: Array<{
-        id?: string | null
-        SubscribedToNotifications?: Array<{ username: string }>
-        [key: string]: unknown
-      }> = []
+        if (!discussionChannel) {
+          return { DiscussionChannel: null, Comments: [] }
+        }
 
-      if (sort === 'new') {
-        // if sort is "new", get the comments sorted by createdAt.
-        const queryResult = await session.run(getNewCommentsQuery, {
-          discussionChannelId,
+        const queryResult = await transaction.run(getCommentsQuery, {
+          discussionChannelId: discussionChannel.id,
           modName,
           offset,
           limit,
-          loggedInUsername
-        })
-
-        commentsResult = queryResult.records.map((record: Neo4jRecord) => {
-          return record.get('comment')
-        })
-      } else if (sort === 'top') {
-        // if sort is "top", get the comments sorted by weightedVotesCount.
-        // Treat a null weightedVotesCount as 0.
-        const queryResult = await session.run(getCommentsQuery, {
-          discussionChannelId,
-          modName,
-          offset,
-          limit,
-          sortOption: 'top',
+          sortOption: effectiveSort,
           loggedInUsername,
           ...rankingParams,
         })
 
-        commentsResult = queryResult.records.map((record: Neo4jRecord) => {
-          return record.get('comment')
-        })
-      } else {
-        // if sort is "hot", get the comments sorted by hotness,
-        // which takes into account both weightedVotesCount and createdAt.
-        const queryResult = await session.run(getCommentsQuery, {
-          discussionChannelId,
-          modName,
-          offset,
-          limit,
-          sortOption: 'hot',
-          loggedInUsername,
-          ...rankingParams,
-        })
-
-        commentsResult = queryResult.records.map((record: Neo4jRecord) => {
-          return record.get('comment')
-        })
-      }
-
-      commentsResult = await populateCommentSubscriptionStatus({
-        comments: commentsResult,
-        loggedInUsername,
-        session,
+        return {
+          DiscussionChannel: discussionChannel,
+          Comments: queryResult.records.map((record) => record.get('comment')),
+        }
       })
-
-      return {
-        DiscussionChannel: discussionChannel,
-        Comments: commentsResult
-      }
     } catch (error: unknown) {
       logger.error('Error getting comment section:', error)
       const message = error instanceof Error ? error.message : String(error)

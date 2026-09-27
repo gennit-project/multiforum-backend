@@ -38,11 +38,21 @@ const anon = () => ({
 
 test("getCommentSection returns root comments for a discussion channel", async () => {
   await run(
-    `CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'disc-1', channelUniqueName: 'test-channel', createdAt: datetime() })
-     CREATE (u:User { username: 'alice' })
+    `CREATE (channel:Channel { uniqueName: 'test-channel', feedbackEnabled: true })
+     CREATE (discussion:Discussion { id: 'disc-1', title: 'Test discussion', createdAt: datetime() })
+     CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'disc-1', channelUniqueName: 'test-channel', createdAt: datetime() })
+     CREATE (u:User { username: 'alice', displayName: 'Alice' })
      CREATE (c:Comment { id: 'c1', text: 'a root comment', isRootComment: true, archived: false, createdAt: datetime() })
+     CREATE (reply:Comment { id: 'c2', text: 'a reply', isRootComment: false, archived: false, createdAt: datetime() })
+     CREATE (voter:User { username: 'bob' })
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(channel)
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (u)-[:POSTED_DISCUSSION]->(discussion)
      CREATE (dc)-[:CONTAINS_COMMENT]->(c)
-     CREATE (u)-[:AUTHORED_COMMENT]->(c)`
+     CREATE (dc)-[:CONTAINS_COMMENT]->(reply)
+     CREATE (u)-[:AUTHORED_COMMENT]->(c)
+     CREATE (reply)-[:IS_REPLY_TO]->(c)
+     CREATE (voter)-[:UPVOTED_COMMENT]->(c)`
   );
 
   const result = await env.resolvers.Query.getCommentSection(
@@ -55,6 +65,11 @@ test("getCommentSection returns root comments for a discussion channel", async (
   assert.equal(result.Comments.length, 1);
   assert.equal(result.Comments[0].id, "c1");
   assert.equal(result.Comments[0].text, "a root comment");
+  assert.equal(result.DiscussionChannel.CommentsAggregate.count.toNumber(), 2);
+  assert.equal(result.DiscussionChannel.RootCommentsAggregate.count.toNumber(), 1);
+  assert.equal(result.Comments[0].ChildCommentsAggregate.count.toNumber(), 1);
+  assert.equal(result.Comments[0].UpvotedByUsersAggregate.count.toNumber(), 1);
+  assert.deepEqual(result.Comments[0].UpvotedByUsers, [{ username: "bob" }]);
 });
 
 test("getCommentSection returns empty when the discussion channel is missing", async () => {

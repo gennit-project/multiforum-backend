@@ -31,9 +31,6 @@ test("comment sections return an empty not-found shape for a sensitive discussio
   const { driver, runs } = sensitiveDriver();
   const resolver = getCommentSection({
     driver,
-    DiscussionChannel: {
-      find: async () => { throw new Error("content lookup must not run"); },
-    },
   } as any);
 
   const result = await resolver(null, {
