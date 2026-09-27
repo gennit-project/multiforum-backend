@@ -2850,6 +2850,24 @@ const typeDefinitions = gql`
     minimumSensitiveContentAge: Int!
   }
 
+  """What a viewer needs before they can open an age-gated discussion."""
+  enum AgeGateCheckStatus {
+    ALLOWED
+    SIGN_IN_REQUIRED
+    BIRTHDAY_REQUIRED
+    UNDER_MINIMUM_AGE
+  }
+
+  """
+  Whether a discussion is behind the sensitive-content age gate for this
+  viewer. Carries no content fields.
+  """
+  type AgeGateCheck @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+    requiresAgeCheck: Boolean!
+    status: AgeGateCheckStatus!
+    minimumAge: Int
+  }
+
   """The authenticated caller's private age-attestation status."""
   type OwnAgeProfile {
     birthday: String
@@ -2990,6 +3008,12 @@ const typeDefinitions = gql`
     getAgePolicy: AgePolicy!
     """Return only the authenticated caller's private age profile."""
     getMyAgeProfile: OwnAgeProfile
+    """
+    Whether a discussion (or download) the viewer can't load is behind the
+    sensitive-content age gate, and what they need to open it. Returns no
+    content, so it's safe to call for restricted viewers.
+    """
+    getDiscussionAgeGateCheck(discussionId: ID!): AgeGateCheck!
     getUploadedDownloadableFiles(username: String!): [UploadedDownloadableFileGroup!]!
     getUserFavoriteComment(commentId: ID!): Boolean
     getSortedChannels(
