@@ -619,8 +619,12 @@ const typeDefinitions = gql`
         { indexName: "channelFulltext", fields: ["uniqueName", "description"] }
       ]
     ) {
-    uniqueName: String! @unique
+    # Public URL and denormalized identity key. Renaming requires an explicit
+    # migration that updates every stored reference; generic updates must not
+    # change it.
+    uniqueName: String! @unique @settable(onCreate: true, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
+      @settable(onCreate: false, onUpdate: false)
     displayName: String
     description: String
     locked: Boolean
@@ -733,13 +737,17 @@ const typeDefinitions = gql`
       @settable(onCreate: false, onUpdate: false)
       @selectable(onRead: false, onAggregate: false)
     locked: Boolean
-    discussionId: ID! # used for uniqueness constraint
-    channelUniqueName: String! # used for uniqueness constraint
+    discussionId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
+    channelUniqueName: String! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
     createdAt: DateTime! @timestamp(operations: [CREATE])
+      @settable(onCreate: false, onUpdate: false)
     weightedVotesCount: Float
     Discussion: Discussion
       @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
-    Channel: Channel @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
+      @settable(onCreate: true, onUpdate: false)
+    Channel: Channel
+      @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
+      @settable(onCreate: true, onUpdate: false)
     UpvotedByUsers: [User!]!
       @relationship(type: "UPVOTED_DISCUSSION", direction: IN)
     SuperUpvotedByUsers: [User!]!
@@ -835,11 +843,16 @@ const typeDefinitions = gql`
   type EventChannel {
     id: ID! @id @unique
     locked: Boolean
-    eventId: ID! # used for uniqueness constraint
-    channelUniqueName: String! # used for uniqueness constraint
+    eventId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
+    channelUniqueName: String! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
     createdAt: DateTime! @timestamp(operations: [CREATE])
-    Event: Event @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
-    Channel: Channel @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
+      @settable(onCreate: false, onUpdate: false)
+    Event: Event
+      @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
+      @settable(onCreate: true, onUpdate: false)
+    Channel: Channel
+      @relationship(type: "POSTED_IN_CHANNEL", direction: OUT)
+      @settable(onCreate: true, onUpdate: false)
     Comments: [Comment!]!
       @relationship(type: "CONTAINS_COMMENT", direction: OUT)
     archived: Boolean @default(value: false)

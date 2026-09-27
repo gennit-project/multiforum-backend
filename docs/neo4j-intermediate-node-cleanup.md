@@ -28,7 +28,7 @@ Review `repairable` and `toQuarantine`, confirm a current backup exists, then
 apply:
 
 ```sh
-pnpm run neo4j:cleanup-intermediate-nodes -- --apply
+pnpm run neo4j:cleanup-intermediate-nodes --apply
 ```
 
 The apply operation runs in one managed transaction and is idempotent. A

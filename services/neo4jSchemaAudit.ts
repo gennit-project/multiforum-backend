@@ -20,7 +20,9 @@ export const requiredOnlineIndexNames = [
 
 export type IntegrityCounts = {
   discussionChannelsWithInvalidEndpoints: number;
+  discussionChannelsWithMismatchedIdentity: number;
   eventChannelsWithInvalidEndpoints: number;
+  eventChannelsWithMismatchedIdentity: number;
   commentsWithMultipleParents: number;
   commentsInReplyCycles: number;
   invalidChannelIssueCounters: number;
@@ -88,6 +90,24 @@ export async function runNeo4jSchemaAudit(
          OR count { (entry)-[:POSTED_IN_CHANNEL]->(:Channel) } <> 1
       RETURN count(entry) AS count
     `);
+    const discussionChannelIdentityMismatches = await session.run(`
+      MATCH (entry:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
+      MATCH (entry)-[:POSTED_IN_CHANNEL]->(channel:Channel)
+      WHERE entry.discussionId IS NULL
+         OR entry.channelUniqueName IS NULL
+         OR entry.discussionId <> discussion.id
+         OR entry.channelUniqueName <> channel.uniqueName
+      RETURN count(DISTINCT entry) AS count
+    `);
+    const eventChannelIdentityMismatches = await session.run(`
+      MATCH (entry:EventChannel)-[:POSTED_IN_CHANNEL]->(event:Event)
+      MATCH (entry)-[:POSTED_IN_CHANNEL]->(channel:Channel)
+      WHERE entry.eventId IS NULL
+         OR entry.channelUniqueName IS NULL
+         OR entry.eventId <> event.id
+         OR entry.channelUniqueName <> channel.uniqueName
+      RETURN count(DISTINCT entry) AS count
+    `);
     const multipleParents = await session.run(`
       MATCH (comment:Comment)-[:IS_REPLY_TO]->()
       WITH comment, count(*) AS parents
@@ -119,8 +139,16 @@ export async function runNeo4jSchemaAudit(
           discussionChannels.records,
           "count"
         ),
+        discussionChannelsWithMismatchedIdentity: firstCount(
+          discussionChannelIdentityMismatches.records,
+          "count"
+        ),
         eventChannelsWithInvalidEndpoints: firstCount(
           eventChannels.records,
+          "count"
+        ),
+        eventChannelsWithMismatchedIdentity: firstCount(
+          eventChannelIdentityMismatches.records,
           "count"
         ),
         commentsWithMultipleParents: firstCount(multipleParents.records, "count"),

@@ -10,7 +10,11 @@ import { cleanupIntermediateNodes } from "../services/intermediateNodeCleanup.js
 dotenv.config({ quiet: true });
 
 const apply = process.argv.includes("--apply");
-const unexpectedArgs = process.argv.slice(2).filter((arg) => arg !== "--apply");
+// npm requires `--` before script arguments while pnpm does not. Accept either
+// spelling so operators cannot be blocked by their package manager's syntax.
+const unexpectedArgs = process.argv
+  .slice(2)
+  .filter((arg) => arg !== "--apply" && arg !== "--");
 if (unexpectedArgs.length > 0) {
   throw new Error(`Unknown arguments: ${unexpectedArgs.join(", ")}`);
 }

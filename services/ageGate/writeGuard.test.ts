@@ -211,13 +211,13 @@ test("marking a discussion sensitive through updateDiscussions is allowed", () =
   );
 });
 
-test("marking a discussion sensitive through another mutation is flagged", () => {
+test("an immutable connector endpoint is absent before the write guard runs", () => {
   assert.deepEqual(
     unsafe("updateDiscussionChannels", {
       where: { id: "dc" },
       update: { Discussion: { update: { node: { hasSensitiveContent: true } } } },
     }),
-    ["sensitivity-write DiscussionUpdateInput.hasSensitiveContent"]
+    []
   );
 });
 
