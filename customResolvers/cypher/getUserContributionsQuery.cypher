@@ -1,115 +1,137 @@
 MATCH (u:User {username: $username})
 WITH u, date($startDate) AS startDate, date($endDate) AS endDate
 
-// Match comments and related data
-OPTIONAL MATCH (u)-[:AUTHORED_COMMENT]->(comment:Comment)
-WHERE date(datetime(comment.createdAt)) >= startDate AND date(datetime(comment.createdAt)) <= endDate
-  AND ($mayAccessSensitiveContent OR (
-    NOT EXISTS { MATCH (comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-    AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-    AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  ))
-OPTIONAL MATCH (comment)<-[:AUTHORED_COMMENT]-(commentAuthor:User)
+// Keep each activity type in a scoped subquery. This avoids carrying the rows
+// from one-to-many relationships into the next activity match.
+CALL {
+  WITH u, startDate, endDate
+  MATCH (u)-[:AUTHORED_COMMENT]->(comment:Comment)
+  WHERE date(datetime(comment.createdAt)) >= startDate
+    AND date(datetime(comment.createdAt)) <= endDate
+    AND ($mayAccessSensitiveContent OR (
+      NOT EXISTS { MATCH (comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+      AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+      AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+    ))
 
-// Match DiscussionChannel and its Channel (for permalink info)
-OPTIONAL MATCH (comment)<-[:CONTAINS_COMMENT]-(discussionChannel:DiscussionChannel)
-OPTIONAL MATCH (discussionChannel)-[:POSTED_IN_CHANNEL]->(discussionChannelNode:Channel)
+  CALL {
+    WITH comment
+    OPTIONAL MATCH (comment)<-[:CONTAINS_COMMENT]-(dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(channel:Channel)
+    RETURN head([entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
+      id: dc.id,
+      discussionId: dc.discussionId,
+      channelUniqueName: channel.uniqueName
+    } END) WHERE entry IS NOT NULL]) AS discussionChannel
+  }
+  CALL {
+    WITH comment
+    OPTIONAL MATCH (event:Event)-[:HAS_COMMENT]->(comment)
+    RETURN head(collect(DISTINCT event)) AS event
+  }
 
-// Match Event that contains this comment
-OPTIONAL MATCH (event:Event)-[:HAS_COMMENT]->(comment)
+  RETURN collect({
+    id: comment.id,
+    text: coalesce(comment.text, ''),
+    createdAt: toString(comment.createdAt),
+    CommentAuthor: {
+      username: u.username,
+      profilePicURL: u.profilePicURL
+    },
+    Channel: null,
+    DiscussionChannel: discussionChannel,
+    Event: CASE WHEN event IS NULL THEN null ELSE {
+      id: event.id,
+      title: coalesce(event.title, ''),
+      createdAt: toString(event.createdAt)
+    } END
+  }) AS comments
+}
 
-WITH u, startDate, endDate, collect({
-  id: comment.id,
-  text: COALESCE(comment.text, ""),
-  createdAt: toString(comment.createdAt),
-  CommentAuthor: CASE WHEN commentAuthor IS NOT NULL THEN { 
-    username: commentAuthor.username,
-    profilePicURL: COALESCE(commentAuthor.profilePicURL, null)
-  } ELSE NULL END,
-  Channel: null,
-  DiscussionChannel: CASE 
-    WHEN discussionChannel IS NOT NULL THEN { 
-      id: discussionChannel.id, 
-      discussionId: discussionChannel.discussionId,
-      channelUniqueName: discussionChannelNode.uniqueName 
-    } ELSE NULL END,
-  Event: CASE WHEN event IS NOT NULL THEN { 
+CALL {
+  WITH u, startDate, endDate
+  MATCH (u)-[:POSTED_DISCUSSION]->(discussion:Discussion)
+  WHERE date(datetime(discussion.createdAt)) >= startDate
+    AND date(datetime(discussion.createdAt)) <= endDate
+    AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
+
+  CALL {
+    WITH discussion
+    OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(channel:Channel)
+    RETURN [entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
+      id: dc.id,
+      channelUniqueName: channel.uniqueName,
+      discussionId: dc.discussionId
+    } END) WHERE entry IS NOT NULL] AS discussionChannels
+  }
+
+  RETURN collect({
+    id: discussion.id,
+    title: coalesce(discussion.title, ''),
+    createdAt: toString(discussion.createdAt),
+    hasDownload: discussion.hasDownload,
+    Author: {
+      username: u.username,
+      profilePicURL: u.profilePicURL
+    },
+    DiscussionChannels: discussionChannels
+  }) AS discussions
+}
+
+CALL {
+  WITH u, startDate, endDate
+  MATCH (u)-[:POSTED_BY]->(event:Event)
+  WHERE date(datetime(event.createdAt)) >= startDate
+    AND date(datetime(event.createdAt)) <= endDate
+
+  CALL {
+    WITH event
+    OPTIONAL MATCH (event)<-[:POSTED_IN_CHANNEL]-(ec:EventChannel)-[:POSTED_IN_CHANNEL]->(channel:Channel)
+    RETURN [entry IN collect(DISTINCT CASE WHEN ec IS NULL THEN null ELSE {
+      id: ec.id,
+      channelUniqueName: channel.uniqueName,
+      eventId: ec.eventId
+    } END) WHERE entry IS NOT NULL] AS eventChannels
+  }
+
+  RETURN collect({
     id: event.id,
-    title: COALESCE(event.title, ""),
-    createdAt: toString(event.createdAt)
-  } ELSE NULL END
-}) AS comments
+    title: coalesce(event.title, ''),
+    createdAt: toString(event.createdAt),
+    Poster: {
+      username: u.username,
+      profilePicURL: u.profilePicURL
+    },
+    EventChannels: eventChannels
+  }) AS events
+}
 
-// Match discussions
-OPTIONAL MATCH (u)-[:POSTED_DISCUSSION]->(discussion:Discussion)
-WHERE date(datetime(discussion.createdAt)) >= startDate AND date(datetime(discussion.createdAt)) <= endDate
-  AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
-OPTIONAL MATCH (discussion)<-[:POSTED_DISCUSSION]-(discussionAuthor:User)
-OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(discussionChannel:DiscussionChannel)
-OPTIONAL MATCH (discussionChannel)-[:POSTED_IN_CHANNEL]->(discussionChannelNode:Channel)
-WITH u, startDate, endDate, comments, collect({
-  id: discussion.id,
-  title: COALESCE(discussion.title, ""),
-  createdAt: toString(discussion.createdAt),
-  hasDownload: discussion.hasDownload,
-  Author: CASE WHEN discussionAuthor IS NOT NULL THEN {
-    username: discussionAuthor.username,
-    profilePicURL: COALESCE(discussionAuthor.profilePicURL, null)
-  } ELSE NULL END,
-  DiscussionChannels: CASE WHEN discussionChannel IS NOT NULL THEN [{
-    id: discussionChannel.id,
-    channelUniqueName: discussionChannelNode.uniqueName,
-    discussionId: discussionChannel.discussionId
-  }] ELSE [] END
-}) AS discussions
+CALL {
+  WITH u, startDate, endDate
+  MATCH (u)-[:AUTHORED_VERSION]->(wikiEdit:TextVersion)
+  WHERE date(datetime(wikiEdit.createdAt)) >= startDate
+    AND date(datetime(wikiEdit.createdAt)) <= endDate
+  OPTIONAL MATCH (wikiPage:WikiPage)-[:HAS_VERSION]->(wikiEdit)
+  RETURN collect({
+    id: wikiEdit.id,
+    body: coalesce(wikiEdit.body, ''),
+    editReason: wikiEdit.editReason,
+    createdAt: toString(wikiEdit.createdAt),
+    Author: {
+      username: u.username,
+      profilePicURL: u.profilePicURL
+    },
+    WikiPage: CASE WHEN wikiPage IS NULL THEN null ELSE {
+      id: wikiPage.id,
+      title: wikiPage.title,
+      slug: wikiPage.slug,
+      channelUniqueName: wikiPage.channelUniqueName
+    } END
+  }) AS wikiEdits
+}
 
-// Match events and related event channels
-OPTIONAL MATCH (u)-[:POSTED_BY]->(event:Event)
-WHERE date(datetime(event.createdAt)) >= startDate AND date(datetime(event.createdAt)) <= endDate
-OPTIONAL MATCH (event)<-[:POSTED_BY]-(eventPoster:User)
-OPTIONAL MATCH (event)<-[:POSTED_IN_CHANNEL]-(eventChannel:EventChannel)
-OPTIONAL MATCH (eventChannel)-[:POSTED_IN_CHANNEL]->(eventChannelNode:Channel)
-WITH u, startDate, endDate, comments, discussions, collect({
-  id: event.id,
-  title: COALESCE(event.title, ""),
-  createdAt: toString(event.createdAt),
-  Poster: CASE WHEN eventPoster IS NOT NULL THEN {
-    username: eventPoster.username,
-    profilePicURL: COALESCE(eventPoster.profilePicURL, null)
-  } ELSE NULL END,
-  EventChannels: CASE WHEN eventChannel IS NOT NULL THEN [{
-    id: eventChannel.id,
-    channelUniqueName: eventChannelNode.uniqueName,
-    eventId: eventChannel.eventId
-  }] ELSE [] END
-}) AS events
-
-// Match wiki edits and their parent wiki pages
-OPTIONAL MATCH (u)-[:AUTHORED_VERSION]->(wikiEdit:TextVersion)
-WHERE date(datetime(wikiEdit.createdAt)) >= startDate AND date(datetime(wikiEdit.createdAt)) <= endDate
-OPTIONAL MATCH (wikiPage:WikiPage)-[:HAS_VERSION]->(wikiEdit)
-WITH comments, discussions, events, collect({
-  id: wikiEdit.id,
-  body: COALESCE(wikiEdit.body, ""),
-  editReason: wikiEdit.editReason,
-  createdAt: toString(wikiEdit.createdAt),
-  Author: CASE WHEN wikiEdit IS NOT NULL THEN {
-    username: u.username,
-    profilePicURL: COALESCE(u.profilePicURL, null)
-  } ELSE NULL END,
-  WikiPage: CASE WHEN wikiPage IS NOT NULL THEN {
-    id: wikiPage.id,
-    title: wikiPage.title,
-    slug: wikiPage.slug,
-    channelUniqueName: wikiPage.channelUniqueName
-  } ELSE NULL END
-}) AS wikiEdits
-
-// Combine and group
-WITH (comments + discussions + events + wikiEdits) AS allActivities
+WITH comments + discussions + events + wikiEdits AS allActivities
 UNWIND allActivities AS activity
 WITH date(datetime(activity.createdAt)) AS activityDate, collect(activity) AS activities
-
 RETURN
   toString(activityDate) AS date,
   size(activities) AS count,
