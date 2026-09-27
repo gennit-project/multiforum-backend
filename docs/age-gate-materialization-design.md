@@ -179,7 +179,7 @@ Performance first, made safe by an interlock:
 2. **Filter switch, with an interlock.** Switch the eight `@authorization` filters to the stored properties. This is the performance win; measure `getIssue` and the discussion page with Server-Timing before and after. Until steps 3–4 ship, the backend **rejects marking content sensitive** (`hasSensitiveContent: true` on any write) **and enabling the sensitive-content gate**. That's safe to ship now because nothing is marked and the gate is off, and it prevents the flags going stale before the write paths maintain them.
 3. **Mark at write time:** the driver-level reconcile step, the stamps, and no auto-commit writes of age-gated content.
 4. **The validator** (log-only, then enforcing) for relationship-only moves, plus file attachments in `updateDiscussionWithChannelConnections`. Implemented log-only; switch to `AGE_GATE_WRITE_VALIDATOR=enforce` after reviewing the logs.
-5. **Remove the interlock.** Marking content sensitive and enabling the gate work again, now with correct flags.
+5. **Remove the interlock.** Marking content sensitive and enabling the gate work again, now with correct flags. Done once the validator was enforcing in production (`AGE_GATE_WRITE_VALIDATOR=enforce`, after a log-only period with no flagged writes). Run `age-gate:sweep` before turning the gate on for an instance.
 6. **Just-in-time age check:** the "requires age check" query and the frontend gate.
 7. Optional: remove the `ageGateSensitive` `@cypher` fields once nothing references them.
 
@@ -193,7 +193,7 @@ Each step is its own PR.
   - Allowed viewers see everything.
   - A node with **no** flag property is visible, for all eight types, matching today's `coalesce(…, false)`.
 - **API safety:** `ageGateRestricted` appears in no `…CreateInput`/`…UpdateInput`.
-- **Interlock (step 2):** marking content sensitive and enabling the gate are rejected, through top-level and nested inputs.
+- **Interlock (step 2, removed in step 5):** marking content sensitive and enabling the gate were rejected, through top-level and nested inputs.
 - **Write-time marking (step 3):** each creation path under marked content sets the flag in the same transaction.
 - **Re-evaluation (step 4):**
   - Marking or unmarking a discussion or image re-evaluates every descendant in the same transaction, for each allowed path. An injected failure after re-evaluation proves the root change and all flag changes roll back together.

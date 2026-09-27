@@ -27,7 +27,6 @@ import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModera
 import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
 import ownershipCreateMiddleware from "./middleware/ownershipCreateMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
-import ageGateInterlockMiddleware from "./middleware/ageGateInterlockMiddleware.js";
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
 import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
@@ -219,9 +218,6 @@ async function initializeServer() {
     type AppMiddleware = IMiddleware<unknown, GraphQLContext>;
     schema = applyMiddleware(
       schema,
-      // Temporary: rejects marking content sensitive and enabling the gate
-      // until write paths maintain the stored age-gate flags.
-      ageGateInterlockMiddleware as AppMiddleware,
       // Flags writes the age-gate reconcile step can't see; log-only unless
       // AGE_GATE_WRITE_VALIDATOR=enforce.
       ageGateWriteValidatorMiddleware as AppMiddleware,

@@ -29,7 +29,7 @@ before(async () => {
     getAgeGateStatements(typeDefinitions)
   );
   // No permission layer here: this exercises the reconcile mechanism under
-  // generated mutations directly, including writes the interlock blocks.
+  // generated mutations directly, including writes the validator rejects.
   schema = await new Neo4jGraphQL({ typeDefs: typeDefinitions, driver }).getSchema();
 }, { timeout: 240000 });
 
