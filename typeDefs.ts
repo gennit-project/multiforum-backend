@@ -2954,6 +2954,14 @@ const typeDefinitions = gql`
       labelFilters: [LabelFilterInput!]
       options: DiscussionListOptions
     ): DiscussionChannelListFormat
+    """
+    Return the bounded data needed for the first discussion/download detail
+    render, scoped to the channel in the route.
+    """
+    getDiscussionDetail(
+      discussionId: ID!
+      channelUniqueName: String!
+    ): [Discussion!]!
     getSiteWideDiscussionList(
       searchInput: String
       selectedChannels: [String]

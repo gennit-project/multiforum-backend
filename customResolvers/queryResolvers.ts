@@ -7,6 +7,7 @@ import getCommentSection from "./queries/getCommentSection.js";
 import getEventComments from "./queries/getEventComments.js";
 import getCommentReplies from "./queries/getCommentReplies.js";
 import getDiscussionsInChannel from "./queries/getDiscussionsInChannel.js";
+import getDiscussionDetail from "./queries/getDiscussionDetail.js";
 import getUserContributions from "./queries/getUserContributions.js";
 import getUserWikiEditsCount from "./queries/getUserWikiEditsCount.js";
 import getChannelContributions from "./queries/getChannelContributions.js";
@@ -91,6 +92,10 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getDiscussionsInChannel: getDiscussionsInChannel({
       driver,
       DiscussionChannel,
+      ServerConfig,
+    }),
+    getDiscussionDetail: getDiscussionDetail({
+      driver,
       ServerConfig,
     }),
     getCommentSection: getCommentSection({
