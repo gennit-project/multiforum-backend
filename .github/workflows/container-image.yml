@@ -13,36 +13,29 @@ on:
 
 concurrency:
   group: container-image-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # PR images and the moving `edge` image only need the newest commit. Preserve
+  # every immutable version-tag publication.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
+  # Pull requests only need the native AMD64 image used by the smoke test. Keep
+  # this as one job so Buildx can load the image directly into the local daemon.
   build-publish-smoke:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Sign in to GitHub Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate image metadata
         id: metadata
@@ -62,33 +55,19 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
 
-      - name: Build and optionally publish image
-        id: build
+      - name: Build AMD64 image
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
-          load: ${{ github.event_name == 'pull_request' }}
-          push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/amd64
+          load: true
+          push: false
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: ${{ github.event_name != 'pull_request' && 'mode=max' || 'false' }}
-          sbom: ${{ github.event_name != 'pull_request' }}
-
-      - name: Select image for smoke test
-        id: smoke-image
-        env:
-          DIGEST: ${{ steps.build.outputs.digest }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "value=${IMAGE_NAME}:pr-${PR_NUMBER}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=${IMAGE_NAME}@${DIGEST}" >> "$GITHUB_OUTPUT"
-          fi
+          cache-from: type=gha,scope=container-amd64
+          cache-to: type=gha,mode=max,scope=container-amd64
+          provenance: false
+          sbom: false
 
       - name: Start Neo4j
         run: |
@@ -125,7 +104,7 @@ jobs:
 
       - name: Start Multiforum backend image
         env:
-          SMOKE_IMAGE: ${{ steps.smoke-image.outputs.value }}
+          SMOKE_IMAGE: ${{ env.IMAGE_NAME }}:pr-${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
           docker run --detach \
@@ -173,15 +152,236 @@ jobs:
           docker logs multiforum-neo4j-smoke || true
           docker logs multiforum-backend-smoke || true
 
+  # Build each production architecture on a native runner. This removes ARM64
+  # emulation from the critical path; the two jobs publish content-addressed
+  # manifests in parallel and the next job assembles their image index.
+  build-publish:
+    if: github.event_name != 'pull_request'
+    name: Build and publish ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Build and publish native image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha,scope=container-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=container-${{ matrix.arch }}
+          provenance: mode=max
+          sbom: true
+
+      - name: Export image digest
+        run: |
+          set -euo pipefail
+          mkdir -p "${{ runner.temp }}/digests"
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: Save image digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish-smoke:
+    if: github.event_name != 'pull_request'
+    needs: build-publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Download image digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: container-digest-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          tags: |
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Assemble multi-platform image
+        id: manifest
+        env:
+          DIGESTS_DIR: ${{ runner.temp }}/digests
+          METADATA_JSON: ${{ steps.metadata.outputs.json }}
+        run: |
+          set -euo pipefail
+          tag_args=()
+          while IFS= read -r tag; do
+            tag_args+=(--tag "$tag")
+          done < <(jq -r '.tags[]' <<< "$METADATA_JSON")
+
+          image_args=()
+          for digest_path in "$DIGESTS_DIR"/*; do
+            image_args+=("${IMAGE_NAME}@sha256:$(basename "$digest_path")")
+          done
+
+          docker buildx imagetools create "${tag_args[@]}" "${image_args[@]}"
+          short_sha="${GITHUB_SHA::7}"
+          echo "image=${IMAGE_NAME}:sha-${short_sha}" >> "$GITHUB_OUTPUT"
+
       # GITHUB_TOKEN can publish repository-linked packages but cannot change
       # organization package visibility. An organization owner must make the
       # package public once; every publication then proves anonymous access.
       - name: Verify the published image is public
-        if: github.event_name != 'pull_request'
         env:
-          PUBLISHED_IMAGE: ${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          PUBLISHED_IMAGE: ${{ steps.manifest.outputs.image }}
         run: |
           set -euo pipefail
           anonymous_docker_config="$(mktemp -d)"
           trap 'rm -rf "$anonymous_docker_config"' EXIT
           DOCKER_CONFIG="$anonymous_docker_config" docker pull "$PUBLISHED_IMAGE"
+
+      - name: Start Neo4j
+        run: |
+          set -euo pipefail
+          docker network create multiforum-image-smoke
+          docker run --detach \
+            --name multiforum-neo4j-smoke \
+            --network multiforum-image-smoke \
+            --env NEO4J_AUTH=neo4j/multiforum-smoke-neo4j \
+            --env 'NEO4J_PLUGINS=["apoc"]' \
+            --env NEO4J_dbms_security_procedures_unrestricted=apoc.* \
+            --health-cmd='cypher-shell -u neo4j -p multiforum-smoke-neo4j "RETURN 1"' \
+            --health-interval=5s \
+            --health-timeout=5s \
+            --health-retries=30 \
+            neo4j:5.1.0
+
+      - name: Wait for Neo4j
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 30); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' multiforum-neo4j-smoke)"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            if [ "$status" = "unhealthy" ]; then
+              docker logs multiforum-neo4j-smoke
+              exit 1
+            fi
+            sleep 5
+          done
+          docker logs multiforum-neo4j-smoke
+          exit 1
+
+      - name: Start Multiforum backend image
+        env:
+          SMOKE_IMAGE: ${{ steps.manifest.outputs.image }}
+        run: |
+          set -euo pipefail
+          docker run --detach \
+            --name multiforum-backend-smoke \
+            --network multiforum-image-smoke \
+            --publish 127.0.0.1:4000:4000 \
+            --env NODE_ENV=development \
+            --env ENVIRONMENT=local \
+            --env MULTIFORUM_AUTH_PROVIDER=local-dev \
+            --env MULTIFORUM_AUTO_PROVISION=true \
+            --env MULTIFORUM_BOOTSTRAP_EMAIL=admin@multiforum.local \
+            --env MULTIFORUM_BOOTSTRAP_USERNAME=admin \
+            --env MULTIFORUM_BOOTSTRAP_PASSWORD=multiforum-local-admin \
+            --env SUPERADMIN_EMAIL=admin@multiforum.local \
+            --env SERVER_CONFIG_NAME='Image Smoke Test' \
+            --env NEO4J_URI=bolt://multiforum-neo4j-smoke:7687 \
+            --env NEO4J_USER=neo4j \
+            --env NEO4J_PASSWORD=multiforum-smoke-neo4j \
+            "$SMOKE_IMAGE"
+
+      - name: Verify backend health check
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 60); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' multiforum-backend-smoke)"
+            if [ "$status" = "healthy" ]; then
+              curl --fail --silent --show-error \
+                --header 'content-type: application/json' \
+                --data '{"query":"query ImageSmoke { __typename }"}' \
+                http://127.0.0.1:4000/ >/dev/null
+              exit 0
+            fi
+            if [ "$status" = "unhealthy" ]; then
+              docker logs multiforum-backend-smoke
+              exit 1
+            fi
+            sleep 5
+          done
+          docker logs multiforum-backend-smoke
+          exit 1
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          docker logs multiforum-neo4j-smoke || true
+          docker logs multiforum-backend-smoke || true

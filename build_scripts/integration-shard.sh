@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Run one shard of the integration suite. Files are partitioned round-robin,
-# with a small set of measured four-shard overrides to balance actual runtime.
+# with an optional set of measured overrides to balance actual runtime.
 # CI runs the shards in parallel (a matrix job), each against its own
 # Testcontainers Neo4j. Coverage (lcov) is written for this shard's subset; CI
 # uploads each shard under the `integration` Codecov flag and Codecov unions
@@ -20,7 +20,7 @@ SHARD_TOTAL="${SHARD_TOTAL:-1}"
 OVERRIDES_FILE="build_scripts/integration-shard-overrides.txt"
 
 # Round-robin is the general rule, so newly added tests are always included.
-# For the four-shard CI layout, apply the small timing-based override map.
+# Apply timing-based overrides only when the map targets this shard layout.
 list_files() {
   find ./tests/integration -name '*test.ts' -print | sort \
     | awk -v shard="${SHARD}" -v total="${SHARD_TOTAL}" '
@@ -30,7 +30,7 @@ list_files() {
         }
         {
           target = (FNR % total) + 1
-          if (total == 4 && ($0 in overrides)) target = overrides[$0]
+          if (($0 in overrides) && overrides[$0] <= total) target = overrides[$0]
           if (target == shard) print
         }
       ' "${OVERRIDES_FILE}" -
@@ -49,5 +49,5 @@ list_files
 # same way the other coverage scripts use $(find ...).
 export TESTCONTAINERS_REUSE_ENABLE=true
 export TS_NODE_TRANSPILE_ONLY=true
-c8 --reporter=lcov --reporter=text-summary \
+c8 --all=false --reporter=lcov --reporter=text-summary \
   node --loader ts-node/esm --test --test-concurrency=1 $(list_files)
