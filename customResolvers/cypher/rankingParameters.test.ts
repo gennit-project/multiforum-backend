@@ -24,3 +24,16 @@ for (const [name, query] of Object.entries(rankingQueries)) {
     );
   });
 }
+
+test("channel discussions paginate before expanding related records", () => {
+  const pagination = getDiscussionChannelsQuery.indexOf(
+    "SKIP toInteger($offset)"
+  );
+  const relationshipExpansion = getDiscussionChannelsQuery.indexOf(
+    "OPTIONAL MATCH (d)-[:HAS_TAG]->(tag:Tag)"
+  );
+
+  assert.ok(pagination >= 0);
+  assert.ok(relationshipExpansion >= 0);
+  assert.ok(pagination < relationshipExpansion);
+});

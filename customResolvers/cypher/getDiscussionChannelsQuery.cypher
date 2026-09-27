@@ -124,55 +124,16 @@ WHERE
         )
     )
 
-WITH dc, totalCount
-MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion)
-OPTIONAL MATCH (d)-[:HAS_TAG]->(tag:Tag)
-WITH dc, d, COLLECT(DISTINCT tag.text) AS tagsText, totalCount
-
-OPTIONAL MATCH (d)<-[:POSTED_DISCUSSION]-(author:User)
-OPTIONAL MATCH (author)-[:HAS_SERVER_ROLE]->(serverRole:ServerRole)
-OPTIONAL MATCH (author)-[:HAS_CHANNEL_ROLE]->(channelRole:ChannelRole)
-
-// Modified upvoter collection to only get count and logged-in user if they upvoted
-OPTIONAL MATCH (upvoter:User)-[:UPVOTED_DISCUSSION]->(dc)
-WITH dc, d, author, serverRole, channelRole, tagsText, 
-     COLLECT(DISTINCT upvoter) AS allUpvoters,
-     COUNT(DISTINCT upvoter) AS totalUpvoters,
-     COALESCE($loggedInUsername, "") AS loggedInUsername,
-     totalCount
-
-// Filter for logged-in user's upvote
-OPTIONAL MATCH (loggedInUser:User {username: loggedInUsername})-[:UPVOTED_DISCUSSION]->(dc)
-// Filter for logged-in user's super upvote
-OPTIONAL MATCH (loggedInSuperUpvoter:User {username: loggedInUsername})-[:SUPER_UPVOTED_DISCUSSION]->(dc)
-WITH dc, d, author, serverRole, channelRole, tagsText,
-     CASE
-         WHEN loggedInUsername = "" THEN []
-         WHEN loggedInUser IS NOT NULL THEN [{username: loggedInUser.username}]
-         ELSE []
-     END AS loggedInUserUpvote,
-     CASE
-         WHEN loggedInUsername = "" THEN []
-         WHEN loggedInSuperUpvoter IS NOT NULL THEN [{username: loggedInSuperUpvoter.username}]
-         ELSE []
-     END AS loggedInUserSuperUpvote,
-     totalUpvoters,
-     totalCount,
-     CASE WHEN coalesce(dc.weightedVotesCount, 0.0) < 0 THEN 0.0 ELSE coalesce(dc.weightedVotesCount, 0.0) END AS weightedVotesCount
-
-OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(c:Comment)
-WHERE c.isFeedbackComment IS NULL OR c.isFeedbackComment = false
-WITH dc, d, author, serverRole, channelRole, COLLECT(c) AS comments, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, totalCount,
+// Ranking only needs properties already stored on DiscussionChannel. Sort and
+// paginate before expanding tags, votes, comments, authors, and media so those
+// relationships are traversed for at most the requested page.
+WITH dc, totalCount,
+     CASE WHEN coalesce(dc.weightedVotesCount, 0.0) < 0 THEN 0.0 ELSE coalesce(dc.weightedVotesCount, 0.0) END AS weightedVotesCount,
      duration.between(dc.createdAt, datetime()).months +
      duration.between(dc.createdAt, datetime()).days / 30.0 AS ageInMonths
 
-WITH dc, d, author, serverRole, channelRole, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, totalCount,
+WITH dc, totalCount, weightedVotesCount,
      log10(weightedVotesCount + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) AS hotRank
-
-// Author ADMIN/MOD badges are now membership-derived (the authorIsChannelModerator
-// @cypher field + server-admin membership), so the author's roles are no longer
-// projected onto the result. Collapse the serverRole/channelRole fan-out.
-WITH DISTINCT dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank, totalCount
 
 // Sort based on individual elements, not the collection
 ORDER BY
@@ -182,9 +143,40 @@ ORDER BY
     dc.createdAt DESC
 
 // Apply pagination
-WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters, weightedVotesCount, comments, hotRank
+WITH totalCount, dc, weightedVotesCount, hotRank
 SKIP toInteger($offset)
 LIMIT toInteger($limit)
+
+MATCH (dc)-[:POSTED_IN_CHANNEL]->(d:Discussion)
+OPTIONAL MATCH (d)-[:HAS_TAG]->(tag:Tag)
+WITH dc, d, COLLECT(DISTINCT tag.text) AS tagsText, totalCount, weightedVotesCount, hotRank
+
+OPTIONAL MATCH (d)<-[:POSTED_DISCUSSION]-(author:User)
+WITH dc, d, author, tagsText, totalCount, weightedVotesCount, hotRank
+
+OPTIONAL MATCH (upvoter:User)-[:UPVOTED_DISCUSSION]->(dc)
+WITH dc, d, author, tagsText, totalCount, weightedVotesCount, hotRank,
+     COUNT(DISTINCT upvoter) AS totalUpvoters,
+     COALESCE($loggedInUsername, "") AS loggedInUsername
+
+OPTIONAL MATCH (loggedInUser:User {username: loggedInUsername})-[:UPVOTED_DISCUSSION]->(dc)
+OPTIONAL MATCH (loggedInSuperUpvoter:User {username: loggedInUsername})-[:SUPER_UPVOTED_DISCUSSION]->(dc)
+WITH dc, d, author, tagsText, totalCount, weightedVotesCount, hotRank, totalUpvoters,
+     CASE
+         WHEN loggedInUsername = "" THEN []
+         WHEN loggedInUser IS NOT NULL THEN [{username: loggedInUser.username}]
+         ELSE []
+     END AS loggedInUserUpvote,
+     CASE
+         WHEN loggedInUsername = "" THEN []
+         WHEN loggedInSuperUpvoter IS NOT NULL THEN [{username: loggedInSuperUpvoter.username}]
+         ELSE []
+     END AS loggedInUserSuperUpvote
+
+OPTIONAL MATCH (dc)-[:CONTAINS_COMMENT]->(c:Comment)
+WHERE c.isFeedbackComment IS NULL OR c.isFeedbackComment = false
+WITH dc, d, author, tagsText, totalCount, weightedVotesCount, hotRank, totalUpvoters,
+     loggedInUserUpvote, loggedInUserSuperUpvote, COUNT(DISTINCT c) AS commentsCount
 
 OPTIONAL MATCH (d)-[:HAS_ALBUM]->(album:Album)
 OPTIONAL MATCH (album)-[:HAS_IMAGE]->(image:Image)
@@ -194,7 +186,7 @@ WHERE image.id IS NOT NULL
   AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
 
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank,
+     weightedVotesCount, commentsCount, hotRank,
      album,
      [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
          id: image.id,
@@ -209,7 +201,7 @@ OPTIONAL MATCH (d)-[:HAS_DOWNLOADABLE_FILE]->(downloadableFile:DownloadableFile)
 WHERE downloadableFile.permanentlyRemoved IS NULL OR downloadableFile.permanentlyRemoved = false
 
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, album, albumImages,
+     weightedVotesCount, commentsCount, hotRank, album, albumImages,
      [file IN COLLECT(DISTINCT CASE WHEN downloadableFile IS NOT NULL THEN {
          id: downloadableFile.id,
          scanStatus: downloadableFile.scanStatus
@@ -218,17 +210,17 @@ WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperU
 // Check if the logged-in user has favorited this discussion
 OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, album, albumImages, downloadableFiles,
+     weightedVotesCount, commentsCount, hotRank, album, albumImages, downloadableFiles,
      CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
 
 // Include every assigned flair, including archived flairs. Archiving prevents
 // future assignment but must not erase a historical discussion's category.
 OPTIONAL MATCH (dc)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair:DiscussionFlair)
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, album, albumImages, downloadableFiles, isFavorited, assignedFlair
+     weightedVotesCount, commentsCount, hotRank, album, albumImages, downloadableFiles, isFavorited, assignedFlair
 ORDER BY assignedFlair.order ASC, assignedFlair.displayName ASC
 WITH totalCount, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, comments, hotRank, album, albumImages, downloadableFiles, isFavorited,
+     weightedVotesCount, commentsCount, hotRank, album, albumImages, downloadableFiles, isFavorited,
      [flair IN COLLECT(DISTINCT assignedFlair) WHERE flair IS NOT NULL | {
          id: flair.id,
          channelUniqueName: flair.channelUniqueName,
@@ -250,7 +242,7 @@ RETURN {
     weightedVotesCount: weightedVotesCount,
     Flairs: assignedFlairs,
     CommentsAggregate: {
-        count: SIZE(comments)
+        count: commentsCount
     },
     UpvotedByUsers: [up in loggedInUserUpvote | { username: up.username }],
     UpvotedByUsersAggregate: {

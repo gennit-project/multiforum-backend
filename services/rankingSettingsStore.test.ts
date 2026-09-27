@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getHotRankingQueryParams } from "./rankingSettingsStore.js";
+import {
+  getHotRankingQueryParams,
+  invalidateRankingSettingsCache,
+  RANKING_SETTINGS_CACHE_TTL_MS,
+} from "./rankingSettingsStore.js";
 
 test("non-hot sorts use defaults without reading stored settings", async () => {
   let calls = 0;
@@ -90,4 +94,99 @@ test("hot sorts fall back to defaults when the server config is absent", async (
       hotGravity: 1.8,
     }
   );
+});
+
+test("hot sorts reuse a cached settings lookup until invalidated", async () => {
+  invalidateRankingSettingsCache();
+  let calls = 0;
+  const executor = {
+    run: async () => {
+      calls += 1;
+      return { records: [] };
+    },
+  };
+
+  await getHotRankingQueryParams({
+    executor: executor as never,
+    profile: "discussion",
+    sortOption: "hot",
+    serverName: "cached-server",
+  });
+  await getHotRankingQueryParams({
+    executor: executor as never,
+    profile: "comment",
+    sortOption: "hot",
+    serverName: "cached-server",
+  });
+
+  assert.equal(calls, 1);
+
+  invalidateRankingSettingsCache("cached-server");
+  await getHotRankingQueryParams({
+    executor: executor as never,
+    profile: "discussion",
+    sortOption: "hot",
+    serverName: "cached-server",
+  });
+  assert.equal(calls, 2);
+  assert.ok(RANKING_SETTINGS_CACHE_TTL_MS > 0);
+});
+
+test("concurrent hot sorts share one settings lookup", async () => {
+  invalidateRankingSettingsCache();
+  let calls = 0;
+  let release: (() => void) | undefined;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const executor = {
+    run: async () => {
+      calls += 1;
+      await pending;
+      return { records: [] };
+    },
+  };
+
+  const requests = ["discussion", "comment"].map((profile) =>
+    getHotRankingQueryParams({
+      executor: executor as never,
+      profile: profile as "discussion" | "comment",
+      sortOption: "hot",
+      serverName: "concurrent-server",
+    })
+  );
+  release?.();
+  await Promise.all(requests);
+
+  assert.equal(calls, 1);
+});
+
+test("failed settings lookups are retried", async () => {
+  invalidateRankingSettingsCache();
+  let calls = 0;
+  const executor = {
+    run: async () => {
+      calls += 1;
+      if (calls === 1) throw new Error("temporary failure");
+      return { records: [] };
+    },
+  };
+
+  await assert.rejects(
+    getHotRankingQueryParams({
+      executor: executor as never,
+      profile: "discussion",
+      sortOption: "hot",
+      serverName: "retry-server",
+    }),
+    /temporary failure/
+  );
+  await getHotRankingQueryParams({
+    executor: executor as never,
+    profile: "discussion",
+    sortOption: "hot",
+    serverName: "retry-server",
+  });
+
+  assert.equal(calls, 2);
 });

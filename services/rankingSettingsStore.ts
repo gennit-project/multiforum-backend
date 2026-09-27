@@ -13,6 +13,15 @@ export type StoredRankingSettings = {
   updatedBy: string | null;
 };
 
+export const RANKING_SETTINGS_CACHE_TTL_MS = 30_000;
+
+type CacheEntry = {
+  expiresAt: number;
+  settings: Promise<StoredRankingSettings | null>;
+};
+
+const cache = new Map<string, CacheEntry>();
+
 const readRecord = (
   record:
     | {
@@ -54,6 +63,45 @@ export const findRankingSettings = async ({
   return readRecord(result.records[0]);
 };
 
+const findCachedRankingSettings = async ({
+  executor,
+  serverName,
+  now = Date.now(),
+}: {
+  executor: Session | ManagedTransaction;
+  serverName: string;
+  now?: number;
+}): Promise<StoredRankingSettings | null> => {
+  const cached = cache.get(serverName);
+  if (cached && cached.expiresAt > now) {
+    return cached.settings;
+  }
+
+  // Cache the promise so simultaneous list requests share the same lookup.
+  const settings = findRankingSettings({ executor, serverName });
+  const current = {
+    expiresAt: now + RANKING_SETTINGS_CACHE_TTL_MS,
+    settings,
+  };
+  cache.set(serverName, current);
+
+  try {
+    return await settings;
+  } catch (error) {
+    // A transient database failure must not remain cached.
+    if (cache.get(serverName) === current) cache.delete(serverName);
+    throw error;
+  }
+};
+
+export const invalidateRankingSettingsCache = (serverName?: string): void => {
+  if (serverName) {
+    cache.delete(serverName);
+    return;
+  }
+  cache.clear();
+};
+
 export const getHotRankingQueryParams = async ({
   executor,
   profile,
@@ -68,7 +116,7 @@ export const getHotRankingQueryParams = async ({
   let settings = DEFAULT_RANKING_SETTINGS;
 
   if (sortOption === "hot" && serverName) {
-    const stored = await findRankingSettings({ executor, serverName });
+    const stored = await findCachedRankingSettings({ executor, serverName });
     settings = stored?.settings ?? DEFAULT_RANKING_SETTINGS;
   }
 
