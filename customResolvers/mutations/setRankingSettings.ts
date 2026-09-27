@@ -7,7 +7,10 @@ import {
   serializeRankingSettings,
   type RankingSettingsPatch,
 } from "../../services/rankingSettings.js";
-import { findRankingSettings } from "../../services/rankingSettingsStore.js";
+import {
+  findRankingSettings,
+  invalidateRankingSettingsCache,
+} from "../../services/rankingSettingsStore.js";
 
 type Input = {
   driver: Driver;
@@ -39,7 +42,7 @@ export const setRankingSettings = ({
     const session = driver.session();
 
     try {
-      return await session.executeWrite(async (transaction) => {
+      const result = await session.executeWrite(async (transaction) => {
         const stored = await findRankingSettings({
           executor: transaction,
           serverName,
@@ -87,6 +90,8 @@ export const setRankingSettings = ({
           updatedBy,
         };
       });
+      invalidateRankingSettingsCache(serverName);
+      return result;
     } finally {
       await session.close();
     }

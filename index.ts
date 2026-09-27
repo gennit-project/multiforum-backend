@@ -66,6 +66,7 @@ import {
   runWithRequestTiming,
   startEventLoopMonitor,
 } from "./services/requestTiming.js";
+import { neo4jDriverConfig } from "./services/neo4jDriverConfig.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -119,7 +120,13 @@ const user = process.env.NEO4J_USER || "neo4j";
 // so every write transaction keeps stored age-gate flags correct before it
 // commits (services/ageGate/reconcile.ts).
 const driver = installAgeGateReconcile(
-  instrumentDriver(neo4j.driver(uri, neo4j.auth.basic(user, password as string))),
+  instrumentDriver(
+    neo4j.driver(
+      uri,
+      neo4j.auth.basic(user, password as string),
+      neo4jDriverConfig
+    )
+  ),
   getAgeGateStatements(typesDefinitions)
 );
 
