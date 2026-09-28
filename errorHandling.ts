@@ -122,6 +122,8 @@ function enhanceErrorMessage(originalMessage: string, errorCode: string): string
       return `Schema Validation Error: ${originalMessage}. This usually means your query doesn't match the current GraphQL schema.`;
     case 'GRAPHQL_PARSE_FAILED':
       return `Query Parse Error: ${originalMessage}. Check your GraphQL syntax.`;
+    case 'QUERY_TOO_COMPLEX':
+      return `Query Too Complex: ${originalMessage}`;
     case 'BAD_USER_INPUT':
       return `Invalid Input: ${originalMessage}. Check your query variables and arguments.`;
     case 'UNAUTHENTICATED':
@@ -142,6 +144,7 @@ function isValidationError(errorCode: string): boolean {
   return [
     'GRAPHQL_VALIDATION_FAILED',
     'GRAPHQL_PARSE_FAILED',
+    'QUERY_TOO_COMPLEX',
     'BAD_USER_INPUT'
   ].includes(errorCode);
 }

@@ -274,7 +274,11 @@ async function initializeServer() {
         paginationLimitPlugin,
         // This runs after GraphQL validation so request variables are available,
         // but before resolvers (and therefore before generated Cypher) execute.
-        queryComplexityPlugin({ maximumComplexity: maxQueryComplexity }),
+        queryComplexityPlugin({
+          maximumComplexity: maxQueryComplexity,
+          report: (observation) =>
+            logger.info("GraphQL query complexity", observation),
+        }),
       ],
     });
 

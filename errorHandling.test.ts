@@ -42,6 +42,7 @@ test("enhances the message per error code", () => {
   const cases: Array<[string, RegExp]> = [
     ["GRAPHQL_VALIDATION_FAILED", /^Schema Validation Error:/],
     ["GRAPHQL_PARSE_FAILED", /^Query Parse Error:/],
+    ["QUERY_TOO_COMPLEX", /^Query Too Complex:/],
     ["BAD_USER_INPUT", /^Invalid Input:/],
     ["UNAUTHENTICATED", /^Authentication Required:/],
     ["FORBIDDEN", /^Permission Denied:/],
