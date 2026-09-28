@@ -75,6 +75,10 @@ import {
   resolveNeo4jDatabase,
 } from "./services/neo4jDatabase.js";
 import { paginationLimitPlugin } from "./services/graphqlPaginationLimit.js";
+import {
+  queryComplexityPlugin,
+  resolveMaxQueryComplexity,
+} from "./services/graphqlQueryComplexity.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -250,13 +254,12 @@ async function initializeServer() {
       createLocalDevTokenHandler()
     );
 
-    // Reject pathologically deep queries before they reach the schema. Neo4jGraphQL
-    // translates a nested GraphQL selection into one Cypher query, so an
-    // arbitrarily deep query can generate an enormous, slow Cypher pattern — a
-    // cheap DoS lever. The bound is generous (real forum queries nest well under
-    // this) and tunable via GRAPHQL_MAX_DEPTH; validate against real traffic
-    // before tightening it.
+    // Reject pathologically deep or wide queries before execution. Neo4jGraphQL
+    // translates a nested GraphQL selection into one Cypher query, so either can
+    // generate an enormous, slow Cypher pattern. Both bounds are deliberately
+    // generous and tunable; validate them against real traffic before tightening.
     const maxQueryDepth = Number(process.env.GRAPHQL_MAX_DEPTH) || 15;
+    const maxQueryComplexity = resolveMaxQueryComplexity();
 
     const server = new ApolloServer({
       persistedQueries: false,
@@ -269,6 +272,9 @@ async function initializeServer() {
         // Per-operation latency breakdown (log line + Server-Timing header).
         requestTimingPlugin,
         paginationLimitPlugin,
+        // This runs after GraphQL validation so request variables are available,
+        // but before resolvers (and therefore before generated Cypher) execute.
+        queryComplexityPlugin({ maximumComplexity: maxQueryComplexity }),
       ],
     });
 

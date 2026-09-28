@@ -77,6 +77,9 @@ importers:
       graphql-middleware:
         specifier: ^6.1.35
         version: 6.1.35(graphql@16.14.2)
+      graphql-query-complexity:
+        specifier: ^2.0.0
+        version: 2.0.0(graphql@16.14.2)
       graphql-shield:
         specifier: 7.6.5
         version: 7.6.5(patch_hash=2c998cd3ea2df8b94bdb166da562e3e7381db7ca4fb1cacc27f11b62e4c4d938)(graphql-middleware@6.1.35(graphql@16.14.2))(graphql@16.14.2)
@@ -2522,6 +2525,11 @@ packages:
     peerDependencies:
       graphql: '>=0.9 <0.14 || ^14.0.2 || ^15.4.0 || ^16.3.0'
 
+  graphql-query-complexity@2.0.0:
+    resolution: {integrity: sha512-gmdNp8Lq3KbJcWeX9mpIqpIxD2oDEVO5QgZtw7eiDB7Q1RYMlqDFQnGq6ZcaDclBNcwTnyOCHUtEr3qAjnUDVg==}
+    peerDependencies:
+      graphql: ^16.6.0 || ^17.0.0
+
   graphql-relay@0.10.2:
     resolution: {integrity: sha512-abybva1hmlNt7Y9pMpAzHuFnM2Mme/a2Usd8S4X27fNteLGRAECMYfhmsrpZFvGn3BhmBZugMXYW/Mesv3P1Kw==}
     engines: {node: ^12.20.0 || ^14.15.0 || >= 15.9.0}
@@ -2905,6 +2913,10 @@ packages:
 
   lodash.clonedeep@4.5.0:
     resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
+
+  lodash.get@4.4.2:
+    resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
+    deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
 
   lodash.includes@4.3.0:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==}
@@ -6887,6 +6899,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  graphql-query-complexity@2.0.0(graphql@16.14.2):
+    dependencies:
+      graphql: 16.14.2
+      lodash.get: 4.4.2
+
   graphql-relay@0.10.2(graphql@16.14.2):
     dependencies:
       graphql: 16.14.2
@@ -7235,6 +7252,8 @@ snapshots:
   lodash.camelcase@4.3.0: {}
 
   lodash.clonedeep@4.5.0: {}
+
+  lodash.get@4.4.2: {}
 
   lodash.includes@4.3.0: {}
 

@@ -80,7 +80,7 @@ const typeDefinitions = gql`
     detail: String!
   }
 
-  type Image @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type Image @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -237,7 +237,7 @@ const typeDefinitions = gql`
     Discussions: [Discussion!]! @relationship(type: "HAS_ALBUM", direction: IN)
   }
 
-  type Notification {
+  type Notification @limit(default: 25, max: 100) {
     id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     read: Boolean
@@ -266,7 +266,7 @@ const typeDefinitions = gql`
     Messages: [Message!]! @relationship(type: "HAS_MESSAGE", direction: OUT)
   }
 
-  type User {
+  type User @limit(default: 25, max: 100) {
     # media
     Albums:   [Album!]!  @relationship(type: "HAS_ALBUM", direction: OUT)
     Images:   [Image!]!  @relationship(type: "UPLOADED_IMAGE", direction: OUT)
@@ -406,7 +406,7 @@ const typeDefinitions = gql`
     superUpvotedByUsers: [User!]
   }
 
-  type TextVersion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type TextVersion @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -444,6 +444,7 @@ const typeDefinitions = gql`
   }
 
   type WikiPage
+    @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
         { indexName: "wikiPageFulltext", fields: ["title", "body"] }
@@ -486,7 +487,7 @@ const typeDefinitions = gql`
     RelatedIssue: Issue @relationship(type: "HAS_CONTEXT", direction: OUT)
   }
 
-   type DownloadableFile @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+   type DownloadableFile @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -619,6 +620,7 @@ const typeDefinitions = gql`
   # The indexName must stay in sync with CHANNEL_FULLTEXT_INDEX in
   # services/channelFulltext.ts.
   type Channel
+    @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
         { indexName: "channelFulltext", fields: ["uniqueName", "description"] }
@@ -723,7 +725,7 @@ const typeDefinitions = gql`
     pluginPipelines: JSON  # Channel-scoped pipeline configuration for events like discussionChannel.created
   }
 
-  type DiscussionChannel @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type DiscussionChannel @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -775,6 +777,7 @@ const typeDefinitions = gql`
   }
 
   type Discussion
+    @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
         { indexName: "discussionFulltext", fields: ["title", "body"] }
@@ -851,7 +854,7 @@ const typeDefinitions = gql`
     SharedCollection: Collection @relationship(type: "SHARES_COLLECTION", direction: OUT)
   }
 
-  type EventChannel {
+  type EventChannel @limit(default: 25, max: 100) {
     id: ID! @id @unique
     locked: Boolean
     eventId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
@@ -941,7 +944,7 @@ const typeDefinitions = gql`
     endTime: DateTime!
   }
 
-  type EventSeries {
+  type EventSeries @limit(default: 25, max: 100) {
     id: ID! @id @unique
     title: String!
     description: String
@@ -977,7 +980,7 @@ const typeDefinitions = gql`
     Events: [Event!]! @relationship(type: "HAS_RECURRING_EVENT", direction: OUT)
   }
 
-  type Event {
+  type Event @limit(default: 25, max: 100) {
     id: ID! @id @unique
     title: String!
     description: String
@@ -1044,7 +1047,7 @@ const typeDefinitions = gql`
     """, columnName: "authorIsChannelModerator")
   }
 
-  type Comment @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type Comment @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -1144,7 +1147,7 @@ const typeDefinitions = gql`
       @relationship(type: "SUSPENDED_AS_MOD", direction: OUT)
   }
 
-  type ModerationAction {
+  type ModerationAction @limit(default: 25, max: 100) {
     id: ID! @id @unique
     ModerationProfile: ModerationProfile
       @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
@@ -1158,6 +1161,7 @@ const typeDefinitions = gql`
   }
 
   type Issue
+    @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
         { indexName: "issueFulltext", fields: ["title", "body"] }
