@@ -8,6 +8,9 @@ export const requiredConstraintNames = coreSchemaConstraints.map(
 export const requiredOnlineIndexNames = [
   "discussion_channel_by_channel",
   "channelFulltext",
+  "discussionFulltext",
+  "issueFulltext",
+  "wikiPageFulltext",
   "age_gate_touched_comment",
   "age_gate_touched_discussion",
   "age_gate_touched_discussionchannel",

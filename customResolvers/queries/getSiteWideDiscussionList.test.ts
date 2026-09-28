@@ -4,6 +4,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import getSiteWideDiscussionListResolver from "./getSiteWideDiscussionList.js";
+import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 type SessionRunCall = {
   query: string;
@@ -76,7 +77,7 @@ const baseArgs = {
 };
 
 // Search filter tests
-test("getSiteWideDiscussionList passes empty search input when not provided", async () => {
+test("getSiteWideDiscussionList keeps empty searches off the full-text index", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
     Discussion: {} as any,
@@ -86,12 +87,11 @@ test("getSiteWideDiscussionList passes empty search input when not provided", as
   await resolver(null, { ...baseArgs, searchInput: "" } as any, createMockContext(), mockInfo);
 
   assert.equal(driver.runCalls.length, 2);
-  assert.equal(driver.runCalls[0].params.searchInput, "");
-  assert.equal(driver.runCalls[0].params.titleRegex, "(?i).*.*");
-  assert.equal(driver.runCalls[0].params.bodyRegex, "(?i).*.*");
+  assert.equal(driver.runCalls[0].params.fulltextQuery, "");
+  assert.doesNotMatch(driver.runCalls[0].query, /db\.index\.fulltext\.queryNodes/);
 });
 
-test("getSiteWideDiscussionList passes search input with regex pattern for title and body", async () => {
+test("getSiteWideDiscussionList drives search from the full-text index", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
     Discussion: {} as any,
@@ -105,9 +105,13 @@ test("getSiteWideDiscussionList passes search input with regex pattern for title
     mockInfo
   );
 
-  assert.equal(driver.runCalls[0].params.searchInput, "hello world");
-  assert.equal(driver.runCalls[0].params.titleRegex, "(?i).*hello world.*");
-  assert.equal(driver.runCalls[0].params.bodyRegex, "(?i).*hello world.*");
+  assert.equal(driver.runCalls[0].params.fulltextIndex, DISCUSSION_FULLTEXT_INDEX);
+  assert.equal(driver.runCalls[0].params.fulltextQuery, "hello* AND world*");
+  assert.match(
+    driver.runCalls[0].query,
+    /db\.index\.fulltext\.queryNodes\(\$fulltextIndex, \$fulltextQuery\)/
+  );
+  assert.doesNotMatch(driver.runCalls[0].query, /=~/);
 });
 
 // Channel filter tests
@@ -514,7 +518,7 @@ test("getSiteWideDiscussionList applies multiple filters together", async () => 
   );
 
   const params = driver.runCalls[0].params;
-  assert.equal(params.searchInput, "test");
+  assert.equal(params.fulltextQuery, "test*");
   assert.deepEqual(params.selectedChannels, ["general", "tech"]);
   assert.deepEqual(params.selectedTags, ["javascript"]);
   assert.equal(params.showArchived, true);

@@ -14,6 +14,8 @@ import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import type { ServerConfigModel } from "../../ogm_types.js";
 import { normalizePagination } from "../../services/pagination.js";
+import { buildFulltextQuery } from "../../services/channelFulltext.js";
+import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 enum timeFrameOptionKeys {
   year = "year",
@@ -72,10 +74,9 @@ const getResolver = (input: Input) => {
       ServerConfig,
     });
     const searchValue = searchInput ?? "";
+    const fulltextQuery = buildFulltextQuery(searchValue);
 
     const session = driver.session();
-    const titleRegex = `(?i).*${searchValue}.*`;
-    const bodyRegex = `(?i).*${searchValue}.*`;
 
     try {
       const effectiveSort: DiscussionChannelSortOption =
@@ -95,7 +96,7 @@ const getResolver = (input: Input) => {
       const pageQuery = buildDiscussionChannelPageQuery({
         hasDownload: hasDownloadFilter,
         hasLabelFilters: normalizedLabelFilters.length > 0,
-        hasSearch: searchValue !== "",
+        hasSearch: fulltextQuery !== "",
         hasSelectedTags: normalizedSelectedTags.length > 0,
         showArchived,
         showUnanswered: showUnanswered ?? false,
@@ -107,9 +108,9 @@ const getResolver = (input: Input) => {
         limit,
         mayAccessSensitiveContent,
       };
-      if (searchValue !== "") {
-        pageQueryParams.titleRegex = titleRegex;
-        pageQueryParams.bodyRegex = bodyRegex;
+      if (fulltextQuery !== "") {
+        pageQueryParams.fulltextIndex = DISCUSSION_FULLTEXT_INDEX;
+        pageQueryParams.fulltextQuery = fulltextQuery;
       }
       if (normalizedSelectedTags.length > 0) {
         pageQueryParams.selectedTags = normalizedSelectedTags;

@@ -443,7 +443,12 @@ const typeDefinitions = gql`
     DiscussionChannel: DiscussionChannel @relationship(type: "HAS_LABEL_CHANGE", direction: IN)
   }
 
-  type WikiPage {
+  type WikiPage
+    @fulltext(
+      indexes: [
+        { indexName: "wikiPageFulltext", fields: ["title", "body"] }
+      ]
+    ) {
     id: ID! @id @unique
     title: String!
     body: String
@@ -769,7 +774,13 @@ const typeDefinitions = gql`
       @settable(onCreate: false, onUpdate: false)
   }
 
-  type Discussion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type Discussion
+    @fulltext(
+      indexes: [
+        { indexName: "discussionFulltext", fields: ["title", "body"] }
+      ]
+    )
+    @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -1146,7 +1157,13 @@ const typeDefinitions = gql`
     actionDescription: String
   }
 
-  type Issue @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type Issue
+    @fulltext(
+      indexes: [
+        { indexName: "issueFulltext", fields: ["title", "body"] }
+      ]
+    )
+    @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction

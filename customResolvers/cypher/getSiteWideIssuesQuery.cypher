@@ -1,6 +1,5 @@
 MATCH (issue:Issue)
 WHERE issue.isOpen = $isOpen
-AND ($searchInput = "" OR coalesce(issue.title, "") =~ $titleRegex OR coalesce(issue.body, "") =~ $bodyRegex)
 AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels)
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
@@ -19,7 +18,6 @@ WITH count(issue) AS totalCount
 
 MATCH (issue:Issue)
 WHERE issue.isOpen = $isOpen
-AND ($searchInput = "" OR coalesce(issue.title, "") =~ $titleRegex OR coalesce(issue.body, "") =~ $bodyRegex)
 AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels)
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
@@ -44,8 +42,8 @@ ORDER BY
   CASE WHEN $sort = "oldest" THEN datetime(issue.createdAt).epochMillis END ASC,
   CASE WHEN $sort <> "oldest" THEN datetime(issue.createdAt).epochMillis END DESC,
   issue.issueNumber DESC
-SKIP $offset
-LIMIT $limit
+SKIP toInteger($offset)
+LIMIT toInteger($limit)
 RETURN {
   id: issue.id,
   issueNumber: issue.issueNumber,

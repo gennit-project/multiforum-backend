@@ -13,6 +13,8 @@ import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import type { ServerConfigModel } from "../../ogm_types.js";
 import { normalizePagination } from "../../services/pagination.js";
+import { buildFulltextQuery } from "../../services/channelFulltext.js";
+import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 type Input = {
   Discussion: DiscussionModel;
@@ -75,6 +77,7 @@ const getResolver = (input: Input) => {
     const session = driver.session();
 
     try {
+      const fulltextQuery = buildFulltextQuery(searchInput);
       const effectiveSort: SiteWideDiscussionSortOption =
         sort === "new" || sort === "top" ? sort : "hot";
       const selectedTimeFrame =
@@ -90,16 +93,15 @@ const getResolver = (input: Input) => {
       const { countQuery, pageQuery } = buildSiteWideDiscussionPageQueries({
         hasDownload:
           typeof hasDownload === "boolean" ? hasDownload : null,
-        hasSearch: searchInput !== "",
+        hasSearch: fulltextQuery !== "",
         hasSelectedChannels: selectedChannels.length > 0,
         hasSelectedTags: selectedTags.length > 0,
         showArchived,
         sortOption: effectiveSort,
       });
       const queryParams = {
-        searchInput,
-        titleRegex: `(?i).*${searchInput}.*`,
-        bodyRegex: `(?i).*${searchInput}.*`,
+        fulltextIndex: DISCUSSION_FULLTEXT_INDEX,
+        fulltextQuery,
         selectedChannels,
         selectedTags,
         showArchived,

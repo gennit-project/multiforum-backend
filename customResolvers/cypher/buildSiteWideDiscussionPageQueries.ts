@@ -40,9 +40,6 @@ const discussionPredicates = (
       "datetime(d.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis"
     );
   }
-  if (options.hasSearch) {
-    predicates.push("(d.title =~ $titleRegex OR d.body =~ $bodyRegex)");
-  }
   if (options.hasSelectedTags) {
     predicates.push(`EXISTS {
       MATCH (d)-[:HAS_TAG]->(tag:Tag)
@@ -58,6 +55,11 @@ const discussionPredicates = (
 
   return predicates.join("\n  AND ");
 };
+
+const discussionAnchor = (hasSearch: boolean) =>
+  hasSearch
+    ? "CALL db.index.fulltext.queryNodes($fulltextIndex, $fulltextQuery) YIELD node AS d"
+    : "MATCH (d:Discussion)";
 
 const rankingClause = (
   sortOption: SiteWideDiscussionSortOption,
@@ -97,10 +99,10 @@ export const buildSiteWideDiscussionPageQueries = (
   const channelPredicate = matchingChannelPredicate(options);
 
   return {
-    countQuery: `MATCH (d:Discussion)
+    countQuery: `${discussionAnchor(options.hasSearch)}
 WHERE ${predicates}
 RETURN count(d) AS totalCount`,
-    pageQuery: `MATCH (d:Discussion)
+    pageQuery: `${discussionAnchor(options.hasSearch)}
 WHERE ${predicates}
 ${rankingClause(options.sortOption, channelPredicate)}
 SKIP toInteger($offset)
