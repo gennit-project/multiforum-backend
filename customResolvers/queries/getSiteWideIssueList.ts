@@ -1,13 +1,15 @@
 import type { GraphQLResolveInfo } from "graphql";
 import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
 import { DateTime } from "luxon";
-import { getSiteWideIssuesQuery } from "../cypher/cypherQueries.js";
+import { buildSiteWideIssuesQuery } from "../cypher/buildContentSearchQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import type { ServerConfigModel } from "../../ogm_types.js";
 import { normalizePagination } from "../../services/pagination.js";
+import { buildFulltextQuery } from "../../services/channelFulltext.js";
+import { ISSUE_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 type Input = {
   driver: Driver;
@@ -111,16 +113,14 @@ const getResolver = (input: Input) => {
     }
 
     const session = driver.session();
-    const titleRegex = `(?i).*${searchInput}.*`;
-    const bodyRegex = `(?i).*${searchInput}.*`;
+    const fulltextQuery = buildFulltextQuery(searchInput);
     const startDate = normalizeDateStart(args.startDate);
     const endDate = normalizeDateEnd(args.endDate);
 
     try {
-      const issueResult = await session.run(getSiteWideIssuesQuery, {
-        searchInput,
-        titleRegex,
-        bodyRegex,
+      const issueResult = await session.run(buildSiteWideIssuesQuery(fulltextQuery !== ""), {
+        fulltextIndex: ISSUE_FULLTEXT_INDEX,
+        fulltextQuery,
         selectedChannels,
         showOnlyServerRuleViolations,
         startDate,

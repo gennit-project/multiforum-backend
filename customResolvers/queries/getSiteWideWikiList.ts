@@ -1,7 +1,9 @@
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
-import { getSiteWideWikiPagesQuery } from "../cypher/cypherQueries.js";
+import { buildSiteWideWikiPagesQuery } from "../cypher/buildContentSearchQueries.js";
 import { logger } from "../../logger.js";
 import { normalizePagination } from "../../services/pagination.js";
+import { buildFulltextQuery } from "../../services/channelFulltext.js";
+import { WIKI_PAGE_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 type WikiPageListItem = {
   id?: string | null;
@@ -44,17 +46,15 @@ const getResolver = (input: Input) => {
       offset: options?.offset,
       limit: options?.limit,
     });
-    const titleRegex = `(?i).*${searchInput}.*`;
-    const bodyRegex = `(?i).*${searchInput}.*`;
+    const fulltextQuery = buildFulltextQuery(searchInput);
 
     const session = driver.session();
     let totalCount = 0;
 
     try {
-      const result = await session.run(getSiteWideWikiPagesQuery, {
-        searchInput,
-        titleRegex,
-        bodyRegex,
+      const result = await session.run(buildSiteWideWikiPagesQuery(fulltextQuery !== ""), {
+        fulltextIndex: WIKI_PAGE_FULLTEXT_INDEX,
+        fulltextQuery,
         selectedChannels,
         offset,
         limit,

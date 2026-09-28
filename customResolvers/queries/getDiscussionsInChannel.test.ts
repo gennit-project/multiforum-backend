@@ -3,6 +3,7 @@ import test from "node:test";
 import getDiscussionsInChannelResolver from "./getDiscussionsInChannel.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 type SessionRunCall = {
   query: string;
@@ -102,7 +103,7 @@ test("getDiscussionsInChannel omits inactive search filtering", async () => {
   assert.doesNotMatch(driver.runCalls[0].query, /\$titleRegex|\$bodyRegex/);
 });
 
-test("getDiscussionsInChannel passes search input with regex pattern for title and body", async () => {
+test("getDiscussionsInChannel drives search from the full-text index", async () => {
   const driver = createMockDriver([]);
   const resolver = getDiscussionsInChannelResolver({
     DiscussionChannel: {},
@@ -116,9 +117,13 @@ test("getDiscussionsInChannel passes search input with regex pattern for title a
     null as unknown as GraphQLResolveInfo
   );
 
-  assert.equal(driver.runCalls[0].params.titleRegex, "(?i).*test query.*");
-  assert.equal(driver.runCalls[0].params.bodyRegex, "(?i).*test query.*");
-  assert.match(driver.runCalls[0].query, /discussion\.title =~ \$titleRegex/);
+  assert.equal(driver.runCalls[0].params.fulltextIndex, DISCUSSION_FULLTEXT_INDEX);
+  assert.equal(driver.runCalls[0].params.fulltextQuery, "test* AND query*");
+  assert.match(
+    driver.runCalls[0].query,
+    /db\.index\.fulltext\.queryNodes\(\$fulltextIndex, \$fulltextQuery\)/
+  );
+  assert.doesNotMatch(driver.runCalls[0].query, /=~/);
 });
 
 // Tag filter tests

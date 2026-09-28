@@ -61,6 +61,43 @@ for (const sort of ["new", "top", "hot"]) {
   });
 }
 
+test("getDiscussionsInChannel searches within the requested channel via full-text", async () => {
+  await run(
+    `CREATE (cats:Channel { uniqueName: 'cats' })
+     CREATE (dogs:Channel { uniqueName: 'dogs' })
+     CREATE (matching:Discussion { id: 'd1', title: 'Needle guide', body: 'Found it', createdAt: datetime() })
+     CREATE (other:Discussion { id: 'd2', title: 'Ordinary guide', body: 'Nothing here', createdAt: datetime() })
+     CREATE (outside:Discussion { id: 'd3', title: 'Needle outside', body: 'Wrong channel', createdAt: datetime() })
+     CREATE (matchingPost:DiscussionChannel { id: 'dc1', discussionId: 'd1', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (otherPost:DiscussionChannel { id: 'dc2', discussionId: 'd2', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (outsidePost:DiscussionChannel { id: 'dc3', discussionId: 'd3', channelUniqueName: 'dogs', createdAt: datetime() })
+     CREATE (matchingPost)-[:POSTED_IN_CHANNEL]->(matching)
+     CREATE (matchingPost)-[:POSTED_IN_CHANNEL]->(cats)
+     CREATE (otherPost)-[:POSTED_IN_CHANNEL]->(other)
+     CREATE (otherPost)-[:POSTED_IN_CHANNEL]->(cats)
+     CREATE (outsidePost)-[:POSTED_IN_CHANNEL]->(outside)
+     CREATE (outsidePost)-[:POSTED_IN_CHANNEL]->(dogs)`
+  );
+
+  const result = await env.resolvers.Query.getDiscussionsInChannel(
+    null,
+    {
+      channelUniqueName: "cats",
+      options: { offset: "0", limit: "10", sort: "new" },
+      selectedTags: [],
+      searchInput: "Needle",
+      showArchived: false,
+      labelFilters: [],
+    },
+    anon(),
+    {} as never
+  );
+
+  assert.equal(result.discussionChannels.length, 1);
+  assert.equal(result.discussionChannels[0].Discussion.id, "d1");
+  assert.equal(Number(result.aggregateDiscussionChannelsCount), 1);
+});
+
 test("download label filters include matching packs and exclude excluded packs first", async () => {
   await run(
     `CREATE (owner:User { username: 'sims-builder', createdAt: datetime() })

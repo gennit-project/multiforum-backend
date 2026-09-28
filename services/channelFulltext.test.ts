@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   buildChannelFulltextQuery,
+  buildFulltextQuery,
   CHANNEL_FULLTEXT_INDEX,
   CHANNEL_FULLTEXT_CREATE_CYPHER,
 } from "./channelFulltext.js";
@@ -9,6 +10,10 @@ import {
 test("appends a prefix wildcard so partial terms match longer tokens", () => {
   // "dog" should still match a "dogs" token, preserving the old CONTAINS feel.
   assert.equal(buildChannelFulltextQuery("dog"), "dog*");
+});
+
+test("exposes the same escaping for non-channel full-text searches", () => {
+  assert.equal(buildFulltextQuery("alpha beta"), "alpha* AND beta*");
 });
 
 test("ANDs multiple whitespace-separated terms, each wildcarded", () => {

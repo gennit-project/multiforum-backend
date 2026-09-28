@@ -35,7 +35,7 @@ const LUCENE_SPECIAL_CHARS = /[+\-&|!(){}[\]^"~*?:\\/]/g;
 // token ("dogs"). Terms are AND-ed so multi-word input narrows results, the way
 // a single substring scan used to. Returns "" when the input has no searchable
 // characters, letting callers fall back to the unfiltered path.
-export function buildChannelFulltextQuery(searchInput: string): string {
+export function buildFulltextQuery(searchInput: string): string {
   return searchInput
     .trim()
     .split(/\s+/)
@@ -44,3 +44,7 @@ export function buildChannelFulltextQuery(searchInput: string): string {
     .map((term) => `${term}*`)
     .join(" AND ");
 }
+
+// Backwards-compatible name for the channel resolver. Other content search
+// paths use the generic name so escaping and token semantics stay identical.
+export const buildChannelFulltextQuery = buildFulltextQuery;

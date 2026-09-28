@@ -5,6 +5,7 @@ import type { Driver } from "neo4j-driver";
 import { getSiteWideIssuesQuery } from "../cypher/cypherQueries.js";
 import type { GraphQLContext } from "../../types/context.js";
 import getSiteWideIssueListResolver from "./getSiteWideIssueList.js";
+import { ISSUE_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 type SessionRunCall = {
   query: string;
@@ -80,12 +81,28 @@ test("getSiteWideIssueList passes the default params to the query", async () => 
   await resolver(null, baseArgs, createMockContext(), mockInfo);
 
   assert.equal(driver.runCalls.length, 1);
-  assert.equal(driver.runCalls[0].params.searchInput, "");
+  assert.equal(driver.runCalls[0].params.fulltextQuery, "");
+  assert.equal(driver.runCalls[0].params.fulltextIndex, ISSUE_FULLTEXT_INDEX);
   assert.equal(driver.runCalls[0].params.sort, "newest");
   assert.equal(driver.runCalls[0].params.isOpen, true);
   assert.deepEqual(driver.runCalls[0].params.selectedChannels, []);
   assert.equal(driver.runCalls[0].params.offset, 0);
   assert.equal(driver.runCalls[0].params.limit, 25);
+});
+
+test("getSiteWideIssueList escapes search text for the full-text index", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideIssueListResolver({ driver });
+
+  await resolver(
+    null,
+    { ...baseArgs, searchInput: "broken: link" },
+    createMockContext(),
+    mockInfo
+  );
+
+  assert.equal(driver.runCalls[0].params.fulltextQuery, "broken\\:* AND link*");
+  assert.doesNotMatch(driver.runCalls[0].query, /=~/);
 });
 
 test("getSiteWideIssueList normalizes date filters to full-day UTC bounds", async () => {
@@ -301,8 +318,8 @@ test("getSiteWideIssueList query filters by report author for filterIReported", 
 });
 
 test("getSiteWideIssueList query uses bound pagination params", () => {
-  assert.match(getSiteWideIssuesQuery, /SKIP \$offset/);
-  assert.match(getSiteWideIssuesQuery, /LIMIT \$limit/);
+  assert.match(getSiteWideIssuesQuery, /SKIP toInteger\(\$offset\)/);
+  assert.match(getSiteWideIssuesQuery, /LIMIT toInteger\(\$limit\)/);
 });
 
 test("getSiteWideIssueList query stringifies datetime fields", () => {

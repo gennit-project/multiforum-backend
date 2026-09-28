@@ -1,13 +1,11 @@
 // Count matching wiki pages first
 MATCH (w:WikiPage)
-WHERE ($searchInput = "" OR w.title =~ $titleRegex OR w.body =~ $bodyRegex)
-AND (SIZE($selectedChannels) = 0 OR w.channelUniqueName IN $selectedChannels)
+WHERE SIZE($selectedChannels) = 0 OR w.channelUniqueName IN $selectedChannels
 WITH COUNT(w) AS totalCount
 
 // Fetch paginated results
 MATCH (w:WikiPage)
-WHERE ($searchInput = "" OR w.title =~ $titleRegex OR w.body =~ $bodyRegex)
-AND (SIZE($selectedChannels) = 0 OR w.channelUniqueName IN $selectedChannels)
+WHERE SIZE($selectedChannels) = 0 OR w.channelUniqueName IN $selectedChannels
 WITH w, totalCount
 ORDER BY coalesce(w.updatedAt, w.createdAt) DESC
 SKIP toInteger($offset)

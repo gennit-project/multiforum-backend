@@ -11,6 +11,8 @@ import {
   run,
   type ImageModEnv,
 } from "./imageModerationHarness.js";
+import { buildSiteWideIssuesQuery } from "../../customResolvers/cypher/buildContentSearchQueries.js";
+import { ISSUE_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 let env: ImageModEnv;
 
@@ -124,6 +126,76 @@ test("getSiteWideDiscussionList includes channel icon URLs for discussion channe
     result.discussions[0].DiscussionChannels[0].Channel.channelIconURL,
     "https://example.com/cats-icon.png"
   );
+});
+
+test("getSiteWideDiscussionList searches discussion text through the full-text index", async () => {
+  await run(
+    `CREATE (cats:Channel { uniqueName: 'cats' })
+     CREATE (alpha:Discussion { id: 'd1', title: 'Alpha discussion', body: 'hello', createdAt: datetime(), hasDownload: false })
+     CREATE (beta:Discussion { id: 'd2', title: 'Beta discussion', body: 'goodbye', createdAt: datetime(), hasDownload: false })
+     CREATE (alphaPost:DiscussionChannel { id: 'dc1', discussionId: 'd1', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (betaPost:DiscussionChannel { id: 'dc2', discussionId: 'd2', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (alphaPost)-[:POSTED_IN_CHANNEL]->(alpha)
+     CREATE (alphaPost)-[:POSTED_IN_CHANNEL]->(cats)
+     CREATE (betaPost)-[:POSTED_IN_CHANNEL]->(beta)
+     CREATE (betaPost)-[:POSTED_IN_CHANNEL]->(cats)`
+  );
+
+  const result = await env.resolvers.Query.getSiteWideDiscussionList(null, {
+    searchInput: "Alpha",
+    selectedChannels: [],
+    selectedTags: [],
+    showArchived: false,
+    hasDownload: null,
+    options: {
+      offset: "0",
+      limit: "10",
+      resultsOrder: "desc",
+      sort: "new",
+      timeFrame: "week",
+    },
+  });
+
+  assert.equal(result.discussions.length, 1);
+  assert.equal(result.discussions[0].id, "d1");
+  assert.equal(Number(result.aggregateDiscussionCount), 1);
+});
+
+test("getSiteWideIssuesQuery supports both unfiltered and indexed search branches", async () => {
+  await run(
+    `CREATE (:Issue { id: 'i1', issueNumber: 1, title: 'Reported link', body: 'Needs review', isOpen: true, createdAt: datetime() })
+     CREATE (:Issue { id: 'i2', issueNumber: 2, title: 'Other concern', body: 'No match', isOpen: true, createdAt: datetime() })`
+  );
+  const params = {
+    fulltextIndex: ISSUE_FULLTEXT_INDEX,
+    selectedChannels: [],
+    showOnlyServerRuleViolations: false,
+    startDate: null,
+    endDate: null,
+    isOpen: true,
+    filterCreatedByMe: false,
+    filterIAmOP: false,
+    filterIReported: false,
+    loggedInUsername: null,
+    loggedInModProfileName: null,
+    mayAccessSensitiveContent: true,
+    offset: 0,
+    limit: 10,
+    sort: "newest",
+  };
+
+  const unfiltered = await run(buildSiteWideIssuesQuery(false), {
+    ...params,
+    fulltextQuery: "",
+  });
+  const searched = await run(buildSiteWideIssuesQuery(true), {
+    ...params,
+    fulltextQuery: "reported*",
+  });
+
+  assert.equal(unfiltered.length, 2);
+  assert.equal(searched.length, 1);
+  assert.equal(searched[0].issue.id, "i1");
 });
 
 // --- getSortedChannels ---

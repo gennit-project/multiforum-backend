@@ -67,11 +67,6 @@ export const buildDiscussionChannelPageQuery = (
     "($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)",
   ];
 
-  if (options.hasSearch) {
-    predicates.push(
-      "(discussion.title =~ $titleRegex OR discussion.body =~ $bodyRegex)"
-    );
-  }
   if (options.sortOption === "top") {
     predicates.push(
       "($startOfTimeFrame IS NULL OR datetime(dc.createdAt).epochMillis > datetime($startOfTimeFrame).epochMillis)"
@@ -98,8 +93,13 @@ export const buildDiscussionChannelPageQuery = (
     predicates.push(labelFilterPredicate);
   }
 
+  const anchor = options.hasSearch
+    ? `CALL db.index.fulltext.queryNodes($fulltextIndex, $fulltextQuery) YIELD node AS discussion
+MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel {channelUniqueName: $channelUniqueName})`
+    : "MATCH (dc:DiscussionChannel {channelUniqueName: $channelUniqueName})-[:POSTED_IN_CHANNEL]->(discussion:Discussion)";
+
   return `// Select/count only IDs here; the hydration query loads display data.
-MATCH (dc:DiscussionChannel {channelUniqueName: $channelUniqueName})-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
+${anchor}
 WHERE ${predicates.join("\n  AND ")}
 WITH DISTINCT dc
 ${rankingClause(options.sortOption)}
