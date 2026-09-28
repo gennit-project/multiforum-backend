@@ -57,3 +57,22 @@ test("sitewide list clients can request non-removed download scan states", () =>
     }
   `);
 });
+
+test("sitewide list clients can paginate with cursors", () => {
+  assertValid(`
+    query ListSitewideDiscussions($after: String) {
+      getSiteWideDiscussionList(
+        searchInput: ""
+        selectedChannels: []
+        selectedTags: []
+        showArchived: false
+        options: { limit: 15, after: $after, sort: new }
+      ) {
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+  `);
+});

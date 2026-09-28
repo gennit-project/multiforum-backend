@@ -65,13 +65,49 @@ test("channel discussions select page IDs before expanding related records", () 
 
 test("sitewide discussions select IDs before hydrating related records", () => {
   assert.match(sitewideDiscussionPageQuery, /RETURN d\.id AS discussionId/);
-  assert.match(sitewideDiscussionPageQuery, /SKIP.*LIMIT/s);
+  assert.doesNotMatch(sitewideDiscussionPageQuery, /SKIP/);
+  assert.match(sitewideDiscussionPageQuery, /LIMIT toInteger\(\$pageLimit\)/);
+  assert.match(
+    sitewideDiscussionPageQuery,
+    /ORDER BY hotRank DESC, d\.createdAt DESC, d\.id DESC/
+  );
   assert.doesNotMatch(sitewideDiscussionPageQuery, /UPVOTED_DISCUSSION|CONTAINS_COMMENT/);
   assert.match(
     getSiteWideDiscussionsQuery,
     /UNWIND range\(0, size\(\$discussionIds\) - 1\)/
   );
   assert.match(getSiteWideDiscussionsQuery, /UPVOTED_DISCUSSION/);
+});
+
+test("sitewide cursor pages seek after the complete hot-ranking tuple", () => {
+  const { pageQuery } = buildSiteWideDiscussionPageQueries({
+    hasDownload: null,
+    hasSearch: false,
+    hasSelectedChannels: false,
+    hasSelectedTags: false,
+    showArchived: false,
+    sortOption: "hot",
+    paginationMode: "cursor",
+  });
+
+  assert.match(pageQuery, /hotRank < \$cursorScore/);
+  assert.match(pageQuery, /d\.createdAt < datetime\(\$cursorCreatedAt\)/);
+  assert.match(pageQuery, /d\.id < \$cursorDiscussionId/);
+  assert.doesNotMatch(pageQuery, /SKIP/);
+});
+
+test("sitewide legacy offset pages retain compatibility", () => {
+  const { pageQuery } = buildSiteWideDiscussionPageQueries({
+    hasDownload: null,
+    hasSearch: false,
+    hasSelectedChannels: false,
+    hasSelectedTags: false,
+    showArchived: false,
+    sortOption: "new",
+    paginationMode: "offset",
+  });
+
+  assert.match(pageQuery, /SKIP toInteger\(\$offset\)/);
 });
 
 test("discussion comments select their page before hydrating related records", () => {

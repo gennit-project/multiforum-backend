@@ -15,6 +15,10 @@ import type { ServerConfigModel } from "../../ogm_types.js";
 import { normalizePagination } from "../../services/pagination.js";
 import { buildFulltextQuery } from "../../services/channelFulltext.js";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
+import {
+  decodeDiscussionListCursor,
+  encodeDiscussionListCursor,
+} from "../../services/discussionListCursor.js";
 
 type Input = {
   Discussion: DiscussionModel;
@@ -39,6 +43,7 @@ type Args = {
   loggedInUsername?: string;
   options: {
     offset: string;
+    after?: string;
     limit: string;
     resultsOrder: string;
     sort: string;
@@ -80,10 +85,24 @@ const getResolver = (input: Input) => {
       const fulltextQuery = buildFulltextQuery(searchInput);
       const effectiveSort: SiteWideDiscussionSortOption =
         sort === "new" || sort === "top" ? sort : "hot";
-      const selectedTimeFrame =
+      const cursor = decodeDiscussionListCursor({
+        after: options?.after,
+        expectedSort: effectiveSort,
+      });
+      const computedTimeFrame =
         effectiveSort === "top"
           ? (timeFrameOptions[timeFrame] ?? timeFrameOptions.year).start
           : null;
+      const rankingAnchor =
+        cursor?.rankingAnchor ??
+        (effectiveSort === "hot"
+          ? new Date().toISOString()
+          : computedTimeFrame);
+      const paginationMode = cursor
+        ? "cursor"
+        : offset > 0
+          ? "offset"
+          : "initial";
       const rankingParams = await getHotRankingQueryParams({
         executor: session,
         profile: "discussion",
@@ -98,6 +117,7 @@ const getResolver = (input: Input) => {
         hasSelectedTags: selectedTags.length > 0,
         showArchived,
         sortOption: effectiveSort,
+        paginationMode,
       });
       const queryParams = {
         fulltextIndex: DISCUSSION_FULLTEXT_INDEX,
@@ -108,9 +128,15 @@ const getResolver = (input: Input) => {
         hasDownload,
         offset,
         limit,
+        pageLimit: limit + 1,
+        cursorCreatedAt: cursor?.createdAt ?? null,
+        cursorDiscussionId: cursor?.discussionId ?? null,
+        cursorScore: cursor?.sortValue ?? null,
+        rankingAnchor,
         resultsOrder: options?.resultsOrder,
         sortOption: effectiveSort,
-        startOfTimeFrame: selectedTimeFrame,
+        startOfTimeFrame:
+          effectiveSort === "top" ? rankingAnchor : computedTimeFrame,
         loggedInUsername: loggedInUsername || null,
         mayAccessSensitiveContent,
         ...rankingParams,
@@ -125,12 +151,32 @@ const getResolver = (input: Input) => {
           countResult.records[0]?.get("totalCount") ?? 0;
 
         const pageResult = await transaction.run(pageQuery, queryParams);
-        const discussionIds = pageResult.records.map(
+        const hasNextPage = pageResult.records.length > limit;
+        const selectedRecords = pageResult.records.slice(0, limit);
+        const discussionIds = selectedRecords.map(
           (record: Neo4jRecord) => record.get("discussionId") as string
         );
+        const lastRecord = selectedRecords[selectedRecords.length - 1];
+        const cursorScore = lastRecord?.get("cursorScore");
+        const normalizedCursorScore =
+          cursorScore === null || cursorScore === undefined
+            ? null
+            : typeof cursorScore === "number"
+              ? cursorScore
+              : Number(cursorScore.toString());
+        const endCursor = lastRecord
+          ? encodeDiscussionListCursor({
+              sort: effectiveSort,
+              sortValue: normalizedCursorScore,
+              createdAt: lastRecord.get("cursorCreatedAt").toString(),
+              discussionId: lastRecord.get("discussionId") as string,
+              rankingAnchor,
+            })
+          : null;
+        const pageInfo = { endCursor, hasNextPage };
 
         if (discussionIds.length === 0) {
-          return { discussions: [], aggregateDiscussionCount };
+          return { discussions: [], aggregateDiscussionCount, pageInfo };
         }
 
         const discussionsResult = await transaction.run(
@@ -147,7 +193,7 @@ const getResolver = (input: Input) => {
           (record: Neo4jRecord) => record.get("discussion")
         );
 
-        return { discussions, aggregateDiscussionCount };
+        return { discussions, aggregateDiscussionCount, pageInfo };
       });
     } catch (error: unknown) {
       logger.error("Error getting discussions:", error);

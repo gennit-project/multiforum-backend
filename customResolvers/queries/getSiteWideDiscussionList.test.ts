@@ -24,8 +24,16 @@ const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
       : query.includes("RETURN d.id AS discussionId")
         ? mockRecords.map((record) => ({
             discussionId: (record.discussion as { id?: string } | undefined)?.id,
+            cursorCreatedAt:
+              (record.discussion as { createdAt?: string } | undefined)
+                ?.createdAt ?? "2026-09-27T12:00:00.000Z",
+            cursorScore: record.cursorScore ?? null,
           }))
-        : mockRecords;
+        : mockRecords.filter((record) =>
+            (params.discussionIds as string[] | undefined)?.includes(
+              (record.discussion as { id?: string } | undefined)?.id ?? ""
+            )
+          );
 
     return {
       records: records.map((record) => ({
@@ -346,6 +354,19 @@ test("getSiteWideDiscussionList passes offset and limit from options", async () 
 
   assert.equal(driver.runCalls[0].params.offset, 50);
   assert.equal(driver.runCalls[0].params.limit, 25);
+  assert.equal(driver.runCalls[0].params.pageLimit, 26);
+});
+
+test("getSiteWideDiscussionList avoids SKIP on the initial page", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideDiscussionListResolver({
+    Discussion: {} as any,
+    driver,
+  });
+
+  await resolver(null, baseArgs as any, createMockContext(), mockInfo);
+
+  assert.doesNotMatch(driver.runCalls[1].query, /SKIP/);
 });
 
 test("getSiteWideDiscussionList passes resultsOrder from options", async () => {
@@ -421,6 +442,93 @@ test("getSiteWideDiscussionList returns discussions and aggregateCount", async (
   assert.equal(result.discussions.length, 1);
   assert.deepEqual(result.discussions[0], mockDiscussion);
   assert.equal(result.aggregateDiscussionCount, 100);
+  assert.equal(result.pageInfo.hasNextPage, false);
+  assert.equal(typeof result.pageInfo.endCursor, "string");
+});
+
+test("getSiteWideDiscussionList fetches one extra row to detect another page", async () => {
+  const driver = createMockDriver([
+    { discussion: { id: "d-1" }, totalCount: 3 },
+    { discussion: { id: "d-2" }, totalCount: 3 },
+    { discussion: { id: "d-3" }, totalCount: 3 },
+  ]);
+  const resolver = getSiteWideDiscussionListResolver({
+    Discussion: {} as any,
+    driver,
+  });
+
+  const result = await resolver(
+    null,
+    { ...baseArgs, options: { ...baseArgs.options, limit: "2" } } as any,
+    createMockContext(),
+    mockInfo
+  );
+
+  assert.deepEqual(
+    {
+      ids: result.discussions.map((discussion: { id: string }) => discussion.id),
+      pageInfo: result.pageInfo,
+      hydratedIds: driver.runCalls[2].params.discussionIds,
+    },
+    {
+      ids: ["d-1", "d-2"],
+      pageInfo: {
+        endCursor: result.pageInfo.endCursor,
+        hasNextPage: true,
+      },
+      hydratedIds: ["d-1", "d-2"],
+    }
+  );
+});
+
+test("getSiteWideDiscussionList decodes an after cursor into seek parameters", async () => {
+  const firstDriver = createMockDriver([
+    {
+      discussion: {
+        id: "d-1",
+        createdAt: "2026-09-27T12:00:00.000Z",
+      },
+      totalCount: 2,
+    },
+  ]);
+  const firstResolver = getSiteWideDiscussionListResolver({
+    Discussion: {} as any,
+    driver: firstDriver,
+  });
+  const firstPage = await firstResolver(
+    null,
+    baseArgs as any,
+    createMockContext(),
+    mockInfo
+  );
+  const nextDriver = createMockDriver([]);
+  const nextResolver = getSiteWideDiscussionListResolver({
+    Discussion: {} as any,
+    driver: nextDriver,
+  });
+
+  await nextResolver(
+    null,
+    {
+      ...baseArgs,
+      options: { ...baseArgs.options, after: firstPage.pageInfo.endCursor },
+    } as any,
+    createMockContext(),
+    mockInfo
+  );
+
+  assert.deepEqual(
+    {
+      cursorCreatedAt: nextDriver.runCalls[1].params.cursorCreatedAt,
+      cursorDiscussionId: nextDriver.runCalls[1].params.cursorDiscussionId,
+      hasSkip: /SKIP/.test(nextDriver.runCalls[1].query),
+    },
+    {
+      cursorCreatedAt: "2026-09-27T12:00:00.000Z",
+      cursorDiscussionId: "d-1",
+      hasSkip: false,
+    }
+  );
 });
 
 test("getSiteWideDiscussionList returns empty array and zero count when no results", async () => {
