@@ -25,9 +25,10 @@ CALL {
     OPTIONAL MATCH (uploader:User)-[:UPLOADED_IMAGE]->(image)
     WITH image, uploader
     ORDER BY image.createdAt DESC, image.id ASC
-    LIMIT toInteger($imageLimit)
-    RETURN [entry IN collect(CASE WHEN image IS NULL THEN null ELSE image {
+    LIMIT toInteger($imageLimit) + 1
+    WITH [entry IN collect(CASE WHEN image IS NULL THEN null ELSE image {
       .id,
+      .createdAt,
       .url,
       .alt,
       .caption,
@@ -36,12 +37,15 @@ CALL {
         .username,
         .displayName
       } END
-    } END) WHERE entry IS NOT NULL] AS images
+    } END) WHERE entry IS NOT NULL] AS imageCandidates
+    RETURN imageCandidates[..toInteger($imageLimit)] AS images,
+      size(imageCandidates) > toInteger($imageLimit) AS hasNextPage
   }
   RETURN CASE WHEN album IS NULL THEN null ELSE album {
     .id,
     .imageOrder,
-    Images: images
+    Images: images,
+    _detailImagesHasNextPage: hasNextPage
   } END AS album
 }
 

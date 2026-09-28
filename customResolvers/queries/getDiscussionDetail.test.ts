@@ -59,7 +59,10 @@ test("getDiscussionDetail combines three bounded reads", async () => {
   const mock = createDriver([
     { Discussion: { id: "discussion-1", title: "Hello" } },
     { DiscussionChannel: { id: "entry-1" } },
-    { DownloadableFiles: [{ id: "file-1" }] },
+    {
+      DownloadableFiles: [{ id: "file-1" }],
+      detailFilesHasNextPage: true,
+    },
   ]);
   const resolver = getDiscussionDetail({
     driver: mock.driver as never,
@@ -84,6 +87,7 @@ test("getDiscussionDetail combines three bounded reads", async () => {
         title: "Hello",
         DiscussionChannels: [{ id: "entry-1" }],
         DownloadableFiles: [{ id: "file-1" }],
+        _detailFilesHasNextPage: true,
       }],
       callCount: 3,
       params: {
@@ -92,10 +96,10 @@ test("getDiscussionDetail combines three bounded reads", async () => {
         viewerUsername: "viewer",
         viewerModName: "mod-viewer",
         mayAccessSensitiveContent: false,
-        imageLimit: 50,
+        imageLimit: 12,
         previewImageLimit: 12,
-        answerLimit: 20,
-        fileLimit: 50,
+        answerLimit: 5,
+        fileLimit: 12,
       },
       closed: true,
     }

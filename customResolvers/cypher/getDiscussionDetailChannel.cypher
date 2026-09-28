@@ -41,8 +41,8 @@ CALL {
   OPTIONAL MATCH (answerAuthor)-[:AUTHORED_COMMENT]->(answer)
   WITH answer, answerAuthor
   ORDER BY answer.createdAt DESC, answer.id ASC
-  LIMIT toInteger($answerLimit)
-  RETURN [value IN collect(CASE WHEN answer IS NULL THEN null ELSE answer {
+  LIMIT toInteger($answerLimit) + 1
+  WITH [value IN collect(CASE WHEN answer IS NULL THEN null ELSE answer {
     .id,
     .text,
     .createdAt,
@@ -50,7 +50,9 @@ CALL {
       .username,
       .displayName
     } END
-  } END) WHERE value IS NOT NULL] AS answers
+  } END) WHERE value IS NOT NULL] AS answerCandidates
+  RETURN answerCandidates[..toInteger($answerLimit)] AS answers,
+    size(answerCandidates) > toInteger($answerLimit) AS hasNextPage
 }
 
 CALL {
@@ -101,6 +103,7 @@ RETURN entry {
   SuperUpvotedByUsers: viewerSuperUpvote,
   CommentsAggregate: {count: commentCount},
   Answers: answers,
+  _detailAnswersHasNextPage: hasNextPage,
   LabelOptions: labelOptions,
   Discussion: {id: discussion.id},
   Channel: channel {

@@ -33,13 +33,15 @@ CALL {
   OPTIONAL MATCH (answerAuthor:User|ModerationProfile)-[:AUTHORED_COMMENT]->(answer)
   WITH answer, answerAuthor
   ORDER BY answer.createdAt DESC, answer.id ASC
-  LIMIT toInteger($answerLimit)
-  RETURN [value IN collect(CASE WHEN answer IS NULL THEN null ELSE answer {
+  LIMIT toInteger($answerLimit) + 1
+  WITH [value IN collect(CASE WHEN answer IS NULL THEN null ELSE answer {
     .id, .text, .createdAt,
     CommentAuthor: CASE WHEN answerAuthor IS NULL THEN null ELSE answerAuthor {
       .username, .displayName
     } END
-  } END) WHERE value IS NOT NULL] AS answers
+  } END) WHERE value IS NOT NULL] AS answerCandidates
+  RETURN answerCandidates[..toInteger($answerLimit)] AS answers,
+    size(answerCandidates) > toInteger($answerLimit) AS hasNextPage
 }
 
 CALL {
@@ -74,6 +76,7 @@ RETURN entry {
   RootCommentsAggregate: {count: rootCommentCount},
   SubscribedToNotifications: viewerSubscription,
   Answers: answers,
+  _detailAnswersHasNextPage: hasNextPage,
   Channel: channel {
     .uniqueName, .feedbackEnabled, .imageUploadsEnabled,
     .markdownImagesEnabled, .emojiEnabled,
