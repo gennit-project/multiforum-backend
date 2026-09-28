@@ -7,6 +7,7 @@ type SiteWideDiscussionPageQueryOptions = {
   hasSelectedTags: boolean;
   showArchived: boolean;
   sortOption: SiteWideDiscussionSortOption;
+  paginationMode?: "cursor" | "initial" | "offset";
 };
 
 const matchingChannelPredicate = (
@@ -63,28 +64,68 @@ const discussionAnchor = (hasSearch: boolean) =>
 
 const rankingClause = (
   sortOption: SiteWideDiscussionSortOption,
-  channelPredicate: string
+  channelPredicate: string,
+  paginationMode: "cursor" | "initial" | "offset"
 ) => {
+  const offsetClause =
+    paginationMode === "offset" ? "SKIP toInteger($offset)" : "";
+
   if (sortOption === "new") {
-    return "ORDER BY d.createdAt DESC";
+    const cursorClause =
+      paginationMode === "cursor"
+        ? `WHERE d.createdAt < datetime($cursorCreatedAt)
+   OR (d.createdAt = datetime($cursorCreatedAt) AND d.id < $cursorDiscussionId)`
+        : "";
+    return `WITH d
+${cursorClause}
+ORDER BY d.createdAt DESC, d.id DESC
+${offsetClause}
+LIMIT toInteger($pageLimit)
+RETURN d.id AS discussionId,
+       d.createdAt AS cursorCreatedAt,
+       null AS cursorScore`;
   }
 
   if (sortOption === "top") {
+    const cursorClause =
+      paginationMode === "cursor"
+        ? `WHERE score < $cursorScore
+   OR (score = $cursorScore AND d.createdAt < datetime($cursorCreatedAt))
+   OR (score = $cursorScore AND d.createdAt = datetime($cursorCreatedAt) AND d.id < $cursorDiscussionId)`
+        : "";
     return `MATCH (d)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
 ${channelPredicate}
 WITH d, sum(CASE WHEN coalesce(dc.weightedVotesCount, 0.0) < 0 THEN 0.0 ELSE coalesce(dc.weightedVotesCount, 0.0) END) AS score
-ORDER BY score DESC, d.createdAt DESC`;
+${cursorClause}
+ORDER BY score DESC, d.createdAt DESC, d.id DESC
+${offsetClause}
+LIMIT toInteger($pageLimit)
+RETURN d.id AS discussionId,
+       d.createdAt AS cursorCreatedAt,
+       score AS cursorScore`;
   }
 
+  const cursorClause =
+    paginationMode === "cursor"
+      ? `WHERE hotRank < $cursorScore
+   OR (hotRank = $cursorScore AND d.createdAt < datetime($cursorCreatedAt))
+   OR (hotRank = $cursorScore AND d.createdAt = datetime($cursorCreatedAt) AND d.id < $cursorDiscussionId)`
+      : "";
   return `MATCH (d)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
 ${channelPredicate}
 WITH d,
      sum(CASE WHEN coalesce(dc.weightedVotesCount, 0.0) < 0 THEN 0.0 ELSE coalesce(dc.weightedVotesCount, 0.0) END) AS score,
-     duration.between(d.createdAt, datetime()).months +
-       duration.between(d.createdAt, datetime()).days / 30.0 AS ageInMonths
+     duration.between(d.createdAt, datetime($rankingAnchor)).months +
+       duration.between(d.createdAt, datetime($rankingAnchor)).days / 30.0 AS ageInMonths
 WITH d, score, CASE WHEN ageInMonths IS NULL THEN 0 ELSE ageInMonths END AS ageInMonths
 WITH d, log10(score + 1) / ((ageInMonths + $hotAgeOffsetMonths) ^ $hotGravity) AS hotRank
-ORDER BY hotRank DESC, d.createdAt DESC`;
+${cursorClause}
+ORDER BY hotRank DESC, d.createdAt DESC, d.id DESC
+${offsetClause}
+LIMIT toInteger($pageLimit)
+RETURN d.id AS discussionId,
+       d.createdAt AS cursorCreatedAt,
+       hotRank AS cursorScore`;
 };
 
 /**
@@ -97,6 +138,7 @@ export const buildSiteWideDiscussionPageQueries = (
 ) => {
   const predicates = discussionPredicates(options);
   const channelPredicate = matchingChannelPredicate(options);
+  const paginationMode = options.paginationMode ?? "initial";
 
   return {
     countQuery: `${discussionAnchor(options.hasSearch)}
@@ -104,9 +146,6 @@ WHERE ${predicates}
 RETURN count(d) AS totalCount`,
     pageQuery: `${discussionAnchor(options.hasSearch)}
 WHERE ${predicates}
-${rankingClause(options.sortOption, channelPredicate)}
-SKIP toInteger($offset)
-LIMIT toInteger($limit)
-RETURN d.id AS discussionId`,
+${rankingClause(options.sortOption, channelPredicate, paginationMode)}`,
   };
 };

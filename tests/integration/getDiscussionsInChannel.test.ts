@@ -252,6 +252,73 @@ test("channel and sitewide discussion lists return assigned flairs, including ar
   );
 });
 
+test("sitewide discussion cursor pages have stable ordering without gaps or duplicates", async () => {
+  await run(
+    `CREATE (channel:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })
+     WITH channel
+     UNWIND ['d-1', 'd-2', 'd-3', 'd-4', 'd-5'] AS discussionId
+     CREATE (discussion:Discussion {
+       id: discussionId,
+       title: discussionId,
+       body: '',
+       hasDownload: false,
+       createdAt: datetime('2026-09-27T12:00:00Z')
+     })
+     CREATE (dc:DiscussionChannel {
+       id: 'dc-' + discussionId,
+       discussionId: discussionId,
+       channelUniqueName: 'cats',
+       createdAt: datetime('2026-09-27T12:00:00Z'),
+       archived: false
+     })
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (dc)-[:POSTED_IN_CHANNEL]->(channel)`
+  );
+
+  const getPage = (after?: string | null) =>
+    env.resolvers.Query.getSiteWideDiscussionList(
+      null,
+      {
+        searchInput: "",
+        selectedChannels: [],
+        selectedTags: [],
+        showArchived: false,
+        hasDownload: false,
+        options: {
+          after,
+          limit: "2",
+          sort: "new",
+          timeFrame: "week",
+        },
+      },
+      anon(),
+      {} as never
+    );
+
+  const firstPage = await getPage();
+  const secondPage = await getPage(firstPage.pageInfo.endCursor);
+  const thirdPage = await getPage(secondPage.pageInfo.endCursor);
+
+  assert.deepEqual(
+    {
+      ids: [firstPage, secondPage, thirdPage].flatMap((page) =>
+        page.discussions.map((discussion: { id: string }) => discussion.id)
+      ),
+      hasNextPage: [
+        firstPage.pageInfo.hasNextPage,
+        secondPage.pageInfo.hasNextPage,
+        thirdPage.pageInfo.hasNextPage,
+      ],
+      total: Number(firstPage.aggregateDiscussionCount),
+    },
+    {
+      ids: ["d-5", "d-4", "d-3", "d-2", "d-1"],
+      hasNextPage: [true, true, false],
+      total: 5,
+    }
+  );
+});
+
 test("sitewide discussion lists return scan metadata only for non-removed downloads", async () => {
   await run(
     `CREATE (owner:User { username: 'alice', createdAt: datetime() })

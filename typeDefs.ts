@@ -1829,6 +1829,7 @@ const typeDefinitions = gql`
 
   input DiscussionListOptions {
     offset: Int
+    after: String
     limit: Int
     sort: SortType
     timeFrame: TimeFrame
@@ -1867,9 +1868,15 @@ const typeDefinitions = gql`
     isFavorited: Boolean
   }
 
+  type DiscussionListPageInfo {
+    endCursor: String
+    hasNextPage: Boolean!
+  }
+
   type SiteWideDiscussionListFormat {
     aggregateDiscussionCount: Int!
     discussions: [SiteWideDiscussionListItem!]!
+    pageInfo: DiscussionListPageInfo!
   }
 
   type SiteWideWikiListFormat {
