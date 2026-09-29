@@ -297,6 +297,7 @@ const permissionRules: IRules = {
       FavoriteComments: isAccountOwner,
       FavoriteDownloads: isAccountOwner,
       FavoriteImages: isAccountOwner,
+      FavoriteImagesAggregate: isAccountOwner,
       FavoriteChannels: isAccountOwner,
       OwnedDownloads: isAccountOwner,
 
