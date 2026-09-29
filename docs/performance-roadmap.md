@@ -1,215 +1,206 @@
-# Performance Roadmap
+# Backend Performance Status and Roadmap
 
-A living backlog of backend performance work, written so it can be picked up
-later without re-deriving the reasoning. It came out of a five-dimension audit
-(indexes, N+1 queries, Cypher, authorization overhead, server/driver config) in
-July 2026.
+This is the current source of truth for backend performance work. It supersedes
+the July 2026 static-audit backlog that originally occupied this file.
 
-Two things to keep in mind before spending effort here:
+Newcomers should begin with
+[Neo4j performance: newcomer overview](./neo4j-performance-overview.md). The
+[performance history](./neo4j-performance-history.md) explains the completed
+work and measurements, and the
+[query performance guide](./neo4j-query-performance-guide.md) is the practical
+runbook for future changes.
 
-1. **These are mostly "at scale" problems.** The findings are from static
-   analysis of the code, not from a slow production instance. Several items only
-   bite once data volume grows (large tables, many channels, lots of content).
-   At the current size the app may be perfectly fast. **Prioritise by observed
-   pain**, not by this list's order — see [When to revisit](#when-to-revisit).
-2. **Measure before investing.** Before doing any of the medium/large items,
-   confirm it's actually slow (see [How to measure](#how-to-measure)). The one
-   exception is index verification (#1) — it's cheap enough to just check.
+Last reconciled: **September 2026**, after backend PR #304.
 
-## Already done (for context)
+## Product goal
 
-| Change | PR | Effect |
-| --- | --- | --- |
-| Removed per-mutation Slack webhook (was awaited on the write path) | #130 | Every mutation was blocked on a 3rd-party HTTP call; gone. |
-| Memoized auth identity + ServerConfig lookups (request-scoped) | #130 | A mutation went from ~8–12 redundant identity/config queries to ~2. |
-| Request-cached server-suspension lookups | #134 | Suspension re-queried per rule → once per request. |
-| GraphQL query **depth limit** | #131 | Rejects pathologically deep queries before they hit the DB. |
-| gzip responses | #132 | Compresses payloads (list responses benefit most). |
+The cross-repository objective is:
 
-Also **decided against**: routing reads to Neo4j `READ` replicas. It looks like a
-free win but breaks read-your-own-writes on a causal cluster without bookmark
-plumbing — see the "Neo4j session routing" note in
-[architecture.md](./architecture.md). Revisit only as part of a real cluster
-migration.
+> Discussion lists, download lists, discussion details, and download details
+> should each reach useful initial content in under two seconds at p95.
 
----
+Frontend [issue #597](https://github.com/gennit-project/multiforum-nuxt/issues/597)
+defines the route-ready boundary, cold/direct versus in-app measurements, and
+the requirement to measure every route category separately.
 
-## The remaining backlog
+The backend's working target for normal cached reads is approximately p95 under
+500 ms and p99 under one second, leaving time for the network, frontend proxy,
+browser, and rendering. That is a planning target, not yet a demonstrated
+service-level guarantee.
 
-Each item: what it is in plain terms, why it matters, the symptom that means
-"do this now", how to do it, and rough effort/risk.
+## Current state
 
-### 1. Verify (and if needed, create) database indexes — *do this first*
+The backend is substantially safer and more predictable than at the start of
+the performance investigation:
 
-- **Plain terms:** An index lets Neo4j jump straight to a node by a property
-  (e.g. a user by `username`) instead of scanning every node of that label. The
-  audit suspects the app's `@unique` constraints (which carry indexes for
-  `username`, channel `uniqueName`, `Tag.text`, moderator `displayName`) may
-  never be created at runtime: `assertIndexesAndConstraints()` is called without
-  `{ options: { create: true } }` **and** only when the DB edition is
-  "enterprise" ([index.ts](../index.ts)). Also, `@id` fields create **no** index
-  in `@neo4j/graphql` v5.
-- **Why it matters:** if the indexes are missing, the *most common* lookups in
-  the app (load a profile, open a channel, filter by tag) do a full label scan.
-  This is the highest-leverage, lowest-effort fix in the whole roadmap — *if*
-  it's real.
-- **Symptom:** any lookup-by-name feels slow; `PROFILE` on a `MATCH (:User {username})`
-  shows a `NodeByLabelScan` instead of a `NodeIndexSeek`.
-- **How:**
-  1. **Verify first** against the real database: `SHOW CONSTRAINTS;` and
-     `SHOW INDEXES;` in the Neo4j browser/cypher-shell. (Can also be checked
-     locally by applying the schema to a Testcontainers Neo4j.) If the
-     constraints already exist — created out-of-band at some point — this whole
-     item is moot; cross it off.
-  2. If missing: call `assertIndexesAndConstraints({ options: { create: true } })`
-     at startup, **un-gated** from the enterprise check (constraint/index
-     creation works on Community; only NODE KEY constraints are enterprise-only).
-  3. Add explicit range indexes for the hot fields `@unique` doesn't cover:
-     `DiscussionChannel.channelUniqueName`, `DiscussionChannel.id`,
-     `Discussion.createdAt`, `Issue.createdAt`/`isOpen`, `Event.startTime`.
-- **Effort:** low (verification + a few `CREATE INDEX IF NOT EXISTS`). **Risk:**
-  low — creating indexes is safe, though on a large prod DB do it in a
-  maintenance window (index build can take time). **Caveat:** several date-window
-  filters currently wrap already-`DateTime` fields in `datetime(...)`, which can
-  defeat a range index even if one exists. Getting index-backed date filtering
-  means removing those conversion wrappers and indexing the actual properties the
-  queries filter on (including connector-node timestamps such as
-  `DiscussionChannel.createdAt` / `EventChannel.createdAt` where relevant). Feeds
-  into #2 and #3.
+- request and database timing are visible per GraphQL operation;
+- key identity lookups and full-text searches are indexed;
+- public generated lists have default/hard limits and operation complexity
+  protection;
+- channel and site-wide discussion feeds select a page separately from heavy
+  hydration;
+- root comments, replies, event comments, contributions, and detail pages use
+  bounded purpose-built reads;
+- the main site-wide discussion feed and detail collections support stable
+  cursor pagination;
+- schema and graph invariants have a repeatable read-only audit;
+- malformed legacy connector nodes were repaired or quarantined, and lifecycle
+  protections prevent recurrence;
+- sessions name the target database and known session leaks were fixed;
+- sensitive-content authorization usually reads stored flags instead of
+  rebuilding graph traversals.
 
-### 2. Pagination limits on list queries
+This does **not** mean performance work is finished. The current production
+graph is small, historical benchmarks used different scenarios, and the four
+primary route categories do not yet have one shared p95 measurement system and
+large representative fixture.
 
-- **Plain terms:** List queries (`discussions`, `comments`, `events`, `issues`,
-  …) have no default or maximum page size. A client that forgets to ask for a
-  page can fetch the entire table in one request. The clearest example today is
-  `getSiteWideIssueList`, whose fallback `limit` is effectively unbounded
-  (`1_000_000_000`).
-- **Why it matters:** as content grows, one such query fetches and serialises
-  thousands of nodes → memory and latency spikes; big `SKIP` offsets get slow.
-- **Symptom:** a list endpoint returns huge responses / slows down as data grows;
-  memory spikes under load.
-- **How:** add the `@limit(default: 25, max: 100)` directive to list-returning
-  types in [typeDefs.ts](../typeDefs.ts); and clamp the client-supplied
-  `limit`/`offset` in the custom Cypher list resolvers (e.g.
-  `getSiteWideDiscussionList`, `getSiteWideIssueList`). **Check the frontend's
-  largest real page size first** so the `max` doesn't cut off a legitimate
-  query.
-- **Effort:** medium (touches many types, mechanical). **Risk:** medium — a
-  client asking for more than `max` gets capped, so verify real page sizes.
+## Completed work map
 
-### 3. Full-text search instead of regex scans
+| Area                         | PRs                                                                                                                                                                                                                                                                                                                                                                                                                                      | Outcome                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Timing and diagnosis         | [#264](https://github.com/gennit-project/multiforum-backend/pull/264)                                                                                                                                                                                                                                                                                                                                                                    | GraphQL phase, Neo4j, call-count, and event-loop timing                        |
+| Identity/index foundations   | [#266](https://github.com/gennit-project/multiforum-backend/pull/266), [#269](https://github.com/gennit-project/multiforum-backend/pull/269), [#282](https://github.com/gennit-project/multiforum-backend/pull/282), [#285](https://github.com/gennit-project/multiforum-backend/pull/285)                                                                                                                                               | Indexed lookup keys, database/session defaults, audit contract                 |
+| Age-gate read cost           | [#267](https://github.com/gennit-project/multiforum-backend/pull/267), [#270](https://github.com/gennit-project/multiforum-backend/pull/270), [#272](https://github.com/gennit-project/multiforum-backend/pull/272), [#274](https://github.com/gennit-project/multiforum-backend/pull/274), [#278](https://github.com/gennit-project/multiforum-backend/pull/278), [#279](https://github.com/gennit-project/multiforum-backend/pull/279) | Cached policy and materialized visibility flags with write-time reconciliation |
+| Channel list                 | [#281](https://github.com/gennit-project/multiforum-backend/pull/281)–[#283](https://github.com/gennit-project/multiforum-backend/pull/283)                                                                                                                                                                                                                                                                                              | Page selection before hydration; fixed active query shapes                     |
+| Graph integrity              | [#286](https://github.com/gennit-project/multiforum-backend/pull/286), [#287](https://github.com/gennit-project/multiforum-backend/pull/287)                                                                                                                                                                                                                                                                                             | Repair/quarantine migration, deletion guards, immutable identity               |
+| Detail reads                 | [#288](https://github.com/gennit-project/multiforum-backend/pull/288), [#304](https://github.com/gennit-project/multiforum-backend/pull/304)                                                                                                                                                                                                                                                                                             | Focused reads and cursor-paged answers/images/files                            |
+| Comments and replies         | [#290](https://github.com/gennit-project/multiforum-backend/pull/290), [#291](https://github.com/gennit-project/multiforum-backend/pull/291)                                                                                                                                                                                                                                                                                             | Page before author/vote/version/child hydration                                |
+| Site-wide/contribution feeds | [#294](https://github.com/gennit-project/multiforum-backend/pull/294), [#296](https://github.com/gennit-project/multiforum-backend/pull/296)                                                                                                                                                                                                                                                                                             | Scoped subqueries, fewer rows/hits/calls                                       |
+| API cost controls            | [#297](https://github.com/gennit-project/multiforum-backend/pull/297), [#301](https://github.com/gennit-project/multiforum-backend/pull/301)                                                                                                                                                                                                                                                                                             | List limits and calibrated operation complexity                                |
+| Indexed content search       | [#298](https://github.com/gennit-project/multiforum-backend/pull/298)                                                                                                                                                                                                                                                                                                                                                                    | Full-text candidate lookup replaces regex label scans                          |
+| Primary-feed cursors         | [#303](https://github.com/gennit-project/multiforum-backend/pull/303)                                                                                                                                                                                                                                                                                                                                                                    | Stable new/top/hot keyset pagination                                           |
 
-- **Plain terms:** Site-wide search filters with a case-insensitive regex —
-  `WHERE title =~ '(?i).*term.*'` — on `title` **and** `body`. A leading-wildcard
-  regex can't use any index, so every search scans every node of the label and
-  runs the regex on each (including large `body` fields).
-- **Why it matters:** search cost is O(all content) and gets worse as content
-  grows. (There's also a raw-regex-injection concern — the search term is
-  interpolated straight into the pattern.)
-- **Symptom:** search is slow / slows with content growth.
-- **How:** declare `@fulltext` indexes on `Discussion(title, body)`,
-  `WikiPage(title, body)`, `Issue`, and switch the search resolvers to
-  `CALL db.index.fulltext.queryNodes(...)`. **Depends on #1** (the index must be
-  created). Note: full-text tokenises (word matching) rather than substring
-  matching, so match behaviour changes slightly — worth a product check. Also
-  note that channel search is currently scan-based too (`toLower(... ) CONTAINS
-  toLower($searchInput)`), so if that path starts to hurt it belongs in the same
-  conversation.
-- **Effort:** medium–high (schema + rewrite the search branch of several
-  resolvers). **Risk:** medium (search result/ranking behaviour changes).
+Detailed before/after evidence is in
+[neo4j-performance-history.md](./neo4j-performance-history.md).
 
-### 4. Rewrite "collect everything, then paginate" queries
+## Open work: performance and safe scaling
 
-- **Plain terms:** A few queries compute results for *all* rows and then keep
-  only one page — in JavaScript, after the DB already did the full work. The
-  clearest case is `getServerHealthDashboard`: it scans every channel and runs
-  ~8 correlated sub-queries per channel, collects the lot, then `.slice(0, limit)`
-  in JS. `getSortedChannels` collects all channels, then applies `SKIP`/`LIMIT`
-  *after*.
-- **Why it matters:** the cost grows with **total server size** to render a
-  single page. This is the query that scales worst as the instance grows.
-- **Symptom:** the admin health dashboard / channel list gets slow as the number
-  of channels and their content grows.
-- **How:** push sort + `SKIP`/`LIMIT` into Cypher **before** building the heavy
-  per-row data — paginate the cheap list first, then compute the expensive
-  per-item stats only for the page that's actually returned.
-- **Effort:** medium–high (careful Cypher rewrites, one query at a time).
-  **Risk:** medium — rewritten Cypher must return identical results; rely on the
-  existing integration tests (`getSortedChannels.test.ts`,
-  `serverHealthDashboard.test.ts`) and `PROFILE` before/after.
+### Establish shared fixtures and budgets
 
-### 5. Smaller / opportunistic items
+[Backend issue #311](https://github.com/gennit-project/multiforum-backend/issues/311)
+is the most important measurement follow-up. It will add thousands of
+discussions/downloads and tens of thousands of comments/votes/media, then set
+durable budgets for database hits, intermediate rows, and forbidden plan
+operators.
 
-- **Query cost/complexity analysis.** The depth limit (#131, done) stops *deep*
-  queries but not *wide*, shallow-but-expensive ones. A complexity plugin
-  (`graphql-query-complexity`) assigns each field a cost and rejects overly
-  expensive queries. Medium effort (need sensible cost estimates).
-- **Batch per-item write loops.** A few mutations issue one query per item in a
-  loop — `createEventSeriesWithChannelConnections` (per occurrence × channel),
-  `refreshPlugins`, the mention-notification hooks. Rewrite with `UNWIND $rows`
-  so it's one round-trip. Low–medium effort each; matters for large inputs
-  (a year-long event series, a big plugin registry).
-- **Move expired-suspension cleanup off the auth path.** Permission checks
-  currently fire a fire-and-forget *write* (disconnecting expired suspensions)
-  during authorization. Move it to the existing background service loop so reads
-  don't trigger writes. Low–medium effort.
-- **Connection-pool tuning.** The Neo4j driver uses all defaults
-  (`connectionAcquisitionTimeout` 60s, etc.). Under load, requests can queue up
-  to 60s instead of failing fast. The right values depend on the Neo4j instance's
-  limits — **an infra tuning decision**, best made with knowledge of the
-  deployment.
-- **Disable introspection in production.** Apollo leaves schema introspection +
-  the landing page on by default. Turning them off in prod is a **security
-  posture** decision (some tooling relies on introspection), so it's flagged
-  rather than assumed.
-- **Make date filters index-friendly.** Several date-window filters wrap existing
-  `DateTime` properties in `datetime(...)`, and some hot filters are on
-  connector-node timestamps (`DiscussionChannel.createdAt`, `EventChannel.createdAt`)
-  rather than the parent content node. Removing unnecessary conversion wrappers
-  and indexing the properties the queries actually filter on is the smaller,
-  more accurate fix. Cross-cutting (query changes + targeted indexes), but much
-  cheaper than a schema-wide timestamp migration.
+Until this exists, a query can regress in scaling behavior while remaining fast
+on today's small graph.
 
----
+### Finish materialized age-gate reads
 
-## Recommended sequence
+[Issue #308](https://github.com/gennit-project/multiforum-backend/issues/308)
+tracks `publicCollectionsContaining`, which still invokes computed
+`ageGateSensitive` traversals instead of the stored flag.
 
-If/when you come back to this, roughly this order gives the most value per unit
-of effort and respects dependencies:
+### Bookmark propagation before reader routing
 
-1. **#1 Verify indexes.** Cheap, and potentially the biggest single win. It also
-   tells you whether #2/#3 assumptions hold. Just check — then fix or cross off.
-2. **#2 Pagination limits.** Bounds worst-case query cost and response size; a
-   good safety measure independent of current pain.
-3. **#3 Full-text search.** Turns the slowest search path from "scan everything"
-   into an indexed lookup. Depends on #1.
-4. **#4 Collect-then-paginate rewrites.** Highest effort; do it when the instance
-   is large enough that the health dashboard / channel list is actually felt.
-5. **#5 items** opportunistically, as capacity allows or as a specific one starts
-   to hurt.
+[Issue #305](https://github.com/gennit-project/multiforum-backend/issues/305)
+tracks causal bookmarks. Reads remain leader-routed until immediate post-write
+reads can safely observe their own write on a routed cluster.
 
-## How to measure
+Do not independently change a hot read to `READ` routing as a local performance
+shortcut.
 
-Before investing in #2–#5, confirm the target is actually slow:
+### Review remaining collect-before-page paths
 
-- **`PROFILE <query>`** in the Neo4j browser / cypher-shell shows the query plan
-  and `db hits`. Look for `NodeByLabelScan` (no index), large `Filter` rows, and
-  high total db hits. Run it before and after a change to prove the win.
-- **Slow query logging** — Neo4j can log queries over a threshold
-  (`db.logs.query.*`); turn it on to find the real offenders.
-- **Request-level latency** — add/inspect APM (or the existing logger's timing)
-  to see which GraphQL operations are slow in practice.
+Some non-primary or less mature reads still collect or compute the complete
+matching set before slicing, including areas called out by the earlier roadmap
+such as administrative health/channel views. Profile these against a large
+fixture and convert them to select-then-hydrate only when measurement shows user
+impact.
 
-The list above is a hypothesis of where the cost *is*; measurement tells you
-where it's *felt*. Spend effort where the two agree.
+The forum-scoped discussion selection query also returns an aggregate count and
+therefore collects ordered matching IDs before slicing. The heavy relationship
+hydration is already page-bounded, which fixed the acute latency, but this
+selection/count strategy should be re-evaluated at large channel sizes.
 
-## When to revisit
+### Make date predicates and indexes match
 
-Concrete triggers that mean an item has become worth doing:
+Several legacy predicates wrap stored `DateTime` values in `datetime(...)`.
+That can prevent direct range-index use, and some feeds filter connector
+timestamps rather than parent content timestamps. Treat this as query-specific
+work: profile the actual predicate, add the index on the property actually
+filtered, and verify `NodeIndexSeek`/range behavior rather than adding broad
+speculative indexes.
 
-- Lookups by name/handle feel sluggish, or `PROFILE` shows label scans → **#1**.
-- A list endpoint returns very large responses or slows as data grows → **#2**.
-- Search latency climbs with content volume → **#3**.
-- The admin health dashboard or channel listing slows as channels multiply → **#4**.
-- You outgrow a single Neo4j instance and add read replicas → revisit read
-  routing + bookmark propagation (see [architecture.md](./architecture.md)).
+### Batch repeated write loops
+
+Several workflows can issue one query per item (event occurrences/channels,
+plugin refresh, mention-related work). Where atomicity and side effects allow,
+use `UNWIND` or another bounded batch to reduce round trips. Measure first and
+keep retry behavior explicit.
+
+### Move expired-suspension cleanup off authorization reads
+
+Permission checks still identify expired suspensions and trigger disconnect
+writes from the authorization path. Request-scoped caching limits repeated
+lookups, but a read/permission decision should ideally not initiate cleanup
+writes. Move expiration cleanup to a bounded background process if measurement
+or transaction hardening work reaches this area.
+
+### Tune the connection pool from deployment evidence
+
+The driver now validates connections that have been idle for 30 seconds, which
+fixed the stale-connection first-request penalty. Other pool settings remain
+mostly at driver defaults. Do not guess new limits: use Aura capacity,
+concurrency, acquisition-wait timing, and failure behavior to set pool size and
+timeouts. Under load, a long acquisition timeout can turn saturation into very
+slow requests rather than a fast, observable failure.
+
+## Open work: correctness and hardening that protects performance
+
+| Issue                                                                                                            | Why it matters                                                                        |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [#306](https://github.com/gennit-project/multiforum-backend/issues/306) — critical property existence/types      | Missing or wrong-typed identity/cursor properties undermine indexes and stable paging |
+| [#307](https://github.com/gennit-project/multiforum-backend/issues/307) — bound reply ancestry and reject cycles | Unbounded traversals and malformed threads can grow unpredictably                     |
+| [#309](https://github.com/gennit-project/multiforum-backend/issues/309) — request/logging envelope               | A 50 MB JSON limit and full payload logging waste memory and expose sensitive values  |
+| [#310](https://github.com/gennit-project/multiforum-backend/issues/310) — managed write transactions             | Retry-safe atomic writes prevent partial graph state under transient failures         |
+| [#284](https://github.com/gennit-project/multiforum-backend/issues/284) — GraphQL 7 / driver 6 migration         | Removes the discontinued OGM constraint and enables the supported modern stack        |
+
+## Frontend work that affects the same goal
+
+Backend latency is only part of route time. Related frontend issues include:
+
+- [#546](https://github.com/gennit-project/multiforum-nuxt/issues/546) — route
+  budgets and production Web Vitals;
+- [#548](https://github.com/gennit-project/multiforum-nuxt/issues/548) — safe
+  anonymous edge caching;
+- [#549](https://github.com/gennit-project/multiforum-nuxt/issues/549) — shared
+  detail-route preload graph;
+- [#551](https://github.com/gennit-project/multiforum-nuxt/issues/551) — defer
+  the optional 3D viewer;
+- [#552](https://github.com/gennit-project/multiforum-nuxt/issues/552) — detail
+  GraphQL latency;
+- [#597](https://github.com/gennit-project/multiforum-nuxt/issues/597) — the
+  overarching two-second route goal.
+
+## Prioritization rule
+
+Prioritize work where these three signals overlap:
+
+1. a user-visible route or operation is measurably slow;
+2. timing identifies the responsible layer/query;
+3. the plan or call graph explains how cost grows.
+
+Schema/integrity and security hardening may still be worth doing without a
+current latency symptom, because they prevent data corruption or resource
+exposure. Pure performance changes should be measured before and after.
+
+## Definition of done for a hot-query improvement
+
+- Same intended records, fields, counts, and order.
+- Same authorization and sensitive-content behavior.
+- Public page size is bounded.
+- Cost scales approximately with page size, not total graph size.
+- No unexplained `AllNodesScan`, label scan, Cartesian product, or `Eager`.
+- Indexed lookup properties have online indexes/constraints.
+- Equal sort keys do not break pagination.
+- Session/transaction lifecycle is correct and retry-safe.
+- Unit and real-Neo4j integration regression coverage exists.
+- Before/after plan evidence and database call count are recorded.
+- The PR includes a plain-language explanation of why the new shape does less
+  work.
+
+Use the [query performance guide](./neo4j-query-performance-guide.md) as the
+implementation checklist.
