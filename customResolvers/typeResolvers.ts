@@ -8,6 +8,40 @@ import userCollections from "./fields/userCollections.js";
 import createDownloadableFileUrlResolver from "./fields/downloadableFileUrl.js";
 import emptyArrayFallback from "./fields/emptyArrayFallback.js";
 import { createVariantUrlsResolver } from "./fields/variantUrls.js";
+import {
+  encodeDetailCollectionCursor,
+  type DetailCollectionKind,
+} from "../services/detailCollectionCursor.js";
+
+type DetailCollectionItem = {
+  createdAt?: unknown;
+  id?: string;
+};
+
+const detailCollectionPageInfo = ({
+  collectionKey,
+  hasNextPageKey,
+  kind,
+}: {
+  collectionKey: string;
+  hasNextPageKey: string;
+  kind: DetailCollectionKind;
+}) => (parent: Record<string, unknown>) => {
+  const collection = Array.isArray(parent[collectionKey])
+    ? (parent[collectionKey] as DetailCollectionItem[])
+    : [];
+  const lastItem = collection[collection.length - 1];
+  const createdAt = lastItem?.createdAt ? String(lastItem.createdAt) : "";
+  const id = lastItem?.id;
+
+  return {
+    endCursor:
+      createdAt && id
+        ? encodeDetailCollectionCursor({ kind, createdAt, id })
+        : null,
+    hasNextPage: parent[hasNextPageKey] === true,
+  };
+};
 
 const imageVariantUrls = createVariantUrlsResolver({
   list80: "list80Url",
@@ -75,6 +109,11 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
     },
     DiscussionChannel: {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+      detailAnswersPageInfo: detailCollectionPageInfo({
+        collectionKey: "Answers",
+        hasNextPageKey: "_detailAnswersHasNextPage",
+        kind: "answer",
+      }),
     },
     DiscussionChannelListItem: {
       Flairs: emptyArrayFallback('Flairs'),
@@ -93,6 +132,18 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
     },
     Album: {
       Images: emptyArrayFallback('Images'),
+      detailImagesPageInfo: detailCollectionPageInfo({
+        collectionKey: "Images",
+        hasNextPageKey: "_detailImagesHasNextPage",
+        kind: "image",
+      }),
+    },
+    Discussion: {
+      detailFilesPageInfo: detailCollectionPageInfo({
+        collectionKey: "DownloadableFiles",
+        hasNextPageKey: "_detailFilesHasNextPage",
+        kind: "file",
+      }),
     },
     Channel: {
       variantUrls: channelVariantUrls,

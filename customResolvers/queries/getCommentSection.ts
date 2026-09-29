@@ -19,7 +19,7 @@ type Input = {
   serverName?: string
 }
 
-const ANSWER_LIMIT = 20
+const ANSWER_LIMIT = 5
 
 type Args = {
   channelUniqueName: string

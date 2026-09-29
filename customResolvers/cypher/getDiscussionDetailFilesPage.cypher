@@ -1,15 +1,23 @@
-MATCH (discussion:Discussion {id: $discussionId})
+MATCH (entry:DiscussionChannel {
+  discussionId: $discussionId,
+  channelUniqueName: $channelUniqueName
+})-[:POSTED_IN_CHANNEL]->(discussion:Discussion {id: $discussionId})
+MATCH (entry)-[:POSTED_IN_CHANNEL]->(:Channel {uniqueName: $channelUniqueName})
 WHERE $mayAccessSensitiveContent
    OR coalesce(discussion.hasSensitiveContent, false) = false
-OPTIONAL MATCH (discussion)-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile)
-WHERE file IS NOT NULL
-  AND coalesce(file.permanentlyRemoved, false) = false
+MATCH (discussion)-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile)
+WHERE coalesce(file.permanentlyRemoved, false) = false
   AND ($mayAccessSensitiveContent OR coalesce(file.ageGateRestricted, false) = false)
+  AND (
+    $cursorCreatedAt IS NULL
+    OR file.createdAt > datetime($cursorCreatedAt)
+    OR (file.createdAt = datetime($cursorCreatedAt) AND file.id > $cursorId)
+  )
 OPTIONAL MATCH (file)-[:USES_LICENSE]->(license:License)
 WITH file, license
 ORDER BY file.createdAt ASC, file.id ASC
-LIMIT toInteger($fileLimit) + 1
-WITH [value IN collect(CASE WHEN file IS NULL THEN null ELSE file {
+LIMIT toInteger($pageLimit)
+RETURN file {
   .id,
   .createdAt,
   .fileName,
@@ -34,6 +42,7 @@ WITH [value IN collect(CASE WHEN file IS NULL THEN null ELSE file {
     .id,
     .name
   } END
-} END) WHERE value IS NOT NULL] AS fileCandidates
-RETURN fileCandidates[..toInteger($fileLimit)] AS DownloadableFiles,
-  size(fileCandidates) > toInteger($fileLimit) AS detailFilesHasNextPage
+} AS item,
+file.createdAt AS cursorCreatedAt,
+file.id AS cursorId
+

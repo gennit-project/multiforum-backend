@@ -235,6 +235,7 @@ const typeDefinitions = gql`
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
     imageOrder: [ID]
     Discussions: [Discussion!]! @relationship(type: "HAS_ALBUM", direction: IN)
+    detailImagesPageInfo: DetailCollectionPageInfo! @customResolver
   }
 
   type Notification @limit(default: 25, max: 100) {
@@ -767,6 +768,7 @@ const typeDefinitions = gql`
     RelatedIssues: [Issue!]! @relationship(type: "CITED_ISSUE", direction: IN)
     answered: Boolean
     Answers: [Comment!]! @relationship(type: "IS_REPLY_TO", direction: IN)
+    detailAnswersPageInfo: DetailCollectionPageInfo! @customResolver
     SubscribedToNotifications: [User!]!
       @relationship(type: "SUBSCRIBED_TO_NOTIFICATIONS", direction: IN)
     LabelOptions: [FilterOption!]! @relationship(type: "HAS_LABEL_OPTION", direction: OUT)
@@ -819,6 +821,7 @@ const typeDefinitions = gql`
     CrosspostedDiscussion: Discussion @relationship(type: "CROSSPOSTED_DISCUSSION", direction: OUT)
     DownloadableFiles: [DownloadableFile!]!
       @relationship(type: "HAS_DOWNLOADABLE_FILE", direction: OUT)
+    detailFilesPageInfo: DetailCollectionPageInfo! @customResolver
 
     # Collection support
     InCollections: [Collection!]! @relationship(type: "CONTAINS_DISCUSSION", direction: IN)
@@ -1871,6 +1874,26 @@ const typeDefinitions = gql`
   type DiscussionListPageInfo {
     endCursor: String
     hasNextPage: Boolean!
+  }
+
+  type DetailCollectionPageInfo {
+    endCursor: String
+    hasNextPage: Boolean!
+  }
+
+  type DiscussionAnswerPage {
+    answers: [Comment!]!
+    pageInfo: DetailCollectionPageInfo!
+  }
+
+  type DiscussionFilePage {
+    files: [DownloadableFile!]!
+    pageInfo: DetailCollectionPageInfo!
+  }
+
+  type DiscussionImagePage {
+    images: [Image!]!
+    pageInfo: DetailCollectionPageInfo!
   }
 
   type SiteWideDiscussionListFormat {
@@ -2990,6 +3013,24 @@ const typeDefinitions = gql`
       discussionId: ID!
       channelUniqueName: String!
     ): [Discussion!]!
+    getDiscussionDetailAnswers(
+      discussionId: ID!
+      channelUniqueName: String!
+      after: String
+      limit: Int
+    ): DiscussionAnswerPage!
+    getDiscussionDetailFiles(
+      discussionId: ID!
+      channelUniqueName: String!
+      after: String
+      limit: Int
+    ): DiscussionFilePage!
+    getDiscussionDetailImages(
+      discussionId: ID!
+      channelUniqueName: String!
+      after: String
+      limit: Int
+    ): DiscussionImagePage!
     getSiteWideDiscussionList(
       searchInput: String
       selectedChannels: [String]

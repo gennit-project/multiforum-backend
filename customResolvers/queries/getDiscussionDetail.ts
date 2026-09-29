@@ -24,10 +24,10 @@ type DiscussionDetail = Record<string, unknown> & {
   DownloadableFiles?: unknown[];
 };
 
-const IMAGE_LIMIT = 50;
+const IMAGE_LIMIT = 12;
 const PREVIEW_IMAGE_LIMIT = 12;
-const ANSWER_LIMIT = 20;
-const FILE_LIMIT = 50;
+const ANSWER_LIMIT = 5;
+const FILE_LIMIT = 12;
 
 /**
  * Hydrates the first detail-page view in three bounded, independently planned
@@ -89,12 +89,15 @@ const getDiscussionDetail = ({ driver, ServerConfig }: Input) => {
         );
         const downloadableFiles =
           filesResult.records[0]?.get("DownloadableFiles") || [];
+        const detailFilesHasNextPage =
+          filesResult.records[0]?.get("detailFilesHasNextPage") === true;
 
         return [
           {
             ...discussion,
             DiscussionChannels: [discussionChannel],
             DownloadableFiles: downloadableFiles,
+            _detailFilesHasNextPage: detailFilesHasNextPage,
           },
         ];
       });
