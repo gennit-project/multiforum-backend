@@ -9,6 +9,43 @@ type IsCollectionOwnerArgs = {
   where?: CollectionWhere;
   collectionId?: string;
   id?: string;
+  input?: {
+    collectionId?: string;
+  };
+};
+
+export const collectCollectionIds = (
+  parent: { id?: string } | undefined,
+  args: IsCollectionOwnerArgs
+) => {
+  const collectionIds: string[] = [];
+  const whereArg = args?.where;
+
+  if (whereArg?.id) {
+    collectionIds.push(whereArg.id);
+  }
+
+  if (whereArg?.id_IN && Array.isArray(whereArg.id_IN)) {
+    collectionIds.push(...whereArg.id_IN);
+  }
+
+  if (args?.collectionId) {
+    collectionIds.push(args.collectionId);
+  }
+
+  if (args?.input?.collectionId) {
+    collectionIds.push(args.input.collectionId);
+  }
+
+  if (args?.id) {
+    collectionIds.push(args.id);
+  }
+
+  if (parent?.id && collectionIds.length === 0) {
+    collectionIds.push(parent.id);
+  }
+
+  return [...new Set(collectionIds)];
 };
 
 export const isCollectionOwner = rule({ cache: "contextual" })(
@@ -23,40 +60,17 @@ export const isCollectionOwner = rule({ cache: "contextual" })(
       throw new Error(ERROR_MESSAGES.user.noUsername);
     }
 
-    const collectionIds: string[] = [];
-    const whereArg = args?.where;
-
-    if (whereArg?.id) {
-      collectionIds.push(whereArg.id);
-    }
-
-    if (whereArg?.id_IN && Array.isArray(whereArg.id_IN)) {
-      collectionIds.push(...whereArg.id_IN);
-    }
-
-    if (args?.collectionId) {
-      collectionIds.push(args.collectionId);
-    }
-
-    if (args?.id) {
-      collectionIds.push(args.id);
-    }
-
-    if (parent?.id && collectionIds.length === 0) {
-      collectionIds.push(parent.id);
-    }
+    const collectionIds = collectCollectionIds(parent, args);
 
     if (collectionIds.length === 0) {
       throw new Error(ERROR_MESSAGES.collection.noId);
     }
 
-    const uniqueIds = [...new Set(collectionIds)];
-
     const CollectionModel = ctx.ogm.model("Collection");
     const whereClause: CollectionWhere =
-      uniqueIds.length === 1
-        ? { id: uniqueIds[0] }
-        : { id_IN: uniqueIds };
+      collectionIds.length === 1
+        ? { id: collectionIds[0] }
+        : { id_IN: collectionIds };
 
     const collections: Collection[] = await CollectionModel.find({
       where: whereClause,
@@ -67,7 +81,7 @@ export const isCollectionOwner = rule({ cache: "contextual" })(
       throw new Error(ERROR_MESSAGES.collection.notFound);
     }
 
-    if (collections.length !== uniqueIds.length) {
+    if (collections.length !== collectionIds.length) {
       throw new Error(ERROR_MESSAGES.collection.notFound);
     }
 
