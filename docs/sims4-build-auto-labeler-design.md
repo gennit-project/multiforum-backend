@@ -1,12 +1,12 @@
 # Proposal: Sims 4 build auto-labeler
 
-Status: proposed, pending parser feasibility tests. Researched September 30, 2026.
+Status: proposed; metadata portability spike completed September 30, 2026. Pack and CC dependency interpretation remains under investigation. See the [spike report and reproduction instructions](../spikes/sims4-metadata/README.md).
 
 ## Recommendation
 
 Build a `sims4-build-metadata` plugin that sends uploaded build files to an isolated analysis service and returns structured facts. Let the backend translate those facts into each forum's labels. Automatically fill supported fields, show where they came from, and preserve explicit creator or moderator corrections.
 
-The external-service idea is a good fit. The important uncertainty is whether the analyzer actually needs Windows. Start with a small headless parser prototype on both Windows and Linux. If Linux works, host the analyzer on Cloud Run alongside the existing Google Cloud storage integration. If a necessary dependency is Windows-only, keep the same service contract and use a Windows worker. Do not make desktop UI automation or launching The Sims a production dependency.
+**Windows is not needed for the metadata analyzer.** The spike read the supplied lot files headlessly on macOS and Linux with identical results. Use a Linux .NET service on Cloud Run alongside the existing Google Cloud storage integration. No Windows worker, desktop automation, or running game is required for this step. Full blueprint/resource dependency resolution is a later capability whose portability has not yet been tested.
 
 The first useful release should read lot dimensions and the build's recorded metadata. Treat complete pack dependency verification and proof of “no CC” as separate, harder capabilities. A partial answer with an honest explanation is better than an incorrect filtering label.
 
@@ -24,23 +24,34 @@ This proposal is grounded in the current backend checkout:
 | Label editing and history | [updateDownloadLabels](../customResolvers/mutations/updateDownloadLabels.ts) supports human edits and history. It currently takes the complete label list; automatic updates need a narrower, concurrency-safe path. |
 | Operations | Plugin versions, settings, secrets, run diagnostics, execution leases, reruns, and campaign machinery already exist. Use [declarative configuration](./plugin-configuration-reconciliation.md) for repeatable installation. |
 
-I did not find the NSFW image-scanning implementation in this checkout. The analogy is architectural: upload → external analysis → controlled backend action. The verified implementation reference here is the attachment security scanner. Labeling failure should leave metadata incomplete, rather than delete a build or block an otherwise clean download.
+Labeling failure should leave metadata incomplete, rather than delete a build or block an otherwise clean download. Keep metadata analysis separate from the existing attachment security decision.
 
 ## Feasibility: what the files actually tell us
 
 Sims 4 lots are distributed as a group of tray files, including `.trayitem`, `.blueprint`, and `.bpi` files. The Sims Resource's own upload guide documents that grouping and explains that its service can associate its own CC automatically. This is evidence that file-based assistance is practical, but not evidence that every external CC dependency can be resolved. [TSR upload guide](https://thesimsresource.zendesk.com/hc/en-us/articles/31357208841491-Finding-the-Content-You-Used-in-Your-Lots-Rooms-and-Sims)
 
-There is a promising open-source starting point: [LlamaLogic](https://github.com/Llama-Logic/LlamaLogic) publishes package and protobuf libraries under MIT. Its [protobuf package](https://www.nuget.org/packages/LlamaLogic.Protobuf/1.126.58) targets several modern .NET versions. That makes portability worth testing; it does not establish a working tray-file reader or freedom from all native dependencies.
+The spike uses [LlamaLogic](https://github.com/Llama-Logic/LlamaLogic)'s MIT-licensed [protobuf package 1.126.58](https://www.nuget.org/packages/LlamaLogic.Protobuf/1.126.58), pinned with NuGet lockfiles. The working CLI reads loose tray files, ZIPs, and one nested ZIP level without a game installation or desktop application.
 
-Its [Exchange schema](https://github.com/Llama-Logic/LlamaLogic/blob/main/LlamaLogic.Protobuf/Protos/Exchange.proto) includes blueprint dimensions, venue, value, bedroom/bathroom metadata, modded-content flags, and pack-related identifiers. These are useful leads, not a complete file-format specification. We still need to establish file framing, optional-field presence, version compatibility, and the meaning of pack encodings against actual exports. In particular, absent protobuf fields must not silently become authoritative zero/false values.
+Its [Exchange schema](https://github.com/Llama-Logic/LlamaLogic/blob/58e103b92cee0f90224f81c86f44747cd7da14d1/LlamaLogic.Protobuf/Protos/Exchange.proto) includes blueprint dimensions, venue, value, bedroom/bathroom metadata, modded-content flags, and pack-related identifiers. The spike verified framing against the supplied exports and tested preservation of optional-field absence. Broader version compatibility and the meaning of pack encodings still need validation. Absent fields remain unknown rather than becoming authoritative zero/false values.
+
+### Completed spike findings
+
+- Seven loose tray files and six outer ZIPs yielded **13 records representing six distinct tray-file hashes**. All result fields matched on macOS and Linux, and ZIP copies matched their loose counterparts.
+- **13 regression tests passed on each platform**, with 84.9% line coverage and 88.5% branch coverage. The real files also exercised the CLI on both platforms.
+- Four distinct lots explicitly record `is_modded_content = true`, despite the creator's no-CC expectation. Independent wire-level inspection confirmed those encoded values. The cause is unresolved; the flag must not become an automatic claim that CC is required.
+- `Havisham_House` contains the same tray metadata as Salty Paws Saloon. Use file contents and identity for labeling, and surface filename/content conflicts for review.
+- The Bedlington archive contains a nested ZIP; the archives also contain Mac sidecars. Support that bounded nesting case and ignore sidecars instead of parsing them as game data.
+- Raw pack-related fields were extracted, but their mapping to named packs and the expected Cats & Dogs requirement are **not yet verified**. The spike reports dependency assessment as `UNVERIFIED`.
+
+This establishes portable metadata extraction for the supplied files, not independent verification of their dimensions in-game, complete pack/CC dependencies, or support for every game version. The report contains the per-lot results and test limits.
 
 | Field | Initial behavior | What must be validated |
 | --- | --- | --- |
-| Lot size | Auto-apply after fixture validation | Decode both dimensions; preserve orientation in raw data and map to the forum's canonical size convention. |
+| Lot size | Auto-apply after comparison with in-game ground truth | Extraction of both dimensions is proven on the supplied files; preserve orientation in raw data and map to the forum's canonical size convention. |
 | Lot/venue type | Auto-apply known mappings | Unknown or custom venue IDs remain unknown. |
-| Packs recorded by the build | Show and apply known positive matches with “recorded by file” provenance | Validate the encodings and maintain a versioned pack catalog. An unknown ID makes completeness unknown. |
+| Packs recorded by the build | Keep raw identifiers internal until mapping is validated; then apply known positive matches with “recorded by file” provenance | Extraction is proven, but pack meanings are not. Validate the encodings and maintain a versioned catalog. An unknown ID makes completeness unknown. |
 | Packs needed to reproduce the build | Initially partial/unverified | Recorded packs, referenced resources, custom venues, and CC dependencies may differ. A usable build with missing objects is not the same as an exact reproduction. |
-| CC status | Show “file marked as modded,” “file not marked as modded,” or “unknown” | A false flag or absence of bundled `.package` files does not prove that no CC was used. |
+| CC status | Show “file marked as modded,” “file not marked as modded,” or “unknown”; report conflicts with creator declarations | The fixtures demonstrate disagreement with a no-CC expectation. Neither true nor false alone proves CC requirements. |
 | CC download links | Leave to the creator initially | Resource identifiers need a trusted catalog to resolve names, creators, links, meshes, and dependencies. Never guess links. |
 | Bedrooms, bathrooms, price | Optional recorded metadata | Exported values may be stale or entered by a creator; do not call them independently verified. |
 
@@ -52,15 +63,17 @@ For the first release, do not auto-assign absolute “CC-free” or “base game
 
 After upload, show “Reading build details…” while the author writes the description. Once analysis finishes, populate supported fields and show a compact explanation:
 
-> Lot size: 30×20 · Read from build file  
-> Packs: 3 recorded · Additional dependencies not verified  
-> CC: File marked as modded · Creator links needed
+> Lot size: 30×20 · Read from build file
+>
+> Packs: Not yet verified
+>
+> CC: File marked as modded · CC requirements not verified
 
 Creators should not have to approve each reliable field. They can correct a value, keep their current value when it conflicts, or request another analysis. A correction records an override so the next run does not silently undo it. Moderators can resolve disputes with the same history visible.
 
 Publication remains possible when analysis is unavailable; fields stay manual or unknown. Security policy continues independently. Show unsupported archives and missing tray files as actionable messages, not a generic “plugin failed.”
 
-Start with one lot per ZIP, allowing subdirectories and optional images. Validate grouping by identifiers and content, not timestamps alone. If there are multiple builds, mixed room/household content, or ambiguous groups, report that auto-labeling needs one build per upload. Do not union pack lists and sizes across alternative versions. Add explicit build selection and per-variant metadata later.
+Start with one lot per ZIP, allowing subdirectories, optional images, and at most one nested ZIP level under strict size/entry limits. Ignore `__MACOSX` and AppleDouble `._` sidecars. Validate grouping by identifiers and content, not filenames or timestamps alone. If there are multiple builds, mixed room/household content, or ambiguous groups, report that auto-labeling needs one build per upload. Do not union pack lists and sizes across alternative versions. Add explicit build selection and per-variant metadata later.
 
 ## Architecture and runtime choice
 
@@ -69,7 +82,7 @@ flowchart TD
     U[Upload build to private storage] --> S[Existing security scan]
     S -->|Clean revision| J[Durable metadata job]
     J --> P[Sims 4 plugin adapter]
-    P --> A[Isolated headless analyzer]
+    P --> A[Linux .NET analyzer on Cloud Run]
     A --> R[Typed facts and evidence]
     R --> B[Backend validates revision and policy]
     B --> F[Stored analysis]
@@ -80,24 +93,17 @@ flowchart TD
 
 Analyze once per immutable file revision; map the result independently into every opted-in channel. In particular, do not use the first `DiscussionChannel` selected by today's download runner as the complete list of destinations.
 
-| Hosting option | Use when | Tradeoff |
-| --- | --- | --- |
-| Linux .NET service on Cloud Run | Parser works without Windows | Preferred: fits current storage integration and permits a small independently deployed service. |
-| Windows Azure Function | Proven headless Windows dependency fits the function sandbox | A plausible serverless fallback, but adds another cloud's deployment, identity, and storage-egress concerns. |
-| Windows VM worker in the existing cloud | Needs native installation, substantial local catalogs, or capabilities unavailable in the function sandbox | More control; baseline cost, patching, and worker recovery become our responsibility. |
-| Desktop Tray Importer automation | Interactive manual validation only | Do not ship an unattended GUI workflow as the analyzer. No supported automation interface or service-use permission was established in this research. |
+**Chosen architecture: a Linux .NET service on Cloud Run.** The successful Debian Linux execution removes the Windows hosting requirement for metadata extraction. The service boundary remains useful for isolating file parsing, controlling resource usage, and deploying parser updates independently of the backend.
 
-Cloud Run requires Linux executables, so a Windows executable cannot simply be put in a Cloud Run container. [Cloud Run runtime contract](https://docs.cloud.google.com/run/docs/container-contract)
+Cloud Run supports Linux executables; build the deployment image for its supported architecture and validate it in a staging deployment. The spike used an x64 Linux SDK container, not a deployed Cloud Run service. Choose a supported production .NET runtime and a minimal runtime image when implementing the service rather than shipping the spike's SDK image. [Cloud Run runtime contract](https://docs.cloud.google.com/run/docs/container-contract)
 
-Azure Functions supports code deployments on Windows under Consumption, Premium, and Dedicated hosting; Flex Consumption does not support Windows, and Functions does not support Windows containers. Windows Consumption is a legacy offering. A Windows function therefore needs a dependency/sandbox deployment test before selection. Its HTTP response limit is 230 seconds even when the execution plan allows longer. [Azure hosting documentation](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale)
-
-The recommendation is conditional but concrete: first attempt a portable parser; if Windows remains necessary, try a headless Windows function. Choose a Windows VM only when measured requirements demand it. If analysis requires a running game or interactive session, reduce the automated scope rather than build around that requirement.
+Windows hosting alternatives are outside the metadata MVP. Evaluate any later resource-resolution dependencies on Linux as they are introduced; the completed spike does not claim to have implemented or tested that separate capability.
 
 ## Execution and integration changes
 
 The diagram describes proposed functionality, not a queue that already exists. Today's `handleEvent` path awaits completion in the backend process; leases and a watchdog do not make an in-memory invocation durable.
 
-For a feasibility demo, a bounded HTTP call from the plugin is enough. Before public rollout, add a durable metadata-job dispatcher with a transactionally recorded job/outbox and an independently running executor. The upload request commits the file and returns; it does not wait for analysis.
+The completed spike is a standalone CLI with no plugin or service integration. A bounded HTTP call from the plugin can exercise the next service prototype. Before public rollout, add a durable metadata-job dispatcher with a transactionally recorded job/outbox and an independently running executor. The upload request commits the file and returns; it does not wait for analysis.
 
 1. Record an analysis request for the committed file revision. Dispatch only after a clean security verdict for that same revision. Security failure leaves analysis blocked; a later clean rescan makes it eligible.
 2. The executor claims a job, obtains a fresh signed read for its pinned storage object generation, and invokes the plugin adapter. The adapter calls the analyzer with a strict timeout.
@@ -112,7 +118,7 @@ Use a server-installed plugin with server-managed service credentials. Make labe
 
 ## Analysis contract and persistence
 
-Add a server-managed `FileAnalysis` record separate from transient plugin logs. The following is an illustrative proposed response, not an existing API:
+Add a server-managed `FileAnalysis` record separate from transient plugin logs. The following is an illustrative target response after pack mappings are validated, not the current spike output or an existing API. Until then, store raw pack-related fields with an unknown interpretation and no derived pack labels:
 
 ```json
 {
@@ -169,17 +175,17 @@ Treat archives as untrusted input even after a clean malware scan. Use a maintai
 
 Allow reads only from approved storage locations; do not fetch arbitrary URLs found inside the archive or follow redirects into private networks. Restrict analyzer network access, use authenticated service requests, and keep signed URLs and user file contents out of logs. Persist only the facts needed for labels and diagnostics, with authorization matching the source discussion's visibility and age restrictions.
 
-A low-volume pilot should cap worker concurrency and retries. Measure queue delay, analysis time, memory, cache hit rate, failures by game/parser version, partial-result rate, and override/disagreement rate. Cost is worker runtime plus any baseline Windows capacity, storage operations, transfer, and maintenance; quote a dollar estimate only after fixture benchmarks and expected upload volume are known.
+A low-volume pilot should cap worker concurrency and retries. Measure queue delay, analysis time, memory, cache hit rate, failures by game/parser version, partial-result rate, and override/disagreement rate. Cost is Cloud Run runtime, storage operations, transfer, and maintenance; quote a dollar estimate only after fixture benchmarks and expected upload volume are known.
 
 ## Delivery plan and acceptance criteria
 
-### 1. Parser feasibility spike
+### 1. Metadata portability spike — completed; semantic validation next
 
-Collect creator-approved exports with known in-game metadata: base-game builds, several pack combinations, current kits, CC without bundled packages, bundled but unused CC, custom venues, older exports, and missing/malformed file sets. Compare against the game and a trusted desktop tool as independent references.
+Completed: a pinned, reproducible CLI reads actual tray files and ZIPs on macOS and Linux, validates observed framing, preserves optional-field presence, and passes the regression suite. The [spike report](../spikes/sims4-metadata/README.md) records the findings. Linux is the selected host platform; another Windows feasibility test is not a prerequisite.
 
-Produce a CLI taking a ZIP and emitting the proposed JSON on Windows and Linux. Demonstrate actual tray framing and optional-field handling, not just protobuf deserialization. Determine which pack fields describe saved dependencies versus other metadata. Inventory native/game-install dependencies and applicable redistribution terms before choosing a library and host. No backend label writes in this stage.
+Next, compare dimensions and pack lists against the game or a trusted desktop tool. Expand the approved fixtures to controlled pack combinations, current kits, CC added/removed, bundled but unused CC, custom venues, and newer exports. Investigate the existing no-CC/modded-flag disagreement. Determine the pack encodings, validate matching blueprint/BPI sets, and establish supported game versions. No backend label writes in this stage.
 
-Exit decision: a tested field-support matrix and hosting choice. If only dimensions are dependable, ship that useful subset and leave dependency claims manual.
+Exit decision: a tested field-support matrix for automatic application. If only dimensions are dependable, ship that useful subset on Linux and leave dependency claims manual.
 
 ### 2. Shadow-mode integration
 
@@ -197,6 +203,6 @@ Acceptance requires correct expected outputs on the approved fixtures; no automa
 
 Roll back by disabling automatic application and dispatch while retaining human labels and audit history. A bad parser release can be pinned back, affected assignments identified by provenance, and reanalysis scheduled without deleting downloads.
 
-## Decisions to make after the spike
+## Remaining decisions
 
-The defaults above are sufficient to start research. The implementation decision needs three concrete results: whether headless Linux parsing works, which pack/CC claims are supported by representative exports, and whether the first pilot's size/latency needs fit a function. The largest uncertainty is trustworthy dependency interpretation, not running the plugin adapter.
+Windows is not needed for the metadata MVP; headless Linux parsing is demonstrated. The remaining decisions concern which pack/CC claims the evidence supports, supported game versions and archive limits, and the Cloud Run sizing/timeouts appropriate for the pilot. The largest uncertainty is trustworthy dependency interpretation, not operating-system portability of metadata extraction.
