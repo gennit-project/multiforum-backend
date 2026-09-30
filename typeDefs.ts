@@ -1467,6 +1467,7 @@ const typeDefinitions = gql`
       discussionUpdateInput: DiscussionUpdateInput!
       channelConnections: [String!]
       channelDisconnections: [String]
+      albumImageDisconnections: [ID!]
       channelFlairSelections: [DiscussionChannelFlairSelectionInput!]
     ): Discussion
     createEventWithChannelConnections(
