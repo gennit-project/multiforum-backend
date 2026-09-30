@@ -46,9 +46,10 @@ before(
           `)
         );
         const userType = transformedSchema.getType("User");
+        const queryFields = transformedSchema.getQueryType()!.getFields();
         assert.ok(isObjectType(userType));
 
-        transformedSchema.getQueryType()!.getFields().users.resolve = () => [
+        queryFields.users.resolve = () => [
           {
             username: "public-user",
             ...Object.fromEntries(
@@ -56,6 +57,14 @@ before(
             ),
           },
         ];
+        queryFields.getSiteWideDiscussionList.resolve = () => ({
+          aggregateDiscussionCount: 1,
+          discussions: [],
+          pageInfo: {
+            endCursor: "discussion-cursor",
+            hasNextPage: true,
+          },
+        });
         for (const field of publicProfileAggregateFields) {
           userType.getFields()[field].resolve = (source) => source[field];
         }
@@ -129,6 +138,33 @@ test("instance setup status fields are publicly readable", async () => {
   assert.deepEqual(result.errors, undefined);
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
     instanceSetupStatusPermissionProbe: { uploads: capability },
+  });
+});
+
+test("sitewide discussion pagination metadata is publicly readable", async () => {
+  const result = await graphql({
+    schema,
+    source: `
+      query {
+        getSiteWideDiscussionList {
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+    `,
+    contextValue: makeRequestContext({ driver, ogm }),
+  });
+
+  assert.deepEqual(result.errors, undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
+    getSiteWideDiscussionList: {
+      pageInfo: {
+        endCursor: "discussion-cursor",
+        hasNextPage: true,
+      },
+    },
   });
 });
 

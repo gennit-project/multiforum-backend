@@ -120,6 +120,7 @@ const PUBLIC_READ_TYPES = [
   "DiscussionFilePage",
   "DiscussionImagePage",
   "DiscussionInfo",
+  "DiscussionListPageInfo",
   "DetailCollectionPageInfo",
   "DownloadScanReviewItem",
   "DownloadableFile",
