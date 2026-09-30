@@ -396,6 +396,39 @@ test("updateDiscussionWithChannelConnections enforces and assigns flairs", async
   });
 });
 
+test("updateDiscussionWithChannelConnections disconnects album images", async () => {
+  const discussionModel = new DiscussionModelStub();
+  const session = new SessionStub();
+  const resolver = getUpdateDiscussionWithChannelConnections({
+    Discussion: discussionModel as never,
+    DownloadableFile: {} as never,
+    PluginPipelineRun: {} as never,
+    PluginRun: {} as never,
+    ServerConfig: {} as never,
+    ServerSecret: {} as never,
+    User: {} as never,
+    driver: createDriver(session) as never,
+  });
+
+  await resolver(
+    null,
+    {
+      where: { id: "discussion-1" },
+      discussionUpdateInput: {},
+      albumImageDisconnections: ["image-2", "image-2", ""],
+    },
+    createContext() as never,
+    {} as never
+  );
+
+  assert.deepEqual(session.runCalls[0].params, {
+    discussionId: "discussion-1",
+    imageIds: ["image-2"],
+  });
+  assert.match(session.runCalls[0].query, /DELETE relationship/);
+  assert.match(session.runCalls[0].query, /SET album\.imageOrder/);
+});
+
 test("album sanitization in updateDiscussionWithChannelConnections", async (t) => {
   await t.test("requires authentication for album create", async () => {
     // When Album.create.node is present, the resolver should require context

@@ -39,6 +39,7 @@ type Args = {
   discussionUpdateInput: DiscussionUpdateInput;
   channelConnections?: string[];
   channelDisconnections?: string[];
+  albumImageDisconnections?: string[];
   channelFlairSelections?: DiscussionChannelFlairSelectionInput[] | null;
 };
 
@@ -46,6 +47,18 @@ const stampAttachedDownloadableFilesQuery = `
   MATCH (file:DownloadableFile)
   WHERE file.id IN $ids
   SET file.ageGateTouchedAt = datetime()
+`;
+
+const disconnectAlbumImagesQuery = `
+  MATCH (:Discussion { id: $discussionId })-[:HAS_ALBUM]->(album:Album)
+  OPTIONAL MATCH (album)-[relationship:HAS_IMAGE]->(image:Image)
+  WHERE image.id IN $imageIds
+  WITH album, collect(relationship) AS relationships
+  FOREACH (relationship IN relationships | DELETE relationship)
+  SET album.imageOrder = [
+    imageId IN coalesce(album.imageOrder, [])
+    WHERE NOT imageId IN $imageIds
+  ]
 `;
 
 export const getConnectedDownloadableFileIds = (
@@ -80,9 +93,17 @@ const getResolver = (
       discussionUpdateInput,
       channelConnections = [],
       channelDisconnections = [],
+      albumImageDisconnections = [],
       channelFlairSelections = [],
     } = args;
     const normalizedChannelFlairSelections = channelFlairSelections ?? [];
+    const normalizedAlbumImageDisconnections = [
+      ...new Set(
+        albumImageDisconnections.filter(
+          (imageId) => typeof imageId === "string" && imageId.length > 0
+        )
+      ),
+    ];
 
     let sanitizedUpdateInput = discussionUpdateInput;
     const albumInput = discussionUpdateInput?.Album;
@@ -184,6 +205,12 @@ const getResolver = (
           if (connectedDownloadableFileIds.length > 0) {
             await tx.run(stampAttachedDownloadableFilesQuery, {
               ids: connectedDownloadableFileIds,
+            });
+          }
+          if (normalizedAlbumImageDisconnections.length > 0) {
+            await tx.run(disconnectAlbumImagesQuery, {
+              discussionId: where.id,
+              imageIds: normalizedAlbumImageDisconnections,
             });
           }
         });
