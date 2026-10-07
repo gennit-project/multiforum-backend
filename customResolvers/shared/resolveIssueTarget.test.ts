@@ -68,7 +68,7 @@ test("resolves a comment author's moderation profile", async () => {
       CommentAuthor: { displayName: "Mod Jane" },
     },
   ]);
-  const User = new ModelStub([]);
+  const User = new ModelStub([{ username: "jane" }]);
 
   const result = await resolveIssueTarget({
     Issue: Issue as any,
@@ -85,6 +85,7 @@ test("resolves a comment author's moderation profile", async () => {
   assert.equal(result.relatedAccountType, "ModerationProfile");
   assert.equal(result.relatedAccountName, "Mod Jane");
   assert.equal(result.modProfileName, "Mod Jane");
+  assert.equal(result.username, "jane");
 });
 
 test("prefers related mod profile metadata on channel-scoped issues", async () => {
@@ -102,7 +103,7 @@ test("prefers related mod profile metadata on channel-scoped issues", async () =
   const Discussion = new ModelStub([]);
   const Event = new ModelStub([]);
   const Comment = new ModelStub([]);
-  const User = new ModelStub([]);
+  const User = new ModelStub([{ username: "jane" }]);
 
   const result = await resolveIssueTarget({
     Issue: Issue as any,
@@ -115,6 +116,7 @@ test("prefers related mod profile metadata on channel-scoped issues", async () =
   });
 
   assert.equal(result.modProfileName, "Mod Jane");
+  assert.equal(result.username, "jane");
 });
 
 test("resolves a server-scoped issue from related username", async () => {

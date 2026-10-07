@@ -48,6 +48,20 @@ type IssueTarget = {
 const isUser = (data: User | ModerationProfile): data is User =>
   (data as User).username !== undefined
 
+const findUsernameForModProfile = async ({
+  User,
+  displayName,
+}: {
+  User: UserModel
+  displayName: string
+}): Promise<string | undefined> => {
+  const [profileOwner] = await User.find({
+    where: { ModerationProfile: { displayName } },
+    selectionSet: `{ username }`,
+  })
+  return profileOwner?.username || undefined
+}
+
 export async function resolveIssueTarget({
   Issue,
   Comment,
@@ -90,12 +104,17 @@ export async function resolveIssueTarget({
     suspendedEntityName === 'mod' &&
     foundIssue.relatedModProfileName
   ) {
+    const username = await findUsernameForModProfile({
+      User,
+      displayName: foundIssue.relatedModProfileName,
+    })
     return {
       issue: foundIssue,
       channelUniqueName,
       scope,
       relatedAccountName: foundIssue.relatedModProfileName,
       relatedAccountType: 'ModerationProfile',
+      username,
       modProfileName: foundIssue.relatedModProfileName,
       isBot: false,
     }
@@ -190,12 +209,17 @@ export async function resolveIssueTarget({
       )
     }
 
+    const username = await findUsernameForModProfile({
+      User,
+      displayName: originalPosterData.displayName,
+    })
     return {
       issue: foundIssue,
       channelUniqueName,
       scope,
       relatedAccountName: originalPosterData.displayName,
       relatedAccountType: 'ModerationProfile',
+      username,
       modProfileName: originalPosterData.displayName,
       isBot: false,
     }
