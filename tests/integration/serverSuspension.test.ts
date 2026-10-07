@@ -17,6 +17,7 @@ import {
   modContext,
   type ImageModEnv,
 } from "./imageModerationHarness.js";
+import { seedServerSuspensionScenario } from "./serverSuspensionScenario.js";
 
 let env: ImageModEnv;
 
@@ -74,28 +75,45 @@ const unsuspendMod = (args: Record<string, unknown> = {}) =>
   );
 
 // A server-scoped Issue has NO Channel relationship (scope resolves to 'server').
-const seedServerUserIssue = () =>
-  run(
-    `CREATE (:User { username: 'baduser', displayName: 'Bad User' })
-     CREATE (:Issue {
-        id: 'srv-user-issue', issueNumber: 1, isOpen: true,
-        relatedUsername: 'baduser', title: 'Server report against baduser',
-        authorName: 'Mod One', createdAt: datetime()
-     })`
-  );
+const seedServerUserIssue = () => seedServerSuspensionScenario("user");
 
-const seedServerModIssue = async () => {
-  await seedModerator({ username: "badmoduser", modDisplayName: "BadMod", email: "badmod@e2e.test" });
-  await run(
-    `CREATE (:Issue {
-        id: 'srv-mod-issue', issueNumber: 2, isOpen: true,
-        relatedModProfileName: 'BadMod', title: 'Server report against BadMod',
-        authorName: 'Mod One', createdAt: datetime()
-     })`
-  );
-};
+const seedServerModIssue = () => seedServerSuspensionScenario("mod");
+
+const findServerConfig = (selectionSet: string) =>
+  env.ogm.model("ServerConfig").find({
+    where: { serverName: SERVER_NAME },
+    selectionSet,
+  });
 
 // --- server-scoped user suspension ---
+
+test("server user fixture attaches a reported discussion without making the issue channel-scoped", async () => {
+  const scenario = await seedServerUserIssue();
+
+  const rows = await run(
+    `MATCH (issue:Issue { id: $issueId })
+     MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion:Discussion { id: $contentId })
+     MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(channel:Channel)
+     OPTIONAL MATCH (issue)<-[:HAS_ISSUE]-(issueChannel:Channel)
+     RETURN issue.relatedDiscussionId AS relatedContentId,
+            issue.relatedUsername AS relatedUsername,
+            author.username AS authorUsername,
+            channel.uniqueName AS contentChannel,
+            count(issueChannel) AS issueChannelCount`,
+    scenario
+  );
+
+  assert.deepEqual({
+    ...rows[0],
+    issueChannelCount: Number(rows[0].issueChannelCount),
+  }, {
+    relatedContentId: scenario.contentId,
+    relatedUsername: scenario.targetUsername,
+    authorUsername: scenario.targetUsername,
+    contentChannel: scenario.channelUniqueName,
+    issueChannelCount: 0,
+  });
+});
 
 test("suspendUser (server scope) creates a server-stamped Suspension on the ServerConfig", async () => {
   await seedServerUserIssue();
@@ -132,6 +150,51 @@ test("suspendUser (server scope) links the suspension to the user and the relate
   );
   assert.equal(Number(linked[0].users), 1, "linked to the suspended user");
   assert.equal(Number(linked[0].issues), 1, "linked to the related issue");
+});
+
+test("server suspended-user admin query returns the target, duration, issue, and reported content", async () => {
+  const scenario = await seedServerUserIssue();
+  await suspendUser({
+    suspendIndefinitely: false,
+    suspendUntil: "2999-01-01T00:00:00.000Z",
+  });
+
+  const [server] = await findServerConfig(`{
+    serverName
+    SuspendedUsers {
+      username
+      suspendedUntil
+      suspendedIndefinitely
+      SuspendedUser { username displayName }
+      RelatedIssue { id issueNumber relatedDiscussionId Channel { uniqueName } }
+    }
+  }`);
+  const suspension = server.SuspendedUsers[0];
+
+  assert.deepEqual(
+    {
+      username: suspension.username,
+      targetUsername: suspension.SuspendedUser?.username,
+      targetDisplayName: suspension.SuspendedUser?.displayName,
+      indefinite: suspension.suspendedIndefinitely,
+      hasExpiration: Boolean(suspension.suspendedUntil),
+      issueId: suspension.RelatedIssue?.id,
+      issueNumber: suspension.RelatedIssue?.issueNumber,
+      relatedDiscussionId: suspension.RelatedIssue?.relatedDiscussionId,
+      issueChannel: suspension.RelatedIssue?.Channel?.uniqueName ?? null,
+    },
+    {
+      username: scenario.targetUsername,
+      targetUsername: scenario.targetUsername,
+      targetDisplayName: "Bad User",
+      indefinite: false,
+      hasExpiration: true,
+      issueId: scenario.issueId,
+      issueNumber: scenario.issueNumber,
+      relatedDiscussionId: scenario.contentId,
+      issueChannel: null,
+    }
+  );
 });
 
 test("suspendUser (server scope, temporary) records a suspendedUntil date", async () => {
@@ -175,6 +238,34 @@ test("unsuspendUser (server scope) detaches the suspension from the ServerConfig
 
 // --- server-scoped mod suspension ---
 
+test("server mod fixture attaches a mod-authored comment without making the issue channel-scoped", async () => {
+  const scenario = await seedServerModIssue();
+
+  const rows = await run(
+    `MATCH (issue:Issue { id: $issueId })
+     MATCH (profile:ModerationProfile)-[:AUTHORED_COMMENT]->(comment:Comment { id: $contentId })
+     MATCH (comment)<-[:CONTAINS_COMMENT]-(dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(channel:Channel)
+     OPTIONAL MATCH (issue)<-[:HAS_ISSUE]-(issueChannel:Channel)
+     RETURN issue.relatedCommentId AS relatedContentId,
+            issue.relatedModProfileName AS relatedModProfileName,
+            profile.displayName AS authorModProfileName,
+            channel.uniqueName AS contentChannel,
+            count(issueChannel) AS issueChannelCount`,
+    scenario
+  );
+
+  assert.deepEqual({
+    ...rows[0],
+    issueChannelCount: Number(rows[0].issueChannelCount),
+  }, {
+    relatedContentId: scenario.contentId,
+    relatedModProfileName: scenario.targetName,
+    authorModProfileName: scenario.targetName,
+    contentChannel: scenario.channelUniqueName,
+    issueChannelCount: 0,
+  });
+});
+
 test("suspendMod (server scope) creates a server-stamped mod Suspension on the ServerConfig", async () => {
   await seedServerModIssue();
 
@@ -196,6 +287,46 @@ test("suspendMod (server scope) creates a server-stamped mod Suspension on the S
   );
   assert.equal(Number(attached[0].suspensions), 1, "attached to the ServerConfig");
   assert.equal(Number(attached[0].mods), 1, "linked to the moderation profile");
+});
+
+test("server suspended-mod admin query returns both the profile and associated username", async () => {
+  const scenario = await seedServerModIssue();
+  await suspendMod();
+
+  const [server] = await findServerConfig(`{
+    serverName
+    SuspendedMods {
+      username
+      modProfileName
+      suspendedIndefinitely
+      SuspendedMod { displayName }
+      RelatedIssue { id issueNumber relatedCommentId Channel { uniqueName } }
+    }
+  }`);
+  const suspension = server.SuspendedMods[0];
+
+  assert.deepEqual(
+    {
+      username: suspension.username,
+      modProfileName: suspension.modProfileName,
+      targetDisplayName: suspension.SuspendedMod?.displayName,
+      indefinite: suspension.suspendedIndefinitely,
+      issueId: suspension.RelatedIssue?.id,
+      issueNumber: suspension.RelatedIssue?.issueNumber,
+      relatedCommentId: suspension.RelatedIssue?.relatedCommentId,
+      issueChannel: suspension.RelatedIssue?.Channel?.uniqueName ?? null,
+    },
+    {
+      username: scenario.targetUsername,
+      modProfileName: scenario.targetName,
+      targetDisplayName: scenario.targetName,
+      indefinite: true,
+      issueId: scenario.issueId,
+      issueNumber: scenario.issueNumber,
+      relatedCommentId: scenario.contentId,
+      issueChannel: null,
+    }
+  );
 });
 
 test("unsuspendMod (server scope) detaches the mod suspension from the ServerConfig", async () => {

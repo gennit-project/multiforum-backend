@@ -74,7 +74,13 @@ export function createSuspensionResolver ({
       throw new GraphQLError('Issue ID is required')
     }
 
-    const { scope, channelUniqueName, relatedAccountName, relatedAccountType } =
+    const {
+      scope,
+      channelUniqueName,
+      relatedAccountName,
+      relatedAccountType,
+      username,
+    } =
       await resolveIssueTarget({
         Issue,
         Comment,
@@ -231,6 +237,7 @@ export function createSuspensionResolver ({
                 node: {
                   channelUniqueName: channelUniqueName,
                   serverName: scope === 'server' ? actionChannelName : null,
+                  username,
                   modProfileName: relatedAccountName,
                   suspendedUntil: suspendUntil,
                   suspendedIndefinitely: suspendIndefinitely,

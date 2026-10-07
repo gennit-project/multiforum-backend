@@ -14,13 +14,13 @@ export const getFinalCommentText = (input: FinalCommentTextInput) => {
   return `
 ${
   selectedForumRules.length > 0
-    ? `Server rule violations: ${selectedForumRules.join(", ")}
+    ? `Forum rule violations: ${selectedForumRules.join(", ")}
 `
     : ""
 }
 ${
   selectedServerRules.length > 0
-    ? `Forum rule violations: ${selectedServerRules.join(", ")}
+    ? `Server rule violations: ${selectedServerRules.join(", ")}
 `
     : ""
 }
