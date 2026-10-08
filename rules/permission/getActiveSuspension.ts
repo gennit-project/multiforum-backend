@@ -134,20 +134,21 @@ const fetchTargetedSuspensions = async (params: {
   const session = driver.session({ defaultAccessMode: "READ" });
 
   try {
-    const [userResult, modResult] = await Promise.all([
-      username
-        ? session.run(USER_SUSPENSION_QUERY, {
-            channelUniqueName,
-            username,
-          })
-        : Promise.resolve({ records: [] }),
-      modProfileName
-        ? session.run(MOD_SUSPENSION_QUERY, {
-            channelUniqueName,
-            modProfileName,
-          })
-        : Promise.resolve({ records: [] }),
-    ]);
+    // The Neo4j driver does not support concurrent queries on one session.
+    // A moderation-profile target commonly supplies both identifiers, so run
+    // those two targeted lookups in sequence.
+    const userResult = username
+      ? await session.run(USER_SUSPENSION_QUERY, {
+          channelUniqueName,
+          username,
+        })
+      : { records: [] };
+    const modResult = modProfileName
+      ? await session.run(MOD_SUSPENSION_QUERY, {
+          channelUniqueName,
+          modProfileName,
+        })
+      : { records: [] };
 
     return {
       userSuspensions: userResult.records.map((record: { get(key: string): unknown }) =>

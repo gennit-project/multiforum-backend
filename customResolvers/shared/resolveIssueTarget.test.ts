@@ -119,6 +119,38 @@ test("prefers related mod profile metadata on channel-scoped issues", async () =
   assert.equal(result.username, "jane");
 });
 
+test("infers a moderation-profile target from issue metadata", async () => {
+  const Issue = new ModelStub([
+    {
+      id: "issue-mod-target",
+      relatedDiscussionId: null,
+      relatedEventId: null,
+      relatedCommentId: "comment-1",
+      relatedUsername: null,
+      relatedModProfileName: "Mod Jane",
+      Channel: null,
+    },
+  ]);
+  const Discussion = new ModelStub([]);
+  const Event = new ModelStub([]);
+  const Comment = new ModelStub([]);
+  const User = new ModelStub([{ username: "jane" }]);
+
+  const result = await resolveIssueTarget({
+    Issue: Issue as any,
+    Discussion: Discussion as any,
+    Event: Event as any,
+    Comment: Comment as any,
+    User: User as any,
+    issueId: "issue-mod-target",
+  });
+
+  assert.equal(result.scope, "server");
+  assert.equal(result.relatedAccountType, "ModerationProfile");
+  assert.equal(result.modProfileName, "Mod Jane");
+  assert.equal(result.username, "jane");
+});
+
 test("resolves a server-scoped issue from related username", async () => {
   const Issue = new ModelStub([
     {

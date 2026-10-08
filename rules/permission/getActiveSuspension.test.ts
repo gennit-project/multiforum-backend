@@ -369,6 +369,35 @@ test("returns expired suspensions from the non-active side when both user and mo
   assert.equal(result.expiredModSuspensions[0].id, "mod-expired");
 });
 
+test("runs combined driver lookups sequentially on one session", async () => {
+  let queryInProgress = false;
+  let queryCalls = 0;
+  const driver = {
+    session: () => ({
+      run: async () => {
+        assert.equal(queryInProgress, false);
+        queryInProgress = true;
+        queryCalls += 1;
+        await Promise.resolve();
+        queryInProgress = false;
+        return { records: [] };
+      },
+      close: async () => {},
+    }),
+  } as unknown as DriverArg;
+
+  const result = await getActiveSuspension({
+    ogm: buildOgm({}),
+    driver,
+    channelUniqueName: "forum-1",
+    username: "jane",
+    modProfileName: "Mod Jane",
+  });
+
+  assert.equal(result.isSuspended, false);
+  assert.equal(queryCalls, 2);
+});
+
 test("skips expired user suspensions until it finds a later active user suspension", async () => {
   const ogm = buildOgm({
     SuspendedUsers: [

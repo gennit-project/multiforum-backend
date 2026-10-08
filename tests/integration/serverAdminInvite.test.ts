@@ -65,18 +65,34 @@ test("inviteServerAdmin adds the invitee to the server's pending admin invites",
      CREATE (:User { username: 'invitee' })`
   );
 
-  await inviteServerAdmin({ serverName: "srv", inviteeUsername: "invitee" });
+  const result = await inviteServerAdmin({
+    serverName: "srv",
+    inviteeUsername: "invitee",
+  });
 
   const pending = await pendingAdminInvitesFor("srv");
+  assert.equal(result, true);
   assert.equal(pending.length, 1);
   assert.equal(pending[0].username, "invitee");
 });
 
-test("inviteServerAdmin returns false and adds no invite for an unknown server", async () => {
+test("inviteServerAdmin rejects an unknown user and adds no invite", async () => {
+  await run(`CREATE (:ServerConfig { serverName: 'srv' })`);
+
+  await assert.rejects(
+    inviteServerAdmin({ serverName: "srv", inviteeUsername: "missing" }),
+    /No user exists with username "missing"/i
+  );
+  assert.equal((await pendingAdminInvitesFor("srv")).length, 0);
+});
+
+test("inviteServerAdmin rejects an unknown server and adds no invite", async () => {
   await run(`CREATE (:User { username: 'invitee' })`);
 
-  const result = await inviteServerAdmin({ serverName: "nope", inviteeUsername: "invitee" });
-  assert.equal(result, false);
+  await assert.rejects(
+    inviteServerAdmin({ serverName: "nope", inviteeUsername: "invitee" }),
+    /No server exists with name "nope"/i
+  );
   assert.equal((await pendingAdminInvitesFor("nope")).length, 0);
 });
 

@@ -71,7 +71,7 @@ export async function resolveIssueTarget({
   WikiPage,
   TextVersion,
   issueId,
-  suspendedEntityName = 'user',
+  suspendedEntityName,
 }: ResolveIssueTargetInput): Promise<IssueTarget> {
   if (!issueId) {
     throw new GraphQLError('Issue ID is required')
@@ -99,9 +99,12 @@ export async function resolveIssueTarget({
 
   const channelUniqueName = foundIssue.Channel?.uniqueName || null
   const scope = channelUniqueName ? 'channel' : 'server'
+  const resolvedEntityName =
+    suspendedEntityName ||
+    (foundIssue.relatedModProfileName ? 'mod' : 'user')
 
   if (
-    suspendedEntityName === 'mod' &&
+    resolvedEntityName === 'mod' &&
     foundIssue.relatedModProfileName
   ) {
     const username = await findUsernameForModProfile({
@@ -139,7 +142,7 @@ export async function resolveIssueTarget({
 
   if (scope === 'server') {
     throw new GraphQLError(
-      `Could not find the ${suspendedEntityName} account name to be suspended.`
+      `Could not find the ${resolvedEntityName} account name to be suspended.`
     )
   }
 
@@ -198,14 +201,14 @@ export async function resolveIssueTarget({
 
   if (!originalPosterData) {
     throw new GraphQLError(
-      `Could not find the ${suspendedEntityName} account name to be suspended.`
+      `Could not find the ${resolvedEntityName} account name to be suspended.`
     )
   }
 
   if (!isUser(originalPosterData)) {
     if (!originalPosterData.displayName) {
       throw new GraphQLError(
-        `Could not find the ${suspendedEntityName} account name to be suspended.`
+        `Could not find the ${resolvedEntityName} account name to be suspended.`
       )
     }
 
@@ -227,7 +230,7 @@ export async function resolveIssueTarget({
 
   if (!originalPosterData.username) {
     throw new GraphQLError(
-      `Could not find the ${suspendedEntityName} account name to be suspended.`
+      `Could not find the ${resolvedEntityName} account name to be suspended.`
     )
   }
 
