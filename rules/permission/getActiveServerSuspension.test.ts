@@ -206,3 +206,32 @@ test("does not alias distinct actor tuples in the request cache", async () => {
   assert.equal(userQueryCalls, 2);
   assert.equal(modQueryCalls, 2);
 });
+
+test("runs combined user and mod lookups sequentially on one session", async () => {
+  let queryInProgress = false;
+  let queryCalls = 0;
+  const context = {
+    driver: {
+      session: () => ({
+        run: async () => {
+          assert.equal(queryInProgress, false);
+          queryInProgress = true;
+          queryCalls += 1;
+          await Promise.resolve();
+          queryInProgress = false;
+          return { records: [] };
+        },
+        close: async () => {},
+      }),
+    },
+  } as unknown as GraphQLContext;
+
+  const result = await getActiveServerSuspension({
+    context,
+    username: "jane",
+    modProfileName: "Mod Jane",
+  });
+
+  assert.equal(result.isSuspended, false);
+  assert.equal(queryCalls, 2);
+});

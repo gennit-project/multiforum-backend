@@ -6,7 +6,6 @@ import type {
 import { sendEmailToUser, EmailContent } from "./shared/emailUtils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
-import { logger } from "../../logger.js";
 
 type Args = {
   inviteeUsername: string;
@@ -28,6 +27,14 @@ const getResolver = (input: Input) => {
       throw new Error(
         "All arguments (serverName, inviteeUsername) are required"
       );
+    }
+
+    const invitees = await User.find({
+      where: { username: inviteeUsername },
+      selectionSet: "{ username }",
+    });
+    if (!invitees[0]) {
+      throw new Error(`No user exists with username "${inviteeUsername}".`);
     }
 
     // Markdown-friendly message for in-app Notifications:
@@ -68,34 +75,25 @@ ${process.env.FRONTEND_URL}/admin/accept-mod-invite
       ],
     } as ServerConfigUpdateInput;
 
-    try {
-      // Update the ServerConfig to add the user to the list of pending invites
-      const serverConfigUpdateResult = await ServerConfig.update({
-        where: {
-          serverName: serverName,
-        },
-        update: serverConfigUpdateInput,
-      });
-      if (!serverConfigUpdateResult.serverConfigs[0]) {
-        throw new Error("Could not invite user.");
-      }
-
-      // Send email and create notification
-      const emailSent = await sendEmailToUser(
-        inviteeUsername,
-        emailContent,
-        User,
-        {
-          inAppText: notificationMessage,
-          createInAppNotification: true
-        }
-      );
-
-      return emailSent;
-    } catch (e) {
-      logger.error(e);
-      return false;
+    // Update the ServerConfig to add the user to the list of pending invites.
+    const serverConfigUpdateResult = await ServerConfig.update({
+      where: {
+        serverName: serverName,
+      },
+      update: serverConfigUpdateInput,
+    });
+    if (!serverConfigUpdateResult.serverConfigs[0]) {
+      throw new Error(`No server exists with name "${serverName}".`);
     }
+
+    // Delivery is best-effort. The invitation itself succeeded once the
+    // PendingModInvites relationship was created.
+    await sendEmailToUser(inviteeUsername, emailContent, User, {
+      inAppText: notificationMessage,
+      createInAppNotification: true,
+    });
+
+    return true;
   };
 };
 
