@@ -4,6 +4,7 @@ const uri = process.env.NEO4J_URI ?? "bolt://127.0.0.1:7688";
 const username = process.env.NEO4J_USER ?? "neo4j";
 const password = process.env.NEO4J_PASSWORD ?? "playwright-ci-password";
 const serverName = process.env.SERVER_CONFIG_NAME ?? "Playwright Test Server";
+const adminUsername = process.env.CYPRESS_ADMIN_TEST_USERNAME ?? "cluse";
 
 const driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
 
@@ -16,6 +17,7 @@ try {
 
   await session.run(
     `MATCH (server:ServerConfig { serverName: $serverName })
+     MATCH (admin:User { username: $adminUsername })
 
      CREATE (channel:Channel {
        uniqueName: 'e2e_admin_moderation',
@@ -23,6 +25,7 @@ try {
        createdAt: datetime(),
        e2eAdminModerationScenario: true
      })
+     CREATE (admin)-[:ADMIN_OF_CHANNEL]->(channel)
 
      CREATE (target:User {
        username: 'e2e_suspended_user',
@@ -143,6 +146,65 @@ try {
      CREATE (modProfile)-[:SUSPENDED_AS_MOD]->(modSuspension)
      CREATE (modSuspension)-[:HAS_CONTEXT]->(modIssue)
 
+     CREATE (targetModUser:User {
+       username: 'e2e_target_mod_user',
+       displayName: 'Target Moderator User',
+       createdAt: datetime(),
+       e2eAdminModerationScenario: true
+     })
+     CREATE (targetModProfile:ModerationProfile {
+       displayName: 'E2E Target Mod',
+       createdAt: datetime(),
+       e2eAdminModerationScenario: true
+     })
+     CREATE (targetModUser)-[:MODERATION_PROFILE]->(targetModProfile)
+     CREATE (targetOriginalComment:Comment {
+       id: 'e2e-target-mod-original-comment',
+       text: 'Original moderator comment reported by the issue.',
+       isRootComment: true,
+       archived: false,
+       createdAt: datetime(),
+       e2eAdminModerationScenario: true
+     })
+     CREATE (targetModProfile)-[:AUTHORED_COMMENT]->(targetOriginalComment)
+     CREATE (channel)-[:HAS_COMMENT]->(targetOriginalComment)
+     CREATE (targetModIssue:Issue {
+       id: 'e2e-target-mod-issue',
+       issueNumber: 9103,
+       channelUniqueName: channel.uniqueName,
+       relatedCommentId: targetOriginalComment.id,
+       relatedModProfileName: targetModProfile.displayName,
+       title: 'Channel report against E2E Target Mod',
+       body: 'Exercise suspension from a target moderator activity comment.',
+       isOpen: true,
+       flaggedServerRuleViolation: false,
+       createdAt: datetime(),
+       updatedAt: datetime(),
+       e2eAdminModerationScenario: true
+     })
+     CREATE (channel)-[:HAS_ISSUE]->(targetModIssue)
+     CREATE (targetActivityComment:Comment {
+       id: 'e2e-target-mod-activity-comment',
+       text: 'Target moderator activity comment for suspension workflow.',
+       isRootComment: false,
+       archived: false,
+       createdAt: datetime(),
+       e2eAdminModerationScenario: true
+     })
+     CREATE (targetModProfile)-[:AUTHORED_COMMENT]->(targetActivityComment)
+     CREATE (channel)-[:HAS_COMMENT]->(targetActivityComment)
+     CREATE (targetActivityComment)-[:ACTIVITY_ON_ISSUE]->(targetModIssue)
+     CREATE (targetActivity:ModerationAction {
+       id: 'e2e-target-mod-activity',
+       actionType: 'comment',
+       actionDescription: 'commented on the issue',
+       createdAt: datetime(),
+       e2eAdminModerationScenario: true
+     })
+     CREATE (targetModIssue)-[:ACTIVITY_ON_ISSUE]->(targetActivity)
+     CREATE (targetModProfile)-[:PERFORMED_MODERATION_ACTION]->(targetActivity)
+     CREATE (targetActivity)-[:MODERATED_COMMENT]->(targetActivityComment)
+
      CREATE (removableAdmin:User {
        username: 'e2e_removable_admin',
        displayName: 'Removable Admin',
@@ -187,7 +249,7 @@ try {
        createdAt: datetime(),
        e2eAdminModerationScenario: true
      })`,
-    { serverName }
+    { adminUsername, serverName }
   );
 
   console.log(`Seeded admin moderation scenario for ${serverName}.`);
