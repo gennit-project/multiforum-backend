@@ -262,6 +262,9 @@ const permissionRules: IRules = {
       pluginRunsAggregate: deny,
       pluginPipelineRuns: deny,
       pluginPipelineRunsAggregate: deny,
+      // Generated solely for the internal OGM campaign service. Clients must
+      // use the application-defined, admin-protected campaign query instead.
+      pluginPipelineCampaigns: deny,
       getRankingSettings: and(isAuthenticated, canManageServerSettings),
     },
     PluginRun: {
@@ -598,6 +601,9 @@ const permissionRules: IRules = {
       createPluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
       pausePluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
       resumePluginPipelineCampaign: and(isAuthenticated, canManagePlugins),
+      // Generated solely for internal OGM create/update calls.
+      createPluginPipelineCampaigns: deny,
+      updatePluginPipelineCampaigns: deny,
       clearDownloadableFileScan: and(isAuthenticated, canPermanentlyRemoveImage),
       requestDownloadableFileReview: and(isAuthenticated, allow),
       permanentlyDeleteImage: and(isAuthenticated, allow),

@@ -2242,8 +2242,11 @@ const typeDefinitions = gql`
   }
 
   type PluginPipelineCampaign
-    @query(read: false, aggregate: false)
-    @mutation(operations: [])
+    # The OGM-backed campaign resolvers and startup worker require these
+    # generated operations. GraphQL Shield's deny fallback keeps the generated
+    # root fields private; clients use the application-defined campaign fields.
+    @query(read: true, aggregate: false)
+    @mutation(operations: [CREATE, UPDATE])
     @subscription(events: []) {
     id: ID! @id @unique
     policyId: ID!
