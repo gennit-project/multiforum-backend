@@ -118,6 +118,8 @@ jobs:
 
       # The request-user helper has the same ts-node source-map ambiguity: c8
       # otherwise assigns emitted JavaScript line numbers to its TypeScript URL.
+      # Primary unit/integration reports exclude this file so this correctly
+      # remapped report is its single authoritative coverage source.
       - name: Collect source-mapped request user coverage
         if: needs.changes.outputs.code == 'true'
         run: pnpm run coverage:request-user
