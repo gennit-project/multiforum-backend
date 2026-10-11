@@ -6,6 +6,10 @@
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import type { SourceLocation } from 'graphql';
 import { logger } from "./logger.js";
+import {
+  fingerprintGraphQLQuery,
+  resolveDiagnosticQueryLogging,
+} from "./services/graphqlOperationLogging.js";
 
 interface ErrorRequest {
   headers?: Record<string, string | string[] | undefined>;
@@ -31,6 +35,33 @@ interface EnhancedError extends Error {
   originalError?: Error;
 }
 
+export function buildGraphQLErrorLogDetails(
+  error: EnhancedError,
+  context?: ErrorContext
+): Record<string, unknown> {
+  const errorCode = error.extensions?.code || 'UNKNOWN_ERROR';
+  return {
+    message: error.message,
+    code: errorCode,
+    path: error.path,
+    locations: error.locations,
+    operationName: context?.operationName,
+    queryFingerprint: context?.query
+      ? fingerprintGraphQLQuery(context.query)
+      : undefined,
+    ...(context?.query && resolveDiagnosticQueryLogging()
+      ? { query: truncateQuery(context.query) }
+      : {}),
+    userAgent: context?.req?.headers?.['user-agent'],
+    ip: context?.req?.ip || context?.req?.connection?.remoteAddress,
+    stack: error.originalError?.stack || error.stack,
+    extensions: error.extensions?.exception ? {
+      ...error.extensions,
+      exception: sanitizeException(error.extensions.exception)
+    } : error.extensions
+  };
+}
+
 /**
  * Enhanced error formatter that provides detailed logging and improved error responses
  */
@@ -54,31 +85,8 @@ export function formatGraphQLError(error: EnhancedError, context?: ErrorContext)
   logger.error('🚨 GraphQL Error Details:', {
     errorId,
     timestamp,
-    message,
-    code: errorCode,
-    path,
-    locations,
-    operationName: context?.operationName,
-    variables: context?.variables ? sanitizeVariables(context.variables) : undefined,
-    query: context?.query ? truncateQuery(context.query) : undefined,
-    userAgent: context?.req?.headers?.['user-agent'],
-    ip: context?.req?.ip || context?.req?.connection?.remoteAddress,
-    stack: originalError?.stack || error.stack,
-    extensions: extensions?.exception ? {
-      ...extensions,
-      exception: sanitizeException(extensions.exception)
-    } : extensions
+    ...buildGraphQLErrorLogDetails(error, context),
   });
-
-  // Log the full query for validation errors (most common debugging need)
-  if (isValidationError(errorCode) && context?.query) {
-    logger.error('📝 Full Query that caused validation error:');
-    logger.error(context.query);
-    if (context.variables) {
-      logger.error('📝 Variables:');
-      logger.error(JSON.stringify(context.variables, null, 2));
-    }
-  }
 
   // Enhanced error response based on environment
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -252,7 +260,9 @@ export const errorHandlingPlugin = {
           if (isCriticalError(error)) {
             logCriticalError(error, {
               operationName: request.operationName,
-              variables: request.variables,
+              queryFingerprint: request.query
+                ? fingerprintGraphQLQuery(request.query)
+                : undefined,
               userId: requestContext.contextValue?.user?.id
             });
           }
