@@ -4,19 +4,25 @@ import type { Driver } from "neo4j-driver";
 import {
   coreSchemaConstraintStatements,
   ensureCoreSchemaConstraints,
+  getCoreSchemaConstraintStatements,
 } from "./coreSchemaConstraints.js";
 
-test("core constraints include unique keys for both issue counters", () => {
-  const statements = coreSchemaConstraintStatements.join("\n");
-  assert.deepEqual({
-    channelCounter: statements.includes(
-      "counter.channelUniqueName IS NODE KEY"
-    ),
-    serverCounter: statements.includes("counter.scope IS NODE KEY"),
-  }, {
-    channelCounter: true,
-    serverCounter: true,
-  });
+test("Enterprise uses node keys where property existence can be enforced", () => {
+  const statements = getCoreSchemaConstraintStatements("enterprise");
+  assert.equal(statements.length, 9);
+  assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 5);
+  assert.equal(statements.filter((item) => item.includes("IS UNIQUE")).length, 4);
+});
+
+test("Community uses supported uniqueness constraints for every identity", () => {
+  const statements = getCoreSchemaConstraintStatements("community");
+  assert.equal(statements.length, coreSchemaConstraintStatements.length);
+  assert.equal(statements.every((item) => item.includes("IS UNIQUE")), true);
+  assert.equal(statements.some((item) => item.includes("IS NODE KEY")), false);
+  assert.equal(
+    statements.every((item) => item.includes("IF NOT EXISTS")),
+    true
+  );
 });
 
 test("ensureCoreSchemaConstraints uses one session and always closes it", async () => {
@@ -28,13 +34,13 @@ test("ensureCoreSchemaConstraints uses one session and always closes it", async 
     }),
   } as unknown as Driver;
 
-  await ensureCoreSchemaConstraints(driver);
+  await ensureCoreSchemaConstraints(driver, "community");
 
   assert.deepEqual({
-    statements: calls.filter((call) => call !== "closed").length,
+    statements: calls.filter((call) => call !== "closed"),
     closes: calls.filter((call) => call === "closed").length,
   }, {
-    statements: coreSchemaConstraintStatements.length,
+    statements: getCoreSchemaConstraintStatements("community"),
     closes: 1,
   });
 });
@@ -52,6 +58,9 @@ test("ensureCoreSchemaConstraints closes its session when creation fails", async
     }),
   } as unknown as Driver;
 
-  await assert.rejects(() => ensureCoreSchemaConstraints(driver), /constraint failed/);
+  await assert.rejects(
+    () => ensureCoreSchemaConstraints(driver, "enterprise"),
+    /constraint failed/
+  );
   assert.equal(closed, true);
 });

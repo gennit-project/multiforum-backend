@@ -131,6 +131,23 @@ JSON report of required constraints, online indexes, and core graph-integrity
 invariants. The command exits non-zero when it finds a problem, making it
 suitable for a deployment check. It never repairs or deletes data.
 
+After deployment, the underlying schema can also be verified directly:
+
+```cypher
+SHOW CONSTRAINTS
+YIELD name, type, labelsOrTypes, properties
+RETURN name, type, labelsOrTypes, properties
+ORDER BY name;
+```
+
+Enterprise deployments use `NODE_KEY` constraints for connector, channel-issue,
+and issue-counter identities. Community deployments use composite or scalar
+`UNIQUENESS` constraints for the same keys; required properties remain enforced
+by the non-null GraphQL inputs and server-owned counter write paths. Issue-target
+constraints are `UNIQUENESS` constraints on both editions. `pnpm run
+neo4j:audit` also confirms the library-managed `@unique` constraints and that
+their backing indexes are online.
+
 ## Email
 
 | Variable | Required | Description |

@@ -3,11 +3,23 @@ import test from "node:test";
 import neo4j, { type Driver } from "neo4j-driver";
 import {
   evaluateSchemaAudit,
+  getLibraryManagedConstraintNames,
   requiredConstraintNames,
   requiredOnlineIndexNames,
   runNeo4jSchemaAudit,
   type IntegrityCounts,
 } from "./neo4jSchemaAudit.js";
+
+test("schema audit includes library-managed unique constraints and their indexes", () => {
+  const managed = getLibraryManagedConstraintNames();
+  assert.equal(managed.includes("User_username"), true);
+  assert.equal(managed.includes("Discussion_id"), true);
+  assert.equal(requiredConstraintNames.includes("discussion_channel_unique"), true);
+  assert.equal(
+    requiredConstraintNames.every((name) => requiredOnlineIndexNames.includes(name)),
+    true
+  );
+});
 
 const cleanIntegrity: IntegrityCounts = {
   discussionChannelsWithInvalidEndpoints: 0,

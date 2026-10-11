@@ -192,12 +192,7 @@ async function initializeServer() {
       await session.close();
     }
 
-    if (edition === "enterprise") {
-      // These constraints are needed for data integrity, but can be skipped
-      // for the purpose of running Cypress tests against a local backend and
-      // a local instance of neo4j community edition.
-      await ensureCoreSchemaConstraints(driver);
-    }
+    await ensureCoreSchemaConstraints(driver, edition);
 
     const ogmSchema = await neoSchema.getSchema();
     initializeOgmFromExistingSchema(ogm, neoSchema, ogmSchema);
