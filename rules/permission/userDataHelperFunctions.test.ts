@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { Driver } from "neo4j-driver";
+import jwt from "jsonwebtoken";
 import { issueLocalDevToken } from "../../services/localDevAuth.js";
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import type { AuthContextForUserLookup } from "./userDataHelperFunctions.js";
@@ -17,9 +19,55 @@ const resolvedUser = {
   data: { ModerationProfile: { displayName: "Mod Alice" } },
 };
 
+const createIdentityDriver = (identity: {
+  username: string;
+  dateOfBirth?: string | null;
+  modProfileName?: string | null;
+}) => {
+  let sessionCalls = 0;
+  let runCalls = 0;
+  let closeCalls = 0;
+  let query = "";
+  const driver = {
+    executeQuery() {
+      throw new Error("getPersistedRequestUser should use a request session");
+    },
+    session() {
+      sessionCalls += 1;
+      return {
+        async run(statement: string) {
+          runCalls += 1;
+          query = statement;
+          return {
+            records: [{
+              get(key: string) {
+                return identity[key as keyof typeof identity] ?? null;
+              },
+            }],
+          };
+        },
+        async close() {
+          closeCalls += 1;
+        },
+      };
+    },
+  } as unknown as Driver;
+
+  return {
+    driver,
+    calls: () => ({ sessionCalls, runCalls, closeCalls }),
+    query: () => query,
+  };
+};
+
 // A context whose `user` is already populated, with an ogm/model that throws if
 // touched — so any DB access from setUserDataOnContext would fail the test.
 const contextWithResolvedUser = (): AuthContextForUserLookup => ({
+  driver: {
+    session() {
+      throw new Error("driver.session must not be called when user is memoized");
+    },
+  } as unknown as Driver,
   ogm: {
     model() {
       throw new Error("ogm.model must not be called when user is memoized");
@@ -99,6 +147,48 @@ const withOidcEnvironment = async (callback: () => Promise<void>) => {
   }
 };
 
+const withMockAuthEnvironment = async (callback: () => Promise<void>) => {
+  const previous = process.env.E2E_MOCK_AUTH;
+  process.env.E2E_MOCK_AUTH = "true";
+  try {
+    await callback();
+  } finally {
+    if (previous === undefined) delete process.env.E2E_MOCK_AUTH;
+    else process.env.E2E_MOCK_AUTH = previous;
+  }
+};
+
+test("uses the username lookup path for mock-auth identities", async () => {
+  await withMockAuthEnvironment(async () => {
+    const identity = createIdentityDriver({
+      username: "alice",
+      dateOfBirth: "1991-04-05",
+      modProfileName: "Mod Alice",
+    });
+    const token = jwt.sign(
+      { username: "alice", email: "alice@example.test" },
+      "test-key"
+    );
+    const context = {
+      driver: identity.driver,
+      ogm: { model: () => ({}) },
+      req: { headers: { authorization: `Bearer ${token}` } },
+    } as unknown as AuthContextForUserLookup;
+
+    const result = await setUserDataOnContext({ context });
+
+    assert.equal(result.username, "alice");
+    assert.equal(result.dateOfBirth, "1991-04-05");
+    assert.match(identity.query(), /User \{username: \$username\}/);
+    assert.doesNotMatch(identity.query(), /HAS_EMAIL/);
+    assert.deepEqual(identity.calls(), {
+      sessionCalls: 1,
+      runCalls: 1,
+      closeCalls: 1,
+    });
+  });
+});
+
 test("resolves a signed local token through the persisted email relationship", async () => {
   await withLocalAuthEnvironment(async () => {
     const token = issueLocalDevToken(
@@ -107,24 +197,14 @@ test("resolves a signed local token through the persisted email relationship", a
     );
     assert.ok(token);
 
+    const identity = createIdentityDriver({
+      username: "persisted_admin",
+      dateOfBirth: "1990-02-03",
+      modProfileName: "Local Admin",
+    });
     const context = {
-      ogm: {
-        model(name: string) {
-          if (name === "Email") {
-            return {
-              find: async () => [{ User: { username: "persisted_admin" } }],
-            };
-          }
-          if (name === "User") {
-            return {
-              find: async () => [
-                { ModerationProfile: { displayName: "Local Admin" } },
-              ],
-            };
-          }
-          throw new Error(`Unexpected model ${name}`);
-        },
-      },
+      driver: identity.driver,
+      ogm: { model: () => ({}) },
       req: { headers: { authorization: `Bearer ${token}` } },
     } as unknown as AuthContextForUserLookup;
 
@@ -134,7 +214,14 @@ test("resolves a signed local token through the persisted email relationship", a
       email: "admin@example.test",
       email_verified: true,
       data: { ModerationProfile: { displayName: "Local Admin" } },
+      dateOfBirth: "1990-02-03",
     });
+    assert.deepEqual(identity.calls(), {
+      sessionCalls: 1,
+      runCalls: 1,
+      closeCalls: 1,
+    });
+    assert.match(identity.query(), /HAS_EMAIL/);
   });
 });
 
@@ -176,24 +263,14 @@ test("marks an invalid local token on query context without throwing", async () 
 
 test("resolves a verified OIDC identity through the persisted email", async () => {
   await withOidcEnvironment(async () => {
+    const identity = createIdentityDriver({
+      username: "oidc_member",
+      dateOfBirth: null,
+      modProfileName: "OIDC Member",
+    });
     const context = {
-      ogm: {
-        model(name: string) {
-          if (name === "Email") {
-            return {
-              find: async () => [{ User: { username: "oidc_member" } }],
-            };
-          }
-          if (name === "User") {
-            return {
-              find: async () => [
-                { ModerationProfile: { displayName: "OIDC Member" } },
-              ],
-            };
-          }
-          throw new Error(`Unexpected model ${name}`);
-        },
-      },
+      driver: identity.driver,
+      ogm: { model: () => ({}) },
       req: { headers: { authorization: "Bearer oidc-token" } },
     } as unknown as AuthContextForUserLookup;
 
@@ -209,6 +286,12 @@ test("resolves a verified OIDC identity through the persisted email", async () =
       email: "member@example.test",
       email_verified: true,
       data: { ModerationProfile: { displayName: "OIDC Member" } },
+      dateOfBirth: null,
+    });
+    assert.deepEqual(identity.calls(), {
+      sessionCalls: 1,
+      runCalls: 1,
+      closeCalls: 1,
     });
   });
 });

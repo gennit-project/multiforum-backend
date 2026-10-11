@@ -53,6 +53,19 @@ export async function mayAccessSensitiveContent({
     return false;
   }
 
+  if (context.user.dateOfBirth !== undefined) {
+    const access = getAgeEligibility({
+      birthday: context.user.dateOfBirth,
+      policy,
+      now,
+    }).mayAccessSensitiveContent;
+    context.mayAccessSensitiveContent = access;
+    return access;
+  }
+
+  // Compatibility path for internal/direct consumers that pre-populate only
+  // a username. Normal authenticated GraphQL requests receive dateOfBirth from
+  // the consolidated identity lookup above and never take this extra trip.
   const session = driver.session();
   try {
     const result = await session.run(
