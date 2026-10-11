@@ -74,18 +74,21 @@ WITH pagePosition, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSupe
 // Include every assigned flair, including archived flairs. Archiving prevents
 // future assignment but must not erase a historical discussion's category.
 OPTIONAL MATCH (dc)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair:DiscussionFlair)
+OPTIONAL MATCH (assignedFlairOwner:Channel)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair)
 WITH pagePosition, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
-     weightedVotesCount, commentsCount, album, albumImages, downloadableFiles, isFavorited, assignedFlair
+     weightedVotesCount, commentsCount, album, albumImages, downloadableFiles, isFavorited,
+     assignedFlair, assignedFlairOwner
 ORDER BY pagePosition, assignedFlair.order ASC, assignedFlair.displayName ASC
 WITH pagePosition, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
      weightedVotesCount, commentsCount, album, albumImages, downloadableFiles, isFavorited,
-     [flair IN COLLECT(DISTINCT assignedFlair) WHERE flair IS NOT NULL | {
-         id: flair.id,
-         channelUniqueName: flair.channelUniqueName,
-         displayName: flair.displayName,
-         color: flair.color,
-         order: flair.order,
-         archived: flair.archived
+     [ownedFlair IN COLLECT(DISTINCT {flair: assignedFlair, owner: assignedFlairOwner})
+       WHERE ownedFlair.flair IS NOT NULL | {
+         id: ownedFlair.flair.id,
+         channelUniqueName: ownedFlair.owner.uniqueName,
+         displayName: ownedFlair.flair.displayName,
+         color: ownedFlair.flair.color,
+         order: ownedFlair.flair.order,
+         archived: ownedFlair.flair.archived
      }] AS assignedFlairs
 
 RETURN {

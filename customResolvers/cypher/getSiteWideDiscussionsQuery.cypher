@@ -32,15 +32,17 @@ CALL {
   CALL {
     WITH dc
     OPTIONAL MATCH (dc)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair:DiscussionFlair)
-    WITH assignedFlair
+    OPTIONAL MATCH (assignedFlairOwner:Channel)-[:HAS_DISCUSSION_FLAIR]->(assignedFlair)
+    WITH assignedFlair, assignedFlairOwner
     ORDER BY assignedFlair.order ASC, assignedFlair.displayName ASC
-    RETURN [flair IN collect(DISTINCT assignedFlair) WHERE flair IS NOT NULL | {
-      id: flair.id,
-      channelUniqueName: flair.channelUniqueName,
-      displayName: flair.displayName,
-      color: flair.color,
-      order: flair.order,
-      archived: flair.archived
+    RETURN [ownedFlair IN collect(DISTINCT {flair: assignedFlair, owner: assignedFlairOwner})
+      WHERE ownedFlair.flair IS NOT NULL | {
+      id: ownedFlair.flair.id,
+      channelUniqueName: ownedFlair.owner.uniqueName,
+      displayName: ownedFlair.flair.displayName,
+      color: ownedFlair.flair.color,
+      order: ownedFlair.flair.order,
+      archived: ownedFlair.flair.archived
     }] AS assignedFlairs
   }
 

@@ -10,16 +10,14 @@ const assertProjectsAssignedFlairs = (query: string) => {
     query,
     /\(dc\)-\[:HAS_DISCUSSION_FLAIR\]->\(assignedFlair:DiscussionFlair\)/
   );
+  assert.match(
+    query,
+    /\(assignedFlairOwner:Channel\)-\[:HAS_DISCUSSION_FLAIR\]->\(assignedFlair\)/
+  );
   assert.match(query, /Flairs:/);
-  for (const field of [
-    "id",
-    "channelUniqueName",
-    "displayName",
-    "color",
-    "order",
-    "archived",
-  ]) {
-    assert.match(query, new RegExp(`${field}: flair\\.${field}`));
+  assert.match(query, /channelUniqueName: ownedFlair\.owner\.uniqueName/);
+  for (const field of ["id", "displayName", "color", "order", "archived"]) {
+    assert.match(query, new RegExp(`${field}: ownedFlair\\.flair\\.${field}`));
   }
 };
 

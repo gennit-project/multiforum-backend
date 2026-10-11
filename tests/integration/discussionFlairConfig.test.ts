@@ -99,6 +99,18 @@ test("persists, reads, and archives channel discussion flairs", async () => {
     ],
   });
 
+  const persistenceSession = driver.session();
+  try {
+    const result = await persistenceSession.run(`
+      MATCH (:Channel {uniqueName: 'gardening'})
+        -[:HAS_DISCUSSION_FLAIR]->(flair:DiscussionFlair)
+      RETURN count(flair.channelUniqueName) AS storedChannelNames
+    `);
+    assert.equal(result.records[0]?.get("storedChannelNames").toNumber(), 0);
+  } finally {
+    await persistenceSession.close();
+  }
+
   await setConfig(
     null,
     {
