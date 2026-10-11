@@ -6,6 +6,11 @@ const typeDefinitions = gql`
     EXCLUDE
   }
 
+  enum FilterSelection {
+    SINGLE
+    MULTIPLE
+  }
+
   enum FileKind {
     ZIP
     RAR
@@ -569,6 +574,7 @@ const typeDefinitions = gql`
     key: String! # computer‑friendly, e.g. "lot_size"
     displayName: String! # human label, e.g. "Lot Size"
     mode: FilterMode! # INCLUDE or EXCLUDE
+    uploadSelection: FilterSelection! @default(value: MULTIPLE)
     # One channel owns many groups
     channel: Channel! @relationship(type: "HAS_FILTER_GROUP", direction: IN)
 

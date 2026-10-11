@@ -10,6 +10,7 @@ const validGroup = (overrides: Record<string, unknown> = {}) => ({
   key: "game_packs",
   displayName: "Game Packs",
   mode: "INCLUDE",
+  uploadSelection: "MULTIPLE",
   order: 0,
   options: {
     create: [
@@ -96,6 +97,34 @@ test("rejects invalid filter group modes", () => {
         input: [validGroup({ mode: "MAYBE" })],
       }),
     /mode must be INCLUDE or EXCLUDE/
+  );
+});
+
+test("accepts both upload selection modes", () => {
+  for (const uploadSelection of ["SINGLE", "MULTIPLE"]) {
+    assert.doesNotThrow(() =>
+      validateCreateFilterGroupsPayload({
+        input: [validGroup({ uploadSelection })],
+      })
+    );
+  }
+});
+
+test("rejects invalid upload selection modes", () => {
+  assert.throws(
+    () =>
+      validateCreateFilterGroupsPayload({
+        input: [validGroup({ uploadSelection: "MAYBE" })],
+      }),
+    /uploadSelection must be SINGLE or MULTIPLE/
+  );
+});
+
+test("allows upload selection to be omitted so the schema default applies", () => {
+  assert.doesNotThrow(() =>
+    validateCreateFilterGroupsPayload({
+      input: [validGroup({ uploadSelection: undefined })],
+    })
   );
 });
 
