@@ -116,6 +116,12 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         run: pnpm run coverage:startup-provisioning
 
+      # The request-user helper has the same ts-node source-map ambiguity: c8
+      # otherwise assigns emitted JavaScript line numbers to its TypeScript URL.
+      - name: Collect source-mapped request user coverage
+        if: needs.changes.outputs.code == 'true'
+        run: pnpm run coverage:request-user
+
       # The unit report is the one authoritative all:true coverage denominator.
       # Integration shards report only files they execute, and coverage-report
       # unions their hits into this complete report. That preserves the local
@@ -137,6 +143,15 @@ jobs:
         with:
           name: cov-lcov-startup
           path: coverage/startup-provisioning/lcov.info
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Save request-user coverage report
+        if: needs.changes.outputs.code == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cov-lcov-request-user
+          path: coverage/request-user/lcov.info
           if-no-files-found: error
           retention-days: 1
 
@@ -227,8 +242,8 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      # Downloads the unit, integration-shard, and startup LCOV artifacts into
-      # subfolders under coverage-artifacts/.
+      # Downloads the unit, integration-shard, and source-mapped supplemental
+      # LCOV artifacts into subfolders under coverage-artifacts/.
       - name: Download coverage artifacts
         uses: actions/download-artifact@v4
         with:
