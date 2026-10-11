@@ -179,10 +179,26 @@ their backing indexes are online.
 | `AGE_GATE_WRITE_VALIDATOR` | No | Set to `enforce` to reject mutations the age-gate write validator flags: connecting an existing node along a relationship an age-gate definition follows, or writing `hasSensitiveContent` outside the mutations that own it (see `docs/age-gate-materialization-design.md`). Any other value, including unset, logs them as `age-gate write validator: unhandled write (log-only)` and lets them run. |
 | `GRAPHQL_MAX_DEPTH` | No | Maximum allowed GraphQL query nesting depth (default `15`). Deeper queries are rejected before execution to prevent one crafted query from generating a pathological Cypher query. |
 | `GRAPHQL_MAX_COMPLEXITY` | No | Maximum allowed GraphQL query complexity (default `50000`). Explicit list sizes are charged at the requested size (capped at `100`); lists without a requested size use a calibrated fan-out estimate of `5`. Every operation logs its score, ceiling, and rejection status without logging query text or variables. Rejections use `QUERY_TOO_COMPLEX` and HTTP 400. Tune from observed scores rather than theoretical nested-list maxima. |
+| `GRAPHQL_DIAGNOSTIC_QUERY_LOGGING` | No | Set explicitly to `true`, `1`, `yes`, or `on` only during a temporary diagnostic session to include GraphQL query text in operation logs. It is disabled by default, and variable values are never logged. Remove the setting after diagnosis. |
 | `SERVER_CONFIG_NAME` | Yes | Name of the `ServerConfig` record this instance runs as (e.g. `Listical`). When automatic provisioning is enabled, Multiforum uses this name to create the config and install or update its default roles. The special value `Cypress Test Server` enables test-only behavior. |
 | `MULTIFORUM_AUTO_PROVISION` | No | Set to `true`, `1`, `yes`, or `on` to create or reconcile the named `ServerConfig` and its default roles during startup. In `local-dev` auth mode, an empty user database also receives the configured bootstrap user, email, moderation profile, and SuperAdmin connection. A non-empty database is never seeded with a new identity; an exact existing bootstrap identity is only reconciled into SuperAdmins. It is disabled by default, so existing deployments are unchanged. The operation is idempotent; an opted-in provisioning error fails startup rather than accepting traffic with partial defaults. |
 | `FRONTEND_URL` | Yes | Base URL of the frontend, used to build links in outbound emails (e.g. mod-invite acceptance links). |
 | `PLUGIN_SECRET_ENCRYPTION_KEY` | If plugins store secrets | 32-character key used to encrypt plugin secrets at rest. Set a strong value in production (the in-code fallback is a placeholder only). |
+
+GraphQL JSON request bodies are capped at 1 MiB and oversized bodies receive a
+structured HTTP 413 response before GraphQL execution. The ceiling covers
+operation documents, rich-text inputs, and upload metadata with substantial
+headroom; media and downloadable-file bytes go directly to object storage and
+must not pass through GraphQL. Normal operation logs contain the operation name,
+request ID, SHA-256 query fingerprint, outcome, complexity, and timings, but no
+query text or variable values.
+
+Before deploying this change, review the retention policy of the configured log
+provider. Older application logs may contain query text or variable values from
+previous releases and cannot be retroactively sanitized by the application;
+expire or delete them according to the deployment's privacy policy. Diagnostic
+query logging may expose inline GraphQL literals, so enable it briefly and only
+where log access and retention are appropriately restricted.
 
 ### Capability reporting
 
