@@ -4,6 +4,7 @@ import type { GraphQLContext } from "../types/context.js";
 const VALID_GROUP_KEY = /^[a-zA-Z0-9_]+$/;
 const VALID_OPTION_VALUE = /^[a-zA-Z0-9_-]+$/;
 const VALID_MODES = new Set(["INCLUDE", "EXCLUDE"]);
+const VALID_UPLOAD_SELECTIONS = new Set(["SINGLE", "MULTIPLE"]);
 
 type Resolver = (
   parent: unknown,
@@ -24,6 +25,7 @@ type FilterGroupLike = {
   key?: unknown;
   displayName?: unknown;
   mode?: unknown;
+  uploadSelection?: unknown;
   order?: unknown;
   options?: unknown;
 };
@@ -123,6 +125,9 @@ export const validateFilterGroupNode = (
     if (!VALID_MODES.has(String(group.mode))) {
       throw new Error(`${label}.mode must be INCLUDE or EXCLUDE`);
     }
+  }
+  if (group.uploadSelection !== undefined && !VALID_UPLOAD_SELECTIONS.has(String(group.uploadSelection))) {
+    throw new Error(`${label}.uploadSelection must be SINGLE or MULTIPLE`);
   }
   if (!partial || group.order !== undefined) {
     assertInteger(group.order, `${label}.order`);

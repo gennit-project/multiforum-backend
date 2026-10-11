@@ -20,6 +20,10 @@ import { getServerScopedMembership } from "../../rules/permission/getServerScope
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
+import {
+  assertValidUploadSelections,
+  type SelectedLabel,
+} from "./validateDownloadLabelSelections.js";
 
 type Args = {
   discussionId: string;
@@ -138,6 +142,27 @@ const getResolver = (input: Input) => {
     const discussionChannelId = discussionChannel.id;
     const existingLabelIds = discussionChannel.LabelOptions?.map((l: { id: string }) => l.id) || [];
 
+    let selectedLabels: SelectedLabel[] = [];
+    if (labelOptionIds.length > 0) {
+      selectedLabels = await FilterOption.find({
+        where: {
+          id_IN: labelOptionIds,
+        },
+        selectionSet: `{
+          id
+          displayName
+          value
+          group {
+            id
+            key
+            displayName
+            uploadSelection
+          }
+        }`,
+      }) as SelectedLabel[];
+      assertValidUploadSelections(selectedLabels);
+    }
+
     // Calculate which labels to connect and disconnect
     const labelsToConnect = labelOptionIds.filter((id: string) => !existingLabelIds.includes(id));
     const labelsToDisconnect = existingLabelIds.filter((id: string) => !labelOptionIds.includes(id));
@@ -145,21 +170,13 @@ const getResolver = (input: Input) => {
     // Get label details for labels being added
     let addedLabels: Array<{ id: string; displayName: string; value: string }> = [];
     if (labelsToConnect.length > 0) {
-      const addedLabelData = await FilterOption.find({
-        where: {
-          id_IN: labelsToConnect,
-        },
-        selectionSet: `{
-          id
-          displayName
-          value
-        }`,
-      });
-      addedLabels = addedLabelData.map((l: { id: string; displayName?: string | null; value: string }) => ({
-        id: l.id,
-        displayName: l.displayName || l.value,
-        value: l.value,
-      }));
+      addedLabels = selectedLabels
+        .filter((label) => labelsToConnect.includes(label.id))
+        .map((l) => ({
+          id: l.id,
+          displayName: l.displayName || l.value,
+          value: l.value,
+        }));
     }
 
     // Get label details for labels being removed
@@ -176,20 +193,7 @@ const getResolver = (input: Input) => {
     }
 
     // Get label names for the moderation action description (all final labels)
-    let labelNames: string[] = [];
-    if (labelOptionIds.length > 0) {
-      const labelData = await FilterOption.find({
-        where: {
-          id_IN: labelOptionIds,
-        },
-        selectionSet: `{
-          id
-          displayName
-          value
-        }`,
-      });
-      labelNames = labelData.map((l: { displayName?: string | null; value: string }) => l.displayName || l.value);
-    }
+    const labelNames = selectedLabels.map((label) => label.displayName || label.value);
 
     // Build the update operation
     const updateInput: any = {

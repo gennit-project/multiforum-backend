@@ -16,6 +16,7 @@ import {
   seedModerator,
   type ImageModEnv,
 } from "./imageModerationHarness.js";
+import { backfillFilterGroupUploadSelection } from "../../services/filterGroupUploadSelection.js";
 
 let env: ImageModEnv;
 
@@ -42,7 +43,7 @@ beforeEach(async () => {
      CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'disc-1', channelUniqueName: 'test-channel', createdAt: datetime() })
      CREATE (dc)-[:POSTED_IN_CHANNEL]->(disc)
      CREATE (dc)-[:POSTED_IN_CHANNEL]->(ch)
-     CREATE (fg:FilterGroup { id: 'fg-1', key: 'size', displayName: 'Size', order: 1, mode: 'INCLUDE' })
+     CREATE (fg:FilterGroup { id: 'fg-1', key: 'size', displayName: 'Size', order: 1, mode: 'INCLUDE', uploadSelection: 'MULTIPLE' })
      CREATE (fo1:FilterOption { id: 'fo-1', value: 'small', displayName: 'Small', order: 1 })
      CREATE (fo2:FilterOption { id: 'fo-2', value: 'large', displayName: 'Large', order: 2 })
      CREATE (fg)-[:HAS_FILTER_OPTION]->(fo1)
@@ -80,6 +81,42 @@ test("owner adds download labels and records 'added' history", async () => {
      RETURN count(h) AS n`
   );
   assert.equal(Number(history[0].n), 2, "two 'added' history entries expected");
+});
+
+test("a multiple-choice group accepts more than one label", async () => {
+  await updateLabels(["fo-1", "fo-2"]);
+
+  assert.deepEqual(await connectedLabelValues(), ["large", "small"]);
+});
+
+test("a legacy group without a stored mode defaults to multiple-choice", async () => {
+  await run("MATCH (fg:FilterGroup { id: 'fg-1' }) REMOVE fg.uploadSelection");
+  await backfillFilterGroupUploadSelection(env.driver);
+
+  await updateLabels(["fo-1", "fo-2"]);
+
+  assert.deepEqual(await connectedLabelValues(), ["large", "small"]);
+});
+
+test("a single-choice group rejects more than one label without changing data", async () => {
+  await run("MATCH (fg:FilterGroup { id: 'fg-1' }) SET fg.uploadSelection = 'SINGLE'");
+
+  await assert.rejects(
+    updateLabels(["fo-1", "fo-2"]),
+    /Filter group "Size" allows only one label per download/
+  );
+
+  assert.deepEqual(await connectedLabelValues(), []);
+  const history = await run("MATCH (h:LabelChangeHistory) RETURN count(h) AS n");
+  assert.equal(Number(history[0].n), 0, "a rejected update should not create history");
+});
+
+test("a single-choice group accepts one label", async () => {
+  await run("MATCH (fg:FilterGroup { id: 'fg-1' }) SET fg.uploadSelection = 'SINGLE'");
+
+  await updateLabels(["fo-1"]);
+
+  assert.deepEqual(await connectedLabelValues(), ["small"]);
 });
 
 test("owner removing a label disconnects it and records 'removed' history", async () => {
