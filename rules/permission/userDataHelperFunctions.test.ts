@@ -63,6 +63,36 @@ const createIdentityDriver = (identity: {
   };
 };
 
+test("skips persisted identity lookup without an email or username", async () => {
+  const driver = {
+    session() {
+      throw new Error("no session should be opened without an identity");
+    },
+  } as unknown as Driver;
+
+  const result = await getPersistedRequestUser({
+    driver,
+    email: null,
+  });
+
+  assert.equal(result, null);
+});
+
+test("skips the raw query for scoped drivers without executeQuery", async () => {
+  const driver = {
+    session() {
+      throw new Error("the compatibility path must not open a raw session");
+    },
+  } as unknown as Driver;
+
+  const result = await getPersistedRequestUser({
+    driver,
+    email: "alice@example.test",
+  });
+
+  assert.equal(result, null);
+});
+
 test("returns null and closes the session when no persisted user exists", async () => {
   let closeCalls = 0;
   const driver = {
