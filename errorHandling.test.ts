@@ -3,7 +3,11 @@
 // didEncounterErrors is invoked directly. No server or database.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { formatGraphQLError, errorHandlingPlugin } from "./errorHandling.js";
+import {
+  buildGraphQLErrorLogDetails,
+  formatGraphQLError,
+  errorHandlingPlugin,
+} from "./errorHandling.js";
 
 // Build an EnhancedError-shaped object (Error + GraphQL fields).
 const makeError = (
@@ -102,6 +106,45 @@ test("redacts sensitive variables (development output)", () => {
   assert.equal(dev.extensions.variables.password, "[REDACTED]");
   assert.equal(dev.extensions.variables.authToken, "[REDACTED]");
   assert.equal(dev.extensions.variables.secretKey, "[REDACTED]");
+});
+
+test("error log details contain a fingerprint but no query or variables by default", () => {
+  const original = process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING;
+  delete process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING;
+  try {
+    const details = buildGraphQLErrorLogDetails(
+      makeError("invalid", { code: "BAD_USER_INPUT" }),
+      {
+        operationName: "DoThing",
+        query: "mutation DoThing($password: String!) { doThing(password: $password) }",
+        variables: { password: "do-not-log" },
+      }
+    );
+    assert.match(String(details.queryFingerprint), /^[a-f0-9]{64}$/);
+    assert.equal("query" in details, false);
+    assert.equal("variables" in details, false);
+    assert.equal(JSON.stringify(details).includes("do-not-log"), false);
+  } finally {
+    if (original === undefined) delete process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING;
+    else process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING = original;
+  }
+});
+
+test("error query text is available only in explicit diagnostic mode", () => {
+  const original = process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING;
+  process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING = "true";
+  try {
+    const details = buildGraphQLErrorLogDetails(makeError("invalid"), {
+      query: "query Diagnose { currentUser { username } }",
+      variables: { token: "still-not-logged" },
+    });
+    assert.equal(details.query, "query Diagnose { currentUser { username } }");
+    assert.equal("variables" in details, false);
+    assert.equal(JSON.stringify(details).includes("still-not-logged"), false);
+  } finally {
+    if (original === undefined) delete process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING;
+    else process.env.GRAPHQL_DIAGNOSTIC_QUERY_LOGGING = original;
+  }
 });
 
 test("errorHandlingPlugin processes errors without throwing", async () => {

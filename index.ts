@@ -79,6 +79,11 @@ import {
   queryComplexityPlugin,
   resolveMaxQueryComplexity,
 } from "./services/graphqlQueryComplexity.js";
+import {
+  createGraphQLJsonBodyParser,
+  graphqlPayloadTooLargeErrorHandler,
+} from "./services/graphqlHttpSecurity.js";
+import { graphqlOperationLoggingPlugin } from "./services/graphqlOperationLogging.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -266,6 +271,7 @@ async function initializeServer() {
         errorHandlingPlugin as ApolloServerPlugin,
         // Per-operation latency breakdown (log line + Server-Timing header).
         requestTimingPlugin,
+        graphqlOperationLoggingPlugin(),
         paginationLimitPlugin,
         // This runs after GraphQL validation so request variables are available,
         // but before resolvers (and therefore before generated Cypher) execute.
@@ -295,25 +301,16 @@ async function initializeServer() {
       }),
       // Gzip GraphQL responses — list payloads especially benefit.
       compression(),
-      express.json({ limit: "50mb" }),
+      createGraphQLJsonBodyParser(),
+      graphqlPayloadTooLargeErrorHandler,
       expressMiddleware(server, {
         context: async ({ req }) => {
-          const queryString = `Query: ${req.body.query}`;
           const isMutation = req.body.query?.trim().startsWith("mutation");
 
           // Add this information to the context so it can be used by permission rules
           (req as GraphQLRequest).isMutation = isMutation;
 
           enrichContext({ operationName: req.body.operationName || undefined });
-
-          if (!queryString.includes("IntrospectionQuery")) {
-            logger.info('📊 GraphQL Operation:', {
-              type: isMutation ? 'Mutation' : 'Query',
-              operationName: req.body.operationName || 'Anonymous',
-              query: req.body.query,
-              variables: req.body.variables
-            });
-          }
 
           return {
             driver,
