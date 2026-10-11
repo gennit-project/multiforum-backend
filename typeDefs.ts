@@ -605,7 +605,13 @@ const typeDefinitions = gql`
     @subscription(events: []) {
     id: ID! @id @unique
     channelUniqueName: String!
+      @cypher(
+        statement: "MATCH (channel:Channel)-[:HAS_DISCUSSION_FLAIR]->(this) RETURN channel.uniqueName AS channelUniqueName"
+        columnName: "channelUniqueName"
+      )
       @settable(onCreate: false, onUpdate: false)
+      @filterable(byValue: false, byAggregate: false)
+      @sortable(byValue: false)
     displayName: String!
       @settable(onCreate: false, onUpdate: false)
     color: String

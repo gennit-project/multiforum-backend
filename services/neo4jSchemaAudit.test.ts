@@ -30,6 +30,8 @@ const cleanIntegrity: IntegrityCounts = {
   commentsInReplyCycles: 0,
   invalidChannelIssueCounters: 0,
   invalidServerIssueCounters: 0,
+  discussionFlairsWithInvalidOwners: 0,
+  discussionFlairsWithStoredChannelUniqueName: 0,
 };
 
 test("schema audit passes a complete and consistent snapshot", () => {
@@ -100,6 +102,6 @@ test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", a
   const report = await runNeo4jSchemaAudit(driver);
 
   assert.equal(report.ok, true);
-  assert.equal(queries.length, 10);
+  assert.equal(queries.length, 12);
   assert.equal(closed, true);
 });

@@ -56,13 +56,13 @@ CALL {
 }
 
 CALL {
-  WITH entry
+  WITH entry, channel
   OPTIONAL MATCH (entry)-[:HAS_DISCUSSION_FLAIR]->(flair:DiscussionFlair)
-  WITH flair
+  WITH flair, channel
   ORDER BY flair.order ASC, flair.displayName ASC
   RETURN [value IN collect(CASE WHEN flair IS NULL THEN null ELSE flair {
     .id,
-    .channelUniqueName,
+    channelUniqueName: channel.uniqueName,
     .displayName,
     .color,
     .order,

@@ -59,6 +59,8 @@ export type IntegrityCounts = {
   commentsInReplyCycles: number;
   invalidChannelIssueCounters: number;
   invalidServerIssueCounters: number;
+  discussionFlairsWithInvalidOwners: number;
+  discussionFlairsWithStoredChannelUniqueName: number;
 };
 
 export type SchemaAuditSnapshot = {
@@ -162,6 +164,16 @@ export async function runNeo4jSchemaAudit(
       WHERE key IS NULL OR copies > 1
       RETURN coalesce(sum(copies), 0) AS count
     `);
+    const discussionFlairsWithInvalidOwners = await session.run(`
+      MATCH (flair:DiscussionFlair)
+      WHERE count { (:Channel)-[:HAS_DISCUSSION_FLAIR]->(flair) } <> 1
+      RETURN count(flair) AS count
+    `);
+    const discussionFlairsWithStoredChannelUniqueName = await session.run(`
+      MATCH (flair:DiscussionFlair)
+      WHERE flair.channelUniqueName IS NOT NULL
+      RETURN count(flair) AS count
+    `);
 
     return evaluateSchemaAudit({
       constraints: constraintsResult.records.map((record) => record.get("name")),
@@ -191,6 +203,14 @@ export async function runNeo4jSchemaAudit(
         ),
         invalidServerIssueCounters: firstCount(
           serverCounterDuplicates.records,
+          "count"
+        ),
+        discussionFlairsWithInvalidOwners: firstCount(
+          discussionFlairsWithInvalidOwners.records,
+          "count"
+        ),
+        discussionFlairsWithStoredChannelUniqueName: firstCount(
+          discussionFlairsWithStoredChannelUniqueName.records,
           "count"
         ),
       },

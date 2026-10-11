@@ -46,7 +46,7 @@ export const findChannelDiscussionFlairConfig = async ({
              coalesce(channel.discussionFlairRequired, false) AS flairRequired,
              collect(CASE WHEN flair IS NULL THEN null ELSE {
                id: flair.id,
-               channelUniqueName: flair.channelUniqueName,
+               channelUniqueName: channel.uniqueName,
                displayName: flair.displayName,
                color: flair.color,
                order: flair.order,

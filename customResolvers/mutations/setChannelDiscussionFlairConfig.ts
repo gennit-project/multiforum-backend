@@ -104,8 +104,7 @@ export const setChannelDiscussionFlairConfig = ({
               MATCH (channel:Channel {uniqueName: $channelUniqueName})
               UNWIND $flairs AS flairInput
               MATCH (channel)-[:HAS_DISCUSSION_FLAIR]->(flair:DiscussionFlair {
-                id: flairInput.id,
-                channelUniqueName: $channelUniqueName
+                id: flairInput.id
               })
               SET flair.displayName = flairInput.displayName,
                   flair.color = flairInput.color,
@@ -126,7 +125,6 @@ export const setChannelDiscussionFlairConfig = ({
               UNWIND $flairs AS flairInput
               CREATE (flair:DiscussionFlair {
                 id: flairInput.id,
-                channelUniqueName: $channelUniqueName,
                 displayName: flairInput.displayName,
                 color: flairInput.color,
                 order: flairInput.order,

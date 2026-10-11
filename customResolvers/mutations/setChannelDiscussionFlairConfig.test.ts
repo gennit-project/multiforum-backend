@@ -159,6 +159,8 @@ test("updates, creates, and archives omitted flairs atomically", async () => {
       },
     ],
   });
+  assert.doesNotMatch(writeCalls[1].query, /flair\.channelUniqueName/);
+  assert.doesNotMatch(writeCalls[2].query, /channelUniqueName:\s*\$channelUniqueName/);
   assert.equal(closed, true);
 });
 
