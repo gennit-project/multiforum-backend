@@ -1,6 +1,7 @@
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { EmailModel } from "../../ogm_types.js";
 import type { GraphQLContext, GraphQLRequest, Ogm, UserDataOnContext } from "../../types/context.js";
+import type { Driver } from "neo4j-driver";
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import jwt from "jsonwebtoken";
@@ -130,9 +131,81 @@ export const getUserFromEmail = async (
   }
 };
 
+type PersistedRequestUser = {
+  username: string;
+  dateOfBirth: string | null;
+  modProfileName: string | null;
+};
+
+const normalizeDate = (value: unknown): string | null => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string") return value;
+  return String(value);
+};
+
+/**
+ * Load all private identity data needed by permission and age-policy checks in
+ * one round trip. A raw query is intentional: `User.dateOfBirth` is excluded
+ * from every generated GraphQL/OGM read surface so it cannot leak to clients.
+ */
+export const getPersistedRequestUser = async ({
+  driver,
+  email,
+  username,
+}: {
+  driver: Driver;
+  email: string | null;
+  username?: string | null;
+}): Promise<PersistedRequestUser | null> => {
+  const bootstrapUsername =
+    email === process.env.CYPRESS_ADMIN_TEST_EMAIL
+      ? process.env.CYPRESS_ADMIN_TEST_USERNAME
+      : null;
+  const lookupUsername = username || bootstrapUsername || null;
+  if (!lookupUsername && !email) return null;
+
+  // Some internal/direct consumers provide an OGM and a scoped driver rather
+  // than the full application driver. Keep those consumers on the compatible
+  // OGM path below; normal HTTP GraphQL contexts take the consolidated query.
+  if (typeof driver.executeQuery !== "function") return null;
+
+  const session = driver.session();
+  try {
+    const result = await session.run(
+      lookupUsername
+        ? `MATCH (user:User {username: $username})
+           OPTIONAL MATCH (user)-[:MODERATION_PROFILE]->(profile:ModerationProfile)
+           RETURN user.username AS username,
+                  toString(user.dateOfBirth) AS dateOfBirth,
+                  profile.displayName AS modProfileName
+           LIMIT 1`
+        : `MATCH (:Email {address: $email})-[:HAS_EMAIL]->(user:User)
+           OPTIONAL MATCH (user)-[:MODERATION_PROFILE]->(profile:ModerationProfile)
+           RETURN user.username AS username,
+                  toString(user.dateOfBirth) AS dateOfBirth,
+                  profile.displayName AS modProfileName
+           LIMIT 1`,
+      { email, username: lookupUsername }
+    );
+    const record = result.records[0];
+    if (!record) return null;
+    return {
+      username: record.get("username"),
+      dateOfBirth: normalizeDate(record.get("dateOfBirth")),
+      modProfileName: record.get("modProfileName") ?? null,
+    };
+  } catch (error) {
+    logger.error("Error fetching request user from database:", error);
+    return null;
+  } finally {
+    await session.close();
+  }
+};
+
 
 
 export type AuthContextForUserLookup = {
+  driver: Driver;
   ogm: Ogm;
   req?: GraphQLRequest;
   jwtError?: Error;
@@ -159,8 +232,8 @@ export const setUserDataOnContext = async (
 
   // Identity is stable for the lifetime of a single request. graphql-shield
   // invokes this once per rule, and ~40 mutation resolvers call it again
-  // directly, so an authenticated request would otherwise re-run
-  // getUserFromEmail + getModProfileNameFromUsername (2 DB queries) many times.
+  // directly, so an authenticated request would otherwise re-run its identity
+  // query many times.
   // Every caller assigns the result back to `context.user`, so once a username
   // has been resolved we can safely reuse it for the rest of the request.
   const existingUser = context.user;
@@ -168,7 +241,7 @@ export const setUserDataOnContext = async (
     return existingUser;
   }
 
-  const { ogm, req } = context;
+  const { req } = context;
   const token = req?.headers?.authorization?.replace("Bearer ", "");
 
   if (!token) {
@@ -177,6 +250,7 @@ export const setUserDataOnContext = async (
       email: null,
       email_verified: false,
       data: null,
+      dateOfBirth: null,
     };
   }
 
@@ -185,6 +259,7 @@ export const setUserDataOnContext = async (
   let decoded: any;
   let username: string | null | undefined = null;
   let modProfileName: string | null | undefined = null;
+  let dateOfBirth: string | null | undefined;
   const mockAuthEnabled = isMockAuthEnabled();
   const authProvider = mockAuthEnabled ? null : getAuthenticationProvider();
 
@@ -195,13 +270,6 @@ export const setUserDataOnContext = async (
       username = mockPayload.username;
       emailVerified = true;
 
-      if (!username && email) {
-        username = await getUserFromEmail(email, ogm.model("Email"));
-      }
-
-      if (username) {
-        modProfileName = await getModProfileNameFromUsername(username, ogm);
-      }
     }
 
     if (!username && !email && authProvider === "local-dev") {
@@ -209,10 +277,6 @@ export const setUserDataOnContext = async (
         const localIdentity = verifyLocalDevToken(token);
         email = localIdentity.email;
         emailVerified = true;
-        username = await getUserFromEmail(email, ogm.model("Email"));
-        if (username) {
-          modProfileName = await getModProfileNameFromUsername(username, ogm);
-        }
       } catch (error) {
         const isExpired =
           error instanceof Error && error.name === "TokenExpiredError";
@@ -234,10 +298,6 @@ export const setUserDataOnContext = async (
         const oidcIdentity = await oidcTokenVerifier(token);
         email = oidcIdentity.email;
         emailVerified = true;
-        username = await getUserFromEmail(email, ogm.model("Email"));
-        if (username) {
-          modProfileName = await getModProfileNameFromUsername(username, ogm);
-        }
       } catch (error) {
         const isExpired =
           error instanceof Error && error.name === "TokenExpiredError";
@@ -357,12 +417,27 @@ export const setUserDataOnContext = async (
         logger.error("Token audience is unrecognized.");
       }
 
-      // Get the username from the email by calling getUserFromEmail
-      if (email) {
-        username = await getUserFromEmail(email, ogm.model("Email"));
+    }
+  }
+
+  if (username || email) {
+    if (typeof context.driver?.executeQuery === "function") {
+      const persistedUser = await getPersistedRequestUser({
+        driver: context.driver,
+        email,
+        username,
+      });
+      username = persistedUser?.username || username;
+      modProfileName = persistedUser?.modProfileName;
+      dateOfBirth = persistedUser?.dateOfBirth ?? null;
+    } else {
+      // Compatibility for internal consumers without the full app driver.
+      // HTTP GraphQL contexts always carry a real driver and use one query.
+      if (!username && email) {
+        username = await getUserFromEmail(email, context.ogm.model("Email"));
       }
       if (username) {
-        modProfileName = await getModProfileNameFromUsername(username, ogm);
+        modProfileName = await getModProfileNameFromUsername(username, context.ogm);
       }
     }
   }
@@ -374,6 +449,7 @@ export const setUserDataOnContext = async (
     data: {
       ModerationProfile: modProfileName ? { displayName: modProfileName } : null,
     },
+    ...(dateOfBirth !== undefined ? { dateOfBirth } : {}),
   };
 };
 

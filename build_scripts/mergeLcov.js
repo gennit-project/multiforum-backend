@@ -1,7 +1,7 @@
 // Merge multiple lcov.info reports into one by unioning per-file coverage.
 //
 // Why this exists: CI produces coverage in several pieces (the unit suite, a
-// source-mapped startup-provisioning supplement, and N integration shards).
+// source-mapped supplements, and N integration shards).
 // Uploading those pieces to Codecov separately and letting Codecov stitch them
 // together under flags loses real coverage — a line covered by one shard but
 // "not covered" (0) in the others does not reliably come out as covered in

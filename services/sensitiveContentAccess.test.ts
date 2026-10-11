@@ -49,6 +49,19 @@ const contextFor = (username: string | null): GraphQLContext => ({
     : undefined,
 } as GraphQLContext);
 
+const resolvedContextFor = (
+  username: string,
+  dateOfBirth: string | null
+): GraphQLContext => ({
+  user: {
+    username,
+    email: null,
+    email_verified: true,
+    data: null,
+    dateOfBirth,
+  },
+} as GraphQLContext);
+
 const now = new Date("2026-09-08T12:00:00.000Z");
 
 test("allows all callers without reading birthdays when the gate is disabled", async () => {
@@ -125,6 +138,32 @@ test("allows an authenticated caller who meets the sensitive-content age", async
     now,
     serverName: "test",
   }), true);
+});
+
+test("uses the birthday already resolved with identity without another DB call", async () => {
+  const { driver, counts } = createDriver("2015-01-01");
+
+  assert.equal(await mayAccessSensitiveContent({
+    context: resolvedContextFor("alice", "2000-01-01"),
+    driver,
+    ServerConfig: policyModel(true),
+    now,
+    serverName: "test",
+  }), true);
+  assert.deepEqual(counts(), { sessionCount: 0, closeCount: 0 });
+});
+
+test("treats a resolved missing birthday as ineligible without another DB call", async () => {
+  const { driver, counts } = createDriver("2000-01-01");
+
+  assert.equal(await mayAccessSensitiveContent({
+    context: resolvedContextFor("alice", null),
+    driver,
+    ServerConfig: policyModel(true),
+    now,
+    serverName: "test",
+  }), false);
+  assert.deepEqual(counts(), { sessionCount: 0, closeCount: 0 });
 });
 
 test("caches the decision on the request context", async () => {

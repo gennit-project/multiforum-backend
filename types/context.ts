@@ -39,6 +39,13 @@ export type UserDataOnContext = {
   email: string | null;
   email_verified: boolean;
   data: UserContextData | null;
+  /**
+   * Private, request-scoped age-attestation data used only by the server's
+   * sensitive-content policy. This value must never be returned to clients.
+   * `undefined` means an older/pre-seeded context still needs a DB lookup;
+   * `null` means identity resolution confirmed that no birthday is stored.
+   */
+  dateOfBirth?: string | null;
 };
 
 /**

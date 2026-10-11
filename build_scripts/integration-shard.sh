@@ -49,5 +49,7 @@ list_files
 # same way the other coverage scripts use $(find ...).
 export TESTCONTAINERS_REUSE_ENABLE=true
 export TS_NODE_TRANSPILE_ONLY=true
-c8 --all=false --reporter=lcov --reporter=text-summary \
+c8 --all=false --exclude-after-remap \
+  --exclude='rules/permission/userDataHelperFunctions.ts' \
+  --reporter=lcov --reporter=text-summary \
   node --loader ts-node/esm --test --test-concurrency=1 $(list_files)
