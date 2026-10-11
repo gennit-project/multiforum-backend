@@ -1,11 +1,40 @@
 import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
+import { Kind, type DocumentNode } from "graphql";
+import typeDefs from "../typeDefs.js";
 import { coreSchemaConstraints } from "./coreSchemaConstraints.js";
 
-export const requiredConstraintNames = coreSchemaConstraints.map(
-  ({ name }) => name
-);
+export const getLibraryManagedConstraintNames = (
+  definitions: DocumentNode = typeDefs
+): string[] => definitions.definitions.flatMap((definition) => {
+  if (
+    definition.kind !== Kind.OBJECT_TYPE_DEFINITION &&
+    definition.kind !== Kind.OBJECT_TYPE_EXTENSION
+  ) {
+    return [];
+  }
+  return definition.fields?.flatMap((field) => {
+    const unique = field.directives?.find(
+      (directive) => directive.name.value === "unique"
+    );
+    if (!unique) return [];
+    const configuredName = unique.arguments?.find(
+      (argument) => argument.name.value === "constraintName"
+    )?.value;
+    return configuredName?.kind === Kind.STRING
+      ? [configuredName.value]
+      : [`${definition.name.value}_${field.name.value}`];
+  }) ?? [];
+});
+
+export const requiredConstraintNames = [...new Set([
+  ...coreSchemaConstraints.map(({ name }) => name),
+  ...getLibraryManagedConstraintNames(),
+])];
 
 export const requiredOnlineIndexNames = [
+  // Uniqueness and node-key constraints own backing RANGE indexes with the
+  // same name. Requiring them here also verifies that each is ONLINE.
+  ...requiredConstraintNames,
   "discussion_channel_by_channel",
   "channelFulltext",
   "discussionFulltext",
