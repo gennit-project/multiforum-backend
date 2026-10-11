@@ -254,6 +254,90 @@ test("publicCollectionsContaining returns only PUBLIC collections with the image
   assert.equal(result[0].visibility, "PUBLIC");
 });
 
+const seedMixedAgeGateCollection = () =>
+  run(
+    `CREATE (owner:User { username: 'owner', createdAt: datetime() })
+     CREATE (channel:Channel { uniqueName: 'downloads', displayName: 'Downloads' })
+     CREATE (collection:Collection {
+       id: 'coll-downloads',
+       name: 'Downloads',
+       visibility: 'PUBLIC',
+       collectionType: 'DOWNLOADS',
+       itemOrder: [],
+       createdAt: datetime(),
+       updatedAt: datetime()
+     })
+     CREATE (ordinary:Discussion {
+       id: 'download-ordinary',
+       title: 'Ordinary download',
+       createdAt: datetime(),
+       hasDownload: true
+     })
+     CREATE (sensitive:Discussion {
+       id: 'download-sensitive',
+       title: 'Sensitive download',
+       createdAt: datetime(),
+       hasDownload: true,
+       hasSensitiveContent: true
+     })
+     CREATE (album:Album { id: 'ordinary-album', imageOrder: [] })
+     CREATE (ordinaryImage:Image { id: 'image-ordinary', scanStatus: 'PENDING' })
+     CREATE (sensitiveImage:Image {
+       id: 'image-sensitive',
+       scanStatus: 'PENDING',
+       hasSensitiveContent: true
+     })
+     CREATE (collection)-[:CREATED_BY]->(owner)
+     CREATE (collection)-[:CONTAINS_CHANNEL]->(channel)
+     CREATE (collection)-[:CONTAINS_DOWNLOAD]->(ordinary)
+     CREATE (collection)-[:CONTAINS_DOWNLOAD]->(sensitive)
+     CREATE (owner)-[:POSTED_DISCUSSION]->(ordinary)
+     CREATE (owner)-[:POSTED_DISCUSSION]->(sensitive)
+     CREATE (ordinary)-[:HAS_ALBUM]->(album)
+     CREATE (album)-[:HAS_IMAGE]->(ordinaryImage)
+     CREATE (album)-[:HAS_IMAGE]->(sensitiveImage)`
+  );
+
+const getMixedAgeGateCollection = (mayAccessSensitiveContent: boolean) =>
+  env.resolvers.Query.publicCollectionsContaining(
+    null,
+    { itemType: "CHANNEL", itemId: "downloads" },
+    { mayAccessSensitiveContent }
+  );
+
+test("publicCollectionsContaining hides sensitive downloads and images from ineligible viewers", async () => {
+  await seedMixedAgeGateCollection();
+
+  const [collection] = await getMixedAgeGateCollection(false);
+
+  assert.deepEqual(
+    collection.Downloads.map((download: { id: string }) => download.id),
+    ["download-ordinary"]
+  );
+  assert.deepEqual(
+    collection.Downloads[0].Album.Images.map((image: { id: string }) => image.id),
+    ["image-ordinary"]
+  );
+});
+
+test("publicCollectionsContaining preserves sensitive downloads and images for eligible viewers", async () => {
+  await seedMixedAgeGateCollection();
+
+  const [collection] = await getMixedAgeGateCollection(true);
+
+  assert.deepEqual(
+    collection.Downloads.map((download: { id: string }) => download.id).sort(),
+    ["download-ordinary", "download-sensitive"]
+  );
+  const ordinary = collection.Downloads.find(
+    (download: { id: string }) => download.id === "download-ordinary"
+  );
+  assert.deepEqual(
+    ordinary.Album.Images.map((image: { id: string }) => image.id).sort(),
+    ["image-ordinary", "image-sensitive"]
+  );
+});
+
 test("publicCollectionsContaining throws on an unsupported itemType", async () => {
   await assert.rejects(
     env.resolvers.Query.publicCollectionsContaining(null, {

@@ -70,6 +70,7 @@ large representative fixture.
 | API cost controls            | [#297](https://github.com/gennit-project/multiforum-backend/pull/297), [#301](https://github.com/gennit-project/multiforum-backend/pull/301)                                                                                                                                                                                                                                                                                             | List limits and calibrated operation complexity                                |
 | Indexed content search       | [#298](https://github.com/gennit-project/multiforum-backend/pull/298)                                                                                                                                                                                                                                                                                                                                                                    | Full-text candidate lookup replaces regex label scans                          |
 | Primary-feed cursors         | [#303](https://github.com/gennit-project/multiforum-backend/pull/303)                                                                                                                                                                                                                                                                                                                                                                    | Stable new/top/hot keyset pagination                                           |
+| Materialized age-gate reads  | [#308](https://github.com/gennit-project/multiforum-backend/issues/308)                                                                                                                                                                                                                                                                                                                                                                   | Public collection filters read stored source flags directly                    |
 
 Detailed before/after evidence is in
 [neo4j-performance-history.md](./neo4j-performance-history.md).
@@ -86,12 +87,6 @@ operators.
 
 Until this exists, a query can regress in scaling behavior while remaining fast
 on today's small graph.
-
-### Finish materialized age-gate reads
-
-[Issue #308](https://github.com/gennit-project/multiforum-backend/issues/308)
-tracks `publicCollectionsContaining`, which still invokes computed
-`ageGateSensitive` traversals instead of the stored flag.
 
 ### Bookmark propagation before reader routing
 

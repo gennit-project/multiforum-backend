@@ -280,6 +280,32 @@ If a filing cabinet contains 10,000 cards, page 100 with offset pagination says
 after this exact card.” The latter stays approximately page-sized even deep in
 the list.
 
+## Phase 10: finish materialized age-gate reads
+
+`publicCollectionsContaining` used the computed `ageGateSensitive` fields when
+filtering downloads and their album images. These two source types already
+store the authoritative flag as `hasSensitiveContent`, so the computed fields
+added nested Cypher subqueries around simple property checks.
+
+The resolver now filters the stored source property directly. It treats both
+`false` and a missing property as clear, preserving the age-gate model's
+existing default-clear behavior.
+
+On a disposable Neo4j 5 Community fixture with one matching public collection,
+100 downloads, and 1,000 images, the exact OGM-generated query was explained
+and profiled twice; the second run supplied the warm measurements below:
+
+| Metric        | Before | After | Change |
+| ------------- | -----: | ----: | -----: |
+| Database hits |    482 |   472 |    -2% |
+| Operator rows |    716 |   441 |   -38% |
+
+Both plans retained the expected root `Collection` label scan because the
+operation lists matching collections. Neither plan contained an all-node scan
+or Cartesian product, and the updated nested filters introduced no scan. The
+generated Cypher shrank from 4,149 to 3,622 characters and no longer contains
+the two per-item `ageGateSensitive` subqueries.
+
 ## The patterns that mattered most
 
 | Pattern             | Old behavior                        | Improved behavior                        |

@@ -77,10 +77,18 @@ const selectionSetTemplate = `
 }
 `;
 
-const getSelectionSet = (canViewSensitiveContent: boolean) =>
+const CLEAR_SOURCE_CONTENT_FILTER = "{ OR: [{ hasSensitiveContent: false }, { hasSensitiveContent: null }] }";
+
+export const getPublicCollectionSelectionSet = (canViewSensitiveContent: boolean) =>
   selectionSetTemplate
-    .replace("__DISCUSSION_AGE_FILTER__", canViewSensitiveContent ? "" : ", where: { ageGateSensitive: false }")
-    .replace("__IMAGE_AGE_FILTER__", canViewSensitiveContent ? "" : "(where: { ageGateSensitive: false })");
+    .replace(
+      "__DISCUSSION_AGE_FILTER__",
+      canViewSensitiveContent ? "" : `, where: ${CLEAR_SOURCE_CONTENT_FILTER}`
+    )
+    .replace(
+      "__IMAGE_AGE_FILTER__",
+      canViewSensitiveContent ? "" : `(where: ${CLEAR_SOURCE_CONTENT_FILTER})`
+    );
 
 const publicCollectionsContaining = ({ driver, ogm, ServerConfig }: Input) => {
   return async (_parent: unknown, args: { itemId: string; itemType: string }, context: GraphQLContext) => {
@@ -100,11 +108,11 @@ const publicCollectionsContaining = ({ driver, ogm, ServerConfig }: Input) => {
       ? { discussionId: itemId }
       : itemType === "DOWNLOAD"
         ? { downloadableFileId: itemId }
-      : itemType === "COMMENT"
-        ? { commentId: itemId }
-        : itemType === "IMAGE"
-          ? { imageId: itemId }
-          : null;
+        : itemType === "COMMENT"
+          ? { commentId: itemId }
+          : itemType === "IMAGE"
+            ? { imageId: itemId }
+            : null;
     if (target && !canViewSensitiveContent && await isSensitiveContentTarget(driver, target)) {
       return [];
     }
@@ -127,7 +135,7 @@ const publicCollectionsContaining = ({ driver, ogm, ServerConfig }: Input) => {
           ...where,
         },
         options: { sort: [{ createdAt: SortDirection.Desc }] },
-        selectionSet: getSelectionSet(canViewSensitiveContent),
+        selectionSet: getPublicCollectionSelectionSet(canViewSensitiveContent),
       });
 
       return collections;
