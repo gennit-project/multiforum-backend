@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import type { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
 import { issueLocalDevToken } from "../../services/localDevAuth.js";
-import { setUserDataOnContext } from "./userDataHelperFunctions.js";
+import {
+  getPersistedRequestUser,
+  setUserDataOnContext,
+} from "./userDataHelperFunctions.js";
 import type { AuthContextForUserLookup } from "./userDataHelperFunctions.js";
 
 // Identity is stable within a request. setUserDataOnContext is invoked once per
@@ -21,7 +24,7 @@ const resolvedUser = {
 
 const createIdentityDriver = (identity: {
   username: string;
-  dateOfBirth?: string | null;
+  dateOfBirth?: unknown;
   modProfileName?: string | null;
 }) => {
   let sessionCalls = 0;
@@ -59,6 +62,76 @@ const createIdentityDriver = (identity: {
     query: () => query,
   };
 };
+
+test("returns null and closes the session when no persisted user exists", async () => {
+  let closeCalls = 0;
+  const driver = {
+    executeQuery() {},
+    session() {
+      return {
+        async run() {
+          return { records: [] };
+        },
+        async close() {
+          closeCalls += 1;
+        },
+      };
+    },
+  } as unknown as Driver;
+
+  const result = await getPersistedRequestUser({
+    driver,
+    email: "missing@example.test",
+  });
+
+  assert.equal(result, null);
+  assert.equal(closeCalls, 1);
+});
+
+test("normalizes Neo4j date values returned by the identity query", async () => {
+  const identity = createIdentityDriver({
+    username: "alice",
+    dateOfBirth: { toString: () => "1991-04-05" },
+  });
+
+  const result = await getPersistedRequestUser({
+    driver: identity.driver,
+    email: null,
+    username: "alice",
+  });
+
+  assert.deepEqual(result, {
+    username: "alice",
+    dateOfBirth: "1991-04-05",
+    modProfileName: null,
+  });
+  assert.equal(identity.calls().closeCalls, 1);
+});
+
+test("returns null and closes the session when the identity query fails", async () => {
+  let closeCalls = 0;
+  const driver = {
+    executeQuery() {},
+    session() {
+      return {
+        async run() {
+          throw new Error("database unavailable");
+        },
+        async close() {
+          closeCalls += 1;
+        },
+      };
+    },
+  } as unknown as Driver;
+
+  const result = await getPersistedRequestUser({
+    driver,
+    email: "alice@example.test",
+  });
+
+  assert.equal(result, null);
+  assert.equal(closeCalls, 1);
+});
 
 // A context whose `user` is already populated, with an ogm/model that throws if
 // touched — so any DB access from setUserDataOnContext would fail the test.
