@@ -14,6 +14,8 @@ test("schema audit includes library-managed unique constraints and their indexes
   const managed = getLibraryManagedConstraintNames();
   assert.equal(managed.includes("User_username"), true);
   assert.equal(managed.includes("Discussion_id"), true);
+  assert.equal(managed.includes("plugin_pipeline_run_pipeline_id"), true);
+  assert.equal(managed.includes("PluginPipelineRun_pipelineId"), false);
   assert.equal(requiredConstraintNames.includes("discussion_channel_unique"), true);
   assert.equal(
     requiredConstraintNames.every((name) => requiredOnlineIndexNames.includes(name)),
