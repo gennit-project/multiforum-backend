@@ -2,6 +2,7 @@ import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
 import { Kind, type DocumentNode } from "graphql";
 import typeDefs from "../typeDefs.js";
 import { coreSchemaConstraints } from "./coreSchemaConstraints.js";
+import { MAX_REPLY_DEPTH } from "./replyAncestry.js";
 
 export const getLibraryManagedConstraintNames = (
   definitions: DocumentNode = typeDefs
@@ -57,6 +58,7 @@ export type IntegrityCounts = {
   eventChannelsWithMismatchedIdentity: number;
   commentsWithMultipleParents: number;
   commentsInReplyCycles: number;
+  commentsOverMaxReplyDepth: number;
   invalidChannelIssueCounters: number;
   invalidServerIssueCounters: number;
   discussionFlairsWithInvalidOwners: number;
@@ -149,7 +151,11 @@ export async function runNeo4jSchemaAudit(
       RETURN count(comment) AS count
     `);
     const replyCycles = await session.run(`
-      MATCH (comment:Comment)-[:IS_REPLY_TO*1..100]->(comment)
+      MATCH (comment:Comment)-[:IS_REPLY_TO*1..${MAX_REPLY_DEPTH + 1}]->(comment)
+      RETURN count(DISTINCT comment) AS count
+    `);
+    const overDepthReplies = await session.run(`
+      MATCH (comment:Comment)-[:IS_REPLY_TO*${MAX_REPLY_DEPTH + 1}]->(:Comment)
       RETURN count(DISTINCT comment) AS count
     `);
     const channelCounterDuplicates = await session.run(`
@@ -197,6 +203,10 @@ export async function runNeo4jSchemaAudit(
         ),
         commentsWithMultipleParents: firstCount(multipleParents.records, "count"),
         commentsInReplyCycles: firstCount(replyCycles.records, "count"),
+        commentsOverMaxReplyDepth: firstCount(
+          overDepthReplies.records,
+          "count"
+        ),
         invalidChannelIssueCounters: firstCount(
           channelCounterDuplicates.records,
           "count"

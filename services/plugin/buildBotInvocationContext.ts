@@ -1,3 +1,5 @@
+import { MAX_REPLY_DEPTH } from '../replyAncestry.js'
+
 type BotChannelSnapshot = {
   uniqueName?: string | null
   displayName?: string | null
@@ -89,8 +91,14 @@ export const collectParentCommentThread = async ({
 }): Promise<BotThreadCommentContext[]> => {
   const parentComments: BotThreadCommentContext[] = []
   let currentParentCommentId = parentCommentId || null
+  const visited = new Set<string>()
 
-  while (currentParentCommentId) {
+  while (
+    currentParentCommentId &&
+    parentComments.length < MAX_REPLY_DEPTH &&
+    !visited.has(currentParentCommentId)
+  ) {
+    visited.add(currentParentCommentId)
     const [parentComment] = await Comment.find({
       where: { id: currentParentCommentId },
       selectionSet: `{

@@ -26,7 +26,7 @@ export async function isSensitiveContentTarget(
           WHERE coalesce(discussion.hasSensitiveContent, false) = true
         }
         OR EXISTS {
-          MATCH (comment:Comment {id: $commentId})-[:IS_REPLY_TO*0..]->(threadComment:Comment)
+          MATCH (comment:Comment {id: $commentId})-[:IS_REPLY_TO*0..32]->(threadComment:Comment)
             <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
           WHERE coalesce(discussion.hasSensitiveContent, false) = true
         }
@@ -36,7 +36,7 @@ export async function isSensitiveContentTarget(
         }
         OR EXISTS {
           MATCH (:Comment {id: $commentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)
-            -[:IS_REPLY_TO*0..]->(threadComment:Comment)
+            -[:IS_REPLY_TO*0..32]->(threadComment:Comment)
             <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
           WHERE coalesce(discussion.hasSensitiveContent, false) = true
         }
@@ -54,7 +54,7 @@ export async function isSensitiveContentTarget(
             MATCH (discussion:Discussion {id: issue.relatedDiscussionId})
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
           } OR EXISTS {
-            MATCH (comment:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..]->(threadComment:Comment)
+            MATCH (comment:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(threadComment:Comment)
               <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
           } OR EXISTS {
@@ -62,7 +62,7 @@ export async function isSensitiveContentTarget(
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
           } OR EXISTS {
             MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)
-              -[:IS_REPLY_TO*0..]->(threadComment:Comment)
+              -[:IS_REPLY_TO*0..32]->(threadComment:Comment)
               <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
           } OR EXISTS {

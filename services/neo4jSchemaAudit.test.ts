@@ -30,6 +30,7 @@ const cleanIntegrity: IntegrityCounts = {
   eventChannelsWithMismatchedIdentity: 0,
   commentsWithMultipleParents: 0,
   commentsInReplyCycles: 0,
+  commentsOverMaxReplyDepth: 0,
   invalidChannelIssueCounters: 0,
   invalidServerIssueCounters: 0,
   discussionFlairsWithInvalidOwners: 0,
@@ -104,6 +105,6 @@ test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", a
   const report = await runNeo4jSchemaAudit(driver);
 
   assert.equal(report.ok, true);
-  assert.equal(queries.length, 12);
+  assert.equal(queries.length, 13);
   assert.equal(closed, true);
 });

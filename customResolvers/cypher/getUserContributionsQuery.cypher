@@ -9,9 +9,9 @@ CALL {
   WHERE date(datetime(comment.createdAt)) >= startDate
     AND date(datetime(comment.createdAt)) <= endDate
     AND ($mayAccessSensitiveContent OR (
-      NOT EXISTS { MATCH (comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+      NOT EXISTS { MATCH (comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
       AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-      AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+      AND NOT EXISTS { MATCH (comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
     ))
 
   CALL {
