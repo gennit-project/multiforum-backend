@@ -48,10 +48,23 @@ beforeEach(async () => {
   await run(
     `CREATE (:ServerConfig { serverName: 'E2ETestServer' })
      CREATE (ch:Channel { uniqueName: $channel, displayName: 'Cats', locked: false, createdAt: datetime() })
-     CREATE (modRole:ModChannelRole { canHideComment: true, canEditDiscussions: true })
-     CREATE (userRole:ChannelRole { canCreateComment: true })
+     CREATE (modRole:ModChannelRole {
+       id: 'cats-default-mod',
+       name: 'Default Moderator',
+       channelUniqueName: $channel,
+       canHideComment: true,
+       canEditDiscussions: true
+     })
+     CREATE (userRole:ChannelRole {
+       id: 'cats-default-user',
+       name: 'Default User',
+       channelUniqueName: $channel,
+       canCreateComment: true
+     })
      CREATE (ch)-[:HAS_DEFAULT_MOD_ROLE]->(modRole)
      CREATE (ch)-[:HAS_DEFAULT_CHANNEL_ROLE]->(userRole)
+     CREATE (ch)-[:OWNS_MOD_CHANNEL_ROLE]->(modRole)
+     CREATE (ch)-[:OWNS_CHANNEL_ROLE]->(userRole)
      CREATE (u:User { username: $modUser, createdAt: datetime() })
      CREATE (mp:ModerationProfile { displayName: $modProfile })
      CREATE (u)-[:MODERATION_PROFILE]->(mp)`,
