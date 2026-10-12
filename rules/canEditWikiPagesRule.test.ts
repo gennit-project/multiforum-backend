@@ -19,6 +19,7 @@ type BuildOgmInput = {
   wikiPages?: Array<{
     id?: string;
     channelUniqueName: string;
+    Channel?: { uniqueName: string };
     locked?: boolean;
     OriginalAuthor?: { username: string };
     ChildPages?: Array<{ id: string }>;
@@ -90,19 +91,23 @@ const buildOgm = ({
     }
 
     if (name === "WikiPage") {
+      const pages = wikiPages.map((wikiPage) => ({
+        ...wikiPage,
+        Channel: wikiPage.Channel ?? { uniqueName: wikiPage.channelUniqueName },
+      }));
       return {
         find: async ({ where }: { where?: { id?: string; id_IN?: string[] } }) => {
           if (where?.id) {
-            return wikiPages.filter((wikiPage) => wikiPage.id === where.id);
+            return pages.filter((wikiPage) => wikiPage.id === where.id);
           }
 
           if (where?.id_IN?.length) {
-            return wikiPages.filter(
+            return pages.filter(
               (wikiPage) => wikiPage.id && where.id_IN?.includes(wikiPage.id)
             );
           }
 
-          return wikiPages;
+          return pages;
         },
       };
     }

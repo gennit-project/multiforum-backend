@@ -25,7 +25,7 @@ type ChannelLookup = {
 
 type WikiPageLookup = {
   id?: string | null;
-  channelUniqueName?: string | null;
+  Channel?: { uniqueName?: string | null } | null;
 };
 
 const validateArgs = (args: PinWikiPageArgs) => {
@@ -59,7 +59,7 @@ const getChannelAndWikiPage = async ({
       where: { id: args.wikiPageId },
       selectionSet: `{
         id
-        channelUniqueName
+        Channel { uniqueName }
       }`,
     }) as Promise<WikiPageLookup[]>,
   ]);
@@ -79,7 +79,7 @@ const getChannelAndWikiPage = async ({
     throw new GraphQLError("Wiki page not found.");
   }
 
-  if (wikiPage.channelUniqueName !== args.channelUniqueName) {
+  if (wikiPage.Channel?.uniqueName !== args.channelUniqueName) {
     throw new GraphQLError("Wiki page does not belong to this forum.");
   }
 };
@@ -120,8 +120,7 @@ export const pinWikiPageToChannel = ({
     try {
       await session.run(
         `
-        MATCH (channel:Channel { uniqueName: $channelUniqueName })
-        MATCH (wikiPage:WikiPage { id: $wikiPageId, channelUniqueName: $channelUniqueName })
+        MATCH (channel:Channel { uniqueName: $channelUniqueName })-[:OWNS_WIKI_PAGE]->(wikiPage:WikiPage { id: $wikiPageId })
         MERGE (channel)-[:PINNED_IN_CHANNEL]->(wikiPage)
         `,
         args
@@ -150,7 +149,8 @@ export const unpinWikiPageFromChannel = ({
     try {
       await session.run(
         `
-        MATCH (:Channel { uniqueName: $channelUniqueName })-[relationship:PINNED_IN_CHANNEL]->(:WikiPage { id: $wikiPageId, channelUniqueName: $channelUniqueName })
+        MATCH (:Channel { uniqueName: $channelUniqueName })-[:OWNS_WIKI_PAGE]->(wikiPage:WikiPage { id: $wikiPageId })
+        MATCH (:Channel { uniqueName: $channelUniqueName })-[relationship:PINNED_IN_CHANNEL]->(wikiPage)
         DELETE relationship
         `,
         args

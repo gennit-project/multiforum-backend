@@ -63,6 +63,9 @@ export type IntegrityCounts = {
   invalidServerIssueCounters: number;
   discussionFlairsWithInvalidOwners: number;
   discussionFlairsWithStoredChannelUniqueName: number;
+  wikiPagesWithInvalidOwners: number;
+  wikiPagesWithMismatchedOwners: number;
+  invalidWikiPageRoutes: number;
 };
 
 export type SchemaAuditSnapshot = {
@@ -180,6 +183,24 @@ export async function runNeo4jSchemaAudit(
       WHERE flair.channelUniqueName IS NOT NULL
       RETURN count(flair) AS count
     `);
+    const wikiPagesWithInvalidOwners = await session.run(`
+      MATCH (page:WikiPage)
+      WHERE count { (:Channel)-[:OWNS_WIKI_PAGE]->(page) } <> 1
+      RETURN count(page) AS count
+    `);
+    const wikiPagesWithMismatchedOwners = await session.run(`
+      MATCH (owner:Channel)-[:OWNS_WIKI_PAGE]->(page:WikiPage)
+      WHERE page.channelUniqueName IS NULL OR page.channelUniqueName <> owner.uniqueName
+      RETURN count(DISTINCT page) AS count
+    `);
+    const invalidWikiPageRoutes = await session.run(`
+      MATCH (page:WikiPage)
+      WITH page.channelUniqueName AS channelUniqueName,
+           page.slug AS slug,
+           count(*) AS copies
+      WHERE channelUniqueName IS NULL OR slug IS NULL OR copies > 1
+      RETURN coalesce(sum(copies), 0) AS count
+    `);
 
     return evaluateSchemaAudit({
       constraints: constraintsResult.records.map((record) => record.get("name")),
@@ -221,6 +242,18 @@ export async function runNeo4jSchemaAudit(
         ),
         discussionFlairsWithStoredChannelUniqueName: firstCount(
           discussionFlairsWithStoredChannelUniqueName.records,
+          "count"
+        ),
+        wikiPagesWithInvalidOwners: firstCount(
+          wikiPagesWithInvalidOwners.records,
+          "count"
+        ),
+        wikiPagesWithMismatchedOwners: firstCount(
+          wikiPagesWithMismatchedOwners.records,
+          "count"
+        ),
+        invalidWikiPageRoutes: firstCount(
+          invalidWikiPageRoutes.records,
           "count"
         ),
       },

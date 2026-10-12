@@ -135,7 +135,9 @@ test("handleCommentUpdateEvent records nothing when text is unchanged", async ()
 test("handleWikiPageUpdateEvent records title and body versions (with edit reason) for the version author", async () => {
   await run(
     `CREATE (carol:User { username: 'carol' })
-     CREATE (w:WikiPage { id: 'w1', title: 'New Title', body: 'New body', slug: 'page', createdAt: datetime() })
+     CREATE (ch:Channel { uniqueName: 'cats', createdAt: datetime() })
+     CREATE (w:WikiPage { id: 'w1', title: 'New Title', body: 'New body', slug: 'page', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (ch)-[:OWNS_WIKI_PAGE]->(w)
      CREATE (carol)-[:AUTHORED_VERSION]->(w)`
   );
 

@@ -32,8 +32,12 @@ beforeEach(async () => {
 
 test("getSiteWideWikiList returns all wiki pages with a total count", async () => {
   await run(
-    `CREATE (:WikiPage { id: 'w1', title: 'Alpha Guide', slug: 'alpha', body: 'aaa', channelUniqueName: 'cats', createdAt: datetime() })
-     CREATE (:WikiPage { id: 'w2', title: 'Beta Guide', slug: 'beta', body: 'bbb', channelUniqueName: 'dogs', createdAt: datetime() })`
+    `MERGE (cats:Channel { uniqueName: 'cats' })
+     MERGE (dogs:Channel { uniqueName: 'dogs' })
+     CREATE (w1:WikiPage { id: 'w1', title: 'Alpha Guide', slug: 'alpha', body: 'aaa', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (w2:WikiPage { id: 'w2', title: 'Beta Guide', slug: 'beta', body: 'bbb', channelUniqueName: 'dogs', createdAt: datetime() })
+     CREATE (cats)-[:OWNS_WIKI_PAGE]->(w1)
+     CREATE (dogs)-[:OWNS_WIKI_PAGE]->(w2)`
   );
 
   const result = await env.resolvers.Query.getSiteWideWikiList(null, {});
@@ -44,8 +48,12 @@ test("getSiteWideWikiList returns all wiki pages with a total count", async () =
 
 test("getSiteWideWikiList filters by search input", async () => {
   await run(
-    `CREATE (:WikiPage { id: 'w1', title: 'Alpha Guide', slug: 'alpha', body: 'aaa', channelUniqueName: 'cats', createdAt: datetime() })
-     CREATE (:WikiPage { id: 'w2', title: 'Beta Guide', slug: 'beta', body: 'bbb', channelUniqueName: 'dogs', createdAt: datetime() })`
+    `MERGE (cats:Channel { uniqueName: 'cats' })
+     MERGE (dogs:Channel { uniqueName: 'dogs' })
+     CREATE (w1:WikiPage { id: 'w1', title: 'Alpha Guide', slug: 'alpha', body: 'aaa', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (w2:WikiPage { id: 'w2', title: 'Beta Guide', slug: 'beta', body: 'bbb', channelUniqueName: 'dogs', createdAt: datetime() })
+     CREATE (cats)-[:OWNS_WIKI_PAGE]->(w1)
+     CREATE (dogs)-[:OWNS_WIKI_PAGE]->(w2)`
   );
 
   const result = await env.resolvers.Query.getSiteWideWikiList(null, {
@@ -59,8 +67,12 @@ test("getSiteWideWikiList filters by search input", async () => {
 test("getSiteWideWikiList returns featured wiki pages in configured order", async () => {
   await run(
     `CREATE (:ServerConfig { serverName: 'test-server', featuredWikiPageIds: ['w2', 'w1'] })
-     CREATE (:WikiPage { id: 'w1', title: 'Alpha Guide', slug: 'alpha', body: 'aaa', channelUniqueName: 'cats', createdAt: datetime() })
-     CREATE (:WikiPage { id: 'w2', title: 'Beta Guide', slug: 'beta', body: 'bbb', channelUniqueName: 'dogs', createdAt: datetime() })`
+     MERGE (cats:Channel { uniqueName: 'cats' })
+     MERGE (dogs:Channel { uniqueName: 'dogs' })
+     CREATE (w1:WikiPage { id: 'w1', title: 'Alpha Guide', slug: 'alpha', body: 'aaa', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (w2:WikiPage { id: 'w2', title: 'Beta Guide', slug: 'beta', body: 'bbb', channelUniqueName: 'dogs', createdAt: datetime() })
+     CREATE (cats)-[:OWNS_WIKI_PAGE]->(w1)
+     CREATE (dogs)-[:OWNS_WIKI_PAGE]->(w2)`
   );
 
   const result = await env.resolvers.Query.getSiteWideWikiList(null, {});

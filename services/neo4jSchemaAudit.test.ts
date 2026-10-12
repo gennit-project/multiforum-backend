@@ -35,6 +35,9 @@ const cleanIntegrity: IntegrityCounts = {
   invalidServerIssueCounters: 0,
   discussionFlairsWithInvalidOwners: 0,
   discussionFlairsWithStoredChannelUniqueName: 0,
+  wikiPagesWithInvalidOwners: 0,
+  wikiPagesWithMismatchedOwners: 0,
+  invalidWikiPageRoutes: 0,
 };
 
 test("schema audit passes a complete and consistent snapshot", () => {
@@ -105,6 +108,6 @@ test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", a
   const report = await runNeo4jSchemaAudit(driver);
 
   assert.equal(report.ok, true);
-  assert.equal(queries.length, 13);
+  assert.equal(queries.length, 16);
   assert.equal(closed, true);
 });

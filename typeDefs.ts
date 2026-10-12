@@ -333,8 +333,8 @@ const typeDefinitions = gql`
     Suspensions:        [Suspension!]!  @relationship(type: "SUSPENDED_AS_USER", direction: OUT)
 
     # wiki authorship
-    AuthoredWikiPages:          [WikiPage!]!   @relationship(type: "AUTHORED_VERSION", direction: OUT)
-    OriginalWikiPages:          [WikiPage!]!   @relationship(type: "AUTHORED_WIKI_PAGE", direction: OUT)
+    AuthoredWikiPages:          [WikiPage!]!   @relationship(type: "AUTHORED_VERSION", direction: OUT) @settable(onCreate: false, onUpdate: false)
+    OriginalWikiPages:          [WikiPage!]!   @relationship(type: "AUTHORED_WIKI_PAGE", direction: OUT) @settable(onCreate: false, onUpdate: false)
     AuthoredWikiPageVersions:   [TextVersion!]! @relationship(type: "AUTHORED_VERSION", direction: OUT)
 
     # roles & perms
@@ -460,8 +460,11 @@ const typeDefinitions = gql`
     title: String!
     body: String
     editReason: String
-    slug: String!
-    channelUniqueName: String
+    # Route identity is intentionally denormalized for the composite
+    # (channelUniqueName, slug) constraint. Both values are immutable after
+    # creation; channel authorization comes from Channel below.
+    slug: String! @settable(onCreate: true, onUpdate: false)
+    channelUniqueName: String! @settable(onCreate: true, onUpdate: false)
     locked: Boolean @default(value: false)
     lockedAt: DateTime
     lockReason: String
@@ -469,6 +472,9 @@ const typeDefinitions = gql`
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     OriginalAuthor: User @relationship(type: "AUTHORED_WIKI_PAGE", direction: IN)
+    Channel: Channel!
+      @relationship(type: "OWNS_WIKI_PAGE", direction: IN, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
     VersionAuthor: User @relationship(type: "AUTHORED_VERSION", direction: IN)
     PastVersions: [TextVersion!]!
       @relationship(type: "HAS_VERSION", direction: OUT)
@@ -663,7 +669,7 @@ const typeDefinitions = gql`
 
     # Pinned content
     PinnedDiscussionChannels: [DiscussionChannel!]! @relationship(type: "PINNED_IN_CHANNEL", direction: OUT)
-    PinnedWikiPages: [WikiPage!]! @relationship(type: "PINNED_IN_CHANNEL", direction: OUT)
+    PinnedWikiPages: [WikiPage!]! @relationship(type: "PINNED_IN_CHANNEL", direction: OUT) @settable(onCreate: false, onUpdate: false)
 
     # Collection support
     InCollections: [Collection!]! @relationship(type: "CONTAINS_CHANNEL", direction: IN)
@@ -727,7 +733,12 @@ const typeDefinitions = gql`
     SuspendedMods:  [Suspension!]!  @relationship(type: "SUSPENDED_AS_MOD", direction: OUT)
 
     # wiki + filters
-    WikiHomePage:  WikiPage   @relationship(type: "HAS_WIKI_HOME_PAGE", direction: OUT)
+    WikiHomePage: WikiPage
+      @relationship(type: "HAS_WIKI_HOME_PAGE", direction: OUT)
+      @settable(onCreate: false, onUpdate: true)
+    WikiPages: [WikiPage!]!
+      @relationship(type: "OWNS_WIKI_PAGE", direction: OUT)
+      @settable(onCreate: false, onUpdate: false)
     FilterGroups: [FilterGroup!]! @relationship(type: "HAS_FILTER_GROUP", direction: OUT)
     DiscussionFlairs: [DiscussionFlair!]!
       @relationship(type: "HAS_DISCUSSION_FLAIR", direction: OUT)

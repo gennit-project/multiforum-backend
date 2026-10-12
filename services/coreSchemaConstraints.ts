@@ -64,6 +64,13 @@ export const coreSchemaConstraints = [
     communityStatement: `CREATE CONSTRAINT server_issue_counter_unique IF NOT EXISTS FOR (counter:ServerIssueCounter)
       REQUIRE counter.scope IS UNIQUE`,
   },
+  {
+    name: "wiki_page_route_unique",
+    enterpriseStatement: `CREATE CONSTRAINT wiki_page_route_unique IF NOT EXISTS FOR (page:WikiPage)
+      REQUIRE (page.channelUniqueName, page.slug) IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT wiki_page_route_unique IF NOT EXISTS FOR (page:WikiPage)
+      REQUIRE (page.channelUniqueName, page.slug) IS UNIQUE`,
+  },
 ] as const;
 
 export const getCoreSchemaConstraintStatements = (edition: string) => {

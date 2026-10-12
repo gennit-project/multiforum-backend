@@ -65,7 +65,10 @@ test("empty discussion searches retain the normal anchored paths", () => {
   assert.doesNotMatch(siteWide.pageQuery, /db\.index\.fulltext/);
   assert.doesNotMatch(inChannel, /db\.index\.fulltext/);
   assert.match(buildSiteWideIssuesQuery(false), /^MATCH \(issue:Issue\)/);
-  assert.match(buildSiteWideWikiPagesQuery(false), /MATCH \(w:WikiPage\)/);
+  assert.match(
+    buildSiteWideWikiPagesQuery(false),
+    /MATCH \(owner:Channel\)-\[:OWNS_WIKI_PAGE\]->\(w:WikiPage\)/
+  );
   assert.doesNotMatch(buildSiteWideIssuesQuery(false), /db\.index\.fulltext/);
   assert.doesNotMatch(
     buildSiteWideWikiPagesQuery(false),

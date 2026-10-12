@@ -83,6 +83,7 @@ export const getRevisionRedactionTarget = async (input: {
       OPTIONAL MATCH (discussionChannel:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion)
 
       OPTIONAL MATCH (wikiPage:WikiPage)-[:HAS_VERSION]->(version)
+      OPTIONAL MATCH (wikiPageOwner:Channel)-[:OWNS_WIKI_PAGE]->(wikiPage)
       OPTIONAL MATCH (wikiOriginalAuthor:User)-[:AUTHORED_WIKI_PAGE]->(wikiPage)
 
       OPTIONAL MATCH (event:Event)-[:HAS_DESCRIPTION_VERSION]->(version)
@@ -108,7 +109,7 @@ export const getRevisionRedactionTarget = async (input: {
           parentCommentDiscussionChannel.channelUniqueName,
           parentCommentEventChannel.channelUniqueName,
           discussionChannel.channelUniqueName,
-          wikiPage.channelUniqueName,
+          wikiPageOwner.uniqueName,
           eventChannel.channelUniqueName
         ) AS channelUniqueName
       `,

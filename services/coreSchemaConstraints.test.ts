@@ -9,8 +9,8 @@ import {
 
 test("Enterprise uses node keys where property existence can be enforced", () => {
   const statements = getCoreSchemaConstraintStatements("enterprise");
-  assert.equal(statements.length, 9);
-  assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 5);
+  assert.equal(statements.length, 10);
+  assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 6);
   assert.equal(statements.filter((item) => item.includes("IS UNIQUE")).length, 4);
 });
 

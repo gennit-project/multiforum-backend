@@ -111,6 +111,7 @@ CALL {
   WHERE date(datetime(wikiEdit.createdAt)) >= startDate
     AND date(datetime(wikiEdit.createdAt)) <= endDate
   OPTIONAL MATCH (wikiPage:WikiPage)-[:HAS_VERSION]->(wikiEdit)
+  OPTIONAL MATCH (wikiOwner:Channel)-[:OWNS_WIKI_PAGE]->(wikiPage)
   RETURN collect({
     id: wikiEdit.id,
     body: coalesce(wikiEdit.body, ''),
@@ -124,7 +125,7 @@ CALL {
       id: wikiPage.id,
       title: wikiPage.title,
       slug: wikiPage.slug,
-      channelUniqueName: wikiPage.channelUniqueName
+      channelUniqueName: wikiOwner.uniqueName
     } END
   }) AS wikiEdits
 }

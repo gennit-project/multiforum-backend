@@ -95,16 +95,16 @@ const getFeaturedWikiPages = async (driver: Driver) => {
       UNWIND range(0, size(featuredIds) - 1) AS index
       WITH featuredIds, index
       WHERE index >= 0
-      MATCH (w:WikiPage { id: featuredIds[index] })
+      MATCH (owner:Channel)-[:OWNS_WIKI_PAGE]->(w:WikiPage { id: featuredIds[index] })
       OPTIONAL MATCH (w)<-[:AUTHORED_VERSION]-(author:User)
-      WITH index, w, author
+      WITH index, w, owner, author
       ORDER BY index ASC
       RETURN {
         id: w.id,
         title: w.title,
         body: w.body,
         slug: w.slug,
-        channelUniqueName: w.channelUniqueName,
+        channelUniqueName: owner.uniqueName,
         createdAt: w.createdAt,
         updatedAt: w.updatedAt,
         VersionAuthor: CASE

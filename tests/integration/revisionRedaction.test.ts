@@ -100,10 +100,12 @@ test("a discussion OP can redact their own discussion body revision", async () =
 test("a wiki page original author can redact a wiki revision", async () => {
   await run(
     `CREATE (alice:User { username: 'alice', createdAt: datetime() })
-     CREATE (w:WikiPage { id: 'w1', title: 'My Wiki', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (cats:Channel { uniqueName: 'cats' })
+     CREATE (w:WikiPage { id: 'w1', title: 'My Wiki', slug: 'my-wiki', channelUniqueName: 'cats', createdAt: datetime() })
      CREATE (v:TextVersion { id: 'v-wiki', body: 'old wiki', createdAt: datetime() })
      CREATE (w)-[:HAS_VERSION]->(v)
-     CREATE (alice)-[:AUTHORED_WIKI_PAGE]->(w)`
+     CREATE (alice)-[:AUTHORED_WIKI_PAGE]->(w)
+     CREATE (cats)-[:OWNS_WIKI_PAGE]->(w)`
   );
 
   await env.resolvers.Mutation.deleteWikiRevision(
@@ -162,10 +164,12 @@ test("calling deleteEventDescriptionRevision with a discussion revision id is re
 test("calling deleteCommentRevision with a wiki revision id is rejected", async () => {
   await run(
     `CREATE (alice:User { username: 'alice', createdAt: datetime() })
-     CREATE (w:WikiPage { id: 'w1', title: 'My Wiki', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (cats:Channel { uniqueName: 'cats' })
+     CREATE (w:WikiPage { id: 'w1', title: 'My Wiki', slug: 'my-wiki', channelUniqueName: 'cats', createdAt: datetime() })
      CREATE (v:TextVersion { id: 'v-wiki', body: 'old wiki', createdAt: datetime() })
      CREATE (w)-[:HAS_VERSION]->(v)
-     CREATE (alice)-[:AUTHORED_WIKI_PAGE]->(w)`
+     CREATE (alice)-[:AUTHORED_WIKI_PAGE]->(w)
+     CREATE (cats)-[:OWNS_WIKI_PAGE]->(w)`
   );
 
   await assert.rejects(
