@@ -171,3 +171,18 @@ test("wiki routes are unique within a channel but slugs can repeat across channe
     CREATE (:WikiPage {id: 'wiki-3', channelUniqueName: 'cats', slug: 'guide'})
   `);
 });
+
+test("role names are unique per channel and reusable across channels", async () => {
+  for (const [label, prefix] of [
+    ["ChannelRole", "user"],
+    ["ModChannelRole", "mod"],
+  ] as const) {
+    await run(`
+      CREATE (:${label} {id: $catsId, channelUniqueName: 'cats', name: 'Member'})
+      CREATE (:${label} {id: $dogsId, channelUniqueName: 'dogs', name: 'Member'})
+    `, { catsId: `${prefix}-cats`, dogsId: `${prefix}-dogs` });
+    await rejectsDuplicate(`
+      CREATE (:${label} {id: $duplicateId, channelUniqueName: 'cats', name: 'Member'})
+    `, { duplicateId: `${prefix}-cats-duplicate` });
+  }
+});

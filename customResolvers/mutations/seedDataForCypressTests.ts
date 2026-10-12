@@ -66,6 +66,25 @@ type Input = {
   ModServerRole: ModServerRoleModel;
   ServerConfig: ServerConfigModel;
 };
+
+export const linkSeededChannelRoleOwners = async (driver: Driver) => {
+  const session = driver.session();
+  try {
+    await session.run(`
+      MATCH (role:ChannelRole)
+      MATCH (channel:Channel {uniqueName: role.channelUniqueName})
+      MERGE (channel)-[:OWNS_CHANNEL_ROLE]->(role)
+    `);
+    await session.run(`
+      MATCH (role:ModChannelRole)
+      MATCH (channel:Channel {uniqueName: role.channelUniqueName})
+      MERGE (channel)-[:OWNS_MOD_CHANNEL_ROLE]->(role)
+    `);
+  } finally {
+    await session.close();
+  }
+};
+
 const seedDataForCypressTestsResolver = (input: Input) => {
   const {
     driver,
@@ -186,6 +205,7 @@ const seedDataForCypressTestsResolver = (input: Input) => {
 
     // Create other entities
     await Channel.create({ input: channels });
+    await linkSeededChannelRoleOwners(driver);
     await Tag.create({ input: tags });
     await createDiscussionsFromInput(Discussion, driver, discussions);
     await createEventsFromInput(Event, driver, events, context);

@@ -71,6 +71,20 @@ export const coreSchemaConstraints = [
     communityStatement: `CREATE CONSTRAINT wiki_page_route_unique IF NOT EXISTS FOR (page:WikiPage)
       REQUIRE (page.channelUniqueName, page.slug) IS UNIQUE`,
   },
+  {
+    name: "channel_role_channel_name_unique",
+    enterpriseStatement: `CREATE CONSTRAINT channel_role_channel_name_unique IF NOT EXISTS FOR (role:ChannelRole)
+      REQUIRE (role.channelUniqueName, role.name) IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT channel_role_channel_name_unique IF NOT EXISTS FOR (role:ChannelRole)
+      REQUIRE (role.channelUniqueName, role.name) IS UNIQUE`,
+  },
+  {
+    name: "mod_channel_role_channel_name_unique",
+    enterpriseStatement: `CREATE CONSTRAINT mod_channel_role_channel_name_unique IF NOT EXISTS FOR (role:ModChannelRole)
+      REQUIRE (role.channelUniqueName, role.name) IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT mod_channel_role_channel_name_unique IF NOT EXISTS FOR (role:ModChannelRole)
+      REQUIRE (role.channelUniqueName, role.name) IS UNIQUE`,
+  },
 ] as const;
 
 export const getCoreSchemaConstraintStatements = (edition: string) => {

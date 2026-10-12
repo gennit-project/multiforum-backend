@@ -36,8 +36,14 @@ beforeEach(async () => {
      CREATE (owner:User { username: 'test-owner', createdAt: datetime() })
      CREATE (rando:User { username: 'rando', createdAt: datetime() })
      CREATE (ch:Channel { uniqueName: 'test-channel', displayName: 'Test Channel', createdAt: datetime() })
-     CREATE (modRole:ModChannelRole { canEditDiscussions: true })
+     CREATE (modRole:ModChannelRole {
+       id: 'test-channel-default-mod',
+       name: 'Default Moderator',
+       channelUniqueName: 'test-channel',
+       canEditDiscussions: true
+     })
      CREATE (ch)-[:HAS_DEFAULT_MOD_ROLE]->(modRole)
+     CREATE (ch)-[:OWNS_MOD_CHANNEL_ROLE]->(modRole)
      CREATE (disc:Discussion { id: 'disc-1', title: 'Test Discussion', createdAt: datetime() })
      CREATE (owner)-[:POSTED_DISCUSSION]->(disc)
      CREATE (dc:DiscussionChannel { id: 'dc-1', discussionId: 'disc-1', channelUniqueName: 'test-channel', createdAt: datetime() })
