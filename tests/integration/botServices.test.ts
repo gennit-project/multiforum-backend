@@ -204,6 +204,28 @@ test("createBotComment validates and creates a reply to an existing comment", as
   assert.deepEqual(rows, [{ parentId: "parent-comment" }]);
 });
 
+test("createBotComment rejects a missing reply parent before creating records", async () => {
+  await run(`CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })`);
+
+  await assert.rejects(createBotComment({
+    Comment: m("Comment"),
+    User: m("User"),
+    Channel: m("Channel"),
+    driver: env.driver,
+    channelUniqueName: "cats",
+    text: "Orphaned bot reply",
+    botName: "helper",
+    parentCommentId: "missing-parent",
+  }), /Could not find the comment being replied to/);
+
+  const rows = await run(`
+    MATCH (record)
+    WHERE record:Comment OR record:User OR record:ModerationProfile
+    RETURN count(record) AS count
+  `);
+  assert.equal(Number(rows[0].count), 0);
+});
+
 test("createBotComment throws when text is empty", async () => {
   await run(`CREATE (:Channel { uniqueName: 'cats', createdAt: datetime() })`);
   await assert.rejects(

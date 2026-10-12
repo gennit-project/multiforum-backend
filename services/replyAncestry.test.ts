@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { Driver } from "neo4j-driver";
+import neo4j, { type Driver } from "neo4j-driver";
 import {
   assertReplyRelationship,
   MAX_REPLY_DEPTH,
@@ -8,7 +8,7 @@ import {
 } from "./replyAncestry.js";
 
 type Snapshot = {
-  parentDepth?: number;
+  parentDepth?: unknown;
   parentHasCycle?: boolean;
   parentExceedsMaxDepth?: boolean;
   ancestryHasMultipleParents?: boolean;
@@ -88,6 +88,18 @@ test("accepts a valid reply and uses only bounded ancestry traversals", async ()
 test("rejects a missing parent", () =>
   rejectsWith(null, /Could not find/));
 
+test("rejects an empty parent ID before opening a session", async () => {
+  const mock = buildDriver({});
+  await assert.rejects(
+    assertReplyRelationship({
+      driver: mock.driver,
+      parentCommentId: "",
+    }),
+    /parent ID is required/
+  );
+  assert.equal(mock.closed(), false);
+});
+
 test("rejects self replies before opening a session", async () => {
   const mock = buildDriver({});
   await assert.rejects(
@@ -103,6 +115,15 @@ test("rejects self replies before opening a session", async () => {
 
 test("rejects a reply beyond the maximum depth", () =>
   rejectsWith({ parentDepth: MAX_REPLY_DEPTH }, /more than 32 levels/));
+
+test("handles Neo4j Integer depth values", async () => {
+  const mock = buildDriver({ parentDepth: neo4j.int(MAX_REPLY_DEPTH - 1) });
+  await assert.doesNotReject(assertReplyRelationship({
+    driver: mock.driver,
+    parentCommentId: "parent",
+  }));
+  assert.equal(mock.closed(), true);
+});
 
 test("rejects a parent chain with a cycle", () =>
   rejectsWith({ parentHasCycle: true }, /invalid ancestry chain/));
@@ -131,4 +152,34 @@ test("allows an explicit parent replacement", async () => {
     allowParentReplacement: true,
   });
   assert.equal(mock.closed(), true);
+});
+
+test("allows reconnecting the child's existing parent without overwrite", async () => {
+  const mock = buildDriver({ currentParentIds: ["same-parent"] });
+  await assertReplyRelationship({
+    driver: mock.driver,
+    parentCommentId: "same-parent",
+    childCommentId: "child",
+  });
+  assert.equal(mock.closed(), true);
+});
+
+test("closes the session when the ancestry query fails", async () => {
+  let closed = false;
+  const driver = {
+    session: () => ({
+      executeRead: async () => {
+        throw new Error("database unavailable");
+      },
+      close: async () => {
+        closed = true;
+      },
+    }),
+  } as unknown as Driver;
+
+  await assert.rejects(assertReplyRelationship({
+    driver,
+    parentCommentId: "parent",
+  }), /database unavailable/);
+  assert.equal(closed, true);
 });

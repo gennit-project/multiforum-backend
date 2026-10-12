@@ -73,6 +73,24 @@ test("allows a reply at the maximum supported depth", async () => {
   }));
 });
 
+test("rejects a missing parent comment", async () => {
+  await assert.rejects(assertReplyRelationship({
+    driver,
+    parentCommentId: "missing-parent",
+    childCommentId: "new-comment",
+  }), /Could not find the comment/);
+});
+
+test("rejects a direct self-cycle before querying Neo4j", async () => {
+  await run("CREATE (:Comment {id: 'same-comment'})");
+
+  await assert.rejects(assertReplyRelationship({
+    driver,
+    parentCommentId: "same-comment",
+    childCommentId: "same-comment",
+  }), /cannot reply to itself/);
+});
+
 test("rejects a reply beyond the maximum supported depth", async () => {
   await seedChain(MAX_REPLY_DEPTH);
 
@@ -92,6 +110,23 @@ test("rejects an indirect cycle during reparenting", async () => {
     childCommentId: "comment-0",
     allowParentReplacement: true,
   }), /would create a cycle/);
+});
+
+test("rejects a parent that already belongs to a reply cycle", async () => {
+  await run(`
+    CREATE (a:Comment {id: 'cycle-a'})
+    CREATE (b:Comment {id: 'cycle-b'})
+    CREATE (c:Comment {id: 'cycle-c'})
+    CREATE (a)-[:IS_REPLY_TO]->(b)
+    CREATE (b)-[:IS_REPLY_TO]->(c)
+    CREATE (c)-[:IS_REPLY_TO]->(a)
+  `);
+
+  await assert.rejects(assertReplyRelationship({
+    driver,
+    parentCommentId: "cycle-a",
+    childCommentId: "new-comment",
+  }), /invalid ancestry chain/);
 });
 
 test("rejects a parent chain containing multiple parents", async () => {
@@ -130,6 +165,36 @@ test("requires explicit overwrite or disconnect to replace a parent", async () =
   }));
 });
 
+test("rejects a child that already has multiple parents", async () => {
+  await run(`
+    CREATE (first:Comment {id: 'first-parent'})
+    CREATE (second:Comment {id: 'second-parent'})
+    CREATE (replacement:Comment {id: 'replacement-parent'})
+    CREATE (child:Comment {id: 'child'})-[:IS_REPLY_TO]->(first)
+    CREATE (child)-[:IS_REPLY_TO]->(second)
+  `);
+
+  await assert.rejects(assertReplyRelationship({
+    driver,
+    parentCommentId: "replacement-parent",
+    childCommentId: "child",
+    allowParentReplacement: true,
+  }), /multiple reply parents/);
+});
+
+test("allows reconnecting a child to its existing parent", async () => {
+  await run(`
+    CREATE (parent:Comment {id: 'parent'})
+    CREATE (child:Comment {id: 'child'})-[:IS_REPLY_TO]->(parent)
+  `);
+
+  await assert.doesNotReject(assertReplyRelationship({
+    driver,
+    parentCommentId: "parent",
+    childCommentId: "child",
+  }));
+});
+
 test("schema audit reports over-depth threads", async () => {
   await seedChain(MAX_REPLY_DEPTH + 1);
 
@@ -137,4 +202,23 @@ test("schema audit reports over-depth threads", async () => {
 
   assert.equal(report.integrity.commentsOverMaxReplyDepth, 1);
   assert.equal(report.integrity.commentsInReplyCycles, 0);
+});
+
+test("schema audit reports reply cycles and multiple parents", async () => {
+  await run(`
+    CREATE (a:Comment {id: 'cycle-a'})
+    CREATE (b:Comment {id: 'cycle-b'})
+    CREATE (c:Comment {id: 'cycle-c'})
+    CREATE (other:Comment {id: 'other-parent'})
+    CREATE (a)-[:IS_REPLY_TO]->(b)
+    CREATE (b)-[:IS_REPLY_TO]->(c)
+    CREATE (c)-[:IS_REPLY_TO]->(a)
+    CREATE (c)-[:IS_REPLY_TO]->(other)
+  `);
+
+  const report = await runNeo4jSchemaAudit(driver);
+
+  assert.equal(report.integrity.commentsInReplyCycles, 3);
+  assert.equal(report.integrity.commentsWithMultipleParents, 1);
+  assert.equal(report.integrity.commentsOverMaxReplyDepth, 0);
 });
