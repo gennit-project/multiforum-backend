@@ -6,9 +6,9 @@ AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
 AND ($mayAccessSensitiveContent OR (
   NOT EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
   AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
   AND NOT EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
 ))
 AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })
@@ -24,9 +24,9 @@ AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
 AND ($mayAccessSensitiveContent OR (
   NOT EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
   AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
   AND NOT EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
 ))
 AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })

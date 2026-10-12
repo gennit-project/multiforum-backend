@@ -53,6 +53,6 @@ test("follows feedback-on-comment relationships into sensitive discussions", asy
   await isSensitiveContentTarget(driver, { commentId: "feedback-1" });
   assert.match(
     query,
-    /HAS_FEEDBACK_COMMENT.*IS_REPLY_TO\*0\.\..*CONTAINS_COMMENT/s
+    /HAS_FEEDBACK_COMMENT.*IS_REPLY_TO\*0\.\.32.*CONTAINS_COMMENT/s
   );
 });

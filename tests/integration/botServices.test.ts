@@ -163,6 +163,7 @@ test("createBotComment creates a comment authored by the bot, in the channel", a
     Comment: m("Comment"),
     User: m("User"),
     Channel: m("Channel"),
+    driver: env.driver,
     channelUniqueName: "cats",
     text: "Hello from the bot",
     botName: "helper",
@@ -178,6 +179,31 @@ test("createBotComment creates a comment authored by the bot, in the channel", a
   assert.equal(rows[0].isRoot, false);
 });
 
+test("createBotComment validates and creates a reply to an existing comment", async () => {
+  await run(`
+    CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })
+    CREATE (:Comment { id: 'parent-comment', text: 'Parent', isRootComment: true, createdAt: datetime() })
+  `);
+
+  const comment = await createBotComment({
+    Comment: m("Comment"),
+    User: m("User"),
+    Channel: m("Channel"),
+    driver: env.driver,
+    channelUniqueName: "cats",
+    text: "Bot reply",
+    botName: "helper",
+    parentCommentId: "parent-comment",
+  });
+
+  const rows = await run(
+    `MATCH (reply:Comment { id: $replyId })-[:IS_REPLY_TO]->(parent:Comment)
+     RETURN parent.id AS parentId`,
+    { replyId: comment.id }
+  );
+  assert.deepEqual(rows, [{ parentId: "parent-comment" }]);
+});
+
 test("createBotComment throws when text is empty", async () => {
   await run(`CREATE (:Channel { uniqueName: 'cats', createdAt: datetime() })`);
   await assert.rejects(
@@ -185,6 +211,7 @@ test("createBotComment throws when text is empty", async () => {
       Comment: m("Comment"),
       User: m("User"),
       Channel: m("Channel"),
+      driver: env.driver,
       channelUniqueName: "cats",
       text: "",
       botName: "helper",

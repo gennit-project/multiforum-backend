@@ -1,4 +1,6 @@
 import type { ChannelModel, CommentCreateInput, CommentModel, UserCreateInput, UserModel } from '../ogm_types.js'
+import type { Driver } from 'neo4j-driver'
+import { assertReplyRelationship } from './replyAncestry.js'
 
 type BotProfile = {
   id: string
@@ -263,6 +265,7 @@ export const createBotComment = async (input: {
   Comment: CommentModel
   User: UserModel
   Channel: ChannelModel
+  driver?: Driver
   channelUniqueName: string
   text: string
   botName: string
@@ -276,6 +279,7 @@ export const createBotComment = async (input: {
     Comment,
     User,
     Channel,
+    driver,
     channelUniqueName,
     text,
     botName,
@@ -288,6 +292,16 @@ export const createBotComment = async (input: {
 
   if (!text) {
     throw new Error('Comment text is required')
+  }
+
+  if (parentCommentId) {
+    if (!driver) {
+      throw new Error('Database driver is required to validate reply ancestry')
+    }
+    await assertReplyRelationship({
+      driver,
+      parentCommentId,
+    })
   }
 
   const botUser = await ensureBotUserForChannel({

@@ -16,7 +16,7 @@ Eight types carry the age-gate filter:
 - Once planned, the query executes in **2–3 ms**. Planning a fresh copy takes **420–660 ms**, and several of these plan concurrently on each page load.
 - With the age-gate statements replaced by `false`, the same query plans in **~185 ms** (about 60% less) and is about a third shorter (14.8 KB → 9.6 KB).
 - The statement runs for every candidate node **before** the request's own `WHERE` (70× the database hits for `getIssue`).
-- It's worst when content *isn't* sensitive, which is the common case. Proving a comment isn't sensitive means walking its whole reply chain (`IS_REPLY_TO*0..`) to the top-level discussion.
+- It's worst when content *isn't* sensitive, which is the common case. Proving a comment isn't sensitive means walking its bounded reply chain (`IS_REPLY_TO*0..32`) to the top-level discussion.
 
 | Type | Current check |
 |---|---|

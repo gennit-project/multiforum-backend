@@ -565,6 +565,7 @@ export const triggerPluginRunsForComment = async (
             Comment,
             User,
             Channel,
+            driver,
             channelUniqueName,
             text: input.text,
             botName: input.botName,
