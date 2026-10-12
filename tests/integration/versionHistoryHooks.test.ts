@@ -328,7 +328,9 @@ test("eventEditNotificationHandler does not notify when the author edits their o
 test("wikiPageVersionHistoryHandler saves pre-edit title and body versions with the edit reason", async () => {
   await run(
     `CREATE (alice:User { username: 'alice', createdAt: datetime() })
-     CREATE (w:WikiPage { id: 'w1', title: 'Old Title', body: 'Old body', editReason: 'cleanup', slug: 'page', createdAt: datetime() })
+     CREATE (ch:Channel { uniqueName: 'cats', createdAt: datetime() })
+     CREATE (w:WikiPage { id: 'w1', title: 'Old Title', body: 'Old body', editReason: 'cleanup', slug: 'page', channelUniqueName: 'cats', createdAt: datetime() })
+     CREATE (ch)-[:OWNS_WIKI_PAGE]->(w)
      CREATE (alice)-[:AUTHORED_VERSION]->(w)`
   );
 
