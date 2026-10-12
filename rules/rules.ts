@@ -67,6 +67,8 @@ import { serverBrandingIsValid } from "./validation/serverBranding.js";
 import {
   channelRoleInputDoesNotEscalate,
   modChannelRoleInputDoesNotEscalate,
+  channelRoleTargetIsOwned,
+  modChannelRoleTargetIsOwned,
 } from "./validation/channelRoleEscalation.js";
 import {
   canCreateChannel,
@@ -149,6 +151,8 @@ const ruleList = {
   serverBrandingIsValid,
   channelRoleInputDoesNotEscalate,
   modChannelRoleInputDoesNotEscalate,
+  channelRoleTargetIsOwned,
+  modChannelRoleTargetIsOwned,
   hasChannelPermission,
   isRoot,
   canManageServerSettings,

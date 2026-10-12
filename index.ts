@@ -27,6 +27,7 @@ import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModera
 import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
 import ownershipCreateMiddleware from "./middleware/ownershipCreateMiddleware.js";
 import wikiPageOwnershipMiddleware from "./middleware/wikiPageOwnershipMiddleware.js";
+import channelRoleOwnershipMiddleware from "./middleware/channelRoleOwnershipMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
@@ -218,6 +219,7 @@ async function initializeServer() {
       // generated createAlbums/createCollections.
       ownershipCreateMiddleware as AppMiddleware,
       wikiPageOwnershipMiddleware as AppMiddleware,
+      channelRoleOwnershipMiddleware as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,
       commentVersionHistoryMiddleware as AppMiddleware,

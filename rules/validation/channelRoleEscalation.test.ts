@@ -1,62 +1,37 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { roleItemsGrantingCapabilities } from "./channelRoleEscalation.js";
-import {
-  CHANNEL_ROLE_CAPABILITY_FIELDS,
-  MOD_CHANNEL_ROLE_CAPABILITY_FIELDS,
-} from "../permission/actorCapabilities.js";
+import { roleOwnerChannelNames } from "./channelRoleEscalation.js";
 
-// PR-4c: channel-role authoring guard. roleItemsGrantingCapabilities selects the
-// input items that actually grant a capability — only those require the caller
-// to own the target channel (or be a server admin / root).
-
-test("selects only items that set a channel capability to true", () => {
-  const items = [
-    { channelUniqueName: "cats", name: "Reader" }, // no caps -> harmless
-    { channelUniqueName: "cats", canUpdateChannel: true }, // grants a cap
-    { channelUniqueName: "dogs", canUploadFile: false }, // explicitly false
-  ];
-  const granting = roleItemsGrantingCapabilities(items, CHANNEL_ROLE_CAPABILITY_FIELDS);
-  assert.deepEqual(granting, [{ channelUniqueName: "cats", canUpdateChannel: true }]);
+const owner = (uniqueName: string) => ({
+  connect: { where: { node: { uniqueName } } },
 });
 
-test("an all-false / capability-free role grants nothing", () => {
+test("extracts the explicit owner from every channel role input", () => {
   const items = [
-    { channelUniqueName: "cats", name: "Reader", description: "x" },
+    { channelUniqueName: "cats", name: "Reader", Owner: owner("cats") },
+    { name: "Moderator", Owner: owner("dogs") },
   ];
-  assert.deepEqual(
-    roleItemsGrantingCapabilities(items, CHANNEL_ROLE_CAPABILITY_FIELDS),
-    []
-  );
+  assert.deepEqual(roleOwnerChannelNames(items), ["cats", "dogs"]);
 });
 
-test("works for mod-channel capabilities", () => {
-  const items = [
-    { channelUniqueName: "cats", canSuspendUser: true },
-    { channelUniqueName: "cats", name: "Helper" },
-  ];
-  const granting = roleItemsGrantingCapabilities(
-    items,
-    MOD_CHANNEL_ROLE_CAPABILITY_FIELDS
-  );
-  assert.deepEqual(granting, [{ channelUniqueName: "cats", canSuspendUser: true }]);
-});
-
-test("ignores a server-administration field that is not a channel capability", () => {
-  // canManageAdmins is not a ChannelRole capability, so it must not count as a
-  // granted channel capability (channel roles can't carry it anyway).
-  const items = [{ channelUniqueName: "cats", canManageAdmins: true }];
-  assert.deepEqual(
-    roleItemsGrantingCapabilities(items, CHANNEL_ROLE_CAPABILITY_FIELDS),
-    []
-  );
+test("rejects missing, multiple, and scalar-mismatched owners", () => {
+  assert.equal(roleOwnerChannelNames([{ name: "Reader" }]), null);
+  assert.equal(roleOwnerChannelNames([{
+    Owner: {
+      connect: [
+        { where: { node: { uniqueName: "cats" } } },
+        { where: { node: { uniqueName: "dogs" } } },
+      ],
+    },
+  }]), null);
+  assert.equal(roleOwnerChannelNames([{
+    channelUniqueName: "dogs",
+    Owner: owner("cats"),
+  }]), null);
 });
 
 test("handles non-array / empty / junk input", () => {
-  assert.deepEqual(roleItemsGrantingCapabilities(undefined, CHANNEL_ROLE_CAPABILITY_FIELDS), []);
-  assert.deepEqual(roleItemsGrantingCapabilities([], CHANNEL_ROLE_CAPABILITY_FIELDS), []);
-  assert.deepEqual(
-    roleItemsGrantingCapabilities([null, "x", 3], CHANNEL_ROLE_CAPABILITY_FIELDS),
-    []
-  );
+  assert.equal(roleOwnerChannelNames(undefined), null);
+  assert.equal(roleOwnerChannelNames([]), null);
+  assert.equal(roleOwnerChannelNames([null, "x", 3]), null);
 });

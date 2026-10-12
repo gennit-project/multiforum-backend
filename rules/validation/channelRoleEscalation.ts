@@ -1,13 +1,10 @@
 // No-privilege-escalation guard for CHANNEL role authoring (PR-4c; extends PR-4
 // to the channel scope — docs/isadmin-phaseout-design.md §5).
 //
-// `createChannelRoles` / `createModChannelRoles` are gated by the server-level
-// `canManageRoles`, but a channel role is fundamentally the channel owner's to
-// define. Channel roles carry NO server-administration capability, so they can
-// never reach the apex tier — this is defense-in-depth. The invariant: you may
-// author a capability-bearing channel role only for a channel you own (or as a
-// server admin / root, who hold every channel capability everywhere). A non-owner
-// with `canManageRoles` can still create empty/no-capability roles.
+// A channel role is fundamentally the channel owner's to define. Channel roles
+// carry no server-administration capability, so they can never reach the apex
+// tier. Ownership is taken from the explicit Owner connection; the scalar is
+// only an immutable identity key.
 //
 // (Wiring a channel role into a channel is separately channel-owner-gated via
 // updateChannels, and createChannels makes the caller the owner — so nested
@@ -15,31 +12,25 @@
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import {
-  CHANNEL_ROLE_CAPABILITY_FIELDS,
-  MOD_CHANNEL_ROLE_CAPABILITY_FIELDS,
-} from "../permission/actorCapabilities.js";
 import { passesAsServerAdminOrRoot } from "../permission/serverAdminOverride.js";
 import { isChannelAdmin } from "../permission/hasChannelPermission.js";
 import { setUserDataOnContext } from "../permission/userDataHelperFunctions.js";
+import { getConnectedOwnerChannelNames } from "../../middleware/channelRoleOwnershipMiddleware.js";
 
 type RoleItem = Record<string, unknown>;
 
-// --- Pure: which input items actually grant a capability (extracted for tests) ---
-
-export function roleItemsGrantingCapabilities(
-  items: unknown,
-  capabilityFields: readonly string[]
-): RoleItem[] {
-  if (!Array.isArray(items)) {
-    return [];
-  }
-  return (items as RoleItem[]).filter(
-    (item) =>
-      !!item &&
-      typeof item === "object" &&
-      capabilityFields.some((field) => item[field] === true)
-  );
+export function roleOwnerChannelNames(items: unknown): string[] | null {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  const ownerNames = (items as RoleItem[]).map((item) => {
+    if (!item || typeof item !== "object") return null;
+    const connectedOwners = getConnectedOwnerChannelNames(item.Owner);
+    if (
+      connectedOwners.length !== 1 ||
+      (item.channelUniqueName && item.channelUniqueName !== connectedOwners[0])
+    ) return null;
+    return connectedOwners[0];
+  });
+  return ownerNames.some((owner) => !owner) ? null : ownerNames as string[];
 }
 
 // True when the caller is listed among the channel's owners (Admins).
@@ -63,7 +54,7 @@ async function ownsChannel(
   return isChannelAdmin(channels?.[0]?.Admins, username);
 }
 
-const channelRoleEscalationRule = (capabilityFields: readonly string[]) =>
+const channelRoleEscalationRule = () =>
   rule({ cache: "contextual" })(
     async (
       _parent: unknown,
@@ -71,13 +62,9 @@ const channelRoleEscalationRule = (capabilityFields: readonly string[]) =>
       ctx: GraphQLContext,
       _info: GraphQLResolveInfo
     ) => {
-      const capabilityItems = roleItemsGrantingCapabilities(
-        args.input,
-        capabilityFields
-      );
-      // Roles that grant nothing are harmless to author.
-      if (capabilityItems.length === 0) {
-        return true;
+      const ownerNames = roleOwnerChannelNames(args.input);
+      if (!ownerNames) {
+        return "Each channel role must connect to exactly one owner matching channelUniqueName.";
       }
 
       // Server admins and root hold every channel capability everywhere, so they
@@ -89,12 +76,10 @@ const channelRoleEscalationRule = (capabilityFields: readonly string[]) =>
         ctx.user = await setUserDataOnContext({ context: ctx });
       }
 
-      // Otherwise every capability-bearing role must target a channel the caller
-      // owns. A channel owner inherently holds all of their channel's
-      // capabilities, so ownership is the capability check for the channel scope.
-      for (const item of capabilityItems) {
-        if (!(await ownsChannel(ctx, item.channelUniqueName))) {
-          return "You can only author channel roles that grant capabilities for a channel you own.";
+      // Otherwise every role must be created for a channel the caller owns.
+      for (const ownerName of ownerNames) {
+        if (!(await ownsChannel(ctx, ownerName))) {
+          return "You can only author channel roles for a channel you own.";
         }
       }
 
@@ -102,10 +87,42 @@ const channelRoleEscalationRule = (capabilityFields: readonly string[]) =>
     }
   );
 
-export const channelRoleInputDoesNotEscalate = channelRoleEscalationRule(
-  CHANNEL_ROLE_CAPABILITY_FIELDS
+export const channelRoleInputDoesNotEscalate = channelRoleEscalationRule();
+
+export const modChannelRoleInputDoesNotEscalate = channelRoleEscalationRule();
+
+const channelRoleTargetIsOwnedRule = (
+  modelName: "ChannelRole" | "ModChannelRole"
+) => rule({ cache: "contextual" })(
+  async (
+    _parent: unknown,
+    args: Record<string, unknown>,
+    ctx: GraphQLContext,
+    _info: GraphQLResolveInfo
+  ) => {
+    if (await passesAsServerAdminOrRoot(ctx)) {
+      return true;
+    }
+    if (!ctx.user?.username) {
+      ctx.user = await setUserDataOnContext({ context: ctx });
+    }
+    const roles = await ctx.ogm.model(modelName).find({
+      where: args.where as any,
+      selectionSet: `{ Owner { uniqueName } }`,
+    }) as Array<{ Owner?: { uniqueName?: string | null } | null }>;
+    if (roles.length === 0) {
+      return "Channel role not found.";
+    }
+    for (const role of roles) {
+      if (!(await ownsChannel(ctx, role.Owner?.uniqueName))) {
+        return "You can only change channel roles owned by a channel you own.";
+      }
+    }
+    return true;
+  }
 );
 
-export const modChannelRoleInputDoesNotEscalate = channelRoleEscalationRule(
-  MOD_CHANNEL_ROLE_CAPABILITY_FIELDS
-);
+export const channelRoleTargetIsOwned =
+  channelRoleTargetIsOwnedRule("ChannelRole");
+export const modChannelRoleTargetIsOwned =
+  channelRoleTargetIsOwnedRule("ModChannelRole");

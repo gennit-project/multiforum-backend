@@ -17,6 +17,8 @@ test("schema audit includes library-managed unique constraints and their indexes
   assert.equal(managed.includes("plugin_pipeline_run_pipeline_id"), true);
   assert.equal(managed.includes("PluginPipelineRun_pipelineId"), false);
   assert.equal(requiredConstraintNames.includes("discussion_channel_unique"), true);
+  assert.equal(managed.includes("ChannelRole_id"), true);
+  assert.equal(managed.includes("ChannelRole_name"), false);
   assert.equal(
     requiredConstraintNames.every((name) => requiredOnlineIndexNames.includes(name)),
     true
@@ -38,6 +40,9 @@ const cleanIntegrity: IntegrityCounts = {
   wikiPagesWithInvalidOwners: 0,
   wikiPagesWithMismatchedOwners: 0,
   invalidWikiPageRoutes: 0,
+  channelRolesWithInvalidOwners: 0,
+  channelRolesWithMismatchedOwners: 0,
+  invalidChannelRoleIdentities: 0,
 };
 
 test("schema audit passes a complete and consistent snapshot", () => {
@@ -108,6 +113,6 @@ test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", a
   const report = await runNeo4jSchemaAudit(driver);
 
   assert.equal(report.ok, true);
-  assert.equal(queries.length, 16);
+  assert.equal(queries.length, 19);
   assert.equal(closed, true);
 });

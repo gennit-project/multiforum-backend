@@ -66,6 +66,9 @@ export type IntegrityCounts = {
   wikiPagesWithInvalidOwners: number;
   wikiPagesWithMismatchedOwners: number;
   invalidWikiPageRoutes: number;
+  channelRolesWithInvalidOwners: number;
+  channelRolesWithMismatchedOwners: number;
+  invalidChannelRoleIdentities: number;
 };
 
 export type SchemaAuditSnapshot = {
@@ -201,6 +204,45 @@ export async function runNeo4jSchemaAudit(
       WHERE channelUniqueName IS NULL OR slug IS NULL OR copies > 1
       RETURN coalesce(sum(copies), 0) AS count
     `);
+    const channelRolesWithInvalidOwners = await session.run(`
+      CALL {
+        MATCH (role:ChannelRole)
+        RETURN role, 'ChannelRole' AS kind
+        UNION ALL
+        MATCH (role:ModChannelRole)
+        RETURN role, 'ModChannelRole' AS kind
+      }
+      WITH role, kind
+      WHERE (kind = 'ChannelRole' AND count { (:Channel)-[:OWNS_CHANNEL_ROLE]->(role) } <> 1)
+         OR (kind = 'ModChannelRole' AND count { (:Channel)-[:OWNS_MOD_CHANNEL_ROLE]->(role) } <> 1)
+      RETURN count(role) AS count
+    `);
+    const channelRolesWithMismatchedOwners = await session.run(`
+      CALL {
+        MATCH (owner:Channel)-[:OWNS_CHANNEL_ROLE]->(role:ChannelRole)
+        RETURN owner, role
+        UNION ALL
+        MATCH (owner:Channel)-[:OWNS_MOD_CHANNEL_ROLE]->(role:ModChannelRole)
+        RETURN owner, role
+      }
+      WITH owner, role
+      WHERE role.channelUniqueName IS NULL OR role.channelUniqueName <> owner.uniqueName
+      RETURN count(DISTINCT role) AS count
+    `);
+    const invalidChannelRoleIdentities = await session.run(`
+      CALL {
+        MATCH (role:ChannelRole)
+        WITH role.channelUniqueName AS channelUniqueName, role.name AS name, count(*) AS copies
+        WHERE channelUniqueName IS NULL OR name IS NULL OR copies > 1
+        RETURN coalesce(sum(copies), 0) AS count
+        UNION ALL
+        MATCH (role:ModChannelRole)
+        WITH role.channelUniqueName AS channelUniqueName, role.name AS name, count(*) AS copies
+        WHERE channelUniqueName IS NULL OR name IS NULL OR copies > 1
+        RETURN coalesce(sum(copies), 0) AS count
+      }
+      RETURN sum(count) AS count
+    `);
 
     return evaluateSchemaAudit({
       constraints: constraintsResult.records.map((record) => record.get("name")),
@@ -254,6 +296,18 @@ export async function runNeo4jSchemaAudit(
         ),
         invalidWikiPageRoutes: firstCount(
           invalidWikiPageRoutes.records,
+          "count"
+        ),
+        channelRolesWithInvalidOwners: firstCount(
+          channelRolesWithInvalidOwners.records,
+          "count"
+        ),
+        channelRolesWithMismatchedOwners: firstCount(
+          channelRolesWithMismatchedOwners.records,
+          "count"
+        ),
+        invalidChannelRoleIdentities: firstCount(
+          invalidChannelRoleIdentities.records,
           "count"
         ),
       },

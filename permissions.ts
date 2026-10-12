@@ -61,6 +61,8 @@ const {
   serverBrandingIsValid,
   channelRoleInputDoesNotEscalate,
   modChannelRoleInputDoesNotEscalate,
+  channelRoleTargetIsOwned,
+  modChannelRoleTargetIsOwned,
   canReport,
   canSuspendAndUnsuspendUser,
   canArchiveAndUnarchiveComment,
@@ -411,16 +413,13 @@ const permissionRules: IRules = {
       seedDataForCypressTests: isRoot,
       createTags: and(isAuthenticated, allow),
       
-      // Role management requires canManageRoles (the updateUsers role-connect
-      // block still prevents self-escalation via assignment). The role-authoring
-      // paths additionally enforce the no-privilege-escalation invariant: you
-      // cannot author a role granting a capability you lack (e.g. a restricted
-      // admin cannot mint canManageAdmins). For channel roles — which carry no
-      // server-administration capability — the invariant is ownership: you may
-      // author a capability-bearing channel role only for a channel you own (or
-      // as server admin / root). See docs/isadmin-phaseout-design.md §5.
-      createChannelRoles: and(isAuthenticated, canManageRoles, channelRoleInputDoesNotEscalate),
-      createModChannelRoles: and(isAuthenticated, canManageRoles, modChannelRoleInputDoesNotEscalate),
+      // Server roles require canManageRoles. Channel roles are scoped to their
+      // explicit owning Channel, so owners (plus server admin/root) may manage
+      // only roles in that scope. updateUsers still blocks self-assignment.
+      createChannelRoles: and(isAuthenticated, channelRoleInputDoesNotEscalate),
+      createModChannelRoles: and(isAuthenticated, modChannelRoleInputDoesNotEscalate),
+      updateChannelRoles: and(isAuthenticated, channelRoleTargetIsOwned),
+      updateModChannelRoles: and(isAuthenticated, modChannelRoleTargetIsOwned),
 
       createModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
       createServerRoles: and(isAuthenticated, canManageRoles, serverRoleInputDoesNotEscalate),
@@ -431,7 +430,8 @@ const permissionRules: IRules = {
       // role via a nested role create/update/connect (see §5 / PR-4b).
       updateServerConfigs: and(isAuthenticated, canManageServerSettings, serverConfigInputDoesNotEscalate, serverAgeConfigIsValid, serverBrandingIsValid),
       updateModServerRoles: and(isAuthenticated, canManageRoles, modServerRoleInputDoesNotEscalate),
-      deleteChannelRoles: and(isAuthenticated, or(canManageRoles, isChannelOwner)),
+      deleteChannelRoles: and(isAuthenticated, channelRoleTargetIsOwned),
+      deleteModChannelRoles: and(isAuthenticated, modChannelRoleTargetIsOwned),
       deleteServerRoles: and(isAuthenticated, canManageRoles),
       
       createEmailAndUser: allow, // Self-scoped to the verified token in the resolver.

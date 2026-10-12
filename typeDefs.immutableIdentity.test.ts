@@ -43,6 +43,16 @@ test("channel and connector identity can be set at creation but not changed", as
     !fieldsFor(schema, "WikiPageDeleteInput").includes("Channel"),
     "deleting a wiki page must not offer a nested delete of its owning channel"
   );
+
+  for (const typeName of ["ChannelRole", "ModChannelRole"]) {
+    const createFields = fieldsFor(schema, `${typeName}CreateInput`);
+    const updateFields = fieldsFor(schema, `${typeName}UpdateInput`);
+    for (const field of ["name", "channelUniqueName"]) {
+      assert.ok(createFields.includes(field), `${typeName}.${field} should be settable on create`);
+      assert.ok(!updateFields.includes(field), `${typeName}.${field} should be immutable`);
+    }
+    assert.ok(createFields.includes("Owner"), `${typeName}.Owner should be explicit on create`);
+  }
 });
 
 test("GraphQL rejects attempts to rewrite immutable identities", async () => {
@@ -56,6 +66,10 @@ test("GraphQL rejects attempts to rewrite immutable identities", async () => {
     `mutation { updateWikiPages(update: { slug: "renamed" }) { wikiPages { id } } }`,
     `mutation { updateWikiPages(update: { channelUniqueName: "other" }) { wikiPages { id } } }`,
     `mutation { updateWikiPages(update: { Channel: { disconnect: {} } }) { wikiPages { id } } }`,
+    `mutation { updateChannelRoles(update: { name: "renamed" }) { channelRoles { id } } }`,
+    `mutation { updateChannelRoles(update: { channelUniqueName: "other" }) { channelRoles { id } } }`,
+    `mutation { updateModChannelRoles(update: { name: "renamed" }) { modChannelRoles { id } } }`,
+    `mutation { updateModChannelRoles(update: { channelUniqueName: "other" }) { modChannelRoles { id } } }`,
   ];
 
   for (const mutation of attempts) {

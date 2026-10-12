@@ -2051,8 +2051,11 @@ const typeDefinitions = gql`
   }
 
   type ChannelRole {
-    name: String @unique
-    channelUniqueName: String
+    id: ID! @id @unique
+    name: String! @settable(onCreate: true, onUpdate: false)
+    channelUniqueName: String! @settable(onCreate: true, onUpdate: false)
+    Owner: Channel!
+      @relationship(type: "OWNS_CHANNEL_ROLE", direction: IN)
     description: String
     canCreateDiscussion: Boolean
     canCreateEvent: Boolean
@@ -2064,8 +2067,11 @@ const typeDefinitions = gql`
   }
 
   type ModChannelRole {
-    name: String @unique
-    channelUniqueName: String
+    id: ID! @id @unique
+    name: String! @settable(onCreate: true, onUpdate: false)
+    channelUniqueName: String! @settable(onCreate: true, onUpdate: false)
+    Owner: Channel!
+      @relationship(type: "OWNS_MOD_CHANNEL_ROLE", direction: IN)
     description: String
     canHideComment: Boolean
     canHideEvent: Boolean
