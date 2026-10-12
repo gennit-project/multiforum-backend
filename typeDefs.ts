@@ -1203,7 +1203,7 @@ const typeDefinitions = gql`
       @selectable(onRead: false, onAggregate: false)
       @filterable(byValue: false, byAggregate: false)
     ageGateSensitive: Boolean!
-      @cypher(statement: "RETURN EXISTS { MATCH (d:Discussion {id: this.relatedDiscussionId}) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (comment:Comment {id: this.relatedCommentId})-[:IS_REPLY_TO*0..32]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR EXISTS { MATCH (image:Image {id: this.relatedImageId}) WHERE coalesce(image.hasSensitiveContent, false) = true } AS ageGateSensitive", columnName: "ageGateSensitive")
+      @cypher(statement: "RETURN EXISTS { MATCH (this)-[:TARGETS_DISCUSSION]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR (NOT EXISTS { MATCH (this)-[:TARGETS_DISCUSSION]->() } AND EXISTS { MATCH (d:Discussion {id: this.relatedDiscussionId}) WHERE coalesce(d.hasSensitiveContent, false) = true }) OR EXISTS { MATCH (this)-[:TARGETS_COMMENT]->(comment:Comment)-[:IS_REPLY_TO*0..32]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR (NOT EXISTS { MATCH (this)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (comment:Comment {id: this.relatedCommentId})-[:IS_REPLY_TO*0..32]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true }) OR EXISTS { MATCH (this)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR (NOT EXISTS { MATCH (this)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true }) OR EXISTS { MATCH (this)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true } OR (NOT EXISTS { MATCH (this)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: this.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(threadComment:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d:Discussion) WHERE coalesce(d.hasSensitiveContent, false) = true }) OR EXISTS { MATCH (this)-[:TARGETS_IMAGE]->(image:Image) WHERE coalesce(image.hasSensitiveContent, false) = true } OR (NOT EXISTS { MATCH (this)-[:TARGETS_IMAGE]->() } AND EXISTS { MATCH (image:Image {id: this.relatedImageId}) WHERE coalesce(image.hasSensitiveContent, false) = true }) AS ageGateSensitive", columnName: "ageGateSensitive")
       @selectable(onRead: false, onAggregate: false)
     # Stored age-gate result: true when under content marked sensitive;
     # null/false means clear (see docs/age-gate-materialization-design.md).
@@ -1211,28 +1211,65 @@ const typeDefinitions = gql`
     ageGateRestricted: Boolean
       @settable(onCreate: false, onUpdate: false)
       @selectable(onRead: false, onAggregate: false)
-    issueNumber: Int!
-    channelUniqueName: String
-    Channel: Channel @relationship(type: "HAS_ISSUE", direction: IN)
-    authorName: String
-    Author: IssueAuthor @relationship(type: "AUTHORED_ISSUE", direction: OUT)
+    issueNumber: Int! @settable(onCreate: true, onUpdate: false)
+    channelUniqueName: String @settable(onCreate: true, onUpdate: false)
+    Channel: Channel
+      @relationship(type: "HAS_ISSUE", direction: IN, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    authorName: String @settable(onCreate: true, onUpdate: false)
+    Author: IssueAuthor
+      @relationship(type: "AUTHORED_ISSUE", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
     title: String
     body: String
     isOpen: Boolean!
-    relatedDiscussionId: ID
-    relatedCommentId: ID
-    relatedEventId: ID
-    relatedWikiPageId: ID
-    relatedWikiRevisionId: ID
-    relatedUsername: String
-    relatedModProfileName: String
-    relatedChannelUniqueName: String
+    relatedDiscussionId: ID @settable(onCreate: true, onUpdate: false)
+    TargetDiscussion: Discussion
+      @relationship(type: "TARGETS_DISCUSSION", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedCommentId: ID @settable(onCreate: true, onUpdate: false)
+    TargetComment: Comment
+      @relationship(type: "TARGETS_COMMENT", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedEventId: ID @settable(onCreate: true, onUpdate: false)
+    TargetEvent: Event
+      @relationship(type: "TARGETS_EVENT", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedWikiPageId: ID @settable(onCreate: true, onUpdate: false)
+    TargetWikiPage: WikiPage
+      @relationship(type: "TARGETS_WIKI_PAGE", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedWikiRevisionId: ID @settable(onCreate: true, onUpdate: false)
+    TargetWikiRevision: TextVersion
+      @relationship(type: "TARGETS_WIKI_REVISION", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedUsername: String @settable(onCreate: true, onUpdate: false)
+    TargetUser: User
+      @relationship(type: "TARGETS_USER", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedModProfileName: String @settable(onCreate: true, onUpdate: false)
+    TargetModProfile: ModerationProfile
+      @relationship(type: "TARGETS_MOD_PROFILE", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedChannelUniqueName: String @settable(onCreate: true, onUpdate: false)
+    TargetChannel: Channel
+      @relationship(type: "TARGETS_CHANNEL", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
     # Image moderation
-    relatedImageId: ID
-    relatedAlbumId: ID
-    relatedProfilePicUserId: ID
-    relatedChannelIconName: String
-    relatedChannelBannerName: String
+    relatedImageId: ID @settable(onCreate: true, onUpdate: false)
+    TargetImage: Image
+      @relationship(type: "TARGETS_IMAGE", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedAlbumId: ID @settable(onCreate: true, onUpdate: false)
+    TargetAlbum: Album
+      @relationship(type: "TARGETS_ALBUM", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedProfilePicUserId: ID @settable(onCreate: true, onUpdate: false)
+    TargetProfilePictureUser: User
+      @relationship(type: "TARGETS_PROFILE_PICTURE_USER", direction: OUT, nestedOperations: [CONNECT])
+      @settable(onCreate: true, onUpdate: false)
+    relatedChannelIconName: String @settable(onCreate: true, onUpdate: false)
+    relatedChannelBannerName: String @settable(onCreate: true, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     flaggedServerRuleViolation: Boolean

@@ -43,6 +43,8 @@ const cleanIntegrity: IntegrityCounts = {
   channelRolesWithInvalidOwners: 0,
   channelRolesWithMismatchedOwners: 0,
   invalidChannelRoleIdentities: 0,
+  issuesWithInvalidTargetRelationships: 0,
+  issuesMissingLiveTargetRelationships: 0,
 };
 
 test("schema audit passes a complete and consistent snapshot", () => {
@@ -113,6 +115,6 @@ test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", a
   const report = await runNeo4jSchemaAudit(driver);
 
   assert.equal(report.ok, true);
-  assert.equal(queries.length, 19);
+  assert.equal(queries.length, 21);
   assert.equal(closed, true);
 });

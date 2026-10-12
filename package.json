@@ -28,6 +28,7 @@
     "migrate:discussion-flair-ownership": "node --loader ts-node/esm build_scripts/migrateDiscussionFlairOwnership.ts",
     "migrate:wiki-page-ownership": "node --loader ts-node/esm build_scripts/migrateWikiPageOwnership.ts",
     "migrate:channel-role-ownership": "node --loader ts-node/esm build_scripts/migrateChannelRoleOwnership.ts",
+    "migrate:issue-targets": "node --loader ts-node/esm build_scripts/migrateIssueTargets.ts",
     "provision": "node --loader ts-node/esm build_scripts/provisionServerDefaults.ts",
     "age-gate:sweep": "node ts_emitted/build_scripts/ageGateSweep.js",
     "age-gate:sweep:dev": "node --loader ts-node/esm build_scripts/ageGateSweep.ts",

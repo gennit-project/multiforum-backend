@@ -14,6 +14,15 @@ class ModelStub<T> {
   }
 }
 
+class RecordingModelStub<T> extends ModelStub<T> {
+  lastFindOptions: Record<string, unknown> | undefined;
+
+  async find(options?: Record<string, unknown>) {
+    this.lastFindOptions = options;
+    return super.find();
+  }
+}
+
 test("resolves a discussion author's username", async () => {
   const Issue = new ModelStub([
     {
@@ -326,4 +335,39 @@ test("throws when a server-scoped issue has no related account", async () => {
       }),
     /Could not find the user account name/
   );
+});
+
+test("prefers a live target relationship over its legacy scalar snapshot", async () => {
+  const Issue = new ModelStub([
+    {
+      id: "issue-relationship-first",
+      relatedDiscussionId: "deleted-discussion",
+      relatedEventId: null,
+      relatedCommentId: null,
+      relatedUsername: null,
+      relatedModProfileName: null,
+      Channel: { uniqueName: "cats" },
+      TargetDiscussion: { id: "live-discussion" },
+    },
+  ]);
+  const Discussion = new RecordingModelStub([
+    {
+      id: "live-discussion",
+      Author: { username: "alice", isBot: false },
+    },
+  ]);
+
+  const result = await resolveIssueTarget({
+    Issue: Issue as any,
+    Discussion: Discussion as any,
+    Event: new ModelStub([]) as any,
+    Comment: new ModelStub([]) as any,
+    User: new ModelStub([]) as any,
+    issueId: "issue-relationship-first",
+  });
+
+  assert.deepEqual(Discussion.lastFindOptions?.where, {
+    id: "live-discussion",
+  });
+  assert.equal(result.username, "alice");
 });

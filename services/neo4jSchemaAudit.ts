@@ -3,6 +3,7 @@ import { Kind, type DocumentNode } from "graphql";
 import typeDefs from "../typeDefs.js";
 import { coreSchemaConstraints } from "./coreSchemaConstraints.js";
 import { MAX_REPLY_DEPTH } from "./replyAncestry.js";
+import { issueTargetDefinitions } from "./issueTargetIdentity.js";
 
 export const getLibraryManagedConstraintNames = (
   definitions: DocumentNode = typeDefs
@@ -69,6 +70,8 @@ export type IntegrityCounts = {
   channelRolesWithInvalidOwners: number;
   channelRolesWithMismatchedOwners: number;
   invalidChannelRoleIdentities: number;
+  issuesWithInvalidTargetRelationships: number;
+  issuesMissingLiveTargetRelationships: number;
 };
 
 export type SchemaAuditSnapshot = {
@@ -243,6 +246,37 @@ export async function runNeo4jSchemaAudit(
       }
       RETURN sum(count) AS count
     `);
+    const invalidIssueTargetPredicates = issueTargetDefinitions.map(
+      (definition) => `
+        count { (issue)-[:${definition.relationshipType}]->(:${definition.targetLabel}) } > 1
+        OR EXISTS {
+          MATCH (issue)-[:${definition.relationshipType}]->(target:${definition.targetLabel})
+          WHERE issue.${definition.scalarField} IS NULL
+             OR target.${definition.targetKey} <> issue.${definition.scalarField}
+        }`
+    ).join("\n        OR ");
+    const missingIssueTargetPredicates = issueTargetDefinitions.map(
+      (definition) => `(
+        issue.${definition.scalarField} IS NOT NULL
+        AND EXISTS {
+          MATCH (target:${definition.targetLabel})
+          WHERE target.${definition.targetKey} = issue.${definition.scalarField}
+        }
+        AND NOT EXISTS {
+          MATCH (issue)-[:${definition.relationshipType}]->(:${definition.targetLabel})
+        }
+      )`
+    ).join("\n        OR ");
+    const issuesWithInvalidTargetRelationships = await session.run(`
+      MATCH (issue:Issue)
+      WHERE ${invalidIssueTargetPredicates}
+      RETURN count(DISTINCT issue) AS count
+    `);
+    const issuesMissingLiveTargetRelationships = await session.run(`
+      MATCH (issue:Issue)
+      WHERE ${missingIssueTargetPredicates}
+      RETURN count(DISTINCT issue) AS count
+    `);
 
     return evaluateSchemaAudit({
       constraints: constraintsResult.records.map((record) => record.get("name")),
@@ -308,6 +342,14 @@ export async function runNeo4jSchemaAudit(
         ),
         invalidChannelRoleIdentities: firstCount(
           invalidChannelRoleIdentities.records,
+          "count"
+        ),
+        issuesWithInvalidTargetRelationships: firstCount(
+          issuesWithInvalidTargetRelationships.records,
+          "count"
+        ),
+        issuesMissingLiveTargetRelationships: firstCount(
+          issuesMissingLiveTargetRelationships.records,
           "count"
         ),
       },

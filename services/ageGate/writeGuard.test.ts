@@ -63,6 +63,9 @@ test("the definitions follow the expected relationship types", () => {
     "HAS_VERSION",
     "IS_REPLY_TO",
     "POSTED_IN_CHANNEL",
+    "TARGETS_COMMENT",
+    "TARGETS_DISCUSSION",
+    "TARGETS_IMAGE",
   ]);
 });
 

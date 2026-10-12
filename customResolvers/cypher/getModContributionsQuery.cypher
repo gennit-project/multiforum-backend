@@ -10,9 +10,19 @@ CALL {
     AND date(datetime(action.createdAt)) <= endDate
   OPTIONAL MATCH (action)-[:MODERATED_COMMENT]->(actionComment:Comment)
   OPTIONAL MATCH (issue:Issue)-[:ACTIVITY_ON_ISSUE]->(action)
-  OPTIONAL MATCH (relatedDiscussion:Discussion {id: issue.relatedDiscussionId})
-  OPTIONAL MATCH (relatedEvent:Event {id: issue.relatedEventId})
-  OPTIONAL MATCH (relatedComment:Comment {id: issue.relatedCommentId})
+  OPTIONAL MATCH (issue)-[:TARGETS_DISCUSSION]->(targetDiscussion:Discussion)
+  OPTIONAL MATCH (scalarDiscussion:Discussion {id: issue.relatedDiscussionId})
+    WHERE targetDiscussion IS NULL
+  OPTIONAL MATCH (issue)-[:TARGETS_EVENT]->(targetEvent:Event)
+  OPTIONAL MATCH (scalarEvent:Event {id: issue.relatedEventId})
+    WHERE targetEvent IS NULL
+  OPTIONAL MATCH (issue)-[:TARGETS_COMMENT]->(targetComment:Comment)
+  OPTIONAL MATCH (scalarComment:Comment {id: issue.relatedCommentId})
+    WHERE targetComment IS NULL
+  WITH action, actionComment, issue,
+       coalesce(targetDiscussion, scalarDiscussion) AS relatedDiscussion,
+       coalesce(targetEvent, scalarEvent) AS relatedEvent,
+       coalesce(targetComment, scalarComment) AS relatedComment
 
   CALL {
     WITH relatedDiscussion

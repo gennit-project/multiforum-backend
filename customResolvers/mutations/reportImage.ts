@@ -338,12 +338,6 @@ const getResolver = (input: Input) => {
         (selectedServerRules?.length ?? 0) > 0,
     };
 
-    // Update relatedUsername if not already set
-    const existingIssue = existingIssueData[0];
-    if (!existingIssue?.relatedUsername && uploaderUsername) {
-      issueUpdateInput.relatedUsername = uploaderUsername;
-    }
-
     try {
       const updateResult = await Issue.update({
         where: issueUpdateWhere,

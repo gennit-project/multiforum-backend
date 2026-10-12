@@ -28,6 +28,7 @@ import filterGroupValidationMiddleware from "./middleware/filterGroupValidationM
 import ownershipCreateMiddleware from "./middleware/ownershipCreateMiddleware.js";
 import wikiPageOwnershipMiddleware from "./middleware/wikiPageOwnershipMiddleware.js";
 import channelRoleOwnershipMiddleware from "./middleware/channelRoleOwnershipMiddleware.js";
+import issueIdentityMiddleware from "./middleware/issueIdentityMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
@@ -220,6 +221,7 @@ async function initializeServer() {
       ownershipCreateMiddleware as AppMiddleware,
       wikiPageOwnershipMiddleware as AppMiddleware,
       channelRoleOwnershipMiddleware as AppMiddleware,
+      issueIdentityMiddleware as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,
       commentVersionHistoryMiddleware as AppMiddleware,

@@ -306,8 +306,9 @@ test("getSiteWideIssueList query filters by issue author for filterCreatedByMe",
 test("getSiteWideIssueList query filters by reported-content author for filterIAmOP", () => {
   assert.match(
     getSiteWideIssuesQuery,
-    /\$filterIAmOP = false OR issue\.relatedUsername = \$loggedInUsername OR issue\.relatedModProfileName = \$loggedInModProfileName/
+    /\$filterIAmOP = false[\s\S]*TARGETS_USER[\s\S]*NOT EXISTS \{ MATCH \(issue\)-\[:TARGETS_USER\]->\(\) \} AND issue\.relatedUsername = \$loggedInUsername/
   );
+  assert.match(getSiteWideIssuesQuery, /TARGETS_MOD_PROFILE/);
 });
 
 test("getSiteWideIssueList query filters by report author for filterIReported", () => {

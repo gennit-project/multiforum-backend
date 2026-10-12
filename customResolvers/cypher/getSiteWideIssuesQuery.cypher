@@ -4,15 +4,24 @@ AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
-AND ($mayAccessSensitiveContent OR (
-  NOT EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
+AND ($mayAccessSensitiveContent OR NOT (
+  EXISTS { MATCH (issue)-[:TARGETS_DISCUSSION]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_DISCUSSION]->() } AND EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_IMAGE]->(sensitiveImage:Image) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_IMAGE]->() } AND EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true })
 ))
 AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })
-AND ($filterIAmOP = false OR issue.relatedUsername = $loggedInUsername OR issue.relatedModProfileName = $loggedInModProfileName)
+AND ($filterIAmOP = false
+  OR EXISTS { MATCH (issue)-[:TARGETS_USER]->(:User {username: $loggedInUsername}) }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_USER]->() } AND issue.relatedUsername = $loggedInUsername)
+  OR EXISTS { MATCH (issue)-[:TARGETS_MOD_PROFILE]->(:ModerationProfile {displayName: $loggedInModProfileName}) }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_MOD_PROFILE]->() } AND issue.relatedModProfileName = $loggedInModProfileName))
 AND ($filterIReported = false OR EXISTS { (issue)-[:ACTIVITY_ON_ISSUE]->(:ModerationAction {actionType: "report"})<-[:PERFORMED_MODERATION_ACTION]-(reporter) WHERE reporter.username = $loggedInUsername OR reporter.displayName = $loggedInModProfileName })
 WITH count(issue) AS totalCount
 
@@ -22,15 +31,24 @@ AND (size($selectedChannels) = 0 OR issue.channelUniqueName IN $selectedChannels
 AND ($showOnlyServerRuleViolations = false OR coalesce(issue.flaggedServerRuleViolation, false) = true)
 AND ($startDate IS NULL OR datetime(issue.createdAt) >= datetime($startDate))
 AND ($endDate IS NULL OR datetime(issue.createdAt) <= datetime($endDate))
-AND ($mayAccessSensitiveContent OR (
-  NOT EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
-  AND NOT EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
+AND ($mayAccessSensitiveContent OR NOT (
+  EXISTS { MATCH (issue)-[:TARGETS_DISCUSSION]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_DISCUSSION]->() } AND EXISTS { MATCH (sensitiveDiscussion:Discussion {id: issue.relatedDiscussionId}) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->() } AND EXISTS { MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)-[:IS_REPLY_TO*0..32]->(:Comment)<-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(sensitiveDiscussion:Discussion) WHERE coalesce(sensitiveDiscussion.hasSensitiveContent, false) = true })
+  OR EXISTS { MATCH (issue)-[:TARGETS_IMAGE]->(sensitiveImage:Image) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_IMAGE]->() } AND EXISTS { MATCH (sensitiveImage:Image {id: issue.relatedImageId}) WHERE coalesce(sensitiveImage.hasSensitiveContent, false) = true })
 ))
 AND ($filterCreatedByMe = false OR issue.authorName = $loggedInUsername OR EXISTS { (issue)<-[:AUTHORED_ISSUE]-(author) WHERE author.username = $loggedInUsername OR author.displayName = $loggedInModProfileName })
-AND ($filterIAmOP = false OR issue.relatedUsername = $loggedInUsername OR issue.relatedModProfileName = $loggedInModProfileName)
+AND ($filterIAmOP = false
+  OR EXISTS { MATCH (issue)-[:TARGETS_USER]->(:User {username: $loggedInUsername}) }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_USER]->() } AND issue.relatedUsername = $loggedInUsername)
+  OR EXISTS { MATCH (issue)-[:TARGETS_MOD_PROFILE]->(:ModerationProfile {displayName: $loggedInModProfileName}) }
+  OR (NOT EXISTS { MATCH (issue)-[:TARGETS_MOD_PROFILE]->() } AND issue.relatedModProfileName = $loggedInModProfileName))
 AND ($filterIReported = false OR EXISTS { (issue)-[:ACTIVITY_ON_ISSUE]->(:ModerationAction {actionType: "report"})<-[:PERFORMED_MODERATION_ACTION]-(reporter) WHERE reporter.username = $loggedInUsername OR reporter.displayName = $loggedInModProfileName })
 OPTIONAL MATCH (issue)<-[:HAS_ISSUE]-(channel:Channel)
 OPTIONAL MATCH (issue)<-[:AUTHORED_ISSUE]-(authorUser:User)

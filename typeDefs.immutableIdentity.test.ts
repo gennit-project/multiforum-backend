@@ -53,6 +53,22 @@ test("channel and connector identity can be set at creation but not changed", as
     }
     assert.ok(createFields.includes("Owner"), `${typeName}.Owner should be explicit on create`);
   }
+
+  const issueCreateFields = fieldsFor(schema, "IssueCreateInput");
+  const issueUpdateFields = fieldsFor(schema, "IssueUpdateInput");
+  for (const field of [
+    "issueNumber", "channelUniqueName", "Channel", "authorName", "Author",
+    "relatedDiscussionId", "TargetDiscussion", "relatedCommentId", "TargetComment",
+    "relatedEventId", "TargetEvent", "relatedWikiPageId", "TargetWikiPage",
+    "relatedWikiRevisionId", "TargetWikiRevision", "relatedImageId", "TargetImage",
+    "relatedAlbumId", "TargetAlbum", "relatedUsername", "TargetUser",
+    "relatedModProfileName", "TargetModProfile", "relatedProfilePicUserId",
+    "TargetProfilePictureUser", "relatedChannelUniqueName", "TargetChannel",
+    "relatedChannelIconName", "relatedChannelBannerName",
+  ]) {
+    assert.ok(issueCreateFields.includes(field), `Issue.${field} should be settable on create`);
+    assert.ok(!issueUpdateFields.includes(field), `Issue.${field} should be immutable`);
+  }
 });
 
 test("GraphQL rejects attempts to rewrite immutable identities", async () => {
@@ -70,6 +86,8 @@ test("GraphQL rejects attempts to rewrite immutable identities", async () => {
     `mutation { updateChannelRoles(update: { channelUniqueName: "other" }) { channelRoles { id } } }`,
     `mutation { updateModChannelRoles(update: { name: "renamed" }) { modChannelRoles { id } } }`,
     `mutation { updateModChannelRoles(update: { channelUniqueName: "other" }) { modChannelRoles { id } } }`,
+    `mutation { updateIssues(update: { relatedDiscussionId: "other" }) { issues { id } } }`,
+    `mutation { updateIssues(update: { TargetDiscussion: { connect: { where: { node: { id: "other" } } } } }) { issues { id } } }`,
   ];
 
   for (const mutation of attempts) {

@@ -65,6 +65,7 @@ const mutate = async (source: string) => {
     contextValue: { jwt: { mayAccessSensitiveContent: true } },
   });
   assert.equal(result.errors, undefined, JSON.stringify(result.errors));
+  return result;
 };
 
 // Generated creates assign ids, so new comments are identified by their text.
@@ -145,12 +146,16 @@ test("marking an image sensitive restricts issues about it", async () => {
   assert.ok((await restricted()).includes("issue"));
 });
 
-test("pointing an issue at marked content restricts it", async () => {
-  await mutate(`mutation {
-    updateIssues(where: { id: "issue" }, update: { relatedCommentId: "s-root" }) { issues { id } }
+test("creating an issue for marked content restricts it", async () => {
+  const result = await mutate(`mutation {
+    createIssues(input: [{
+      issueNumber: 2, isOpen: true, relatedCommentId: "s-root"
+    }]) { issues { id } }
   }`);
 
-  assert.ok((await restricted()).includes("issue"));
+  const issueId = (result.data as any)?.createIssues?.issues?.[0]?.id;
+  assert.ok(issueId);
+  assert.ok((await restricted()).includes(issueId));
 });
 
 test("an explicit transaction reconciles before it commits", async () => {
