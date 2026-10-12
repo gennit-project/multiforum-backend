@@ -161,3 +161,13 @@ test("Community rejects duplicate channel issue targets", async () => {
     })
   `);
 });
+
+test("wiki routes are unique within a channel but slugs can repeat across channels", async () => {
+  await run(`
+    CREATE (:WikiPage {id: 'wiki-1', channelUniqueName: 'cats', slug: 'guide'})
+    CREATE (:WikiPage {id: 'wiki-2', channelUniqueName: 'dogs', slug: 'guide'})
+  `);
+  await rejectsDuplicate(`
+    CREATE (:WikiPage {id: 'wiki-3', channelUniqueName: 'cats', slug: 'guide'})
+  `);
+});

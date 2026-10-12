@@ -22,7 +22,7 @@ export const buildSiteWideWikiPagesQuery = (hasSearch: boolean): string =>
   hasSearch
     ? replaceAnchors(
         getSiteWideWikiPagesQuery,
-        /^MATCH \(w:WikiPage\)$/gm,
-        "CALL db.index.fulltext.queryNodes($fulltextIndex, $fulltextQuery) YIELD node AS w"
+        /^MATCH \(owner:Channel\)-\[:OWNS_WIKI_PAGE\]->\(w:WikiPage\)$/gm,
+        "CALL db.index.fulltext.queryNodes($fulltextIndex, $fulltextQuery) YIELD node AS w\nMATCH (owner:Channel)-[:OWNS_WIKI_PAGE]->(w)"
       )
     : getSiteWideWikiPagesQuery;

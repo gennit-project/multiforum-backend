@@ -13,7 +13,7 @@ type ModelFindArgs = {
 
 const buildModels = ({
   channel = { uniqueName: "cats", wikiEnabled: true },
-  wikiPage = { id: "wiki-1", channelUniqueName: "cats" },
+  wikiPage = { id: "wiki-1", Channel: { uniqueName: "cats" } },
 }: {
   channel?: Record<string, unknown> | null;
   wikiPage?: Record<string, unknown> | null;
@@ -133,7 +133,7 @@ test("unpinWikiPageFromChannel deletes the pin relationship", async () => {
 
 test("pinWikiPageToChannel rejects wiki pages from another forum", async () => {
   const models = buildModels({
-    wikiPage: { id: "wiki-1", channelUniqueName: "dogs" },
+    wikiPage: { id: "wiki-1", Channel: { uniqueName: "dogs" } },
   });
   const { driver, calls } = buildDriver();
   const resolver = pinWikiPageToChannel({

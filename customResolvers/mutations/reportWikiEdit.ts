@@ -89,7 +89,7 @@ const getResolver = (input: Input) => {
         id
         title
         body
-        channelUniqueName
+        Channel { uniqueName }
         VersionAuthor {
           username
         }
@@ -101,8 +101,7 @@ const getResolver = (input: Input) => {
     }
 
     if (
-      wikiPage.channelUniqueName &&
-      wikiPage.channelUniqueName !== channelUniqueName
+      wikiPage.Channel?.uniqueName !== channelUniqueName
     ) {
       throw new GraphQLError('Wiki page does not belong to this channel')
     }

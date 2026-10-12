@@ -29,7 +29,9 @@ beforeEach(async () => {
   await resetDb();
   await seedModerator({ username: "mod1", modDisplayName: "Mod One" });
   await run(
-    `CREATE (:WikiPage { id: 'wiki-1', title: 'Test Page', slug: 'test-page', channelUniqueName: 'test-channel', createdAt: datetime() })`
+    `MERGE (channel:Channel { uniqueName: 'test-channel' })
+     CREATE (page:WikiPage { id: 'wiki-1', title: 'Test Page', slug: 'test-page', channelUniqueName: 'test-channel', createdAt: datetime() })
+     CREATE (channel)-[:OWNS_WIKI_PAGE]->(page)`
   );
 });
 

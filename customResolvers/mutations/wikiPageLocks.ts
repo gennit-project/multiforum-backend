@@ -32,7 +32,7 @@ type ChannelLookup = {
 
 type WikiPageLookup = {
   id?: string | null;
-  channelUniqueName?: string | null;
+  Channel?: { uniqueName?: string | null } | null;
   locked?: boolean | null;
 };
 
@@ -88,7 +88,7 @@ const getChannelAndWikiPage = async ({
       where: { id: args.wikiPageId },
       selectionSet: `{
         id
-        channelUniqueName
+        Channel { uniqueName }
         locked
       }`,
     }) as Promise<WikiPageLookup[]>,
@@ -109,7 +109,7 @@ const getChannelAndWikiPage = async ({
     throw new GraphQLError("Wiki page not found.");
   }
 
-  if (wikiPage.channelUniqueName !== args.channelUniqueName) {
+  if (wikiPage.Channel?.uniqueName !== args.channelUniqueName) {
     throw new GraphQLError("Wiki page does not belong to this forum.");
   }
 

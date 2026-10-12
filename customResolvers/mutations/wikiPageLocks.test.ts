@@ -19,7 +19,7 @@ type ModelUpdateArgs = {
 
 const buildModels = ({
   channel = { uniqueName: "cats", wikiEnabled: true },
-  wikiPage = { id: "wiki-1", channelUniqueName: "cats", locked: false },
+  wikiPage = { id: "wiki-1", Channel: { uniqueName: "cats" }, locked: false },
 }: {
   channel?: Record<string, unknown> | null;
   wikiPage?: Record<string, unknown> | null;
@@ -112,7 +112,7 @@ test("lockWikiPage delegates authorization and writes lock metadata", async () =
 
 test("unlockWikiPage clears lock metadata", async () => {
   const models = buildModels({
-    wikiPage: { id: "wiki-1", channelUniqueName: "cats", locked: true },
+    wikiPage: { id: "wiki-1", Channel: { uniqueName: "cats" }, locked: true },
   });
   const resolver = unlockWikiPage({
     Channel: models.Channel as never,
@@ -164,7 +164,7 @@ test("lockWikiPage rejects callers without wiki moderation permission", async ()
 
 test("lockWikiPage rejects an already locked wiki page", async () => {
   const models = buildModels({
-    wikiPage: { id: "wiki-1", channelUniqueName: "cats", locked: true },
+    wikiPage: { id: "wiki-1", Channel: { uniqueName: "cats" }, locked: true },
   });
   const resolver = lockWikiPage({
     Channel: models.Channel as never,

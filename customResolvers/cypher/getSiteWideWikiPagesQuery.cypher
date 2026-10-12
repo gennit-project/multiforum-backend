@@ -1,12 +1,12 @@
 // Count matching wiki pages first
-MATCH (w:WikiPage)
-WHERE SIZE($selectedChannels) = 0 OR w.channelUniqueName IN $selectedChannels
+MATCH (owner:Channel)-[:OWNS_WIKI_PAGE]->(w:WikiPage)
+WHERE SIZE($selectedChannels) = 0 OR owner.uniqueName IN $selectedChannels
 WITH COUNT(w) AS totalCount
 
 // Fetch paginated results
-MATCH (w:WikiPage)
-WHERE SIZE($selectedChannels) = 0 OR w.channelUniqueName IN $selectedChannels
-WITH w, totalCount
+MATCH (owner:Channel)-[:OWNS_WIKI_PAGE]->(w:WikiPage)
+WHERE SIZE($selectedChannels) = 0 OR owner.uniqueName IN $selectedChannels
+WITH w, owner, totalCount
 ORDER BY coalesce(w.updatedAt, w.createdAt) DESC
 SKIP toInteger($offset)
 LIMIT toInteger($limit)
@@ -18,7 +18,7 @@ RETURN {
   title: w.title,
   body: w.body,
   slug: w.slug,
-  channelUniqueName: w.channelUniqueName,
+  channelUniqueName: owner.uniqueName,
   createdAt: w.createdAt,
   updatedAt: w.updatedAt,
   VersionAuthor: CASE

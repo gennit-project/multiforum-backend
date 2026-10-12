@@ -18,7 +18,9 @@ import {
 
 type WikiPageLookup = {
   id?: string | null;
-  channelUniqueName?: string | null;
+  Channel?: {
+    uniqueName?: string | null;
+  } | null;
   locked?: boolean | null;
   OriginalAuthor?: {
     username?: string | null;
@@ -75,7 +77,9 @@ async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: GraphQLCont
     where: where ?? undefined,
     selectionSet: `{
       id
-      channelUniqueName
+      Channel {
+        uniqueName
+      }
       locked
       OriginalAuthor {
         username
@@ -91,7 +95,7 @@ function collectWikiPageChannelNames(wikiPages: WikiPageLookup[]) {
   const channelNames = new Set<string>();
 
   wikiPages.forEach((wikiPage) => {
-    addChannelName(channelNames, wikiPage.channelUniqueName);
+    addChannelName(channelNames, wikiPage.Channel?.uniqueName);
   });
 
   return Array.from(channelNames);
@@ -103,8 +107,6 @@ async function getWikiPageChannelNamesByWhere(
 ) {
   const channelNames = new Set<string>();
   const where = args?.where || null;
-
-  addChannelName(channelNames, where?.channelUniqueName);
 
   const wikiPages = await getWikiPagesByWhere(where, ctx);
   collectWikiPageChannelNames(wikiPages).forEach((channelName) => {
@@ -301,10 +303,6 @@ export async function evaluateCanEditWikiHomePageRule(
   addChannelName(
     channelNames,
     wikiHomePageUpdate?.create?.node?.channelUniqueName
-  );
-  addChannelName(
-    channelNames,
-    wikiHomePageUpdate?.update?.node?.channelUniqueName
   );
   const channelConnections = Array.from(channelNames);
   const wikiEnabledResult = await validateWikiChannelsEnabled(

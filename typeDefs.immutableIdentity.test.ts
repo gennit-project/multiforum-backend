@@ -16,6 +16,8 @@ test("channel and connector identity can be set at creation but not changed", as
   assert.ok(fieldsFor(schema, "ChannelCreateInput").includes("uniqueName"));
   assert.ok(!fieldsFor(schema, "ChannelUpdateInput").includes("uniqueName"));
   assert.ok(!fieldsFor(schema, "ChannelUpdateInput").includes("createdAt"));
+  assert.ok(!fieldsFor(schema, "ChannelCreateInput").includes("WikiHomePage"));
+  assert.ok(fieldsFor(schema, "ChannelUpdateInput").includes("WikiHomePage"));
 
   for (const [typeName, identityFields] of [
     ["DiscussionChannel", ["discussionId", "channelUniqueName", "Discussion", "Channel"]],
@@ -30,6 +32,17 @@ test("channel and connector identity can be set at creation but not changed", as
     }
     assert.ok(!updateFields.includes("createdAt"), `${typeName}.createdAt should be server-owned`);
   }
+
+  const wikiCreateFields = fieldsFor(schema, "WikiPageCreateInput");
+  const wikiUpdateFields = fieldsFor(schema, "WikiPageUpdateInput");
+  for (const field of ["slug", "channelUniqueName", "Channel"]) {
+    assert.ok(wikiCreateFields.includes(field), `WikiPage.${field} should be settable on create`);
+    assert.ok(!wikiUpdateFields.includes(field), `WikiPage.${field} should be immutable`);
+  }
+  assert.ok(
+    !fieldsFor(schema, "WikiPageDeleteInput").includes("Channel"),
+    "deleting a wiki page must not offer a nested delete of its owning channel"
+  );
 });
 
 test("GraphQL rejects attempts to rewrite immutable identities", async () => {
@@ -40,6 +53,9 @@ test("GraphQL rejects attempts to rewrite immutable identities", async () => {
     `mutation { updateDiscussionChannels(update: { Discussion: { disconnect: {} } }) { discussionChannels { id } } }`,
     `mutation { updateEventChannels(update: { channelUniqueName: "other" }) { eventChannels { id } } }`,
     `mutation { updateEventChannels(update: { Channel: { disconnect: {} } }) { eventChannels { id } } }`,
+    `mutation { updateWikiPages(update: { slug: "renamed" }) { wikiPages { id } } }`,
+    `mutation { updateWikiPages(update: { channelUniqueName: "other" }) { wikiPages { id } } }`,
+    `mutation { updateWikiPages(update: { Channel: { disconnect: {} } }) { wikiPages { id } } }`,
   ];
 
   for (const mutation of attempts) {

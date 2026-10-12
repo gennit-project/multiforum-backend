@@ -26,6 +26,7 @@ import channelBotsMiddleware from "./middleware/channelBotsMiddleware.js";
 import channelCreatorModeratorMiddleware from "./middleware/channelCreatorModeratorMiddleware.js";
 import filterGroupValidationMiddleware from "./middleware/filterGroupValidationMiddleware.js";
 import ownershipCreateMiddleware from "./middleware/ownershipCreateMiddleware.js";
+import wikiPageOwnershipMiddleware from "./middleware/wikiPageOwnershipMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
@@ -216,6 +217,7 @@ async function initializeServer() {
       // the OGM, which shares the unwrapped schema, still reaches the
       // generated createAlbums/createCollections.
       ownershipCreateMiddleware as AppMiddleware,
+      wikiPageOwnershipMiddleware as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,
       commentVersionHistoryMiddleware as AppMiddleware,
