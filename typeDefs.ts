@@ -2218,7 +2218,8 @@ const typeDefinitions = gql`
 
   type PluginPipelineRun {
     id: ID! @id @unique
-    pipelineId: String! @unique
+    pipelineId: String!
+      @unique(constraintName: "plugin_pipeline_run_pipeline_id")
     targetId: String!
     targetType: String!
     targetVersion: String
