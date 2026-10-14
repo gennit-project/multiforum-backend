@@ -282,35 +282,30 @@ const getResolver = (input: Input) => {
         create: occurrenceInputs
       };
 
-      // Create the EventSeries with all occurrences
-      const createResult = await EventSeries.create({
-        input: [eventSeriesCreateInput],
-        selectionSet: `{ eventSeries ${eventSeriesSelectionSet} }`,
-      });
+      const eventSeriesId = await session.executeWrite(async (transaction) => {
+        // Create the series, its occurrences, and every EventChannel in one
+        // retry-safe unit. If any channel link fails, none of the graph changes
+        // from this attempt are committed.
+        const createResult = await EventSeries.create({
+          input: [eventSeriesCreateInput],
+          selectionSet: `{ eventSeries ${eventSeriesSelectionSet} }`,
+          context: { executionContext: transaction },
+        });
 
-      const newEventSeries = createResult.eventSeries[0];
-      const eventSeriesId = newEventSeries.id;
+        const newEventSeries = createResult.eventSeries[0];
 
-      // Link each occurrence to channels via EventChannel
-      for (const occurrence of newEventSeries.Occurrences) {
-        for (const channelUniqueName of seriesInput.channelConnections) {
-          try {
-            await session.run(createEventChannelQuery, {
+        for (const occurrence of newEventSeries.Occurrences) {
+          for (const channelUniqueName of seriesInput.channelConnections) {
+            await transaction.run(createEventChannelQuery, {
               eventId: occurrence.id,
               channelUniqueName,
               poster: context.user?.username,
             });
-          } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            if (message.includes("Constraint validation failed")) {
-              logger.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
-              continue;
-            } else {
-              throw error;
-            }
           }
         }
-      }
+
+        return newEventSeries.id;
+      });
 
       // Refetch the EventSeries with all related data
       const fetchedEventSeries = await EventSeries.find({
@@ -326,7 +321,7 @@ const getResolver = (input: Input) => {
       logger.error("Error creating event series:", message);
       throw new Error(`Failed to create event series: ${message}`);
     } finally {
-      session.close();
+      await session.close();
     }
   };
 };

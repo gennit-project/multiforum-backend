@@ -18,9 +18,16 @@ const buildRecord = (values: Record<string, unknown>) => ({
   get: (key: string) => values[key],
 });
 
-const buildDriver = ({ target }: { target: TargetRecord | null }) => {
+const buildDriver = ({
+  target,
+  callbackAttempts = 1,
+}: {
+  target: TargetRecord | null;
+  callbackAttempts?: number;
+}) => {
   const calls = {
     reads: [] as Record<string, unknown>[],
+    executeWrite: 0,
     writes: [] as Record<string, unknown>[],
   };
 
@@ -54,27 +61,45 @@ const buildDriver = ({ target }: { target: TargetRecord | null }) => {
           };
         }
 
-        calls.writes.push({ query, params });
-        return {
-          records: [
-            buildRecord(
-              query.includes("target:User")
-                ? {
-                    username: params.username,
-                    profilePicURL: null,
-                  }
-                : query.includes("channelIconURL")
-                  ? {
-                      uniqueName: params.channelUniqueName,
-                      channelIconURL: null,
-                    }
-                : {
-                    uniqueName: params.channelUniqueName,
-                    channelBannerURL: null,
-                  }
-            ),
-          ],
-        };
+        throw new Error("Writes must use executeWrite");
+      },
+      executeWrite: async (
+        work: (transaction: {
+          run: (query: string, params: Record<string, unknown>) => Promise<{
+            records: ReturnType<typeof buildRecord>[];
+          }>;
+        }) => Promise<Record<string, unknown>>
+      ) => {
+        calls.executeWrite += 1;
+        let result: Record<string, unknown> = {};
+        for (let attempt = 0; attempt < callbackAttempts; attempt += 1) {
+          result = await work({
+            run: async (query, params) => {
+              calls.writes.push({ query, params });
+              return {
+                records: [
+                  buildRecord(
+                    query.includes("target:User")
+                      ? {
+                          username: params.username,
+                          profilePicURL: null,
+                        }
+                      : query.includes("channelIconURL")
+                        ? {
+                            uniqueName: params.channelUniqueName,
+                            channelIconURL: null,
+                          }
+                        : {
+                            uniqueName: params.channelUniqueName,
+                            channelBannerURL: null,
+                          }
+                  ),
+                ],
+              };
+            },
+          });
+        }
+        return result;
       },
       close: async () => undefined,
     }),
@@ -255,6 +280,43 @@ test("permanentlyDeleteChannelIcon deletes generated icon variants with the orig
       writeCount: 1,
     }
   );
+});
+
+test("permanentlyDeleteChannelIcon keeps storage deletion outside a retried managed callback", async () => {
+  const { driver, calls } = buildDriver({
+    target: {
+      channelUniqueName: "cats",
+      channelOwnerUsernames: ["alice"],
+    },
+    callbackAttempts: 2,
+  });
+  let deleteCalls = 0;
+  const resolver = getResolver({
+    driver,
+    referenceType: "ChannelIcon",
+    deleteObject: async () => {
+      deleteCalls += 1;
+      return { status: "deleted" };
+    },
+    checkServerModPermission: async () => new Error("not a mod"),
+  });
+
+  const result = await resolver(
+    null,
+    {
+      channelUniqueName: "cats",
+      imageUrl: "https://storage.example/image.png",
+    },
+    contextFor("alice")
+  );
+
+  assert.deepEqual(result, {
+    uniqueName: "cats",
+    channelIconURL: null,
+  });
+  assert.equal(calls.executeWrite, 1);
+  assert.equal(calls.writes.length, 2);
+  assert.equal(deleteCalls, 1);
 });
 
 test("permanentlyDeleteChannelBanner lets a server mod delete another channel's active banner", async () => {

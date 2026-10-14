@@ -3,8 +3,12 @@ import assert from "node:assert/strict";
 import getResolver from "./createEventSeriesWithChannelConnections.js";
 import type { GraphQLContext } from "../../types/context.js";
 
-const buildDriver = () => {
-  const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
+const buildDriver = (callbackAttempts = 1) => {
+  const sessions: Array<{
+    runCalls: any[];
+    executeWriteCalls: number;
+    closeCalls: number;
+  }> = [];
 
   return {
     sessions,
@@ -12,13 +16,25 @@ const buildDriver = () => {
       session() {
         const sessionState = {
           runCalls: [] as any[],
+          executeWriteCalls: 0,
           closeCalls: 0,
         };
         sessions.push(sessionState);
         return {
-          async run(query: string, params: Record<string, unknown>) {
-            sessionState.runCalls.push({ query, params });
-            return {};
+          async executeWrite(work: (transaction: {
+            run: (query: string, params: Record<string, unknown>) => Promise<object>;
+          }) => Promise<string>) {
+            sessionState.executeWriteCalls += 1;
+            let result = "";
+            for (let attempt = 0; attempt < callbackAttempts; attempt += 1) {
+              result = await work({
+                async run(query: string, params: Record<string, unknown>) {
+                  sessionState.runCalls.push({ query, params });
+                  return {};
+                },
+              });
+            }
+            return result;
           },
           async close() {
             sessionState.closeCalls += 1;
@@ -87,6 +103,8 @@ test("createEventSeriesWithChannelConnections creates series with occurrences", 
   assert.equal(result.title, "Weekly Meetup");
   assert.equal(result.Occurrences.length, 2);
   assert.equal(createCalls.length, 1);
+  assert.ok(createCalls[0].context.executionContext);
+  assert.equal(sessions[0].executeWriteCalls, 1);
   // Should have created EventChannel for each occurrence and channel
   assert.equal(sessions[0].runCalls.length, 2); // 2 occurrences * 1 channel
   assert.equal(sessions[0].closeCalls, 1);
@@ -273,22 +291,25 @@ test("createEventSeriesWithChannelConnections handles location coordinates", asy
   assert.deepEqual(occurrenceInput.location, { latitude: 33.4484, longitude: -112.074 });
 });
 
-test("createEventSeriesWithChannelConnections skips duplicate EventChannel gracefully", async () => {
-  const { driver, sessions } = buildDriver();
+test("createEventSeriesWithChannelConnections rolls back when an EventChannel cannot be created", async () => {
 
   // Override the session to simulate constraint violation on second call
   let runCallCount = 0;
   const customDriver = {
     session() {
       return {
-        async run(query: string, params: Record<string, unknown>) {
-          runCallCount++;
-          if (runCallCount === 2) {
-            const error = new Error("Constraint validation failed");
-            throw error;
-          }
-          sessions.push({ runCalls: [{ query, params }], closeCalls: 0 });
-          return {};
+        async executeWrite(work: (transaction: {
+          run: (query: string, params: Record<string, unknown>) => Promise<object>;
+        }) => Promise<string>) {
+          return work({
+            async run() {
+              runCallCount++;
+              if (runCallCount === 2) {
+                throw new Error("Constraint validation failed");
+              }
+              return {};
+            },
+          });
         },
         async close() {},
       };
@@ -306,7 +327,35 @@ test("createEventSeriesWithChannelConnections skips duplicate EventChannel grace
 
   const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver: customDriver } as unknown as Parameters<typeof getResolver>[0]);
 
-  // Should not throw despite constraint violation on second EventChannel
+  await assert.rejects(
+    resolver(
+      null,
+      { input: baseSeriesInput },
+      { user: { username: "testuser" } } as unknown as GraphQLContext
+    ),
+    /Failed to create event series: Constraint validation failed/
+  );
+});
+
+test("createEventSeriesWithChannelConnections is safe when Neo4j retries the callback", async () => {
+  const { driver, sessions } = buildDriver(2);
+  const createCalls: any[] = [];
+  const EventSeries = {
+    async create(input: any) {
+      createCalls.push(input);
+      return { eventSeries: [mockCreatedSeries] };
+    },
+    async find() {
+      return [mockCreatedSeries];
+    },
+  };
+  const resolver = getResolver({
+    EventSeries,
+    Event: {},
+    Tag: {},
+    driver,
+  } as unknown as Parameters<typeof getResolver>[0]);
+
   const result = await resolver(
     null,
     { input: baseSeriesInput },
@@ -314,6 +363,10 @@ test("createEventSeriesWithChannelConnections skips duplicate EventChannel grace
   );
 
   assert.equal(result.id, "series-1");
+  assert.equal(createCalls.length, 2);
+  assert.equal(sessions[0].executeWriteCalls, 1);
+  assert.equal(sessions[0].runCalls.length, 4);
+  assert.equal(sessions[0].closeCalls, 1);
 });
 
 test("createEventSeriesWithChannelConnections sets occurrence index correctly", async () => {

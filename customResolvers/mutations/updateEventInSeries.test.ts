@@ -6,8 +6,12 @@ import type { GraphQLResolveInfo } from "graphql";
 
 type GetResolverArg = Parameters<typeof getResolver>[0];
 
-const buildDriver = () => {
-  const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
+const buildDriver = (callbackAttempts = 1, failRun = false) => {
+  const sessions: Array<{
+    runCalls: any[];
+    executeWriteCalls: number;
+    closeCalls: number;
+  }> = [];
 
   return {
     sessions,
@@ -15,13 +19,28 @@ const buildDriver = () => {
       session() {
         const sessionState = {
           runCalls: [] as any[],
+          executeWriteCalls: 0,
           closeCalls: 0,
         };
         sessions.push(sessionState);
         return {
-          async run(query: string, params: Record<string, unknown>) {
-            sessionState.runCalls.push({ query, params });
-            return {};
+          async executeWrite<T>(work: (transaction: {
+            run: (query: string, params: Record<string, unknown>) => Promise<object>;
+          }) => Promise<T>) {
+            sessionState.executeWriteCalls += 1;
+            let result: T | undefined;
+            for (let attempt = 0; attempt < callbackAttempts; attempt += 1) {
+              result = await work({
+                async run(query: string, params: Record<string, unknown>) {
+                  sessionState.runCalls.push({ query, params });
+                  if (failRun) {
+                    throw new Error("channel write failed");
+                  }
+                  return {};
+                },
+              });
+            }
+            return result as T;
           },
           async close() {
             sessionState.closeCalls += 1;
@@ -102,7 +121,9 @@ test("updateEventInSeries THIS_ONLY updates only the specified event", async () 
 
   assert.equal(updateCalls.length, 1);
   assert.equal(updateCalls[0].where.id, "event-1");
+  assert.ok(updateCalls[0].context.executionContext);
   assert.equal(result.id, "event-1");
+  assert.equal(sessions[0].executeWriteCalls, 1);
   assert.equal(sessions[0].closeCalls, 1);
 });
 
@@ -425,6 +446,68 @@ test("updateEventInSeries handles channel disconnections", async () => {
   assert.equal(sessions[0].runCalls.length, 1);
   assert.equal(sessions[0].runCalls[0].params.channelUniqueName, "channel-x");
   assert.equal(sessions[0].runCalls[0].params.eventId, "event-1");
+});
+
+test("updateEventInSeries retries all graph writes as one unit", async () => {
+  const { driver, sessions } = buildDriver(2);
+  const updateCalls: any[] = [];
+  const Event = {
+    async find() {
+      return [{ ...baseEvent, EventSeries: null }];
+    },
+    async update(input: any) {
+      updateCalls.push(input);
+      return {};
+    },
+  };
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as GetResolverArg);
+
+  await resolver(
+    null,
+    {
+      eventId: "event-1",
+      scope: "THIS_ONLY",
+      eventUpdateInput: { title: "Retried" },
+      channelConnections: ["general"],
+      channelDisconnections: ["old-channel"],
+    },
+    {} as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
+  );
+
+  assert.equal(sessions[0].executeWriteCalls, 1);
+  assert.equal(updateCalls.length, 2);
+  assert.equal(sessions[0].runCalls.length, 4);
+  assert.equal(sessions[0].closeCalls, 1);
+});
+
+test("updateEventInSeries does not partially apply the event update when a channel write fails", async () => {
+  const { driver } = buildDriver(1, true);
+  const Event = {
+    async find() {
+      return [{ ...baseEvent, EventSeries: null }];
+    },
+    async update() {
+      return {};
+    },
+  };
+  const resolver = getResolver({ Event, EventSeries: {}, driver } as unknown as GetResolverArg);
+
+  await assert.rejects(
+    resolver(
+      null,
+      {
+        eventId: "event-1",
+        scope: "THIS_ONLY",
+        eventUpdateInput: { title: "Should roll back" },
+        channelConnections: ["general"],
+        channelDisconnections: [],
+      },
+      {} as unknown as GraphQLContext,
+      null as unknown as GraphQLResolveInfo
+    ),
+    /channel write failed/
+  );
 });
 
 test("updateEventInSeries does not update series for occurrence-level only changes", async () => {

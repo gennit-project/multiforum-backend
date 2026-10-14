@@ -147,7 +147,10 @@ const getResolver = (input: Input) => {
       const occurrenceLevelUpdates = getOccurrenceLevelUpdates(eventUpdateInput);
       const hasSeriesLevelChanges = Object.keys(seriesLevelUpdates).length > 0;
 
-      switch (scope) {
+      await session.executeWrite(async (transaction) => {
+        const ogmContext = { executionContext: transaction };
+
+        switch (scope) {
         case "THIS_ONLY": {
           // Update only this event
           // If there are series-level changes, set override flags
@@ -166,6 +169,7 @@ const getResolver = (input: Input) => {
           await Event.update({
             where: { id: eventId },
             update: updateWithOverrides,
+            context: ogmContext,
           });
           break;
         }
@@ -176,6 +180,7 @@ const getResolver = (input: Input) => {
             await Event.update({
               where: { id: eventId },
               update: eventUpdateInput,
+              context: ogmContext,
             });
           } else {
             // Get all events with occurrenceIndex >= this event's index
@@ -189,6 +194,7 @@ const getResolver = (input: Input) => {
               await Event.update({
                 where: { id: occ.id },
                 update: eventUpdateInput,
+                context: ogmContext,
               });
             }
 
@@ -197,6 +203,7 @@ const getResolver = (input: Input) => {
               await EventSeries.update({
                 where: { id: eventSeries.id },
                 update: seriesLevelUpdates,
+                context: ogmContext,
               });
             }
           }
@@ -209,6 +216,7 @@ const getResolver = (input: Input) => {
             await Event.update({
               where: { id: eventId },
               update: eventUpdateInput,
+              context: ogmContext,
             });
           } else {
             // Update all events in the series
@@ -216,6 +224,7 @@ const getResolver = (input: Input) => {
               await Event.update({
                 where: { id: occ.id },
                 update: eventUpdateInput,
+                context: ogmContext,
               });
             }
 
@@ -224,6 +233,7 @@ const getResolver = (input: Input) => {
               await EventSeries.update({
                 where: { id: eventSeries.id },
                 update: seriesLevelUpdates,
+                context: ogmContext,
               });
             }
           }
@@ -234,20 +244,22 @@ const getResolver = (input: Input) => {
           throw new Error(`Invalid scope: ${scope}`);
       }
 
-      // Handle channel connections/disconnections for the current event
-      for (const channelUniqueName of channelConnections) {
-        await session.run(updateEventChannelQuery, {
-          eventId,
-          channelUniqueName,
-        });
-      }
+        // Channel changes are part of the same commit as the occurrence and
+        // series updates, preventing partially applied multi-event edits.
+        for (const channelUniqueName of channelConnections) {
+          await transaction.run(updateEventChannelQuery, {
+            eventId,
+            channelUniqueName,
+          });
+        }
 
-      for (const channelUniqueName of channelDisconnections) {
-        await session.run(severConnectionBetweenEventAndChannelQuery, {
-          eventId,
-          channelUniqueName,
-        });
-      }
+        for (const channelUniqueName of channelDisconnections) {
+          await transaction.run(severConnectionBetweenEventAndChannelQuery, {
+            eventId,
+            channelUniqueName,
+          });
+        }
+      });
 
       // Refetch the updated event with subscriber info for notifications
       const selectionSet = `
@@ -361,8 +373,9 @@ const getResolver = (input: Input) => {
                 ? ` (this and ${affectedCount - 1} future)`
                 : ` (all ${affectedCount} in series)`;
 
-            await notificationSession.run(
-              `
+            await notificationSession.executeWrite((transaction) =>
+              transaction.run(
+                `
               UNWIND $usernames AS username
               MATCH (user:User {username: username})
               CREATE (notification:Notification {
@@ -373,11 +386,12 @@ const getResolver = (input: Input) => {
                 notificationType: 'event'
               })
               CREATE (user)-[:HAS_NOTIFICATION]->(notification)
-              `,
-              {
-                usernames: usersToNotify.map((user: NotifiableUser) => user.username),
-                notificationText: `${updatedEvent.title} was updated${scopeText}.`,
-              }
+                `,
+                {
+                  usernames: usersToNotify.map((user: NotifiableUser) => user.username),
+                  notificationText: `${updatedEvent.title} was updated${scopeText}.`,
+                }
+              )
             );
           } finally {
             await notificationSession.close();

@@ -58,12 +58,18 @@ const getResolver = (input: Input) => {
           {
             id
             title
+            description
             startTime
             endTime
             locationName
             address
             virtualEventUrl
             canceled
+            Poster { username }
+            DescriptionLastEditedBy { username }
+            EventChannels { channelUniqueName }
+            PastTitleVersions { id body createdAt }
+            PastDescriptionVersions { id body createdAt }
           }
         `,
       });
@@ -73,9 +79,33 @@ const getResolver = (input: Input) => {
         throw new Error("Event not found");
       }
 
-      // Snapshot the previous title/description into the event's version
-      // history before applying the update. Runs before Event.update so it
-      // reads the pre-update values.
+      const updatedEventId = where.id;
+
+      await session.executeWrite(async (transaction) => {
+        await Event.update({
+          where,
+          update: eventUpdateInput,
+          context: { executionContext: transaction },
+        });
+
+        for (const channelUniqueName of channelConnections) {
+          await transaction.run(updateEventChannelQuery, {
+            eventId: updatedEventId,
+            channelUniqueName,
+          });
+        }
+
+        for (const channelUniqueName of channelDisconnections) {
+          await transaction.run(severConnectionBetweenEventAndChannelQuery, {
+            eventId: updatedEventId,
+            channelUniqueName,
+          });
+        }
+      });
+
+      // Version-history writes happen once after the retryable business write.
+      // They use the pre-update snapshot without putting logging or other
+      // non-database effects inside the managed callback.
       if (where.id) {
         await eventVersionHistoryHandler({
           context,
@@ -86,44 +116,7 @@ const getResolver = (input: Input) => {
               description: eventUpdateInput.description,
             },
           },
-        });
-      }
-
-      // Update the event
-      await Event.update({
-        where: where,
-        update: eventUpdateInput,
-      });
-      const updatedEventId = where.id;
-
-      // Update the channel connections
-      for (let i = 0; i < channelConnections.length; i++) {
-        const channelUniqueName = channelConnections[i];
-
-        // For each channel connection, create a EventChannel node
-        // if one does not already exist.
-
-        // Join the EventChannel to the Event and Channel nodes.
-        // If there was an existing one, join that. If we just created one,
-        // join that.
-        await session.run(updateEventChannelQuery, {
-          eventId: updatedEventId,
-          channelUniqueName: channelUniqueName,
-        });
-      }
-
-      // Update the channel disconnections
-      for (let i = 0; i < channelDisconnections.length; i++) {
-        const channelUniqueName = channelDisconnections[i];
-        // For each channel disconnection, sever the connection between
-        // the Event and the EventChannel node.
-        // We intentionally do not delete the EventChannel node
-        // because it contains comments that are authored by other users
-        // than the event poster, and the event poster should
-        // not have permission to delete those comments.
-        await session.run(severConnectionBetweenEventAndChannelQuery, {
-          eventId: updatedEventId,
-          channelUniqueName: channelUniqueName,
+          eventSnapshot: existingEvent,
         });
       }
       // Refetch the newly created event with the channel connections
@@ -217,8 +210,10 @@ const getResolver = (input: Input) => {
 
         if (usersToNotify.length > 0) {
           const notificationSession = driver.session();
-          await notificationSession.run(
-            `
+          try {
+            await notificationSession.executeWrite((transaction) =>
+              transaction.run(
+                `
             UNWIND $usernames AS username
             MATCH (user:User {username: username})
             CREATE (notification:Notification {
@@ -229,13 +224,16 @@ const getResolver = (input: Input) => {
               notificationType: 'event'
             })
             CREATE (user)-[:HAS_NOTIFICATION]->(notification)
-            `,
-            {
-              usernames: usersToNotify.map((user: NotifiableUser) => user.username),
-              notificationText: eventUpdateNotification.notificationText,
-            }
-          );
-          await notificationSession.close();
+                `,
+                {
+                  usernames: usersToNotify.map((user: NotifiableUser) => user.username),
+                  notificationText: eventUpdateNotification.notificationText,
+                }
+              )
+            );
+          } finally {
+            await notificationSession.close();
+          }
         }
       }
 

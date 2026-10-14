@@ -179,9 +179,10 @@ const clearReference = async ({
   const removedAt = new Date().toISOString();
 
   try {
-    const result = await session.run(
-      referenceType === "ProfileImage"
-        ? `
+    return await session.executeWrite(async (transaction) => {
+      const result = await transaction.run(
+        referenceType === "ProfileImage"
+          ? `
           MATCH (target:User {username: $username})
           WHERE target.profilePicURL = $imageUrl
           SET target.profilePicURL = null
@@ -194,8 +195,8 @@ const clearReference = async ({
           RETURN target.username AS username,
                  target.profilePicURL AS profilePicURL
           `
-        : referenceType === "ChannelIcon"
-          ? `
+          : referenceType === "ChannelIcon"
+            ? `
           MATCH (target:Channel {uniqueName: $channelUniqueName})
           WHERE target.channelIconURL = $imageUrl
           SET target.channelIconURL = null,
@@ -213,7 +214,7 @@ const clearReference = async ({
           RETURN target.uniqueName AS uniqueName,
                  target.channelIconURL AS channelIconURL
           `
-          : `
+            : `
           MATCH (target:Channel {uniqueName: $channelUniqueName})
           WHERE target.channelBannerURL = $imageUrl
           SET target.channelBannerURL = null
@@ -226,22 +227,23 @@ const clearReference = async ({
           RETURN target.uniqueName AS uniqueName,
                  target.channelBannerURL AS channelBannerURL
           `,
-      {
-        username,
-        channelUniqueName,
-        imageUrl,
-        removedAt,
-        removedByUsername,
-        removedByModName: removedByModName || null,
+        {
+          username,
+          channelUniqueName,
+          imageUrl,
+          removedAt,
+          removedByUsername,
+          removedByModName: removedByModName || null,
+        }
+      );
+
+      const record = result.records[0];
+      if (!record) {
+        throw new GraphQLError("Image reference changed before deletion completed");
       }
-    );
 
-    const record = result.records[0];
-    if (!record) {
-      throw new GraphQLError("Image reference changed before deletion completed");
-    }
-
-    return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+      return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+    });
   } finally {
     await session.close();
   }

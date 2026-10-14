@@ -80,22 +80,24 @@ const trackDownload = ({
 
     try {
       if (!username) {
-        const result = await session.run(
-          `
+        const updated = await session.executeWrite(async (transaction) => {
+          const result = await transaction.run(
+            `
           MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
           WHERE ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
             AND coalesce(file.scanStatus, 'PENDING') = 'CLEAN'
           SET file.downloadCountTotal = coalesce(file.downloadCountTotal, 0) + 1
           RETURN count(file) AS updated
-          `,
-          {
-            downloadableFileId,
-            discussionId,
-            mayAccessSensitiveContent: canViewSensitiveContent
-          }
-        )
+            `,
+            {
+              downloadableFileId,
+              discussionId,
+              mayAccessSensitiveContent: canViewSensitiveContent
+            }
+          )
 
-        const updated = toNumber(result.records[0]?.get('updated'))
+          return toNumber(result.records[0]?.get('updated'))
+        })
 
         if (updated < 1) {
           throw new GraphQLError('Downloadable file not found for this discussion')
@@ -104,8 +106,9 @@ const trackDownload = ({
         return true
       }
 
-      const result = await session.run(
-        `
+      const updated = await session.executeWrite(async (transaction) => {
+        const result = await transaction.run(
+          `
         MATCH (user:User {username: $username})
         MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
         OPTIONAL MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion)
@@ -143,19 +146,20 @@ const trackDownload = ({
           file.downloadCountUnique = coalesce(file.downloadCountUnique, 0) + CASE WHEN isUnique THEN 1 ELSE 0 END
         MERGE (user)-[:OWNS_DOWNLOAD]->(discussion)
         RETURN count(file) AS updated
-        `,
-        {
-          username,
-          mayAccessSensitiveContent: canViewSensitiveContent,
-          downloadsCollectionName: AUTO_SAVED_DOWNLOADS_COLLECTION_NAME,
-          downloadsCollectionDescription:
-            AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION,
-          downloadableFileId,
-          discussionId
-        }
-      )
+          `,
+          {
+            username,
+            mayAccessSensitiveContent: canViewSensitiveContent,
+            downloadsCollectionName: AUTO_SAVED_DOWNLOADS_COLLECTION_NAME,
+            downloadsCollectionDescription:
+              AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION,
+            downloadableFileId,
+            discussionId
+          }
+        )
 
-      const updated = toNumber(result.records[0]?.get('updated'))
+        return toNumber(result.records[0]?.get('updated'))
+      })
 
       if (updated < 1) {
         throw new GraphQLError('Downloadable file is unavailable or not found for this discussion')
@@ -163,7 +167,7 @@ const trackDownload = ({
 
       return true
     } finally {
-      session.close()
+      await session.close()
     }
   }
 }

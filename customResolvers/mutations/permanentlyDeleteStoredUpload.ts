@@ -168,9 +168,10 @@ const markStoredUploadRemoved = async ({
   const removedAt = new Date().toISOString();
 
   try {
-    const result = await session.run(
-      mediaType === "Image"
-        ? `
+    return await session.executeWrite(async (transaction) => {
+      const result = await transaction.run(
+        mediaType === "Image"
+          ? `
           MATCH (target:Image {id: $id})
           SET target.permanentlyRemoved = true,
               target.permanentlyRemovedAt = datetime($removedAt),
@@ -197,7 +198,7 @@ const markStoredUploadRemoved = async ({
             target.permanentlyRemovedByUsername AS permanentlyRemovedByUsername,
             target.permanentlyRemovedByModName AS permanentlyRemovedByModName
           `
-        : `
+          : `
           MATCH (target:DownloadableFile {id: $id})
           SET target.permanentlyRemoved = true,
               target.permanentlyRemovedAt = datetime($removedAt),
@@ -227,20 +228,21 @@ const markStoredUploadRemoved = async ({
             target.permanentlyRemovedByUsername AS permanentlyRemovedByUsername,
             target.permanentlyRemovedByModName AS permanentlyRemovedByModName
           `,
-      {
-        id,
-        removedAt,
-        username,
-        modProfileName: modProfileName || null,
+        {
+          id,
+          removedAt,
+          username,
+          modProfileName: modProfileName || null,
+        }
+      );
+
+      const record = result.records[0];
+      if (!record) {
+        throw new GraphQLError("Upload not found");
       }
-    );
 
-    const record = result.records[0];
-    if (!record) {
-      throw new GraphQLError("Upload not found");
-    }
-
-    return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+      return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+    });
   } finally {
     await session.close();
   }
