@@ -2,6 +2,7 @@ import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
 import { Kind, type DocumentNode } from "graphql";
 import typeDefs from "../typeDefs.js";
 import { coreSchemaConstraints } from "./coreSchemaConstraints.js";
+import { criticalPropertyConstraintNames } from "./criticalPropertyConstraints.js";
 import { MAX_REPLY_DEPTH } from "./replyAncestry.js";
 import { issueTargetDefinitions } from "./issueTargetIdentity.js";
 
@@ -32,6 +33,17 @@ export const requiredConstraintNames = [...new Set([
   ...coreSchemaConstraints.map(({ name }) => name),
   ...getLibraryManagedConstraintNames(),
 ])];
+
+export const requiredEnterpriseConstraintNames = [
+  ...criticalPropertyConstraintNames,
+];
+
+export const getRequiredConstraintNames = (edition: string) => [
+  ...requiredConstraintNames,
+  ...(edition.toLowerCase().includes("enterprise")
+    ? requiredEnterpriseConstraintNames
+    : []),
+];
 
 export const requiredOnlineIndexNames = [
   // Uniqueness and node-key constraints own backing RANGE indexes with the
@@ -75,6 +87,7 @@ export type IntegrityCounts = {
 };
 
 export type SchemaAuditSnapshot = {
+  edition: string;
   constraints: string[];
   onlineIndexes: string[];
   integrity: IntegrityCounts;
@@ -96,7 +109,7 @@ export function evaluateSchemaAudit(
   const constraints = new Set(snapshot.constraints);
   const indexes = new Set(snapshot.onlineIndexes);
   const problems = [
-    ...requiredConstraintNames
+    ...getRequiredConstraintNames(snapshot.edition)
       .filter((name) => !constraints.has(name))
       .map((name) => `Missing constraint: ${name}`),
     ...requiredOnlineIndexNames
@@ -117,6 +130,14 @@ export async function runNeo4jSchemaAudit(
 ): Promise<SchemaAuditReport> {
   const session = driver.session();
   try {
+    // Omit a Cypher pre-parser version so edition discovery works against both
+    // the repository's Neo4j 5 Community tests and Aura's Cypher 25 runtime.
+    const componentsResult = await session.run(
+      "CALL dbms.components() YIELD edition RETURN edition LIMIT 1"
+    );
+    const edition =
+      (componentsResult.records[0]?.get("edition") as string | undefined) ??
+      "unknown";
     const constraintsResult = await session.run(
       "SHOW CONSTRAINTS YIELD name RETURN name ORDER BY name"
     );
@@ -279,6 +300,7 @@ export async function runNeo4jSchemaAudit(
     `);
 
     return evaluateSchemaAudit({
+      edition,
       constraints: constraintsResult.records.map((record) => record.get("name")),
       onlineIndexes: indexesResult.records.map((record) => record.get("name")),
       integrity: {

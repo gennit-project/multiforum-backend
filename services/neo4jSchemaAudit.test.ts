@@ -4,7 +4,9 @@ import neo4j, { type Driver } from "neo4j-driver";
 import {
   evaluateSchemaAudit,
   getLibraryManagedConstraintNames,
+  getRequiredConstraintNames,
   requiredConstraintNames,
+  requiredEnterpriseConstraintNames,
   requiredOnlineIndexNames,
   runNeo4jSchemaAudit,
   type IntegrityCounts,
@@ -49,6 +51,7 @@ const cleanIntegrity: IntegrityCounts = {
 
 test("schema audit passes a complete and consistent snapshot", () => {
   const report = evaluateSchemaAudit({
+    edition: "community",
     constraints: [...requiredConstraintNames],
     onlineIndexes: [...requiredOnlineIndexNames],
     integrity: cleanIntegrity,
@@ -61,6 +64,7 @@ test("schema audit passes a complete and consistent snapshot", () => {
 
 test("schema audit reports missing schema and integrity failures", () => {
   const report = evaluateSchemaAudit({
+    edition: "community",
     constraints: [],
     onlineIndexes: [],
     integrity: {
@@ -83,6 +87,26 @@ test("schema audit reports missing schema and integrity failures", () => {
   });
 });
 
+test("Enterprise audit additionally requires critical property constraints", () => {
+  const report = evaluateSchemaAudit({
+    edition: "enterprise",
+    constraints: [...requiredConstraintNames],
+    onlineIndexes: [...requiredOnlineIndexNames],
+    integrity: cleanIntegrity,
+  });
+  assert.equal(report.ok, false);
+  assert.equal(
+    report.problems.includes(
+      `Missing constraint: ${requiredEnterpriseConstraintNames[0]}`
+    ),
+    true
+  );
+  assert.deepEqual(
+    getRequiredConstraintNames("enterprise"),
+    [...requiredConstraintNames, ...requiredEnterpriseConstraintNames]
+  );
+});
+
 test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", async () => {
   const queries: string[] = [];
   let closed = false;
@@ -90,6 +114,9 @@ test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", a
     session: () => ({
       run: async (query: string) => {
         queries.push(query);
+        if (query.includes("dbms.components")) {
+          return { records: [{ get: () => "community" }] };
+        }
         if (query.includes("SHOW CONSTRAINTS")) {
           return {
             records: requiredConstraintNames.map((name) => ({
@@ -115,6 +142,6 @@ test("runNeo4jSchemaAudit reads the schema and integrity checks, then closes", a
   const report = await runNeo4jSchemaAudit(driver);
 
   assert.equal(report.ok, true);
-  assert.equal(queries.length, 21);
+  assert.equal(queries.length, 22);
   assert.equal(closed, true);
 });

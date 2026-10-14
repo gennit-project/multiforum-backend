@@ -36,6 +36,7 @@ import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
 import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
 import { backfillFilterGroupUploadSelection } from "./services/filterGroupUploadSelection.js";
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
+import { ensureCriticalPropertyConstraints } from "./services/criticalPropertyConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
 import dotenv from "dotenv";
@@ -202,6 +203,7 @@ async function initializeServer() {
     }
 
     await ensureCoreSchemaConstraints(driver, edition);
+    await ensureCriticalPropertyConstraints(driver, edition);
 
     const ogmSchema = await neoSchema.getSchema();
     initializeOgmFromExistingSchema(ogm, neoSchema, ogmSchema);
