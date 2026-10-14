@@ -87,9 +87,12 @@ export function buildReconcileQuery(
     [x IN reached WHERE x:Comment | x.id] AS commentIds,
     [x IN reached WHERE x:Image | x.id] AS imageIds
   OPTIONAL MATCH (issue:Issue)
-  WHERE issue.relatedDiscussionId IN discussionIds
-     OR issue.relatedCommentId IN commentIds
-     OR issue.relatedImageId IN imageIds
+  WHERE EXISTS { MATCH (issue)-[:TARGETS_DISCUSSION]->(target:Discussion) WHERE target.id IN discussionIds }
+     OR (NOT EXISTS { MATCH (issue)-[:TARGETS_DISCUSSION]->() } AND issue.relatedDiscussionId IN discussionIds)
+     OR EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->(target:Comment) WHERE target.id IN commentIds }
+     OR (NOT EXISTS { MATCH (issue)-[:TARGETS_COMMENT]->() } AND issue.relatedCommentId IN commentIds)
+     OR EXISTS { MATCH (issue)-[:TARGETS_IMAGE]->(target:Image) WHERE target.id IN imageIds }
+     OR (NOT EXISTS { MATCH (issue)-[:TARGETS_IMAGE]->() } AND issue.relatedImageId IN imageIds)
   WITH reached, collect(DISTINCT issue) AS issues
   WITH reached + issues AS candidates
   UNWIND candidates AS this

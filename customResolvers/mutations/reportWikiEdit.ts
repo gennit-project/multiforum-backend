@@ -228,12 +228,6 @@ const getResolver = (input: Input) => {
         selectedServerRules.length > 0
     }
 
-    const existingIssue = issueData[0]
-
-    if (!existingIssue?.relatedUsername && relatedUsername) {
-      issueUpdateInput.relatedUsername = relatedUsername
-    }
-
     try {
       const updatedIssueData = await Issue.update({
         where: issueUpdateWhere,

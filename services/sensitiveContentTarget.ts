@@ -51,24 +51,52 @@ export async function isSensitiveContentTarget(
         OR EXISTS {
           MATCH (issue:Issue {id: $issueId})
           WHERE EXISTS {
+            MATCH (issue)-[:TARGETS_DISCUSSION]->(discussion:Discussion)
+            WHERE coalesce(discussion.hasSensitiveContent, false) = true
+          } OR (NOT EXISTS {
+            MATCH (issue)-[:TARGETS_DISCUSSION]->()
+          } AND EXISTS {
             MATCH (discussion:Discussion {id: issue.relatedDiscussionId})
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
-          } OR EXISTS {
+          }) OR EXISTS {
+            MATCH (issue)-[:TARGETS_COMMENT]->(comment:Comment)-[:IS_REPLY_TO*0..32]->(threadComment:Comment)
+              <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
+            WHERE coalesce(discussion.hasSensitiveContent, false) = true
+          } OR (NOT EXISTS {
+            MATCH (issue)-[:TARGETS_COMMENT]->()
+          } AND EXISTS {
             MATCH (comment:Comment {id: issue.relatedCommentId})-[:IS_REPLY_TO*0..32]->(threadComment:Comment)
               <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
-          } OR EXISTS {
+          }) OR EXISTS {
+            MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(discussion:Discussion)
+            WHERE coalesce(discussion.hasSensitiveContent, false) = true
+          } OR (NOT EXISTS {
+            MATCH (issue)-[:TARGETS_COMMENT]->()
+          } AND EXISTS {
             MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(discussion:Discussion)
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
-          } OR EXISTS {
+          }) OR EXISTS {
+            MATCH (issue)-[:TARGETS_COMMENT]->(:Comment)-[:HAS_FEEDBACK_COMMENT]->(:Comment)
+              -[:IS_REPLY_TO*0..32]->(threadComment:Comment)
+              <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
+            WHERE coalesce(discussion.hasSensitiveContent, false) = true
+          } OR (NOT EXISTS {
+            MATCH (issue)-[:TARGETS_COMMENT]->()
+          } AND EXISTS {
             MATCH (:Comment {id: issue.relatedCommentId})-[:HAS_FEEDBACK_COMMENT]->(:Comment)
               -[:IS_REPLY_TO*0..32]->(threadComment:Comment)
               <-[:CONTAINS_COMMENT]-(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(discussion:Discussion)
             WHERE coalesce(discussion.hasSensitiveContent, false) = true
-          } OR EXISTS {
+          }) OR EXISTS {
+            MATCH (issue)-[:TARGETS_IMAGE]->(image:Image)
+            WHERE coalesce(image.hasSensitiveContent, false) = true
+          } OR (NOT EXISTS {
+            MATCH (issue)-[:TARGETS_IMAGE]->()
+          } AND EXISTS {
             MATCH (image:Image {id: issue.relatedImageId})
             WHERE coalesce(image.hasSensitiveContent, false) = true
-          }
+          })
         }
         AS sensitive`,
       {

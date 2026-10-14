@@ -7,6 +7,7 @@ import type { ServerRole, ModServerRole } from "../../ogm_types.js";
 import { hasServerPermission } from "../permission/hasServerPermission.js";
 import { hasServerModPermission } from "../permission/hasServerModPermission.js";
 import { isServerRoot } from "../permission/isServerRoot.js";
+import { validateIssueIdentityInput } from "../../services/issueTargetIdentity.js";
 
 // The env break-glass root (and the test super-user) only. Used for the
 // dangerous Cypress test-data mutations, which must never be a delegatable
@@ -103,7 +104,17 @@ export const canReportContent = rule({ cache: "contextual" })(
 );
 
 export const issueIsValid = rule({ cache: "contextual" })(
-  async (parent: unknown, args: unknown, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    return true;
+  async (_parent: unknown, args: unknown, _ctx: GraphQLContext, _info: GraphQLResolveInfo) => {
+    try {
+      const input = (args as { input?: unknown } | null)?.input;
+      const inputs = Array.isArray(input) ? input : input ? [input] : [];
+      if (inputs.length === 0) return new Error("Issue input is required.");
+      for (const entry of inputs) {
+        validateIssueIdentityInput(entry as Record<string, unknown>);
+      }
+      return true;
+    } catch (error) {
+      return error instanceof Error ? error : new Error("Invalid issue input.");
+    }
   }
 );

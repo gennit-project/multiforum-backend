@@ -48,6 +48,9 @@ export const GUARDED_RELATIONSHIP_FIELDS = [
   "DownloadableFile.Discussion",
   "DownloadableFile.versions",
   "FileVersion.mainFile",
+  "Issue.TargetDiscussion",
+  "Issue.TargetComment",
+  "Issue.TargetImage",
 ] as const;
 
 /**

@@ -35,6 +35,13 @@ type IssueTarget = {
     relatedUsername?: string | null
     relatedModProfileName?: string | null
     Channel?: { uniqueName?: string | null } | null
+    TargetDiscussion?: { id?: string | null } | null
+    TargetEvent?: { id?: string | null } | null
+    TargetComment?: { id?: string | null } | null
+    TargetWikiPage?: { id?: string | null } | null
+    TargetWikiRevision?: { id?: string | null } | null
+    TargetUser?: { username?: string | null; isBot?: boolean | null } | null
+    TargetModProfile?: { displayName?: string | null } | null
   }
   channelUniqueName: string | null
   scope: 'channel' | 'server'
@@ -90,6 +97,13 @@ export async function resolveIssueTarget({
       relatedUsername
       relatedModProfileName
       Channel { uniqueName }
+      TargetDiscussion { id }
+      TargetEvent { id }
+      TargetComment { id }
+      TargetWikiPage { id }
+      TargetWikiRevision { id }
+      TargetUser { username isBot }
+      TargetModProfile { displayName }
     }`,
   })
 
@@ -101,42 +115,49 @@ export async function resolveIssueTarget({
   const scope = channelUniqueName ? 'channel' : 'server'
   const resolvedEntityName =
     suspendedEntityName ||
-    (foundIssue.relatedModProfileName ? 'mod' : 'user')
+    (foundIssue.TargetModProfile?.displayName || foundIssue.relatedModProfileName
+      ? 'mod'
+      : 'user')
+
+  const relatedModProfileName =
+    foundIssue.TargetModProfile?.displayName || foundIssue.relatedModProfileName
+  const relatedUsername =
+    foundIssue.TargetUser?.username || foundIssue.relatedUsername
 
   if (
     resolvedEntityName === 'mod' &&
-    foundIssue.relatedModProfileName
+    relatedModProfileName
   ) {
     const username = await findUsernameForModProfile({
       User,
-      displayName: foundIssue.relatedModProfileName,
+      displayName: relatedModProfileName,
     })
     return {
       issue: foundIssue,
       channelUniqueName,
       scope,
-      relatedAccountName: foundIssue.relatedModProfileName,
+      relatedAccountName: relatedModProfileName,
       relatedAccountType: 'ModerationProfile',
       username,
-      modProfileName: foundIssue.relatedModProfileName,
+      modProfileName: relatedModProfileName,
       isBot: false,
     }
   }
 
-  if (foundIssue.relatedUsername) {
+  if (relatedUsername) {
     // Query user to check if they are a bot
     const [relatedUser] = await User.find({
-      where: { username: foundIssue.relatedUsername },
+      where: { username: relatedUsername },
       selectionSet: `{ username isBot }`,
     })
     return {
       issue: foundIssue,
       channelUniqueName,
       scope,
-      relatedAccountName: foundIssue.relatedUsername,
+      relatedAccountName: relatedUsername,
       relatedAccountType: 'User',
-      username: foundIssue.relatedUsername,
-      isBot: relatedUser?.isBot ?? false,
+      username: relatedUsername,
+      isBot: foundIssue.TargetUser?.isBot ?? relatedUser?.isBot ?? false,
     }
   }
 
@@ -148,25 +169,35 @@ export async function resolveIssueTarget({
 
   let originalPosterData: User | ModerationProfile | null = null
 
-  if (foundIssue.relatedDiscussionId) {
+  const relatedDiscussionId =
+    foundIssue.TargetDiscussion?.id || foundIssue.relatedDiscussionId
+  const relatedEventId = foundIssue.TargetEvent?.id || foundIssue.relatedEventId
+  const relatedCommentId =
+    foundIssue.TargetComment?.id || foundIssue.relatedCommentId
+  const relatedWikiRevisionId =
+    foundIssue.TargetWikiRevision?.id || foundIssue.relatedWikiRevisionId
+  const relatedWikiPageId =
+    foundIssue.TargetWikiPage?.id || foundIssue.relatedWikiPageId
+
+  if (relatedDiscussionId) {
     const [discussion] = await Discussion.find({
-      where: { id: foundIssue.relatedDiscussionId },
+      where: { id: relatedDiscussionId },
       selectionSet: `{ id Author { username isBot } }`,
     })
     originalPosterData = discussion?.Author || null
   }
 
-  if (foundIssue.relatedEventId) {
+  if (relatedEventId) {
     const [event] = await Event.find({
-      where: { id: foundIssue.relatedEventId },
+      where: { id: relatedEventId },
       selectionSet: `{ id Poster { username isBot } }`,
     })
     originalPosterData = event?.Poster || null
   }
 
-  if (foundIssue.relatedCommentId) {
+  if (relatedCommentId) {
     const [comment] = await Comment.find({
-      where: { id: foundIssue.relatedCommentId },
+      where: { id: relatedCommentId },
       selectionSet: `{
         id
         CommentAuthor {
@@ -178,17 +209,17 @@ export async function resolveIssueTarget({
     originalPosterData = comment?.CommentAuthor || null
   }
 
-  if (foundIssue.relatedWikiRevisionId && TextVersion) {
+  if (relatedWikiRevisionId && TextVersion) {
     const [revision] = await TextVersion.find({
-      where: { id: foundIssue.relatedWikiRevisionId },
+      where: { id: relatedWikiRevisionId },
       selectionSet: `{ id Author { username isBot } }`,
     })
     originalPosterData = revision?.Author || null
   }
 
-  if (!originalPosterData && foundIssue.relatedWikiPageId && WikiPage) {
+  if (!originalPosterData && relatedWikiPageId && WikiPage) {
     const [wikiPage] = await WikiPage.find({
-      where: { id: foundIssue.relatedWikiPageId },
+      where: { id: relatedWikiPageId },
       selectionSet: `{
         id
         OriginalAuthor { username isBot }

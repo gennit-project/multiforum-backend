@@ -8,6 +8,7 @@ import pkg from "@neo4j/graphql-ogm";
 import type { Driver } from "neo4j-driver";
 import typeDefs from "../typeDefs.js";
 import { ModelMap } from "../ogm_types.js";
+import { protectIssueModelIdentity } from "../services/issueTargetIdentity.js";
 
 const { OGM } = pkg;
 
@@ -16,6 +17,7 @@ export function createOgmAndModels(driver: Driver) {
     typeDefs,
     driver,
   });
+  const Issue = protectIssueModelIdentity(ogm.model("Issue"));
 
   return {
     ogm,
@@ -31,7 +33,7 @@ export function createOgmAndModels(driver: Driver) {
     Email: ogm.model("Email"),
     Channel: ogm.model("Channel"),
     Tag: ogm.model("Tag"),
-    Issue: ogm.model("Issue"),
+    Issue,
     ChannelRole: ogm.model("ChannelRole"),
     ModChannelRole: ogm.model("ModChannelRole"),
     ServerRole: ogm.model("ServerRole"),
