@@ -24,6 +24,12 @@ const buildDriver = (callbackAttempts = 1, failRun = false) => {
         };
         sessions.push(sessionState);
         return {
+          async run(query: string, params: Record<string, unknown>) {
+            sessionState.runCalls.push({ query, params });
+            return {
+              records: [{ get: () => ({ toNumber: () => 1 }) }],
+            };
+          },
           async executeWrite<T>(work: (transaction: {
             run: (query: string, params: Record<string, unknown>) => Promise<object>;
           }) => Promise<T>) {

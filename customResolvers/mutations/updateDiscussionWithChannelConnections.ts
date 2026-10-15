@@ -16,6 +16,7 @@ import type {
   UserModel,
 } from "../../ogm_types.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import { logger } from "../../logger.js";
 import {
   loadChannelDiscussionFlairRequirements,
@@ -202,50 +203,45 @@ const getResolver = (
       // runs before commit. Attaching an existing file is a relationship-only
       // connect, which @neo4j/graphql doesn't stamp, so stamp the attached files
       // here: the reconcile step then flags them in this same transaction.
-      const updateSession = driver.session();
-      try {
-        await updateSession.executeWrite(async (tx) => {
-          await Discussion.update({
-            where: where,
-            update: sanitizedUpdateInput,
-            // The OGM runs its query in this transaction.
-            context: { executionContext: tx },
-          });
-          if (connectedDownloadableFileIds.length > 0) {
-            await tx.run(stampAttachedDownloadableFilesQuery, {
-              ids: connectedDownloadableFileIds,
-            });
-          }
-          if (normalizedAlbumImageDisconnections.length > 0) {
-            await tx.run(disconnectAlbumImagesQuery, {
-              discussionId: where.id,
-              imageIds: normalizedAlbumImageDisconnections,
-            });
-          }
-
-          for (const channelUniqueName of channelConnections) {
-            const flairSelectionProvided = normalizedChannelFlairSelections.some(
-              (selection) =>
-                selection.channelUniqueName.trim() === channelUniqueName
-            );
-            await tx.run(updateDiscussionChannelQuery, {
-              discussionId: updatedDiscussionId,
-              channelUniqueName,
-              flairIds: flairIdsByChannel.get(channelUniqueName) ?? [],
-              flairSelectionProvided,
-            });
-          }
-
-          for (const channelUniqueName of channelDisconnections) {
-            await tx.run(severConnectionBetweenDiscussionAndChannelQuery, {
-              discussionId: updatedDiscussionId,
-              channelUniqueName,
-            });
-          }
+      await executeManagedWrite(driver, async (tx) => {
+        await Discussion.update({
+          where: where,
+          update: sanitizedUpdateInput,
+          // The OGM runs its query in this transaction.
+          context: { executionContext: tx },
         });
-      } finally {
-        await updateSession.close();
-      }
+        if (connectedDownloadableFileIds.length > 0) {
+          await tx.run(stampAttachedDownloadableFilesQuery, {
+            ids: connectedDownloadableFileIds,
+          });
+        }
+        if (normalizedAlbumImageDisconnections.length > 0) {
+          await tx.run(disconnectAlbumImagesQuery, {
+            discussionId: where.id,
+            imageIds: normalizedAlbumImageDisconnections,
+          });
+        }
+
+        for (const channelUniqueName of channelConnections) {
+          const flairSelectionProvided = normalizedChannelFlairSelections.some(
+            (selection) =>
+              selection.channelUniqueName.trim() === channelUniqueName
+          );
+          await tx.run(updateDiscussionChannelQuery, {
+            discussionId: updatedDiscussionId,
+            channelUniqueName,
+            flairIds: flairIdsByChannel.get(channelUniqueName) ?? [],
+            flairSelectionProvided,
+          });
+        }
+
+        for (const channelUniqueName of channelDisconnections) {
+          await tx.run(severConnectionBetweenDiscussionAndChannelQuery, {
+            discussionId: updatedDiscussionId,
+            channelUniqueName,
+          });
+        }
+      });
 
       if (shouldTrackVersion) {
         await discussionVersionHistoryHandler({

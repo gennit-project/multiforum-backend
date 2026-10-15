@@ -3,6 +3,7 @@ import { sendBatchEmails } from "./mail/index.js";
 import { createIssueSubscriptionNotificationEmail } from "../customResolvers/mutations/shared/emailUtils.js";
 import { appendNotificationFooter } from "../utils/notificationFooter.js";
 import type { IssueModel } from "../ogm_types.js";
+import { createInAppNotificationsForUsers } from "./inAppNotifications.js";
 
 type IssueNotificationDependencies = {
   sendBatchEmails?: typeof sendBatchEmails;
@@ -158,29 +159,12 @@ export const notifyIssueSubscribers = async ({
     await sendBatchEmailsFn(emailMessages);
   }
 
-  const session = driver.session();
-  try {
-    await session.run(
-      `
-      UNWIND $usernames AS username
-      MATCH (user:User {username: username})
-      CREATE (notification:Notification {
-        id: randomUUID(),
-        createdAt: datetime(),
-        read: false,
-        text: $notificationText,
-        notificationType: "moderation"
-      })
-      CREATE (user)-[:HAS_NOTIFICATION]->(notification)
-      `,
-      {
-        usernames: subscribers.map((subscriber) => subscriber.username),
-        notificationText: notificationTextWithFooter,
-      }
-    );
-  } finally {
-    await session.close();
-  }
+  await createInAppNotificationsForUsers({
+    driver,
+    usernames: subscribers.map((subscriber) => subscriber.username),
+    notificationText: notificationTextWithFooter,
+    notificationType: "moderation",
+  });
 
   return true;
 };

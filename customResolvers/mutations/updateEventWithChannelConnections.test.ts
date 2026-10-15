@@ -24,6 +24,12 @@ const buildDriver = (callbackAttempts = 1) => {
         };
         sessions.push(sessionState);
         return {
+          async run(query: string, params: Record<string, unknown>) {
+            sessionState.runCalls.push({ query, params });
+            return {
+              records: [{ get: () => ({ toNumber: () => 1 }) }],
+            };
+          },
           async executeWrite<T>(work: (transaction: {
             run: (query: string, params: Record<string, unknown>) => Promise<object>;
           }) => Promise<T>) {
@@ -160,10 +166,11 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
   ]);
   assert.equal(sessions.length, 2);
   assert.equal(sessions[0]?.executeWriteCalls, 1);
-  assert.equal(sessions[1]?.executeWriteCalls, 1);
+  assert.equal(sessions[1]?.executeWriteCalls, 0);
   assert.deepEqual(sessions[1]?.runCalls[0]?.params, {
     usernames: ["alice", "bob"],
     notificationText: "Phoenix Makers Meetup was updated.",
+    notificationType: "event",
   });
 });
 

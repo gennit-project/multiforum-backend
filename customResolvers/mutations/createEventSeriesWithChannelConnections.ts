@@ -3,6 +3,7 @@ import { createEventChannelQuery } from "../cypher/cypherQueries.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventSeriesModel, EventModel, TagModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 
 type DateOccurrence = {
   startTime: string;
@@ -173,8 +174,6 @@ const getResolver = (input: Input) => {
       throw new Error("At least one occurrence is required");
     }
 
-    const session = driver.session();
-
     try {
       // Build the location point if coordinates provided
       const locationPoint = seriesInput.latitude && seriesInput.longitude
@@ -282,7 +281,7 @@ const getResolver = (input: Input) => {
         create: occurrenceInputs
       };
 
-      const eventSeriesId = await session.executeWrite(async (transaction) => {
+      const eventSeriesId = await executeManagedWrite(driver, async (transaction) => {
         // Create the series, its occurrences, and every EventChannel in one
         // retry-safe unit. If any channel link fails, none of the graph changes
         // from this attempt are committed.
@@ -320,8 +319,6 @@ const getResolver = (input: Input) => {
       const message = error instanceof Error ? error.message : String(error);
       logger.error("Error creating event series:", message);
       throw new Error(`Failed to create event series: ${message}`);
-    } finally {
-      await session.close();
     }
   };
 };

@@ -9,6 +9,7 @@ import {
   type StorageDeletionResult,
 } from "../../services/storageDeletion.js";
 import { getGeneratedImageVariantObjectNames } from "../../services/imageVariants.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 
 type MediaType = "Image" | "DownloadableFile";
 
@@ -164,11 +165,9 @@ const markStoredUploadRemoved = async ({
   username: string;
   modProfileName?: string | null;
 }): Promise<Record<string, unknown>> => {
-  const session = driver.session({ defaultAccessMode: "WRITE" });
   const removedAt = new Date().toISOString();
 
-  try {
-    return await session.executeWrite(async (transaction) => {
+  return executeManagedWrite(driver, async (transaction) => {
       const result = await transaction.run(
         mediaType === "Image"
           ? `
@@ -242,10 +241,7 @@ const markStoredUploadRemoved = async ({
       }
 
       return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
-    });
-  } finally {
-    await session.close();
-  }
+  });
 };
 
 const getResolver = ({

@@ -1,14 +1,16 @@
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
-import { updateEventChannelQuery, severConnectionBetweenEventAndChannelQuery } from "../cypher/cypherQueries.js";
 import { EventWhere, EventUpdateInput } from "../../src/generated/graphql.js";
 import { sendBatchEmails } from "../../services/mail/index.js";
 import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
+import { createInAppNotificationsForUsers } from "../../services/inAppNotifications.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
 import { eventVersionHistoryHandler } from "../../hooks/eventVersionHistoryHook.js";
 import { logger } from "../../logger.js";
+import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
 
 type Input = {
   Event: EventModel;
@@ -49,8 +51,6 @@ const getResolver = (input: Input) => {
       channelDisconnections,
     } = args;
 
-    const session = driver.session();
-
     try {
       const existingEvents = await Event.find({
         where,
@@ -81,26 +81,19 @@ const getResolver = (input: Input) => {
 
       const updatedEventId = where.id;
 
-      await session.executeWrite(async (transaction) => {
+      await executeManagedWrite(driver, async (transaction) => {
         await Event.update({
           where,
           update: eventUpdateInput,
           context: { executionContext: transaction },
         });
 
-        for (const channelUniqueName of channelConnections) {
-          await transaction.run(updateEventChannelQuery, {
-            eventId: updatedEventId,
-            channelUniqueName,
-          });
-        }
-
-        for (const channelUniqueName of channelDisconnections) {
-          await transaction.run(severConnectionBetweenEventAndChannelQuery, {
-            eventId: updatedEventId,
-            channelUniqueName,
-          });
-        }
+        await applyEventChannelChanges({
+          transaction,
+          eventId: updatedEventId,
+          channelConnections,
+          channelDisconnections,
+        });
       });
 
       // Version-history writes happen once after the retryable business write.
@@ -208,33 +201,12 @@ const getResolver = (input: Input) => {
           await sendBatchEmailsFn(emailRecipients);
         }
 
-        if (usersToNotify.length > 0) {
-          const notificationSession = driver.session();
-          try {
-            await notificationSession.executeWrite((transaction) =>
-              transaction.run(
-                `
-            UNWIND $usernames AS username
-            MATCH (user:User {username: username})
-            CREATE (notification:Notification {
-              id: randomUUID(),
-              createdAt: datetime(),
-              read: false,
-              text: $notificationText,
-              notificationType: 'event'
-            })
-            CREATE (user)-[:HAS_NOTIFICATION]->(notification)
-                `,
-                {
-                  usernames: usersToNotify.map((user: NotifiableUser) => user.username),
-                  notificationText: eventUpdateNotification.notificationText,
-                }
-              )
-            );
-          } finally {
-            await notificationSession.close();
-          }
-        }
+        await createInAppNotificationsForUsers({
+          driver,
+          usernames: usersToNotify.map((user: NotifiableUser) => user.username),
+          notificationText: eventUpdateNotification.notificationText,
+          notificationType: "event",
+        });
       }
 
       return updatedEvent;
@@ -242,8 +214,6 @@ const getResolver = (input: Input) => {
       logger.error("Error updating event:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to update event. ${message}`);
-    } finally {
-      await session.close();
     }
   };
 };

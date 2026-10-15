@@ -11,6 +11,7 @@ import {
   USER_AVATAR_VARIANT_KEYS,
   getGeneratedImageVariantObjectNames,
 } from "../../services/imageVariants.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 
 type DeleteObject = typeof deleteStoredObject;
 type CheckServerModPermission = typeof hasServerModPermission;
@@ -175,11 +176,9 @@ const clearReference = async ({
   removedByUsername: string;
   removedByModName?: string | null;
 }): Promise<Record<string, unknown>> => {
-  const session = driver.session({ defaultAccessMode: "WRITE" });
   const removedAt = new Date().toISOString();
 
-  try {
-    return await session.executeWrite(async (transaction) => {
+  return executeManagedWrite(driver, async (transaction) => {
       const result = await transaction.run(
         referenceType === "ProfileImage"
           ? `
@@ -243,10 +242,7 @@ const clearReference = async ({
       }
 
       return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
-    });
-  } finally {
-    await session.close();
-  }
+  });
 };
 
 const getResolver = ({

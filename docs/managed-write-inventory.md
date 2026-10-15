@@ -46,8 +46,8 @@ The remaining calls fall into these audited categories:
   statement, so it cannot partially commit within Neo4j. They remain candidates
   for managed retries, but were lower risk than the multi-statement boundaries
   above.
-- Post-commit notifications: `commentNotificationHandler.ts`,
-  `issueNotifications.ts`, mention hooks, and lock/unlock notification writes.
+- Post-commit notifications: the shared `inAppNotifications.ts` writer,
+  mention hooks, and lock/unlock notification writes.
   Moving these to `executeWrite` alone would not make a notification
   semantically idempotent across a caller retry. They need a stable event key or
   outbox before automatic retry is enabled.
