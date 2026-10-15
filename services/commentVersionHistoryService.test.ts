@@ -1,6 +1,6 @@
 // Unit tests for the comment version-history service: the pure handler functions
 // (author lookup + saving the previous text as a version) and the subscription
-// class. Driven with a permissive in-memory OGM and a tiny executable schema. No DB.
+// class. Driven with an in-memory repository and a tiny executable schema. No DB.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { makeExecutableSchema } from "@graphql-tools/schema";
@@ -9,63 +9,69 @@ import {
   handleCommentUpdateEvent,
   CommentVersionHistoryService,
 } from "./commentVersionHistoryService.js";
+import type {
+  RecordTextVersionInput,
+  VersionHistoryRepository,
+} from "./persistence/versionHistoryRepository.js";
 
-// Comment.find -> authorRows; User.find -> a user so trackTextVersion proceeds.
-function makeOgm(opts: { authorRows?: unknown[] } = {}) {
-  const tracked: string[] = [];
-  const ogm: any = {
-    model(name: string) {
-      return {
-        find: async () => {
-          if (name === "Comment") return opts.authorRows ?? [];
-          if (name === "User") return [{ username: "alice" }];
-          return [];
-        },
-        create: async () => {
-          tracked.push(`${name}.create`);
-          return { textVersions: [{ id: "tv-1" }] };
-        },
-        update: async () => ({}),
-      };
+function makeRepository(opts: { authorName?: string | null; lookupThrows?: boolean } = {}) {
+  const tracked: RecordTextVersionInput[] = [];
+  const repository: VersionHistoryRepository = {
+    async getCommentAuthorName() {
+      if (opts.lookupThrows) throw new Error("db down");
+      return opts.authorName ?? null;
+    },
+    async getDiscussionAuthorUsername() { return null; },
+    async getWikiPageVersionAuthorUsername() { return null; },
+    async recordTextVersion(input) {
+      tracked.push(input);
+      return "tv-1";
     },
   };
-  return { ogm, tracked };
+  return { repository, tracked };
 }
 
-const userAuthor = [{ CommentAuthor: { username: "alice" } }];
-const modAuthor = [{ CommentAuthor: { displayName: "ModAlice" } }];
-
 test("getCommentAuthorUsername returns a User author's username", async () => {
-  const { ogm } = makeOgm({ authorRows: userAuthor });
-  assert.equal(await getCommentAuthorUsername(ogm, "c-1"), "alice");
+  const { repository } = makeRepository({ authorName: "alice" });
+  assert.equal(await getCommentAuthorUsername(repository, "c-1"), "alice");
 });
 
 test("getCommentAuthorUsername falls back to a ModerationProfile displayName", async () => {
-  const { ogm } = makeOgm({ authorRows: modAuthor });
-  assert.equal(await getCommentAuthorUsername(ogm, "c-1"), "ModAlice");
+  const { repository } = makeRepository({ authorName: "ModAlice" });
+  assert.equal(await getCommentAuthorUsername(repository, "c-1"), "ModAlice");
 });
 
 test("getCommentAuthorUsername returns null when the comment is missing", async () => {
-  const { ogm } = makeOgm({ authorRows: [] });
-  assert.equal(await getCommentAuthorUsername(ogm, "c-1"), null);
+  const { repository } = makeRepository();
+  assert.equal(await getCommentAuthorUsername(repository, "c-1"), null);
+});
+
+test("getCommentAuthorUsername swallows lookup errors", async () => {
+  const { repository } = makeRepository({ lookupThrows: true });
+  assert.equal(await getCommentAuthorUsername(repository, "c-1"), null);
 });
 
 test("handleCommentUpdateEvent records the previous text as a version", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: userAuthor });
-  await handleCommentUpdateEvent(ogm, { id: "c-1", text: "new" }, { text: "old" });
-  assert.equal(tracked.filter((t) => t === "TextVersion.create").length, 1);
+  const { repository, tracked } = makeRepository({ authorName: "alice" });
+  await handleCommentUpdateEvent(repository, { id: "c-1", text: "new" }, { text: "old" });
+  assert.deepEqual(tracked, [{
+    target: "comment",
+    parentId: "c-1",
+    body: "old",
+    username: "alice",
+  }]);
 });
 
 test("handleCommentUpdateEvent does nothing when text is unchanged or absent", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: userAuthor });
-  await handleCommentUpdateEvent(ogm, { id: "c-1", text: "same" }, { text: "same" });
-  await handleCommentUpdateEvent(ogm, { id: "c-1", text: "new" }, null);
+  const { repository, tracked } = makeRepository({ authorName: "alice" });
+  await handleCommentUpdateEvent(repository, { id: "c-1", text: "same" }, { text: "same" });
+  await handleCommentUpdateEvent(repository, { id: "c-1", text: "new" }, null);
   assert.deepEqual(tracked, []);
 });
 
 test("handleCommentUpdateEvent skips when the author cannot be resolved", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: [] });
-  await handleCommentUpdateEvent(ogm, { id: "c-1", text: "new" }, { text: "old" });
+  const { repository, tracked } = makeRepository();
+  await handleCommentUpdateEvent(repository, { id: "c-1", text: "new" }, { text: "old" });
   assert.deepEqual(tracked, []);
 });
 
@@ -93,18 +99,18 @@ function schemaYielding(events: any[]) {
 const flush = () => new Promise((r) => setImmediate(r));
 
 test("service constructs and stop() is safe before start", () => {
-  const { ogm } = makeOgm();
-  const svc = new CommentVersionHistoryService(schemaYielding([]), ogm);
+  const { repository } = makeRepository();
+  const svc = new CommentVersionHistoryService(schemaYielding([]), repository);
   svc.stop();
 });
 
 test("service start() processes update events then the loop completes", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: userAuthor });
+  const { repository, tracked } = makeRepository({ authorName: "alice" });
   const schema = schemaYielding([
     { updatedComment: { id: "c-1", text: "new" }, previousValues: { text: "old" } },
     null,
   ]);
-  const svc = new CommentVersionHistoryService(schema, ogm);
+  const svc = new CommentVersionHistoryService(schema, repository);
   await svc.start();
   for (let i = 0; i < 50 && tracked.length === 0; i++) await flush();
   svc.stop();
@@ -116,8 +122,8 @@ test("service start() handles a subscribe error without throwing", async () => {
   const resolvers = {
     Subscription: { commentUpdated: { subscribe: () => { throw new Error("no sub"); } } },
   };
-  const { ogm } = makeOgm();
-  const svc = new CommentVersionHistoryService(makeExecutableSchema({ typeDefs, resolvers }), ogm);
+  const { repository } = makeRepository();
+  const svc = new CommentVersionHistoryService(makeExecutableSchema({ typeDefs, resolvers }), repository);
   await svc.start();
   svc.stop();
 });

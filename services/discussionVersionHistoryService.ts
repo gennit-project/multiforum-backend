@@ -1,8 +1,8 @@
-import { execute, parse, subscribe } from 'graphql';
-import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
+import { parse, subscribe } from 'graphql';
+import { trackTextVersion } from './textVersionHistory.js';
+import type { VersionHistoryRepository } from './persistence/versionHistoryRepository.js';
 import { logger } from "../logger.js";
 import type { GraphQLSchema } from "graphql";
-import type { Ogm } from "../types/context.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -22,19 +22,11 @@ export interface DiscussionPreviousValues {
  * discussion or its author cannot be found.
  */
 export const getDiscussionAuthorUsername = async (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   discussionId: string
 ): Promise<string | null> => {
   try {
-    const DiscussionModel = ogm.model('Discussion');
-    const discussions = await DiscussionModel.find({
-      where: { id: discussionId },
-      selectionSet: `{ Author { username } }`,
-    });
-    if (!discussions.length || !discussions[0].Author?.username) {
-      return null;
-    }
-    return discussions[0].Author.username;
+    return await repository.getDiscussionAuthorUsername(discussionId);
   } catch (error) {
     logger.error('Error getting current user username:', error);
     return null;
@@ -46,17 +38,16 @@ export const getDiscussionAuthorUsername = async (
  * connected to PastTitleVersions.
  */
 export const trackDiscussionTitleVersion = (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   discussionId: string,
   newTitle: string,
   username: string
 ): Promise<string | null> =>
-  trackTextVersion(ogm, {
+  trackTextVersion(repository, {
+    target: 'discussion-title',
     body: newTitle,
     username,
-    parentModelName: 'Discussion',
     parentId: discussionId,
-    relationshipField: 'PastTitleVersions',
   });
 
 /**
@@ -64,17 +55,16 @@ export const trackDiscussionTitleVersion = (
  * connected to PastBodyVersions.
  */
 export const trackDiscussionBodyVersion = (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   discussionId: string,
   newBody: string,
   username: string
 ): Promise<string | null> =>
-  trackTextVersion(ogm, {
+  trackTextVersion(repository, {
+    target: 'discussion-body',
     body: newBody,
     username,
-    parentModelName: 'Discussion',
     parentId: discussionId,
-    relationshipField: 'PastBodyVersions',
   });
 
 /**
@@ -83,12 +73,12 @@ export const trackDiscussionBodyVersion = (
  * core of the subscription handler, extracted so it can be tested directly.
  */
 export const handleDiscussionUpdateEvent = async (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   updatedDiscussion: DiscussionUpdatePayload,
   previousValues: DiscussionPreviousValues | null | undefined
 ): Promise<void> => {
   const discussionId = updatedDiscussion.id;
-  const currentUsername = await getDiscussionAuthorUsername(ogm, discussionId);
+  const currentUsername = await getDiscussionAuthorUsername(repository, discussionId);
   if (!currentUsername) {
     logger.info('Could not determine current user, skipping version history');
     return;
@@ -99,7 +89,7 @@ export const handleDiscussionUpdateEvent = async (
     previousValues.title !== updatedDiscussion.title &&
     updatedDiscussion.title
   ) {
-    await trackDiscussionTitleVersion(ogm, discussionId, updatedDiscussion.title, currentUsername);
+    await trackDiscussionTitleVersion(repository, discussionId, updatedDiscussion.title, currentUsername);
   }
 
   if (
@@ -107,7 +97,7 @@ export const handleDiscussionUpdateEvent = async (
     previousValues.body !== updatedDiscussion.body &&
     updatedDiscussion.body
   ) {
-    await trackDiscussionBodyVersion(ogm, discussionId, updatedDiscussion.body, currentUsername);
+    await trackDiscussionBodyVersion(repository, discussionId, updatedDiscussion.body, currentUsername);
   }
 };
 
@@ -117,13 +107,13 @@ export const handleDiscussionUpdateEvent = async (
  */
 export class DiscussionVersionHistoryService {
   private schema: GraphQLSchema;
-  private ogm: Ogm;
+  private repository: VersionHistoryRepository;
   private isRunning: boolean = false;
   private subscriptionIterator: AsyncIterableIterator<any> | null = null;
 
-  constructor(schema: GraphQLSchema, ogm: Ogm) {
+  constructor(schema: GraphQLSchema, repository: VersionHistoryRepository) {
     this.schema = schema;
-    this.ogm = ogm;
+    this.repository = repository;
     logger.info('Discussion version history service initialized');
   }
 
@@ -165,7 +155,6 @@ export class DiscussionVersionHistoryService {
       const result = await subscribe({
         schema: this.schema,
         document: parse(discussionSubscription),
-        contextValue: { ogm: this.ogm }
       });
 
       // Check if result is an AsyncIterator (subscription succeeded)
@@ -206,7 +195,7 @@ export class DiscussionVersionHistoryService {
         logger.info('Processing version history for updated discussion:', updatedDiscussion.id);
 
         try {
-          await handleDiscussionUpdateEvent(this.ogm, updatedDiscussion, previousValues);
+          await handleDiscussionUpdateEvent(this.repository, updatedDiscussion, previousValues);
         } catch (error) {
           logger.error('Error processing discussion version history:', error);
           // Continue processing other events even if one fails

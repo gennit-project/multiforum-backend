@@ -1,8 +1,8 @@
-import { execute, parse, subscribe } from 'graphql';
-import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
+import { parse, subscribe } from 'graphql';
+import { trackTextVersion } from './textVersionHistory.js';
+import type { VersionHistoryRepository } from './persistence/versionHistoryRepository.js';
 import { logger } from "../logger.js";
 import type { GraphQLSchema } from "graphql";
-import type { Ogm } from "../types/context.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -23,19 +23,11 @@ export interface WikiPagePreviousState {
  * the wikiPage or its version author cannot be found.
  */
 export const getWikiPageVersionAuthorUsername = async (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   wikiPageId: string
 ): Promise<string | null> => {
   try {
-    const WikiPageModel = ogm.model('WikiPage');
-    const wikiPages = await WikiPageModel.find({
-      where: { id: wikiPageId },
-      selectionSet: `{ VersionAuthor { username } }`,
-    });
-    if (!wikiPages.length || !wikiPages[0].VersionAuthor?.username) {
-      return null;
-    }
-    return wikiPages[0].VersionAuthor.username;
+    return await repository.getWikiPageVersionAuthorUsername(wikiPageId);
   } catch (error) {
     logger.error('Error getting current user username:', error);
     return null;
@@ -47,19 +39,18 @@ export const getWikiPageVersionAuthorUsername = async (
  * (with optional editReason) connected to PastVersions.
  */
 export const trackWikiPageVersion = (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   wikiPageId: string,
   content: string,
   editReason: string | null | undefined,
   username: string
 ): Promise<string | null> =>
-  trackTextVersion(ogm, {
+  trackTextVersion(repository, {
+    target: 'wiki-page',
     body: content,
     editReason,
     username,
-    parentModelName: 'WikiPage',
     parentId: wikiPageId,
-    relationshipField: 'PastVersions',
   });
 
 /**
@@ -68,12 +59,12 @@ export const trackWikiPageVersion = (
  * of the subscription handler, extracted so it can be tested directly.
  */
 export const handleWikiPageUpdateEvent = async (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   updatedWikiPage: WikiPageUpdatePayload,
   previousState: WikiPagePreviousState | null | undefined
 ): Promise<void> => {
   const wikiPageId = updatedWikiPage.id;
-  const currentUsername = await getWikiPageVersionAuthorUsername(ogm, wikiPageId);
+  const currentUsername = await getWikiPageVersionAuthorUsername(repository, wikiPageId);
   if (!currentUsername) {
     logger.info('Could not determine current user, skipping version history');
     return;
@@ -85,7 +76,7 @@ export const handleWikiPageUpdateEvent = async (
     updatedWikiPage.title
   ) {
     await trackWikiPageVersion(
-      ogm,
+      repository,
       wikiPageId,
       updatedWikiPage.title,
       updatedWikiPage.editReason,
@@ -99,7 +90,7 @@ export const handleWikiPageUpdateEvent = async (
     updatedWikiPage.body
   ) {
     await trackWikiPageVersion(
-      ogm,
+      repository,
       wikiPageId,
       updatedWikiPage.body,
       updatedWikiPage.editReason,
@@ -114,13 +105,13 @@ export const handleWikiPageUpdateEvent = async (
  */
 export class WikiPageVersionHistoryService {
   private schema: GraphQLSchema;
-  private ogm: Ogm;
+  private repository: VersionHistoryRepository;
   private isRunning: boolean = false;
   private subscriptionIterator: AsyncIterableIterator<any> | null = null;
 
-  constructor(schema: GraphQLSchema, ogm: Ogm) {
+  constructor(schema: GraphQLSchema, repository: VersionHistoryRepository) {
     this.schema = schema;
-    this.ogm = ogm;
+    this.repository = repository;
     logger.info('WikiPage version history service initialized');
   }
 
@@ -162,7 +153,6 @@ export class WikiPageVersionHistoryService {
       const result = await subscribe({
         schema: this.schema,
         document: parse(wikiPageSubscription),
-        contextValue: { ogm: this.ogm }
       });
 
       // Check if result is an AsyncIterator (subscription succeeded)
@@ -203,7 +193,7 @@ export class WikiPageVersionHistoryService {
         logger.info('Processing version history for updated wikiPage:', updatedWikiPage.id);
 
         try {
-          await handleWikiPageUpdateEvent(this.ogm, updatedWikiPage, previousState);
+          await handleWikiPageUpdateEvent(this.repository, updatedWikiPage, previousState);
         } catch (error) {
           logger.error('Error processing wikiPage version history:', error);
           // Continue processing other events even if one fails

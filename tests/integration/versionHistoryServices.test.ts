@@ -8,7 +8,10 @@ import assert from "node:assert/strict";
 import { handleDiscussionUpdateEvent } from "../../services/discussionVersionHistoryService.js";
 import { handleCommentUpdateEvent } from "../../services/commentVersionHistoryService.js";
 import { handleWikiPageUpdateEvent } from "../../services/wikiPageVersionHistoryService.js";
-import { createAuthoredTextVersion } from "../../services/textVersionHistory.js";
+import {
+  createVersionHistoryRepository,
+  type VersionHistoryRepository,
+} from "../../services/persistence/versionHistoryRepository.js";
 import {
   startImageModEnv,
   stopImageModEnv,
@@ -18,9 +21,11 @@ import {
 } from "./imageModerationHarness.js";
 
 let env: ImageModEnv;
+let repository: VersionHistoryRepository;
 
 before(async () => {
   env = await startImageModEnv();
+  repository = createVersionHistoryRepository(env.driver);
 }, { timeout: 240000 });
 
 after(async () => {
@@ -41,18 +46,25 @@ test("handleDiscussionUpdateEvent records title and body versions authored by th
   );
 
   await handleDiscussionUpdateEvent(
-    env.ogm,
+    repository,
     { id: "d1", title: "New Title", body: "New body" },
     { title: "Old Title", body: "Old body" }
   );
 
   const titleV = await run(
     `MATCH (:Discussion { id: 'd1' })-[:HAS_TITLE_VERSION]->(tv:TextVersion)<-[:AUTHORED_VERSION]-(u:User)
-     RETURN tv.body AS body, u.username AS author`
+     RETURN tv.body AS body,
+            u.username AS author,
+            tv.id IS NOT NULL AS hasId,
+            tv.createdAt IS NOT NULL AS hasCreatedAt,
+            tv.ageGateTouchedAt IS NOT NULL AS hasAgeGateTouchedAt`
   );
   assert.equal(titleV.length, 1, "a title version should be recorded");
   assert.equal(titleV[0].body, "New Title");
   assert.equal(titleV[0].author, "alice");
+  assert.equal(titleV[0].hasId, true);
+  assert.equal(titleV[0].hasCreatedAt, true);
+  assert.equal(titleV[0].hasAgeGateTouchedAt, true);
 
   const bodyV = await run(
     `MATCH (:Discussion { id: 'd1' })-[:HAS_BODY_VERSION]->(tv:TextVersion)<-[:AUTHORED_VERSION]-(u:User)
@@ -71,7 +83,7 @@ test("handleDiscussionUpdateEvent records nothing when title and body are unchan
   );
 
   await handleDiscussionUpdateEvent(
-    env.ogm,
+    repository,
     { id: "d1", title: "Same", body: "Same body" },
     { title: "Same", body: "Same body" }
   );
@@ -84,7 +96,7 @@ test("handleDiscussionUpdateEvent skips tracking when the discussion has no auth
   await run(`CREATE (:Discussion { id: 'd1', title: 'New Title', body: 'New body', createdAt: datetime() })`);
 
   await handleDiscussionUpdateEvent(
-    env.ogm,
+    repository,
     { id: "d1", title: "New Title", body: "New body" },
     { title: "Old Title", body: "Old body" }
   );
@@ -103,7 +115,7 @@ test("handleCommentUpdateEvent saves the previous text as a version authored by 
   );
 
   await handleCommentUpdateEvent(
-    env.ogm,
+    repository,
     { id: "c1", text: "New text" },
     { text: "Old text" }
   );
@@ -124,7 +136,7 @@ test("handleCommentUpdateEvent records nothing when text is unchanged", async ()
      CREATE (bob)-[:AUTHORED_COMMENT]->(c)`
   );
 
-  await handleCommentUpdateEvent(env.ogm, { id: "c1", text: "Same" }, { text: "Same" });
+  await handleCommentUpdateEvent(repository, { id: "c1", text: "Same" }, { text: "Same" });
 
   const versions = await run(`MATCH (tv:TextVersion) RETURN count(tv) AS n`);
   assert.equal(Number(versions[0].n), 0);
@@ -142,7 +154,7 @@ test("handleWikiPageUpdateEvent records title and body versions (with edit reaso
   );
 
   await handleWikiPageUpdateEvent(
-    env.ogm,
+    repository,
     { id: "w1", title: "New Title", body: "New body", editReason: "fixed typo" },
     { title: "Old Title", body: "Old body" }
   );
@@ -164,8 +176,11 @@ test("handleWikiPageUpdateEvent records title and body versions (with edit reaso
 
 // --- Shared helper ---
 
-test("createAuthoredTextVersion returns null when the author user does not exist", async () => {
-  const id = await createAuthoredTextVersion(env.ogm, {
+test("recordTextVersion creates no orphan when the author user does not exist", async () => {
+  await run(`CREATE (:Comment { id: 'c1', text: 'text', isRootComment: true, createdAt: datetime() })`);
+  const id = await repository.recordTextVersion({
+    target: "comment",
+    parentId: "c1",
     body: "orphan",
     username: "nobody",
   });
@@ -175,8 +190,26 @@ test("createAuthoredTextVersion returns null when the author user does not exist
   assert.equal(Number(versions[0].n), 0, "no TextVersion should be created for a missing user");
 });
 
-test("createAuthoredTextVersion returns null for empty body", async () => {
+test("recordTextVersion creates no orphan when the parent does not exist", async () => {
   await run(`CREATE (:User { username: 'dave' })`);
-  const id = await createAuthoredTextVersion(env.ogm, { body: "", username: "dave" });
+  const id = await repository.recordTextVersion({
+    target: "wiki-page",
+    parentId: "missing",
+    body: "orphan",
+    username: "dave",
+  });
+  assert.equal(id, null);
+
+  const versions = await run(`MATCH (tv:TextVersion) RETURN count(tv) AS n`);
+  assert.equal(Number(versions[0].n), 0, "no TextVersion should be created for a missing parent");
+});
+
+test("recordTextVersion returns null for an empty body", async () => {
+  const id = await repository.recordTextVersion({
+    target: "comment",
+    parentId: "c1",
+    body: "",
+    username: "dave",
+  });
   assert.equal(id, null);
 });

@@ -1,8 +1,8 @@
-import { execute, parse, subscribe } from 'graphql';
-import { trackTextVersion, type OGMLike } from './textVersionHistory.js';
+import { parse, subscribe } from 'graphql';
+import { trackTextVersion } from './textVersionHistory.js';
+import type { VersionHistoryRepository } from './persistence/versionHistoryRepository.js';
 import { logger } from "../logger.js";
 import type { GraphQLSchema } from "graphql";
-import type { Ogm } from "../types/context.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -21,25 +21,15 @@ export interface CommentPreviousValues {
  * or its author cannot be found.
  */
 export const getCommentAuthorUsername = async (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   commentId: string
 ): Promise<string | null> => {
-  const CommentModel = ogm.model('Comment');
-  const comments = await CommentModel.find({
-    where: { id: commentId },
-    selectionSet: `{
-      id
-      CommentAuthor {
-        ... on User { username }
-        ... on ModerationProfile { displayName }
-      }
-    }`,
-  });
-  if (!comments.length) {
+  try {
+    return await repository.getCommentAuthorName(commentId);
+  } catch (error) {
+    logger.error('Error getting comment author name:', error);
     return null;
   }
-  const author = comments[0].CommentAuthor;
-  return author?.username || author?.displayName || null;
 };
 
 /**
@@ -47,17 +37,16 @@ export const getCommentAuthorUsername = async (
  * connected to PastVersions (so the edit history preserves what was replaced).
  */
 export const trackCommentTextVersion = (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   commentId: string,
   previousText: string,
   username: string
 ): Promise<string | null> =>
-  trackTextVersion(ogm, {
+  trackTextVersion(repository, {
+    target: 'comment',
     body: previousText,
     username,
-    parentModelName: 'Comment',
     parentId: commentId,
-    relationshipField: 'PastVersions',
   });
 
 /**
@@ -66,7 +55,7 @@ export const trackCommentTextVersion = (
  * extracted so it can be tested directly.
  */
 export const handleCommentUpdateEvent = async (
-  ogm: OGMLike,
+  repository: VersionHistoryRepository,
   updatedComment: CommentUpdatePayload,
   previousValues: CommentPreviousValues | null | undefined
 ): Promise<void> => {
@@ -76,13 +65,13 @@ export const handleCommentUpdateEvent = async (
     return;
   }
 
-  const username = await getCommentAuthorUsername(ogm, updatedComment.id);
+  const username = await getCommentAuthorUsername(repository, updatedComment.id);
   if (!username) {
     logger.info('Could not determine username from comment author');
     return;
   }
 
-  await trackCommentTextVersion(ogm, updatedComment.id, previousText, username);
+  await trackCommentTextVersion(repository, updatedComment.id, previousText, username);
 };
 
 /**
@@ -91,13 +80,13 @@ export const handleCommentUpdateEvent = async (
  */
 export class CommentVersionHistoryService {
   private schema: GraphQLSchema;
-  private ogm: Ogm;
+  private repository: VersionHistoryRepository;
   private isRunning: boolean = false;
   private subscriptionIterator: AsyncIterableIterator<any> | null = null;
 
-  constructor(schema: GraphQLSchema, ogm: Ogm) {
+  constructor(schema: GraphQLSchema, repository: VersionHistoryRepository) {
     this.schema = schema;
-    this.ogm = ogm;
+    this.repository = repository;
     logger.info('Comment version history service initialized');
   }
 
@@ -142,7 +131,6 @@ export class CommentVersionHistoryService {
       const result = await subscribe({
         schema: this.schema,
         document: parse(commentSubscription),
-        contextValue: { ogm: this.ogm }
       });
 
       // Check if result is an AsyncIterator (subscription succeeded)
@@ -183,7 +171,7 @@ export class CommentVersionHistoryService {
         logger.info('Processing version history for updated comment:', updatedComment.id);
 
         try {
-          await handleCommentUpdateEvent(this.ogm, updatedComment, previousValues);
+          await handleCommentUpdateEvent(this.repository, updatedComment, previousValues);
         } catch (error) {
           logger.error('Error processing comment version history:', error);
           // Continue processing other events even if one fails
