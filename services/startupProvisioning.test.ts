@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { Driver } from "neo4j-driver";
 import type { ProvisionServerDefaultsResult } from "../seedData/provisionServerDefaults.js";
-import { provisionInstanceOnStartup } from "./startupProvisioning.js";
+import {
+  provisionInstanceOnStartup as provisionInstanceOnStartupWithDriver,
+  type StartupProvisioningInput,
+} from "./startupProvisioning.js";
+
+const testDriver = {} as Driver;
+const provisionInstanceOnStartup = (
+  input: Omit<StartupProvisioningInput, "driver">
+) => provisionInstanceOnStartupWithDriver({ driver: testDriver, ...input });
 
 const provisionedResult: ProvisionServerDefaultsResult = {
   serverRolesUpserted: 5,
@@ -131,7 +140,7 @@ test("provisions the configured local development identity after server defaults
       calls.push("defaults");
       return provisionedResult;
     },
-    provisionBootstrapAdmin: async (_ogm, options) => {
+    provisionBootstrapAdmin: async (options) => {
       calls.push(`admin:${options.username}:${options.email}:${options.serverName}`);
       return { status: "created", username: options.username };
     },
@@ -208,32 +217,16 @@ test("uses the production default role provisioner when no seam is injected", as
 });
 
 test("uses the default bootstrap provisioner and forwards its logs", async () => {
-  let userFindCalls = 0;
-  let userCreateCalls = 0;
-  let configUpdateCalls = 0;
+  const repositoryCalls: unknown[] = [];
   const messages: string[] = [];
-  const models = {
-    User: {
-      find: async () => {
-        userFindCalls += 1;
-        return [];
-      },
-      create: async () => {
-        userCreateCalls += 1;
-      },
-    },
-    Email: { find: async () => [] },
-    ServerConfig: {
-      find: async () => [{ SuperAdmins: [] }],
-      update: async () => {
-        configUpdateCalls += 1;
-      },
-    },
-  };
 
   const result = await provisionInstanceOnStartup({
-    ogm: {
-      model: (name) => models[name as keyof typeof models],
+    ogm: { model: () => ({}) },
+    bootstrapAdminRepository: {
+      async reconcile(input) {
+        repositoryCalls.push(input);
+        return { status: "created", username: input.username };
+      },
     },
     env: {
       MULTIFORUM_AUTO_PROVISION: "true",
@@ -249,11 +242,13 @@ test("uses the default bootstrap provisioner and forwards its logs", async () =>
     log: (message) => messages.push(message),
   });
 
-  assert.deepEqual({ userFindCalls, userCreateCalls, configUpdateCalls }, {
-    userFindCalls: 2,
-    userCreateCalls: 1,
-    configUpdateCalls: 1,
-  });
+  assert.deepEqual(repositoryCalls, [
+    {
+      serverName: "Community Forum",
+      email: "admin@example.test",
+      username: "admin",
+    },
+  ]);
   assert.equal(result.status, "provisioned");
   if (result.status === "provisioned") {
     assert.deepEqual(result.bootstrapAdmin, {

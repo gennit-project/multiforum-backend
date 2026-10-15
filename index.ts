@@ -252,6 +252,7 @@ async function initializeServer() {
     await ensureDiscussionListIndexes(driver);
     await backfillFilterGroupUploadSelection(driver);
     await provisionInstanceOnStartup({
+      driver,
       ogm,
       log: (message) => logger.info(message),
     });

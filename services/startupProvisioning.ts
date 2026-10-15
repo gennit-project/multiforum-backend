@@ -1,12 +1,18 @@
+import type { Driver } from "neo4j-driver";
 import {
   provisionServerDefaultsFromOgm,
   type OgmLike,
   type ProvisionServerDefaultsResult,
 } from "../seedData/provisionServerDefaults.js";
 import {
-  provisionBootstrapAdminFromOgm,
+  provisionBootstrapAdmin,
+  type BootstrapAdminInput,
   type BootstrapAdminResult,
 } from "./bootstrapAdmin.js";
+import {
+  createBootstrapAdminRepository,
+  type BootstrapAdminRepository,
+} from "./persistence/bootstrapAdminRepository.js";
 import {
   getAuthenticationProvider,
   getLocalDevBootstrapIdentity,
@@ -18,13 +24,7 @@ type ProvisionDefaults = (
 ) => Promise<ProvisionServerDefaultsResult>;
 
 type ProvisionBootstrapAdmin = (
-  ogm: OgmLike,
-  options: {
-    serverName: string;
-    email: string;
-    username: string;
-    log?: (message: string) => void;
-  }
+  input: BootstrapAdminInput
 ) => Promise<BootstrapAdminResult>;
 
 type StartupBootstrapAdminResult =
@@ -43,11 +43,13 @@ export type StartupProvisioningResult =
     };
 
 export type StartupProvisioningInput = {
+  driver: Driver;
   ogm: OgmLike;
   env?: NodeJS.ProcessEnv;
   log?: (message: string) => void;
   provision?: ProvisionDefaults;
   provisionBootstrapAdmin?: ProvisionBootstrapAdmin;
+  bootstrapAdminRepository?: BootstrapAdminRepository;
 };
 
 const ENABLED_VALUES = new Set(["1", "true", "yes", "on"]);
@@ -87,8 +89,12 @@ export const provisionInstanceOnStartup = async (
   if (getAuthenticationProvider(env) === "local-dev") {
     const identity = getLocalDevBootstrapIdentity(env);
     const provisionAdmin =
-      input.provisionBootstrapAdmin ?? provisionBootstrapAdminFromOgm;
-    bootstrapAdmin = await provisionAdmin(input.ogm, {
+      input.provisionBootstrapAdmin ?? provisionBootstrapAdmin;
+    const repository =
+      input.bootstrapAdminRepository ??
+      createBootstrapAdminRepository(input.driver);
+    bootstrapAdmin = await provisionAdmin({
+      repository,
       serverName,
       ...identity,
       log: (message) => log(`[startup-provision] ${message}`),
