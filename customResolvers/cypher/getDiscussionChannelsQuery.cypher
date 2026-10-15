@@ -9,25 +9,28 @@ WITH pagePosition, dc, d,
 OPTIONAL MATCH (d)-[:HAS_TAG]->(tag:Tag)
 WITH pagePosition, dc, d, COLLECT(DISTINCT tag.text) AS tagsText, weightedVotesCount
 
-OPTIONAL MATCH (d)<-[:POSTED_DISCUSSION]-(author:User)
-WITH pagePosition, dc, d, author, tagsText, weightedVotesCount
+WITH pagePosition, dc, d, tagsText, weightedVotesCount,
+     head([(d)<-[:POSTED_DISCUSSION]-(discussionAuthor:User) | discussionAuthor]) AS author
 
-OPTIONAL MATCH (upvoter:User)-[:UPVOTED_DISCUSSION]->(dc)
 WITH pagePosition, dc, d, author, tagsText, weightedVotesCount,
-     COUNT(DISTINCT upvoter) AS totalUpvoters,
+     COUNT { (dc)<-[:UPVOTED_DISCUSSION]-(:User) } AS totalUpvoters,
      COALESCE($loggedInUsername, "") AS loggedInUsername
 
-OPTIONAL MATCH (loggedInUser:User {username: loggedInUsername})-[:UPVOTED_DISCUSSION]->(dc)
-OPTIONAL MATCH (loggedInSuperUpvoter:User {username: loggedInUsername})-[:SUPER_UPVOTED_DISCUSSION]->(dc)
 WITH pagePosition, dc, d, author, tagsText, weightedVotesCount, totalUpvoters,
      CASE
          WHEN loggedInUsername = "" THEN []
-         WHEN loggedInUser IS NOT NULL THEN [{username: loggedInUser.username}]
+         WHEN EXISTS {
+           (dc)<-[:UPVOTED_DISCUSSION]-(loggedInUser:User)
+           WHERE loggedInUser.username = loggedInUsername
+         } THEN [{username: loggedInUsername}]
          ELSE []
      END AS loggedInUserUpvote,
      CASE
          WHEN loggedInUsername = "" THEN []
-         WHEN loggedInSuperUpvoter IS NOT NULL THEN [{username: loggedInSuperUpvoter.username}]
+         WHEN EXISTS {
+           (dc)<-[:SUPER_UPVOTED_DISCUSSION]-(loggedInSuperUpvoter:User)
+           WHERE loggedInSuperUpvoter.username = loggedInUsername
+         } THEN [{username: loggedInUsername}]
          ELSE []
      END AS loggedInUserSuperUpvote
 
@@ -65,11 +68,17 @@ WITH pagePosition, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSupe
          scanStatus: downloadableFile.scanStatus
      } END) WHERE file IS NOT NULL] AS downloadableFiles
 
-// Check if the logged-in user has favorited this discussion.
-OPTIONAL MATCH (favUser:User {username: $loggedInUsername})-[:DEFAULT_FAVORITES_DISCUSSIONS]->(d)
+// Check if the logged-in user has favorited this discussion. Keep the pattern
+// rooted at the already-selected discussion so the planner cannot scan all users.
 WITH pagePosition, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
      weightedVotesCount, commentsCount, album, albumImages, downloadableFiles,
-     CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null WHEN favUser IS NOT NULL THEN true ELSE false END AS isFavorited
+     CASE
+       WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null
+       ELSE EXISTS {
+         (d)<-[:DEFAULT_FAVORITES_DISCUSSIONS]-(favoriteViewer:User)
+         WHERE favoriteViewer.username = $loggedInUsername
+       }
+     END AS isFavorited
 
 // Include every assigned flair, including archived flairs. Archiving prevents
 // future assignment but must not erase a historical discussion's category.
