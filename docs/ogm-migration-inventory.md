@@ -1,0 +1,73 @@
+# OGM migration inventory
+
+This document records the starting boundary for
+[#284](https://github.com/gennit-project/multiforum-backend/issues/284). It is a
+migration map, not a recommendation to replace every call in one pull request.
+
+## Baseline
+
+As of this inventory, production TypeScript contains:
+
+- 65 files that call `ogm.model(...)` directly;
+- 179 files that import generated definitions from `ogm_types.ts`;
+- one module permitted to import the concrete `@neo4j/graphql-ogm` runtime:
+  `services/persistence/ogm.ts`, which constructs the temporary adapter.
+
+Direct model lookup is concentrated in these areas:
+
+| Area | Files | Migration concern |
+| --- | ---: | --- |
+| `rules/` | 38 | Authorization behavior must remain fail-closed and leader-routed. |
+| `middleware/` | 10 | Writes and side effects must retain transaction ordering. |
+| `services/` | 6 | Background workers need explicit retry and idempotency semantics. |
+| `customResolvers/` | 5 | Resolver inputs and generated selection shapes must stay compatible. |
+| `hooks/` | 4 | Version-history and notification effects must not be duplicated. |
+| `seedData/` | 1 | Startup provisioning must stay idempotent. |
+| `types/` | 1 | The legacy context type remains coupled until its callers move to repositories. |
+
+Generated OGM types are even more widespread: 140 of the 179 production files
+are custom resolvers. Their replacement is therefore a separate code-generation
+workstream from replacing runtime model access.
+
+The baseline can be reproduced with:
+
+```sh
+rg -l '\bogm\.model\(' --glob '*.ts' --glob '!**/*.test.ts' \
+  --glob '!tests/**' --glob '!build_scripts/**' --glob '!ogm_types.ts'
+
+rg -l 'ogm_types\.js' --glob '*.ts' --glob '!**/*.test.ts' \
+  --glob '!tests/**' --glob '!build_scripts/**' --glob '!ogm_types.ts'
+```
+
+## Replacement boundary
+
+New persistence code should depend on `Repository<Model>` or
+`RepositoryProvider<ModelMap>` from `services/persistence/repository.ts`. The
+temporary adapter in `services/persistence/ogm.ts` binds the existing OGM
+methods to those application-owned interfaces. ESLint rejects any new runtime
+import of `@neo4j/graphql-ogm` outside that adapter; temporary type-only imports
+remain allowed while legacy call sites are migrated.
+
+The contract intentionally preserves each generated model's `find`, `create`,
+`update`, and `delete` signatures. This lets a domain move to parameterized
+Cypher and the JavaScript driver without forcing its callers to migrate in the
+same pull request. OGM-only operations such as `aggregate` are excluded from the
+common contract and need an explicit domain-specific interface when encountered.
+
+The first migrated production path is the standalone default-role provisioning
+command. Its domain logic now receives repositories; the legacy OGM entry point
+is retained as a compatibility wrapper for server startup and integration tests.
+
+## Recommended migration order
+
+1. Move read-only permission helpers to narrow repositories, preserving leader
+   routing until request bookmarks are propagated end to end.
+2. Move idempotent startup and maintenance services.
+3. Move resolver writes one domain at a time, keeping related middleware and
+   managed transactions in the same slice.
+4. Replace `ogm_types.ts` generation after runtime OGM calls are gone.
+5. Remove the adapter and package, then proceed with GraphQL 7 and Driver 6.
+
+Every domain slice should keep its existing unit coverage and add a live Neo4j
+integration test for generated projections, permissions, and transaction
+behavior where applicable.

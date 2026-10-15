@@ -197,5 +197,6 @@ domain maps onto the storage model instead of fighting it.
 | [`permissions.ts`](../permissions.ts), [`rules/`](../rules) | Authorization rules (graphql-shield) |
 | [`middleware/`](../middleware), [`hooks/`](../hooks) | Mutation side effects |
 | [`services/`](../services) | Background services and the plugin runtime |
+| [`services/persistence/`](../services/persistence) | Application repository contracts and temporary database adapters |
 | [`tests/`](../tests) | Unit and Testcontainers-backed integration tests |
 | [`docs/`](.) | This documentation |

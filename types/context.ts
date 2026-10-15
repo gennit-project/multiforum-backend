@@ -4,8 +4,8 @@ import type { OGM } from "@neo4j/graphql-ogm";
 import type { ModelMap } from "../ogm_types.js";
 
 /**
- * The OGM instance is generic over the generated {@link ModelMap}, which gives
- * `ogm.model("Comment")` etc. their concrete model types.
+ * Compatibility surface for code not yet migrated to repositories. New domain
+ * interfaces must use the application-owned repository contract instead.
  */
 export type Ogm = OGM<ModelMap>;
 

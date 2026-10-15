@@ -27,6 +27,32 @@ export default tseslint.config(
     },
     rules: {
       "no-console": "error",
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@neo4j/graphql-ogm",
+              allowTypeImports: true,
+              message:
+                "Use the application repository boundary in services/persistence; only its temporary adapter may import the OGM at runtime.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The adapter owns the runtime dependency. Type generation and tests may
+    // still exercise the concrete package while the migration is in progress.
+    files: [
+      "services/persistence/ogm.ts",
+      "build_scripts/generateTypes.ts",
+      "tests/**",
+      "**/*.test.ts",
+    ],
+    rules: {
+      "no-restricted-imports": "off",
     },
   },
   {

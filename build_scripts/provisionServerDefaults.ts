@@ -12,7 +12,7 @@
 import "dotenv/config";
 import neo4j from "neo4j-driver";
 import { createOgmAndModels } from "../customResolvers/resolverDeps.js";
-import { provisionServerDefaultsFromOgm } from "../seedData/provisionServerDefaults.js";
+import { provisionServerDefaultsFromRepositories } from "../seedData/provisionServerDefaults.js";
 import {
   installDefaultNeo4jDatabase,
   resolveNeo4jDatabase,
@@ -39,10 +39,13 @@ const run = async () => {
   await deps.ogm.init();
 
   try {
-    const result = await provisionServerDefaultsFromOgm(deps.ogm, {
-      serverName: serverName as string,
-      log: (message) => console.log(`[provision] ${message}`),
-    });
+    const result = await provisionServerDefaultsFromRepositories(
+      deps.repositories,
+      {
+        serverName: serverName as string,
+        log: (message) => console.log(`[provision] ${message}`),
+      }
+    );
     console.log("[provision] Done:", JSON.stringify(result, null, 2));
   } finally {
     await driver.close();

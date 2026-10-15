@@ -29,6 +29,7 @@ const makeRoleModel = (existing: boolean) => {
         calls.update.push(args);
         return {};
       },
+      delete: async () => ({}),
     },
   };
 };
@@ -49,6 +50,7 @@ const makeServerConfigModel = (
         calls.update.push(args);
         return {};
       },
+      delete: async () => ({}),
     },
   };
 };
