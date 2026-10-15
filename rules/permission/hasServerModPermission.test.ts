@@ -5,6 +5,13 @@ type ServerModContext = Parameters<typeof hasServerModPermission>[1];
 
 const asContext = (context: any) => ({
   ...context,
+  suspensionEffectsRepository: context.suspensionEffectsRepository ?? {
+    async disconnectExpiredChannelSuspensions() {},
+    async disconnectExpiredServerSuspensions() {},
+    async createBlockNotification() {
+      return "created";
+    },
+  },
   permissionServerConfigRepository: {
     async findByName() {
       const configs = await context.ogm.model("ServerConfig").find();

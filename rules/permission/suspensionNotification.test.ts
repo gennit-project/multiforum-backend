@@ -1,78 +1,26 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { SuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 import { createSuspensionNotification } from "./suspensionNotification.js";
-import type { UserModel } from "../../ogm_types.js";
 
-class UserModelStub {
-  public finds: any[] = [];
-  public updates: any[] = [];
-  private notifications: Record<string, string[]> = {};
-  private notifyOnSuspensionBlocks: Record<string, boolean> = {};
+const buildRepository = () => {
+  const notifications: Array<{ username: string; text: string }> = [];
+  const repository: SuspensionEffectsRepository = {
+    async createBlockNotification(input) {
+      notifications.push(input);
+      return "created";
+    },
+    async disconnectExpiredChannelSuspensions() {},
+    async disconnectExpiredServerSuspensions() {},
+  };
+  return { notifications, repository };
+};
 
-  constructor(input?: {
-    initialNotifications?: Record<string, string[]>;
-    notifyOnSuspensionBlocks?: Record<string, boolean>;
-  }) {
-    this.notifications = input?.initialNotifications || {};
-    this.notifyOnSuspensionBlocks = input?.notifyOnSuspensionBlocks || {};
-  }
-
-  async find({ where }: any) {
-    const username = where.username;
-    this.finds.push(where);
-    const texts = this.notifications[username] || [];
-    return [
-      {
-        notifyOnSuspensionBlocks:
-          this.notifyOnSuspensionBlocks[username] ?? true,
-        Notifications: texts.map((text) => ({ id: text, text })),
-      },
-    ];
-  }
-
-  async update({ where, update }: any) {
-    this.updates.push({ where, update });
-    const username = where.username;
-    const newText = update.Notifications[0].create[0].node.text;
-    this.notifications[username] = [...(this.notifications[username] || []), newText];
-    return {};
-  }
-}
-
-test("creates notification when missing", async () => {
-  const userModel = new UserModelStub();
-  const suspendUntil = "2030-01-15T00:00:00.000Z";
+test("formats a dated channel suspension notification", async () => {
+  const { notifications, repository } = buildRepository();
 
   await createSuspensionNotification({
-    UserModel: userModel as unknown as UserModel,
-    username: "alice",
-    scopeName: "forum-1",
-    scopeType: "channel",
-    permission: "canCreateDiscussion",
-    relatedIssueId: "issue-123",
-    relatedIssueNumber: 123,
-    suspendedUntil: suspendUntil,
-    suspendedIndefinitely: false,
-    actorType: "user",
-  });
-
-  assert.equal(userModel.updates.length, 1, "Should create a notification");
-  const text = userModel.updates[0].update.Notifications[0].create[0].node
-    .text as string;
-  assert.ok(text.includes("forum-1"));
-  assert.ok(text.includes("Issue #123"));
-  assert.ok(text.includes("Suspension expires on 2030-01-15."));
-});
-
-test("does not duplicate notification", async () => {
-  const existingText =
-    "You are suspended in forum-1 and cannot canCreateDiscussion. See [Issue #123](/forums/forum-1/issues/123) for details. Suspension expires on 2030-01-15.";
-  const userModel = new UserModelStub({
-    initialNotifications: { alice: [existingText] },
-  });
-
-  await createSuspensionNotification({
-    UserModel: userModel as unknown as UserModel,
+    repository,
     username: "alice",
     scopeName: "forum-1",
     scopeType: "channel",
@@ -84,14 +32,24 @@ test("does not duplicate notification", async () => {
     actorType: "user",
   });
 
-  assert.equal(userModel.updates.length, 0, "Should not duplicate notification");
+  assert.equal(notifications.length, 1);
+  assert.equal(notifications[0]?.username, "alice");
+  assert.match(notifications[0]?.text ?? "", /in forum-1/);
+  assert.match(
+    notifications[0]?.text ?? "",
+    /\[Issue #123\]\(\/forums\/forum-1\/issues\/123\)/
+  );
+  assert.match(
+    notifications[0]?.text ?? "",
+    /Suspension expires on 2030-01-15\./
+  );
 });
 
-test("formats indefinite suspension message", async () => {
-  const userModel = new UserModelStub();
+test("formats an indefinite moderator suspension", async () => {
+  const { notifications, repository } = buildRepository();
 
   await createSuspensionNotification({
-    UserModel: userModel as unknown as UserModel,
+    repository,
     username: "mod-user",
     scopeName: "forum-2",
     scopeType: "channel",
@@ -101,38 +59,18 @@ test("formats indefinite suspension message", async () => {
     actorType: "mod",
   });
 
-  assert.equal(userModel.updates.length, 1, "Should create a notification");
-  const text = userModel.updates[0].update.Notifications[0].create[0].node
-    .text as string;
-  assert.ok(text.includes("Your moderator account is suspended in forum-2"));
-  assert.ok(text.includes("Issue #77"));
-  assert.ok(text.includes("Suspension is indefinite."));
-});
-
-test("skips notification when suspension-block preference is disabled", async () => {
-  const userModel = new UserModelStub({
-    notifyOnSuspensionBlocks: { alice: false },
-  });
-
-  await createSuspensionNotification({
-    UserModel: userModel as unknown as UserModel,
-    username: "alice",
-    scopeName: "forum-1",
-    scopeType: "channel",
-    permission: "canCreateDiscussion",
-    relatedIssueNumber: 123,
-    suspendedIndefinitely: true,
-    actorType: "user",
-  });
-
-  assert.equal(userModel.updates.length, 0, "Should honor the opt-out preference");
+  assert.match(
+    notifications[0]?.text ?? "",
+    /Your moderator account is suspended in forum-2/
+  );
+  assert.match(notifications[0]?.text ?? "", /Suspension is indefinite\./);
 });
 
 test("formats server-scoped issue links", async () => {
-  const userModel = new UserModelStub();
+  const { notifications, repository } = buildRepository();
 
   await createSuspensionNotification({
-    UserModel: userModel as unknown as UserModel,
+    repository,
     username: "alice",
     scopeName: "main",
     scopeType: "server",
@@ -142,7 +80,37 @@ test("formats server-scoped issue links", async () => {
     actorType: "user",
   });
 
-  const text = userModel.updates[0].update.Notifications[0].create[0].node
-    .text as string;
-  assert.ok(text.includes("/admin/issues/45"));
+  assert.match(notifications[0]?.text ?? "", /\/admin\/issues\/45/);
+});
+
+test("uses the issue id fallback and omits an unknown expiry", async () => {
+  const { notifications, repository } = buildRepository();
+
+  await createSuspensionNotification({
+    repository,
+    username: "alice",
+    scopeName: "forum-1",
+    scopeType: "channel",
+    permission: "canCreateComment",
+    relatedIssueId: "issue-abc",
+    actorType: "user",
+  });
+
+  assert.match(notifications[0]?.text ?? "", /See Issue issue-abc/);
+  assert.doesNotMatch(notifications[0]?.text ?? "", /Suspension expires/);
+});
+
+test("does not query persistence for an empty username", async () => {
+  const { notifications, repository } = buildRepository();
+
+  await createSuspensionNotification({
+    repository,
+    username: "",
+    scopeName: "forum-1",
+    scopeType: "channel",
+    permission: "canCreateComment",
+    actorType: "user",
+  });
+
+  assert.deepEqual(notifications, []);
 });

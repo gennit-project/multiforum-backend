@@ -8,6 +8,7 @@ import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js"
 import { createSuspensionNotification } from "./suspensionNotification.js";
 import { passesAsServerAdminOrRoot } from "./serverAdminOverride.js";
 import { logger } from "../../logger.js";
+import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
 type HasChannelPermissionInput = {
   permission: keyof ChannelRole;
@@ -88,7 +89,6 @@ export const hasChannelPermission: (
   const { permission, channelName, context } = input;
 
   const Channel = context.ogm.model("Channel");
-  const User = context.ogm.model("User");
 
   if (!context.user?.username) {
     context.user = await setUserDataOnContext({
@@ -177,7 +177,8 @@ export const hasChannelPermission: (
   // Clean up any expired suspensions (fire-and-forget, don't block on result)
   if (suspensionInfo.expiredUserSuspensions.length > 0 || suspensionInfo.expiredModSuspensions.length > 0) {
     disconnectExpiredSuspensions({
-      ogm: context.ogm,
+      driver: context.driver,
+      repository: context.suspensionEffectsRepository,
       channelUniqueName: channelName,
       expiredUserSuspensions: suspensionInfo.expiredUserSuspensions,
       expiredModSuspensions: suspensionInfo.expiredModSuspensions,
@@ -214,7 +215,9 @@ export const hasChannelPermission: (
   if (suspensionInfo.isSuspended && username) {
     try {
       await createSuspensionNotification({
-        UserModel: User,
+        repository:
+          context.suspensionEffectsRepository ??
+          createSuspensionEffectsRepository(context.driver),
         username,
         scopeName: channelName,
         scopeType: "channel",

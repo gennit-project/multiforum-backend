@@ -3,6 +3,7 @@ import type { Request } from "express";
 import type { OGM } from "@neo4j/graphql-ogm";
 import type { ModelMap } from "../ogm_types.js";
 import type { PermissionServerConfigRepository } from "../services/persistence/permissionServerConfigRepository.js";
+import type { SuspensionEffectsRepository } from "../services/persistence/suspensionEffectsRepository.js";
 
 /**
  * Compatibility surface for code not yet migrated to repositories. New domain
@@ -73,6 +74,8 @@ export type GraphQLContext = {
   ogm: Ogm;
   /** Optional application-owned override used by permission rules and tests. */
   permissionServerConfigRepository?: PermissionServerConfigRepository;
+  /** Optional persistence seam for suspension cleanup and notifications. */
+  suspensionEffectsRepository?: SuspensionEffectsRepository;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;

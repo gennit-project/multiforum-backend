@@ -28,6 +28,7 @@ import {
 } from "./imageModerationHarness.js";
 import { getActiveSuspension } from "../../rules/permission/getActiveSuspension.js";
 import { createSuspensionNotification } from "../../rules/permission/suspensionNotification.js";
+import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
 let env: ImageModEnv;
 
@@ -74,8 +75,6 @@ const notificationsFor = (username: string) =>
     { username }
   );
 
-const userModel = () => env.ogm.model("User");
-
 test("getActiveSuspension resolves the related issue number from the suspension graph", async () => {
   const info = await getActiveSuspension({
     ogm: env.ogm,
@@ -97,7 +96,7 @@ test("the suspension block notification links to the related issue with a valid 
   });
 
   await createSuspensionNotification({
-    UserModel: userModel(),
+    repository: createSuspensionEffectsRepository(env.driver),
     username: "baduser",
     scopeName: "test-channel",
     scopeType: "channel",
@@ -125,7 +124,7 @@ test("no suspension block notification is created when the user has opted out", 
   );
 
   await createSuspensionNotification({
-    UserModel: userModel(),
+    repository: createSuspensionEffectsRepository(env.driver),
     username: "baduser",
     scopeName: "test-channel",
     scopeType: "channel",

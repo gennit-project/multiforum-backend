@@ -9,12 +9,12 @@ import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSus
 import { createSuspensionNotification } from "./suspensionNotification.js";
 import { isServerRoot } from "./isServerRoot.js";
 import { logger } from "../../logger.js";
+import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
 export const hasServerModPermission: (
   permission: keyof ModServerRole,
   context: GraphQLContext
 ) => Promise<Error | boolean> = async (permission, context) => {
-  const User = context.ogm.model("User");
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
       context,
@@ -91,7 +91,9 @@ export const hasServerModPermission: (
   if (suspensionInfo.isSuspended && context.user?.username) {
     try {
       await createSuspensionNotification({
-        UserModel: User,
+        repository:
+          context.suspensionEffectsRepository ??
+          createSuspensionEffectsRepository(context.driver),
         username: context.user.username,
         scopeName: process.env.SERVER_CONFIG_NAME || "server",
         scopeType: "server",

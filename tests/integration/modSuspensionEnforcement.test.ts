@@ -167,7 +167,7 @@ test("an expired mod suspension is detected and cleaned up from the channel", as
   assert.equal(info.expiredModSuspensions.length, 1);
 
   await disconnectExpiredSuspensions({
-    ogm: env.ogm,
+    driver: env.driver,
     channelUniqueName: CHANNEL,
     expiredUserSuspensions: info.expiredUserSuspensions,
     expiredModSuspensions: info.expiredModSuspensions,
