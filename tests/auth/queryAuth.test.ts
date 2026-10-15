@@ -52,6 +52,7 @@ before(
         queryFields.users.resolve = () => [
           {
             username: "public-user",
+            NotificationsAggregate: { count: 0 },
             ...Object.fromEntries(
               publicProfileAggregateFields.map((field) => [field, { count: 1 }])
             ),
@@ -68,6 +69,8 @@ before(
         for (const field of publicProfileAggregateFields) {
           userType.getFields()[field].resolve = (source) => source[field];
         }
+        userType.getFields().NotificationsAggregate.resolve =
+          (source) => source.NotificationsAggregate;
 
         return transformedSchema;
       },
@@ -214,7 +217,7 @@ test("public user profile aggregate counters are readable anonymously", async ()
   });
 });
 
-test("owner-only user aggregate counters remain private", async () => {
+test("notification aggregate traversal delegates ownership filtering to Neo4j GraphQL", async () => {
   const result = await graphql({
     schema,
     source: `
@@ -227,5 +230,8 @@ test("owner-only user aggregate counters remain private", async () => {
     contextValue: makeRequestContext({ driver, ogm }),
   });
 
-  assert.match(result.errors?.[0]?.message ?? "", /Not Authoris/i);
+  assert.deepEqual(result.errors, undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
+    users: [{ NotificationsAggregate: { count: 0 } }],
+  });
 });
