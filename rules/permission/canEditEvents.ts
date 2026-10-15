@@ -2,6 +2,7 @@ import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { createContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
 type CanEditEventsArgs = {
   where?: {
@@ -11,12 +12,11 @@ type CanEditEventsArgs = {
   eventId?: string;
 };
 
-type EventChannelLookup = {
-  EventChannels?: Array<{ channelUniqueName?: string | null }> | null;
-};
-
-export const canEditEvents = rule({ cache: "contextual" })(
-  async (parent: unknown, args: CanEditEventsArgs, context: GraphQLContext) => {
+export const canEditEventsHandler = async (
+  _parent: unknown,
+  args: CanEditEventsArgs,
+  context: GraphQLContext
+) => {
     const eventIds: string[] = [];
 
     if (args.eventId) {
@@ -35,19 +35,16 @@ export const canEditEvents = rule({ cache: "contextual" })(
       return new Error("No event specified for this operation.");
     }
 
-    const Event = context.ogm.model("Event");
-    const events = await Event.find({
-      where: { id_IN: eventIds },
-      selectionSet: `{
-        EventChannels { channelUniqueName }
-      }`,
-    });
+    const repository =
+      context.contentChannelPermissionRepository ??
+      createContentChannelPermissionRepository(context.driver);
+    const lookup = await repository.findEventChannels(eventIds);
 
-    if (!events || events.length === 0) {
+    if (!lookup.found) {
       return new Error("Could not find the event or its associated channel.");
     }
 
-    const channelConnections = collectEventChannelConnections(events);
+    const channelConnections = lookup.channelUniqueNames;
 
     if (channelConnections.length === 0) {
       return new Error("No channel specified for this operation.");
@@ -64,22 +61,8 @@ export const canEditEvents = rule({ cache: "contextual" })(
     }
 
     return true;
-  }
-);
-
-export const collectEventChannelConnections = (
-  events: Array<EventChannelLookup>
-) => {
-  const channelConnections = new Set<string>();
-
-  for (const event of events) {
-    const channels = event?.EventChannels || [];
-    for (const channel of channels) {
-      if (channel?.channelUniqueName) {
-        channelConnections.add(channel.channelUniqueName);
-      }
-    }
-  }
-
-  return Array.from(channelConnections);
 };
+
+export const canEditEvents = rule({ cache: "contextual" })(
+  canEditEventsHandler
+);

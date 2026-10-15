@@ -2,6 +2,7 @@ import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { createContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
 type CanEditDiscussionsArgs = {
   where?: {
@@ -11,12 +12,11 @@ type CanEditDiscussionsArgs = {
   discussionId?: string;
 };
 
-type DiscussionChannelLookup = {
-  DiscussionChannels?: Array<{ channelUniqueName?: string | null }> | null;
-};
-
-export const canEditDiscussions = rule({ cache: "contextual" })(
-  async (parent: unknown, args: CanEditDiscussionsArgs, context: GraphQLContext) => {
+export const canEditDiscussionsHandler = async (
+  _parent: unknown,
+  args: CanEditDiscussionsArgs,
+  context: GraphQLContext
+) => {
     const discussionIds: string[] = [];
 
     if (args.discussionId) {
@@ -35,19 +35,16 @@ export const canEditDiscussions = rule({ cache: "contextual" })(
       return new Error("No discussion specified for this operation.");
     }
 
-    const Discussion = context.ogm.model("Discussion");
-    const discussions = await Discussion.find({
-      where: { id_IN: discussionIds },
-      selectionSet: `{
-        DiscussionChannels { channelUniqueName }
-      }`,
-    });
+    const repository =
+      context.contentChannelPermissionRepository ??
+      createContentChannelPermissionRepository(context.driver);
+    const lookup = await repository.findDiscussionChannels(discussionIds);
 
-    if (!discussions || discussions.length === 0) {
+    if (!lookup.found) {
       return new Error("Could not find the discussion or its associated channel.");
     }
 
-    const channelConnections = collectDiscussionChannelConnections(discussions);
+    const channelConnections = lookup.channelUniqueNames;
 
     if (channelConnections.length === 0) {
       return new Error("No channel specified for this operation.");
@@ -64,22 +61,8 @@ export const canEditDiscussions = rule({ cache: "contextual" })(
     }
 
     return true;
-  }
-);
-
-export const collectDiscussionChannelConnections = (
-  discussions: Array<DiscussionChannelLookup>
-) => {
-  const channelConnections = new Set<string>();
-
-  for (const discussion of discussions) {
-    const channels = discussion?.DiscussionChannels || [];
-    for (const channel of channels) {
-      if (channel?.channelUniqueName) {
-        channelConnections.add(channel.channelUniqueName);
-      }
-    }
-  }
-
-  return Array.from(channelConnections);
 };
+
+export const canEditDiscussions = rule({ cache: "contextual" })(
+  canEditDiscussionsHandler
+);

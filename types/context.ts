@@ -4,6 +4,7 @@ import type { OGM } from "@neo4j/graphql-ogm";
 import type { ModelMap } from "../ogm_types.js";
 import type { PermissionServerConfigRepository } from "../services/persistence/permissionServerConfigRepository.js";
 import type { SuspensionEffectsRepository } from "../services/persistence/suspensionEffectsRepository.js";
+import type { ContentChannelPermissionRepository } from "../services/persistence/contentChannelPermissionRepository.js";
 
 /**
  * Compatibility surface for code not yet migrated to repositories. New domain
@@ -76,6 +77,8 @@ export type GraphQLContext = {
   permissionServerConfigRepository?: PermissionServerConfigRepository;
   /** Optional persistence seam for suspension cleanup and notifications. */
   suspensionEffectsRepository?: SuspensionEffectsRepository;
+  /** Optional persistence seam for content-to-channel authorization reads. */
+  contentChannelPermissionRepository?: ContentChannelPermissionRepository;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;
