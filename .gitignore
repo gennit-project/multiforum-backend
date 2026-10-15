@@ -13,6 +13,7 @@ ssl
 config
 ts_emitted
 coverage
+performance-results
 .nyc_output
 listical-dev-gcp.json
 

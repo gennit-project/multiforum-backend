@@ -34,6 +34,7 @@
     "age-gate:sweep": "node ts_emitted/build_scripts/ageGateSweep.js",
     "age-gate:sweep:dev": "node --loader ts-node/esm build_scripts/ageGateSweep.ts",
     "neo4j:audit": "node --loader ts-node/esm build_scripts/neo4jSchemaAudit.ts",
+    "perf:cypher": "TS_NODE_TRANSPILE_ONLY=true node --loader ts-node/esm build_scripts/profileCriticalQueries.ts",
     "neo4j:cleanup-intermediate-nodes": "node --loader ts-node/esm build_scripts/cleanupIntermediateNodes.ts",
     "mfctl": "node --loader ts-node/esm build_scripts/pluginConfigurationCli.ts",
     "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",

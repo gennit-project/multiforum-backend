@@ -255,6 +255,53 @@ Performance changes must preserve:
 An optimized query that returns data the viewer must not see is not an
 optimization.
 
+## Automated performance budgets
+
+### Repeatable large-fixture budget check
+
+Run the critical-query performance contract with:
+
+```bash
+pnpm run perf:cypher
+```
+
+The command starts a disposable Neo4j 5 Community container, provisions the
+indexes used by the profiled routes, and deterministically creates 2,000
+discussions and downloads, 4,000 images, 20,000 comments, and 60,000 vote
+relationships. It then runs `EXPLAIN` followed by two `PROFILE` passes for the
+critical list, cursor, detail, root-comment, and reply queries. Docker is the
+only external requirement; the command never connects to a configured
+development or production database.
+
+Reports are written to `performance-results/cypher-profile.json` and
+`performance-results/cypher-profile.md`. The first profile is the cold pass
+over the freshly seeded fixture. The immediately repeated profile is the warm
+pass used for enforcement. The report stores database hits, maximum
+intermediate rows, result count, page-cache counters, operators, and each
+budget violation.
+
+Budgets are expressed as a fixed query setup cost plus a cost per requested
+row. Keep the fixed part limited to work intentionally scoped to the selected
+thread or the site-wide cursor anchor; do not multiply a budget by the total
+fixture size. The initial site-wide page explicitly allows its known
+`NodeByLabelScan`; all other occurrences of that operator are failures. Every
+query rejects `AllNodesScan`, `CartesianProduct`, and the exact materializing
+`Eager` operator. Aggregation operators such as `EagerAggregation` are not the
+same operator and are reported without being rejected.
+
+To choose custom artifact paths:
+
+```bash
+pnpm run perf:cypher -- \
+  --json /tmp/cypher-profile.json \
+  --markdown /tmp/cypher-profile.md
+```
+
+CI runs the same command and uploads both reports even when a budget fails.
+When intentionally changing a critical query, compare the old and new JSON,
+explain the change in the pull request, and retain reasonable headroom rather
+than setting the threshold to the observed value exactly.
+
 ## Testing expectations
 
 At minimum:

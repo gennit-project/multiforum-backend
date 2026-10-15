@@ -219,6 +219,38 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  performance-budgets:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Clean install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Profile critical Cypher queries
+        run: pnpm run perf:cypher
+
+      - name: Upload Cypher performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypher-performance-report
+          path: performance-results/
+          if-no-files-found: error
+          retention-days: 14
+
   # Union the complete unit LCOV report with the hit-only integration reports and
   # upload the result to Codecov. A line covered by ANY job counts as covered,
   # while the unit report's all:true file list supplies one stable denominator.
