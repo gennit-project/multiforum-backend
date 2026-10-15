@@ -119,6 +119,21 @@ const buildOgm = ({
 const buildContext = (input: BuildOgmInput = {}) =>
   ({
     ogm: buildOgm(input),
+    permissionServerConfigRepository: {
+      findByName: async () => ({
+        DefaultServerRole: {
+          canUpdateChannel: input.defaultCanUpdateChannel ?? true,
+        },
+        DefaultSuspendedRole: {
+          canUpdateChannel: input.suspendedCanUpdateChannel ?? false,
+        },
+        SuperAdmins: [],
+        Admins: [],
+        Moderators: [],
+        SuspendedUsers: [],
+        SuspendedMods: [],
+      }),
+    },
     req: { headers: {} },
     user: {
       username: "wiki-author",

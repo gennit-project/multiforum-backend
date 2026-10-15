@@ -20,6 +20,9 @@ function makeCtx(rows: Record<string, unknown[]> = {}) {
     user: { username: "alice", email: "alice@x.test", data: { username: "alice" } },
     req: { headers: {} },
     driver: { session: () => ({ run: async () => ({ records: [] }), close: async () => {} }) },
+    permissionServerConfigRepository: {
+      findByName: async () => rows.ServerConfig?.[0] ?? null,
+    },
     ogm: { model: (name: string) => ({ find: async () => rows[name] ?? [] }) },
   } as any;
 }

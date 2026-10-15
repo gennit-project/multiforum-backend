@@ -3,38 +3,38 @@ import type { GraphQLContext } from "../../types/context.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
 
 async function testCachesServerConfigWithinRequest() {
-  let findCalls = 0;
+  let findByNameCalls = 0;
   const context = {
-    ogm: {
-      model(name: string) {
-        if (name !== "ServerConfig") {
-          throw new Error(`Unexpected model lookup: ${name}`);
-        }
-
-        return {
-          find: async () => {
-            findCalls += 1;
-            return [
-              {
-                DefaultServerRole: { canCreateChannel: true, canUploadFile: true },
-                DefaultSuspendedRole: {
-                  canCreateChannel: false,
-                  canUploadFile: false,
-                },
-                Admins: [{ username: "alice" }],
-                Moderators: [{ displayName: "Mod Alice" }],
-              },
-            ];
-          },
-        };
-      },
+    driver: {},
+  };
+  const repository = {
+    async findByName() {
+      findByNameCalls += 1;
+      return {
+        DefaultServerRole: { canCreateChannel: true, canUploadFile: true },
+        DefaultSuspendedRole: {
+          canCreateChannel: false,
+          canUploadFile: false,
+        },
+        Admins: [{ username: "alice" }],
+        SuperAdmins: [],
+        Moderators: [{ displayName: "Mod Alice" }],
+        SuspendedUsers: [],
+        SuspendedMods: [],
+      };
     },
   };
 
-  await getServerConfigForPermissions(context as unknown as GraphQLContext);
-  await getServerConfigForPermissions(context as unknown as GraphQLContext);
+  await getServerConfigForPermissions(
+    context as unknown as GraphQLContext,
+    repository
+  );
+  await getServerConfigForPermissions(
+    context as unknown as GraphQLContext,
+    repository
+  );
 
-  assert.equal(findCalls, 1);
+  assert.equal(findByNameCalls, 1);
 }
 
 async function run() {
