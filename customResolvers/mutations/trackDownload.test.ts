@@ -19,9 +19,10 @@ type FakeRecord = {
   get: (key: string) => number
 }
 
-const buildDriver = (updated = 1) => {
+const buildDriver = (updated = 1, callbackAttempts = 1) => {
   const calls = {
     run: [] as RunCall[],
+    executeWrite: 0,
     close: 0,
     defaultAccessMode: null as string | null
   }
@@ -35,9 +36,20 @@ const buildDriver = (updated = 1) => {
       calls.defaultAccessMode = input.defaultAccessMode
 
       return {
-        run: async (...args: RunCall) => {
-          calls.run.push(args)
-          return { records: [record] }
+        executeWrite: async (
+          work: (transaction: { run: (...args: RunCall) => Promise<{ records: FakeRecord[] }> }) => Promise<number>
+        ) => {
+          calls.executeWrite += 1
+          let result = 0
+          for (let attempt = 0; attempt < callbackAttempts; attempt += 1) {
+            result = await work({
+              run: async (...args: RunCall) => {
+                calls.run.push(args)
+                return { records: [record] }
+              }
+            })
+          }
+          return result
         },
         close: () => {
           calls.close += 1
@@ -132,6 +144,7 @@ test('trackDownload updates counters and saves the download discussion', async (
 
   assert.equal(result, true)
   assert.equal(calls.defaultAccessMode, 'WRITE')
+  assert.equal(calls.executeWrite, 1)
   assert.equal(calls.close, 1)
   assert.equal(calls.run.length, 1)
   assert.equal(calls.run[0][1].username, 'alice')
@@ -155,6 +168,22 @@ test('trackDownload updates counters and saves the download discussion', async (
     calls.run[0][1].downloadsCollectionDescription,
     AUTO_SAVED_DOWNLOADS_COLLECTION_DESCRIPTION
   )
+})
+
+test('trackDownload remains correct when Neo4j retries the managed callback', async () => {
+  const { driver, calls } = buildDriver(1, 2)
+  const resolver = trackDownload({ driver })
+
+  const result = await resolver(
+    null,
+    { downloadableFileId: 'file-1', discussionId: 'discussion-1' },
+    { user: { username: 'alice' } } as unknown as GraphQLContext
+  )
+
+  assert.equal(result, true)
+  assert.equal(calls.executeWrite, 1)
+  assert.equal(calls.run.length, 2)
+  assert.equal(calls.close, 1)
 })
 
 test('trackDownload permits review tracking only for the uploader or discussion author', async () => {

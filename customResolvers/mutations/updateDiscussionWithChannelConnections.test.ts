@@ -63,10 +63,16 @@ class DiscussionModelStub {
 
 class SessionStub {
   runCalls: Array<{ query: string; params: Record<string, unknown> }> = [];
+  executeWriteCalls = 0;
+  callbackAttempts: number;
   flairRequirements = new Map<
     string,
     { flairRequired: boolean; activeFlairIds: string[] }
   >();
+
+  constructor(callbackAttempts = 1) {
+    this.callbackAttempts = callbackAttempts;
+  }
 
   async run(query: string, params: Record<string, unknown>) {
     if (query.includes("requestedChannelUniqueName")) {
@@ -93,7 +99,12 @@ class SessionStub {
 
   // Managed writes run their work against this same stub.
   async executeWrite<T>(work: (tx: { run: SessionStub["run"] }) => Promise<T>) {
-    return work({ run: this.run.bind(this) });
+    this.executeWriteCalls += 1;
+    let result: T | undefined;
+    for (let attempt = 0; attempt < this.callbackAttempts; attempt += 1) {
+      result = await work({ run: this.run.bind(this) });
+    }
+    return result as T;
   }
 
   async close() {}
@@ -427,6 +438,41 @@ test("updateDiscussionWithChannelConnections disconnects album images", async ()
   });
   assert.match(session.runCalls[0].query, /DELETE relationship/);
   assert.match(session.runCalls[0].query, /SET album\.imageOrder/);
+});
+
+test("updateDiscussionWithChannelConnections retries the update and channel changes as one unit", async () => {
+  const discussionModel = new DiscussionModelStub();
+  const session = new SessionStub(2);
+  const resolver = getUpdateDiscussionWithChannelConnections({
+    Discussion: discussionModel as never,
+    DownloadableFile: {} as never,
+    PluginPipelineRun: {} as never,
+    PluginRun: {} as never,
+    ServerConfig: {} as never,
+    ServerSecret: {} as never,
+    User: {} as never,
+    driver: createDriver(session) as never,
+  });
+
+  await resolver(
+    null,
+    {
+      where: { id: "discussion-1" },
+      discussionUpdateInput: {},
+      channelConnections: ["new-channel"],
+      channelDisconnections: ["old-channel"],
+    },
+    createContext() as never,
+    {} as never
+  );
+
+  assert.equal(session.executeWriteCalls, 1);
+  assert.equal(discussionModel.updateCalls.length, 2);
+  assert.equal(session.runCalls.length, 4);
+  assert.deepEqual(
+    session.runCalls.map((call) => call.params.channelUniqueName),
+    ["new-channel", "old-channel", "new-channel", "old-channel"]
+  );
 });
 
 test("album sanitization in updateDiscussionWithChannelConnections", async (t) => {

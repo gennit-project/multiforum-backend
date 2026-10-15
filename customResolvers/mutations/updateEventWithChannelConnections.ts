@@ -1,14 +1,16 @@
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
-import { updateEventChannelQuery, severConnectionBetweenEventAndChannelQuery } from "../cypher/cypherQueries.js";
 import { EventWhere, EventUpdateInput } from "../../src/generated/graphql.js";
 import { sendBatchEmails } from "../../services/mail/index.js";
 import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
+import { createInAppNotificationsForUsers } from "../../services/inAppNotifications.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
 import { eventVersionHistoryHandler } from "../../hooks/eventVersionHistoryHook.js";
 import { logger } from "../../logger.js";
+import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
 
 type Input = {
   Event: EventModel;
@@ -49,8 +51,6 @@ const getResolver = (input: Input) => {
       channelDisconnections,
     } = args;
 
-    const session = driver.session();
-
     try {
       const existingEvents = await Event.find({
         where,
@@ -58,12 +58,18 @@ const getResolver = (input: Input) => {
           {
             id
             title
+            description
             startTime
             endTime
             locationName
             address
             virtualEventUrl
             canceled
+            Poster { username }
+            DescriptionLastEditedBy { username }
+            EventChannels { channelUniqueName }
+            PastTitleVersions { id body createdAt }
+            PastDescriptionVersions { id body createdAt }
           }
         `,
       });
@@ -73,9 +79,26 @@ const getResolver = (input: Input) => {
         throw new Error("Event not found");
       }
 
-      // Snapshot the previous title/description into the event's version
-      // history before applying the update. Runs before Event.update so it
-      // reads the pre-update values.
+      const updatedEventId = where.id;
+
+      await executeManagedWrite(driver, async (transaction) => {
+        await Event.update({
+          where,
+          update: eventUpdateInput,
+          context: { executionContext: transaction },
+        });
+
+        await applyEventChannelChanges({
+          transaction,
+          eventId: updatedEventId,
+          channelConnections,
+          channelDisconnections,
+        });
+      });
+
+      // Version-history writes happen once after the retryable business write.
+      // They use the pre-update snapshot without putting logging or other
+      // non-database effects inside the managed callback.
       if (where.id) {
         await eventVersionHistoryHandler({
           context,
@@ -86,44 +109,7 @@ const getResolver = (input: Input) => {
               description: eventUpdateInput.description,
             },
           },
-        });
-      }
-
-      // Update the event
-      await Event.update({
-        where: where,
-        update: eventUpdateInput,
-      });
-      const updatedEventId = where.id;
-
-      // Update the channel connections
-      for (let i = 0; i < channelConnections.length; i++) {
-        const channelUniqueName = channelConnections[i];
-
-        // For each channel connection, create a EventChannel node
-        // if one does not already exist.
-
-        // Join the EventChannel to the Event and Channel nodes.
-        // If there was an existing one, join that. If we just created one,
-        // join that.
-        await session.run(updateEventChannelQuery, {
-          eventId: updatedEventId,
-          channelUniqueName: channelUniqueName,
-        });
-      }
-
-      // Update the channel disconnections
-      for (let i = 0; i < channelDisconnections.length; i++) {
-        const channelUniqueName = channelDisconnections[i];
-        // For each channel disconnection, sever the connection between
-        // the Event and the EventChannel node.
-        // We intentionally do not delete the EventChannel node
-        // because it contains comments that are authored by other users
-        // than the event poster, and the event poster should
-        // not have permission to delete those comments.
-        await session.run(severConnectionBetweenEventAndChannelQuery, {
-          eventId: updatedEventId,
-          channelUniqueName: channelUniqueName,
+          eventSnapshot: existingEvent,
         });
       }
       // Refetch the newly created event with the channel connections
@@ -215,28 +201,12 @@ const getResolver = (input: Input) => {
           await sendBatchEmailsFn(emailRecipients);
         }
 
-        if (usersToNotify.length > 0) {
-          const notificationSession = driver.session();
-          await notificationSession.run(
-            `
-            UNWIND $usernames AS username
-            MATCH (user:User {username: username})
-            CREATE (notification:Notification {
-              id: randomUUID(),
-              createdAt: datetime(),
-              read: false,
-              text: $notificationText,
-              notificationType: 'event'
-            })
-            CREATE (user)-[:HAS_NOTIFICATION]->(notification)
-            `,
-            {
-              usernames: usersToNotify.map((user: NotifiableUser) => user.username),
-              notificationText: eventUpdateNotification.notificationText,
-            }
-          );
-          await notificationSession.close();
-        }
+        await createInAppNotificationsForUsers({
+          driver,
+          usernames: usersToNotify.map((user: NotifiableUser) => user.username),
+          notificationText: eventUpdateNotification.notificationText,
+          notificationType: "event",
+        });
       }
 
       return updatedEvent;
@@ -244,8 +214,6 @@ const getResolver = (input: Input) => {
       logger.error("Error updating event:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to update event. ${message}`);
-    } finally {
-      await session.close();
     }
   };
 };

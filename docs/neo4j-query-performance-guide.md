@@ -220,9 +220,9 @@ visibility and domain filters.
 - Batch repeated writes with `UNWIND` rather than one round trip per item when
   transaction semantics allow it.
 
-The managed-write migration is tracked in
-[issue #310](https://github.com/gennit-project/multiforum-backend/issues/310),
-and bookmark propagation in
+The current managed-write audit and deliberate exceptions are recorded in
+[managed-write-inventory.md](./managed-write-inventory.md), and bookmark
+propagation in
 [issue #305](https://github.com/gennit-project/multiforum-backend/issues/305).
 
 ## Neo4j GraphQL rules

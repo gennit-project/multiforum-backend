@@ -6,8 +6,12 @@ import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel } from "../../ogm_types.js";
 import type { GraphQLResolveInfo } from "graphql";
 
-const buildDriver = () => {
-  const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
+const buildDriver = (callbackAttempts = 1) => {
+  const sessions: Array<{
+    runCalls: any[];
+    executeWriteCalls: number;
+    closeCalls: number;
+  }> = [];
 
   return {
     sessions,
@@ -15,13 +19,31 @@ const buildDriver = () => {
       session() {
         const sessionState = {
           runCalls: [] as any[],
+          executeWriteCalls: 0,
           closeCalls: 0,
         };
         sessions.push(sessionState);
         return {
           async run(query: string, params: Record<string, unknown>) {
             sessionState.runCalls.push({ query, params });
-            return {};
+            return {
+              records: [{ get: () => ({ toNumber: () => 1 }) }],
+            };
+          },
+          async executeWrite<T>(work: (transaction: {
+            run: (query: string, params: Record<string, unknown>) => Promise<object>;
+          }) => Promise<T>) {
+            sessionState.executeWriteCalls += 1;
+            let result: T | undefined;
+            for (let attempt = 0; attempt < callbackAttempts; attempt += 1) {
+              result = await work({
+                async run(query: string, params: Record<string, unknown>) {
+                  sessionState.runCalls.push({ query, params });
+                  return {};
+                },
+              });
+            }
+            return result as T;
           },
           async close() {
             sessionState.closeCalls += 1;
@@ -130,6 +152,7 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
   );
 
   assert.equal(updateCalls.length, 1);
+  assert.ok(updateCalls[0].context.executionContext);
   assert.equal(result.title, "Phoenix Makers Meetup");
   assert.deepEqual(sendBatchEmailsCalls, [
     [
@@ -142,9 +165,12 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
     ],
   ]);
   assert.equal(sessions.length, 2);
+  assert.equal(sessions[0]?.executeWriteCalls, 1);
+  assert.equal(sessions[1]?.executeWriteCalls, 0);
   assert.deepEqual(sessions[1]?.runCalls[0]?.params, {
     usernames: ["alice", "bob"],
     notificationText: "Phoenix Makers Meetup was updated.",
+    notificationType: "event",
   });
 });
 
@@ -193,4 +219,65 @@ test("updateEventWithChannelConnections skips notifications when no meaningful e
   assert.deepEqual(sendBatchEmailsCalls, []);
   assert.equal(sessions.length, 1);
   assert.equal(sessions[0]?.runCalls.length, 0);
+});
+
+test("updateEventWithChannelConnections does not duplicate email when Neo4j retries", async () => {
+  const { driver, sessions } = buildDriver(2);
+  const sendBatchEmailsCalls: any[] = [];
+  let findCalls = 0;
+  let updateCalls = 0;
+  const Event = {
+    async find() {
+      findCalls += 1;
+      return findCalls === 1
+        ? [baseExistingEvent]
+        : [{
+            ...baseUpdatedEvent,
+            SubscribedToEventUpdates: [
+              { username: "alice", Email: { address: "alice@example.com" } },
+            ],
+          }];
+    },
+    async update() {
+      updateCalls += 1;
+      return {};
+    },
+  };
+  const resolver = getResolver({
+    Event: Event as unknown as EventModel,
+    driver: driver as unknown as Driver,
+    dependencies: {
+      buildEventUpdateNotificationPayload: () => ({
+        subject: "Updated",
+        notificationText: "Updated",
+        summaryLines: ["Updated"],
+        eventUrl: "https://example.com/event-1",
+      }),
+      createEventUpdateNotificationEmail: () => ({
+        subject: "Updated",
+        plainText: "Updated",
+        html: "<p>Updated</p>",
+      }),
+      sendBatchEmails: async (messages) => {
+        sendBatchEmailsCalls.push(messages);
+        return true;
+      },
+    },
+  });
+
+  await resolver(
+    null,
+    {
+      where: { id: "event-1" },
+      eventUpdateInput: { title: "Phoenix Makers Meetup" },
+      channelConnections: ["events"],
+      channelDisconnections: [],
+    },
+    { user: { username: "editor" } } as unknown as GraphQLContext,
+    null as unknown as GraphQLResolveInfo
+  );
+
+  assert.equal(updateCalls, 2);
+  assert.equal(sessions[0]?.runCalls.length, 2);
+  assert.equal(sendBatchEmailsCalls.length, 1);
 });

@@ -20,7 +20,9 @@ const buildDriver = () => {
         return {
           async run(query: string, params: Record<string, unknown>) {
             sessionState.runCalls.push({ query, params });
-            return {};
+            return {
+              records: [{ get: () => ({ toNumber: () => 1 }) }],
+            };
           },
           async close() {
             sessionState.closeCalls += 1;
@@ -109,8 +111,9 @@ test("notifyIssueSubscribers notifies subscribers and only emails opted-in users
   assert.deepEqual(sessions[0]?.runCalls[0]?.params, {
     usernames: ["alice", "bob"],
     notificationText: "New reply on Issue #42: Broken image links",
+    notificationType: "moderation",
   });
-  assert.match(sessions[0]?.runCalls[0]?.query, /notificationType: "moderation"/);
+  assert.match(sessions[0]?.runCalls[0]?.query, /notificationType: \$notificationType/);
 });
 
 test("notifyIssueSubscribers links the issue label in notification text when a URL is available", async () => {

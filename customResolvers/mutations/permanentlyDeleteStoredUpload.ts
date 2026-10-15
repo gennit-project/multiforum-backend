@@ -9,6 +9,7 @@ import {
   type StorageDeletionResult,
 } from "../../services/storageDeletion.js";
 import { getGeneratedImageVariantObjectNames } from "../../services/imageVariants.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 
 type MediaType = "Image" | "DownloadableFile";
 
@@ -164,13 +165,12 @@ const markStoredUploadRemoved = async ({
   username: string;
   modProfileName?: string | null;
 }): Promise<Record<string, unknown>> => {
-  const session = driver.session({ defaultAccessMode: "WRITE" });
   const removedAt = new Date().toISOString();
 
-  try {
-    const result = await session.run(
-      mediaType === "Image"
-        ? `
+  return executeManagedWrite(driver, async (transaction) => {
+      const result = await transaction.run(
+        mediaType === "Image"
+          ? `
           MATCH (target:Image {id: $id})
           SET target.permanentlyRemoved = true,
               target.permanentlyRemovedAt = datetime($removedAt),
@@ -197,7 +197,7 @@ const markStoredUploadRemoved = async ({
             target.permanentlyRemovedByUsername AS permanentlyRemovedByUsername,
             target.permanentlyRemovedByModName AS permanentlyRemovedByModName
           `
-        : `
+          : `
           MATCH (target:DownloadableFile {id: $id})
           SET target.permanentlyRemoved = true,
               target.permanentlyRemovedAt = datetime($removedAt),
@@ -227,23 +227,21 @@ const markStoredUploadRemoved = async ({
             target.permanentlyRemovedByUsername AS permanentlyRemovedByUsername,
             target.permanentlyRemovedByModName AS permanentlyRemovedByModName
           `,
-      {
-        id,
-        removedAt,
-        username,
-        modProfileName: modProfileName || null,
+        {
+          id,
+          removedAt,
+          username,
+          modProfileName: modProfileName || null,
+        }
+      );
+
+      const record = result.records[0];
+      if (!record) {
+        throw new GraphQLError("Upload not found");
       }
-    );
 
-    const record = result.records[0];
-    if (!record) {
-      throw new GraphQLError("Upload not found");
-    }
-
-    return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
-  } finally {
-    await session.close();
-  }
+      return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+  });
 };
 
 const getResolver = ({

@@ -11,6 +11,7 @@ import {
   USER_AVATAR_VARIANT_KEYS,
   getGeneratedImageVariantObjectNames,
 } from "../../services/imageVariants.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 
 type DeleteObject = typeof deleteStoredObject;
 type CheckServerModPermission = typeof hasServerModPermission;
@@ -175,13 +176,12 @@ const clearReference = async ({
   removedByUsername: string;
   removedByModName?: string | null;
 }): Promise<Record<string, unknown>> => {
-  const session = driver.session({ defaultAccessMode: "WRITE" });
   const removedAt = new Date().toISOString();
 
-  try {
-    const result = await session.run(
-      referenceType === "ProfileImage"
-        ? `
+  return executeManagedWrite(driver, async (transaction) => {
+      const result = await transaction.run(
+        referenceType === "ProfileImage"
+          ? `
           MATCH (target:User {username: $username})
           WHERE target.profilePicURL = $imageUrl
           SET target.profilePicURL = null
@@ -194,8 +194,8 @@ const clearReference = async ({
           RETURN target.username AS username,
                  target.profilePicURL AS profilePicURL
           `
-        : referenceType === "ChannelIcon"
-          ? `
+          : referenceType === "ChannelIcon"
+            ? `
           MATCH (target:Channel {uniqueName: $channelUniqueName})
           WHERE target.channelIconURL = $imageUrl
           SET target.channelIconURL = null,
@@ -213,7 +213,7 @@ const clearReference = async ({
           RETURN target.uniqueName AS uniqueName,
                  target.channelIconURL AS channelIconURL
           `
-          : `
+            : `
           MATCH (target:Channel {uniqueName: $channelUniqueName})
           WHERE target.channelBannerURL = $imageUrl
           SET target.channelBannerURL = null
@@ -226,25 +226,23 @@ const clearReference = async ({
           RETURN target.uniqueName AS uniqueName,
                  target.channelBannerURL AS channelBannerURL
           `,
-      {
-        username,
-        channelUniqueName,
-        imageUrl,
-        removedAt,
-        removedByUsername,
-        removedByModName: removedByModName || null,
+        {
+          username,
+          channelUniqueName,
+          imageUrl,
+          removedAt,
+          removedByUsername,
+          removedByModName: removedByModName || null,
+        }
+      );
+
+      const record = result.records[0];
+      if (!record) {
+        throw new GraphQLError("Image reference changed before deletion completed");
       }
-    );
 
-    const record = result.records[0];
-    if (!record) {
-      throw new GraphQLError("Image reference changed before deletion completed");
-    }
-
-    return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
-  } finally {
-    await session.close();
-  }
+      return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+  });
 };
 
 const getResolver = ({

@@ -23,6 +23,7 @@ import { notifyModMentions } from "../hooks/modMentionNotificationHook.js";
 import { notifyCommentMentions } from "../hooks/userMentionNotificationHook.js";
 import { appendNotificationFooter } from "../utils/notificationFooter.js";
 import { logger } from "../logger.js";
+import { createInAppNotificationsForUsers } from "./inAppNotifications.js";
 
 export interface NotificationDeps {
   ogm: any;
@@ -278,36 +279,16 @@ export const createNotificationsForUsers = async (
   emailContent?: EmailContent,
   notificationType: string = "reply"
 ): Promise<number> => {
-  const session = deps.driver.session();
-
-  try {
-    if (emailContent) {
-      await sendNotificationEmails(usersToNotify, emailContent);
-    }
-
-    const usernames = usersToNotify.map((user) => user.username);
-
-    const result = await session.run(
-      `
-      UNWIND $usernames AS username
-      MATCH (user:User {username: username})
-      CREATE (notification:Notification {
-        id: randomUUID(),
-        createdAt: datetime(),
-        read: false,
-        text: $notificationText,
-        notificationType: $notificationType
-      })
-      CREATE (user)-[:HAS_NOTIFICATION]->(notification)
-      RETURN count(notification) as notificationsCreated, collect(user.username) as notifiedUsers
-      `,
-      { usernames, notificationText, notificationType }
-    );
-
-    return result.records[0]?.get("notificationsCreated")?.toNumber() || 0;
-  } finally {
-    session.close();
+  if (emailContent) {
+    await sendNotificationEmails(usersToNotify, emailContent);
   }
+
+  return createInAppNotificationsForUsers({
+    driver: deps.driver,
+    usernames: usersToNotify.map((user) => user.username),
+    notificationText,
+    notificationType,
+  });
 };
 
 /**

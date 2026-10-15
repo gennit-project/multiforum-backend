@@ -1,16 +1,15 @@
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import { EventUpdateInput } from "../../src/generated/graphql.js";
-import {
-  updateEventChannelQuery,
-  severConnectionBetweenEventAndChannelQuery,
-} from "../cypher/cypherQueries.js";
 import { sendBatchEmails } from "../../services/mail/index.js";
 import { createSeriesUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
+import { createInAppNotificationsForUsers } from "../../services/inAppNotifications.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { EventModel, EventSeriesModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
+import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
 
 type Input = {
   Event: EventModel;
@@ -108,8 +107,6 @@ const getResolver = (input: Input) => {
       channelDisconnections = [],
     } = args;
 
-    const session = driver.session();
-
     try {
       // Fetch the event and its series relationship with fields needed for notifications
       const existingEvents = await Event.find({
@@ -147,7 +144,10 @@ const getResolver = (input: Input) => {
       const occurrenceLevelUpdates = getOccurrenceLevelUpdates(eventUpdateInput);
       const hasSeriesLevelChanges = Object.keys(seriesLevelUpdates).length > 0;
 
-      switch (scope) {
+      await executeManagedWrite(driver, async (transaction) => {
+        const ogmContext = { executionContext: transaction };
+
+        switch (scope) {
         case "THIS_ONLY": {
           // Update only this event
           // If there are series-level changes, set override flags
@@ -166,6 +166,7 @@ const getResolver = (input: Input) => {
           await Event.update({
             where: { id: eventId },
             update: updateWithOverrides,
+            context: ogmContext,
           });
           break;
         }
@@ -176,6 +177,7 @@ const getResolver = (input: Input) => {
             await Event.update({
               where: { id: eventId },
               update: eventUpdateInput,
+              context: ogmContext,
             });
           } else {
             // Get all events with occurrenceIndex >= this event's index
@@ -189,6 +191,7 @@ const getResolver = (input: Input) => {
               await Event.update({
                 where: { id: occ.id },
                 update: eventUpdateInput,
+                context: ogmContext,
               });
             }
 
@@ -197,6 +200,7 @@ const getResolver = (input: Input) => {
               await EventSeries.update({
                 where: { id: eventSeries.id },
                 update: seriesLevelUpdates,
+                context: ogmContext,
               });
             }
           }
@@ -209,6 +213,7 @@ const getResolver = (input: Input) => {
             await Event.update({
               where: { id: eventId },
               update: eventUpdateInput,
+              context: ogmContext,
             });
           } else {
             // Update all events in the series
@@ -216,6 +221,7 @@ const getResolver = (input: Input) => {
               await Event.update({
                 where: { id: occ.id },
                 update: eventUpdateInput,
+                context: ogmContext,
               });
             }
 
@@ -224,6 +230,7 @@ const getResolver = (input: Input) => {
               await EventSeries.update({
                 where: { id: eventSeries.id },
                 update: seriesLevelUpdates,
+                context: ogmContext,
               });
             }
           }
@@ -234,20 +241,15 @@ const getResolver = (input: Input) => {
           throw new Error(`Invalid scope: ${scope}`);
       }
 
-      // Handle channel connections/disconnections for the current event
-      for (const channelUniqueName of channelConnections) {
-        await session.run(updateEventChannelQuery, {
-          eventId,
-          channelUniqueName,
-        });
-      }
-
-      for (const channelUniqueName of channelDisconnections) {
-        await session.run(severConnectionBetweenEventAndChannelQuery, {
-          eventId,
-          channelUniqueName,
-        });
-      }
+      // Channel changes are part of the same commit as the occurrence and
+      // series updates, preventing partially applied multi-event edits.
+      await applyEventChannelChanges({
+        transaction,
+        eventId,
+        channelConnections,
+        channelDisconnections,
+      });
+      });
 
       // Refetch the updated event with subscriber info for notifications
       const selectionSet = `
@@ -352,36 +354,18 @@ const getResolver = (input: Input) => {
             await sendBatchEmailsFn(emailRecipients);
           }
 
-          // Create in-app notifications
-          const notificationSession = driver.session();
-          try {
-            const scopeText = scope === "THIS_ONLY"
-              ? ""
-              : scope === "THIS_AND_FUTURE"
-                ? ` (this and ${affectedCount - 1} future)`
-                : ` (all ${affectedCount} in series)`;
+          const scopeText = scope === "THIS_ONLY"
+            ? ""
+            : scope === "THIS_AND_FUTURE"
+              ? ` (this and ${affectedCount - 1} future)`
+              : ` (all ${affectedCount} in series)`;
 
-            await notificationSession.run(
-              `
-              UNWIND $usernames AS username
-              MATCH (user:User {username: username})
-              CREATE (notification:Notification {
-                id: randomUUID(),
-                createdAt: datetime(),
-                read: false,
-                text: $notificationText,
-                notificationType: 'event'
-              })
-              CREATE (user)-[:HAS_NOTIFICATION]->(notification)
-              `,
-              {
-                usernames: usersToNotify.map((user: NotifiableUser) => user.username),
-                notificationText: `${updatedEvent.title} was updated${scopeText}.`,
-              }
-            );
-          } finally {
-            await notificationSession.close();
-          }
+          await createInAppNotificationsForUsers({
+            driver,
+            usernames: usersToNotify.map((user: NotifiableUser) => user.username),
+            notificationText: `${updatedEvent.title} was updated${scopeText}.`,
+            notificationType: "event",
+          });
         }
       }
 
@@ -390,8 +374,6 @@ const getResolver = (input: Input) => {
       logger.error("Error updating event in series:", error);
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to update event in series. ${message}`);
-    } finally {
-      await session.close();
     }
   };
 };

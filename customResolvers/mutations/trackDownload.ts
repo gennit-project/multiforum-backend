@@ -7,6 +7,7 @@ import {
 import type { GraphQLContext } from '../../types/context.js'
 import type { ServerConfigModel } from '../../ogm_types.js'
 import { mayAccessSensitiveContent } from '../../services/sensitiveContentAccess.js'
+import { executeManagedWrite } from '../../services/neo4jTransactions.js'
 
 type Args = {
   downloadableFileId: string
@@ -76,11 +77,9 @@ const trackDownload = ({
       ServerConfig,
     })
 
-    const session = driver.session({ defaultAccessMode: 'WRITE' })
-
-    try {
-      if (!username) {
-        const result = await session.run(
+    if (!username) {
+      const updated = await executeManagedWrite(driver, async (transaction) => {
+        const result = await transaction.run(
           `
           MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
           WHERE ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
@@ -95,16 +94,18 @@ const trackDownload = ({
           }
         )
 
-        const updated = toNumber(result.records[0]?.get('updated'))
+        return toNumber(result.records[0]?.get('updated'))
+      })
 
-        if (updated < 1) {
-          throw new GraphQLError('Downloadable file not found for this discussion')
-        }
-
-        return true
+      if (updated < 1) {
+        throw new GraphQLError('Downloadable file not found for this discussion')
       }
 
-      const result = await session.run(
+      return true
+    }
+
+    const updated = await executeManagedWrite(driver, async (transaction) => {
+      const result = await transaction.run(
         `
         MATCH (user:User {username: $username})
         MATCH (discussion:Discussion {id: $discussionId})-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile {id: $downloadableFileId})
@@ -155,16 +156,14 @@ const trackDownload = ({
         }
       )
 
-      const updated = toNumber(result.records[0]?.get('updated'))
+      return toNumber(result.records[0]?.get('updated'))
+    })
 
-      if (updated < 1) {
-        throw new GraphQLError('Downloadable file is unavailable or not found for this discussion')
-      }
-
-      return true
-    } finally {
-      session.close()
+    if (updated < 1) {
+      throw new GraphQLError('Downloadable file is unavailable or not found for this discussion')
     }
+
+    return true
   }
 }
 

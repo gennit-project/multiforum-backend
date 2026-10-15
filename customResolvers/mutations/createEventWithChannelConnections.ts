@@ -92,32 +92,25 @@ export const createEventsFromInput = async (
       }
 
       try {
-        const response = await Event.create({
-          input: [eventCreateInput],
-          selectionSet: `{ events ${selectionSet} }`,
-        });
+        const newEventId = await session.executeWrite(async (transaction) => {
+          const response = await Event.create({
+            input: [eventCreateInput],
+            selectionSet: `{ events ${selectionSet} }`,
+            context: { executionContext: transaction },
+          });
 
-        const newEvent = response.events[0];
-        const newEventId = newEvent.id;
+          const newEvent = response.events[0];
 
-        // Link the event to channels
-        for (const channelUniqueName of channelConnections) {
-          try {
-            await session.run(createEventChannelQuery, {
-              eventId: newEventId,
+          for (const channelUniqueName of channelConnections) {
+            await transaction.run(createEventChannelQuery, {
+              eventId: newEvent.id,
               channelUniqueName,
               poster: context.user?.username,
             });
-          } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            if (message.includes("Constraint validation failed")) {
-              logger.warn(`Skipping duplicate EventChannel: ${channelUniqueName}`);
-              continue;
-            } else {
-              throw error;
-            }
           }
-        }
+
+          return newEvent.id;
+        });
 
         // Refetch the event with all related data
         const fetchedEvent = await Event.find({
@@ -149,7 +142,7 @@ export const createEventsFromInput = async (
     const message = error instanceof Error ? error.message : String(error);
     logger.error("Unexpected error during event creation:", message);
   } finally {
-    session.close();
+    await session.close();
   }
 
   return events;

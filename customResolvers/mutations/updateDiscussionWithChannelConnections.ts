@@ -16,6 +16,7 @@ import type {
   UserModel,
 } from "../../ogm_types.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
+import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import { logger } from "../../logger.js";
 import {
   loadChannelDiscussionFlairRequirements,
@@ -174,50 +175,84 @@ const getResolver = (
     }
     
     try {
-      // Track version history before updating the discussion
-      if (sanitizedUpdateInput.title || sanitizedUpdateInput.body) {
-        await discussionVersionHistoryHandler({ 
-          context, 
-          params: { 
+      const shouldTrackVersion =
+        sanitizedUpdateInput.title !== undefined ||
+        sanitizedUpdateInput.body !== undefined;
+      const discussionSnapshot = shouldTrackVersion
+        ? (await Discussion.find({
             where,
-            update: sanitizedUpdateInput
-          }
-        });
-      }
+            selectionSet: `{
+              id
+              title
+              body
+              Author { username }
+              BodyLastEditedBy { username }
+              DiscussionChannels { channelUniqueName }
+              PastTitleVersions { id body createdAt }
+              PastBodyVersions { id body createdAt }
+            }`,
+          }))[0]
+        : null;
       
       const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
         sanitizedUpdateInput
       );
+      const updatedDiscussionId = where.id;
 
       // Update the discussion in a managed write so the age-gate reconcile step
       // runs before commit. Attaching an existing file is a relationship-only
       // connect, which @neo4j/graphql doesn't stamp, so stamp the attached files
       // here: the reconcile step then flags them in this same transaction.
-      const updateSession = driver.session();
-      try {
-        await updateSession.executeWrite(async (tx) => {
-          await Discussion.update({
-            where: where,
-            update: sanitizedUpdateInput,
-            // The OGM runs its query in this transaction.
-            context: { executionContext: tx },
-          });
-          if (connectedDownloadableFileIds.length > 0) {
-            await tx.run(stampAttachedDownloadableFilesQuery, {
-              ids: connectedDownloadableFileIds,
-            });
-          }
-          if (normalizedAlbumImageDisconnections.length > 0) {
-            await tx.run(disconnectAlbumImagesQuery, {
-              discussionId: where.id,
-              imageIds: normalizedAlbumImageDisconnections,
-            });
-          }
+      await executeManagedWrite(driver, async (tx) => {
+        await Discussion.update({
+          where: where,
+          update: sanitizedUpdateInput,
+          // The OGM runs its query in this transaction.
+          context: { executionContext: tx },
         });
-      } finally {
-        await updateSession.close();
+        if (connectedDownloadableFileIds.length > 0) {
+          await tx.run(stampAttachedDownloadableFilesQuery, {
+            ids: connectedDownloadableFileIds,
+          });
+        }
+        if (normalizedAlbumImageDisconnections.length > 0) {
+          await tx.run(disconnectAlbumImagesQuery, {
+            discussionId: where.id,
+            imageIds: normalizedAlbumImageDisconnections,
+          });
+        }
+
+        for (const channelUniqueName of channelConnections) {
+          const flairSelectionProvided = normalizedChannelFlairSelections.some(
+            (selection) =>
+              selection.channelUniqueName.trim() === channelUniqueName
+          );
+          await tx.run(updateDiscussionChannelQuery, {
+            discussionId: updatedDiscussionId,
+            channelUniqueName,
+            flairIds: flairIdsByChannel.get(channelUniqueName) ?? [],
+            flairSelectionProvided,
+          });
+        }
+
+        for (const channelUniqueName of channelDisconnections) {
+          await tx.run(severConnectionBetweenDiscussionAndChannelQuery, {
+            discussionId: updatedDiscussionId,
+            channelUniqueName,
+          });
+        }
+      });
+
+      if (shouldTrackVersion) {
+        await discussionVersionHistoryHandler({
+          context,
+          params: {
+            where,
+            update: sanitizedUpdateInput,
+          },
+          discussionSnapshot,
+        });
       }
-      const updatedDiscussionId = where.id;
 
       // The edit form uploads replacement files before connecting them to the
       // discussion. Trigger only newly connected file IDs after Discussion.update
@@ -246,47 +281,6 @@ const getResolver = (
             message
           );
         }
-      }
-
-      const session = driver.session();
-
-      // Update the channel connections
-      for (let i = 0; i < channelConnections.length; i++) {
-        const channelUniqueName = channelConnections[i];
-        const flairSelectionProvided = normalizedChannelFlairSelections.some(
-          (selection) => selection.channelUniqueName.trim() === channelUniqueName
-        );
-
-        // For each channel connection, create a DiscussionChannel node
-        // if one does not already exist.
-
-        // Join the DiscussionChannel to the Discussion and Channel nodes.
-        // If there was an existing one, join that. If we just created one,
-        // join that.
-        // A managed write, so the age-gate reconcile step runs before commit.
-        await session.executeWrite((tx) =>
-          tx.run(updateDiscussionChannelQuery, {
-            discussionId: updatedDiscussionId,
-            channelUniqueName: channelUniqueName,
-            flairIds: flairIdsByChannel.get(channelUniqueName) ?? [],
-            flairSelectionProvided,
-          })
-        );
-      }
-
-      // Update the channel disconnections
-      for (let i = 0; i < channelDisconnections.length; i++) {
-        const channelUniqueName = channelDisconnections[i];
-        // For each channel disconnection, sever the connection between
-        // the Discussion and the DiscussionChannel node.
-        // We intentionally do not delete the DiscussionChannel node
-        // because it contains comments that are authored by other users
-        // than the discussion author, and the discussion author should
-        // not have permission to delete those comments.
-        await session.run(severConnectionBetweenDiscussionAndChannelQuery, {
-          discussionId: updatedDiscussionId,
-          channelUniqueName: channelUniqueName,
-        });
       }
 
       // Refetch the newly created discussion with the channel connections
@@ -348,8 +342,6 @@ const getResolver = (
         },
         selectionSet,
       });
-      session.close();
-
       return result[0];
     } catch (error: unknown) {
       logger.error("Error updating discussion:", error);

@@ -21,11 +21,14 @@ const buildRecord = (values: Record<string, unknown>) => ({
 
 const buildDriver = ({
   target,
+  callbackAttempts = 1,
 }: {
   target: TargetRecord | null;
+  callbackAttempts?: number;
 }) => {
   const calls = {
     sessions: [] as string[],
+    executeWrite: 0,
     writes: [] as Record<string, unknown>[],
   };
 
@@ -34,53 +37,67 @@ const buildDriver = ({
       calls.sessions.push(defaultAccessMode);
       return {
         run: async (query: string, params: Record<string, unknown>) => {
-          if (defaultAccessMode === "READ") {
-            return {
-              records: target
-                ? [
-                    buildRecord({
-                      id: target.id || "target-1",
-                      permanentlyRemoved: target.permanentlyRemoved || false,
-                      storageBucket:
-                        target.storageBucket === undefined
-                          ? "bucket"
-                          : target.storageBucket,
-                      storageObjectName:
-                        target.storageObjectName === undefined
-                          ? "uploads/alice/file.stl"
-                          : target.storageObjectName,
-                      uploadedByUsername:
-                        target.uploadedByUsername === undefined
-                          ? "alice"
-                          : target.uploadedByUsername,
-                      uploaderUsername: target.uploaderUsername || null,
-                      discussionAuthorUsernames:
-                        target.discussionAuthorUsernames || [],
-                    }),
-                  ]
-                : [],
-            };
-          }
-
-          calls.writes.push({ query, params });
           return {
-            records: [
-              buildRecord({
-                id: params.id,
-                url: "https://storage.example/file.stl",
-                fileName: "file.stl",
-                kind: "STL",
-                size: 100,
-                storageBucket: "bucket",
-                storageObjectName: "uploads/alice/file.stl",
-                storageUrl: "https://storage.example/file.stl",
-                permanentlyRemoved: true,
-                permanentlyRemovedAt: "2026-07-01T12:00:00.000Z",
-                permanentlyRemovedByUsername: params.username,
-                permanentlyRemovedByModName: params.modProfileName,
-              }),
-            ],
+            records: target
+              ? [
+                  buildRecord({
+                    id: target.id || "target-1",
+                    permanentlyRemoved: target.permanentlyRemoved || false,
+                    storageBucket:
+                      target.storageBucket === undefined
+                        ? "bucket"
+                        : target.storageBucket,
+                    storageObjectName:
+                      target.storageObjectName === undefined
+                        ? "uploads/alice/file.stl"
+                        : target.storageObjectName,
+                    uploadedByUsername:
+                      target.uploadedByUsername === undefined
+                        ? "alice"
+                        : target.uploadedByUsername,
+                    uploaderUsername: target.uploaderUsername || null,
+                    discussionAuthorUsernames:
+                      target.discussionAuthorUsernames || [],
+                  }),
+                ]
+              : [],
           };
+        },
+        executeWrite: async (
+          work: (transaction: {
+            run: (query: string, params: Record<string, unknown>) => Promise<{
+              records: ReturnType<typeof buildRecord>[];
+            }>;
+          }) => Promise<Record<string, unknown>>
+        ) => {
+          calls.executeWrite += 1;
+          let result: Record<string, unknown> = {};
+          for (let attempt = 0; attempt < callbackAttempts; attempt += 1) {
+            result = await work({
+              run: async (query, params) => {
+                calls.writes.push({ query, params });
+                return {
+                  records: [
+                    buildRecord({
+                      id: params.id,
+                      url: "https://storage.example/file.stl",
+                      fileName: "file.stl",
+                      kind: "STL",
+                      size: 100,
+                      storageBucket: "bucket",
+                      storageObjectName: "uploads/alice/file.stl",
+                      storageUrl: "https://storage.example/file.stl",
+                      permanentlyRemoved: true,
+                      permanentlyRemovedAt: "2026-07-01T12:00:00.000Z",
+                      permanentlyRemovedByUsername: params.username,
+                      permanentlyRemovedByModName: params.modProfileName,
+                    }),
+                  ],
+                };
+              },
+            });
+          }
+          return result;
         },
         close: async () => undefined,
       };
@@ -390,6 +407,34 @@ test("permanentlyDeleteImage lets a server mod with permanent removal permission
   );
 
   assert.equal(result.permanentlyRemoved, true);
+});
+
+test("permanentlyDeleteImage keeps storage deletion outside a retried managed callback", async () => {
+  const { driver, calls } = buildDriver({
+    target: { uploadedByUsername: "alice" },
+    callbackAttempts: 2,
+  });
+  let deleteCalls = 0;
+  const resolver = getResolver({
+    driver,
+    mediaType: "Image",
+    deleteObject: async () => {
+      deleteCalls += 1;
+      return { status: "deleted" };
+    },
+    checkServerModPermission: async () => new Error("not a mod"),
+  });
+
+  const result = await resolver(
+    null,
+    { imageId: "image-1" },
+    contextFor("alice")
+  );
+
+  assert.equal(result.permanentlyRemoved, true);
+  assert.equal(calls.executeWrite, 1);
+  assert.equal(calls.writes.length, 2);
+  assert.equal(deleteCalls, 1);
 });
 
 test("permanentlyDeleteImage rejects an unrelated non-mod user", async () => {
