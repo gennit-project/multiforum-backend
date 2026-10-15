@@ -96,6 +96,15 @@ transaction. The explicit Cypher reproduces the OGM-generated id, createdAt,
 and ageGateTouchedAt values. This reduces production files with direct
 `ogm.model(...)` access from 58 to 54; generated OGM type imports remain at 175.
 
+Moderator edit and sticky-comment rules now resolve their target content's
+channels through a driver-backed permission repository. The repository covers
+direct channel comments, discussion comments, event comments, issue activity,
+discussion channels, and event channels while preserving the distinction
+between missing content and content without a channel. These authorization
+reads remain leader-routed so request bookmarks provide read-your-own-writes
+behavior. This reduces production files with direct `ogm.model(...)` access
+from 54 to 50; generated OGM type imports remain at 175.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

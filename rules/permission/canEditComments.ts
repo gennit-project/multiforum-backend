@@ -2,6 +2,7 @@ import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { createContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
 type CanEditCommentsArgs = {
   where?: {
@@ -11,17 +12,11 @@ type CanEditCommentsArgs = {
   commentId?: string;
 };
 
-type CommentChannelLookup = {
-  Channel?: { uniqueName?: string | null } | null;
-  DiscussionChannel?: { channelUniqueName?: string | null } | null;
-  Event?: {
-    EventChannels?: Array<{ channelUniqueName?: string | null }> | null;
-  } | null;
-  Issue?: { channelUniqueName?: string | null } | null;
-};
-
-export const canEditComments = rule({ cache: "contextual" })(
-  async (parent: unknown, args: CanEditCommentsArgs, context: GraphQLContext) => {
+export const canEditCommentsHandler = async (
+  _parent: unknown,
+  args: CanEditCommentsArgs,
+  context: GraphQLContext
+) => {
     const commentIds: string[] = [];
 
     if (args.commentId) {
@@ -40,22 +35,16 @@ export const canEditComments = rule({ cache: "contextual" })(
       return new Error("No comment specified for this operation.");
     }
 
-    const Comment = context.ogm.model("Comment");
-    const comments = await Comment.find({
-      where: { id_IN: commentIds },
-      selectionSet: `{
-        Channel { uniqueName }
-        DiscussionChannel { channelUniqueName }
-        Event { EventChannels { channelUniqueName } }
-        Issue { channelUniqueName }
-      }`,
-    });
+    const repository =
+      context.contentChannelPermissionRepository ??
+      createContentChannelPermissionRepository(context.driver);
+    const lookup = await repository.findCommentChannels(commentIds);
 
-    if (!comments || comments.length === 0) {
+    if (!lookup.found) {
       return new Error("Could not find the comment or its associated channel.");
     }
 
-    const channelConnections = collectCommentChannelConnections(comments);
+    const channelConnections = lookup.channelUniqueNames;
 
     if (channelConnections.length === 0) {
       return new Error("No channel specified for this operation.");
@@ -72,35 +61,8 @@ export const canEditComments = rule({ cache: "contextual" })(
     }
 
     return true;
-  }
-);
-
-export const collectCommentChannelConnections = (
-  comments: Array<CommentChannelLookup>
-) => {
-  const channelConnections = new Set<string>();
-
-  for (const comment of comments) {
-    if (comment?.Channel?.uniqueName) {
-      channelConnections.add(comment.Channel.uniqueName);
-    }
-
-    if (comment?.DiscussionChannel?.channelUniqueName) {
-      channelConnections.add(comment.DiscussionChannel.channelUniqueName);
-    }
-
-    if (comment?.Event?.EventChannels?.length) {
-      for (const eventChannel of comment.Event.EventChannels) {
-        if (eventChannel?.channelUniqueName) {
-          channelConnections.add(eventChannel.channelUniqueName);
-        }
-      }
-    }
-
-    if (comment?.Issue?.channelUniqueName) {
-      channelConnections.add(comment.Issue.channelUniqueName);
-    }
-  }
-
-  return Array.from(channelConnections);
 };
+
+export const canEditComments = rule({ cache: "contextual" })(
+  canEditCommentsHandler
+);
