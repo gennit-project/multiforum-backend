@@ -124,6 +124,21 @@ stream that feeds [`services/`](../services): notification delivery and
 version-history services react to data changes out of band, off the request
 path.
 
+The application uses `Neo4jGraphQLSubscriptionsCDCEngine`, which polls the
+database's shared CDC stream. This matters when more than one application
+instance is running: every instance sees writes made through every other
+instance. The former in-process engine only published a write inside the
+process that handled it, so an instance could miss notification and version
+history work performed elsewhere.
+
+CDC must be enabled in `FULL` mode for the selected Neo4j database before the
+server starts. On Aura, an administrator enables it with **Edit CDC Mode** in
+the instance settings. For self-managed Enterprise, set the database option
+`txLogEnrichment` to `FULL`. The application user must also be allowed to run
+`cdc.query`; Neo4j may require both regular and boosted execute grants. Startup
+checks the CDC cursor and query permission and fails with setup guidance rather
+than silently running with incomplete cross-instance behavior.
+
 ### Extensibility — the plugin system
 
 Server- and channel-level [plugins](../PLUGIN_REQUIREMENTS.md) extend behavior

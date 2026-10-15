@@ -89,6 +89,10 @@ import {
   graphqlPayloadTooLargeErrorHandler,
 } from "./services/graphqlHttpSecurity.js";
 import { graphqlOperationLoggingPlugin } from "./services/graphqlOperationLogging.js";
+import {
+  assertNeo4jCdcAvailable,
+  createNeo4jCdcSubscriptionsEngine,
+} from "./services/neo4jSubscriptions.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -164,14 +168,16 @@ const {
   pipelineCampaignModels,
 } = getCustomResolvers(driver);
 
+const subscriptionsEngine = createNeo4jCdcSubscriptionsEngine(driver, database);
+
 const features = {
   filters: {
     String: {
       MATCHES: true,
     },
   },
-  // Enable subscriptions for change data capture
-  subscriptions: true
+  // Poll Neo4j CDC so every application instance observes every write.
+  subscriptions: subscriptionsEngine,
 };
 
 // Create Neo4j GraphQL schema
@@ -201,6 +207,8 @@ async function initializeServer() {
     } finally {
       await session.close();
     }
+
+    await assertNeo4jCdcAvailable(driver, database);
 
     await ensureCoreSchemaConstraints(driver, edition);
     await ensureCriticalPropertyConstraints(driver, edition);

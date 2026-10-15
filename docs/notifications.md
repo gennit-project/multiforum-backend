@@ -17,6 +17,13 @@ The notification system is implemented using Neo4j GraphQL's subscription featur
 
 4. **Maintainability**: With clear separation of concerns, the notification logic is isolated in a dedicated service that's easier to test and update.
 
+The subscription engine reads Neo4j's shared CDC stream rather than publishing
+events only inside the process that performed a mutation. Consequently, a
+comment written through one backend instance can be processed by notification
+and version-history subscribers running on another instance. CDC must be
+enabled in `FULL` mode, and the database user must be able to execute
+`cdc.query`; the backend verifies both requirements during startup.
+
 ## How It Works
 
 1. **Enabling Subscriptions**: The Neo4j GraphQL schema is extended with the `@subscription` directive, enabling subscription capabilities.
