@@ -46,23 +46,16 @@ async function testGetServerScopedMembershipReadsServerConfigRelationships() {
     req: {
       headers: {},
     },
-    ogm: {
-      model(name: string) {
-        if (name === "ServerConfig") {
-          return {
-            find: async () => {
-              findCalls += 1;
-              return [
-                {
-                  Admins: [{ username: "alice" }],
-                  Moderators: [{ displayName: "Mod Alice" }],
-                },
-              ];
-            },
-          };
-        }
-
-        throw new Error(`Unexpected model lookup: ${name}`);
+    permissionServerConfigRepository: {
+      async findByName() {
+        findCalls += 1;
+        return {
+          Admins: [{ username: "alice" }],
+          SuperAdmins: [],
+          Moderators: [{ displayName: "Mod Alice" }],
+          SuspendedUsers: [],
+          SuspendedMods: [],
+        };
       },
     },
   };

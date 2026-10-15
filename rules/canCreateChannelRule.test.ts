@@ -52,9 +52,16 @@ const buildOgm = (defaultServerRole: { canCreateChannel: boolean; canUploadFile:
 });
 
 test("returns the permission error when server permission check fails", async () => {
+  const defaultServerRole = { canCreateChannel: false, canUploadFile: true };
   const ctx = {
     driver: buildDriver(),
-    ogm: buildOgm({ canCreateChannel: false, canUploadFile: true }),
+    ogm: buildOgm(defaultServerRole),
+    permissionServerConfigRepository: {
+      findByName: async () => ({
+        DefaultServerRole: defaultServerRole,
+        SuperAdmins: [], Admins: [], Moderators: [], SuspendedUsers: [], SuspendedMods: [],
+      }),
+    },
     req: { headers: {} },
   };
 
@@ -63,9 +70,16 @@ test("returns the permission error when server permission check fails", async ()
 });
 
 test("returns true when server permission check succeeds", async () => {
+  const defaultServerRole = { canCreateChannel: true, canUploadFile: true };
   const ctx = {
     driver: buildDriver(),
-    ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
+    ogm: buildOgm(defaultServerRole),
+    permissionServerConfigRepository: {
+      findByName: async () => ({
+        DefaultServerRole: defaultServerRole,
+        SuperAdmins: [], Admins: [], Moderators: [], SuspendedUsers: [], SuspendedMods: [],
+      }),
+    },
     req: { headers: {} },
   };
 
@@ -74,11 +88,19 @@ test("returns true when server permission check succeeds", async () => {
 });
 
 test("returns error when user has an active indefinite suspension", async () => {
+  const defaultServerRole = { canCreateChannel: true, canUploadFile: true };
   const ctx = {
     driver: buildDriver([
       { id: "suspension-1", suspendedIndefinitely: true, suspendedUntil: null },
     ]),
-    ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
+    ogm: buildOgm(defaultServerRole),
+    permissionServerConfigRepository: {
+      findByName: async () => ({
+        DefaultServerRole: defaultServerRole,
+        DefaultSuspendedRole: { canCreateChannel: false, canUploadFile: false },
+        SuperAdmins: [], Admins: [], Moderators: [], SuspendedUsers: [], SuspendedMods: [],
+      }),
+    },
     user: {
       username: "suspended-user",
       data: {}, // Pre-populate to skip setUserDataOnContext
@@ -92,11 +114,19 @@ test("returns error when user has an active indefinite suspension", async () => 
 
 test("returns error when user has an active time-limited suspension", async () => {
   const futureDate = new Date(Date.now() + 86400000).toISOString(); // 24 hours from now
+  const defaultServerRole = { canCreateChannel: true, canUploadFile: true };
   const ctx = {
     driver: buildDriver([
       { id: "suspension-2", suspendedIndefinitely: false, suspendedUntil: futureDate },
     ]),
-    ogm: buildOgm({ canCreateChannel: true, canUploadFile: true }),
+    ogm: buildOgm(defaultServerRole),
+    permissionServerConfigRepository: {
+      findByName: async () => ({
+        DefaultServerRole: defaultServerRole,
+        DefaultSuspendedRole: { canCreateChannel: false, canUploadFile: false },
+        SuperAdmins: [], Admins: [], Moderators: [], SuspendedUsers: [], SuspendedMods: [],
+      }),
+    },
     user: {
       username: "time-limited-suspended-user",
       data: {}, // Pre-populate to skip setUserDataOnContext

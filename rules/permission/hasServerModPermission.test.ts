@@ -3,7 +3,15 @@ import { hasServerModPermission } from "./hasServerModPermission.js";
 
 type ServerModContext = Parameters<typeof hasServerModPermission>[1];
 
-const asContext = (context: unknown) => context as unknown as ServerModContext;
+const asContext = (context: any) => ({
+  ...context,
+  permissionServerConfigRepository: {
+    async findByName() {
+      const configs = await context.ogm.model("ServerConfig").find();
+      return configs[0] ?? null;
+    },
+  },
+}) as unknown as ServerModContext;
 
 const buildDriver = (responses: { modSuspensions?: unknown[] }) => ({
   session: () => ({

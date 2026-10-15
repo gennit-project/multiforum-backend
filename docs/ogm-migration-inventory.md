@@ -6,7 +6,7 @@ migration map, not a recommendation to replace every call in one pull request.
 
 ## Baseline
 
-As of this inventory, production TypeScript contains:
+The original baseline contained:
 
 - 65 files that call `ogm.model(...)` directly;
 - 179 files that import generated definitions from `ogm_types.ts`;
@@ -57,6 +57,13 @@ common contract and need an explicit domain-specific interface when encountered.
 The first migrated production path is the standalone default-role provisioning
 command. Its domain logic now receives repositories; the legacy OGM entry point
 is retained as a compatibility wrapper for server startup and integration tests.
+
+The central server-config permission read is also driver-backed. It uses a
+domain-specific repository with an explicit database and retains leader routing
+so authorization checks continue to observe current writes through the
+request-scoped bookmark manager. Permission decisions and GraphQL Shield rules
+remain unchanged. This reduces the production files with direct
+`ogm.model(...)` access from 65 to 64; generated OGM type imports remain at 179.
 
 ## Recommended migration order
 

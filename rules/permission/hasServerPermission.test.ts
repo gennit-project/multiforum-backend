@@ -151,30 +151,28 @@ async function testHasServerPermissionCachesRequestLookups() {
     req: {
       headers: {},
     },
+    permissionServerConfigRepository: {
+      async findByName() {
+        serverConfigFindCalls += 1;
+        return {
+          DefaultServerRole: {
+            canCreateChannel: true,
+            canUploadFile: true,
+          },
+          DefaultSuspendedRole: {
+            canCreateChannel: false,
+            canUploadFile: false,
+          },
+          Admins: [],
+          SuperAdmins: [],
+          Moderators: [],
+          SuspendedUsers: [],
+          SuspendedMods: [],
+        };
+      },
+    },
     ogm: {
       model(name: string) {
-        if (name === "ServerConfig") {
-          return {
-            find: async () => {
-              serverConfigFindCalls += 1;
-              return [
-                {
-                  DefaultServerRole: {
-                    canCreateChannel: true,
-                    canUploadFile: true,
-                  },
-                  DefaultSuspendedRole: {
-                    canCreateChannel: false,
-                    canUploadFile: false,
-                  },
-                  Admins: [],
-                  Moderators: [],
-                },
-              ];
-            },
-          };
-        }
-
         if (name === "User") {
           return {
             find: async () => [],
