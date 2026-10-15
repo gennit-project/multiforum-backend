@@ -38,15 +38,15 @@ WITH pagePosition, dc, d, author, tagsText, weightedVotesCount, totalUpvoters,
 
 OPTIONAL MATCH (d)-[:HAS_ALBUM]->(album:Album)
 OPTIONAL MATCH (album)-[:HAS_IMAGE]->(image:Image)
-WHERE image.id IS NOT NULL
-  AND (image.archived IS NULL OR image.archived = false)
-  AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
-  AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
 
 WITH pagePosition, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSuperUpvote, totalUpvoters,
      weightedVotesCount, commentsCount,
      album,
-     [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL THEN {
+     [img IN COLLECT(DISTINCT CASE WHEN image IS NOT NULL
+         AND (image.archived IS NULL OR image.archived = false)
+         AND (image.permanentlyRemoved IS NULL OR image.permanentlyRemoved = false)
+         AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
+       THEN {
          id: image.id,
          url: image.url,
          alt: image.alt,
