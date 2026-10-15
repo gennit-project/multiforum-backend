@@ -1,5 +1,6 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import neo4j from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { getDiscussionChannelsQuery } from "../cypher/cypherQueries.js";
 import {
@@ -76,7 +77,9 @@ const getResolver = (input: Input) => {
     const searchValue = searchInput ?? "";
     const fulltextQuery = buildFulltextQuery(searchValue);
 
-    const session = driver.session();
+    const session = driver.session({
+      defaultAccessMode: neo4j.session.READ,
+    });
 
     try {
       const effectiveSort: DiscussionChannelSortOption =
@@ -125,10 +128,7 @@ const getResolver = (input: Input) => {
         Object.assign(pageQueryParams, rankingParams);
       }
 
-      // These are read-only queries, but executeWrite intentionally keeps the
-      // transaction on the leader. Switching to executeRead would route to an
-      // Aura reader and could break read-your-own-writes without bookmarks.
-      return await session.executeWrite(async (transaction) => {
+      return await session.executeRead(async (transaction) => {
         const pageResult = await transaction.run(
           pageQuery,
           pageQueryParams

@@ -1,5 +1,6 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import neo4j from "neo4j-driver";
 import { getSiteWideDiscussionsQuery } from "../cypher/cypherQueries.js";
 import {
   buildSiteWideDiscussionPageQueries,
@@ -79,7 +80,9 @@ const getResolver = (input: Input) => {
       driver,
       ServerConfig,
     });
-    const session = driver.session();
+    const session = driver.session({
+      defaultAccessMode: neo4j.session.READ,
+    });
 
     try {
       const fulltextQuery = buildFulltextQuery(searchInput);
@@ -142,10 +145,7 @@ const getResolver = (input: Input) => {
         ...rankingParams,
       };
 
-      // These are read-only queries, but executeWrite intentionally keeps the
-      // transaction on the leader. Switching to executeRead would route to an
-      // Aura reader and could break read-your-own-writes without bookmarks.
-      return await session.executeWrite(async (transaction) => {
+      return await session.executeRead(async (transaction) => {
         const countResult = await transaction.run(countQuery, queryParams);
         const aggregateDiscussionCount =
           countResult.records[0]?.get("totalCount") ?? 0;

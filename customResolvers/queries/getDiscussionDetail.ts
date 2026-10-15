@@ -1,4 +1,5 @@
 import type { Driver } from "neo4j-driver";
+import neo4j from "neo4j-driver";
 import type { ServerConfigModel } from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
@@ -49,7 +50,9 @@ const getDiscussionDetail = ({ driver, ServerConfig }: Input) => {
       driver,
       ServerConfig,
     });
-    const session = driver.session();
+    const session = driver.session({
+      defaultAccessMode: neo4j.session.READ,
+    });
     const sharedParams = {
       discussionId: args.discussionId,
       channelUniqueName: args.channelUniqueName,
@@ -63,9 +66,7 @@ const getDiscussionDetail = ({ driver, ServerConfig }: Input) => {
     };
 
     try {
-      // Keep these reads on one leader transaction to preserve the project's
-      // read-your-own-writes behavior until request bookmarks are propagated.
-      return await session.executeWrite(async (transaction) => {
+      return await session.executeRead(async (transaction) => {
         const coreResult = await transaction.run(
           getDiscussionDetailCoreQuery,
           sharedParams

@@ -89,6 +89,10 @@ import {
   graphqlPayloadTooLargeErrorHandler,
 } from "./services/graphqlHttpSecurity.js";
 import { graphqlOperationLoggingPlugin } from "./services/graphqlOperationLogging.js";
+import {
+  installRequestScopedBookmarks,
+  runWithRequestBookmarks,
+} from "./services/requestScopedBookmarks.js";
 
 async function connectToNeo4jWithRetry(driver: Driver, maxRetries = 10, retryDelay = 5000) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -140,21 +144,23 @@ const port = process.env.PORT || 4000;
 const user = process.env.NEO4J_USERNAME || process.env.NEO4J_USER || "neo4j";
 const database = resolveNeo4jDatabase();
 
-// Timed so each request can report how long it spent in Neo4j, and wrapped
-// so every write transaction keeps stored age-gate flags correct before it
-// commits (services/ageGate/reconcile.ts).
-const driver = installAgeGateReconcile(
-  instrumentDriver(
-    installDefaultNeo4jDatabase(
-      neo4j.driver(
-        uri,
-        neo4j.auth.basic(user, password as string),
-        neo4jDriverConfig
-      ),
-      database
-    )
-  ),
-  getAgeGateStatements(typesDefinitions)
+// Timed so each request can report how long it spent in Neo4j, wrapped so
+// every write transaction keeps stored age-gate flags correct before commit,
+// and given an isolated bookmark manager for causally consistent routed reads.
+const driver = installRequestScopedBookmarks(
+  installAgeGateReconcile(
+    instrumentDriver(
+      installDefaultNeo4jDatabase(
+        neo4j.driver(
+          uri,
+          neo4j.auth.basic(user, password as string),
+          neo4jDriverConfig
+        ),
+        database
+      )
+    ),
+    getAgeGateStatements(typesDefinitions)
+  )
 );
 
 const {
@@ -299,7 +305,7 @@ async function initializeServer() {
     // handling it can be traced back to the same operation.
     app.use((req, _res, next) => {
       runWithContext({ requestId: randomUUID() }, () =>
-        runWithRequestTiming(() => next())
+        runWithRequestTiming(() => runWithRequestBookmarks(() => next()))
       );
     });
 

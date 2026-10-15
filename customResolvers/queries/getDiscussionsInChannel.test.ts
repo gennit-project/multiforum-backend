@@ -4,6 +4,7 @@ import getDiscussionsInChannelResolver from "./getDiscussionsInChannel.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
+import type { SessionConfig } from "neo4j-driver";
 
 type SessionRunCall = {
   query: string;
@@ -12,6 +13,7 @@ type SessionRunCall = {
 
 const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
   const runCalls: SessionRunCall[] = [];
+  const sessionConfigs: Array<SessionConfig | undefined> = [];
   const toRecords = (records: Array<Record<string, unknown>>) =>
     records.map((record) => ({
       get: (key: string) => record[key],
@@ -31,35 +33,39 @@ const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
 
   return {
     runCalls,
-    session: () => ({
-      executeWrite: async (
-        work: (transaction: {
-          run: (query: string, params: Record<string, unknown>) => Promise<{
-            records: Array<{ get: (key: string) => unknown }>;
-          }>;
-        }) => Promise<unknown>
-      ) => {
-        let transactionRunIndex = 0;
-        return work({
-          run: async (query: string, params: Record<string, unknown>) => {
-            runCalls.push({ query, params });
-            transactionRunIndex += 1;
-            if (transactionRunIndex === 1) {
-              return {
-                records: toRecords([
-                  {
-                    totalCount: mockRecords[0]?.totalCount ?? 0,
-                    discussionChannelIds,
-                  },
-                ]),
-              };
-            }
-            return { records: toRecords(mockRecords) };
-          },
-        });
-      },
-      close: async () => {},
-    }),
+    sessionConfigs,
+    session: (config?: SessionConfig) => {
+      sessionConfigs.push(config);
+      return {
+        executeRead: async (
+          work: (transaction: {
+            run: (query: string, params: Record<string, unknown>) => Promise<{
+              records: Array<{ get: (key: string) => unknown }>;
+            }>;
+          }) => Promise<unknown>
+        ) => {
+          let transactionRunIndex = 0;
+          return work({
+            run: async (query: string, params: Record<string, unknown>) => {
+              runCalls.push({ query, params });
+              transactionRunIndex += 1;
+              if (transactionRunIndex === 1) {
+                return {
+                  records: toRecords([
+                    {
+                      totalCount: mockRecords[0]?.totalCount ?? 0,
+                      discussionChannelIds,
+                    },
+                  ]),
+                };
+              }
+              return { records: toRecords(mockRecords) };
+            },
+          });
+        },
+        close: async () => {},
+      };
+    },
   };
 };
 
@@ -101,6 +107,7 @@ test("getDiscussionsInChannel omits inactive search filtering", async () => {
   assert.equal(driver.runCalls[0].params.titleRegex, undefined);
   assert.equal(driver.runCalls[0].params.bodyRegex, undefined);
   assert.doesNotMatch(driver.runCalls[0].query, /\$titleRegex|\$bodyRegex/);
+  assert.equal(driver.sessionConfigs[0]?.defaultAccessMode, "READ");
 });
 
 test("getDiscussionsInChannel drives search from the full-text index", async () => {
@@ -463,7 +470,7 @@ test("getDiscussionsInChannel returns empty array and zero count when no results
 test("getDiscussionsInChannel throws error with message when query fails", async () => {
   const driver = {
     session: () => ({
-      executeWrite: async (work: (transaction: { run: () => Promise<never> }) => Promise<unknown>) =>
+      executeRead: async (work: (transaction: { run: () => Promise<never> }) => Promise<unknown>) =>
         work({
           run: async () => {
             throw new Error("Database connection failed");

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLContext } from "../../types/context.js";
+import type { SessionConfig } from "neo4j-driver";
 import getDiscussionDetail from "./getDiscussionDetail.js";
 
 type QueryCall = {
@@ -14,33 +15,38 @@ const record = (values: Record<string, unknown>) => ({
 
 const createDriver = (results: Array<Record<string, unknown>>) => {
   const calls: QueryCall[] = [];
+  const sessionConfigs: Array<SessionConfig | undefined> = [];
   let closed = false;
   return {
     calls,
+    sessionConfigs,
     wasClosed: () => closed,
     driver: {
-      session: () => ({
-        executeWrite: async (
-          work: (transaction: {
-            run: (
-              query: string,
-              params: Record<string, unknown>
-            ) => Promise<{ records: Array<ReturnType<typeof record>> }>;
-          }) => Promise<unknown>
-        ) => {
-          let index = 0;
-          return work({
-            run: async (query, params) => {
-              calls.push({ query, params });
-              const values = results[index++];
-              return { records: values ? [record(values)] : [] };
-            },
-          });
-        },
-        close: async () => {
-          closed = true;
-        },
-      }),
+      session: (config?: SessionConfig) => {
+        sessionConfigs.push(config);
+        return {
+          executeRead: async (
+            work: (transaction: {
+              run: (
+                query: string,
+                params: Record<string, unknown>
+              ) => Promise<{ records: Array<ReturnType<typeof record>> }>;
+            }) => Promise<unknown>
+          ) => {
+            let index = 0;
+            return work({
+              run: async (query, params) => {
+                calls.push({ query, params });
+                const values = results[index++];
+                return { records: values ? [record(values)] : [] };
+              },
+            });
+          },
+          close: async () => {
+            closed = true;
+          },
+        };
+      },
     },
   };
 };
@@ -104,6 +110,7 @@ test("getDiscussionDetail combines three bounded reads", async () => {
       closed: true,
     }
   );
+  assert.equal(mock.sessionConfigs[0]?.defaultAccessMode, "READ");
 });
 
 test("getDiscussionDetail stops after an unknown or hidden discussion", async () => {
