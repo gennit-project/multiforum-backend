@@ -65,6 +65,14 @@ request-scoped bookmark manager. Permission decisions and GraphQL Shield rules
 remain unchanged. This reduces the production files with direct
 `ogm.model(...)` access from 65 to 64; generated OGM type imports remain at 179.
 
+Bootstrap-admin provisioning is now also driver-backed. Identity collision
+checks, first-user creation, ServerConfig verification, and the SuperAdmin
+relationship are reconciled in one managed write transaction so any failure
+rolls back the complete bootstrap attempt. Startup continues to share the
+application driver while default-role provisioning remains behind the OGM
+repository adapter. This reduces the production files with direct
+`ogm.model(...)` access from 64 to 63.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader
