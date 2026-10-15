@@ -19,6 +19,12 @@ import {
   DEFAULT_MOD_SERVER_ROLES,
   SERVER_CONFIG_ROLE_WIRING,
 } from "./defaultRoles.js";
+import {
+  createRepositoryProvider,
+  type Repository,
+  type RepositoryProvider,
+} from "../services/persistence/repository.js";
+import type { ModelMap } from "../ogm_types.js";
 
 type AnyModel = {
   find: (args: any) => Promise<any[]>;
@@ -27,9 +33,9 @@ type AnyModel = {
 };
 
 export type ProvisionServerDefaultsInput = {
-  ServerRole: ServerRoleModel;
-  ModServerRole: ModServerRoleModel;
-  ServerConfig: ServerConfigModel;
+  ServerRole: Repository<ServerRoleModel>;
+  ModServerRole: Repository<ModServerRoleModel>;
+  ServerConfig: Repository<ServerConfigModel>;
   serverName: string;
   log?: (message: string) => void;
 };
@@ -184,11 +190,29 @@ export type OgmLike = {
   model: (name: string) => unknown;
 };
 
-// Convenience wrapper that resolves the three role/config models from an OGM
-// instance and delegates to `provisionServerDefaults`. This is the seam shared
-// by every caller — the production entry point (build_scripts) and the
-// role-exercising integration tests — so the `ogm.model("ServerRole")` wiring
-// lives in exactly one place.
+type ProvisioningModelMap = Pick<
+  ModelMap,
+  "ServerRole" | "ModServerRole" | "ServerConfig"
+>;
+
+export type ProvisioningRepositories = RepositoryProvider<ProvisioningModelMap>;
+
+export const provisionServerDefaultsFromRepositories = (
+  repositories: ProvisioningRepositories,
+  options: { serverName: string; log?: (message: string) => void }
+): Promise<ProvisionServerDefaultsResult> =>
+  provisionServerDefaults({
+    ServerRole: repositories.repository("ServerRole"),
+    ModServerRole: repositories.repository("ModServerRole"),
+    ServerConfig: repositories.repository("ServerConfig"),
+    serverName: options.serverName,
+    log: options.log,
+  });
+
+// Compatibility wrapper for server startup and role-exercising integration
+// tests that still own an OGM instance. New callers should receive
+// ProvisioningRepositories and call provisionServerDefaultsFromRepositories.
+// This keeps the remaining `ogm.model("ServerRole")` wiring in one place.
 //
 // Note: most integration tests only need a bare `ServerConfig` and should keep
 // creating one directly (a one-line Cypher CREATE) rather than calling this —
@@ -198,10 +222,13 @@ export const provisionServerDefaultsFromOgm = (
   ogm: OgmLike,
   options: { serverName: string; log?: (message: string) => void }
 ): Promise<ProvisionServerDefaultsResult> =>
-  provisionServerDefaults({
-    ServerRole: ogm.model("ServerRole") as ServerRoleModel,
-    ModServerRole: ogm.model("ModServerRole") as ModServerRoleModel,
-    ServerConfig: ogm.model("ServerConfig") as ServerConfigModel,
-    serverName: options.serverName,
-    log: options.log,
-  });
+  provisionServerDefaultsFromRepositories(
+    createRepositoryProvider<ProvisioningModelMap>({
+      model<Name extends keyof ProvisioningModelMap>(
+        name: Name
+      ): ProvisioningModelMap[Name] {
+        return ogm.model(name) as ProvisioningModelMap[Name];
+      },
+    }),
+    options
+  );

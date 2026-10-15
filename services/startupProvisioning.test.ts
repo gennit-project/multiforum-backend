@@ -170,11 +170,13 @@ test("uses the production default role provisioner when no seam is injected", as
     find: async () => [],
     create: async () => ({}),
     update: async () => ({}),
+    delete: async () => ({}),
   };
   const serverConfigModel = {
     find: async () => [],
     create: async () => ({}),
     update: async () => ({}),
+    delete: async () => ({}),
   };
 
   const result = await provisionInstanceOnStartup({

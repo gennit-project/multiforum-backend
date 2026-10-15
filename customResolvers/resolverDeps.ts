@@ -4,23 +4,17 @@
 // resolvers inline in one ~740-line file. The OGM/model creation now lives here
 // and is shared by the type/query/mutation resolver builders, each of which
 // receives the same `ResolverDeps` object and destructures the models it needs.
-import pkg from "@neo4j/graphql-ogm";
 import type { Driver } from "neo4j-driver";
-import typeDefs from "../typeDefs.js";
-import { ModelMap } from "../ogm_types.js";
 import { protectIssueModelIdentity } from "../services/issueTargetIdentity.js";
-
-const { OGM } = pkg;
+import { createOgmPersistence } from "../services/persistence/ogm.js";
 
 export function createOgmAndModels(driver: Driver) {
-  const ogm = new OGM<ModelMap>({
-    typeDefs,
-    driver,
-  });
+  const { ogm, repositories } = createOgmPersistence(driver);
   const Issue = protectIssueModelIdentity(ogm.model("Issue"));
 
   return {
     ogm,
+    repositories,
     driver,
     Discussion: ogm.model("Discussion"),
     DiscussionChannel: ogm.model("DiscussionChannel"),
