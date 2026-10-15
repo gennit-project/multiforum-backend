@@ -40,7 +40,7 @@ const createDriver = () => {
           }
           return { records: [] };
         },
-        executeWrite: async (
+        executeRead: async (
           work: (transaction: {
             run: (query: string, params: Record<string, unknown>) => Promise<{
               records: Array<{ get: (key: string) => unknown }>;

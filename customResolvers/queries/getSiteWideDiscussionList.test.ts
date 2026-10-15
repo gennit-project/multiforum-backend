@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLResolveInfo } from "graphql";
-import type { Driver } from "neo4j-driver";
+import type { Driver, SessionConfig } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import getSiteWideDiscussionListResolver from "./getSiteWideDiscussionList.js";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
@@ -13,6 +13,7 @@ type SessionRunCall = {
 
 const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
   const runCalls: SessionRunCall[] = [];
+  const sessionConfigs: Array<SessionConfig | undefined> = [];
   const run = async (query: string, params: Record<string, unknown>) => {
     runCalls.push({ query, params });
     const records: Array<Record<string, unknown>> = query.includes(
@@ -44,19 +45,29 @@ const createMockDriver = (mockRecords: Array<Record<string, unknown>> = []) => {
 
   return {
     runCalls,
-    session: () => ({
-      run,
-      executeWrite: async (
-        work: (transaction: {
-          run: (query: string, params: Record<string, unknown>) => Promise<unknown>;
-        }) => Promise<unknown>
-      ) =>
-        work({
-          run,
-        }),
-      close: async () => {},
-    }),
-  } as unknown as Driver & { runCalls: SessionRunCall[] };
+    sessionConfigs,
+    session: (config?: SessionConfig) => {
+      sessionConfigs.push(config);
+      return {
+        run,
+        executeRead: async (
+          work: (transaction: {
+            run: (
+              query: string,
+              params: Record<string, unknown>
+            ) => Promise<unknown>;
+          }) => Promise<unknown>
+        ) =>
+          work({
+            run,
+          }),
+        close: async () => {},
+      };
+    },
+  } as unknown as Driver & {
+    runCalls: SessionRunCall[];
+    sessionConfigs: Array<SessionConfig | undefined>;
+  };
 };
 
 const createMockContext = () =>
@@ -97,6 +108,7 @@ test("getSiteWideDiscussionList keeps empty searches off the full-text index", a
   assert.equal(driver.runCalls.length, 2);
   assert.equal(driver.runCalls[0].params.fulltextQuery, "");
   assert.doesNotMatch(driver.runCalls[0].query, /db\.index\.fulltext\.queryNodes/);
+  assert.equal(driver.sessionConfigs[0]?.defaultAccessMode, "READ");
 });
 
 test("getSiteWideDiscussionList drives search from the full-text index", async () => {
@@ -573,7 +585,7 @@ test("getSiteWideDiscussionList returns multiple discussions", async () => {
 test("getSiteWideDiscussionList throws error with message when query fails", async () => {
   const driver = {
     session: () => ({
-      executeWrite: async (work: (transaction: { run: () => Promise<never> }) => Promise<unknown>) =>
+      executeRead: async (work: (transaction: { run: () => Promise<never> }) => Promise<unknown>) =>
         work({
           run: async () => {
             throw new Error("Database unavailable");
