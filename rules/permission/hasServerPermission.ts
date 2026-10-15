@@ -8,6 +8,7 @@ import { disconnectExpiredServerSuspensions } from "./disconnectExpiredServerSus
 import { createSuspensionNotification } from "./suspensionNotification.js";
 import { isServerRoot } from "./isServerRoot.js";
 import { logger } from "../../logger.js";
+import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
 type EvaluateServerPermissionInput = {
   permission: keyof ServerRole;
@@ -78,7 +79,6 @@ export const hasServerPermission: (
   permission: keyof ServerRole,
   context: GraphQLContext
 ) => Promise<Error | boolean> = async (permission, context) => {
-  const User = context.ogm.model("User");
   // 1. Check for server roles on the user object.
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
@@ -154,7 +154,9 @@ export const hasServerPermission: (
   if (result instanceof Error && hasActiveSuspension && username) {
     try {
       await createSuspensionNotification({
-        UserModel: User,
+        repository:
+          context.suspensionEffectsRepository ??
+          createSuspensionEffectsRepository(context.driver),
         username,
         scopeName: process.env.SERVER_CONFIG_NAME || "server",
         scopeType: "server",

@@ -1,7 +1,7 @@
-import type { UserModel } from "../../ogm_types.js";
+import type { SuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
 type CreateSuspensionNotificationInput = {
-  UserModel: UserModel;
+  repository: SuspensionEffectsRepository;
   username: string;
   scopeName: string;
   scopeType: "channel" | "server";
@@ -21,7 +21,7 @@ export async function createSuspensionNotification(
   input: CreateSuspensionNotificationInput
 ) {
   const {
-    UserModel,
+    repository,
     username,
     scopeName,
     scopeType,
@@ -55,38 +55,8 @@ export async function createSuspensionNotification(
     : "";
   const notificationText = `${subject} and cannot ${permission}. See ${issueRef} for details.${expiresText ? ` ${expiresText}` : ""}`;
 
-  // Escape quotes for the selectionSet filter
-  const escapedText = notificationText.replace(/"/g, '\\"');
-
-  const existing = await UserModel.find({
-    where: { username },
-    selectionSet: `{ 
-      notifyOnSuspensionBlocks
-      Notifications(where: { text: "${escapedText}", read: false }) { id } 
-    }`,
-  });
-
-  const user = existing?.[0];
-  if (user?.notifyOnSuspensionBlocks === false) return;
-
-  const alreadyNotified = user?.Notifications?.length > 0;
-  if (alreadyNotified) return;
-
-  await UserModel.update({
-    where: { username },
-    update: {
-      Notifications: [
-        {
-          create: [
-            {
-              node: {
-                text: notificationText,
-                read: false,
-              },
-            },
-          ],
-        },
-      ],
-    },
+  await repository.createBlockNotification({
+    username,
+    text: notificationText,
   });
 }

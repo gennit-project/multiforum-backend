@@ -1,127 +1,79 @@
 import assert from "node:assert/strict";
+import test from "node:test";
+import type { Driver } from "neo4j-driver";
+import type { SuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 import { disconnectExpiredSuspensions } from "./disconnectExpiredSuspensions.js";
-import type { Ogm } from "../../types/context.js";
 
-type SuspensionStub = {
-  id: string;
-  username?: string | null;
-  modProfileName?: string | null;
-};
-
-class ChannelModelStub {
-  public updates: any[] = [];
-
-  async update({ update }: any) {
-    this.updates.push(update);
-    return {};
-  }
-}
-
-const buildOgm = (channelStub: ChannelModelStub) => {
-  return {
-    model: (name: string) => {
-      if (name === "Channel") return channelStub;
-      throw new Error(`Unexpected model lookup: ${name}`);
+const buildRepository = (failure?: Error) => {
+  const calls: unknown[] = [];
+  const repository: SuspensionEffectsRepository = {
+    async disconnectExpiredChannelSuspensions(input) {
+      calls.push(input);
+      if (failure) throw failure;
     },
-  } as unknown as Ogm;
+    async disconnectExpiredServerSuspensions() {},
+    async createBlockNotification() {
+      return "created";
+    },
+  };
+  return { calls, repository };
 };
 
-async function testDisconnectsUserSuspensions() {
-  const channelStub = new ChannelModelStub();
-  const ogm = buildOgm(channelStub);
-
-  const expiredUserSuspensions: SuspensionStub[] = [
-    { id: "user-suspension-1", username: "alice" },
-    { id: "user-suspension-2", username: "bob" },
-  ];
+test("disconnects user and mod suspensions through the repository", async () => {
+  const { calls, repository } = buildRepository();
 
   const result = await disconnectExpiredSuspensions({
-    ogm,
+    driver: {} as Driver,
+    repository,
     channelUniqueName: "forum-1",
-    expiredUserSuspensions: expiredUserSuspensions as any,
-    expiredModSuspensions: [],
+    expiredUserSuspensions: [{ id: "user-1" }, { id: "user-2" }],
+    expiredModSuspensions: [{ id: "mod-1" }],
   });
 
-  assert.deepEqual(result.disconnectedUserSuspensionIds, [
-    "user-suspension-1",
-    "user-suspension-2",
+  assert.deepEqual(calls, [
+    {
+      scopeName: "forum-1",
+      userSuspensionIds: ["user-1", "user-2"],
+      modSuspensionIds: ["mod-1"],
+    },
   ]);
-  assert.deepEqual(result.disconnectedModSuspensionIds, []);
-  assert.equal(channelStub.updates.length, 1);
-  assert.ok(channelStub.updates[0].SuspendedUsers, "Expected SuspendedUsers disconnect");
-}
-
-async function testDisconnectsModSuspensions() {
-  const channelStub = new ChannelModelStub();
-  const ogm = buildOgm(channelStub);
-
-  const expiredModSuspensions: SuspensionStub[] = [
-    { id: "mod-suspension-1", modProfileName: "ModA" },
-  ];
-
-  const result = await disconnectExpiredSuspensions({
-    ogm,
-    channelUniqueName: "forum-1",
-    expiredUserSuspensions: [],
-    expiredModSuspensions: expiredModSuspensions as any,
+  assert.deepEqual(result, {
+    disconnectedUserSuspensionIds: ["user-1", "user-2"],
+    disconnectedModSuspensionIds: ["mod-1"],
   });
+});
 
-  assert.deepEqual(result.disconnectedUserSuspensionIds, []);
-  assert.deepEqual(result.disconnectedModSuspensionIds, ["mod-suspension-1"]);
-  assert.equal(channelStub.updates.length, 1);
-  assert.ok(channelStub.updates[0].SuspendedMods, "Expected SuspendedMods disconnect");
-}
-
-async function testDisconnectsBothUserAndModSuspensions() {
-  const channelStub = new ChannelModelStub();
-  const ogm = buildOgm(channelStub);
-
-  const expiredUserSuspensions: SuspensionStub[] = [
-    { id: "user-suspension-1", username: "alice" },
-  ];
-  const expiredModSuspensions: SuspensionStub[] = [
-    { id: "mod-suspension-1", modProfileName: "ModA" },
-  ];
+test("does not call the repository when there is nothing to disconnect", async () => {
+  const { calls, repository } = buildRepository();
 
   const result = await disconnectExpiredSuspensions({
-    ogm,
-    channelUniqueName: "forum-1",
-    expiredUserSuspensions: expiredUserSuspensions as any,
-    expiredModSuspensions: expiredModSuspensions as any,
-  });
-
-  assert.deepEqual(result.disconnectedUserSuspensionIds, ["user-suspension-1"]);
-  assert.deepEqual(result.disconnectedModSuspensionIds, ["mod-suspension-1"]);
-  assert.equal(channelStub.updates.length, 1);
-  assert.ok(channelStub.updates[0].SuspendedUsers, "Expected SuspendedUsers disconnect");
-  assert.ok(channelStub.updates[0].SuspendedMods, "Expected SuspendedMods disconnect");
-}
-
-async function testNoUpdateWhenNoExpiredSuspensions() {
-  const channelStub = new ChannelModelStub();
-  const ogm = buildOgm(channelStub);
-
-  const result = await disconnectExpiredSuspensions({
-    ogm,
+    driver: {} as Driver,
+    repository,
     channelUniqueName: "forum-1",
     expiredUserSuspensions: [],
     expiredModSuspensions: [],
   });
 
-  assert.deepEqual(result.disconnectedUserSuspensionIds, []);
-  assert.deepEqual(result.disconnectedModSuspensionIds, []);
-  assert.equal(channelStub.updates.length, 0, "Should not call update when no expired suspensions");
-}
+  assert.deepEqual(calls, []);
+  assert.deepEqual(result, {
+    disconnectedUserSuspensionIds: [],
+    disconnectedModSuspensionIds: [],
+  });
+});
 
-async function run() {
-  await testDisconnectsUserSuspensions();
-  await testDisconnectsModSuspensions();
-  await testDisconnectsBothUserAndModSuspensions();
-  await testNoUpdateWhenNoExpiredSuspensions();
-  console.log("disconnectExpiredSuspensions tests passed");
-}
+test("preserves best-effort behavior when cleanup fails", async () => {
+  const { repository } = buildRepository(new Error("database unavailable"));
 
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
+  const result = await disconnectExpiredSuspensions({
+    driver: {} as Driver,
+    repository,
+    channelUniqueName: "forum-1",
+    expiredUserSuspensions: [{ id: "user-1" }],
+    expiredModSuspensions: [],
+  });
+
+  assert.deepEqual(result, {
+    disconnectedUserSuspensionIds: ["user-1"],
+    disconnectedModSuspensionIds: [],
+  });
 });

@@ -7,6 +7,7 @@
 
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import { getDiscussionChannelsQuery } from "../../customResolvers/cypher/cypherQueries.js";
 import {
   startImageModEnv,
   stopImageModEnv,
@@ -60,6 +61,55 @@ for (const sort of ["new", "top", "hot"]) {
     assert.equal(Number(result.aggregateDiscussionChannelsCount), 0);
   });
 }
+
+test("channel hydration keeps user lookups scoped to the selected discussion", async () => {
+  await run(
+    `CREATE (channel:Channel { uniqueName: 'cats' })
+     CREATE (discussion:Discussion { id: 'd1', title: 'Scoped hydration' })
+     CREATE (post:DiscussionChannel {
+       id: 'dc1', discussionId: 'd1', channelUniqueName: 'cats', weightedVotesCount: 2
+     })
+     CREATE (author:User { username: 'author' })
+     CREATE (viewer:User { username: 'viewer' })
+     CREATE (otherUpvoter:User { username: 'other-upvoter' })
+     CREATE (album:Album { id: 'album-1', imageOrder: [] })
+     CREATE (visibleImage:Image { id: 'visible-image', url: 'https://example.test/visible' })
+     CREATE (sensitiveImage:Image {
+       id: 'sensitive-image', url: 'https://example.test/sensitive', hasSensitiveContent: true
+     })
+     CREATE (archivedImage:Image {
+       id: 'archived-image', url: 'https://example.test/archived', archived: true
+     })
+     CREATE (post)-[:POSTED_IN_CHANNEL]->(discussion)
+     CREATE (post)-[:POSTED_IN_CHANNEL]->(channel)
+     CREATE (author)-[:POSTED_DISCUSSION]->(discussion)
+     CREATE (viewer)-[:UPVOTED_DISCUSSION]->(post)
+     CREATE (otherUpvoter)-[:UPVOTED_DISCUSSION]->(post)
+     CREATE (viewer)-[:SUPER_UPVOTED_DISCUSSION]->(post)
+     CREATE (viewer)-[:DEFAULT_FAVORITES_DISCUSSIONS]->(discussion)
+     CREATE (discussion)-[:HAS_ALBUM]->(album)
+     CREATE (album)-[:HAS_IMAGE]->(visibleImage)
+     CREATE (album)-[:HAS_IMAGE]->(sensitiveImage)
+     CREATE (album)-[:HAS_IMAGE]->(archivedImage)`
+  );
+
+  const result = await env.driver.executeQuery(getDiscussionChannelsQuery, {
+    discussionChannelIds: ["dc1"],
+    loggedInUsername: "viewer",
+    mayAccessSensitiveContent: false,
+  });
+  const hydrated = result.records[0]?.get("DiscussionChannel");
+
+  assert.equal(hydrated.Discussion.Author.username, "author");
+  assert.equal(hydrated.UpvotedByUsersAggregate.count.toNumber(), 2);
+  assert.deepEqual(hydrated.UpvotedByUsers, [{ username: "viewer" }]);
+  assert.deepEqual(hydrated.SuperUpvotedByUsers, [{ username: "viewer" }]);
+  assert.equal(hydrated.isFavorited, true);
+  assert.deepEqual(
+    hydrated.Discussion.Album.Images.map((image: { id: string }) => image.id),
+    ["visible-image"]
+  );
+});
 
 test("getDiscussionsInChannel searches within the requested channel via full-text", async () => {
   await run(

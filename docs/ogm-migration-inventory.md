@@ -81,6 +81,14 @@ neither initializes an OGM for this work. This reduces production files with
 direct `ogm.model(...)` access from 63 to 62 and generated OGM type imports from
 179 to 178.
 
+Suspension side effects are now driver-backed. Expired channel and server
+suspensions remove only their active scope relationships, retaining suspension
+nodes and user/profile relationships as an audit trail. Suspension-block
+notifications are created with parameterized Cypher and deduplicated against
+identical unread notifications. This reduces production files with direct
+`ogm.model(...)` access from 62 to 58 and generated OGM type imports from 178 to
+175.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

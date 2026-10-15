@@ -2,18 +2,20 @@ import { logger } from "../../logger.js";
 // Disconnects expired suspensions from a channel.
 // This keeps the Suspension nodes for historical display but removes
 // them from the channel's active suspended users/mods lists.
-import type {
-  Suspension,
-  ChannelModel,
-  ChannelUpdateInput,
-} from "../../ogm_types.js";
-import type { Ogm } from "../../types/context.js";
+import type { Driver } from "neo4j-driver";
+import {
+  createSuspensionEffectsRepository,
+  type SuspensionEffectsRepository,
+} from "../../services/persistence/suspensionEffectsRepository.js";
+
+type SuspensionReference = { id: string };
 
 type DisconnectExpiredSuspensionsInput = {
-  ogm: Ogm;
+  driver: Driver;
+  repository?: SuspensionEffectsRepository;
   channelUniqueName: string;
-  expiredUserSuspensions: Suspension[];
-  expiredModSuspensions: Suspension[];
+  expiredUserSuspensions: SuspensionReference[];
+  expiredModSuspensions: SuspensionReference[];
 };
 
 type DisconnectExpiredSuspensionsResult = {
@@ -24,37 +26,19 @@ type DisconnectExpiredSuspensionsResult = {
 export async function disconnectExpiredSuspensions(
   input: DisconnectExpiredSuspensionsInput
 ): Promise<DisconnectExpiredSuspensionsResult> {
-  const { ogm, channelUniqueName, expiredUserSuspensions, expiredModSuspensions } = input;
+  const { channelUniqueName, expiredUserSuspensions, expiredModSuspensions } =
+    input;
+  const userSuspensionIds = expiredUserSuspensions.map(({ id }) => id);
+  const modSuspensionIds = expiredModSuspensions.map(({ id }) => id);
 
-  const Channel: ChannelModel = ogm.model("Channel");
-
-  const disconnectOperations: ChannelUpdateInput = {};
-
-  if (expiredUserSuspensions.length > 0) {
-    disconnectOperations.SuspendedUsers = [
-      {
-        disconnect: expiredUserSuspensions.map((s) => ({
-          where: { node: { id: s.id } },
-        })),
-      },
-    ];
-  }
-
-  if (expiredModSuspensions.length > 0) {
-    disconnectOperations.SuspendedMods = [
-      {
-        disconnect: expiredModSuspensions.map((s) => ({
-          where: { node: { id: s.id } },
-        })),
-      },
-    ];
-  }
-
-  if (disconnectOperations.SuspendedUsers || disconnectOperations.SuspendedMods) {
+  if (userSuspensionIds.length > 0 || modSuspensionIds.length > 0) {
     try {
-      await Channel.update({
-        where: { uniqueName: channelUniqueName },
-        update: disconnectOperations,
+      const repository =
+        input.repository ?? createSuspensionEffectsRepository(input.driver);
+      await repository.disconnectExpiredChannelSuspensions({
+        scopeName: channelUniqueName,
+        userSuspensionIds,
+        modSuspensionIds,
       });
     } catch (error) {
       logger.error("Error disconnecting expired suspensions", error);
@@ -62,7 +46,7 @@ export async function disconnectExpiredSuspensions(
   }
 
   return {
-    disconnectedUserSuspensionIds: expiredUserSuspensions.map((s) => s.id),
-    disconnectedModSuspensionIds: expiredModSuspensions.map((s) => s.id),
+    disconnectedUserSuspensionIds: userSuspensionIds,
+    disconnectedModSuspensionIds: modSuspensionIds,
   };
 }
