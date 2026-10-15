@@ -60,10 +60,16 @@ before(async () => {
 
   // Provisions DefaultServerRole/DefaultChannelRole (grant create/upvote) and the
   // serverSuspended/channelSuspended roles (deny them) used by the gates above.
-  const { provisionServerDefaultsFromOgm } = await import(
+  const { provisionServerDefaults } = await import(
     "../../seedData/provisionServerDefaults.js"
   );
-  await provisionServerDefaultsFromOgm(ogm, { serverName: SERVER_CONFIG_NAME });
+  const { createServerDefaultsRepository } = await import(
+    "../../services/persistence/serverDefaultsRepository.js"
+  );
+  await provisionServerDefaults({
+    repository: createServerDefaultsRepository(driver),
+    serverName: SERVER_CONFIG_NAME,
+  });
 }, { timeout: 240000 });
 
 after(async () => {

@@ -73,6 +73,14 @@ application driver while default-role provisioning remains behind the OGM
 repository adapter. This reduces the production files with direct
 `ogm.model(...)` access from 64 to 63.
 
+Default-role and ServerConfig provisioning is now driver-backed as well. Role
+upserts, ServerConfig creation, default-role relationship reconciliation, and
+the Admin-to-SuperAdmin backfill run in one managed write transaction. Both
+startup and the standalone provisioning command share the application driver;
+neither initializes an OGM for this work. This reduces production files with
+direct `ogm.model(...)` access from 63 to 62 and generated OGM type imports from
+179 to 178.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

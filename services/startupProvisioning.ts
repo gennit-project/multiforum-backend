@@ -1,7 +1,6 @@
 import type { Driver } from "neo4j-driver";
 import {
-  provisionServerDefaultsFromOgm,
-  type OgmLike,
+  provisionServerDefaults,
   type ProvisionServerDefaultsResult,
 } from "../seedData/provisionServerDefaults.js";
 import {
@@ -14,13 +13,20 @@ import {
   type BootstrapAdminRepository,
 } from "./persistence/bootstrapAdminRepository.js";
 import {
+  createServerDefaultsRepository,
+  type ServerDefaultsRepository,
+} from "./persistence/serverDefaultsRepository.js";
+import {
   getAuthenticationProvider,
   getLocalDevBootstrapIdentity,
 } from "./localDevAuth.js";
 
 type ProvisionDefaults = (
-  ogm: OgmLike,
-  options: { serverName: string; log?: (message: string) => void }
+  options: {
+    repository: ServerDefaultsRepository;
+    serverName: string;
+    log?: (message: string) => void;
+  }
 ) => Promise<ProvisionServerDefaultsResult>;
 
 type ProvisionBootstrapAdmin = (
@@ -44,10 +50,10 @@ export type StartupProvisioningResult =
 
 export type StartupProvisioningInput = {
   driver: Driver;
-  ogm: OgmLike;
   env?: NodeJS.ProcessEnv;
   log?: (message: string) => void;
   provision?: ProvisionDefaults;
+  serverDefaultsRepository?: ServerDefaultsRepository;
   provisionBootstrapAdmin?: ProvisionBootstrapAdmin;
   bootstrapAdminRepository?: BootstrapAdminRepository;
 };
@@ -73,8 +79,11 @@ export const provisionInstanceOnStartup = async (
     );
   }
 
-  const provision = input.provision ?? provisionServerDefaultsFromOgm;
-  const result = await provision(input.ogm, {
+  const provision = input.provision ?? provisionServerDefaults;
+  const repository =
+    input.serverDefaultsRepository ?? createServerDefaultsRepository(input.driver);
+  const result = await provision({
+    repository,
     serverName,
     log: (message) => log(`[startup-provision] ${message}`),
   });

@@ -67,10 +67,16 @@ before(async () => {
   // Provision the default roles so a non-admin resolves the real
   // DefaultServerRole (which lacks the admin capabilities) — exercising the
   // post-migration permission path that the capability checks rely on.
-  const { provisionServerDefaultsFromOgm } = await import(
+  const { provisionServerDefaults } = await import(
     "../../seedData/provisionServerDefaults.js"
   );
-  await provisionServerDefaultsFromOgm(ogm, { serverName: SERVER_CONFIG_NAME });
+  const { createServerDefaultsRepository } = await import(
+    "../../services/persistence/serverDefaultsRepository.js"
+  );
+  await provisionServerDefaults({
+    repository: createServerDefaultsRepository(driver),
+    serverName: SERVER_CONFIG_NAME,
+  });
 }, { timeout: 240000 });
 
 after(async () => {

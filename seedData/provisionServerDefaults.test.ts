@@ -1,202 +1,122 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  provisionServerDefaults,
-  provisionServerDefaultsFromOgm,
-} from "./provisionServerDefaults.js";
-import {
-  DEFAULT_SERVER_ROLES,
   DEFAULT_MOD_SERVER_ROLES,
+  DEFAULT_SERVER_ROLES,
   ROLE_NAMES,
+  SERVER_CONFIG_ROLE_WIRING,
 } from "./defaultRoles.js";
-
-// Minimal recording model. `existing` decides whether find() reports the role
-// as already present (drives the upsert branch).
-const makeRoleModel = (existing: boolean) => {
-  const calls = { create: [] as any[], update: [] as any[], find: 0 };
-  return {
-    calls,
-    model: {
-      find: async () => {
-        calls.find += 1;
-        return existing ? [{ name: "x" }] : [];
-      },
-      create: async (args: any) => {
-        calls.create.push(args);
-        return {};
-      },
-      update: async (args: any) => {
-        calls.update.push(args);
-        return {};
-      },
-      delete: async () => ({}),
-    },
-  };
-};
-
-const makeServerConfigModel = (
-  config: { Admins?: any[]; SuperAdmins?: any[] } | null
-) => {
-  const calls = { create: [] as any[], update: [] as any[] };
-  return {
-    calls,
-    model: {
-      find: async () => (config ? [config] : []),
-      create: async (args: any) => {
-        calls.create.push(args);
-        return {};
-      },
-      update: async (args: any) => {
-        calls.update.push(args);
-        return {};
-      },
-      delete: async () => ({}),
-    },
-  };
-};
+import { provisionServerDefaults } from "./provisionServerDefaults.js";
+import type {
+  ServerDefaultsRepository,
+  ServerDefaultsResult,
+} from "../services/persistence/serverDefaultsRepository.js";
 
 test("the seeded admin roles encode the restricted-vs-super distinction", () => {
-  const admin = DEFAULT_SERVER_ROLES.find((r) => r.name === ROLE_NAMES.administrator)!;
+  const admin = DEFAULT_SERVER_ROLES.find(
+    (role) => role.name === ROLE_NAMES.administrator
+  )!;
   const superAdmin = DEFAULT_SERVER_ROLES.find(
-    (r) => r.name === ROLE_NAMES.superAdministrator
+    (role) => role.name === ROLE_NAMES.superAdministrator
   )!;
 
-  // Restricted admin is permissive but cannot make admins.
   assert.equal(admin.canManageServerSettings, true);
   assert.equal(admin.canManagePlugins, true);
   assert.equal(admin.canManageAdmins, false);
   assert.equal(admin.canManageSuperAdmins, false);
-
-  // Super admin can.
   assert.equal(superAdmin.canManageAdmins, true);
   assert.equal(superAdmin.canManageSuperAdmins, true);
 });
 
 test("the elevated mod role grants the destructive structural caps", () => {
   const elevated = DEFAULT_MOD_SERVER_ROLES.find(
-    (r) => r.name === ROLE_NAMES.modElevated
+    (role) => role.name === ROLE_NAMES.modElevated
   )!;
   assert.equal(elevated.canRemoveDiscussionChannel, true);
   assert.equal(elevated.canRemoveEventChannel, true);
 });
 
-test("fresh provisioning creates roles and the server config", async () => {
-  const ServerRole = makeRoleModel(false);
-  const ModServerRole = makeRoleModel(false);
-  const ServerConfig = makeServerConfigModel(null);
+const result: ServerDefaultsResult = {
+  serverRolesUpserted: DEFAULT_SERVER_ROLES.length,
+  modServerRolesUpserted: DEFAULT_MOD_SERVER_ROLES.length,
+  serverConfigCreated: true,
+  rolesWired: ["DefaultServerRole", "DefaultAdminRole"],
+  adminsBackfilledToSuperAdmins: ["alice"],
+};
 
-  const result = await provisionServerDefaults({
-    ServerRole: ServerRole.model as any,
-    ModServerRole: ModServerRole.model as any,
-    ServerConfig: ServerConfig.model as any,
-    serverName: "Test Server",
-  });
-
-  assert.equal(ServerRole.calls.create.length, DEFAULT_SERVER_ROLES.length);
-  assert.equal(ServerRole.calls.update.length, 0);
-  assert.equal(ModServerRole.calls.create.length, DEFAULT_MOD_SERVER_ROLES.length);
-  assert.equal(result.serverConfigCreated, true);
-  // The config is created, then updated to wire the default-role links.
-  assert.equal(ServerConfig.calls.create.length, 1);
-  assert.equal(
-    ServerConfig.calls.create[0].selectionSet,
-    "{ serverConfigs { serverName } }"
-  );
-  assert.ok(result.rolesWired.includes("DefaultSuperAdminRole"));
-  assert.ok(result.rolesWired.includes("DefaultAdminRole"));
-});
-
-test("re-running provisioning updates existing roles (idempotent upsert)", async () => {
-  const ServerRole = makeRoleModel(true);
-  const ModServerRole = makeRoleModel(true);
-  const ServerConfig = makeServerConfigModel({ Admins: [], SuperAdmins: [] });
-
-  const result = await provisionServerDefaults({
-    ServerRole: ServerRole.model as any,
-    ModServerRole: ModServerRole.model as any,
-    ServerConfig: ServerConfig.model as any,
-    serverName: "Test Server",
-  });
-
-  assert.equal(ServerRole.calls.create.length, 0);
-  assert.equal(ServerRole.calls.update.length, DEFAULT_SERVER_ROLES.length);
-  assert.equal(result.serverConfigCreated, false);
-});
-
-test("backfill promotes only admins that are not already super-admins", async () => {
-  const ServerRole = makeRoleModel(true);
-  const ModServerRole = makeRoleModel(true);
-  const ServerConfig = makeServerConfigModel({
-    Admins: [{ username: "alice" }, { username: "bob" }],
-    SuperAdmins: [{ username: "bob" }],
-  });
-
-  const result = await provisionServerDefaults({
-    ServerRole: ServerRole.model as any,
-    ModServerRole: ModServerRole.model as any,
-    ServerConfig: ServerConfig.model as any,
-    serverName: "Test Server",
-  });
-
-  assert.deepEqual(result.adminsBackfilledToSuperAdmins, ["alice"]);
-  // One update wires roles; a second update performs the backfill.
-  const backfillUpdate = ServerConfig.calls.update.find(
-    (u) => u.update?.SuperAdmins
-  );
-  assert.ok(backfillUpdate, "expected a SuperAdmins backfill update");
-  assert.equal(backfillUpdate.selectionSet, "{ serverConfigs { serverName } }");
-});
-
-test("provisionServerDefaultsFromOgm resolves the three models off the OGM and delegates", async () => {
-  const ServerRole = makeRoleModel(false);
-  const ModServerRole = makeRoleModel(false);
-  const ServerConfig = makeServerConfigModel(null);
-  const requested: string[] = [];
-  const ogm = {
-    model: (name: string) => {
-      requested.push(name);
-      const byName: Record<string, unknown> = {
-        ServerRole: ServerRole.model,
-        ModServerRole: ModServerRole.model,
-        ServerConfig: ServerConfig.model,
-      };
-      return byName[name];
+test("delegates the canonical defaults and logs only after reconciliation", async () => {
+  const calls: unknown[] = [];
+  const messages: string[] = [];
+  const repository: ServerDefaultsRepository = {
+    async reconcile(input) {
+      calls.push(input);
+      assert.deepEqual(messages, []);
+      return result;
     },
   };
 
-  const result = await provisionServerDefaultsFromOgm(ogm, {
-    serverName: "Test Server",
-  });
-
-  // It pulled exactly the three role/config models from the OGM...
-  assert.deepEqual(requested.sort(), [
-    "ModServerRole",
-    "ServerConfig",
-    "ServerRole",
+  assert.deepEqual(
+    await provisionServerDefaults({
+      repository,
+      serverName: "Test Server",
+      log: (message) => messages.push(message),
+    }),
+    result
+  );
+  assert.deepEqual(calls, [
+    {
+      serverName: "Test Server",
+      serverRoles: DEFAULT_SERVER_ROLES,
+      modServerRoles: DEFAULT_MOD_SERVER_ROLES,
+      wiring: Object.entries(SERVER_CONFIG_ROLE_WIRING).map(
+        ([relationship, roleName]) => ({ relationship, roleName })
+      ),
+    },
   ]);
-  // ...and the underlying provisioning ran against them.
-  assert.equal(ServerRole.calls.create.length, DEFAULT_SERVER_ROLES.length);
-  assert.equal(result.serverConfigCreated, true);
+  assert.deepEqual(messages, [
+    "Upserted 4 server roles and 3 mod server roles.",
+    "Created ServerConfig 'Test Server'.",
+    "Wired 2 default-role links on 'Test Server'.",
+    "Backfilled 1 admin(s) into SuperAdmins: alice.",
+  ]);
 });
 
-test("backfill is a no-op when all admins are already super-admins", async () => {
-  const ServerRole = makeRoleModel(true);
-  const ModServerRole = makeRoleModel(true);
-  const ServerConfig = makeServerConfigModel({
-    Admins: [{ username: "bob" }],
-    SuperAdmins: [{ username: "bob" }],
-  });
-
-  const result = await provisionServerDefaults({
-    ServerRole: ServerRole.model as any,
-    ModServerRole: ModServerRole.model as any,
-    ServerConfig: ServerConfig.model as any,
+test("omits create and backfill messages for an unchanged configuration", async () => {
+  const messages: string[] = [];
+  await provisionServerDefaults({
+    repository: {
+      async reconcile() {
+        return {
+          ...result,
+          serverConfigCreated: false,
+          rolesWired: [],
+          adminsBackfilledToSuperAdmins: [],
+        };
+      },
+    },
     serverName: "Test Server",
+    log: (message) => messages.push(message),
   });
 
-  assert.deepEqual(result.adminsBackfilledToSuperAdmins, []);
-  const backfillUpdate = ServerConfig.calls.update.find(
-    (u) => u.update?.SuperAdmins
+  assert.deepEqual(messages, [
+    "Upserted 4 server roles and 3 mod server roles.",
+    "Wired 0 default-role links on 'Test Server'.",
+  ]);
+});
+
+test("does not log when reconciliation fails", async () => {
+  const messages: string[] = [];
+  await assert.rejects(
+    provisionServerDefaults({
+      repository: {
+        async reconcile() {
+          throw new Error("transaction rolled back");
+        },
+      },
+      serverName: "Test Server",
+      log: (message) => messages.push(message),
+    }),
+    /transaction rolled back/
   );
-  assert.equal(backfillUpdate, undefined);
+  assert.deepEqual(messages, []);
 });

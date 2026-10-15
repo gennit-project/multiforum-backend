@@ -6,8 +6,9 @@
 //   - integration tests (so they exercise the real defaults instead of
 //     re-seeding inline)
 //
-// Roles are keyed by their unique `name`; provisioning is idempotent (MERGE by
-// name), so editing a value here and re-running provisioning updates it.
+// Roles are keyed by their unique `name`; the driver-backed provisioner uses
+// MERGE plus a partial property update, so editing a value here and re-running
+// provisioning updates it without deleting unrelated custom properties.
 // See docs/isadmin-phaseout-design.md.
 
 // ---------------------------------------------------------------------------

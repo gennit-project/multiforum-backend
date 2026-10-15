@@ -76,10 +76,16 @@ before(async () => {
 
   // Provision the default roles so identity/permission resolution runs against
   // the same role graph production uses.
-  const { provisionServerDefaultsFromOgm } = await import(
+  const { provisionServerDefaults } = await import(
     "../../seedData/provisionServerDefaults.js"
   );
-  await provisionServerDefaultsFromOgm(ogm, { serverName: SERVER_CONFIG_NAME });
+  const { createServerDefaultsRepository } = await import(
+    "../../services/persistence/serverDefaultsRepository.js"
+  );
+  await provisionServerDefaults({
+    repository: createServerDefaultsRepository(driver),
+    serverName: SERVER_CONFIG_NAME,
+  });
 }, { timeout: 240000 });
 
 after(async () => {

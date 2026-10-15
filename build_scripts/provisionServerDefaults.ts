@@ -11,12 +11,12 @@
 // project's .env when not already exported in the shell.
 import "dotenv/config";
 import neo4j from "neo4j-driver";
-import { createOgmAndModels } from "../customResolvers/resolverDeps.js";
-import { provisionServerDefaultsFromRepositories } from "../seedData/provisionServerDefaults.js";
+import { provisionServerDefaults } from "../seedData/provisionServerDefaults.js";
 import {
   installDefaultNeo4jDatabase,
   resolveNeo4jDatabase,
 } from "../services/neo4jDatabase.js";
+import { createServerDefaultsRepository } from "../services/persistence/serverDefaultsRepository.js";
 
 const uri = process.env.NEO4J_URI || "bolt://localhost:7687";
 const user = process.env.NEO4J_USERNAME || process.env.NEO4J_USER || "neo4j";
@@ -35,17 +35,13 @@ const run = async () => {
     neo4j.driver(uri, neo4j.auth.basic(user, password as string)),
     resolveNeo4jDatabase()
   );
-  const deps = createOgmAndModels(driver);
-  await deps.ogm.init();
 
   try {
-    const result = await provisionServerDefaultsFromRepositories(
-      deps.repositories,
-      {
-        serverName: serverName as string,
-        log: (message) => console.log(`[provision] ${message}`),
-      }
-    );
+    const result = await provisionServerDefaults({
+      repository: createServerDefaultsRepository(driver),
+      serverName: serverName as string,
+      log: (message) => console.log(`[provision] ${message}`),
+    });
     console.log("[provision] Done:", JSON.stringify(result, null, 2));
   } finally {
     await driver.close();
