@@ -1,122 +1,152 @@
-// Runs provisionServerDefaults against a real Neo4j (Testcontainers) — the
-// provisioning code otherwise only has mock-based unit tests. Verifies that a
-// fresh provision creates the default roles, wires the ServerConfig tier links,
-// and backfills existing Admins into SuperAdmins, and that re-running is
-// idempotent. See seedData/ and docs/isadmin-phaseout-design.md.
-
-import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
+import { after, before, beforeEach, test } from "node:test";
 import type { Driver } from "neo4j-driver";
-import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
-import { ROLE_NAMES } from "../../seedData/defaultRoles.js";
+import {
+  DEFAULT_MOD_SERVER_ROLES,
+  DEFAULT_SERVER_ROLES,
+  ROLE_NAMES,
+} from "../../seedData/defaultRoles.js";
+import { provisionServerDefaults } from "../../seedData/provisionServerDefaults.js";
+import { createServerDefaultsRepository } from "../../services/persistence/serverDefaultsRepository.js";
+import {
+  resetDatabase,
+  startNeo4j,
+  stopNeo4j,
+} from "./neo4jHarness.js";
 
 const SERVER_CONFIG_NAME = "ProvisionTestServer";
-const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
-
-let container: StartedNeo4jContainer;
 let driver: Driver;
-let ogm: any;
-let provisionServerDefaultsFromOgm: any;
-
-const provision = () =>
-  provisionServerDefaultsFromOgm(ogm, { serverName: SERVER_CONFIG_NAME });
 
 before(async () => {
-  let builder = new Neo4jContainer("neo4j:5-community").withApoc();
-  if (REUSE) builder = builder.withReuse();
-  container = await builder.start();
-  process.env.NEO4J_URI = container.getBoltUri();
-  process.env.NEO4J_USER = container.getUsername();
-  process.env.NEO4J_PASSWORD = container.getPassword();
-  process.env.SERVER_CONFIG_NAME = SERVER_CONFIG_NAME;
-
-  const { buildPermissionedSchema } = await import(
-    "../helpers/buildPermissionedSchema.js"
-  );
-  ({ driver, ogm } = await buildPermissionedSchema());
-  await ogm.init();
-  ({ provisionServerDefaultsFromOgm } = await import(
-    "../../seedData/provisionServerDefaults.js"
-  ));
-
-  // Seed a ServerConfig with two existing admins (to exercise the backfill) and
-  // a pre-existing DefaultServerRole pointing at a DIFFERENT role, so wiring must
-  // disconnect+reconnect a to-one link rather than blind-connect (regression for
-  // "DefaultServerRole must be less than or equal to one").
-  const session = driver.session();
-  try {
-    await session.run("MATCH (n) DETACH DELETE n");
-    await session.run(
-      `CREATE (sc:ServerConfig { serverName: $name })
-       CREATE (a:User { username: 'alice' })-[:ADMIN_OF_SERVER]->(sc)
-       CREATE (b:User { username: 'bob' })-[:ADMIN_OF_SERVER]->(sc)
-       CREATE (old:ServerRole { name: 'Legacy Default Role' })
-       CREATE (sc)-[:HAS_DEFAULT_SERVER_ROLE]->(old)`,
-      { name: SERVER_CONFIG_NAME }
-    );
-  } finally {
-    await session.close();
-  }
+  driver = await startNeo4j();
 }, { timeout: 240000 });
 
+beforeEach(async () => {
+  await resetDatabase(driver);
+});
+
 after(async () => {
-  await driver?.close();
-  if (!REUSE) await container?.stop();
+  await stopNeo4j();
 });
 
-const findRole = async (name: string) => {
-  const roles = await ogm.model("ServerRole").find({
-    where: { name },
-    selectionSet: `{ name canManageAdmins canManageSuperAdmins canManageServerSettings }`,
+const provision = () =>
+  provisionServerDefaults({
+    repository: createServerDefaultsRepository(driver, "neo4j"),
+    serverName: SERVER_CONFIG_NAME,
   });
-  return roles[0];
-};
 
-test("fresh provisioning creates the default roles with the restricted/super split", async () => {
+test("creates the canonical roles, config, and default-role links", async () => {
   const result = await provision();
-  assert.equal(result.serverConfigCreated, false, "config already existed");
+  assert.equal(result.serverConfigCreated, true);
+  assert.equal(result.serverRolesUpserted, DEFAULT_SERVER_ROLES.length);
+  assert.equal(result.modServerRolesUpserted, DEFAULT_MOD_SERVER_ROLES.length);
+  assert.equal(result.rolesWired.length, 7);
 
-  const admin = await findRole(ROLE_NAMES.administrator);
-  const superAdmin = await findRole(ROLE_NAMES.superAdministrator);
-  assert.equal(admin.canManageServerSettings, true);
-  assert.equal(admin.canManageAdmins, false, "restricted admin cannot manage admins");
-  assert.equal(superAdmin.canManageAdmins, true, "super admin can");
+  const verification = await driver.executeQuery(
+    `MATCH (config:ServerConfig {serverName: $serverName})
+     MATCH (config)-[:HAS_DEFAULT_ADMIN_ROLE]->(admin:ServerRole {name: $adminName})
+     MATCH (config)-[:HAS_DEFAULT_SUPER_ADMIN_ROLE]->(superAdmin:ServerRole {name: $superAdminName})
+     MATCH (config)-[:HAS_DEFAULT_MOD_ROLE]->(moderator:ModServerRole {name: $moderatorName})
+     RETURN admin.canManageAdmins AS adminCanManageAdmins,
+            superAdmin.canManageAdmins AS superAdminCanManageAdmins,
+            moderator.canReport AS moderatorCanReport`,
+    {
+      serverName: SERVER_CONFIG_NAME,
+      adminName: ROLE_NAMES.administrator,
+      superAdminName: ROLE_NAMES.superAdministrator,
+      moderatorName: ROLE_NAMES.modBasic,
+    },
+    { database: "neo4j" }
+  );
+  const record = verification.records[0];
+  assert.equal(record?.get("adminCanManageAdmins"), false);
+  assert.equal(record?.get("superAdminCanManageAdmins"), true);
+  assert.equal(record?.get("moderatorCanReport"), true);
 });
 
-test("the ServerConfig tier role links are wired", async () => {
-  const configs = await ogm.model("ServerConfig").find({
-    where: { serverName: SERVER_CONFIG_NAME },
-    selectionSet: `{
-      DefaultAdminRole { name }
-      DefaultSuperAdminRole { name }
-      DefaultServerRole { name }
-    }`,
-  });
-  const sc = configs[0];
-  assert.equal(sc.DefaultAdminRole?.name, ROLE_NAMES.administrator);
-  assert.equal(sc.DefaultSuperAdminRole?.name, ROLE_NAMES.superAdministrator);
-  assert.equal(sc.DefaultServerRole?.name, ROLE_NAMES.serverStandard);
-});
+test("corrects stale defaults while preserving unrelated data", async () => {
+  await driver.executeQuery(
+    `CREATE (config:ServerConfig {serverName: $serverName, customSetting: 'keep'})
+     CREATE (legacy:ServerRole {name: 'Legacy Default Role'})
+     CREATE (admin:ServerRole {name: $adminName, customProperty: 'keep'})
+     CREATE (custom:ServerRole {name: 'Custom Role'})
+     CREATE (config)-[:HAS_DEFAULT_SERVER_ROLE]->(legacy)
+     CREATE (config)-[:USES_CUSTOM_ROLE]->(custom)`,
+    { serverName: SERVER_CONFIG_NAME, adminName: ROLE_NAMES.administrator },
+    { database: "neo4j" }
+  );
 
-test("existing admins are backfilled into SuperAdmins", async () => {
-  const configs = await ogm.model("ServerConfig").find({
-    where: { serverName: SERVER_CONFIG_NAME },
-    selectionSet: `{ SuperAdmins { username } }`,
-  });
-  const superAdmins = (configs[0].SuperAdmins ?? [])
-    .map((u: { username: string }) => u.username)
-    .sort();
-  assert.deepEqual(superAdmins, ["alice", "bob"]);
-});
-
-test("re-running is idempotent (no duplicate roles, backfill no-op)", async () => {
   const result = await provision();
-  assert.deepEqual(result.adminsBackfilledToSuperAdmins, [], "already super-admins");
+  assert.ok(result.rolesWired.includes("DefaultServerRole"));
 
-  // Exactly one Administrator role exists (upsert, not duplicate-create).
-  const admins = await ogm.model("ServerRole").find({
-    where: { name: ROLE_NAMES.administrator },
-    selectionSet: `{ name }`,
-  });
-  assert.equal(admins.length, 1);
+  const verification = await driver.executeQuery(
+    `MATCH (config:ServerConfig {serverName: $serverName})
+     MATCH (config)-[:HAS_DEFAULT_SERVER_ROLE]->(defaultRole:ServerRole)
+     MATCH (config)-[:USES_CUSTOM_ROLE]->(custom:ServerRole {name: 'Custom Role'})
+     MATCH (admin:ServerRole {name: $adminName})
+     RETURN config.customSetting AS customSetting,
+            defaultRole.name AS defaultRoleName,
+            custom.name AS customRoleName,
+            admin.customProperty AS customProperty`,
+    { serverName: SERVER_CONFIG_NAME, adminName: ROLE_NAMES.administrator },
+    { database: "neo4j" }
+  );
+  const record = verification.records[0];
+  assert.equal(record?.get("customSetting"), "keep");
+  assert.equal(record?.get("defaultRoleName"), ROLE_NAMES.serverStandard);
+  assert.equal(record?.get("customRoleName"), "Custom Role");
+  assert.equal(record?.get("customProperty"), "keep");
+});
+
+test("backfills admins and is idempotent on a repeat run", async () => {
+  await driver.executeQuery(
+    `CREATE (config:ServerConfig {serverName: $serverName})
+     CREATE (alice:User {username: 'alice'})-[:ADMIN_OF_SERVER]->(config)
+     CREATE (bob:User {username: 'bob'})-[:ADMIN_OF_SERVER]->(config)
+     CREATE (bob)-[:SUPER_ADMIN_OF_SERVER]->(config)`,
+    { serverName: SERVER_CONFIG_NAME },
+    { database: "neo4j" }
+  );
+
+  const first = await provision();
+  assert.deepEqual(first.adminsBackfilledToSuperAdmins, ["alice"]);
+  const second = await provision();
+  assert.deepEqual(second.rolesWired, []);
+  assert.deepEqual(second.adminsBackfilledToSuperAdmins, []);
+
+  const verification = await driver.executeQuery(
+    `MATCH (config:ServerConfig {serverName: $serverName})
+     OPTIONAL MATCH (user:User)-[membership:SUPER_ADMIN_OF_SERVER]->(config)
+     OPTIONAL MATCH (admin:ServerRole {name: $adminName})
+     RETURN count(DISTINCT membership) AS memberships,
+            count(DISTINCT admin) AS adminRoles`,
+    { serverName: SERVER_CONFIG_NAME, adminName: ROLE_NAMES.administrator },
+    { database: "neo4j" }
+  );
+  assert.equal(verification.records[0]?.get("memberships").toNumber(), 2);
+  assert.equal(verification.records[0]?.get("adminRoles").toNumber(), 1);
+});
+
+test("rolls back every write when a required default role is missing", async () => {
+  await assert.rejects(
+    createServerDefaultsRepository(driver, "neo4j").reconcile({
+      serverName: SERVER_CONFIG_NAME,
+      serverRoles: [{ name: "Transient Role", canCreateComment: true }],
+      modServerRoles: [],
+      wiring: [
+        { relationship: "DefaultAdminRole", roleName: "Missing Role" },
+      ],
+    }),
+    /role 'Missing Role' does not exist/
+  );
+
+  const verification = await driver.executeQuery(
+    `OPTIONAL MATCH (role:ServerRole {name: 'Transient Role'})
+     OPTIONAL MATCH (config:ServerConfig {serverName: $serverName})
+     RETURN role IS NOT NULL AS roleExists, config IS NOT NULL AS configExists`,
+    { serverName: SERVER_CONFIG_NAME },
+    { database: "neo4j" }
+  );
+  assert.equal(verification.records[0]?.get("roleExists"), false);
+  assert.equal(verification.records[0]?.get("configExists"), false);
 });

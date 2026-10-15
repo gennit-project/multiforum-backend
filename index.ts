@@ -253,7 +253,6 @@ async function initializeServer() {
     await backfillFilterGroupUploadSelection(driver);
     await provisionInstanceOnStartup({
       driver,
-      ogm,
       log: (message) => logger.info(message),
     });
 

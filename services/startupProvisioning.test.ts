@@ -21,25 +21,23 @@ const provisionedResult: ProvisionServerDefaultsResult = {
 };
 
 test("provisions an explicitly enabled instance", async () => {
-  const ogm = { model: () => ({}) };
-  const calls: Array<{ ogm: unknown; serverName: string }> = [];
+  const calls: Array<{ serverName: string }> = [];
   const messages: string[] = [];
 
   const result = await provisionInstanceOnStartup({
-    ogm,
     env: {
       MULTIFORUM_AUTO_PROVISION: "true",
       SERVER_CONFIG_NAME: "  Community Forum  ",
     },
     log: (message) => messages.push(message),
-    provision: async (receivedOgm, options) => {
-      calls.push({ ogm: receivedOgm, serverName: options.serverName });
+    provision: async (options) => {
+      calls.push({ serverName: options.serverName });
       options.log?.("Created defaults.");
       return provisionedResult;
     },
   });
 
-  assert.deepEqual(calls, [{ ogm, serverName: "Community Forum" }]);
+  assert.deepEqual(calls, [{ serverName: "Community Forum" }]);
   assert.deepEqual(result, {
     status: "provisioned",
     result: provisionedResult,
@@ -56,7 +54,6 @@ for (const value of ["1", "yes", "on", " YES "]) {
     let provisionCalls = 0;
 
     const result = await provisionInstanceOnStartup({
-      ogm: { model: () => ({}) },
       env: {
         MULTIFORUM_AUTO_PROVISION: value,
         SERVER_CONFIG_NAME: "Community Forum",
@@ -77,7 +74,6 @@ for (const value of [undefined, "", "false", "0", "unexpected"]) {
     let provisionCalls = 0;
 
     const result = await provisionInstanceOnStartup({
-      ogm: { model: () => ({}) },
       env: {
         MULTIFORUM_AUTO_PROVISION: value,
         SERVER_CONFIG_NAME: "Community Forum",
@@ -98,7 +94,6 @@ for (const value of [undefined, "", "false", "0", "unexpected"]) {
 test("rejects an enabled instance with no server name", async () => {
   await assert.rejects(
     provisionInstanceOnStartup({
-      ogm: { model: () => ({}) },
       env: { MULTIFORUM_AUTO_PROVISION: "true" },
       provision: async () => provisionedResult,
     }),
@@ -109,7 +104,6 @@ test("rejects an enabled instance with no server name", async () => {
 test("propagates opt-in provisioning failures so startup fails fast", async () => {
   await assert.rejects(
     provisionInstanceOnStartup({
-      ogm: { model: () => ({}) },
       env: {
         MULTIFORUM_AUTO_PROVISION: "true",
         SERVER_CONFIG_NAME: "Community Forum",
@@ -125,7 +119,6 @@ test("propagates opt-in provisioning failures so startup fails fast", async () =
 test("provisions the configured local development identity after server defaults", async () => {
   const calls: string[] = [];
   const result = await provisionInstanceOnStartup({
-    ogm: { model: () => ({}) },
     env: {
       MULTIFORUM_AUTO_PROVISION: "true",
       SERVER_CONFIG_NAME: "Community Forum",
@@ -160,7 +153,6 @@ test("provisions the configured local development identity after server defaults
 test("fails startup when enabled local auth is incomplete", async () => {
   await assert.rejects(
     provisionInstanceOnStartup({
-      ogm: { model: () => ({}) },
       env: {
         MULTIFORUM_AUTO_PROVISION: "true",
         SERVER_CONFIG_NAME: "Community Forum",
@@ -174,25 +166,13 @@ test("fails startup when enabled local auth is incomplete", async () => {
 });
 
 test("uses the production default role provisioner when no seam is injected", async () => {
-  const requestedModels: string[] = [];
-  const roleModel = {
-    find: async () => [],
-    create: async () => ({}),
-    update: async () => ({}),
-    delete: async () => ({}),
-  };
-  const serverConfigModel = {
-    find: async () => [],
-    create: async () => ({}),
-    update: async () => ({}),
-    delete: async () => ({}),
-  };
+  const repositoryCalls: unknown[] = [];
 
   const result = await provisionInstanceOnStartup({
-    ogm: {
-      model: (name) => {
-        requestedModels.push(name);
-        return name === "ServerConfig" ? serverConfigModel : roleModel;
+    serverDefaultsRepository: {
+      async reconcile(input) {
+        repositoryCalls.push(input);
+        return provisionedResult;
       },
     },
     env: {
@@ -201,11 +181,11 @@ test("uses the production default role provisioner when no seam is injected", as
     },
   });
 
-  assert.deepEqual(requestedModels, [
-    "ServerRole",
-    "ModServerRole",
-    "ServerConfig",
-  ]);
+  assert.equal(repositoryCalls.length, 1);
+  assert.equal(
+    (repositoryCalls[0] as { serverName: string }).serverName,
+    "Community Forum"
+  );
   assert.equal(result.status, "provisioned");
   if (result.status === "provisioned") {
     assert.equal(result.result.serverConfigCreated, true);
@@ -221,7 +201,6 @@ test("uses the default bootstrap provisioner and forwards its logs", async () =>
   const messages: string[] = [];
 
   const result = await provisionInstanceOnStartup({
-    ogm: { model: () => ({}) },
     bootstrapAdminRepository: {
       async reconcile(input) {
         repositoryCalls.push(input);
