@@ -1,6 +1,6 @@
 // Unit tests for the discussion version-history service: the pure handler
 // functions (author lookup + per-field version tracking) and the subscription
-// class (start/process/stop). Driven with a permissive in-memory OGM and a tiny
+// class (start/process/stop). Driven with an in-memory repository and a tiny
 // executable schema whose subscription yields controlled events. No DB.
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -10,87 +10,81 @@ import {
   handleDiscussionUpdateEvent,
   DiscussionVersionHistoryService,
 } from "./discussionVersionHistoryService.js";
+import type {
+  RecordTextVersionInput,
+  VersionHistoryRepository,
+} from "./persistence/versionHistoryRepository.js";
 
-// A permissive OGM whose Discussion.find returns `authorRows` and whose
-// TextVersion/parent writes are no-ops. `tracked` records TextVersion creates so
-// we can assert which fields were versioned.
-// Discussion.find -> authorRows (for the author lookup). User.find -> a user so
-// the shared trackTextVersion helper proceeds to create the version. TextVersion
-// creates are recorded in `tracked`.
-function makeOgm(opts: { authorRows?: unknown[]; findThrows?: boolean } = {}) {
-  const tracked: string[] = [];
-  const ogm: any = {
-    model(name: string) {
-      return {
-        find: async () => {
-          if (opts.findThrows) throw new Error("db down");
-          if (name === "Discussion") return opts.authorRows ?? [];
-          if (name === "User") return [{ username: "alice" }];
-          return [];
-        },
-        create: async () => {
-          tracked.push(`${name}.create`);
-          return { textVersions: [{ id: "tv-1" }] };
-        },
-        update: async () => ({}),
-      };
+function makeRepository(opts: { username?: string | null; lookupThrows?: boolean } = {}) {
+  const tracked: RecordTextVersionInput[] = [];
+  const repository: VersionHistoryRepository = {
+    async getCommentAuthorName() { return null; },
+    async getDiscussionAuthorUsername() {
+      if (opts.lookupThrows) throw new Error("db down");
+      return opts.username ?? null;
+    },
+    async getWikiPageVersionAuthorUsername() { return null; },
+    async recordTextVersion(input) {
+      tracked.push(input);
+      return "tv-1";
     },
   };
-  return { ogm, tracked };
+  return { repository, tracked };
 }
 
-const author = [{ Author: { username: "alice" } }];
-
 test("getDiscussionAuthorUsername returns the author's username", async () => {
-  const { ogm } = makeOgm({ authorRows: author });
-  assert.equal(await getDiscussionAuthorUsername(ogm, "d-1"), "alice");
+  const { repository } = makeRepository({ username: "alice" });
+  assert.equal(await getDiscussionAuthorUsername(repository, "d-1"), "alice");
 });
 
 test("getDiscussionAuthorUsername returns null when the discussion is missing", async () => {
-  const { ogm } = makeOgm({ authorRows: [] });
-  assert.equal(await getDiscussionAuthorUsername(ogm, "d-1"), null);
-});
-
-test("getDiscussionAuthorUsername returns null when there is no author", async () => {
-  const { ogm } = makeOgm({ authorRows: [{ Author: null }] });
-  assert.equal(await getDiscussionAuthorUsername(ogm, "d-1"), null);
+  const { repository } = makeRepository();
+  assert.equal(await getDiscussionAuthorUsername(repository, "d-1"), null);
 });
 
 test("getDiscussionAuthorUsername swallows lookup errors and returns null", async () => {
-  const { ogm } = makeOgm({ findThrows: true });
-  assert.equal(await getDiscussionAuthorUsername(ogm, "d-1"), null);
+  const { repository } = makeRepository({ lookupThrows: true });
+  assert.equal(await getDiscussionAuthorUsername(repository, "d-1"), null);
 });
 
 test("handleDiscussionUpdateEvent skips everything when the author is unknown", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: [] });
-  await handleDiscussionUpdateEvent(ogm, { id: "d-1", title: "new" }, { title: "old" });
+  const { repository, tracked } = makeRepository();
+  await handleDiscussionUpdateEvent(repository, { id: "d-1", title: "new" }, { title: "old" });
   assert.deepEqual(tracked, []);
 });
 
 test("handleDiscussionUpdateEvent tracks a title change only", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: author });
+  const { repository, tracked } = makeRepository({ username: "alice" });
   await handleDiscussionUpdateEvent(
-    ogm,
+    repository,
     { id: "d-1", title: "new title", body: "same" },
     { title: "old title", body: "same" }
   );
-  assert.equal(tracked.filter((t) => t === "TextVersion.create").length, 1);
+  assert.deepEqual(tracked, [{
+    target: "discussion-title",
+    parentId: "d-1",
+    body: "new title",
+    username: "alice",
+  }]);
 });
 
 test("handleDiscussionUpdateEvent tracks both title and body when both change", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: author });
+  const { repository, tracked } = makeRepository({ username: "alice" });
   await handleDiscussionUpdateEvent(
-    ogm,
+    repository,
     { id: "d-1", title: "new title", body: "new body" },
     { title: "old title", body: "old body" }
   );
-  assert.equal(tracked.filter((t) => t === "TextVersion.create").length, 2);
+  assert.deepEqual(tracked.map(({ target }) => target), [
+    "discussion-title",
+    "discussion-body",
+  ]);
 });
 
 test("handleDiscussionUpdateEvent tracks nothing when values are unchanged or absent", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: author });
-  await handleDiscussionUpdateEvent(ogm, { id: "d-1", title: "same", body: "same" }, { title: "same", body: "same" });
-  await handleDiscussionUpdateEvent(ogm, { id: "d-1", title: "new" }, null); // no previousValues
+  const { repository, tracked } = makeRepository({ username: "alice" });
+  await handleDiscussionUpdateEvent(repository, { id: "d-1", title: "same", body: "same" }, { title: "same", body: "same" });
+  await handleDiscussionUpdateEvent(repository, { id: "d-1", title: "new" }, null); // no previousValues
   assert.deepEqual(tracked, []);
 });
 
@@ -119,18 +113,18 @@ function schemaYielding(events: any[]) {
 const flush = () => new Promise((r) => setImmediate(r));
 
 test("service constructs and stop() is safe before start", () => {
-  const { ogm } = makeOgm();
-  const svc = new DiscussionVersionHistoryService(schemaYielding([]), ogm);
+  const { repository } = makeRepository();
+  const svc = new DiscussionVersionHistoryService(schemaYielding([]), repository);
   svc.stop();
 });
 
 test("service start() processes update events then the loop completes", async () => {
-  const { ogm, tracked } = makeOgm({ authorRows: author });
+  const { repository, tracked } = makeRepository({ username: "alice" });
   const schema = schemaYielding([
     { updatedDiscussion: { id: "d-1", title: "new", body: "b" }, previousValues: { title: "old", body: "b" } },
     null, // invalid event -> skipped
   ]);
-  const svc = new DiscussionVersionHistoryService(schema, ogm);
+  const svc = new DiscussionVersionHistoryService(schema, repository);
   await svc.start();
   for (let i = 0; i < 50 && tracked.length === 0; i++) await flush();
   svc.stop();
@@ -142,8 +136,8 @@ test("service start() handles a subscribe error without throwing", async () => {
   const resolvers = {
     Subscription: { discussionUpdated: { subscribe: () => { throw new Error("no sub"); } } },
   };
-  const { ogm } = makeOgm();
-  const svc = new DiscussionVersionHistoryService(makeExecutableSchema({ typeDefs, resolvers }), ogm);
+  const { repository } = makeRepository();
+  const svc = new DiscussionVersionHistoryService(makeExecutableSchema({ typeDefs, resolvers }), repository);
   await svc.start();
   svc.stop();
 });

@@ -48,6 +48,7 @@ import { CommentNotificationService } from "./services/commentNotificationServic
 import { DiscussionVersionHistoryService } from "./services/discussionVersionHistoryService.js";
 import { CommentVersionHistoryService } from "./services/commentVersionHistoryService.js";
 import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistoryService.js";
+import { createVersionHistoryRepository } from "./services/persistence/versionHistoryRepository.js";
 import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdog.js";
 import { PluginPipelineCampaignService } from "./services/plugin/pipelineCampaign.js";
 import { ensureSchemaConstraints } from "./services/schemaConstraints.js";
@@ -363,7 +364,7 @@ async function initializeServer() {
     startEventLoopMonitor();
 
     // Start services with enhanced error handling
-    startBackgroundServices(schema, ogm);
+    startBackgroundServices(schema, ogm, driver);
   } catch (e) {
     logger.error("💥 Failed to initialize server:", e);
     logCriticalError(e as Error, {
@@ -377,7 +378,12 @@ async function initializeServer() {
 /**
  * Start background services with enhanced error handling
  */
-async function startBackgroundServices(schema: GraphQLSchema, ogm: Ogm) {
+async function startBackgroundServices(
+  schema: GraphQLSchema,
+  ogm: Ogm,
+  driver: Driver
+) {
+  const versionHistoryRepository = createVersionHistoryRepository(driver);
   const services = [
     {
       name: 'Comment Notification Service',
@@ -386,17 +392,20 @@ async function startBackgroundServices(schema: GraphQLSchema, ogm: Ogm) {
     },
     {
       name: 'Discussion Version History Service', 
-      service: () => new DiscussionVersionHistoryService(schema, ogm),
+      service: () =>
+        new DiscussionVersionHistoryService(schema, versionHistoryRepository),
       critical: false
     },
     {
       name: 'Comment Version History Service',
-      service: () => new CommentVersionHistoryService(schema, ogm),
+      service: () =>
+        new CommentVersionHistoryService(schema, versionHistoryRepository),
       critical: false
     },
     {
       name: 'WikiPage Version History Service',
-      service: () => new WikiPageVersionHistoryService(schema, ogm),
+      service: () =>
+        new WikiPageVersionHistoryService(schema, versionHistoryRepository),
       critical: false
     },
     {

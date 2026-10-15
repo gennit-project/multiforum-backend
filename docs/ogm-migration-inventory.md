@@ -89,6 +89,13 @@ identical unread notifications. This reduces production files with direct
 `ogm.model(...)` access from 62 to 58 and generated OGM type imports from 178 to
 175.
 
+Comment, discussion, and wiki-page background version-history services are now
+driver-backed. Author lookup remains leader-routed, and each TextVersion plus
+its author and parent relationships is created atomically in a managed write
+transaction. The explicit Cypher reproduces the OGM-generated id, createdAt,
+and ageGateTouchedAt values. This reduces production files with direct
+`ogm.model(...)` access from 58 to 54; generated OGM type imports remain at 175.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

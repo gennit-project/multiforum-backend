@@ -197,6 +197,11 @@ const seedFixture = async (driver: Driver) => {
   await verifyCount("Discussion", FIXTURE.discussions);
   await verifyCount("Comment", FIXTURE.comments);
   await verifyCount("DownloadableFile", FIXTURE.downloads);
+
+  // The fixture is bulk-loaded after the schema is created. Refresh planner
+  // statistics and discard plans compiled while the graph was still empty so
+  // the performance budget measures a stable, representative execution plan.
+  await runStatements(driver, ["CALL db.prepareForReplanning()"], {});
 };
 
 const pageIds = (size: number) =>
