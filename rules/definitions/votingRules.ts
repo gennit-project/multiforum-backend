@@ -4,6 +4,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { hasChannelPermission } from "../permission/hasChannelPermission.js";
+import { resolveContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
 type CanUpvoteCommentArgs = {
   commentId: string;
@@ -12,37 +13,25 @@ type CanUpvoteCommentArgs = {
 
 export const canUpvoteComment = rule({ cache: "contextual" })(
   async (parent: unknown, args: CanUpvoteCommentArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    const CommentModel = ctx.ogm.model("Comment");
-
     const { commentId, username } = args;
 
     if (!commentId || !username) {
       throw new Error("All arguments (commentId, username) are required");
     }
 
-    const commentData = await CommentModel.find({
-      where: { id: commentId },
-      selectionSet: `{
-        id
-        DiscussionChannel {
-          channelUniqueName
-        }
-        Channel {
-          uniqueName
-        }
-      }`,
-    });
+    const repository = resolveContentChannelPermissionRepository(ctx);
+    const commentData = await repository.findCommentChannelReferences(commentId);
 
-    if (!commentData || !commentData[0]) {
+    if (!commentData.found) {
       throw new Error("No comment found.");
     }
 
     // Try to get channel name either from DiscussionChannel or directly from Channel
-    let channelThatCommentIsIn = commentData[0]?.DiscussionChannel?.channelUniqueName;
+    let channelThatCommentIsIn = commentData.discussionChannelUniqueName;
 
     // If not found in DiscussionChannel, try the direct Channel relationship
     if (!channelThatCommentIsIn) {
-      channelThatCommentIsIn = commentData[0]?.Channel?.uniqueName;
+      channelThatCommentIsIn = commentData.directChannelUniqueName;
     }
 
     if (!channelThatCommentIsIn) {
@@ -91,27 +80,21 @@ export const canSuperUpvote = rule({ cache: "contextual" })(
     if (sourceType === "comment") {
       permission = "canUpvoteComment";
       if (!channelName) {
-        const CommentModel = ctx.ogm.model("Comment");
-        const commentData = await CommentModel.find({
-          where: { id: sourceId },
-          selectionSet: `{
-            DiscussionChannel { channelUniqueName }
-            Channel { uniqueName }
-          }`,
-        });
+        const repository = resolveContentChannelPermissionRepository(ctx);
+        const commentData =
+          await repository.findCommentChannelReferences(sourceId);
         channelName =
-          commentData?.[0]?.DiscussionChannel?.channelUniqueName ||
-          commentData?.[0]?.Channel?.uniqueName;
+          commentData.discussionChannelUniqueName ||
+          commentData.directChannelUniqueName ||
+          undefined;
       }
     } else if (sourceType === "discussion") {
       permission = "canUpvoteDiscussion";
       if (!channelName) {
-        const DiscussionChannelModel = ctx.ogm.model("DiscussionChannel");
-        const dcData = await DiscussionChannelModel.find({
-          where: { id: sourceId },
-          selectionSet: `{ channelUniqueName }`,
-        });
-        channelName = dcData?.[0]?.channelUniqueName;
+        const repository = resolveContentChannelPermissionRepository(ctx);
+        const discussionChannel =
+          await repository.findDiscussionChannelReference(sourceId);
+        channelName = discussionChannel.channelUniqueName || undefined;
       }
     } else {
       throw new Error('sourceType must be "comment" or "discussion"');
@@ -151,8 +134,6 @@ export const canUpvoteDiscussion = rule({ cache: "contextual" })(
     ctx: GraphQLContext,
     info: GraphQLResolveInfo
   ) => {
-    const DiscussionChannelModel = ctx.ogm.model("DiscussionChannel");
-
     // get channel name from discussion channel id
     const { discussionChannelId, username } = args;
 
@@ -162,19 +143,15 @@ export const canUpvoteDiscussion = rule({ cache: "contextual" })(
       );
     }
 
-    const discussionChannelData = await DiscussionChannelModel.find({
-      where: { id: discussionChannelId },
-      selectionSet: `{
-        id
-        channelUniqueName
-      }`,
-    });
+    const repository = resolveContentChannelPermissionRepository(ctx);
+    const discussionChannelData =
+      await repository.findDiscussionChannelReference(discussionChannelId);
 
-    if (!discussionChannelData || !discussionChannelData[0]) {
+    if (!discussionChannelData.found) {
       throw new Error("No discussion channel found.");
     }
 
-    const channelName = discussionChannelData[0]?.channelUniqueName;
+    const channelName = discussionChannelData.channelUniqueName;
 
     if (!channelName) {
       throw new Error("No channel found.");

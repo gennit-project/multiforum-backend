@@ -32,6 +32,9 @@ const unusedSingleLookups = {
       directChannelUniqueName: null,
     };
   },
+  async findDiscussionChannelReference() {
+    return { found: false, channelUniqueName: null };
+  },
 };
 
 const makeContext = (

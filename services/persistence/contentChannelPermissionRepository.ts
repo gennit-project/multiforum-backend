@@ -17,6 +17,11 @@ export type CommentChannelReferences = {
   directChannelUniqueName: string | null;
 };
 
+export type DiscussionChannelReference = {
+  found: boolean;
+  channelUniqueName: string | null;
+};
+
 export interface ContentChannelPermissionRepository {
   findCommentChannels(commentIds: string[]): Promise<ContentChannelLookup>;
   findDiscussionChannels(discussionIds: string[]): Promise<ContentChannelLookup>;
@@ -25,6 +30,9 @@ export interface ContentChannelPermissionRepository {
   findCommentChannelReferences(
     commentId: string
   ): Promise<CommentChannelReferences>;
+  findDiscussionChannelReference(
+    discussionChannelId: string
+  ): Promise<DiscussionChannelReference>;
 }
 
 export const FIND_ISSUE_CHANNEL_QUERY = `
@@ -40,6 +48,12 @@ export const FIND_COMMENT_CHANNEL_REFERENCES_QUERY = `
   RETURN count(DISTINCT comment) > 0 AS found,
          head(collect(DISTINCT discussionEntry.channelUniqueName)) AS discussionChannelUniqueName,
          head(collect(DISTINCT channel.uniqueName)) AS directChannelUniqueName
+`;
+
+export const FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY = `
+  MATCH (entry:DiscussionChannel {id: $id})
+  RETURN entry.channelUniqueName AS channelUniqueName
+  LIMIT 1
 `;
 
 export const FIND_COMMENT_CHANNELS_QUERY = `
@@ -185,6 +199,18 @@ export const createContentChannelPermissionRepository = (
           directChannelUniqueName: normalizeChannelName(
             record.get("directChannelUniqueName")
           ),
+        })
+      );
+    },
+
+    findDiscussionChannelReference(discussionChannelId) {
+      return runSingleLookup<DiscussionChannelReference>(
+        FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY,
+        discussionChannelId,
+        { found: false, channelUniqueName: null },
+        (record) => ({
+          found: true,
+          channelUniqueName: normalizeChannelName(record.get("channelUniqueName")),
         })
       );
     },

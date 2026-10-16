@@ -125,6 +125,15 @@ consistency. This reduces production files with direct `ogm.model(...)` access
 from 46 to 38 and direct calls from 120 to 112; generated OGM type imports
 remain at 172.
 
+The subsequent channel-authorization-target cleanup removed seven more direct
+OGM files and twelve calls without recording the revised totals, establishing a
+reconciled pre-voting baseline of 31 production files, 100 direct calls, and
+172 generated OGM type imports. Voting authorization now resolves comment and
+discussion-entry channels through the driver-backed content-channel repository,
+while preserving comment channel precedence and the caller-supplied channel
+fast path. This reduces production files with direct `ogm.model(...)` access to
+30 and direct calls to 96; generated OGM type imports remain at 172.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader
