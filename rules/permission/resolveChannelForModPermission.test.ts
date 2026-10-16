@@ -54,6 +54,21 @@ test("errors when the comment lookup returns nothing", () => {
   assert.equal(result.error.message, COMMENT_NOT_FOUND_ERROR);
 });
 
+test("errors when a found comment has no direct channel", () => {
+  const result = resolveChannelForModPermission({
+    commentId: "comment-1",
+    comment: { found: true, directChannelUniqueName: null },
+  });
+  assert.ok(result.error instanceof Error);
+  assert.equal(result.error.message, NO_CHANNEL_ERROR);
+});
+
+test("errors when a requested comment lookup was not supplied", () => {
+  const result = resolveChannelForModPermission({ commentId: "comment-1" });
+  assert.ok(result.error instanceof Error);
+  assert.equal(result.error.message, COMMENT_NOT_FOUND_ERROR);
+});
+
 test("comment channel overrides issue channel when both ids are present", () => {
   // Mirrors canArchiveAndUnarchiveComment: both branches run, comment last.
   const result = resolveChannelForModPermission({

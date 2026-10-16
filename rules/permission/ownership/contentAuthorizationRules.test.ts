@@ -396,6 +396,32 @@ test("channel ownership rejects orphan comments and non-owners", async () => {
   );
 });
 
+test("channel ownership handles channel-less issues and where.id lookups", async () => {
+  const orphanIssue = makeContext();
+  orphanIssue.contentChannelPermissionRepository.findIssueChannel = async () => ({
+    found: true,
+    channelUniqueName: null,
+  });
+  assert.equal(
+    await run(isChannelOwner, { issueId: "orphan", where: {} }, orphanIssue),
+    false
+  );
+
+  const whereIssue = makeContext();
+  const issueIds: string[] = [];
+  whereIssue.contentChannelPermissionRepository.findIssueChannel = async (id: string) => {
+    issueIds.push(id);
+    return { found: true, channelUniqueName: "issues" };
+  };
+  whereIssue.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot(["alice"]);
+  assert.equal(
+    await run(isChannelOwner, { where: { id: "issue-from-where" } }, whereIssue),
+    true
+  );
+  assert.deepEqual(issueIds, ["issue-from-where"]);
+});
+
 test("discussion-channel ownership short-circuits authors before channel admins", async () => {
   const authorContext = makeContext();
   let channelCalls = 0;

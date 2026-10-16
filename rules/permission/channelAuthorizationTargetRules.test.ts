@@ -255,6 +255,33 @@ test("suspension preserves missing issue and missing channel behavior", async ()
     missingChannel.jwtError
   );
   assert.deepEqual(missingChannel.channelCalls, ["missing"]);
+
+  const nonOwner = makeSuspendContext({ channelAdmins: [] });
+  assert.equal(
+    await run(
+      canSuspendAndUnsuspendUser,
+      { channelUniqueName: "cats", username: "target" },
+      nonOwner.context
+    ),
+    nonOwner.jwtError
+  );
+});
+
+test("suspension treats an issue without a channel as server-scoped", async () => {
+  const setup = makeSuspendContext({ channelAdmins: [] });
+  setup.context.contentChannelPermissionRepository.findIssueChannel = async () => ({
+    found: true,
+    channelUniqueName: null,
+  });
+
+  const result = await run(
+    canSuspendAndUnsuspendUser,
+    { issueId: "issue-without-channel" },
+    setup.context
+  );
+  assert.ok(result instanceof Error);
+  assert.equal(result.message, ERROR_MESSAGES.channel.notMod);
+  assert.deepEqual(setup.channelCalls, []);
 });
 
 test("suspension uses default issue and channel repositories", async () => {
