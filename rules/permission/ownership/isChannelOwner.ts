@@ -48,9 +48,7 @@ export const isChannelOwner = rule({ cache: "contextual" })(
 
     // If no channel name is provided but we have a commentId, look it up
     if (!uniqueName && commentId) {
-      const repository =
-        ctx.contentChannelPermissionRepository ??
-        createContentChannelPermissionRepository(ctx.driver);
+      const repository = ctx.contentChannelPermissionRepository ?? createContentChannelPermissionRepository(ctx.driver);
       const comment = await repository.findCommentChannelReferences(commentId);
 
       if (!comment.found) {
@@ -72,9 +70,7 @@ export const isChannelOwner = rule({ cache: "contextual" })(
     // Also check where.id for mutations like updateIssues that pass issue ID in where clause
     const resolvedIssueId = issueId || (where as any)?.id;
     if (!uniqueName && resolvedIssueId) {
-      const repository =
-        ctx.contentChannelPermissionRepository ??
-        createContentChannelPermissionRepository(ctx.driver);
+      const repository = ctx.contentChannelPermissionRepository ?? createContentChannelPermissionRepository(ctx.driver);
       const issue = await repository.findIssueChannel(resolvedIssueId);
       logger.info('issue', JSON.stringify(issue));
 
@@ -91,9 +87,7 @@ export const isChannelOwner = rule({ cache: "contextual" })(
       return false;
     }
 
-    const channelRepository =
-      ctx.channelPermissionRepository ??
-      createChannelPermissionRepository(ctx.driver);
+    const channelRepository = ctx.channelPermissionRepository ?? createChannelPermissionRepository(ctx.driver);
     const channel = await channelRepository.findAuthorizationSnapshot(uniqueName);
 
     if (!channel) {

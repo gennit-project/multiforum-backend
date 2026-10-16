@@ -41,9 +41,7 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
 
     try {
       // First check if the user is the owner of the discussion
-      const contentRepository =
-        ctx.contentAuthorizationRepository ??
-        createContentAuthorizationRepository(ctx.driver);
+      const contentRepository = ctx.contentAuthorizationRepository ?? createContentAuthorizationRepository(ctx.driver);
       const discussion = await contentRepository.findDiscussionAuthor(discussionId);
 
       if (discussion.found && discussion.username === username) {
@@ -51,9 +49,7 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
       }
 
       // Next check if the user is an admin of the channel
-      const channelRepository =
-        ctx.channelPermissionRepository ??
-        createChannelPermissionRepository(ctx.driver);
+      const channelRepository = ctx.channelPermissionRepository ?? createChannelPermissionRepository(ctx.driver);
       const channel =
         await channelRepository.findAuthorizationSnapshot(channelUniqueName);
 

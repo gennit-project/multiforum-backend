@@ -13,9 +13,7 @@ import { createContentChannelPermissionRepository } from "../../services/persist
 
 // Helper function to check if a user is a channel owner
 async function isUserChannelOwner(username: string, channelName: string, context: GraphQLContext): Promise<boolean> {
-  const repository =
-    context.channelPermissionRepository ??
-    createChannelPermissionRepository(context.driver);
+  const repository = context.channelPermissionRepository ?? createChannelPermissionRepository(context.driver);
   const channel = await repository.findAuthorizationSnapshot(channelName);
 
   if (!channel) {
@@ -112,9 +110,7 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
     
     // If channelUniqueName is not provided, look it up from the issue
     if (!channelUniqueName && issueId) {
-      const repository =
-        context.contentChannelPermissionRepository ??
-        createContentChannelPermissionRepository(context.driver);
+      const repository = context.contentChannelPermissionRepository ?? createContentChannelPermissionRepository(context.driver);
       const issue = await repository.findIssueChannel(issueId);
 
       if (!issue.found) {

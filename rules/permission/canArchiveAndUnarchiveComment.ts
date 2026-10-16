@@ -23,9 +23,7 @@ export const canArchiveAndUnarchiveComment = rule({ cache: "contextual" })(
     let issue;
     let comment;
     if (!channelUniqueName) {
-      const repository =
-        context.contentChannelPermissionRepository ??
-        createContentChannelPermissionRepository(context.driver);
+      const repository = context.contentChannelPermissionRepository ?? createContentChannelPermissionRepository(context.driver);
       if (issueId) {
         issue = await repository.findIssueChannel(issueId);
       }

@@ -24,9 +24,7 @@ export const canReport = rule({ cache: "contextual" })(
     // If channelUniqueName is not provided, look it up from the issue.
     let issue;
     if (!channelUniqueName && issueId) {
-      const repository =
-        context.contentChannelPermissionRepository ??
-        createContentChannelPermissionRepository(context.driver);
+      const repository = context.contentChannelPermissionRepository ?? createContentChannelPermissionRepository(context.driver);
       issue = await repository.findIssueChannel(issueId);
     }
 
