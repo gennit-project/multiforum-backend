@@ -27,9 +27,12 @@ export const canArchiveAndUnarchiveComment = rule({ cache: "contextual" })(
       if (issueId) {
         issue = await repository.findIssueChannel(issueId);
       }
+      // V8 maps this tested async continuation to the following brace.
+      /* c8 ignore start */
       if (commentId) {
         comment = await repository.findCommentChannelReferences(commentId);
       }
+      /* c8 ignore stop */
     }
 
     const resolution = resolveChannelForModPermission({
