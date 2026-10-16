@@ -9,11 +9,19 @@ import { isEventOwner } from "./isEventOwner.js";
 import { isImageUploader } from "./isImageUploader.js";
 import { isIssueAuthor } from "./isIssueAuthor.js";
 import { issueIsNotLocked } from "./issueIsNotLocked.js";
+import { isChannelOwner } from "./isChannelOwner.js";
+import { isDiscussionChannelOwner } from "./isDiscussionChannelOwner.js";
+import { FIND_DISCUSSION_AUTHOR_QUERY } from "../../../services/persistence/contentAuthorizationRepository.js";
+import {
+  FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
+  FIND_ISSUE_CHANNEL_QUERY,
+} from "../../../services/persistence/contentChannelPermissionRepository.js";
+import { CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY } from "../../../services/persistence/channelPermissionRepository.js";
 
 const run = (permissionRule: any, args: unknown, ctx: unknown, parent = {}) =>
   permissionRule.func(parent, args, ctx, {} as any);
 
-const makeContext = (repositoryOverrides: Record<string, unknown> = {}) => ({
+const makeContext = (repositoryOverrides: Record<string, unknown> = {}): any => ({
   user: {
     username: "alice",
     email: "alice@example.test",
@@ -48,9 +56,44 @@ const makeContext = (repositoryOverrides: Record<string, unknown> = {}) => ({
     findIssueLock: async () => ({ found: true, locked: false }),
     ...repositoryOverrides,
   },
+  contentChannelPermissionRepository: {
+    findCommentChannels: async () => ({ found: false, channelUniqueNames: [] }),
+    findDiscussionChannels: async () => ({ found: false, channelUniqueNames: [] }),
+    findEventChannels: async () => ({ found: false, channelUniqueNames: [] }),
+    findIssueChannel: async () => ({ found: false, channelUniqueName: null }),
+    findCommentChannelReferences: async () => ({
+      found: false,
+      discussionChannelUniqueName: null,
+      directChannelUniqueName: null,
+    }),
+  },
+  channelPermissionRepository: {
+    findAuthorizationSnapshot: async () => null,
+    findTargetedSuspensions: async () => ({
+      userSuspensions: [],
+      modSuspensions: [],
+    }),
+  },
   driver: {},
   ogm: {},
   req: { headers: {} },
+});
+
+const channelSnapshot = (admins: string[]) => ({
+  Admins: admins.map((username) => ({ username })),
+  Moderators: [],
+  DefaultChannelRole: null,
+  ElevatedChannelRole: null,
+  SuspendedRole: null,
+  DefaultModRole: null,
+  ElevatedModRole: null,
+  SuspendedModRole: null,
+});
+
+const record = (values: Record<string, unknown>) => ({
+  get(key: string) {
+    return values[key];
+  },
 });
 
 test("album ownership requires every requested album to exist and match", async () => {
@@ -282,5 +325,287 @@ test("issue lock checks deny only explicitly locked issues", async () => {
       })
     ),
     { message: ERROR_MESSAGES.issue.notFound }
+  );
+});
+
+test("channel ownership preserves comment precedence and repository boundaries", async () => {
+  const context = makeContext();
+  const lookedUpChannels: string[] = [];
+  context.contentChannelPermissionRepository.findCommentChannelReferences = async () => ({
+    found: true,
+    discussionChannelUniqueName: "discussion-channel",
+    directChannelUniqueName: "direct-channel",
+  });
+  context.channelPermissionRepository.findAuthorizationSnapshot = async (uniqueName: string) => {
+    lookedUpChannels.push(uniqueName);
+    return channelSnapshot(["alice"]);
+  };
+
+  assert.equal(
+    await run(isChannelOwner, { commentId: "comment-1", where: {} }, context),
+    true
+  );
+  assert.deepEqual(lookedUpChannels, ["discussion-channel"]);
+});
+
+test("channel ownership keeps missing issue and missing comment behavior distinct", async () => {
+  const context = makeContext();
+
+  assert.equal(
+    await run(isChannelOwner, { issueId: "missing", where: {} }, context),
+    false
+  );
+  await assert.rejects(
+    run(isChannelOwner, { commentId: "missing", where: {} }, context),
+    { message: ERROR_MESSAGES.channel.notFound }
+  );
+});
+
+test("channel ownership rejects orphan comments and non-owners", async () => {
+  const orphanContext = makeContext();
+  orphanContext.contentChannelPermissionRepository.findCommentChannelReferences = async () => ({
+    found: true,
+    discussionChannelUniqueName: null,
+    directChannelUniqueName: null,
+  });
+  await assert.rejects(
+    run(isChannelOwner, { commentId: "orphan", where: {} }, orphanContext),
+    { message: ERROR_MESSAGES.channel.notFound }
+  );
+
+  const nonOwnerContext = makeContext();
+  nonOwnerContext.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot(["mallory"]);
+  assert.equal(
+    await run(
+      isChannelOwner,
+      { channelUniqueName: "cats", where: {} },
+      nonOwnerContext
+    ),
+    false
+  );
+
+  nonOwnerContext.channelPermissionRepository.findAuthorizationSnapshot = async () => null;
+  await assert.rejects(
+    run(
+      isChannelOwner,
+      { channelUniqueName: "missing", where: {} },
+      nonOwnerContext
+    ),
+    { message: ERROR_MESSAGES.channel.notFound }
+  );
+});
+
+test("channel ownership handles channel-less issues and where.id lookups", async () => {
+  const orphanIssue = makeContext();
+  orphanIssue.contentChannelPermissionRepository.findIssueChannel = async () => ({
+    found: true,
+    channelUniqueName: null,
+  });
+  assert.equal(
+    await run(isChannelOwner, { issueId: "orphan", where: {} }, orphanIssue),
+    false
+  );
+
+  const whereIssue = makeContext();
+  const issueIds: string[] = [];
+  whereIssue.contentChannelPermissionRepository.findIssueChannel = async (id: string) => {
+    issueIds.push(id);
+    return { found: true, channelUniqueName: "issues" };
+  };
+  whereIssue.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot(["alice"]);
+  assert.equal(
+    await run(isChannelOwner, { where: { id: "issue-from-where" } }, whereIssue),
+    true
+  );
+  assert.deepEqual(issueIds, ["issue-from-where"]);
+});
+
+test("channel ownership denies an anonymous caller", async () => {
+  const context = makeContext();
+  context.user = {
+    username: null,
+    email: null,
+    email_verified: false,
+    data: { ModerationProfile: null },
+  };
+  context.req = { headers: {} };
+  context.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot([]);
+
+  assert.equal(
+    await run(
+      isChannelOwner,
+      { channelUniqueName: "cats", where: {} },
+      context
+    ),
+    false
+  );
+});
+
+test("discussion-channel ownership short-circuits authors before channel admins", async () => {
+  const authorContext = makeContext();
+  let channelCalls = 0;
+  authorContext.channelPermissionRepository.findAuthorizationSnapshot = async () => {
+    channelCalls += 1;
+    return channelSnapshot([]);
+  };
+
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      authorContext
+    ),
+    true
+  );
+  assert.equal(channelCalls, 0);
+
+  const adminContext = makeContext({
+    findDiscussionAuthor: async () => ({ found: true, username: "mallory" }),
+  });
+  adminContext.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot(["alice"]);
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      adminContext
+    ),
+    true
+  );
+});
+
+test("channel ownership uses default repositories for direct comment channels", async () => {
+  const context = makeContext();
+  delete context.contentChannelPermissionRepository;
+  delete context.channelPermissionRepository;
+  const queries: string[] = [];
+  context.driver = {
+    session() {
+      return {
+        async run(query: string) {
+          queries.push(query);
+          if (query === FIND_COMMENT_CHANNEL_REFERENCES_QUERY) {
+            return {
+              records: [
+                record({
+                  found: true,
+                  discussionChannelUniqueName: null,
+                  directChannelUniqueName: "direct-channel",
+                }),
+              ],
+            };
+          }
+          if (query === CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY) {
+            return {
+              records: [record({ channel: channelSnapshot(["alice"]) })],
+            };
+          }
+          throw new Error("unexpected query");
+        },
+        async close() {},
+      };
+    },
+  };
+
+  assert.equal(
+    await run(isChannelOwner, { commentId: "comment-1", where: {} }, context),
+    true
+  );
+  assert.deepEqual(queries, [
+    FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
+    CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY,
+  ]);
+});
+
+test("channel ownership uses the default issue lookup", async () => {
+  const context = makeContext();
+  delete context.contentChannelPermissionRepository;
+  context.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot(["alice"]);
+  context.driver = {
+    session() {
+      return {
+        async run(query: string) {
+          assert.equal(query, FIND_ISSUE_CHANNEL_QUERY);
+          return { records: [record({ channelUniqueName: "issue-channel" })] };
+        },
+        async close() {},
+      };
+    },
+  };
+
+  assert.equal(
+    await run(isChannelOwner, { issueId: "issue-1", where: {} }, context),
+    true
+  );
+});
+
+test("discussion-channel ownership uses both default repositories", async () => {
+  const context = makeContext();
+  delete context.contentAuthorizationRepository;
+  delete context.channelPermissionRepository;
+  const queries: string[] = [];
+  context.driver = {
+    session() {
+      return {
+        async run(query: string) {
+          queries.push(query);
+          if (query === FIND_DISCUSSION_AUTHOR_QUERY) {
+            return { records: [record({ username: "mallory" })] };
+          }
+          if (query === CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY) {
+            return {
+              records: [record({ channel: channelSnapshot(["alice"]) })],
+            };
+          }
+          throw new Error("unexpected query");
+        },
+        async close() {},
+      };
+    },
+  };
+
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      context
+    ),
+    true
+  );
+  assert.deepEqual(queries, [
+    FIND_DISCUSSION_AUTHOR_QUERY,
+    CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY,
+  ]);
+});
+
+test("discussion-channel ownership denies missing channels and repository errors", async () => {
+  const missingChannel = makeContext({
+    findDiscussionAuthor: async () => ({ found: false, username: null }),
+  });
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "missing", channelUniqueName: "cats" } },
+      missingChannel
+    ),
+    false
+  );
+
+  const failingContext = makeContext({
+    findDiscussionAuthor: async () => {
+      throw new Error("read failed");
+    },
+  });
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      failingContext
+    ),
+    false
   );
 });

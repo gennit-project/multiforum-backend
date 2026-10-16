@@ -8,25 +8,19 @@ import { getServerConfigForPermissions } from "./getServerConfigForPermissions.j
 import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
 import { logger } from "../../logger.js";
+import { resolveChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
+import { resolveContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
 // Helper function to check if a user is a channel owner
 async function isUserChannelOwner(username: string, channelName: string, context: GraphQLContext): Promise<boolean> {
-  const Channel = context.ogm.model("Channel");
-  
-  const channel = await Channel.find({
-    where: { uniqueName: channelName },
-    selectionSet: `{ 
-      Admins { 
-        username
-      } 
-    }`,
-  });
+  const repository = resolveChannelPermissionRepository(context);
+  const channel = await repository.findAuthorizationSnapshot(channelName);
 
-  if (!channel || !channel[0]) {
+  if (!channel) {
     return false;
   }
 
-  const channelOwners = channel[0].Admins.map((admin: { username: string }) => admin.username);
+  const channelOwners = channel.Admins.map((admin) => admin.username);
   return channelOwners.includes(username);
 }
 
@@ -116,19 +110,14 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
     
     // If channelUniqueName is not provided, look it up from the issue
     if (!channelUniqueName && issueId) {
-      const Issue = context.ogm.model("Issue");
-      const issue = await Issue.find({
-        where: { id: issueId },
-        selectionSet: `{ 
-          channelUniqueName
-        }`,
-      });
+      const repository = resolveContentChannelPermissionRepository(context);
+      const issue = await repository.findIssueChannel(issueId);
 
-      if (!issue || !issue[0]) {
+      if (!issue.found) {
         return new Error("Could not find the issue or its associated channel.");
       }
 
-      channelUniqueName = issue[0].channelUniqueName ?? undefined;
+      channelUniqueName = issue.channelUniqueName ?? undefined;
     }
 
     // Look up the admin/owner flags the decision needs, in the same conditional

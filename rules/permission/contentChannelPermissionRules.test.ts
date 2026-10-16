@@ -21,6 +21,19 @@ const missing: ContentChannelLookup = {
   channelUniqueNames: [],
 };
 
+const unusedSingleLookups = {
+  async findIssueChannel() {
+    return { found: false, channelUniqueName: null };
+  },
+  async findCommentChannelReferences() {
+    return {
+      found: false,
+      discussionChannelUniqueName: null,
+      directChannelUniqueName: null,
+    };
+  },
+};
+
 const makeContext = (
   repository: ContentChannelPermissionRepository,
   jwtError?: Error
@@ -34,6 +47,7 @@ const makeContext = (
 test("content permission handlers reject missing identifiers before querying", async () => {
   let repositoryCalls = 0;
   const repository: ContentChannelPermissionRepository = {
+    ...unusedSingleLookups,
     async findCommentChannels() {
       repositoryCalls += 1;
       return missing;
@@ -73,6 +87,7 @@ test("content permission handlers pass every supported identifier to the reposit
   const discussionCalls: string[][] = [];
   const eventCalls: string[][] = [];
   const repository: ContentChannelPermissionRepository = {
+    ...unusedSingleLookups,
     async findCommentChannels(ids) {
       commentCalls.push(ids);
       return found(["cats"]);
@@ -156,6 +171,7 @@ test("content permission handlers pass every supported identifier to the reposit
 
 test("content permission handlers preserve not-found and no-channel errors", async () => {
   const repository: ContentChannelPermissionRepository = {
+    ...unusedSingleLookups,
     async findCommentChannels(ids) {
       return ids[0] === "orphan-comment" ? found([]) : missing;
     },

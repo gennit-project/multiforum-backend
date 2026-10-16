@@ -13,15 +13,15 @@ export const ISSUE_NOT_FOUND_ERROR =
 export const COMMENT_NOT_FOUND_ERROR =
   "Could not find the comment or its associated channel.";
 
-export type IssueRecords =
-  | Array<{ channelUniqueName?: string | null }>
-  | null
-  | undefined;
+export type IssueChannelLookup = {
+  found: boolean;
+  channelUniqueName: string | null;
+};
 
-export type CommentRecords =
-  | Array<{ Channel?: { uniqueName?: string | null } | null }>
-  | null
-  | undefined;
+export type CommentChannelLookup = {
+  found: boolean;
+  directChannelUniqueName: string | null;
+};
 
 export type ChannelResolution =
   | { channelUniqueName: string; error?: undefined }
@@ -33,9 +33,9 @@ export interface ResolveChannelInput {
   // Ids that, when present and no direct channel was given, trigger a lookup.
   issueId?: string;
   commentId?: string;
-  // Records fetched by the caller for those ids (Issue.find / Comment.find).
-  issue?: IssueRecords;
-  comment?: CommentRecords;
+  // Normalized repository results fetched by the caller for those ids.
+  issue?: IssueChannelLookup;
+  comment?: CommentChannelLookup;
 }
 
 export function resolveChannelForModPermission(
@@ -46,17 +46,17 @@ export function resolveChannelForModPermission(
   if (!channelUniqueName) {
     if (input.issueId) {
       const issue = input.issue;
-      if (!issue || !issue[0]) {
+      if (!issue?.found) {
         return { error: new Error(ISSUE_NOT_FOUND_ERROR) };
       }
-      channelUniqueName = issue[0].channelUniqueName;
+      channelUniqueName = issue.channelUniqueName;
     }
     if (input.commentId) {
       const comment = input.comment;
-      if (!comment || !comment[0]) {
+      if (!comment?.found) {
         return { error: new Error(COMMENT_NOT_FOUND_ERROR) };
       }
-      channelUniqueName = comment[0].Channel?.uniqueName;
+      channelUniqueName = comment.directChannelUniqueName;
     }
   }
 

@@ -133,3 +133,51 @@ test("distinguishes missing content from content without a channel", async () =>
     channelUniqueNames: [],
   });
 });
+
+test("finds issue channels and preserves both comment channel references", async () => {
+  await driver.executeQuery(`
+    CREATE (issue:Issue {id: "issue-1", channelUniqueName: "issues"})
+    CREATE (orphanIssue:Issue {id: "issue-orphan"})
+    CREATE (comment:Comment {id: "comment-1"})
+    CREATE (orphanComment:Comment {id: "comment-orphan"})
+    CREATE (discussionEntry:DiscussionChannel {
+      id: "discussion-channel-1",
+      channelUniqueName: "discussion"
+    })
+    CREATE (directChannel:Channel {uniqueName: "direct"})
+    CREATE (discussionEntry)-[:CONTAINS_COMMENT]->(comment)
+    CREATE (directChannel)-[:HAS_COMMENT]->(comment)
+  `);
+  const repository = createContentChannelPermissionRepository(driver, "neo4j");
+
+  assert.deepEqual(await repository.findIssueChannel("issue-1"), {
+    found: true,
+    channelUniqueName: "issues",
+  });
+  assert.deepEqual(await repository.findIssueChannel("issue-orphan"), {
+    found: true,
+    channelUniqueName: null,
+  });
+  assert.deepEqual(await repository.findIssueChannel("missing"), {
+    found: false,
+    channelUniqueName: null,
+  });
+  assert.deepEqual(await repository.findCommentChannelReferences("comment-1"), {
+    found: true,
+    discussionChannelUniqueName: "discussion",
+    directChannelUniqueName: "direct",
+  });
+  assert.deepEqual(
+    await repository.findCommentChannelReferences("comment-orphan"),
+    {
+      found: true,
+      discussionChannelUniqueName: null,
+      directChannelUniqueName: null,
+    }
+  );
+  assert.deepEqual(await repository.findCommentChannelReferences("missing"), {
+    found: false,
+    discussionChannelUniqueName: null,
+    directChannelUniqueName: null,
+  });
+});

@@ -1,10 +1,12 @@
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../../types/context.js";
-import { DiscussionChannelWhere, User } from "../../../src/generated/graphql.js";
+import { DiscussionChannelWhere } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
 import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
 import { logger } from "../../../logger.js";
+import { resolveChannelPermissionRepository } from "../../../services/persistence/channelPermissionRepository.js";
+import { createContentAuthorizationRepository } from "../../../services/persistence/contentAuthorizationRepository.js";
 
 type IsDiscussionChannelOwnerInput = {
   where: DiscussionChannelWhere;
@@ -23,8 +25,6 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
     });
 
     let username = ctx.user.username;
-    let ogm = ctx.ogm;
-
     // Extract the discussionId and channelUniqueName from the various possible argument formats
     let discussionId;
     let channelUniqueName;
@@ -41,38 +41,20 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
 
     try {
       // First check if the user is the owner of the discussion
-      const DiscussionModel = ogm.model("Discussion");
-      const discussions = await DiscussionModel.find({
-        where: { id: discussionId },
-        selectionSet: `{
-          Author {
-            username
-          }
-        }`,
-      });
+      const contentRepository = ctx.contentAuthorizationRepository ?? createContentAuthorizationRepository(ctx.driver);
+      const discussion = await contentRepository.findDiscussionAuthor(discussionId);
 
-      const discussionAuthor = discussions[0]?.Author?.username
-
-      if (discussions && discussions.length > 0) {
-        const discussionOwner = discussionAuthor;
-        if (discussionOwner === username) {
-          return true;
-        }
+      if (discussion.found && discussion.username === username) {
+        return true;
       }
 
       // Next check if the user is an admin of the channel
-      const ChannelModel = ogm.model("Channel");
-      const channels = await ChannelModel.find({
-        where: { uniqueName: channelUniqueName },
-        selectionSet: `{
-          Admins {
-            username
-          }
-        }`,
-      });
+      const channelRepository = resolveChannelPermissionRepository(ctx);
+      const channel =
+        await channelRepository.findAuthorizationSnapshot(channelUniqueName);
 
-      if (channels && channels.length > 0) {
-        const channelAdmins = channels[0].Admins.map((admin: User) => admin.username);
+      if (channel) {
+        const channelAdmins = channel.Admins.map((admin) => admin.username);
         if (channelAdmins.includes(username ?? "")) {
           return true;
         }
