@@ -9,11 +9,13 @@ import { isEventOwner } from "./isEventOwner.js";
 import { isImageUploader } from "./isImageUploader.js";
 import { isIssueAuthor } from "./isIssueAuthor.js";
 import { issueIsNotLocked } from "./issueIsNotLocked.js";
+import { isChannelOwner } from "./isChannelOwner.js";
+import { isDiscussionChannelOwner } from "./isDiscussionChannelOwner.js";
 
 const run = (permissionRule: any, args: unknown, ctx: unknown, parent = {}) =>
   permissionRule.func(parent, args, ctx, {} as any);
 
-const makeContext = (repositoryOverrides: Record<string, unknown> = {}) => ({
+const makeContext = (repositoryOverrides: Record<string, unknown> = {}): any => ({
   user: {
     username: "alice",
     email: "alice@example.test",
@@ -48,9 +50,38 @@ const makeContext = (repositoryOverrides: Record<string, unknown> = {}) => ({
     findIssueLock: async () => ({ found: true, locked: false }),
     ...repositoryOverrides,
   },
+  contentChannelPermissionRepository: {
+    findCommentChannels: async () => ({ found: false, channelUniqueNames: [] }),
+    findDiscussionChannels: async () => ({ found: false, channelUniqueNames: [] }),
+    findEventChannels: async () => ({ found: false, channelUniqueNames: [] }),
+    findIssueChannel: async () => ({ found: false, channelUniqueName: null }),
+    findCommentChannelReferences: async () => ({
+      found: false,
+      discussionChannelUniqueName: null,
+      directChannelUniqueName: null,
+    }),
+  },
+  channelPermissionRepository: {
+    findAuthorizationSnapshot: async () => null,
+    findTargetedSuspensions: async () => ({
+      userSuspensions: [],
+      modSuspensions: [],
+    }),
+  },
   driver: {},
   ogm: {},
   req: { headers: {} },
+});
+
+const channelSnapshot = (admins: string[]) => ({
+  Admins: admins.map((username) => ({ username })),
+  Moderators: [],
+  DefaultChannelRole: null,
+  ElevatedChannelRole: null,
+  SuspendedRole: null,
+  DefaultModRole: null,
+  ElevatedModRole: null,
+  SuspendedModRole: null,
 });
 
 test("album ownership requires every requested album to exist and match", async () => {
@@ -282,5 +313,71 @@ test("issue lock checks deny only explicitly locked issues", async () => {
       })
     ),
     { message: ERROR_MESSAGES.issue.notFound }
+  );
+});
+
+test("channel ownership preserves comment precedence and repository boundaries", async () => {
+  const context = makeContext();
+  const lookedUpChannels: string[] = [];
+  context.contentChannelPermissionRepository.findCommentChannelReferences = async () => ({
+    found: true,
+    discussionChannelUniqueName: "discussion-channel",
+    directChannelUniqueName: "direct-channel",
+  });
+  context.channelPermissionRepository.findAuthorizationSnapshot = async (uniqueName: string) => {
+    lookedUpChannels.push(uniqueName);
+    return channelSnapshot(["alice"]);
+  };
+
+  assert.equal(
+    await run(isChannelOwner, { commentId: "comment-1", where: {} }, context),
+    true
+  );
+  assert.deepEqual(lookedUpChannels, ["discussion-channel"]);
+});
+
+test("channel ownership keeps missing issue and missing comment behavior distinct", async () => {
+  const context = makeContext();
+
+  assert.equal(
+    await run(isChannelOwner, { issueId: "missing", where: {} }, context),
+    false
+  );
+  await assert.rejects(
+    run(isChannelOwner, { commentId: "missing", where: {} }, context),
+    { message: ERROR_MESSAGES.channel.notFound }
+  );
+});
+
+test("discussion-channel ownership short-circuits authors before channel admins", async () => {
+  const authorContext = makeContext();
+  let channelCalls = 0;
+  authorContext.channelPermissionRepository.findAuthorizationSnapshot = async () => {
+    channelCalls += 1;
+    return channelSnapshot([]);
+  };
+
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      authorContext
+    ),
+    true
+  );
+  assert.equal(channelCalls, 0);
+
+  const adminContext = makeContext({
+    findDiscussionAuthor: async () => ({ found: true, username: "mallory" }),
+  });
+  adminContext.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot(["alice"]);
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      adminContext
+    ),
+    true
   );
 });

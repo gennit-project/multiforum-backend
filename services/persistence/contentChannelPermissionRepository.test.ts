@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import neo4j, { type Driver } from "neo4j-driver";
 import {
+  FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
   FIND_COMMENT_CHANNELS_QUERY,
   FIND_DISCUSSION_CHANNELS_QUERY,
   FIND_EVENT_CHANNELS_QUERY,
+  FIND_ISSUE_CHANNEL_QUERY,
   createContentChannelPermissionRepository,
 } from "./contentChannelPermissionRepository.js";
 
@@ -12,6 +14,89 @@ const record = (values: Record<string, unknown>) => ({
   get(key: string) {
     return values[key];
   },
+});
+
+test("single-content lookups preserve distinct channel references", async () => {
+  const calls: Array<{ query: string; parameters: unknown }> = [];
+  let closeCalls = 0;
+  const driver = {
+    session() {
+      return {
+        async run(query: string, parameters: unknown) {
+          calls.push({ query, parameters });
+          if (query === FIND_ISSUE_CHANNEL_QUERY) {
+            return { records: [record({ channelUniqueName: "issues" })] };
+          }
+          return {
+            records: [
+              record({
+                found: true,
+                discussionChannelUniqueName: "discussion",
+                directChannelUniqueName: "direct",
+              }),
+            ],
+          };
+        },
+        async close() {
+          closeCalls += 1;
+        },
+      };
+    },
+  } as unknown as Driver;
+  const repository = createContentChannelPermissionRepository(driver, "permission-db");
+
+  assert.deepEqual(await repository.findIssueChannel("issue-1"), {
+    found: true,
+    channelUniqueName: "issues",
+  });
+  assert.deepEqual(await repository.findCommentChannelReferences("comment-1"), {
+    found: true,
+    discussionChannelUniqueName: "discussion",
+    directChannelUniqueName: "direct",
+  });
+  assert.deepEqual(calls, [
+    { query: FIND_ISSUE_CHANNEL_QUERY, parameters: { id: "issue-1" } },
+    {
+      query: FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
+      parameters: { id: "comment-1" },
+    },
+  ]);
+  assert.equal(closeCalls, 2);
+});
+
+test("single-content lookups distinguish missing and empty references", async () => {
+  let call = 0;
+  const driver = {
+    session() {
+      return {
+        async run() {
+          call += 1;
+          if (call === 1) return { records: [] };
+          return {
+            records: [
+              record({
+                found: true,
+                discussionChannelUniqueName: "",
+                directChannelUniqueName: null,
+              }),
+            ],
+          };
+        },
+        async close() {},
+      };
+    },
+  } as unknown as Driver;
+  const repository = createContentChannelPermissionRepository(driver);
+
+  assert.deepEqual(await repository.findIssueChannel("missing"), {
+    found: false,
+    channelUniqueName: null,
+  });
+  assert.deepEqual(await repository.findCommentChannelReferences("orphan"), {
+    found: true,
+    discussionChannelUniqueName: null,
+    directChannelUniqueName: null,
+  });
 });
 
 test("content channel lookups are parameterized, leader-routed, and normalized", async () => {

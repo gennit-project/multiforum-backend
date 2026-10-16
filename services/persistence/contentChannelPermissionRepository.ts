@@ -6,11 +6,41 @@ export type ContentChannelLookup = {
   channelUniqueNames: string[];
 };
 
+export type IssueChannelLookup = {
+  found: boolean;
+  channelUniqueName: string | null;
+};
+
+export type CommentChannelReferences = {
+  found: boolean;
+  discussionChannelUniqueName: string | null;
+  directChannelUniqueName: string | null;
+};
+
 export interface ContentChannelPermissionRepository {
   findCommentChannels(commentIds: string[]): Promise<ContentChannelLookup>;
   findDiscussionChannels(discussionIds: string[]): Promise<ContentChannelLookup>;
   findEventChannels(eventIds: string[]): Promise<ContentChannelLookup>;
+  findIssueChannel(issueId: string): Promise<IssueChannelLookup>;
+  findCommentChannelReferences(
+    commentId: string
+  ): Promise<CommentChannelReferences>;
 }
+
+export const FIND_ISSUE_CHANNEL_QUERY = `
+  MATCH (issue:Issue {id: $id})
+  RETURN issue.channelUniqueName AS channelUniqueName
+  LIMIT 1
+`;
+
+export const FIND_COMMENT_CHANNEL_REFERENCES_QUERY = `
+  OPTIONAL MATCH (comment:Comment {id: $id})
+  OPTIONAL MATCH (comment)<-[:CONTAINS_COMMENT]-(discussionEntry:DiscussionChannel)
+  OPTIONAL MATCH (comment)<-[:HAS_COMMENT]-(channel:Channel)
+  RETURN count(DISTINCT comment) > 0 AS found,
+         head(collect(DISTINCT discussionEntry.channelUniqueName)) AS discussionChannelUniqueName,
+         head(collect(DISTINCT channel.uniqueName)) AS directChannelUniqueName
+`;
 
 export const FIND_COMMENT_CHANNELS_QUERY = `
   MATCH (comment:Comment)
@@ -58,6 +88,9 @@ const normalizeChannelNames = (value: unknown): string[] => {
   );
 };
 
+const normalizeChannelName = (value: unknown): string | null =>
+  typeof value === "string" && value.length > 0 ? value : null;
+
 export const createContentChannelPermissionRepository = (
   driver: Driver,
   database = resolveNeo4jDatabase()
@@ -91,6 +124,25 @@ export const createContentChannelPermissionRepository = (
     }
   };
 
+  const runSingleLookup = async <T>(
+    query: string,
+    id: string,
+    missing: T,
+    mapRecord: (record: { get(key: string): unknown }) => T
+  ): Promise<T> => {
+    const session = driver.session({
+      database,
+      defaultAccessMode: neo4j.session.WRITE,
+    });
+    try {
+      const result = await session.run(query, { id });
+      const record = result.records[0];
+      return record ? mapRecord(record) : missing;
+    } finally {
+      await session.close();
+    }
+  };
+
   return {
     findCommentChannels(commentIds) {
       return findChannels(FIND_COMMENT_CHANNELS_QUERY, commentIds);
@@ -102,6 +154,39 @@ export const createContentChannelPermissionRepository = (
 
     findEventChannels(eventIds) {
       return findChannels(FIND_EVENT_CHANNELS_QUERY, eventIds);
+    },
+
+    findIssueChannel(issueId) {
+      return runSingleLookup<IssueChannelLookup>(
+        FIND_ISSUE_CHANNEL_QUERY,
+        issueId,
+        { found: false, channelUniqueName: null },
+        (record) => ({
+          found: true,
+          channelUniqueName: normalizeChannelName(record.get("channelUniqueName")),
+        })
+      );
+    },
+
+    findCommentChannelReferences(commentId) {
+      return runSingleLookup<CommentChannelReferences>(
+        FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
+        commentId,
+        {
+          found: false,
+          discussionChannelUniqueName: null,
+          directChannelUniqueName: null,
+        },
+        (record) => ({
+          found: record.get("found") === true,
+          discussionChannelUniqueName: normalizeChannelName(
+            record.get("discussionChannelUniqueName")
+          ),
+          directChannelUniqueName: normalizeChannelName(
+            record.get("directChannelUniqueName")
+          ),
+        })
+      );
     },
   };
 };
