@@ -2,9 +2,10 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
-import { Event, EventWhere, EventUpdateInput } from "../../../src/generated/graphql.js";
+import type { EventWhere, EventUpdateInput } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
 import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
+import { createContentAuthorizationRepository } from "../../../services/persistence/contentAuthorizationRepository.js";
 
 type IsEventOwnerInput = {
   where: EventWhere;
@@ -34,31 +35,18 @@ export const isEventOwner = rule({ cache: "contextual" })(
     });
 
     let username = ctx.user.username;
-    let ogm = ctx.ogm;
-
     if (!eventId) {
       throw new Error(ERROR_MESSAGES.event.noId);
     }
-    const EventModel = ogm.model("Event");
+    const repository =
+      ctx.contentAuthorizationRepository ??
+      createContentAuthorizationRepository(ctx.driver);
+    const event = await repository.findEventPoster(eventId);
 
-    // Get the event owner by using the OGM on the
-    // Event model.
-    const events: Event[] = await EventModel.find({
-      where: { id: eventId },
-      selectionSet: `{
-            Poster {
-                username
-            }
-      }`,
-    });
-
-    if (!events || events.length === 0) {
+    if (!event.found) {
       throw new Error(ERROR_MESSAGES.event.notFound);
     }
-    const event = events[0];
-
-    // Get the event author.
-    const eventOwner = event?.Poster?.username;
+    const eventOwner = event.username;
 
     if (!eventOwner) {
       throw new Error(ERROR_MESSAGES.event.noOwner);

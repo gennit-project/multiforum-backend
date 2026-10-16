@@ -2,9 +2,10 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
-import { Album, AlbumWhere } from "../../../src/generated/graphql.js";
+import type { AlbumWhere } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
 import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
+import { createContentAuthorizationRepository } from "../../../services/persistence/contentAuthorizationRepository.js";
 
 type IsAlbumOwnerArgs = {
   where?: AlbumWhere;
@@ -62,16 +63,10 @@ export const isAlbumOwner = rule({ cache: "contextual" })(
 
     const uniqueIds = [...new Set(albumIds)];
 
-    const AlbumModel = ctx.ogm.model("Album");
-    const whereClause: AlbumWhere =
-      uniqueIds.length === 1
-        ? { id: uniqueIds[0] }
-        : { id_IN: uniqueIds };
-
-    const albums: Album[] = await AlbumModel.find({
-      where: whereClause,
-      selectionSet: `{ id Owner { username } }`,
-    });
+    const repository =
+      ctx.contentAuthorizationRepository ??
+      createContentAuthorizationRepository(ctx.driver);
+    const albums = await repository.findAlbumOwners(uniqueIds);
 
     if (!albums || albums.length === 0) {
       throw new Error(ERROR_MESSAGES.album.notFound);
@@ -82,7 +77,7 @@ export const isAlbumOwner = rule({ cache: "contextual" })(
     }
 
     const isOwner = albums.every(
-      (album) => album?.Owner?.username === username
+      (album) => album.username === username
     );
 
     if (!isOwner) {

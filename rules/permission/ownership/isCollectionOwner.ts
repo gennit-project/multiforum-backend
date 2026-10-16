@@ -2,8 +2,9 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
-import { Collection, CollectionWhere } from "../../../src/generated/graphql.js";
+import type { CollectionWhere } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
+import { createContentAuthorizationRepository } from "../../../services/persistence/contentAuthorizationRepository.js";
 
 type IsCollectionOwnerArgs = {
   where?: CollectionWhere;
@@ -66,16 +67,10 @@ export const isCollectionOwner = rule({ cache: "contextual" })(
       throw new Error(ERROR_MESSAGES.collection.noId);
     }
 
-    const CollectionModel = ctx.ogm.model("Collection");
-    const whereClause: CollectionWhere =
-      collectionIds.length === 1
-        ? { id: collectionIds[0] }
-        : { id_IN: collectionIds };
-
-    const collections: Collection[] = await CollectionModel.find({
-      where: whereClause,
-      selectionSet: `{ id CreatedBy { username } }`,
-    });
+    const repository =
+      ctx.contentAuthorizationRepository ??
+      createContentAuthorizationRepository(ctx.driver);
+    const collections = await repository.findCollectionOwners(collectionIds);
 
     if (!collections || collections.length === 0) {
       throw new Error(ERROR_MESSAGES.collection.notFound);
@@ -86,7 +81,7 @@ export const isCollectionOwner = rule({ cache: "contextual" })(
     }
 
     const isOwner = collections.every(
-      (collection) => collection?.CreatedBy?.username === username
+      (collection) => collection.username === username
     );
 
     if (!isOwner) {

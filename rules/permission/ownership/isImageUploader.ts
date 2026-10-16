@@ -2,9 +2,10 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
-import { Image, ImageWhere } from "../../../src/generated/graphql.js";
+import type { ImageWhere } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
 import { logger } from "../../../logger.js";
+import { createContentAuthorizationRepository } from "../../../services/persistence/contentAuthorizationRepository.js";
 
 type IsImageUploaderInput = {
   where: ImageWhere;
@@ -21,35 +22,22 @@ export const isImageUploader = rule({ cache: "contextual" })(
     });
 
     const username = ctx.user.username;
-    const ogm = ctx.ogm;
-
     if (!imageId) {
       throw new Error(ERROR_MESSAGES.image.noId);
     }
+    const repository =
+      ctx.contentAuthorizationRepository ??
+      createContentAuthorizationRepository(ctx.driver);
+    const image = await repository.findImageUploader(imageId);
 
-    const ImageModel = ogm.model("Image");
+    logger.info('🔍 isImageUploader - Found image:', JSON.stringify(image, null, 2));
 
-    // Get the image and its uploader
-    const images: Image[] = await ImageModel.find({
-      where: { id: imageId },
-      selectionSet: `{
-        id
-        Uploader {
-          username
-        }
-      }`,
-    });
-
-    logger.info('🔍 isImageUploader - Found images:', JSON.stringify(images, null, 2));
-
-    if (!images || images.length === 0) {
+    if (!image.found) {
       throw new Error(ERROR_MESSAGES.image.notFound);
     }
+    const uploaderUsername = image.username;
 
-    const image = images[0];
-    const uploaderUsername = image?.Uploader?.username;
-
-    logger.info('🔍 isImageUploader - Image:', { imageId: image.id, uploaderUsername, loggedInUsername: username });
+    logger.info('🔍 isImageUploader - Image:', { imageId, uploaderUsername, loggedInUsername: username });
 
     // If there's no uploader set (legacy/test data), allow anyone authenticated to edit
     // This maintains backward compatibility with existing images
