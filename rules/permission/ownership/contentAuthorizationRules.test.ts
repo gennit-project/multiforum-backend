@@ -361,6 +361,41 @@ test("channel ownership keeps missing issue and missing comment behavior distinc
   );
 });
 
+test("channel ownership rejects orphan comments and non-owners", async () => {
+  const orphanContext = makeContext();
+  orphanContext.contentChannelPermissionRepository.findCommentChannelReferences = async () => ({
+    found: true,
+    discussionChannelUniqueName: null,
+    directChannelUniqueName: null,
+  });
+  await assert.rejects(
+    run(isChannelOwner, { commentId: "orphan", where: {} }, orphanContext),
+    { message: ERROR_MESSAGES.channel.notFound }
+  );
+
+  const nonOwnerContext = makeContext();
+  nonOwnerContext.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot(["mallory"]);
+  assert.equal(
+    await run(
+      isChannelOwner,
+      { channelUniqueName: "cats", where: {} },
+      nonOwnerContext
+    ),
+    false
+  );
+
+  nonOwnerContext.channelPermissionRepository.findAuthorizationSnapshot = async () => null;
+  await assert.rejects(
+    run(
+      isChannelOwner,
+      { channelUniqueName: "missing", where: {} },
+      nonOwnerContext
+    ),
+    { message: ERROR_MESSAGES.channel.notFound }
+  );
+});
+
 test("discussion-channel ownership short-circuits authors before channel admins", async () => {
   const authorContext = makeContext();
   let channelCalls = 0;
@@ -497,4 +532,32 @@ test("discussion-channel ownership uses both default repositories", async () => 
     FIND_DISCUSSION_AUTHOR_QUERY,
     CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY,
   ]);
+});
+
+test("discussion-channel ownership denies missing channels and repository errors", async () => {
+  const missingChannel = makeContext({
+    findDiscussionAuthor: async () => ({ found: false, username: null }),
+  });
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "missing", channelUniqueName: "cats" } },
+      missingChannel
+    ),
+    false
+  );
+
+  const failingContext = makeContext({
+    findDiscussionAuthor: async () => {
+      throw new Error("read failed");
+    },
+  });
+  assert.equal(
+    await run(
+      isDiscussionChannelOwner,
+      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      failingContext
+    ),
+    false
+  );
 });

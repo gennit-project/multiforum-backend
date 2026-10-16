@@ -5,9 +5,20 @@ import { canArchiveAndUnarchiveDiscussion } from "./canArchiveAndUnarchiveDiscus
 import { canArchiveAndUnarchiveEvent } from "./canArchiveAndUnarchiveEvent.js";
 import { canSuspendAndUnsuspendUser } from "./canSuspendAndUnsuspendUser.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
+import {
+  FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
+  FIND_ISSUE_CHANNEL_QUERY,
+} from "../../services/persistence/contentChannelPermissionRepository.js";
+import { CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY } from "../../services/persistence/channelPermissionRepository.js";
 
 const run = (permissionRule: any, args: unknown, ctx: unknown) =>
   permissionRule.func({}, args, ctx, {} as any);
+
+const record = (values: Record<string, unknown>) => ({
+  get(key: string) {
+    return values[key];
+  },
+});
 
 const makeContext = () => {
   const calls: string[] = [];
@@ -80,6 +91,57 @@ test("archive-event resolves its channel through the issue repository", async ()
     jwtError
   );
   assert.deepEqual(calls, ["issue:issue-1"]);
+});
+
+test("archive targets use the default content-channel repository", async () => {
+  const jwtError = new Error("permission check reached");
+  const queries: string[] = [];
+  const context = {
+    ogm: {},
+    jwtError,
+    driver: {
+      session() {
+        return {
+          async run(query: string) {
+            queries.push(query);
+            if (query === FIND_ISSUE_CHANNEL_QUERY) {
+              return { records: [record({ channelUniqueName: "issues" })] };
+            }
+            if (query === FIND_COMMENT_CHANNEL_REFERENCES_QUERY) {
+              return {
+                records: [
+                  record({
+                    found: true,
+                    discussionChannelUniqueName: null,
+                    directChannelUniqueName: "comments",
+                  }),
+                ],
+              };
+            }
+            throw new Error("unexpected query");
+          },
+          async close() {},
+        };
+      },
+    },
+  };
+
+  assert.equal(
+    await run(canArchiveAndUnarchiveEvent, { issueId: "issue-1" }, context),
+    jwtError
+  );
+  assert.equal(
+    await run(
+      canArchiveAndUnarchiveComment,
+      { commentId: "comment-1" },
+      context
+    ),
+    jwtError
+  );
+  assert.deepEqual(queries, [
+    FIND_ISSUE_CHANNEL_QUERY,
+    FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
+  ]);
 });
 
 const makeSuspendContext = (input: {
@@ -193,4 +255,49 @@ test("suspension preserves missing issue and missing channel behavior", async ()
     missingChannel.jwtError
   );
   assert.deepEqual(missingChannel.channelCalls, ["missing"]);
+});
+
+test("suspension uses default issue and channel repositories", async () => {
+  const queries: string[] = [];
+  const context = makeSuspendContext({ channelAdmins: ["target"] }).context;
+  delete (context as any).contentChannelPermissionRepository;
+  delete (context as any).channelPermissionRepository;
+  context.driver = {
+    session() {
+      return {
+        async run(query: string) {
+          queries.push(query);
+          if (query === FIND_ISSUE_CHANNEL_QUERY) {
+            return { records: [record({ channelUniqueName: "cats" })] };
+          }
+          if (query === CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY) {
+            return {
+              records: [
+                record({
+                  channel: {
+                    Admins: [{ username: "target" }],
+                    Moderators: [],
+                  },
+                }),
+              ],
+            };
+          }
+          throw new Error("unexpected query");
+        },
+        async close() {},
+      };
+    },
+  };
+
+  const result = await run(
+    canSuspendAndUnsuspendUser,
+    { issueId: "issue-1", username: "target" },
+    context
+  );
+  assert.ok(result instanceof Error);
+  assert.equal(result.message, ERROR_MESSAGES.channel.cantSuspendOwner);
+  assert.deepEqual(queries, [
+    FIND_ISSUE_CHANNEL_QUERY,
+    CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY,
+  ]);
 });
