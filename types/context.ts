@@ -6,6 +6,7 @@ import type { PermissionServerConfigRepository } from "../services/persistence/p
 import type { SuspensionEffectsRepository } from "../services/persistence/suspensionEffectsRepository.js";
 import type { ContentChannelPermissionRepository } from "../services/persistence/contentChannelPermissionRepository.js";
 import type { ChannelPermissionRepository } from "../services/persistence/channelPermissionRepository.js";
+import type { ContentAuthorizationRepository } from "../services/persistence/contentAuthorizationRepository.js";
 
 /**
  * Compatibility surface for code not yet migrated to repositories. New domain
@@ -82,6 +83,8 @@ export type GraphQLContext = {
   contentChannelPermissionRepository?: ContentChannelPermissionRepository;
   /** Optional persistence seam for channel roles and suspension reads. */
   channelPermissionRepository?: ChannelPermissionRepository;
+  /** Optional persistence seam for entity-level authorization reads. */
+  contentAuthorizationRepository?: ContentAuthorizationRepository;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;

@@ -3,12 +3,12 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../../types/context.js";
 import { ERROR_MESSAGES } from "../../errorMessages.js";
 import {
-  Discussion,
   DiscussionWhere,
   DiscussionUpdateInput,
 } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
 import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
+import { createContentAuthorizationRepository } from "../../../services/persistence/contentAuthorizationRepository.js";
 
 type IsDiscussionOwnerInput = {
   where: DiscussionWhere;
@@ -37,31 +37,18 @@ export const isDiscussionOwner = rule({ cache: "contextual" })(
     });
 
     let username = ctx.user.username;
-    let ogm = ctx.ogm;
-
     if (!discussionId) {
       throw new Error(ERROR_MESSAGES.discussion.noId);
     }
-    const DiscussionModel = ogm.model("Discussion");
+    const repository =
+      ctx.contentAuthorizationRepository ??
+      createContentAuthorizationRepository(ctx.driver);
+    const discussion = await repository.findDiscussionAuthor(discussionId);
 
-    // Get the discussion owner by using the OGM on the
-    // Discussion model.
-    const discussions: Discussion[] = await DiscussionModel.find({
-      where: { id: discussionId },
-      selectionSet: `{
-            Author {
-                username
-            }
-      }`,
-    });
-
-    if (!discussions || discussions.length === 0) {
+    if (!discussion.found) {
       throw new Error(ERROR_MESSAGES.channel.notFound);
     }
-    const discussion = discussions[0];
-
-    // Get the discussion author.
-    const discussionOwner = discussion?.Author?.username;
+    const discussionOwner = discussion.username;
 
     if (!discussionOwner) {
       throw new Error(ERROR_MESSAGES.discussion.noAuthor);

@@ -115,6 +115,16 @@ the configured database and remain leader-routed for causal consistency. This
 reduces production files with direct `ogm.model(...)` access from 50 to 46,
 direct calls from 125 to 120, and generated OGM type imports from 175 to 172.
 
+Entity-level authorization reads are now driver-backed. Album, collection,
+comment, discussion, event, image, and issue ownership rules share a narrow
+content authorization repository, which also supplies issue lock state.
+Polymorphic user/moderation-profile authors, multi-id ownership checks,
+ownerless legacy images, and existing missing-entity behavior are preserved.
+The queries specify the configured database and remain leader-routed for causal
+consistency. This reduces production files with direct `ogm.model(...)` access
+from 46 to 38 and direct calls from 120 to 112; generated OGM type imports
+remain at 172.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader
