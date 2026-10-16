@@ -158,6 +158,27 @@ const createContext = ({
     },
   },
   driver: createDriver(),
+  channelPermissionRepository: {
+    findAuthorizationSnapshot: async (channelUniqueName: string) => {
+      const channels = await channelModel.find({
+        where: { uniqueName: channelUniqueName },
+      });
+      const channel = channels[0];
+      return channel
+        ? {
+            Admins: [],
+            Moderators: channel.Moderators ?? [],
+            DefaultModRole: channel.DefaultModRole ?? null,
+            ElevatedModRole: channel.ElevatedModRole ?? null,
+            SuspendedModRole: channel.SuspendedModRole ?? null,
+          }
+        : null;
+    },
+    findTargetedSuspensions: async () => ({
+      userSuspensions: [],
+      modSuspensions: [],
+    }),
+  },
 }) as unknown as GraphQLContext);
 
 test("archiveEvent creates an issue, archives the event channel, and links the issue", async () => {

@@ -5,6 +5,7 @@ import type { ModelMap } from "../ogm_types.js";
 import type { PermissionServerConfigRepository } from "../services/persistence/permissionServerConfigRepository.js";
 import type { SuspensionEffectsRepository } from "../services/persistence/suspensionEffectsRepository.js";
 import type { ContentChannelPermissionRepository } from "../services/persistence/contentChannelPermissionRepository.js";
+import type { ChannelPermissionRepository } from "../services/persistence/channelPermissionRepository.js";
 
 /**
  * Compatibility surface for code not yet migrated to repositories. New domain
@@ -79,6 +80,8 @@ export type GraphQLContext = {
   suspensionEffectsRepository?: SuspensionEffectsRepository;
   /** Optional persistence seam for content-to-channel authorization reads. */
   contentChannelPermissionRepository?: ContentChannelPermissionRepository;
+  /** Optional persistence seam for channel roles and suspension reads. */
+  channelPermissionRepository?: ChannelPermissionRepository;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;

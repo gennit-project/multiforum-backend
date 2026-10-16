@@ -28,7 +28,7 @@ const commentPluginPipelineMiddleware = {
         const User = context?.ogm?.model('User')
         const driver = context?.driver
 
-        if (!Channel || !Comment || !PluginPipelineRun || !PluginRun || !ServerConfig || !ServerSecret || !User) {
+        if (!Channel || !Comment || !PluginPipelineRun || !PluginRun || !ServerConfig || !ServerSecret || !User || !driver) {
           return result
         }
 

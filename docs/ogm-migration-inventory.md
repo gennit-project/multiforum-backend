@@ -105,6 +105,16 @@ reads remain leader-routed so request bookmarks provide read-your-own-writes
 behavior. This reduces production files with direct `ogm.model(...)` access
 from 54 to 50; generated OGM type imports remain at 175.
 
+Core channel authorization reads are now driver-backed. User and moderator
+permission checks share a narrow channel snapshot containing lock state,
+owners, moderators, and channel roles; suspension classification consumes
+targeted repository results without an OGM fallback. The multi-channel content
+gate reuses the same snapshot for its lock and role checks, while direct checks
+retain the existing server-admin short circuit. Authorization sessions specify
+the configured database and remain leader-routed for causal consistency. This
+reduces production files with direct `ogm.model(...)` access from 50 to 46,
+direct calls from 125 to 120, and generated OGM type imports from 175 to 172.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

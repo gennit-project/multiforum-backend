@@ -110,7 +110,7 @@ export type CommentTriggerArgs = {
     ServerSecret: ServerSecretModel
     User: UserModel
   }
-  driver?: Driver
+  driver: Driver
 }
 
 // Arguments for channel trigger

@@ -1,36 +1,29 @@
-import { ChannelModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
+import { createChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
 
 type CheckZeroAdminsInput = {
   channelName: string;
   context: GraphQLContext;
 };
 
-export const channelHasZeroAdmins = async (input: CheckZeroAdminsInput): Promise<boolean> => {
+export const channelHasZeroAdmins = async (
+  input: CheckZeroAdminsInput
+): Promise<boolean> => {
   const { channelName, context } = input;
-  
-  const Channel = context.ogm.model("Channel");
-  
-  try {
-    const channel = await Channel.find({
-      where: {
-        uniqueName: channelName,
-      },
-      selectionSet: `{ 
-        Admins {
-          username
-        }
-      }`,
-    });
 
-    if (!channel || !channel[0]) {
+  try {
+    const repository =
+      context.channelPermissionRepository ??
+      createChannelPermissionRepository(context.driver);
+    const channel = await repository.findAuthorizationSnapshot(channelName);
+
+    if (!channel) {
       return false; // Channel doesn't exist, so can't become admin
     }
 
-    const channelData = channel[0];
-    const admins = channelData.Admins || [];
-    
+    const admins = channel.Admins || [];
+
     return admins.length === 0;
   } catch (error) {
     logger.error("Error checking if channel has zero admins:", error);

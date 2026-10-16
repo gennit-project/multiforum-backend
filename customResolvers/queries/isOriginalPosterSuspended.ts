@@ -10,6 +10,7 @@ import type {
   ServerConfigModel
 } from '../../ogm_types.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
+import { createChannelPermissionRepository } from '../../services/persistence/channelPermissionRepository.js'
 import { getActiveServerSuspension } from '../../rules/permission/getActiveServerSuspension.js'
 import { resolveIssueTarget } from '../shared/resolveIssueTarget.js'
 import { mayAccessSensitiveContent } from '../../services/sensitiveContentAccess.js'
@@ -58,8 +59,9 @@ export default function getResolver (input: Input) {
           modProfileName: target.modProfileName,
         })
       : await getActiveSuspension({
-          ogm: context.ogm,
-          driver: context.driver,
+          repository:
+            context.channelPermissionRepository ??
+            createChannelPermissionRepository(context.driver),
           channelUniqueName: target.channelUniqueName as string,
           username: target.username,
           modProfileName: target.modProfileName,

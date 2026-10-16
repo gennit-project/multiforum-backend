@@ -119,6 +119,34 @@ const buildOgm = ({
 const buildContext = (input: BuildOgmInput = {}) =>
   ({
     ogm: buildOgm(input),
+    channelPermissionRepository: {
+      findAuthorizationSnapshot: async () => ({
+        locked: false,
+        Admins: [],
+        Moderators: [],
+        DefaultChannelRole: {
+          canUpdateChannel: input.defaultCanUpdateChannel ?? true,
+        },
+        SuspendedRole: {
+          canUpdateChannel: input.suspendedCanUpdateChannel ?? false,
+        },
+      }),
+      findTargetedSuspensions: async ({ username }: { username?: string }) => ({
+        userSuspensions: input.suspendedUsers?.some(
+          (user) => user.username === username
+        )
+          ? [
+              {
+                id: `suspension-${username}`,
+                username,
+                suspendedIndefinitely: true,
+                suspendedUntil: null,
+              },
+            ]
+          : [],
+        modSuspensions: [],
+      }),
+    },
     permissionServerConfigRepository: {
       findByName: async () => ({
         DefaultServerRole: {
