@@ -247,3 +247,10 @@ export function createChannelPermissionRepository(
     },
   };
 }
+
+export const resolveChannelPermissionRepository = (context: {
+  channelPermissionRepository?: ChannelPermissionRepository;
+  driver: Driver;
+}): ChannelPermissionRepository =>
+  context.channelPermissionRepository ??
+  createChannelPermissionRepository(context.driver);

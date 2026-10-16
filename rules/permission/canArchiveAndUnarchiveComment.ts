@@ -4,7 +4,7 @@ import { resolveChannelForModPermission } from "./resolveChannelForModPermission
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import { createContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
+import { resolveContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
 export interface CanArchiveAndUnarchiveCommentArgs {
   channelUniqueName?: string;
@@ -23,7 +23,7 @@ export const canArchiveAndUnarchiveComment = rule({ cache: "contextual" })(
     let issue;
     let comment;
     if (!channelUniqueName) {
-      const repository = context.contentChannelPermissionRepository ?? createContentChannelPermissionRepository(context.driver);
+      const repository = resolveContentChannelPermissionRepository(context);
       if (issueId) {
         issue = await repository.findIssueChannel(issueId);
       }

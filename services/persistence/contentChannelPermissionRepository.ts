@@ -190,3 +190,10 @@ export const createContentChannelPermissionRepository = (
     },
   };
 };
+
+export const resolveContentChannelPermissionRepository = (context: {
+  contentChannelPermissionRepository?: ContentChannelPermissionRepository;
+  driver: Driver;
+}): ContentChannelPermissionRepository =>
+  context.contentChannelPermissionRepository ??
+  createContentChannelPermissionRepository(context.driver);

@@ -8,12 +8,12 @@ import { getServerConfigForPermissions } from "./getServerConfigForPermissions.j
 import { getServerScopedMembership } from "./getServerScopedMembership.js";
 import { hasServerModPermission } from "./hasServerModPermission.js";
 import { logger } from "../../logger.js";
-import { createChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
-import { createContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
+import { resolveChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
+import { resolveContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
 // Helper function to check if a user is a channel owner
 async function isUserChannelOwner(username: string, channelName: string, context: GraphQLContext): Promise<boolean> {
-  const repository = context.channelPermissionRepository ?? createChannelPermissionRepository(context.driver);
+  const repository = resolveChannelPermissionRepository(context);
   const channel = await repository.findAuthorizationSnapshot(channelName);
 
   if (!channel) {
@@ -110,7 +110,7 @@ export const canSuspendAndUnsuspendUser = rule({ cache: "contextual" })(
     
     // If channelUniqueName is not provided, look it up from the issue
     if (!channelUniqueName && issueId) {
-      const repository = context.contentChannelPermissionRepository ?? createContentChannelPermissionRepository(context.driver);
+      const repository = resolveContentChannelPermissionRepository(context);
       const issue = await repository.findIssueChannel(issueId);
 
       if (!issue.found) {

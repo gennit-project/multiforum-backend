@@ -5,7 +5,7 @@ import { DiscussionChannelWhere } from "../../../src/generated/graphql.js";
 import { setUserDataOnContext } from "../userDataHelperFunctions.js";
 import { passesAsServerAdminOrRoot } from "../serverAdminOverride.js";
 import { logger } from "../../../logger.js";
-import { createChannelPermissionRepository } from "../../../services/persistence/channelPermissionRepository.js";
+import { resolveChannelPermissionRepository } from "../../../services/persistence/channelPermissionRepository.js";
 import { createContentAuthorizationRepository } from "../../../services/persistence/contentAuthorizationRepository.js";
 
 type IsDiscussionChannelOwnerInput = {
@@ -49,7 +49,7 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
       }
 
       // Next check if the user is an admin of the channel
-      const channelRepository = ctx.channelPermissionRepository ?? createChannelPermissionRepository(ctx.driver);
+      const channelRepository = resolveChannelPermissionRepository(ctx);
       const channel =
         await channelRepository.findAuthorizationSnapshot(channelUniqueName);
 
