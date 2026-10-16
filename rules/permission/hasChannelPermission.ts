@@ -1,6 +1,5 @@
 import { setUserDataOnContext } from "./userDataHelperFunctions.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
-import { ChannelRole } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { getActiveSuspension } from "./getActiveSuspension.js";
 import { getServerConfigForPermissions } from "./getServerConfigForPermissions.js";
@@ -9,11 +8,17 @@ import { createSuspensionNotification } from "./suspensionNotification.js";
 import { passesAsServerAdminOrRoot } from "./serverAdminOverride.js";
 import { logger } from "../../logger.js";
 import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
+import {
+  createChannelPermissionRepository,
+  type ChannelAuthorizationSnapshot,
+  type ChannelPermission,
+} from "../../services/persistence/channelPermissionRepository.js";
 
 type HasChannelPermissionInput = {
-  permission: keyof ChannelRole;
+  permission: ChannelPermission;
   channelName: string;
   context: GraphQLContext;
+  preloadedSnapshot?: ChannelAuthorizationSnapshot | null;
 };
 
 // --- Pure permission decision (extracted for unit testing) ---
@@ -88,8 +93,6 @@ export const hasChannelPermission: (
 ) => Promise<Error | boolean> = async (input: HasChannelPermissionInput) => {
   const { permission, channelName, context } = input;
 
-  const Channel = context.ogm.model("Channel");
-
   if (!context.user?.username) {
     context.user = await setUserDataOnContext({
       context,
@@ -108,54 +111,21 @@ export const hasChannelPermission: (
   }
 
   const username = context.user?.username;
+  const repository =
+    context.channelPermissionRepository ??
+    createChannelPermissionRepository(context.driver);
 
   // Check if user is a channel owner (admin) - channel owners have all permissions
-  const channel = await Channel.find({
-    where: {
-      uniqueName: channelName,
-    },
-    selectionSet: `{
-      Admins {
-        username
-      }
-      ElevatedChannelRole {
-        name
-        canCreateEvent
-        canCreateDiscussion
-        canCreateComment
-        canUpvoteComment
-        canUpvoteDiscussion
-        canUploadFile
-        canUpdateChannel
-      }
-      DefaultChannelRole {
-        name
-        canCreateEvent
-        canCreateDiscussion
-        canCreateComment
-        canUpvoteComment
-        canUpvoteDiscussion
-        canUploadFile
-        canUpdateChannel
-      }
-      SuspendedRole {
-        name
-        canCreateEvent
-        canCreateDiscussion
-        canCreateComment
-        canUpvoteComment
-        canUpvoteDiscussion
-        canUploadFile
-        canUpdateChannel
-      }
-    }`,
-  });
+  const channelData = Object.prototype.hasOwnProperty.call(
+    input,
+    "preloadedSnapshot"
+  )
+    ? input.preloadedSnapshot ?? null
+    : await repository.findAuthorizationSnapshot(channelName);
 
-  if (!channel || !channel[0]) {
+  if (!channelData) {
     return new Error(ERROR_MESSAGES.channel.notFound);
   }
-
-  const channelData = channel[0];
 
   // Channel owners (admins) resolve the channel's elevated role (with a
   // behavior-preserving fallback to all-permissions when none is configured).
@@ -168,8 +138,7 @@ export const hasChannelPermission: (
 
   // Check for an active suspension
   const suspensionInfo = await getActiveSuspension({
-    ogm: context.ogm,
-    driver: context.driver,
+    repository,
     channelUniqueName: channelName,
     username: username ?? undefined,
   });
@@ -240,7 +209,7 @@ export const hasChannelPermission: (
 type CheckChannelPermissionInput = {
   channelConnections: string[];
   context: GraphQLContext;
-  permissionCheck: keyof ChannelRole;
+  permissionCheck: ChannelPermission;
 };
 
 /**
@@ -252,17 +221,10 @@ type CheckChannelPermissionInput = {
  *
  * Returns an Error when the channel is locked, otherwise null.
  */
-async function getChannelLockError(
-  channelName: string,
-  context: GraphQLContext
-): Promise<Error | null> {
-  const Channel = context.ogm.model("Channel");
-  const channel = await Channel.find({
-    where: { uniqueName: channelName },
-    selectionSet: `{ locked }`,
-  });
-
-  if (channel?.[0]?.locked) {
+function getChannelLockError(
+  snapshot: ChannelAuthorizationSnapshot | null
+): Error | null {
+  if (snapshot?.locked) {
     return new Error(ERROR_MESSAGES.channel.locked);
   }
   return null;
@@ -287,7 +249,13 @@ export async function checkChannelPermissions(
   for (const channelConnection of channelConnections) {
     // A locked forum blocks content creation for everyone; surface a clear
     // reason before falling through to the per-role permission check.
-    const lockError = await getChannelLockError(channelConnection, context);
+    const repository =
+      context.channelPermissionRepository ??
+      createChannelPermissionRepository(context.driver);
+    const snapshot = await repository.findAuthorizationSnapshot(
+      channelConnection
+    );
+    const lockError = getChannelLockError(snapshot);
     if (lockError) {
       return lockError;
     }
@@ -296,6 +264,7 @@ export async function checkChannelPermissions(
       permission: permissionCheck,
       channelName: channelConnection,
       context: context,
+      preloadedSnapshot: snapshot,
     });
 
     if (permissionResult instanceof Error) {

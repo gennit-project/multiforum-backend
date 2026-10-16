@@ -8,6 +8,7 @@ import { createSuspensionNotification } from "./suspensionNotification.js";
 import { passesAsServerAdminOrRoot } from "./serverAdminOverride.js";
 import { logger } from "../../logger.js";
 import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
+import { createChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
 
 // Define the moderator permissions as an enum for type safety
 export enum ModChannelPermission {
@@ -91,8 +92,6 @@ export const hasChannelModPermission: (
 ) => Promise<Error | boolean> = async (input: HasChannelModPermissionInput) => {
   const { permission, channelName, context } = input;
 
-  const Channel = context.ogm.model("Channel");
-
   // 1. Check for mod roles on the user object
   context.user = await setUserDataOnContext({
     context,
@@ -112,70 +111,14 @@ export const hasChannelModPermission: (
   }
 
   // 3. Get the channel's mod roles and moderator lists
-  const channel = await Channel.find({
-    where: {
-      uniqueName: channelName,
-    },
-    selectionSet: `{
-      DefaultModRole {
-        canHideComment
-        canHideEvent
-        canHideDiscussion
-        canEditComments
-        canEditDiscussions
-        canEditEvents
-        canGiveFeedback
-        canOpenSupportTickets
-        canCloseSupportTickets
-        canReport
-        canSuspendUser
-        canArchiveImage
-        canDeleteWiki
-      }
-      ElevatedModRole {
-        canHideComment
-        canHideEvent
-        canHideDiscussion
-        canEditComments
-        canEditDiscussions
-        canEditEvents
-        canGiveFeedback
-        canOpenSupportTickets
-        canCloseSupportTickets
-        canReport
-        canSuspendUser
-        canArchiveImage
-        canDeleteWiki
-      }
-      SuspendedModRole {
-        canHideComment
-        canHideEvent
-        canHideDiscussion
-        canEditComments
-        canEditDiscussions
-        canEditEvents
-        canGiveFeedback
-        canOpenSupportTickets
-        canCloseSupportTickets
-        canReport
-        canSuspendUser
-        canArchiveImage
-        canDeleteWiki
-      }
-      SuspendedMods {
-        modProfileName
-      }
-      Moderators {
-        displayName
-      }
-    }`,
-  });
+  const repository =
+    context.channelPermissionRepository ??
+    createChannelPermissionRepository(context.driver);
+  const channelData = await repository.findAuthorizationSnapshot(channelName);
 
-  if (!channel || !channel[0]) {
+  if (!channelData) {
     return new Error(ERROR_MESSAGES.channel.notFound);
   }
-
-  const channelData = channel[0];
   const modProfileName = context.user?.data?.ModerationProfile?.displayName ?? undefined;
 
   // Request-cached (see hasChannelPermission for rationale); the cached
@@ -183,8 +126,7 @@ export const hasChannelModPermission: (
   const serverConfig = await getServerConfigForPermissions(context);
 
   const suspensionInfo = await getActiveSuspension({
-    ogm: context.ogm,
-    driver: context.driver,
+    repository,
     channelUniqueName: channelName,
     modProfileName,
   });

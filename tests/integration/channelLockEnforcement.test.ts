@@ -5,11 +5,10 @@
 //
 // The enforcement lives in checkChannelPermissions (the shared chokepoint that
 // canCreateDiscussion / canCreateEvent / canCreateComment all funnel through),
-// so we exercise that helper directly against a real database. This needs the
-// OGM + live Neo4j because the gate reads the channel's `locked` flag from the
-// graph. The end-to-end shield wiring of the create mutations is covered by the
-// auth tests; here we prove the lock gate itself, across all three content
-// permissions and against the channel-owner bypass.
+// so we exercise that helper directly against live Neo4j. The end-to-end shield
+// wiring of the create mutations is covered by the auth tests; here we prove
+// the repository-backed lock gate itself, across all three content permissions
+// and against the channel-owner bypass.
 
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";

@@ -27,6 +27,7 @@ import {
   type ImageModEnv,
 } from "./imageModerationHarness.js";
 import { getActiveSuspension } from "../../rules/permission/getActiveSuspension.js";
+import { createChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
 import { createSuspensionNotification } from "../../rules/permission/suspensionNotification.js";
 import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
@@ -77,8 +78,7 @@ const notificationsFor = (username: string) =>
 
 test("getActiveSuspension resolves the related issue number from the suspension graph", async () => {
   const info = await getActiveSuspension({
-    ogm: env.ogm,
-    driver: env.driver,
+    repository: createChannelPermissionRepository(env.driver),
     channelUniqueName: "test-channel",
     username: "baduser",
   });
@@ -89,8 +89,7 @@ test("getActiveSuspension resolves the related issue number from the suspension 
 
 test("the suspension block notification links to the related issue with a valid URL", async () => {
   const info = await getActiveSuspension({
-    ogm: env.ogm,
-    driver: env.driver,
+    repository: createChannelPermissionRepository(env.driver),
     channelUniqueName: "test-channel",
     username: "baduser",
   });

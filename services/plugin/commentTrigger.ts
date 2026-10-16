@@ -24,7 +24,7 @@ import { createBotReport } from '../botReportService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
-import type { Ogm } from '../../types/context.js'
+import { createChannelPermissionRepository } from '../persistence/channelPermissionRepository.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Comment, ServerConfig } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 
@@ -551,8 +551,7 @@ export const triggerPluginRunsForComment = async (
           // Check if the bot is suspended before allowing it to comment
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
           const suspensionInfo = await getActiveSuspension({
-            ogm: models as unknown as Ogm,
-            driver,
+            repository: createChannelPermissionRepository(driver),
             channelUniqueName,
             username: botUsername,
           })
@@ -593,8 +592,7 @@ export const triggerPluginRunsForComment = async (
           // Check if the bot is suspended before allowing it to report
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
           const suspensionInfo = await getActiveSuspension({
-            ogm: models as unknown as Ogm,
-            driver,
+            repository: createChannelPermissionRepository(driver),
             channelUniqueName,
             username: botUsername,
           })

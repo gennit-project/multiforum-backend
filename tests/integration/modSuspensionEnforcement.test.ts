@@ -23,6 +23,7 @@ import {
 import { checkChannelModPermissions } from "../../rules/permission/hasChannelModPermission.js";
 import { checkChannelPermissions } from "../../rules/permission/hasChannelPermission.js";
 import { getActiveSuspension } from "../../rules/permission/getActiveSuspension.js";
+import { createChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
 import { disconnectExpiredSuspensions } from "../../rules/permission/disconnectExpiredSuspensions.js";
 
 const CHANNEL = "cats";
@@ -158,8 +159,7 @@ test("an expired mod suspension is detected and cleaned up from the channel", as
   await suspendMod("2000-01-01T00:00:00.000Z");
 
   const info = await getActiveSuspension({
-    ogm: env.ogm,
-    driver: env.driver,
+    repository: createChannelPermissionRepository(env.driver),
     channelUniqueName: CHANNEL,
     modProfileName: MOD_PROFILE,
   });
