@@ -3,30 +3,86 @@
 // throws on failure (shield's `.resolve` wrapper caches/swallows, so we call
 // `.func` directly). We drive the argument-validation, not-found, and no-channel
 // guard branches, plus the permission-check path with a fuller context (which
-// denies for a user with no channel permission). In-memory OGM + driver; no DB.
+// denies for a user with no channel permission). Repository seams only; no DB.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { canUpvoteComment, canSuperUpvote, canUpvoteDiscussion } from "./votingRules.js";
 
 const run = (r: any, args: any, ctx: any) => (r as any).func({}, args, ctx, {} as any);
 
-// A ctx whose models return the supplied rows. A pre-set user short-circuits the
-// identity lookup inside the permission check; ServerConfig/Channel rows let the
-// permission check run to a (deny) decision rather than crashing.
-function makeCtx(rows: Record<string, unknown[]> = {}) {
+type LookupCounters = {
+  commentCalls: number;
+  discussionCalls: number;
+  permissionChannels: string[];
+};
+
+const makeCounters = (): LookupCounters => ({
+  commentCalls: 0,
+  discussionCalls: 0,
+  permissionChannels: [],
+});
+
+// A pre-set user short-circuits identity lookup. The repository seam maps the
+// old OGM-shaped fixtures into the narrow records consumed by the rules, while
+// ogm.model throws to prove voting authorization never falls back to the OGM.
+function makeCtx(
+  rows: Record<string, unknown[]> = {},
+  counters = makeCounters()
+) {
   return {
     user: { username: "alice", email: "alice@x.test", data: { username: "alice" } },
     req: { headers: {} },
-    driver: { session: () => ({ run: async () => ({ records: [] }), close: async () => {} }) },
+    driver: {},
     permissionServerConfigRepository: {
       findByName: async () => rows.ServerConfig?.[0] ?? null,
     },
-    ogm: { model: (name: string) => ({ find: async () => rows[name] ?? [] }) },
+    contentChannelPermissionRepository: {
+      async findCommentChannelReferences() {
+        counters.commentCalls += 1;
+        const comment = rows.Comment?.[0] as any;
+        return comment
+          ? {
+              found: true,
+              discussionChannelUniqueName:
+                comment.DiscussionChannel?.channelUniqueName ?? null,
+              directChannelUniqueName: comment.Channel?.uniqueName ?? null,
+            }
+          : {
+              found: false,
+              discussionChannelUniqueName: null,
+              directChannelUniqueName: null,
+            };
+      },
+      async findDiscussionChannelReference() {
+        counters.discussionCalls += 1;
+        const discussionChannel = rows.DiscussionChannel?.[0] as any;
+        return discussionChannel
+          ? {
+              found: true,
+              channelUniqueName: discussionChannel.channelUniqueName ?? null,
+            }
+          : { found: false, channelUniqueName: null };
+      },
+    },
+    channelPermissionRepository: {
+      async findAuthorizationSnapshot(channelName: string) {
+        counters.permissionChannels.push(channelName);
+        return null;
+      },
+      async findTargetedSuspensions() {
+        return { userSuspensions: [], modSuspensions: [] };
+      },
+    },
+    ogm: {
+      model() {
+        throw new Error("voting authorization must not use ogm.model");
+      },
+    },
   } as any;
 }
 
 const withChannelCtx = (extra: Record<string, unknown[]>) =>
-  makeCtx({ ServerConfig: [{ Admins: [], SuperAdmins: [] }], Channel: [{ uniqueName: "cats", Admins: [], Moderators: [] }], ...extra });
+  makeCtx({ ServerConfig: [{ Admins: [], SuperAdmins: [] }], ...extra });
 
 // A permission-check denial may throw noChannelPermission or return an Error;
 // accept either as "denied and the tail ran".
@@ -55,13 +111,33 @@ test("canUpvoteComment throws when the comment has no channel", async () => {
 });
 
 test("canUpvoteComment falls back to the direct Channel relationship", async () => {
-  const ctx = withChannelCtx({ Comment: [{ id: "c-1", DiscussionChannel: null, Channel: { uniqueName: "cats" } }] });
+  const counters = makeCounters();
+  const ctx = makeCtx(
+    {
+      ServerConfig: [{ Admins: [], SuperAdmins: [] }],
+      Comment: [{ id: "c-1", DiscussionChannel: null, Channel: { uniqueName: "cats" } }],
+    },
+    counters
+  );
   await expectDeniedOrError(run(canUpvoteComment, { commentId: "c-1", username: "alice" }, ctx));
+  assert.deepEqual(counters.permissionChannels, ["cats"]);
 });
 
 test("canUpvoteComment runs the permission check and denies without channel permission", async () => {
-  const ctx = withChannelCtx({ Comment: [{ id: "c-1", DiscussionChannel: { channelUniqueName: "cats" } }] });
+  const counters = makeCounters();
+  const ctx = makeCtx(
+    {
+      ServerConfig: [{ Admins: [], SuperAdmins: [] }],
+      Comment: [{
+        id: "c-1",
+        DiscussionChannel: { channelUniqueName: "cats" },
+        Channel: { uniqueName: "dogs" },
+      }],
+    },
+    counters
+  );
   await expectDeniedOrError(run(canUpvoteComment, { commentId: "c-1", username: "alice" }, ctx));
+  assert.deepEqual(counters.permissionChannels, ["cats"]);
 });
 
 // ---- canSuperUpvote ----
@@ -85,9 +161,27 @@ test("canSuperUpvote resolves a discussion source channel", async () => {
 });
 
 test("canSuperUpvote uses a provided channel name directly", async () => {
-  const ctx = withChannelCtx({});
+  const counters = makeCounters();
+  const ctx = makeCtx(
+    { ServerConfig: [{ Admins: [], SuperAdmins: [] }] },
+    counters
+  );
   await expectDeniedOrError(
     run(canSuperUpvote, { sourceType: "comment", sourceId: "c-1", sourceChannelUniqueName: "cats" }, ctx)
+  );
+  assert.equal(counters.commentCalls, 0);
+  assert.equal(counters.discussionCalls, 0);
+  assert.deepEqual(counters.permissionChannels, ["cats"]);
+});
+
+test("canSuperUpvote preserves the missing-channel error for unknown sources", async () => {
+  await assert.rejects(
+    run(
+      canSuperUpvote,
+      { sourceType: "comment", sourceId: "missing" },
+      makeCtx()
+    ),
+    /No channel found/
   );
 });
 
@@ -101,6 +195,17 @@ test("canUpvoteDiscussion throws when the discussion channel is not found", asyn
   await assert.rejects(
     run(canUpvoteDiscussion, { discussionChannelId: "dc-1", username: "alice" }, makeCtx({ DiscussionChannel: [] })),
     /No discussion channel/
+  );
+});
+
+test("canUpvoteDiscussion distinguishes an entry without a channel name", async () => {
+  await assert.rejects(
+    run(
+      canUpvoteDiscussion,
+      { discussionChannelId: "dc-orphan", username: "alice" },
+      makeCtx({ DiscussionChannel: [{ id: "dc-orphan" }] })
+    ),
+    /No channel found/
   );
 });
 

@@ -144,6 +144,7 @@ test("finds issue channels and preserves both comment channel references", async
       id: "discussion-channel-1",
       channelUniqueName: "discussion"
     })
+    CREATE (:DiscussionChannel {id: "discussion-channel-orphan"})
     CREATE (directChannel:Channel {uniqueName: "direct"})
     CREATE (discussionEntry)-[:CONTAINS_COMMENT]->(comment)
     CREATE (directChannel)-[:HAS_COMMENT]->(comment)
@@ -180,4 +181,18 @@ test("finds issue channels and preserves both comment channel references", async
     discussionChannelUniqueName: null,
     directChannelUniqueName: null,
   });
+  assert.deepEqual(
+    await repository.findDiscussionChannelReference("discussion-channel-1"),
+    { found: true, channelUniqueName: "discussion" }
+  );
+  assert.deepEqual(
+    await repository.findDiscussionChannelReference(
+      "discussion-channel-orphan"
+    ),
+    { found: true, channelUniqueName: null }
+  );
+  assert.deepEqual(
+    await repository.findDiscussionChannelReference("missing"),
+    { found: false, channelUniqueName: null }
+  );
 });

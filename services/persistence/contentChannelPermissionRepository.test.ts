@@ -4,6 +4,7 @@ import neo4j, { type Driver } from "neo4j-driver";
 import {
   FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
   FIND_COMMENT_CHANNELS_QUERY,
+  FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY,
   FIND_DISCUSSION_CHANNELS_QUERY,
   FIND_EVENT_CHANNELS_QUERY,
   FIND_ISSUE_CHANNEL_QUERY,
@@ -26,6 +27,9 @@ test("single-content lookups preserve distinct channel references", async () => 
           calls.push({ query, parameters });
           if (query === FIND_ISSUE_CHANNEL_QUERY) {
             return { records: [record({ channelUniqueName: "issues" })] };
+          }
+          if (query === FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY) {
+            return { records: [record({ channelUniqueName: "discussion" })] };
           }
           return {
             records: [
@@ -54,24 +58,38 @@ test("single-content lookups preserve distinct channel references", async () => 
     discussionChannelUniqueName: "discussion",
     directChannelUniqueName: "direct",
   });
+  assert.deepEqual(
+    await repository.findDiscussionChannelReference("discussion-channel-1"),
+    {
+      found: true,
+      channelUniqueName: "discussion",
+    }
+  );
   assert.deepEqual(calls, [
     { query: FIND_ISSUE_CHANNEL_QUERY, parameters: { id: "issue-1" } },
     {
       query: FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
       parameters: { id: "comment-1" },
     },
+    {
+      query: FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY,
+      parameters: { id: "discussion-channel-1" },
+    },
   ]);
-  assert.equal(closeCalls, 2);
+  assert.equal(closeCalls, 3);
 });
 
 test("single-content lookups distinguish missing and empty references", async () => {
-  let call = 0;
   const driver = {
     session() {
       return {
-        async run() {
-          call += 1;
-          if (call === 1) return { records: [] };
+        async run(query: string) {
+          if (
+            query === FIND_ISSUE_CHANNEL_QUERY ||
+            query === FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY
+          ) {
+            return { records: [] };
+          }
           return {
             records: [
               record({
@@ -97,6 +115,10 @@ test("single-content lookups distinguish missing and empty references", async ()
     discussionChannelUniqueName: null,
     directChannelUniqueName: null,
   });
+  assert.deepEqual(
+    await repository.findDiscussionChannelReference("missing-entry"),
+    { found: false, channelUniqueName: null }
+  );
 });
 
 test("content channel lookups are parameterized, leader-routed, and normalized", async () => {
