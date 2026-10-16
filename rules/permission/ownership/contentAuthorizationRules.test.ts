@@ -422,6 +422,28 @@ test("channel ownership handles channel-less issues and where.id lookups", async
   assert.deepEqual(issueIds, ["issue-from-where"]);
 });
 
+test("channel ownership denies an anonymous caller", async () => {
+  const context = makeContext();
+  context.user = {
+    username: null,
+    email: null,
+    email_verified: false,
+    data: { ModerationProfile: null },
+  };
+  context.req = { headers: {} };
+  context.channelPermissionRepository.findAuthorizationSnapshot = async () =>
+    channelSnapshot([]);
+
+  assert.equal(
+    await run(
+      isChannelOwner,
+      { channelUniqueName: "cats", where: {} },
+      context
+    ),
+    false
+  );
+});
+
 test("discussion-channel ownership short-circuits authors before channel admins", async () => {
   const authorContext = makeContext();
   let channelCalls = 0;

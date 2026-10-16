@@ -65,6 +65,20 @@ test("archive-comment resolves issue then direct comment channel", async () => {
   assert.deepEqual(calls, ["issue:issue-1", "comment:comment-1"]);
 });
 
+test("archive-comment resolves an issue-only target", async () => {
+  const { calls, context, jwtError } = makeContext();
+
+  assert.equal(
+    await run(
+      canArchiveAndUnarchiveComment,
+      { issueId: "issue-only" },
+      context
+    ),
+    jwtError
+  );
+  assert.deepEqual(calls, ["issue:issue-only"]);
+});
+
 test("direct channels skip target lookups", async () => {
   const { calls, context, jwtError } = makeContext();
 
