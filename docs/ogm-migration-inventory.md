@@ -134,6 +134,14 @@ while preserving comment channel precedence and the caller-supplied channel
 fast path. This reduces production files with direct `ogm.model(...)` access to
 30 and direct calls to 96; generated OGM type imports remain at 172.
 
+Comment-creation authorization now reads parent-comment, discussion-entry, and
+event-entry state through a driver-backed repository. Missing-target behavior,
+lock and archive enforcement, feedback permission routing, and the compound
+event/channel membership check remain unchanged. These reads specify the
+configured database and stay leader-routed for bookmark consistency. This
+reduces production files with direct `ogm.model(...)` access to 29 and direct
+calls to 91; generated OGM type imports remain at 172.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

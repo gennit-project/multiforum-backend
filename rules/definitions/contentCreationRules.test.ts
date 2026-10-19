@@ -2,7 +2,7 @@
 // raw resolver as `.func(parent, args, ctx, info)`, which runs the real logic
 // and throws on failure. We drive the guard branches (missing input / channel /
 // resolvable channel name) directly, and the permission-check tail with a fuller
-// context that denies for a user with no permission. In-memory OGM + driver; no DB.
+// context that denies for a user with no permission. Repository seams only; no DB.
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -15,19 +15,99 @@ import {
 
 const run = (r: any, args: any, ctx: any) => (r as any).func({}, args, ctx, {} as any);
 
-function makeCtx(rows: Record<string, unknown[]> = {}) {
+type LookupCounters = {
+  parentComments: string[];
+  discussionChannels: string[];
+  eventChannels: Array<{ eventId: string; channelUniqueName: string }>;
+  permissionChannels: string[];
+};
+
+const makeCounters = (): LookupCounters => ({
+  parentComments: [],
+  discussionChannels: [],
+  eventChannels: [],
+  permissionChannels: [],
+});
+
+function makeCtx(
+  rows: Record<string, unknown[]> = {},
+  counters = makeCounters()
+) {
   return {
     user: { username: "alice", email: "alice@x.test", data: { username: "alice" } },
     req: { headers: {} },
-    driver: { session: () => ({ run: async () => ({ records: [] }), close: async () => {} }) },
+    driver: {
+      session: () => ({
+        run: async () => ({ records: [] }),
+        close: async () => {},
+      }),
+    },
     permissionServerConfigRepository: {
       findByName: async () => rows.ServerConfig?.[0] ?? null,
     },
-    ogm: { model: (name: string) => ({ find: async () => rows[name] ?? [] }) },
+    commentCreationAuthorizationRepository: {
+      async findParentCommentState(commentId: string) {
+        counters.parentComments.push(commentId);
+        const comment = rows.Comment?.[0] as any;
+        return comment
+          ? { found: true, archived: comment.archived ?? null }
+          : { found: false, archived: null };
+      },
+      async findDiscussionChannelState(discussionChannelId: string) {
+        counters.discussionChannels.push(discussionChannelId);
+        const entry = rows.DiscussionChannel?.[0] as any;
+        return entry
+          ? {
+              found: true,
+              channelUniqueName: entry.channelUniqueName ?? null,
+              locked: entry.locked ?? null,
+              archived: entry.archived ?? null,
+            }
+          : {
+              found: false,
+              channelUniqueName: null,
+              locked: null,
+              archived: null,
+            };
+      },
+      async findEventChannelState(
+        eventId: string,
+        channelUniqueName: string
+      ) {
+        counters.eventChannels.push({ eventId, channelUniqueName });
+        const entry = (rows.EventChannel ?? []).find(
+          (candidate: any) =>
+            (!candidate.eventId || candidate.eventId === eventId) &&
+            (!candidate.channelUniqueName ||
+              candidate.channelUniqueName === channelUniqueName)
+        ) as any;
+        return entry
+          ? {
+              found: true,
+              locked: entry.locked ?? null,
+              archived: entry.archived ?? null,
+            }
+          : { found: false, locked: null, archived: null };
+      },
+    },
+    channelPermissionRepository: {
+      async findAuthorizationSnapshot(channelName: string) {
+        counters.permissionChannels.push(channelName);
+        return null;
+      },
+      async findTargetedSuspensions() {
+        return { userSuspensions: [], modSuspensions: [] };
+      },
+    },
+    ogm: {
+      model() {
+        throw new Error("comment creation authorization must not use ogm.model");
+      },
+    },
   } as any;
 }
 const permCtx = (extra: Record<string, unknown[]> = {}) =>
-  makeCtx({ ServerConfig: [{ Admins: [], SuperAdmins: [] }], Channel: [{ uniqueName: "cats", Admins: [], Moderators: [] }], ...extra });
+  makeCtx({ ServerConfig: [{ Admins: [], SuperAdmins: [] }], ...extra });
 
 async function ranToDecision(promise: Promise<unknown>) {
   try {
@@ -102,6 +182,95 @@ test("canCreateComment rejects a reply to an archived parent comment", async () 
   await assert.rejects(run(canCreateComment, { input }, ctx), /archived/);
 });
 
+test("canCreateComment rejects a reply when the parent comment is missing", async () => {
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    ParentComment: { connect: { where: { node: { id: "missing" } } } },
+  }];
+  await assert.rejects(
+    run(canCreateComment, { input }, permCtx()),
+    /Could not find the comment being replied to/
+  );
+});
+
+test("canCreateComment rejects locked and archived discussion entries", async () => {
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    DiscussionChannel: { connect: { where: { node: { id: "dc-1" } } } },
+  }];
+
+  await assert.rejects(
+    run(
+      canCreateComment,
+      { input },
+      permCtx({
+        DiscussionChannel: [{
+          channelUniqueName: "cats",
+          locked: true,
+          archived: false,
+        }],
+      })
+    ),
+    /locked discussion/
+  );
+  await assert.rejects(
+    run(
+      canCreateComment,
+      { input },
+      permCtx({
+        DiscussionChannel: [{
+          channelUniqueName: "cats",
+          locked: false,
+          archived: true,
+        }],
+      })
+    ),
+    /archived discussion/
+  );
+});
+
+test("canCreateComment preserves DiscussionChannel identifier errors", async () => {
+  const withoutId = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    DiscussionChannel: { connect: { where: { node: {} } } },
+  }];
+  await assert.rejects(
+    run(canCreateComment, { input: withoutId }, permCtx()),
+    /No discussion channel ID found/
+  );
+
+  const missing = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    DiscussionChannel: { connect: { where: { node: { id: "missing" } } } },
+  }];
+  await assert.rejects(
+    run(canCreateComment, { input: missing }, permCtx()),
+    /No discussion channel found/
+  );
+});
+
+test("canCreateComment rejects a DiscussionChannel without a channel name", async () => {
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    DiscussionChannel: { connect: { where: { node: { id: "dc-orphan" } } } },
+  }];
+  await assert.rejects(
+    run(
+      canCreateComment,
+      { input },
+      permCtx({
+        DiscussionChannel: [{
+          id: "dc-orphan",
+          channelUniqueName: null,
+          locked: false,
+          archived: false,
+        }],
+      })
+    ),
+    /No channel name found/
+  );
+});
+
 test("canCreateComment resolves the channel via an Event submission", async () => {
   const input = [{
     Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
@@ -120,10 +289,134 @@ test("canCreateComment throws when the Event submission is not in the channel", 
   await assert.rejects(run(canCreateComment, { input }, ctx), /Could not find the event/);
 });
 
+test("canCreateComment requires an Event submission in the requested channel", async () => {
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    Event: { connect: { where: { node: { id: "e-1" } } } },
+  }];
+  const ctx = permCtx({
+    EventChannel: [{
+      id: "ec-1",
+      eventId: "e-1",
+      channelUniqueName: "dogs",
+      locked: false,
+      archived: false,
+    }],
+  });
+  await assert.rejects(
+    run(canCreateComment, { input }, ctx),
+    /Could not find the event submission in the given channel/
+  );
+});
+
+test("canCreateComment rejects archived Event submissions", async () => {
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    Event: { connect: { where: { node: { id: "e-1" } } } },
+  }];
+  const ctx = permCtx({
+    EventChannel: [{
+      id: "ec-1",
+      eventId: "e-1",
+      channelUniqueName: "cats",
+      locked: false,
+      archived: true,
+    }],
+  });
+  await assert.rejects(
+    run(canCreateComment, { input }, ctx),
+    /archived event/
+  );
+});
+
+test("canCreateComment rejects locked Event submissions", async () => {
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    Event: { connect: { where: { node: { id: "e-1" } } } },
+  }];
+  const ctx = permCtx({
+    EventChannel: [{
+      id: "ec-1",
+      eventId: "e-1",
+      channelUniqueName: "cats",
+      locked: true,
+      archived: false,
+    }],
+  });
+  await assert.rejects(
+    run(canCreateComment, { input }, ctx),
+    /locked event/
+  );
+});
+
+test("canCreateComment preserves missing Event identifier errors", async () => {
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    Event: { connect: { where: { node: {} } } },
+  }];
+  await assert.rejects(
+    run(canCreateComment, { input }, permCtx()),
+    /No event ID found/
+  );
+});
+
 test("canCreateComment treats a feedback comment as a mod-permission check", async () => {
   const input = [{
     Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
     GivesFeedbackOnComment: { connect: { where: { node: { id: "c-9" } } } },
   }];
   await ranToDecision(run(canCreateComment, { input }, permCtx()));
+});
+
+test("canCreateComment resolves Event feedback through the compound target", async () => {
+  const counters = makeCounters();
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    GivesFeedbackOnEvent: { connect: { where: { node: { id: "e-1" } } } },
+  }];
+  const ctx = makeCtx(
+    {
+      ServerConfig: [{ Admins: [], SuperAdmins: [] }],
+      EventChannel: [{
+        id: "ec-1",
+        eventId: "e-1",
+        channelUniqueName: "cats",
+      }],
+    },
+    counters
+  );
+
+  await ranToDecision(run(canCreateComment, { input }, ctx));
+  assert.deepEqual(counters.eventChannels, [{
+    eventId: "e-1",
+    channelUniqueName: "cats",
+  }]);
+  assert.deepEqual(counters.permissionChannels, ["cats"]);
+});
+
+test("canCreateComment reuses the DiscussionChannel lookup for feedback", async () => {
+  const counters = makeCounters();
+  const input = [{
+    Channel: { connect: { where: { node: { uniqueName: "cats" } } } },
+    DiscussionChannel: { connect: { where: { node: { id: "dc-1" } } } },
+    GivesFeedbackOnDiscussion: {
+      connect: { where: { node: { id: "discussion-1" } } },
+    },
+  }];
+  const ctx = makeCtx(
+    {
+      ServerConfig: [{ Admins: [], SuperAdmins: [] }],
+      DiscussionChannel: [{
+        id: "dc-1",
+        channelUniqueName: "cats",
+        locked: false,
+        archived: false,
+      }],
+    },
+    counters
+  );
+
+  await ranToDecision(run(canCreateComment, { input }, ctx));
+  assert.deepEqual(counters.discussionChannels, ["dc-1"]);
+  assert.deepEqual(counters.permissionChannels, ["cats"]);
 });

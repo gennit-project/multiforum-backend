@@ -11,6 +11,10 @@ import {
   DiscussionCreateInput,
   EventCreateInput,
 } from "../../src/generated/graphql.js";
+import {
+  resolveCommentCreationAuthorizationRepository,
+  type DiscussionCommentTargetState,
+} from "../../services/persistence/commentCreationAuthorizationRepository.js";
 
 // Locked content is read-only and archived content is closed: no new comments
 // (or replies) may be created on a locked/archived discussion, event, or
@@ -132,21 +136,23 @@ export const canCreateComment = rule({ cache: "contextual" })(
       throw new Error("Comment must be connected to a Channel.");
     }
 
+    const repository = resolveCommentCreationAuthorizationRepository(ctx);
+
     // Replies cannot be made to an archived comment.
     const parentCommentId = ParentComment?.connect?.where?.node?.id;
     if (parentCommentId) {
-      const commentModel = ctx.ogm.model("Comment");
-      const parentComments = await commentModel.find({
-        where: { id: parentCommentId },
-        selectionSet: `{ id archived }`,
-      });
-      if (!parentComments || !parentComments[0]) {
+      const parentComment =
+        await repository.findParentCommentState(parentCommentId);
+      if (!parentComment.found) {
         throw new Error("Could not find the comment being replied to.");
       }
-      assertParentNotLockedOrArchived(parentComments[0], "comment");
+      assertParentNotLockedOrArchived(parentComment, "comment");
     }
 
     let channelName = '';
+    let discussionChannelState:
+      | DiscussionCommentTargetState
+      | undefined;
 
     // Determine if this is a feedback comment
     const isFeedbackComment = !!(GivesFeedbackOnEvent || GivesFeedbackOnDiscussion || GivesFeedbackOnComment);
@@ -158,20 +164,19 @@ export const canCreateComment = rule({ cache: "contextual" })(
         throw new Error("No discussion channel ID found.");
       }
 
-      // Look up the channelUniqueName from the discussion channel ID.
-      const discussionChannelModel = ctx.ogm.model("DiscussionChannel");
-      const discussionChannel = await discussionChannelModel.find({
-        where: { id: discussionChannelId },
-        selectionSet: `{ channelUniqueName locked archived }`,
-      });
+      discussionChannelState =
+        await repository.findDiscussionChannelState(discussionChannelId);
 
-      if (!discussionChannel || !discussionChannel[0]) {
+      if (!discussionChannelState.found) {
         throw new Error("No discussion channel found.");
       }
 
-      assertParentNotLockedOrArchived(discussionChannel[0], "discussion");
+      assertParentNotLockedOrArchived(
+        discussionChannelState,
+        "discussion"
+      );
 
-      channelName = discussionChannel[0]?.channelUniqueName;
+      channelName = discussionChannelState.channelUniqueName || '';
     }
 
     if (Event) {
@@ -184,20 +189,16 @@ export const canCreateComment = rule({ cache: "contextual" })(
       // Validate that the user has permission to comment on the event.
       // The channel that they are posting in needs to match one of the
       // channels that the event is connected to.
-      const eventChannelModel = ctx.ogm.model("EventChannel");
-      const event = await eventChannelModel.find({
-        where: {
-          eventId,
-          channelUniqueName: Channel?.connect?.where?.node?.uniqueName
-        },
-        selectionSet: `{ id locked archived }`,
-      });
+      const event = await repository.findEventChannelState(
+        eventId,
+        Channel.connect.where.node.uniqueName
+      );
 
-      if (!event || !event[0]) {
+      if (!event.found) {
         throw new Error("Could not find the event submission in the given channel.");
       }
 
-      assertParentNotLockedOrArchived(event[0], "event");
+      assertParentNotLockedOrArchived(event, "event");
 
       channelName = Channel?.connect?.where?.node?.uniqueName
     }
@@ -212,16 +213,12 @@ export const canCreateComment = rule({ cache: "contextual" })(
       // Validate that the user has permission to comment on the event.
       // The channel that they are posting in needs to match one of the
       // channels that the event is connected to.
-      const eventChannelModel = ctx.ogm.model("EventChannel");
-      const event = await eventChannelModel.find({
-        where: {
-          eventId,
-          channelUniqueName: Channel?.connect?.where?.node?.uniqueName
-        },
-        selectionSet: `{ id }`,
-      });
+      const event = await repository.findEventChannelState(
+        eventId,
+        Channel.connect.where.node.uniqueName
+      );
 
-      if (!event || !event[0]) {
+      if (!event.found) {
         throw new Error("Could not find the event submission in the given channel.");
       }
 
@@ -237,18 +234,14 @@ export const canCreateComment = rule({ cache: "contextual" })(
         throw new Error("No discussion channel ID found.");
       }
 
-      // Look up the channelUniqueName from the discussion channel ID.
-      const discussionChannelModel = ctx.ogm.model("DiscussionChannel");
-      const discussionChannel = await discussionChannelModel.find({
-        where: { id: discussionChannelId },
-        selectionSet: `{ channelUniqueName }`,
-      });
+      discussionChannelState ??=
+        await repository.findDiscussionChannelState(discussionChannelId);
 
-      if (!discussionChannel || !discussionChannel[0]) {
+      if (!discussionChannelState.found) {
         throw new Error("No discussion channel found.");
       }
 
-      channelName = discussionChannel[0]?.channelUniqueName;
+      channelName = discussionChannelState.channelUniqueName || '';
     }
 
     if (GivesFeedbackOnComment) {
