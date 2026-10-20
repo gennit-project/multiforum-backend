@@ -81,12 +81,13 @@
       "baselineCrudSites": 10,
       "dependencies": "None; preserve existing raw writes",
       "acceptance": "Missing targets, repeats, selected response parity; no new events",
-      "status": "reviewed",
-      "commit": null,
+      "status": "complete",
+      "commit": "776e0847d5f52f8e5ba8bd88a8e177c87e4ccca1",
       "review": "Independent review_subscription: numerical/ID/APOC/array parity findings resolved; no blocking findings",
       "verification": [
         "22 focused units and 27 live production-schema parity tests passed",
-        "Independent reviewer reran 22 units; full working-tree lint/tsc/1912units passed"
+        "Independent reviewer reran 22 units; full working-tree lint/tsc/1912units passed",
+        "Exact source tree: TypeScript,22 focused units,27 live tests,build and circular checks passed; cumulative hook1912units/lint/tsc passed"
       ]
     },
     {
@@ -774,5 +775,19 @@
   ],
   "remainingRuntimeCrudSites": 462,
   "remainingModelAcquisitionsIncludingOptional": 97,
-  "remainingRuntimeCrudFiles": 139
+  "remainingRuntimeCrudFiles": 139,
+  "foundations": [
+    {
+      "id": "F01",
+      "scope": "Supported generated schema operations for named domain snapshots",
+      "status": "reviewed",
+      "commit": null,
+      "runtimeCrudSitesRemoved": 0,
+      "review": "review_slice1 independently approved; parent reviewed live tests",
+      "verification": [
+        "5 focused units and4 live production OGM parity tests passed",
+        "Explicit executionContext/custom rootValue are NOT supported; characterize separately before migrating such callers"
+      ]
+    }
+  ]
 }

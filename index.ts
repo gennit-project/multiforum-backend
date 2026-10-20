@@ -1,3 +1,4 @@
+import { registerGeneratedSchema } from "./services/persistence/generatedSchemaOperations.js";
 import { createSubscriptionEngine } from "./services/subscriptionEngine.js";
 import { createChannelCreatorModeratorService } from "./services/channelCreatorModerator.js";
 import { createChannelCreatorModeratorRepository } from "./services/persistence/channelCreatorModeratorRepository.js";
@@ -223,6 +224,7 @@ async function initializeServer() {
     await ensureCriticalPropertyConstraints(driver, edition);
 
     const ogmSchema = await neoSchema.getSchema();
+    registerGeneratedSchema(driver, ogmSchema);
     initializeOgmFromExistingSchema(ogm, neoSchema, ogmSchema);
     let schema = ogmSchema;
     type AppMiddleware = IMiddleware<unknown, GraphQLContext>;

@@ -42,7 +42,7 @@ All rows start pending. A slice is complete only with independent review, commit
 | 01 Age policy/setup | 2 | None; first implementation slice | Missing/default policy, cache, absent config and setup flags | complete |
 | 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | complete |
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
-| 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | reviewed; commit evidence below |
+| 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | complete |
 | 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | pending |
 | 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | pending |
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | pending |
@@ -130,3 +130,15 @@ Commit `021f3a0d86c07b033587fef752e9a081f623879a` ([diff](https://github.com/gen
 ### Slice 04 — subscription response reads
 
 Removed 10 CRUD sites (462 remain in 139 files; acquisitions remain 97). Existing raw writes and their event behavior are unchanged. Independent `review_subscription` approved after preserving legacy numerical/ID/array and APOC temporal transformations. Targeted units 22/22 and live production-schema parity 27/27 passed, including repeated actual resolver operations. Exact commit evidence follows in next ledger update.
+
+### Slice 04 committed evidence
+
+Commit `776e0847d5f52f8e5ba8bd88a8e177c87e4ccca1` ([diff](https://github.com/gennit-project/multiforum-backend/commit/776e0847d5f52f8e5ba8bd88a8e177c87e4ccca1)). Exact source tree passed TypeScript, 22 focused units, 27 live tests, build and circular-dependency checks. Cumulative hook lint/TypeScript and 1,912 unit tests passed. Published with slices01/02 in draft PR #354.
+
+### Foundation F01 — supported schema execution
+
+Explicitly register the unwrapped production schema by driver before applying middleware. Named domain documents use supported graphql() parsing/validation/coercion and original default context/root/first-error semantics. No generic model API, request-auth inheritance or production OGM introspection. Independent reviewer review_slice1 approved; 5 unit and 4 live parity tests passed. No domain CRUD count reduction. This initial executor does not accept executionContext/custom rootValue; those migrations require separate characterization and reviewed extension.
+
+### Test execution environment
+
+Checks use Node26/pnpm10 with an infrastructure-only child environment (HOME/USER/LOGNAME/SHELL/TMPDIR/LANG/LC_ALL/TERM/CI/Docker connection variables plus pinned PATH, TS_NODE_TRANSPILE_ONLY=true, TESTCONTAINERS_REUSE_ENABLE=false). Application configuration and credentials are excluded. An initial unsanitized unit run failed due inherited server/mail settings and was interrupted; one existing mail test attempted a provider request that failed to resolve. No successful delivery was reported. Sanitized reruns passed. This changes only test child environments, never stored credentials.
