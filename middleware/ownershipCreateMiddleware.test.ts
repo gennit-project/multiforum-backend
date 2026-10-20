@@ -19,6 +19,7 @@ type ContextParams = {
 
 const createContext = ({ username, userExists = true }: ContextParams) =>
   ({
+    driver: {},
     req: {
       headers: username
         ? {
@@ -29,16 +30,11 @@ const createContext = ({ username, userExists = true }: ContextParams) =>
           }
         : {},
     },
-    ogm: {
-      model: (name: string) => {
-        if (name !== "User") throw new Error(`Unexpected model lookup: ${name}`);
-        return {
-          find: async ({ where }: { where: { username?: string } }) =>
-            userExists && where.username === username
-              ? [{ username, ModerationProfile: null }]
-              : [],
-        };
-      },
+    requestIdentityRepository: {
+      findByUsername: async () => null,
+      findByEmail: async () => null,
+      userExists: async (candidate: string) =>
+        userExists && candidate === username,
     },
   }) as unknown as GraphQLContext;
 

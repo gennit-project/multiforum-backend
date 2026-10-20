@@ -43,17 +43,7 @@ const channelCreatorModeratorMiddleware = {
           return result;
         }
 
-        const User = context.ogm.model('User');
-        const userWithProfile = await User.find({
-          where: { username: userData.username },
-          selectionSet: `{
-            ModerationProfile {
-              displayName
-            }
-          }`,
-        });
-
-        const displayName = userWithProfile[0]?.ModerationProfile?.displayName;
+        const displayName = userData.data?.ModerationProfile?.displayName;
 
         if (!displayName) {
           logger.warn(`⚠️ User ${userData.username} has no ModerationProfile, skipping moderator assignment`);

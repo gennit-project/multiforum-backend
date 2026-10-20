@@ -71,6 +71,16 @@ const createDriver = () => ({
   }),
 });
 
+const requestIdentityRepository = {
+  findByUsername: async () => ({
+    username: "alice",
+    dateOfBirth: null,
+    modProfileName: "mod-alice",
+  }),
+  findByEmail: async () => null,
+  userExists: async () => true,
+};
+
 const createContext = (userModel: ModelStub): GraphQLContext => (({
   req: {
     headers: {
@@ -92,6 +102,7 @@ const createContext = (userModel: ModelStub): GraphQLContext => (({
     },
   },
   driver: createDriver(),
+  requestIdentityRepository,
 }) as unknown as GraphQLContext);
 
 const createUserModel = () =>

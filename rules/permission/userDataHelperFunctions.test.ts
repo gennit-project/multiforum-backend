@@ -32,9 +32,6 @@ const createIdentityDriver = (identity: {
   let closeCalls = 0;
   let query = "";
   const driver = {
-    executeQuery() {
-      throw new Error("getPersistedRequestUser should use a request session");
-    },
     session() {
       sessionCalls += 1;
       return {
@@ -78,25 +75,38 @@ test("skips persisted identity lookup without an email or username", async () =>
   assert.equal(result, null);
 });
 
-test("skips the raw query for scoped drivers without executeQuery", async () => {
+test("uses an injected identity repository without opening a driver session", async () => {
   const driver = {
     session() {
-      throw new Error("the compatibility path must not open a raw session");
+      throw new Error("the injected repository should handle the lookup");
     },
   } as unknown as Driver;
+  let requestedEmail = "";
 
   const result = await getPersistedRequestUser({
     driver,
     email: "alice@example.test",
+    requestIdentityRepository: {
+      findByUsername: async () => null,
+      findByEmail: async (email) => {
+        requestedEmail = email;
+        return {
+          username: "alice",
+          dateOfBirth: null,
+          modProfileName: null,
+        };
+      },
+      userExists: async () => true,
+    },
   });
 
-  assert.equal(result, null);
+  assert.equal(requestedEmail, "alice@example.test");
+  assert.equal(result?.username, "alice");
 });
 
 test("returns null and closes the session when no persisted user exists", async () => {
   let closeCalls = 0;
   const driver = {
-    executeQuery() {},
     session() {
       return {
         async run() {
@@ -141,7 +151,6 @@ test("normalizes Neo4j date values returned by the identity query", async () => 
 test("returns null and closes the session when the identity query fails", async () => {
   let closeCalls = 0;
   const driver = {
-    executeQuery() {},
     session() {
       return {
         async run() {
@@ -163,19 +172,14 @@ test("returns null and closes the session when the identity query fails", async 
   assert.equal(closeCalls, 1);
 });
 
-// A context whose `user` is already populated, with an ogm/model that throws if
-// touched — so any DB access from setUserDataOnContext would fail the test.
+// A context whose `user` is already populated and whose driver throws if
+// touched, so any DB access from setUserDataOnContext would fail the test.
 const contextWithResolvedUser = (): AuthContextForUserLookup => ({
   driver: {
     session() {
       throw new Error("driver.session must not be called when user is memoized");
     },
   } as unknown as Driver,
-  ogm: {
-    model() {
-      throw new Error("ogm.model must not be called when user is memoized");
-    },
-  } as unknown as AuthContextForUserLookup["ogm"],
   req: { headers: { authorization: "Bearer any-token" } } as never,
   user: resolvedUser,
 });
@@ -186,26 +190,24 @@ test("returns the already-resolved user when identity is on the context", async 
 });
 
 test("does not touch the database when identity is already resolved", async () => {
-  // contextWithResolvedUser().ogm.model throws if called; reaching here means it
-  // was never called. Assert the resolved username to make the check explicit.
   const result = await setUserDataOnContext({ context: contextWithResolvedUser() });
   assert.equal(result.username, "alice");
 });
 
 test("does no DB work for an unauthenticated request (no token)", async () => {
-  let modelCalls = 0;
+  let sessionCalls = 0;
   const context = {
-    ogm: {
-      model() {
-        modelCalls += 1;
-        return {};
+    driver: {
+      session() {
+        sessionCalls += 1;
+        throw new Error("no session expected");
       },
     },
     req: { headers: {} },
   } as unknown as AuthContextForUserLookup;
 
   const result = await setUserDataOnContext({ context });
-  assert.equal(modelCalls, 0);
+  assert.equal(sessionCalls, 0);
   assert.equal(result.username, null);
 });
 

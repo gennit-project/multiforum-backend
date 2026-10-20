@@ -5,6 +5,7 @@ import {
   sanitizeAlbumCreateInput,
   sanitizeCollectionCreateInput,
 } from "../customResolvers/mutations/utils/ownershipSanitizers.js";
+import { resolveRequestIdentityRepository } from "../services/persistence/requestIdentityRepository.js";
 
 /**
  * Forces the owner of albums and collections created through the public API
@@ -41,11 +42,8 @@ const requireExistingUsername = async (
     throw new GraphQLError(messages.loggedOut);
   }
 
-  const users = await context.ogm.model("User").find({
-    where: { username },
-    selectionSet: `{ username }`,
-  });
-  if (users.length === 0) {
+  const repository = resolveRequestIdentityRepository(context);
+  if (!(await repository.userExists(username))) {
     throw new GraphQLError(messages.unknownUser);
   }
   return username;

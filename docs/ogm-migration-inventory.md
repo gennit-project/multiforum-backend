@@ -151,6 +151,16 @@ These reads specify the configured database and stay leader-routed for bookmark
 consistency. This reduces production files with direct `ogm.model(...)` access
 to 26 and direct calls to 81; generated OGM type imports remain at 172.
 
+Request identity and ownership reads are now driver-backed. Username and email
+lookups share one repository that returns the private birthday and moderation
+profile data needed by request authorization, while album and collection
+creation use the same boundary to verify that their forced owner exists.
+Channel-creator moderator assignment reuses the profile already loaded onto the
+request instead of issuing a duplicate OGM query. These reads specify the
+configured database and stay leader-routed for bookmark consistency. This
+reduces production files with direct `ogm.model(...)` access to 24, direct calls
+to 77, and generated OGM type imports to 171.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader
