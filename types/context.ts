@@ -1,3 +1,4 @@
+import type { ChannelCreatorModeratorService } from "../services/channelCreatorModerator.js";
 import type { Driver } from "neo4j-driver";
 import type { Request } from "express";
 import type { OGM } from "@neo4j/graphql-ogm";
@@ -78,6 +79,7 @@ export type GraphQLRequest = Request & {
  */
 export type GraphQLContext = {
   driver: Driver;
+  channelCreatorModeratorService?: ChannelCreatorModeratorService;
   ogm: Ogm;
   /** Optional application-owned override used by permission rules and tests. */
   permissionServerConfigRepository?: PermissionServerConfigRepository;

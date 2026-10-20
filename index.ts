@@ -1,3 +1,6 @@
+import { createSubscriptionEngine } from "./services/subscriptionEngine.js";
+import { createChannelCreatorModeratorService } from "./services/channelCreatorModerator.js";
+import { createChannelCreatorModeratorRepository } from "./services/persistence/channelCreatorModeratorRepository.js";
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
@@ -173,6 +176,11 @@ const {
   pipelineCampaignModels,
 } = getCustomResolvers(driver);
 
+const subscriptionEngine = createSubscriptionEngine();
+const channelCreatorModeratorService = createChannelCreatorModeratorService(
+  createChannelCreatorModeratorRepository(driver), subscriptionEngine
+);
+
 const features = {
   filters: {
     String: {
@@ -180,7 +188,7 @@ const features = {
     },
   },
   // Enable subscriptions for change data capture
-  subscriptions: true
+  subscriptions: subscriptionEngine
 };
 
 // Create Neo4j GraphQL schema
@@ -332,6 +340,7 @@ async function initializeServer() {
           enrichContext({ operationName: req.body.operationName || undefined });
 
           const context: GraphQLContext = {
+            channelCreatorModeratorService,
             driver,
             req,
             ogm,

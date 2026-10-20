@@ -184,6 +184,18 @@ preserved. The discussion lookup accepting arbitrary GraphQL filters remains on
 OGM. This leaves 23 literal-call files and 75 calls (33 files and 99 calls when
 optional chaining is included); generated OGM type imports remain at 171.
 
+Creator-to-moderator assignment now uses a managed WRITE repository and a shared
+application-owned subscription engine configured through the supported GraphQL
+interface. Only newly created relationships publish an event; repeated and
+missing-endpoint connections are silent no-ops. Events retain the generated
+shape and are published after commit, outside transaction retries. Delivery
+remains best effort: publication failures are logged without failing channel
+creation or retrying the committed write. Generated GraphQL mutations use the
+same engine and retain their existing event behavior. Live tests cover concurrent
+connections, rollback/retry, event serialization and GraphQL subscriber delivery.
+This leaves 22 literal-call files and 74 calls (32 files and 98 calls including
+optional chaining); generated OGM type imports remain at 171.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

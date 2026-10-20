@@ -4,9 +4,7 @@
 // a pre-set context.user (no DB), so these tests drive the middleware's branching
 // — anonymous caller, no mod profile, no channels, per-channel update, the
 // unique-name skip, and both the inner (per-channel) and outer error paths —
-// against the REAL middleware with a stubbed resolver and a permissive in-memory
-// OGM. (Replaces an older test that exercised an inline copy of the logic and so
-// covered none of the real module.)
+// against the real middleware with a stubbed assignment service.
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
@@ -15,7 +13,7 @@ import middleware from "./channelCreatorModeratorMiddleware.js";
 const M: any = (middleware as any).Mutation;
 
 // Build a ctx. `user` is placed on context.user so setUserDataOnContext returns
-// it without a DB lookup. Channel.update remains on the temporary OGM boundary;
+// it without a DB lookup. The assignment service is stubbed;
 // `updates` records the channels a Moderator connect was attempted on.
 function makeCtx(opts: {
   user?: {
@@ -25,20 +23,15 @@ function makeCtx(opts: {
   channelUpdate?: (args: any) => Promise<unknown>;
 } = {}) {
   const updates: string[] = [];
-  const ogm = {
-    model(name: string) {
-      if (name === "Channel") {
-        return {
-          update: async (args: any) => {
-            updates.push(args?.where?.uniqueName);
-            return opts.channelUpdate ? opts.channelUpdate(args) : {};
-          },
-        };
-      }
-      return { find: async () => [], update: async () => ({}) };
+  const ogm = { model() { throw new Error("Assignment must not use OGM"); } };
+  const ctx: any = { ogm, driver: {}, req: { headers: {} },
+    channelCreatorModeratorService: {
+      assign: async (channelUniqueName: string, displayName: string) => {
+        updates.push(channelUniqueName);
+        if (opts.channelUpdate) await opts.channelUpdate({ where: { uniqueName: channelUniqueName }, displayName });
+      },
     },
   };
-  const ctx: any = { ogm, driver: {}, req: { headers: {} } };
   if (opts.user) ctx.user = opts.user;
   return { ctx, updates };
 }
@@ -99,7 +92,7 @@ test("skips channels without a uniqueName", async () => {
   assert.deepEqual(updates, ["cats"]); // only the named channel updated
 });
 
-test("a failed Channel.update is logged but does not fail channel creation", async () => {
+test("a failed assignment is logged but does not fail channel creation", async () => {
   const { ctx } = makeCtx({
     user: userWithProfile,
     channelUpdate: async () => {
@@ -147,4 +140,18 @@ test("an error while loading request identity is swallowed", async () => {
       process.env.PLAYWRIGHT_MOCK_AUTH = previousMockAuth;
     }
   }
+});
+
+
+test("per-channel assignments are awaited in order and continue after a failure", async () => {
+  const finished: string[] = [];
+  const { ctx, updates } = makeCtx({ user: userWithProfile, channelUpdate: async (args) => {
+    assert.equal(finished.length, updates.length - 1);
+    await Promise.resolve();
+    finished.push(args.where.uniqueName);
+    if (args.where.uniqueName === "cats") throw new Error("first channel failed");
+  } });
+  const { resolve } = resolveReturning({ channels: [{ uniqueName: "cats" }, { uniqueName: "dogs" }] });
+  await M.createChannels(resolve, null, {}, ctx, {});
+  assert.deepEqual(finished, ["cats", "dogs"]);
 });
