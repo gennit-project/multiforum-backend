@@ -177,6 +177,13 @@ optional chaining gives a pre-trial baseline of 34 files and 101 calls (33 files
 and 100 calls after the URL slice); neither count captures all indirect model
 dependencies. These are migration tracking counts, not proof of total removal.
 
+Discussion attachment validation now reads fixed-ID file metadata through the
+same repository. The per-file loop, duplicate IDs, validation order, empty-name
+fast path, missing-file errors, and context-free restricted-file visibility are
+preserved. The discussion lookup accepting arbitrary GraphQL filters remains on
+OGM. This leaves 23 literal-call files and 75 calls (33 files and 99 calls when
+optional chaining is included); generated OGM type imports remain at 171.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

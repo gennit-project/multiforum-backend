@@ -1,4 +1,4 @@
-import { GraphQLEnumType, GraphQLString } from "graphql";
+import { GraphQLEnumType, GraphQLID, GraphQLString } from "graphql";
 import neo4j, { type Driver } from "neo4j-driver";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
@@ -9,7 +9,15 @@ export type DownloadableFileAccess = {
 
 export interface DownloadableFileRepository {
   findUrlAccess(id: string): Promise<DownloadableFileAccess | null>;
+  findAttachmentMetadata(id: string): Promise<{ id: string; fileName: string } | null>;
 }
+
+export const FIND_DOWNLOADABLE_FILE_ATTACHMENT_METADATA_QUERY = `
+  MATCH (file:DownloadableFile {id: $id})
+  WHERE file.ageGateRestricted IS NULL OR file.ageGateRestricted = false
+  RETURN file.id AS id, file.fileName AS fileName
+  LIMIT 1
+`;
 
 export const FIND_DOWNLOADABLE_FILE_URL_ACCESS_QUERY = `
   MATCH (file:DownloadableFile {id: $id})
@@ -45,6 +53,31 @@ export function createDownloadableFileRepository(
   database = resolveNeo4jDatabase()
 ): DownloadableFileRepository {
   return {
+    async findAttachmentMetadata(id) {
+      const session = driver.session({
+        database,
+        defaultAccessMode: neo4j.session.READ,
+        bookmarkManager: driver.executeQueryBookmarkManager,
+      });
+      try {
+        const result = await session.executeRead((tx) =>
+          tx.run(FIND_DOWNLOADABLE_FILE_ATTACHMENT_METADATA_QUERY, { id })
+        );
+        const record = result.records[0];
+        if (!record) return null;
+        const fileName: unknown = record.get("fileName");
+        if (fileName == null) {
+          throw new Error("Cannot return null for non-nullable field DownloadableFile.fileName.");
+        }
+        return {
+          id: GraphQLID.serialize(record.get("id")),
+          fileName: GraphQLString.serialize(fileName),
+        };
+      } finally {
+        await session.close();
+      }
+    },
+
     async findUrlAccess(id) {
       const session = driver.session({
         database,

@@ -5,6 +5,7 @@ import { makeResult } from "../../tests/fixtures/neo4j.js";
 import {
   createDownloadableFileRepository,
   FIND_DOWNLOADABLE_FILE_URL_ACCESS_QUERY,
+  FIND_DOWNLOADABLE_FILE_ATTACHMENT_METADATA_QUERY,
   resolveDownloadableFileRepository,
 } from "./downloadableFileRepository.js";
 
@@ -88,8 +89,36 @@ test("invalid non-null projection values still fail closed and close the session
 });
 
 test("an injected repository is used unchanged", () => {
-  const injected = { findUrlAccess: async () => null };
+  const injected = { findUrlAccess: async () => null, findAttachmentMetadata: async () => null };
   assert.equal(resolveDownloadableFileRepository({
     driver: {} as Driver, downloadableFileRepository: injected,
   }), injected);
+});
+
+test("metadata lookup retains read routing, parameters, and projection independent of access fields", async () => {
+  const state = setup([{ id: "file", fileName: "" }]);
+  const repository = createDownloadableFileRepository(state.driver, "downloads");
+  assert.deepEqual(await repository.findAttachmentMetadata("file"), { id: "file", fileName: "" });
+  assert.deepEqual(state.calls, [{
+    query: FIND_DOWNLOADABLE_FILE_ATTACHMENT_METADATA_QUERY, parameters: { id: "file" },
+  }]);
+  assert.deepEqual(state.configs, [{
+    database: "downloads", defaultAccessMode: neo4j.session.READ,
+    bookmarkManager: state.bookmarkManager,
+  }]);
+  assert.deepEqual(state.counts(), { closed: 1, transactions: 1 });
+  assert.equal(
+    await createDownloadableFileRepository(setup().driver).findAttachmentMetadata("missing"), null
+  );
+});
+
+test("metadata query and serialization failures propagate and close the session", async () => {
+  for (const state of [
+    setup([], new Error("database unavailable")),
+    setup([{ id: "file", fileName: null }]),
+    setup([{ id: "file", fileName: [] }]),
+  ]) {
+    await assert.rejects(createDownloadableFileRepository(state.driver).findAttachmentMetadata("file"));
+    assert.equal(state.counts().closed, 1);
+  }
 });

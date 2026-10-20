@@ -8,6 +8,7 @@ import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFro
 import { createOgmPersistence } from "../../services/persistence/ogm.js";
 import { createDownloadableFileUrlResolver } from "../../customResolvers/fields/downloadableFileUrl.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { validateDiscussionDownloadPreferences } from "../../rules/validation/discussionIsValid.js";
 import { createDownloadableFileRepository } from "../../services/persistence/downloadableFileRepository.js";
 import {
   installRequestScopedBookmarks, runWithRequestBookmarks, getRequestBookmarkManager,
@@ -213,4 +214,53 @@ test("access lookup observes request writes through the shared bookmark manager"
     `);
     assert.equal(await repository.findUrlAccess("file"), null);
   });
+});
+
+test("attachment metadata matches the production OGM projection and hidden-file outcome", async () => {
+  await seedFile();
+  const repository = createDownloadableFileRepository(driver);
+  const legacyMetadata = async (id: string) => {
+    const rows = await ogm.model("DownloadableFile").find({
+      where: { id }, selectionSet: "{ id fileName }",
+    });
+    return rows[0] ? JSON.parse(JSON.stringify(rows[0])) : null;
+  };
+  assert.equal(await repository.findAttachmentMetadata("missing"), await legacyMetadata("missing"));
+  for (const restricted of [null, false, true]) {
+    for (const fileName of ["archive.zip", ""]) {
+      await driver.executeQuery(`
+        MATCH (file:DownloadableFile {id: "file"})
+        SET file.ageGateRestricted = $restricted, file.fileName = $fileName,
+            file.scanStatus = null
+      `, { restricted, fileName });
+      assert.deepEqual(await repository.findAttachmentMetadata("file"), await legacyMetadata("file"));
+      const context = {
+        driver, ogm, jwt: { mayAccessSensitiveContent: true },
+        contentFeaturePolicyRepository: {
+          findChannelPolicy: async () => ({ found: true, allowedFileTypes: ["zip"] }),
+          findServerFileTypePolicy: async () => ({ found: true, allowedFileTypes: ["zip"] }),
+        },
+      } as unknown as GraphQLContext;
+      const input = {
+        discussionInput: {
+          DownloadableFiles: { connect: [{ where: { node: { id: "file" } } }] },
+        },
+        channelConnections: ["cats"],
+      };
+      const oldContext = {
+        ...context,
+        downloadableFileRepository: { ...repository, findAttachmentMetadata: legacyMetadata },
+      };
+      assert.equal(await validateDiscussionDownloadPreferences(input, context),
+        await validateDiscussionDownloadPreferences(input, oldContext));
+    }
+  }
+  await driver.executeQuery(`
+    MATCH (file:DownloadableFile {id: "file"})
+    SET file.ageGateRestricted = false, file.fileName = null
+  `);
+  const previousError = await legacyMetadata("file").then(() => null, (error: Error) => error.message);
+  const currentError = await repository.findAttachmentMetadata("file").then(() => null, (error: Error) => error.message);
+  assert.equal(currentError, previousError);
+  assert.ok(currentError);
 });

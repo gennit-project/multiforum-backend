@@ -15,6 +15,7 @@ import {
   validateFileTypePermissions,
 } from "./downloadableFileIsValid.js";
 import { resolveContentFeaturePolicyRepository } from "../../services/persistence/contentFeaturePolicyRepository.js";
+import { resolveDownloadableFileRepository } from "../../services/persistence/downloadableFileRepository.js";
 
 type DiscussionInput = {
   title?: string;
@@ -213,17 +214,10 @@ export async function validateDiscussionDownloadPreferences(
     return true;
   }
 
-  const DownloadableFile = ctx.ogm.model("DownloadableFile");
+  const downloadableFiles = resolveDownloadableFileRepository(ctx);
 
   for (const downloadableFileId of downloadableFileIds) {
-    const downloadableFiles = await DownloadableFile.find({
-      where: { id: downloadableFileId },
-      selectionSet: `{
-        id
-        fileName
-      }`,
-    });
-    const downloadableFile = downloadableFiles?.[0];
+    const downloadableFile = await downloadableFiles.findAttachmentMetadata(downloadableFileId);
 
     if (!downloadableFile) {
       return `Downloadable file '${downloadableFileId}' not found`;

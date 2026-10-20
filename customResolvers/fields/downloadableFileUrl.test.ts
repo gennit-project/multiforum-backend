@@ -13,6 +13,7 @@ const buildContext = (file: Record<string, unknown> | null = {
   Discussion: { Author: { username: "alice" } },
 }) => ({
   downloadableFileRepository: {
+    findAttachmentMetadata: async () => null,
     findUrlAccess: async () => file ? {
       uploadedByUsername: file.uploadedByUsername ?? null,
       discussionAuthorUsername:
@@ -208,6 +209,7 @@ test("missing id and missing file fail closed without checking moderator permiss
   const context = buildContext(null) as unknown as ResolverContext;
   assert.equal(await resolver({ id: "missing", url: "private" }, {}, context), "");
   context.downloadableFileRepository = {
+    findAttachmentMetadata: async () => null,
     findUrlAccess: async () => { throw new Error("must not read without an id"); },
   };
   assert.equal(await resolver({ url: "private" }, {}, context), "");
@@ -228,6 +230,7 @@ test("only literal true grants moderator access", async () => {
 test("lookup errors propagate instead of using the parent URL", async () => {
   const context = buildContext() as unknown as ResolverContext;
   context.downloadableFileRepository = {
+    findAttachmentMetadata: async () => null,
     findUrlAccess: async () => { throw new Error("database unavailable"); },
   };
   const resolver = createDownloadableFileUrlResolver(async () => authenticated("alice"));

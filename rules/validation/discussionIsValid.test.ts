@@ -9,10 +9,14 @@ import {
   validateDiscussionDownloadPreferences,
 } from "./discussionIsValid.js";
 
-// ctx.ogm with a configurable Channel row and DownloadableFile lookup.
+// Configurable policy and file repositories, with the remaining discussion OGM lookup.
 function makeCtx(opts: { channel?: any; downloadableFile?: any } = {}) {
   const ctx: any = {
     driver: {},
+    downloadableFileRepository: {
+      findUrlAccess: async () => null,
+      findAttachmentMetadata: async () => opts.downloadableFile ?? null,
+    },
     contentFeaturePolicyRepository: {
       findChannelPolicy: async (uniqueName: string) => {
         const channel = opts.channel === null
@@ -47,13 +51,9 @@ function makeCtx(opts: { channel?: any; downloadableFile?: any } = {}) {
     },
     ogm: {
       model(name: string) {
+        assert.equal(name, "Discussion", "attachment reads must not fall back to OGM");
         return {
-          find: async () => {
-            if (name === "DownloadableFile") {
-              return opts.downloadableFile ? [opts.downloadableFile] : [];
-            }
-            return [];
-          },
+          find: async () => [],
         };
       },
     },
@@ -68,6 +68,110 @@ test("albumInputCreatesOrConnectsImages detects created/connected images", () =>
   assert.equal(albumInputCreatesOrConnectsImages({ create: [{ node: { Images: { connect: [{ where: {} }] } } }] }), true);
   assert.equal(albumInputCreatesOrConnectsImages(undefined), false);
   assert.equal(albumInputCreatesOrConnectsImages({ create: [{ node: {} }] }), false);
+});
+
+const attachments = (...ids: string[]) => ({
+  DownloadableFiles: { connect: ids.map((id) => ({ where: { node: { id } } })) },
+});
+
+test("attachment validation retains per-file ordering, including duplicate IDs", async () => {
+  const calls: string[] = [];
+  const ctx = makeCtx();
+  const policy = ctx.contentFeaturePolicyRepository;
+  const findChannel = policy.findChannelPolicy;
+  policy.findChannelPolicy = async (name: string) => {
+    calls.push(`channel:${name}`);
+    return findChannel(name);
+  };
+  policy.findServerFileTypePolicy = async () => {
+    calls.push("server");
+    return { found: true, allowedFileTypes: ["zip"] };
+  };
+  ctx.downloadableFileRepository.findAttachmentMetadata = async (id: string) => {
+    calls.push(`file:${id}`);
+    return { id, fileName: "archive.zip" };
+  };
+  assert.equal(await validateDiscussionDownloadPreferences({
+    discussionInput: attachments("a", "a", "b"), channelConnections: ["cats"],
+  }, ctx), true);
+  assert.deepEqual(calls, [
+    "channel:cats",
+    "file:a", "server", "channel:cats",
+    "file:a", "server", "channel:cats",
+    "file:b", "server", "channel:cats",
+  ]);
+});
+
+test("disabled channels stop before file lookup and missing files stop at the first failure", async () => {
+  const ctx = makeCtx({ channel: { downloadsEnabled: false } });
+  const ids: string[] = [];
+  ctx.downloadableFileRepository.findAttachmentMetadata = async (id: string) => {
+    ids.push(id);
+    return null;
+  };
+  const input = { discussionInput: attachments("missing", "later"), channelConnections: ["cats"] };
+  assert.equal(await validateDiscussionDownloadPreferences(input, ctx), "Downloads are disabled in channel 'cats'.");
+  assert.deepEqual(ids, []);
+  ctx.contentFeaturePolicyRepository.findChannelPolicy = async () => ({ found: true });
+  assert.equal(await validateDiscussionDownloadPreferences(input, ctx), "Downloadable file 'missing' not found");
+  assert.deepEqual(ids, ["missing"]);
+});
+
+test("server type rejection precedes channel type validation and later attachments", async () => {
+  const calls: string[] = [];
+  const ctx = makeCtx();
+  ctx.contentFeaturePolicyRepository.findChannelPolicy = async () => {
+    calls.push("channel");
+    return { found: true, allowedFileTypes: ["png"] };
+  };
+  ctx.contentFeaturePolicyRepository.findServerFileTypePolicy = async () => {
+    calls.push("server");
+    return { found: true, allowedFileTypes: ["png"] };
+  };
+  ctx.downloadableFileRepository.findAttachmentMetadata = async (id: string) => {
+    calls.push(id);
+    return { id, fileName: "archive.zip" };
+  };
+  assert.equal(await validateDiscussionDownloadPreferences({
+    discussionInput: attachments("first", "later"), channelConnections: ["cats"],
+  }, ctx), "File type 'zip' is not allowed by server configuration. Allowed types: png");
+  assert.deepEqual(calls, ["channel", "first", "server"]);
+});
+
+test("array connections retain order and empty filenames retain the existing validation fast path", async () => {
+  const ctx = makeCtx();
+  const ids: string[] = [];
+  ctx.downloadableFileRepository.findAttachmentMetadata = async (id: string) => {
+    ids.push(id);
+    return { id, fileName: "" };
+  };
+  ctx.contentFeaturePolicyRepository.findServerFileTypePolicy = async () => {
+    throw new Error("empty filenames skip file-type checks");
+  };
+  const discussionInput = {
+    DownloadableFiles: [
+      attachments("a").DownloadableFiles,
+      { connect: [{ where: {} }, { where: { node: { id: 7 } } }] },
+      attachments("b").DownloadableFiles,
+    ],
+  };
+  assert.equal(await validateDiscussionDownloadPreferences({
+    discussionInput, channelConnections: ["cats"],
+  }, ctx), true);
+  assert.deepEqual(ids, ["a", "b"]);
+});
+
+test("attachment lookup errors propagate without validating subsequent files", async () => {
+  const ctx = makeCtx();
+  const ids: string[] = [];
+  ctx.downloadableFileRepository.findAttachmentMetadata = async (id: string) => {
+    ids.push(id);
+    throw new Error("read failed");
+  };
+  await assert.rejects(validateDiscussionDownloadPreferences({
+    discussionInput: attachments("first", "later"), channelConnections: ["cats"],
+  }, ctx), /read failed/);
+  assert.deepEqual(ids, ["first"]);
 });
 
 test("validateDiscussionImagePreferences passes when no album images are involved", async () => {
