@@ -251,9 +251,8 @@ export const eventEditNotificationHandler = async ({
     const eventTitle = eventSnapshot?.title || 'event';
     const notificationText = `${editorLabel} edited your event [${eventTitle}](${notificationUrl})`;
 
-    const UserModel = context.ogm.model('User');
     await createInAppNotification({
-      UserModel,
+      context,
       username: authorUsername,
       text: notificationText,
     });

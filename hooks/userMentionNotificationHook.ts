@@ -234,12 +234,12 @@ export const notifyNewUserMentions = async ({
     );
     if (!notificationText) return;
 
-    const UserModel = context?.ogm?.model('User');
-    if (!UserModel) return;
+
+    if (!context.driver && !context.notificationWriter) return;
 
     for (const user of usersToNotify) {
       await createInAppNotificationFn({
-        UserModel,
+        context,
         username: user.username,
         text: notificationText,
         notificationType: "mention",

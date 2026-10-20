@@ -36,7 +36,7 @@ function makeContext(opts: { issues?: unknown[]; users?: unknown[] } = {}) {
     },
   };
   const driver = { session: () => ({ run: async () => ({ records: [] }), close: async () => {} }) };
-  const context: any = { ogm, driver, user: { username: "editor", data: {} } };
+  const context: any = { notificationWriter: {createForUser: async () => {ops.push("notification.create"); return true;}}, ogm, driver, user: { username: "editor", data: {} } };
   return { context, ops };
 }
 
@@ -117,7 +117,7 @@ test("eventEditNotificationHandler: notifies the author when a different editor 
     params: { where: { id: "e-1" }, update: { title: "new title" } },
     eventSnapshot: snapshot, // Poster alice != editor
   });
-  assert.ok(ops.includes("User.update") || true); // createInAppNotification runs against UserModel
+  assert.ok(ops.includes("notification.create"));
 });
 
 test("eventEditNotificationHandler: no notification when the editor is the author", async () => {

@@ -30,11 +30,7 @@ export const notifyFeedback = async ({
   targetAuthorUsername,
 }: NotifyFeedbackInput): Promise<void> => {
   try {
-    const UserModel = context?.ogm?.model('User');
-    if (!UserModel) {
-      logger.error('UserModel not available for feedback notification');
-      return;
-    }
+    if (!context?.driver && !context?.notificationWriter) return;
 
     // Check if target author wants feedback notifications
     const users = await resolveNotificationSnapshotRepository(context).findFeedbackRecipient(targetAuthorUsername);
@@ -65,7 +61,7 @@ export const notifyFeedback = async ({
     }
 
     await createInAppNotification({
-      UserModel,
+      context,
       username: targetAuthorUsername,
       text: notificationText,
       notificationType: 'feedback',

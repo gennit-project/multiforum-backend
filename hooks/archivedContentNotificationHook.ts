@@ -2,14 +2,14 @@ import type { NotificationSnapshotRepository } from "../services/persistence/not
 import { resolveNotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import { createInAppNotification } from './notificationHelpers.js';
 import type { Driver } from 'neo4j-driver';
-import type { Ogm } from '../types/context.js';
+import type { NotificationWriter } from "../services/persistence/notificationWriter.js";
 import { logger } from "../logger.js";
 
 type ContentType = 'comment' | 'discussion' | 'event' | 'image';
 
 type ArchivedContentNotificationParams = {
-  /** Writes still use OGM until slice 06; snapshots require an explicit source. */
-  context: { ogm: Ogm } & (
+  /** Reads and writes use the registered schema or explicitly injected dependencies. */
+  context: { notificationWriter?: NotificationWriter } & (
     | { driver: Driver; notificationSnapshotRepository?: NotificationSnapshotRepository }
     | { driver?: Driver; notificationSnapshotRepository: NotificationSnapshotRepository }
   );
@@ -94,11 +94,7 @@ export async function notifyArchivedContentAuthor(
       return false;
     }
 
-    const UserModel = context.ogm?.model('User');
-    if (!UserModel) {
-      logger.error('UserModel not available for archived content notification');
-      return false;
-    }
+    if (!context.driver && !context.notificationWriter) return false;
 
     // Check if user exists and wants notifications
     const users = await resolveNotificationSnapshotRepository(context).findArchivedAuthor(authorUsername);
@@ -115,7 +111,7 @@ export async function notifyArchivedContentAuthor(
     });
 
     return await createInAppNotification({
-      UserModel,
+      context,
       username: authorUsername,
       text: notificationText,
       notificationType: 'moderation',

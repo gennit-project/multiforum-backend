@@ -421,7 +421,7 @@ const getResolver = (input: Input) => {
 
         if (contentUrl) {
           await notifyArchivedContentAuthor({
-            context: { ogm: context.ogm, driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository },
+            context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },
             contentType: 'comment',
             authorUsername: commentAuthorUsername,
             contentUrl,

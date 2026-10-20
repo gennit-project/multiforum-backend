@@ -82,21 +82,7 @@ const buildMockContext = (
         close: async () => {},
       }),
     },
-    ogm: {
-      model: () => ({
-        async update(input: any) {
-          const notification = input.update?.Notifications?.[0]?.create?.[0]?.node;
-          if (notification) {
-            createdNotifications.push({
-              username: input.where.username,
-              text: notification.text,
-              notificationType: notification.notificationType,
-            });
-          }
-          return { users: [{ username: input.where.username }] };
-        },
-      }),
-    },
+    notificationWriter: {async createForUser(input: any) {createdNotifications.push(input); return true;}},
   } as unknown as GraphQLContext;
 };
 

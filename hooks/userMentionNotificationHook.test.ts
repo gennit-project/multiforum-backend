@@ -11,6 +11,7 @@ const buildContext = (users: any[]) => {
 
   return {
     context: {
+      notificationWriter: {createForUser: async () => true},
       notificationSnapshotRepository: {findMentionRecipients: async () => users},
       ogm: {
         model(modelName: string) {
@@ -277,4 +278,14 @@ test("mention in-app creation remains before email and email failure is swallowe
     },
   });
   assert.deepEqual(order,["in-app","email"]);
+});
+
+
+test("unavailable notification writer prevents mention email delivery", async () => {
+ const {context,createdNotifications}=buildContext([{username:"reader",notifyWhenTagged:true,Email:{address:"reader@example.test"}}]);
+ delete context.notificationWriter;
+ const emails: unknown[]=[];
+ await notifyDiscussionMentions({context,discussion:baseDiscussion,nextText:"@reader",dependencies:discussionDeps(createdNotifications,emails)});
+ assert.deepEqual(createdNotifications,[]);
+ assert.deepEqual(emails,[]);
 });

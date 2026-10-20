@@ -287,7 +287,7 @@ const getResolver = (input: Input) => {
         const contentUrl = `${baseUrl}/forums/${channelUniqueName}/events/${eventId}`;
 
         await notifyArchivedContentAuthor({
-          context: { ogm: context.ogm, driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository },
+          context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },
           contentType: 'event',
           authorUsername: eventPosterUsername,
           contentUrl,

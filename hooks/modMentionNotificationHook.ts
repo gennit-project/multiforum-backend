@@ -184,12 +184,12 @@ export const notifyModMentions = async ({
     const notificationText = buildNotificationText(mentionContext, notificationUrl);
     if (!notificationText) return;
 
-    const UserModel = context?.ogm?.model('User');
-    if (!UserModel) return;
+
+    if (!context?.driver && !context?.notificationWriter) return;
 
     for (const mod of modsToNotify) {
       await createInAppNotification({
-        UserModel,
+        context,
         username: mod.username,
         text: notificationText,
         notificationType: 'mention',

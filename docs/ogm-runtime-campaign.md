@@ -44,8 +44,8 @@ Rows track the current campaign state. A slice is complete only with independent
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
 | 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | complete |
 | 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | complete; a07af6a |
-| 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | pending |
-| 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | reviewed; exact-tree gates pending |
+| 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | reviewed; exact-tree gates pending |
+| 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete; dd14fee |
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | pending |
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | pending |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | pending |
@@ -168,3 +168,15 @@ Exact-head CI for `a07af6a`: [container run 39437972349](https://github.com/genn
 ### Slice 07 — role filter guards
 
 Four CRUD sites and four acquisitions replaced by fixed generated-schema operations in channelRoleEscalation, nestedRoleEscalation and channelRoleOwnershipMiddleware. Arbitrary filters, existing projections, sequential ownership/capability decisions and fail-closed behavior preserved. Independent `review_contributions` approved after adding production-equivalent schema registration to the permission harness and capability field drift tests. Focused units 39/39 and live parity/authenticated-role tests 13/13 passed in the isolated worktree. Parent exact-tree gates pending. Remaining inventory: 450 domain CRUD sites in 129 files, 88 acquisitions, 2 separate CLI sites.
+
+### Slice 07 committed evidence
+
+Commit `dd14fee16c439a5fa29ba79942c5993d12aedc9c` ([diff](https://github.com/gennit-project/multiforum-backend/commit/dd14fee16c439a5fa29ba79942c5993d12aedc9c)), source tree `6dfd87eb6a1272570757b85e7d35880c3d90ab9f`: lint, TypeScript, all 1,935 units and 13 live parity/authenticated-role tests passed. Inventory recheck:447 generated-model calls +3 structural injected calls =450 runtime CRUD sites;88 acquisitions in24files.
+
+### Slice 06 — notification creation
+
+Replaced notificationHelpers User.update with one fixed named nested mutation. Preserves exact ordered default User projection and supported generated-schema event publication, repeated distinct notifications, missing-user false result, input coercion and committed writes/events on response projection errors. Six write-only model acquisitions removed; initial user-mention lookup guard remains for legacy fallback. Independent review_subscription approved final25-file patch and independently passed61units/6live; existing14version-history integrations also passed. Availability guards remain before notification/email work. Parent exact-tree gates pending. Remaining449 CRUD sites/128files,82acquisitions,2CLI sites.
+
+CI update for `a07af6a`: Tests CI39437972218 completed with one failing moderator-suspension integration assertion (expired list0 vs1); seven other integration shards, unit coverage, coverage report and performance budgets passed. Separate investigation reproduced a pre-existing late-cleanup/fixture-ID race on baseline006f625 and a07af6a. Test-only synchronization fix is under independent review; this failed run is not counted as passing.
+
+Slice06 first cumulative hook attempt: lint/TypeScript passed;1,935 of1,937 units passed, with2 old edit-notification mocks failing. Commit blocked pending fixture migration and full rerun. Expanded live35/35 passed on source tree4f474e956c6c5f8e2532719940f194d93d75879b.

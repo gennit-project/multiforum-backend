@@ -360,7 +360,7 @@ test("notifyArchivedContentAuthor writes a moderation notification to the conten
   await run(`CREATE (:User { username: 'alice', createdAt: datetime() })`);
 
   const sent = await notifyArchivedContentAuthor({
-    context: { ogm: env.ogm, driver: env.driver },
+    context: { driver: env.driver },
     contentType: "comment",
     authorUsername: "alice",
     contentUrl: "https://example.test/forums/cats/discussions/d1/comments/c1",
@@ -384,7 +384,7 @@ test("notifyArchivedContentAuthor does not notify on self-archival", async () =>
   await run(`CREATE (:User { username: 'alice', createdAt: datetime() })`);
 
   const sent = await notifyArchivedContentAuthor({
-    context: { ogm: env.ogm, driver: env.driver },
+    context: { driver: env.driver },
     contentType: "comment",
     authorUsername: "alice",
     contentUrl: "https://example.test/x",

@@ -162,7 +162,7 @@ export const commentVersionHistoryHandler = async ({
         if (notificationUrl && notificationContext) {
           const notificationText = `${editorLabel} edited your comment on [${notificationContext}](${notificationUrl})`;
           await createInAppNotification({
-            UserModel,
+            context,
             username: authorUsername,
             text: notificationText,
           });

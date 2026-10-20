@@ -1,3 +1,4 @@
+import type { NotificationWriter } from "./persistence/notificationWriter.js";
 import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 export { FULL_COMMENT_SELECTION_SET } from "./persistence/notificationSnapshotRepository.js";
 import { resolveNotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
@@ -32,6 +33,7 @@ export interface NotificationDeps {
   ogm: any;
   driver: any;
   notificationSnapshotRepository?: NotificationSnapshotRepository;
+  notificationWriter?: NotificationWriter;
 }
 
 export interface EmailContent {
@@ -398,7 +400,7 @@ export const processFeedbackNotification = async (
     }
 
     await notifyFeedback({
-      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository },
+      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
       feedbackContext: {
         feedbackCommentId: commentId,
         authorUsername,
@@ -433,7 +435,7 @@ export const processModMentionNotifications = async (
     const event = fullComment.Event;
 
     await notifyModMentions({
-      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository },
+      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
       mentionContext: {
         type: "comment",
         authorUsername,
@@ -463,7 +465,7 @@ export const processUserMentionNotifications = async (
 ): Promise<void> => {
   try {
     await notifyCommentMentions({
-      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository },
+      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
       comment: {
         id: commentId,
         text: fullComment.text,

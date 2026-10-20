@@ -446,7 +446,7 @@ const getResolver = (input: Input) => {
           : `${baseUrl}/images/${imageId}`;
 
         await notifyArchivedContentAuthor({
-          context: { ogm: context.ogm, driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository },
+          context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },
           contentType: 'image',
           authorUsername: uploaderUsername,
           contentUrl,

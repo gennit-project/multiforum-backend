@@ -10,20 +10,10 @@ type NotificationInput = {
   notificationType?: string;
 };
 
-const buildMockUserModel = (users: any[], createdNotifications: any[]) => ({
-  async find({ where }: { where: { username: string } }) {
-    return users.filter((u) => u.username === where.username);
-  },
-  async update(input: any) {
-    const notification = input.update?.Notifications?.[0]?.create?.[0]?.node;
-    if (notification) {
-      createdNotifications.push({
-        username: input.where.username,
-        text: notification.text,
-        notificationType: notification.notificationType,
-      });
-    }
-    return { users: [{ username: input.where.username }] };
+const buildWriter = (createdNotifications: any[]) => ({
+  async createForUser(input: {username: string; text: string; notificationType: string}) {
+    createdNotifications.push(input);
+    return true;
   },
 });
 
@@ -36,9 +26,7 @@ test("notifyFeedback sends notification when user has notifyOnFeedback enabled",
 
   const context = {
     notificationSnapshotRepository: { findFeedbackRecipient: async (username: string) => users.filter(u => u.username === username) },
-    ogm: {
-      model: () => buildMockUserModel(users, createdNotifications),
-    },
+    notificationWriter: buildWriter(createdNotifications),
   } as unknown as GraphQLContext;
 
   await notifyFeedback({
@@ -71,9 +59,7 @@ test("notifyFeedback does not send notification when notifyOnFeedback is disable
 
   const context = {
     notificationSnapshotRepository: { findFeedbackRecipient: async (username: string) => users.filter(u => u.username === username) },
-    ogm: {
-      model: () => buildMockUserModel(users, createdNotifications),
-    },
+    notificationWriter: buildWriter(createdNotifications),
   } as unknown as GraphQLContext;
 
   await notifyFeedback({
@@ -101,9 +87,7 @@ test("notifyFeedback does not notify yourself", async () => {
 
   const context = {
     notificationSnapshotRepository: { findFeedbackRecipient: async (username: string) => users.filter(u => u.username === username) },
-    ogm: {
-      model: () => buildMockUserModel(users, createdNotifications),
-    },
+    notificationWriter: buildWriter(createdNotifications),
   } as unknown as GraphQLContext;
 
   await notifyFeedback({
@@ -131,9 +115,7 @@ test("notifyFeedback builds correct URL for discussion feedback", async () => {
 
   const context = {
     notificationSnapshotRepository: { findFeedbackRecipient: async (username: string) => users.filter(u => u.username === username) },
-    ogm: {
-      model: () => buildMockUserModel(users, createdNotifications),
-    },
+    notificationWriter: buildWriter(createdNotifications),
   } as unknown as GraphQLContext;
 
   await notifyFeedback({
@@ -162,9 +144,7 @@ test("notifyFeedback builds correct URL for event feedback", async () => {
 
   const context = {
     notificationSnapshotRepository: { findFeedbackRecipient: async (username: string) => users.filter(u => u.username === username) },
-    ogm: {
-      model: () => buildMockUserModel(users, createdNotifications),
-    },
+    notificationWriter: buildWriter(createdNotifications),
   } as unknown as GraphQLContext;
 
   await notifyFeedback({
@@ -193,9 +173,7 @@ test("notifyFeedback does NOT include feedback content in notification (privacy)
 
   const context = {
     notificationSnapshotRepository: { findFeedbackRecipient: async (username: string) => users.filter(u => u.username === username) },
-    ogm: {
-      model: () => buildMockUserModel(users, createdNotifications),
-    },
+    notificationWriter: buildWriter(createdNotifications),
   } as unknown as GraphQLContext;
 
   await notifyFeedback({

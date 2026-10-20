@@ -253,9 +253,8 @@ export const discussionEditNotificationHandler = async ({
     const discussionTitle = discussionSnapshot?.title || 'discussion';
     const notificationText = `${editorLabel} edited your discussion [${discussionTitle}](${notificationUrl})`;
 
-    const UserModel = context.ogm.model('User');
     await createInAppNotification({
-      UserModel,
+      context,
       username: authorUsername,
       text: notificationText,
     });

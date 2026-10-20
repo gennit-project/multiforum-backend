@@ -1,4 +1,5 @@
 import type { NotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
+import type { NotificationWriter } from "../services/persistence/notificationWriter.js";
 import type { RoleGuardRepository } from "../services/persistence/roleGuardRepository.js";
 import type { InstancePolicyRepository } from "../services/persistence/instancePolicyRepository.js";
 import type { ChannelCreatorModeratorService } from "../services/channelCreatorModerator.js";
@@ -81,6 +82,7 @@ export type GraphQLRequest = Request & {
  * possibly-absent (`req?.headers`, `if (context.req)`).
  */
 export type GraphQLContext = {
+  notificationWriter?: NotificationWriter;
   roleGuardRepository?: RoleGuardRepository;
   notificationSnapshotRepository?: NotificationSnapshotRepository;
   instancePolicyRepository?: InstancePolicyRepository;
