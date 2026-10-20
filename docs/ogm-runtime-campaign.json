@@ -247,8 +247,8 @@
       "baselineCrudSites": 16,
       "dependencies": "06; write/event contract",
       "acceptance": "Split moderator vs owner/admin; sequential-write partial failures and event counts",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "1f539e8a515e64c5c9854522b39fafe6599579e3",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -286,15 +286,16 @@
           "id": "11c",
           "scope": "Forum invitations",
           "baselineCrudSites": 2,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_contributions approved original patch; integration_review approved final factory merge and independently passed8 focused email checks; native transports denied",
           "preparedPatch": "forum-invitations11c.patch",
           "preparedPatchSha256": "26392055092ae69a80756da74c431e98ad843aa32ba49e772219606a36a31b21",
           "preparedBase": "658bfe4 plus03a/03b/11a",
           "verification": [
-            "8 focused units and11 live parity tests passed on reviewed patch; native mail transports denied and injected fake senders; cumulative gates pending"
+            "8 focused units and11 live parity tests passed on reviewed patch; native mail transports denied and injected fake senders; cumulative gates pending",
+            "Exact committed tree a5601f5047754b2d229161080cf6e21ba1fa7af0: lint, TypeScript and2016 full units passed; 11 disposable live parity tests passed on identical production sources before documentation-only review update; cumulative exact-tree build and circular checks passed"
           ],
-          "commit": null
+          "commit": "1f539e8a515e64c5c9854522b39fafe6599579e3"
         }
       ]
     },
@@ -312,7 +313,7 @@
       "baselineCrudSites": 13,
       "dependencies": "06; write/event contract",
       "acceptance": "Split admin vs moderator; repeat acceptance, partial failures and events",
-      "status": "reviewed subdivisions; integration pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -321,14 +322,15 @@
           "id": "12a",
           "scope": "Server admin core",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
-          "review": "review_subscription",
+          "status": "reviewed; cumulative gates pending",
+          "review": "integration_review independently verified seven nonmerge blobs exactly match reviewed patch, factory/context changes limited to two server-admin constructors and repository field/import; prior campaign wiring retained. Independent 6 focused tests passed actual exit 0 (/tmp/review12a-integration-focused.log); diff-check passed. No findings.",
           "preparedPatch": "server-membership12a.patch",
           "preparedPatchSha256": "707bd694862603e214319c93b16f89e10bb848460ab36992c8f9abc98e46b1fe",
           "preparedBase": "658bfe4",
           "verification": [
-            "6 units;10 parity+4 existing live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "12b",
@@ -495,10 +497,16 @@
       "baselineCrudSites": 4,
       "dependencies": "Storage mocks; write/event contract",
       "acceptance": "Variant/upload/database ordering and failures, all external IO mocked",
-      "status": "pending",
+      "status": "reviewed; integration pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "integration_review independently passed35focused, inspected exact7live; no unresolved findings",
+      "verification": [
+        "Tree8b9bf450b1befafe6214537a85355d8476e0c9ea:35focused,7exactlive,tsc/lint passed; cumulative integration gates pending"
+      ],
+      "preparedPatch": "ogm-slice16.patch",
+      "preparedPatchSha256": "a0c05cd13b6c7e4e7c996b09e866ab244c368245045c64e3145c97cbe4aeb84b",
+      "preparedBase": "3567c3820fa05f2bfd9e80765be99ed683f0b411",
+      "accountingNote": "4CRUD =2typed+2structural adapters. Reduce manual structural audit adjustment3\u21921 only upon integration. Existing variantUrls map-property rejection preserved, no serialization correction."
     },
     {
       "id": "17",
@@ -1195,9 +1203,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 396,
+  "remainingRuntimeCrudSites": 392,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 97,
+  "remainingRuntimeCrudFiles": 95,
   "foundations": [
     {
       "id": "F01",
@@ -1226,6 +1234,7 @@
       "08",
       "09",
       "10",
+      "11",
       "35"
     ],
     "runtimeRemovalComplete": false,

@@ -1,3 +1,4 @@
+import type { ServerAdminRepository } from "../services/persistence/serverAdminRepository.js";
 import type { ForumModeratorRepository } from "../services/persistence/forumModeratorRepository.js";
 import type { ForumOwnerRepository } from "../services/persistence/forumOwnerRepository.js";
 import type { ContentValidationRepository } from "../services/persistence/contentValidationRepository.js";
@@ -87,6 +88,7 @@ export type GraphQLRequest = Request & {
  */
 export type GraphQLContext = {
   wikiGuardRepository?: WikiGuardRepository;
+  serverAdminRepository?: ServerAdminRepository;
   forumModeratorRepository?: ForumModeratorRepository;
   forumOwnerRepository?: ForumOwnerRepository;
   notificationWriter?: NotificationWriter;

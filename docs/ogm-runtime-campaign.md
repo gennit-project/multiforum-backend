@@ -49,7 +49,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete |
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | complete |
-| 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | partial; see subdivisions |
+| 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | complete |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | reviewed subdivisions; integration pending |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | reviewed subdivisions; integration pending |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
@@ -319,3 +319,13 @@ Slice11b committed `100901653b2ab169c0b89f057c8c4392f93418b2` ([diff](https://gi
 14a/b/c votes independently approved in isolatedworktrees; prepared artifacts recorded without crediting queued removals. Initial live fixture assumptions corrected (required-field response failure, Neo4j integer conversion, generated event-envelope IDs, actual relationship name, existing fragment-only User projection failure); strengthened final live checks passed, no production workaround. Final exact-tree static exits confirmed, not inferred from pending processes.
 
 20/21a/21b independently reviewed artifacts recorded without crediting queued removals.20 reversed test relationship corrected with explicit notification title/recipient assertions; final6live passed.21 baseline has no recent-version deduplication; migration preserves repeated snapshots and distinct standard/custom middleware semantics.
+
+Slice11c committed `1f539e8a515e64c5c9854522b39fafe6599579e3` ([diff](https://github.com/gennit-project/multiforum-backend/commit/1f539e8a515e64c5c9854522b39fafe6599579e3)), tree `a5601f5047754b2d229161080cf6e21ba1fa7af0`: lint, TypeScript and all2016 units passed; 11 disposable live parity tests passed on identical production sources before documentation-only review update; cumulative exact-tree build and circular checks passed. Independent approval recorded above.
+
+### Slice 12a — Server admin membership
+
+4 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 392 CRUD sites/95 files; 74 acquisitions/15 files; two separate CLI sites.
+
+16 independently approved artifact recorded without crediting queued removals;4CRUD comprises2typed+2structural calls, requiring audit adjustment3→1 only when integrated. Existing variantUrls map-property rejection preserved; native storage/HTTP attempt guards stayed zero.
+
+12a final integration approval: integration_review independently verified seven nonmerge blobs exactly match reviewed patch, factory/context changes limited to two server-admin constructors and repository field/import; prior campaign wiring retained. Independent 6 focused tests passed actual exit 0 (/tmp/review12a-integration-focused.log); diff-check passed. No findings.; live parity passed on identical production sources before this documentation-only update.

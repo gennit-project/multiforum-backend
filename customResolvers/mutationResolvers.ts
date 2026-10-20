@@ -290,12 +290,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       User,
       driver
     }),
-    cancelInviteServerAdmin: cancelInviteServerAdmin({
-      ServerConfig
-    }),
-    acceptServerAdminInvite: acceptServerAdminInvite({
-      ServerConfig
-    }),
+    cancelInviteServerAdmin: cancelInviteServerAdmin(),
+    acceptServerAdminInvite: acceptServerAdminInvite(),
     inviteServerMod: inviteServerMod({
       ServerConfig,
       User,
