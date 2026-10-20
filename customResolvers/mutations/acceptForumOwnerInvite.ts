@@ -1,7 +1,4 @@
-import type {
-  ChannelUpdateInput,
-  ChannelModel,
-} from "../../ogm_types.js";
+import { resolveForumOwnerRepository } from "../../services/persistence/forumOwnerRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -10,12 +7,7 @@ type Args = {
   channelUniqueName: string;
 };
 
-type Input = {
-  Channel: ChannelModel;
-};
-
-const getResolver = (input: Input) => {
-  const { Channel } = input;
+const getResolver = () => {
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName } = args;
     if (!channelUniqueName) {
@@ -34,69 +26,18 @@ const getResolver = (input: Input) => {
     }
 
     // Check if there's a pending owner invite first
-    const channelWithPendingInvite = await Channel.find({
-      where: {
-        uniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-        PendingOwnerInvites {
-          username
-        }
-      }`,
-    });
+    const channelWithPendingInvite = await resolveForumOwnerRepository(context).findPendingInvites(channelUniqueName);
 
     if (!channelWithPendingInvite[0]?.PendingOwnerInvites?.some(invite => invite.username === loggedInUsername)) {
       throw new Error(`No pending owner invite found for user ${loggedInUsername} in channel ${channelUniqueName}`);
     }
 
-    const addChannelOwnerInput: ChannelUpdateInput = {
-      Admins: [
-        {
-          connect: [
-            {
-              where: {
-                node: {
-                  username: loggedInUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
-    const removePendingInviteInput: ChannelUpdateInput = {
-      PendingOwnerInvites: [
-        {
-          disconnect: [
-            {
-              where: {
-                node: {
-                  username: loggedInUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
     try {
-      const acceptInviteResult = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: addChannelOwnerInput,
-      });
+      const acceptInviteResult = await resolveForumOwnerRepository(context).connectOwner(channelUniqueName, loggedInUsername);
       if (!acceptInviteResult.channels[0]) {
         throw new Error("Channel not found. Could not accept invite.");
       }
-      const removePendingInviteResult = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: removePendingInviteInput,
-      });
+      const removePendingInviteResult = await resolveForumOwnerRepository(context).disconnectInvite(channelUniqueName, loggedInUsername);
       if (!removePendingInviteResult.channels[0]) {
         throw new Error("Channel not found. Could not remove pending invite");
       }

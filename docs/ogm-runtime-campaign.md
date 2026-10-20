@@ -73,7 +73,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | pending |
 | 33 Event recurrence | 19 | 32; external transaction/event gate | Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes | pending |
 | 34 Download review/labels | 14 | Retain pipeline adapter until 41/44 controls | Split review/preparation 7/labels 7; scan state and label history | pending |
-| 35 Plugin read models | 20 | 01; visibility/redaction contract | Split configuration vs run/visibility reads; redaction, order and empty states | partial; see subdivisions |
+| 35 Plugin read models | 20 | 01; visibility/redaction contract | Split configuration vs run/visibility reads; redaction, order and empty states | complete |
 | 36 Plugin registry/install | 22 | 37 secrets before install; external IO mocks | Two commits refresh 13/install 9; verification/download/write/rename failure ordering | pending |
 | 37 Plugin config/secrets | 16 | 35; configuration/secret masking contract | Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth | reviewed subdivisions; integration pending |
 | 38 Bot identity/comments | 13 | 03; write/event contract | Nested identity creation, activation/deprecation, channel links and comment context | pending |
@@ -295,3 +295,9 @@ Slice35c2 committed `55c0701cb88f2ace84991fabc1a4fc118cdc26e4` ([diff](https://g
 ### Preserved reviewed integration queue
 
 The JSON ledger now records prepared patch hashes, baselines and independent evidence for11a/b/c,12a/b/c,13a/b,15,37a/b1/c and18a. These are reviewed worktree patches, not completed or published slices; integration, cumulative gates and separate commits remain required. Patch paths refer to the preserved cloud workspace. Counts in remainingRuntimeCrudSites include only changes already integrated into this branch, never queued removals.37b2 remains separately paused.
+
+Slice35c3 committed `c19c5378184e2717d24aaa8ecdb0fb85d8dad7a3` ([diff](https://github.com/gennit-project/multiforum-backend/commit/c19c5378184e2717d24aaa8ecdb0fb85d8dad7a3)), tree `b4db7de98b5c07bc03cfaff9f5b8f9a986feb110`: lint, TypeScript and all1999 units passed; 3 exact-tree disposable Neo4j parity tests; cumulative build and circular dependency checks passed. Independent approval recorded above.
+
+### Slice 11a — Forum owner membership
+
+7 baseline CRUD sites removed. Independent review_subscription approved frozen patch; integration_review approved exact factory/context merge and independently passed8 focused checks. 8 focused units and 12 production-schema live parity tests passed on reviewed patch; cumulative gates pending. Parent cumulative gates pending. Remaining 405 CRUD sites/102 files; 74 acquisitions/15 files; two separate CLI sites.

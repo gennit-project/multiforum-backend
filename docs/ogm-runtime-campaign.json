@@ -247,7 +247,7 @@
       "baselineCrudSites": 16,
       "dependencies": "06; write/event contract",
       "acceptance": "Split moderator vs owner/admin; sequential-write partial failures and event counts",
-      "status": "reviewed subdivisions; integration pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -256,14 +256,15 @@
           "id": "11a",
           "scope": "Owner/admin core",
           "baselineCrudSites": 7,
-          "status": "reviewed; integration pending",
-          "review": "review_subscription",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_subscription approved frozen patch; integration_review approved exact factory/context merge and independently passed8 focused checks",
           "preparedPatch": "forum-membership11a.patch",
           "preparedPatchSha256": "1efb27e21e44a95d5d77cf759b4f44174ba135cc02774792ef2e8e35ae0e7280",
           "preparedBase": "658bfe4",
           "verification": [
-            "8 units;12 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "8 focused units and 12 production-schema live parity tests passed on reviewed patch; cumulative gates pending"
+          ],
+          "commit": null
         },
         {
           "id": "11b",
@@ -785,8 +786,8 @@
       "baselineCrudSites": 20,
       "dependencies": "01; visibility/redaction contract",
       "acceptance": "Split configuration vs run/visibility reads; redaction, order and empty states",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "c19c5378184e2717d24aaa8ecdb0fb85d8dad7a3",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -843,12 +844,13 @@
           "id": "35c3",
           "scope": "Public/internal detail reads",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_slice1 approved; no unresolved findings",
           "verification": [
-            "13 focused units,3 live parity and4 authorization tests passed; public visibility/redaction and internal diagnostics preserved with exact ordering and defaults"
+            "13 focused units,3 live parity and4 authorization tests passed; public visibility/redaction and internal diagnostics preserved with exact ordering and defaults",
+            "Exact committed tree b4db7de98b5c07bc03cfaff9f5b8f9a986feb110: lint, TypeScript and1999 full units passed; 3 exact-tree disposable Neo4j parity tests; cumulative build and circular dependency checks passed"
           ],
-          "commit": null
+          "commit": "c19c5378184e2717d24aaa8ecdb0fb85d8dad7a3"
         }
       ]
     },
@@ -1068,9 +1070,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 412,
+  "remainingRuntimeCrudSites": 405,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 106,
+  "remainingRuntimeCrudFiles": 102,
   "foundations": [
     {
       "id": "F01",
@@ -1098,7 +1100,8 @@
       "07",
       "08",
       "09",
-      "10"
+      "10",
+      "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [

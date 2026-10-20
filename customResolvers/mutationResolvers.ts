@@ -275,18 +275,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Channel,
       driver
     }),
-    cancelInviteForumOwner: cancelInviteOwner({
-      Channel
-    }),
-    removeForumOwner: removeForumOwner({
-      Channel
-    }),
-    acceptForumOwnerInvite: acceptForumOwnerInvite({
-      Channel,
-    }),
-    becomeForumAdmin: becomeForumAdmin({
-      Channel,
-    }),
+    cancelInviteForumOwner: cancelInviteOwner(),
+    removeForumOwner: removeForumOwner(),
+    acceptForumOwnerInvite: acceptForumOwnerInvite(),
+    becomeForumAdmin: becomeForumAdmin(),
     inviteForumMod: inviteForumMod({
       Channel,
       driver

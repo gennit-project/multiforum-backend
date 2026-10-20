@@ -1,7 +1,4 @@
-import type {
-  ChannelUpdateInput,
-  ChannelModel,
-} from "../../ogm_types.js";
+import { resolveForumOwnerRepository } from "../../services/persistence/forumOwnerRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -12,12 +9,7 @@ type Args = {
   channelUniqueName: string;
 };
 
-type Input = {
-  Channel: ChannelModel;
-};
-
-const getResolver = (input: Input) => {
-  const { Channel } = input;
+const getResolver = () => {
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName } = args;
     if (!channelUniqueName) {
@@ -46,16 +38,7 @@ const getResolver = (input: Input) => {
     }
 
     // Check if user is already an admin
-    const currentChannel = await Channel.find({
-      where: {
-        uniqueName: channelUniqueName,
-      },
-      selectionSet: `{ 
-        Admins {
-          username
-        }
-      }`,
-    });
+    const currentChannel = await resolveForumOwnerRepository(context).findAdmins(channelUniqueName);
 
     if (!currentChannel || !currentChannel[0]) {
       throw new Error("Channel not found");
@@ -69,29 +52,8 @@ const getResolver = (input: Input) => {
       throw new Error("User is already an admin of this forum");
     }
 
-    const addAdminInput: ChannelUpdateInput = {
-      Admins: [
-        {
-          connect: [
-            {
-              where: {
-                node: {
-                  username: loggedInUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
     try {
-      const result = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: addAdminInput,
-      });
+      const result = await resolveForumOwnerRepository(context).connectOwner(channelUniqueName, loggedInUsername);
 
       if (!result.channels[0]) {
         throw new Error("Failed to update channel admin");

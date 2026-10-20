@@ -1,3 +1,4 @@
+import type { ForumOwnerRepository } from "../services/persistence/forumOwnerRepository.js";
 import type { ContentValidationRepository } from "../services/persistence/contentValidationRepository.js";
 import type { NotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import type { WikiGuardRepository } from "../services/persistence/wikiGuardRepository.js";
@@ -85,6 +86,7 @@ export type GraphQLRequest = Request & {
  */
 export type GraphQLContext = {
   wikiGuardRepository?: WikiGuardRepository;
+  forumOwnerRepository?: ForumOwnerRepository;
   notificationWriter?: NotificationWriter;
   roleGuardRepository?: RoleGuardRepository;
   notificationSnapshotRepository?: NotificationSnapshotRepository;
