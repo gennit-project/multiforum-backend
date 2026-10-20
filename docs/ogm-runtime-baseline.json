@@ -1,0 +1,2870 @@
+[
+  {
+    "file": "customResolvers/fields/userCollections.ts",
+    "line": 74,
+    "receiver": "Collection",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getUserContributions.ts",
+    "line": 36,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getUserWikiEditsCount.ts",
+    "line": 23,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getChannelContributions.ts",
+    "line": 37,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getModContributions.ts",
+    "line": 35,
+    "receiver": "ModerationProfile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 65,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 87,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 149,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 183,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 191,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 199,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 213,
+    "receiver": "TextVersion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/shared/resolveIssueTarget.ts",
+    "line": 221,
+    "receiver": "WikiPage",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getServerPluginSecrets.ts",
+    "line": 24,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getInstalledPlugins.ts",
+    "line": 54,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPluginRunsForDownloadableFile.ts",
+    "line": 19,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPipelineRuns.ts",
+    "line": 20,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/publicCollectionsContaining.ts",
+    "line": 132,
+    "receiver": "Collection",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getOwnEmail.ts",
+    "line": 61,
+    "receiver": "Email",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPluginConfigStatus.ts",
+    "line": 31,
+    "receiver": "Plugin",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPluginConfigStatus.ts",
+    "line": 45,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPluginConfigStatus.ts",
+    "line": 60,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/pluginPipelineVisibility.ts",
+    "line": 19,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/pluginPipelineVisibility.ts",
+    "line": 53,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getApplicablePluginPipeline.ts",
+    "line": 86,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getApplicablePluginPipeline.ts",
+    "line": 91,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getApplicablePluginPipeline.ts",
+    "line": 113,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPluginPipelineSummary.ts",
+    "line": 35,
+    "receiver": "PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPluginPipelineSummary.ts",
+    "line": 40,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPublicPluginPipelineRun.ts",
+    "line": 26,
+    "receiver": "PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getPublicPluginPipelineRun.ts",
+    "line": 39,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getInternalPluginPipelineRun.ts",
+    "line": 14,
+    "receiver": "PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getInternalPluginPipelineRun.ts",
+    "line": 26,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/executionLease.ts",
+    "line": 66,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/executionLease.ts",
+    "line": 79,
+    "receiver": "PluginPipelineRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/executionLease.ts",
+    "line": 104,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/executionLease.ts",
+    "line": 115,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/executionLease.ts",
+    "line": 122,
+    "receiver": "PluginPipelineRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/executionLease.ts",
+    "line": 141,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/pipelineAttempt.ts",
+    "line": 84,
+    "receiver": "PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineAttempt.ts",
+    "line": 121,
+    "receiver": "PluginPipelineRun",
+    "method": "create"
+  },
+  {
+    "file": "services/plugin/pipelineAttempt.ts",
+    "line": 150,
+    "receiver": "PluginPipelineRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/pipelineAttempt.ts",
+    "line": 200,
+    "receiver": "PluginPipelineRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/pipelineNotifications.ts",
+    "line": 33,
+    "receiver": "PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineNotifications.ts",
+    "line": 48,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineNotifications.ts",
+    "line": 76,
+    "receiver": "PluginPipelineRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/pipelineNotifications.ts",
+    "line": 100,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 81,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 127,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 213,
+    "receiver": "DownloadableFile",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 249,
+    "receiver": "PluginRun",
+    "method": "create"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 294,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 306,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 324,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 336,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 372,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 538,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 584,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/downloadTrigger.ts",
+    "line": 605,
+    "receiver": "DownloadableFile",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/pipelineCampaign.ts",
+    "line": 61,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineCampaign.ts",
+    "line": 85,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineCampaign.ts",
+    "line": 137,
+    "receiver": "models.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineCampaign.ts",
+    "line": 151,
+    "receiver": "models.DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineCampaign.ts",
+    "line": 180,
+    "receiver": "models.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineCampaign.ts",
+    "line": 187,
+    "receiver": "models.PluginPipelineCampaign",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/pipelineCampaign.ts",
+    "line": 207,
+    "receiver": "models.PluginPipelineCampaign",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/pluginPipelineCampaigns.ts",
+    "line": 26,
+    "receiver": "PluginPipelineCampaign",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/pluginPipelineCampaigns.ts",
+    "line": 44,
+    "receiver": "PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/pluginPipelineCampaigns.ts",
+    "line": 57,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/getInstanceSetupStatus.ts",
+    "line": 178,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/previewPluginConfigurationReconciliation.ts",
+    "line": 133,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/queries/previewPluginConfigurationReconciliation.ts",
+    "line": 150,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 66,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 80,
+    "receiver": "User",
+    "method": "create"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 106,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 119,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 137,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 228,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 253,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "services/botUserService.ts",
+    "line": 378,
+    "receiver": "Comment",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportComment.ts",
+    "line": 314,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportComment.ts",
+    "line": 340,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportComment.ts",
+    "line": 380,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportComment.ts",
+    "line": 430,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "services/botReportService.ts",
+    "line": 120,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "services/botReportService.ts",
+    "line": 143,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "services/botReportService.ts",
+    "line": 169,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "services/botReportService.ts",
+    "line": 184,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "services/botReportService.ts",
+    "line": 225,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "services/botReportService.ts",
+    "line": 287,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 61,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 152,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 195,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 347,
+    "receiver": "PluginRun",
+    "method": "create"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 390,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 402,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 419,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 431,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 467,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 740,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/commentTrigger.ts",
+    "line": 777,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 86,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 154,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 192,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 282,
+    "receiver": "DownloadableFile",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 320,
+    "receiver": "PluginRun",
+    "method": "create"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 366,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 378,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 396,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 408,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 444,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 620,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 666,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/channelTrigger.ts",
+    "line": 687,
+    "receiver": "DownloadableFile",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+    "line": 288,
+    "receiver": "Discussion",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+    "line": 329,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+    "line": 356,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/shared/emailUtils.ts",
+    "line": 35,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/shared/emailUtils.ts",
+    "line": 89,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "services/issueNotifications.ts",
+    "line": 91,
+    "receiver": "IssueModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/issueActivityFeedHelpers.ts",
+    "line": 59,
+    "receiver": "IssueModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/issueActivityFeedHelpers.ts",
+    "line": 150,
+    "receiver": "IssueModel",
+    "method": "update"
+  },
+  {
+    "file": "hooks/notificationHelpers.ts",
+    "line": 25,
+    "receiver": "UserModel",
+    "method": "update"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 84,
+    "receiver": "DiscussionModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 169,
+    "receiver": "DiscussionModel",
+    "method": "update"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 283,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 295,
+    "receiver": "TextVersionModel",
+    "method": "create"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 312,
+    "receiver": "DiscussionModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 325,
+    "receiver": "DiscussionModel",
+    "method": "update"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 366,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 378,
+    "receiver": "TextVersionModel",
+    "method": "create"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 395,
+    "receiver": "DiscussionModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/discussionVersionHistoryHook.ts",
+    "line": 408,
+    "receiver": "DiscussionModel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateDiscussionWithChannelConnections.ts",
+    "line": 182,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateDiscussionWithChannelConnections.ts",
+    "line": 207,
+    "receiver": "Discussion",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateDiscussionWithChannelConnections.ts",
+    "line": 339,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createEventWithChannelConnections.ts",
+    "line": 96,
+    "receiver": "Event",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/createEventWithChannelConnections.ts",
+    "line": 116,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createEventSeriesWithChannelConnections.ts",
+    "line": 288,
+    "receiver": "EventSeries",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/createEventSeriesWithChannelConnections.ts",
+    "line": 310,
+    "receiver": "EventSeries",
+    "method": "find"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 83,
+    "receiver": "EventModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 167,
+    "receiver": "EventModel",
+    "method": "update"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 279,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 289,
+    "receiver": "TextVersionModel",
+    "method": "create"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 305,
+    "receiver": "EventModel",
+    "method": "update"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 344,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 354,
+    "receiver": "TextVersionModel",
+    "method": "create"
+  },
+  {
+    "file": "hooks/eventVersionHistoryHook.ts",
+    "line": 370,
+    "receiver": "EventModel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventWithChannelConnections.ts",
+    "line": 55,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventWithChannelConnections.ts",
+    "line": 85,
+    "receiver": "Event",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventWithChannelConnections.ts",
+    "line": 166,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 112,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 166,
+    "receiver": "Event",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 177,
+    "receiver": "Event",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 191,
+    "receiver": "Event",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 200,
+    "receiver": "EventSeries",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 213,
+    "receiver": "Event",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 221,
+    "receiver": "Event",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 230,
+    "receiver": "EventSeries",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateEventInSeries.ts",
+    "line": 302,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 29,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 59,
+    "receiver": "Event",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 70,
+    "receiver": "Event",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 84,
+    "receiver": "Event",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 94,
+    "receiver": "EventSeries",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 105,
+    "receiver": "Event",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 113,
+    "receiver": "Event",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/deleteEventInSeries.ts",
+    "line": 121,
+    "receiver": "EventSeries",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/channelPreferenceGuards.ts",
+    "line": 39,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/channelPreferenceGuards.ts",
+    "line": 79,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/addEmojiToComment.ts",
+    "line": 38,
+    "receiver": "Comment",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/removeEmojiFromComment.ts",
+    "line": 36,
+    "receiver": "Comment",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/addEmojiToDiscussionChannel.ts",
+    "line": 41,
+    "receiver": "DiscussionChannel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/removeEmojiFromDiscussionChannel.ts",
+    "line": 39,
+    "receiver": "DiscussionChannel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/upvoteComment.ts",
+    "line": 74,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/upvoteComment.ts",
+    "line": 105,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/upvoteComment.ts",
+    "line": 137,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/undoUpvoteComment.ts",
+    "line": 84,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/undoUpvoteComment.ts",
+    "line": 112,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/undoUpvoteComment.ts",
+    "line": 143,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/upvoteDiscussionChannel.ts",
+    "line": 70,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/upvoteDiscussionChannel.ts",
+    "line": 94,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/upvoteDiscussionChannel.ts",
+    "line": 129,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/undoUpvoteDiscussionChannel.ts",
+    "line": 78,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/undoUpvoteDiscussionChannel.ts",
+    "line": 103,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/undoUpvoteDiscussionChannel.ts",
+    "line": 136,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/createEmailAndUser.ts",
+    "line": 62,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createEmailAndUser.ts",
+    "line": 71,
+    "receiver": "Email",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createEmailAndUser.ts",
+    "line": 129,
+    "receiver": "User",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/createEmailAndUser.ts",
+    "line": 132,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 126,
+    "receiver": "ModChannelRole",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 127,
+    "receiver": "ChannelRole",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 128,
+    "receiver": "ModServerRole",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 129,
+    "receiver": "ServerRole",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 132,
+    "receiver": "ServerConfig",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 137,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 207,
+    "receiver": "Channel",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 209,
+    "receiver": "Tag",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/seedDataForCypressTests.ts",
+    "line": 212,
+    "receiver": "Comment",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/inviteForumOwner.ts",
+    "line": 72,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/removeForumOwner.ts",
+    "line": 43,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptForumOwnerInvite.ts",
+    "line": 37,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/acceptForumOwnerInvite.ts",
+    "line": 85,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptForumOwnerInvite.ts",
+    "line": 94,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/becomeForumAdmin.ts",
+    "line": 49,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/becomeForumAdmin.ts",
+    "line": 89,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/inviteForumMod.ts",
+    "line": 76,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/removeForumMod.ts",
+    "line": 37,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/removeForumMod.ts",
+    "line": 70,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptForumModInvite.ts",
+    "line": 39,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/acceptForumModInvite.ts",
+    "line": 55,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/acceptForumModInvite.ts",
+    "line": 103,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptForumModInvite.ts",
+    "line": 112,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/cancelInviteForumMod.ts",
+    "line": 43,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/cancelInviteForumOwner.ts",
+    "line": 43,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/inviteServerAdmin.ts",
+    "line": 32,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/inviteServerAdmin.ts",
+    "line": 79,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptServerAdminInvite.ts",
+    "line": 39,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/acceptServerAdminInvite.ts",
+    "line": 92,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptServerAdminInvite.ts",
+    "line": 101,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/cancelInviteServerAdmin.ts",
+    "line": 44,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/inviteServerMod.ts",
+    "line": 32,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/inviteServerMod.ts",
+    "line": 79,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptServerModInvite.ts",
+    "line": 41,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/acceptServerModInvite.ts",
+    "line": 57,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/acceptServerModInvite.ts",
+    "line": 110,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/acceptServerModInvite.ts",
+    "line": 119,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/cancelInviteServerMod.ts",
+    "line": 44,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/reportDiscussion.ts",
+    "line": 87,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportDiscussion.ts",
+    "line": 113,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportDiscussion.ts",
+    "line": 137,
+    "receiver": "ChannelModel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportDiscussion.ts",
+    "line": 148,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportDiscussion.ts",
+    "line": 205,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/reportEvent.ts",
+    "line": 80,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportEvent.ts",
+    "line": 106,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportEvent.ts",
+    "line": 129,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportEvent.ts",
+    "line": 180,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/reportWikiEdit.ts",
+    "line": 86,
+    "receiver": "WikiPage",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportWikiEdit.ts",
+    "line": 113,
+    "receiver": "TextVersion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportWikiEdit.ts",
+    "line": 141,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportWikiEdit.ts",
+    "line": 182,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportWikiEdit.ts",
+    "line": 232,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/redactTextVersionRevision.ts",
+    "line": 237,
+    "receiver": "TextVersion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/redactTextVersionRevision.ts",
+    "line": 284,
+    "receiver": "TextVersion",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannel.ts",
+    "line": 133,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannel.ts",
+    "line": 154,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannel.ts",
+    "line": 204,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannel.ts",
+    "line": 254,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/reportImage.ts",
+    "line": 188,
+    "receiver": "Image",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportImage.ts",
+    "line": 225,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportImage.ts",
+    "line": 289,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportImage.ts",
+    "line": 342,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/reportProfilePicture.ts",
+    "line": 138,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportProfilePicture.ts",
+    "line": 164,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportProfilePicture.ts",
+    "line": 215,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportProfilePicture.ts",
+    "line": 265,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannelImage.ts",
+    "line": 141,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannelImage.ts",
+    "line": 185,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannelImage.ts",
+    "line": 239,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/reportChannelImage.ts",
+    "line": 289,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/lockChannel.ts",
+    "line": 58,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/lockChannel.ts",
+    "line": 88,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/lockChannel.ts",
+    "line": 128,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/lockChannel.ts",
+    "line": 208,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/lockChannel.ts",
+    "line": 219,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unlockChannel.ts",
+    "line": 56,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unlockChannel.ts",
+    "line": 82,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unlockChannel.ts",
+    "line": 158,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unlockChannel.ts",
+    "line": 170,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "hooks/archivedContentNotificationHook.ts",
+    "line": 102,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveComment.ts",
+    "line": 146,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveComment.ts",
+    "line": 209,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveComment.ts",
+    "line": 257,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/archiveComment.ts",
+    "line": 336,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveComment.ts",
+    "line": 347,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveComment.ts",
+    "line": 399,
+    "receiver": "Comment",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveComment.ts",
+    "line": 60,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveComment.ts",
+    "line": 108,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveComment.ts",
+    "line": 183,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveComment.ts",
+    "line": 194,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveComment.ts",
+    "line": 232,
+    "receiver": "Comment",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/stickyComment.ts",
+    "line": 49,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/stickyComment.ts",
+    "line": 84,
+    "receiver": "Comment",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveDiscussion.ts",
+    "line": 88,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveDiscussion.ts",
+    "line": 102,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveDiscussion.ts",
+    "line": 136,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/archiveDiscussion.ts",
+    "line": 193,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveDiscussion.ts",
+    "line": 227,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveDiscussion.ts",
+    "line": 259,
+    "receiver": "DiscussionChannel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveDiscussion.ts",
+    "line": 66,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveDiscussion.ts",
+    "line": 113,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveDiscussion.ts",
+    "line": 151,
+    "receiver": "DiscussionChannel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveEvent.ts",
+    "line": 100,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveEvent.ts",
+    "line": 114,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveEvent.ts",
+    "line": 148,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/archiveEvent.ts",
+    "line": 205,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveEvent.ts",
+    "line": 239,
+    "receiver": "EventChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveEvent.ts",
+    "line": 271,
+    "receiver": "EventChannel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveEvent.ts",
+    "line": 66,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveEvent.ts",
+    "line": 113,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveEvent.ts",
+    "line": 151,
+    "receiver": "EventChannel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveImage.ts",
+    "line": 185,
+    "receiver": "Image",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveImage.ts",
+    "line": 224,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/archiveImage.ts",
+    "line": 287,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/archiveImage.ts",
+    "line": 363,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveImage.ts",
+    "line": 375,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/archiveImage.ts",
+    "line": 429,
+    "receiver": "Image",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveImage.ts",
+    "line": 132,
+    "receiver": "Image",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveImage.ts",
+    "line": 162,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveImage.ts",
+    "line": 227,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveImage.ts",
+    "line": 239,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unarchiveImage.ts",
+    "line": 280,
+    "receiver": "Image",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/permanentlyRemoveImage.ts",
+    "line": 110,
+    "receiver": "Image",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/permanentlyRemoveImage.ts",
+    "line": 148,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/permanentlyRemoveImage.ts",
+    "line": 189,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/permanentlyRemoveImage.ts",
+    "line": 261,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/permanentlyRemoveImage.ts",
+    "line": 273,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/permanentlyRemoveImage.ts",
+    "line": 337,
+    "receiver": "Image",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/createIssue.ts",
+    "line": 33,
+    "receiver": "Issue",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/shared/createSuspensionResolver.ts",
+    "line": 152,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/shared/createSuspensionResolver.ts",
+    "line": 156,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/shared/createSuspensionResolver.ts",
+    "line": 274,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/shared/createSuspensionResolver.ts",
+    "line": 289,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/shared/createUnsuspendResolver.ts",
+    "line": 127,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/shared/createUnsuspendResolver.ts",
+    "line": 203,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/shared/createUnsuspendResolver.ts",
+    "line": 208,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/lockIssue.ts",
+    "line": 53,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/lockIssue.ts",
+    "line": 137,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/unlockIssue.ts",
+    "line": 54,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unlockIssue.ts",
+    "line": 142,
+    "receiver": "Issue",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/subscribeToComment.ts",
+    "line": 46,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unsubscribeFromComment.ts",
+    "line": 47,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/subscribeToDiscussionChannel.ts",
+    "line": 63,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unsubscribeFromDiscussionChannel.ts",
+    "line": 47,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/subscribeToEvent.ts",
+    "line": 46,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unsubscribeFromEvent.ts",
+    "line": 47,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/subscribeToEventUpdates.ts",
+    "line": 38,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unsubscribeFromEventUpdates.ts",
+    "line": 39,
+    "receiver": "Event",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/subscribeToIssue.ts",
+    "line": 46,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/unsubscribeFromIssue.ts",
+    "line": 47,
+    "receiver": "Issue",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 38,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 65,
+    "receiver": "PluginVersion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 80,
+    "receiver": "Plugin",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 102,
+    "receiver": "Plugin",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 109,
+    "receiver": "Plugin",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 116,
+    "receiver": "PluginVersion",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 146,
+    "receiver": "Plugin",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 203,
+    "receiver": "Plugin",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 220,
+    "receiver": "Plugin",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 237,
+    "receiver": "PluginVersion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 262,
+    "receiver": "PluginVersion",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 290,
+    "receiver": "PluginVersion",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/refreshPlugins.ts",
+    "line": 328,
+    "receiver": "Plugin",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/reconcileSecrets.ts",
+    "line": 94,
+    "receiver": "params.ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/reconcileSecrets.ts",
+    "line": 109,
+    "receiver": "params.ServerSecret",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 61,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 78,
+    "receiver": "Plugin",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 96,
+    "receiver": "PluginVersion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 219,
+    "receiver": "Plugin",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 236,
+    "receiver": "Plugin",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 266,
+    "receiver": "PluginVersion",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 290,
+    "receiver": "PluginVersion",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 314,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/installPluginVersion.ts",
+    "line": 370,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/startPluginPipeline.ts",
+    "line": 114,
+    "receiver": "input.DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/startPluginPipeline.ts",
+    "line": 150,
+    "receiver": "input.Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/startPluginPipeline.ts",
+    "line": 177,
+    "receiver": "input.Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/startPluginPipeline.ts",
+    "line": 224,
+    "receiver": "input.ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/startPluginPipeline.ts",
+    "line": 272,
+    "receiver": "input.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/startPluginPipeline.ts",
+    "line": 320,
+    "receiver": "input.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/rerunPluginPipeline.ts",
+    "line": 79,
+    "receiver": "input.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/rerunPluginPipeline.ts",
+    "line": 100,
+    "receiver": "input.DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/rerunPluginPipeline.ts",
+    "line": 107,
+    "receiver": "input.Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/rerunPluginPipeline.ts",
+    "line": 134,
+    "receiver": "input.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/retryDownloadableFileScan.ts",
+    "line": 53,
+    "receiver": "input.DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/retryDownloadableFileScan.ts",
+    "line": 100,
+    "receiver": "input.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/retryDownloadableFileScan.ts",
+    "line": 117,
+    "receiver": "input.PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/retryDownloadableFileScan.ts",
+    "line": 148,
+    "receiver": "input.PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/pluginPipelineCampaigns.ts",
+    "line": 50,
+    "receiver": "models.PluginPipelineCampaign",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/pluginPipelineCampaigns.ts",
+    "line": 68,
+    "receiver": "models.PluginPipelineCampaign",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/pluginPipelineCampaigns.ts",
+    "line": 97,
+    "receiver": "models.PluginPipelineCampaign",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/pluginPipelineCampaigns.ts",
+    "line": 116,
+    "receiver": "models.PluginPipelineCampaign",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/clearDownloadableFileScan.ts",
+    "line": 22,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/clearDownloadableFileScan.ts",
+    "line": 43,
+    "receiver": "DownloadableFile",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/clearDownloadableFileScan.ts",
+    "line": 80,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/requestDownloadableFileReview.ts",
+    "line": 33,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/requestDownloadableFileReview.ts",
+    "line": 51,
+    "receiver": "DownloadableFile",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/requestDownloadableFileReview.ts",
+    "line": 60,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/prepareDownload.ts",
+    "line": 95,
+    "receiver": "DownloadableFile",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/enableServerPlugin.ts",
+    "line": 59,
+    "receiver": "Plugin",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/enableServerPlugin.ts",
+    "line": 105,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/enableServerPlugin.ts",
+    "line": 137,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/enableServerPlugin.ts",
+    "line": 171,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/setServerPluginSecret.ts",
+    "line": 35,
+    "receiver": "ServerSecret",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/setServerPluginSecret.ts",
+    "line": 46,
+    "receiver": "ServerSecret",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/setServerPluginSecret.ts",
+    "line": 57,
+    "receiver": "ServerSecret",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/updatePluginPipelines.ts",
+    "line": 96,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updatePluginPipelines.ts",
+    "line": 109,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateChannelPluginPipelines.ts",
+    "line": 86,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateChannelPluginPipelines.ts",
+    "line": 119,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateChannelPluginPipelines.ts",
+    "line": 128,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateChannelPluginPipelines.ts",
+    "line": 233,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateChannelPluginPipelines.ts",
+    "line": 243,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/createImageWithUploader.ts",
+    "line": 86,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createImageWithUploader.ts",
+    "line": 169,
+    "receiver": "Image",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/updateDownloadLabels.ts",
+    "line": 72,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateDownloadLabels.ts",
+    "line": 122,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateDownloadLabels.ts",
+    "line": 147,
+    "receiver": "FilterOption",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateDownloadLabels.ts",
+    "line": 220,
+    "receiver": "DiscussionChannel",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/updateDownloadLabels.ts",
+    "line": 280,
+    "receiver": "LabelChangeHistory",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/updateDownloadLabels.ts",
+    "line": 319,
+    "receiver": "LabelChangeHistory",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/updateDownloadLabels.ts",
+    "line": 349,
+    "receiver": "ModerationAction",
+    "method": "create"
+  },
+  {
+    "file": "customResolvers/mutations/createScratchpadEntry.ts",
+    "line": 69,
+    "receiver": "User",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createScratchpadEntry.ts",
+    "line": 90,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/createScratchpadEntry.ts",
+    "line": 118,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/undoSuperUpvote.ts",
+    "line": 55,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/undoSuperUpvote.ts",
+    "line": 77,
+    "receiver": "DiscussionChannel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateScratchpadEntryVisibility.ts",
+    "line": 40,
+    "receiver": "ScratchpadEntry",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/updateScratchpadEntryVisibility.ts",
+    "line": 74,
+    "receiver": "ScratchpadEntry",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/deleteScratchpadEntry.ts",
+    "line": 30,
+    "receiver": "ScratchpadEntry",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/deleteScratchpadEntry.ts",
+    "line": 53,
+    "receiver": "ScratchpadEntry",
+    "method": "delete"
+  },
+  {
+    "file": "customResolvers/mutations/shareCollectionAsDiscussion.ts",
+    "line": 114,
+    "receiver": "Collection",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/shareCollectionAsDiscussion.ts",
+    "line": 133,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/wikiPagePins.ts",
+    "line": 51,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/wikiPagePins.ts",
+    "line": 58,
+    "receiver": "WikiPage",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/wikiPageLocks.ts",
+    "line": 80,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/wikiPageLocks.ts",
+    "line": 87,
+    "receiver": "WikiPage",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/wikiPageLocks.ts",
+    "line": 148,
+    "receiver": "WikiPage",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/setFeaturedWikiPages.ts",
+    "line": 40,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/setFeaturedWikiPages.ts",
+    "line": 52,
+    "receiver": "WikiPage",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/setFeaturedWikiPages.ts",
+    "line": 68,
+    "receiver": "ServerConfig",
+    "method": "update"
+  },
+  {
+    "file": "rules/validation/downloadableFileIsValid.ts",
+    "line": 180,
+    "receiver": "DownloadableFileModel",
+    "method": "find"
+  },
+  {
+    "file": "rules/validation/discussionIsValid.ts",
+    "line": 122,
+    "receiver": "Discussion",
+    "method": "find"
+  },
+  {
+    "file": "rules/validation/nestedRoleEscalation.ts",
+    "line": 169,
+    "receiver": "Model",
+    "method": "find"
+  },
+  {
+    "file": "middleware/channelRoleOwnershipMiddleware.ts",
+    "line": 158,
+    "receiver": "context.ogm.model(modelName)",
+    "method": "find"
+  },
+  {
+    "file": "rules/validation/channelRoleEscalation.ts",
+    "line": 49,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "rules/validation/channelRoleEscalation.ts",
+    "line": 109,
+    "receiver": "ctx.ogm.model(modelName)",
+    "method": "find"
+  },
+  {
+    "file": "rules/definitions/wikiRules.ts",
+    "line": 72,
+    "receiver": "WikiPage",
+    "method": "find"
+  },
+  {
+    "file": "hooks/userMentionNotificationHook.ts",
+    "line": 118,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/discussionVersionHistoryMiddleware.ts",
+    "line": 66,
+    "receiver": "DiscussionModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/discussionVersionHistoryMiddleware.ts",
+    "line": 148,
+    "receiver": "DiscussionModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/commentVersionHistoryHook.ts",
+    "line": 68,
+    "receiver": "CommentModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/commentVersionHistoryHook.ts",
+    "line": 226,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/commentVersionHistoryHook.ts",
+    "line": 240,
+    "receiver": "TextVersionModel",
+    "method": "create"
+  },
+  {
+    "file": "hooks/commentVersionHistoryHook.ts",
+    "line": 252,
+    "receiver": "CommentModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/commentVersionHistoryHook.ts",
+    "line": 265,
+    "receiver": "CommentModel",
+    "method": "update"
+  },
+  {
+    "file": "middleware/commentVersionHistoryMiddleware.ts",
+    "line": 52,
+    "receiver": "CommentModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/eventVersionHistoryMiddleware.ts",
+    "line": 73,
+    "receiver": "EventModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/commentUserMentionsMiddleware.ts",
+    "line": 69,
+    "receiver": "CommentModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/discussionMentionsMiddleware.ts",
+    "line": 33,
+    "receiver": "DiscussionModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/wikiPageVersionHistoryHook.ts",
+    "line": 56,
+    "receiver": "WikiPageModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/wikiPageVersionHistoryHook.ts",
+    "line": 140,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/wikiPageVersionHistoryHook.ts",
+    "line": 163,
+    "receiver": "TextVersionModel",
+    "method": "create"
+  },
+  {
+    "file": "hooks/wikiPageVersionHistoryHook.ts",
+    "line": 175,
+    "receiver": "WikiPageModel",
+    "method": "find"
+  },
+  {
+    "file": "hooks/wikiPageVersionHistoryHook.ts",
+    "line": 188,
+    "receiver": "WikiPageModel",
+    "method": "update"
+  },
+  {
+    "file": "middleware/wikiPageVersionHistoryMiddleware.ts",
+    "line": 186,
+    "receiver": "TextVersionModel",
+    "method": "create"
+  },
+  {
+    "file": "middleware/wikiPageVersionHistoryMiddleware.ts",
+    "line": 198,
+    "receiver": "WikiPageModel",
+    "method": "update"
+  },
+  {
+    "file": "middleware/issueActivityFeedMiddleware.ts",
+    "line": 64,
+    "receiver": "CommentModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/issueActivityFeedMiddleware.ts",
+    "line": 98,
+    "receiver": "DiscussionModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/issueActivityFeedMiddleware.ts",
+    "line": 124,
+    "receiver": "EventModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/issueActivityFeedMiddleware.ts",
+    "line": 151,
+    "receiver": "IssueModel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/issueActivityFeedMiddleware.ts",
+    "line": 197,
+    "receiver": "IssueModel",
+    "method": "update"
+  },
+  {
+    "file": "middleware/channelBotsMiddleware.ts",
+    "line": 94,
+    "receiver": "Channel",
+    "method": "find"
+  },
+  {
+    "file": "middleware/channelBotsMiddleware.ts",
+    "line": 125,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "middleware/channelBotsMiddleware.ts",
+    "line": 250,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "middleware/channelBotsMiddleware.ts",
+    "line": 260,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "middleware/wikiPageOwnershipMiddleware.ts",
+    "line": 47,
+    "receiver": "context.ogm.model(\"WikiPage\")",
+    "method": "find"
+  },
+  {
+    "file": "hooks/feedbackNotificationHook.ts",
+    "line": 39,
+    "receiver": "UserModel",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineWatchdog.ts",
+    "line": 83,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineWatchdog.ts",
+    "line": 118,
+    "receiver": "PluginRun",
+    "method": "update"
+  },
+  {
+    "file": "services/plugin/pipelineWatchdog.ts",
+    "line": 142,
+    "receiver": "PluginPipelineRun",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/pipelineWatchdog.ts",
+    "line": 154,
+    "receiver": "PluginRun",
+    "method": "find"
+  },
+  {
+    "file": "services/agePolicy.ts",
+    "line": 57,
+    "receiver": "ServerConfig",
+    "method": "find"
+  },
+  {
+    "file": "services/plugin/buildBotInvocationContext.ts",
+    "line": 102,
+    "receiver": "Comment",
+    "method": "find"
+  },
+  {
+    "file": "customResolvers/mutations/setProfileImage.ts",
+    "line": 87,
+    "receiver": "User",
+    "method": "update"
+  },
+  {
+    "file": "customResolvers/mutations/setChannelIcon.ts",
+    "line": 87,
+    "receiver": "Channel",
+    "method": "update"
+  },
+  {
+    "file": "services/commentNotificationHandler.ts",
+    "line": 202,
+    "receiver": "EntityModel",
+    "method": "find"
+  },
+  {
+    "file": "services/commentNotificationHandler.ts",
+    "line": 614,
+    "receiver": "CommentModel",
+    "method": "find"
+  }
+]

@@ -1,0 +1,764 @@
+{
+  "baseline": "006f625477cdd32be2e3a7ec3ea14c649da17638",
+  "issue": 284,
+  "runtimeCrudSites": 478,
+  "runtimeFiles": 155,
+  "modelAcquisitionsIncludingOptional": 98,
+  "modelAcquisitionFiles": 32,
+  "cliCrudSites": 2,
+  "slices": [
+    {
+      "id": "01",
+      "scope": "Age policy/setup",
+      "files": [
+        "services/agePolicy.ts",
+        "customResolvers/queries/getInstanceSetupStatus.ts"
+      ],
+      "baselineCrudSites": 2,
+      "dependencies": "None; first implementation slice",
+      "acceptance": "Missing/default policy, cache, absent config and setup flags",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "02",
+      "scope": "Contribution reads",
+      "files": [
+        "customResolvers/queries/getUserContributions.ts",
+        "customResolvers/queries/getModContributions.ts",
+        "customResolvers/queries/getChannelContributions.ts",
+        "customResolvers/queries/getUserWikiEditsCount.ts"
+      ],
+      "baselineCrudSites": 4,
+      "dependencies": "01 age-policy interface when applicable",
+      "acceptance": "Missing identity, date ranges, counts, errors and session closure",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "03",
+      "scope": "Account/email",
+      "files": [
+        "customResolvers/queries/getOwnEmail.ts",
+        "customResolvers/mutations/createEmailAndUser.ts",
+        "customResolvers/mutations/shared/emailUtils.ts"
+      ],
+      "baselineCrudSites": 7,
+      "dependencies": "01; write/event parity",
+      "acceptance": "Ownership, normalization, duplicate account/email and nested creation",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "04",
+      "scope": "Subscription target reads",
+      "files": [
+        "customResolvers/mutations/subscribeToComment.ts",
+        "customResolvers/mutations/subscribeToDiscussionChannel.ts",
+        "customResolvers/mutations/subscribeToEvent.ts",
+        "customResolvers/mutations/subscribeToEventUpdates.ts",
+        "customResolvers/mutations/subscribeToIssue.ts",
+        "customResolvers/mutations/unsubscribeFromComment.ts",
+        "customResolvers/mutations/unsubscribeFromDiscussionChannel.ts",
+        "customResolvers/mutations/unsubscribeFromEvent.ts",
+        "customResolvers/mutations/unsubscribeFromEventUpdates.ts",
+        "customResolvers/mutations/unsubscribeFromIssue.ts"
+      ],
+      "baselineCrudSites": 10,
+      "dependencies": "None; preserve existing raw writes",
+      "acceptance": "Missing targets, repeats, selected response parity; no new events",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "05",
+      "scope": "Notification snapshots",
+      "files": [
+        "hooks/archivedContentNotificationHook.ts",
+        "hooks/feedbackNotificationHook.ts",
+        "hooks/userMentionNotificationHook.ts",
+        "middleware/commentUserMentionsMiddleware.ts",
+        "middleware/discussionMentionsMiddleware.ts",
+        "services/commentNotificationHandler.ts",
+        "services/issueNotifications.ts"
+      ],
+      "baselineCrudSites": 8,
+      "dependencies": "01 where age filtering applies",
+      "acceptance": "Recipients/preferences/actor exclusions; email-before-in-app ordering",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "06",
+      "scope": "Notification creation",
+      "files": [
+        "hooks/notificationHelpers.ts"
+      ],
+      "baselineCrudSites": 1,
+      "dependencies": "05; shared publisher contract",
+      "acceptance": "Nested notification graph/events and caught-error boolean contract",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "07",
+      "scope": "Role filter guards",
+      "files": [
+        "rules/validation/channelRoleEscalation.ts",
+        "rules/validation/nestedRoleEscalation.ts",
+        "middleware/channelRoleOwnershipMiddleware.ts"
+      ],
+      "baselineCrudSites": 4,
+      "dependencies": "Named-schema operation contract",
+      "acceptance": "Arbitrary/nested filters; missing/multiple-owner fail-closed authorization",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "08",
+      "scope": "Wiki filter guards",
+      "files": [
+        "rules/definitions/wikiRules.ts",
+        "middleware/wikiPageOwnershipMiddleware.ts"
+      ],
+      "baselineCrudSites": 2,
+      "dependencies": "Named-schema operation contract",
+      "acceptance": "Locked pages, arbitrary filters and unique channel ownership",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "09",
+      "scope": "Content validation",
+      "files": [
+        "rules/validation/discussionIsValid.ts",
+        "rules/validation/downloadableFileIsValid.ts",
+        "customResolvers/mutations/channelPreferenceGuards.ts"
+      ],
+      "baselineCrudSites": 4,
+      "dependencies": "Named-schema operation contract; 01",
+      "acceptance": "Existing-file/filename fallback, filters, preferences and exact errors",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "10",
+      "scope": "Collections",
+      "files": [
+        "customResolvers/fields/userCollections.ts",
+        "customResolvers/queries/publicCollectionsContaining.ts",
+        "customResolvers/mutations/shareCollectionAsDiscussion.ts"
+      ],
+      "baselineCrudSites": 4,
+      "dependencies": "Named-schema operation contract; retain creation adapter until 31",
+      "acceptance": "Filter merge precedence, visibility, sensitivity and default sorting",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "11",
+      "scope": "Forum membership",
+      "files": [
+        "customResolvers/mutations/acceptForumModInvite.ts",
+        "customResolvers/mutations/acceptForumOwnerInvite.ts",
+        "customResolvers/mutations/cancelInviteForumMod.ts",
+        "customResolvers/mutations/cancelInviteForumOwner.ts",
+        "customResolvers/mutations/inviteForumMod.ts",
+        "customResolvers/mutations/inviteForumOwner.ts",
+        "customResolvers/mutations/removeForumMod.ts",
+        "customResolvers/mutations/removeForumOwner.ts",
+        "customResolvers/mutations/becomeForumAdmin.ts"
+      ],
+      "baselineCrudSites": 16,
+      "dependencies": "06; write/event contract",
+      "acceptance": "Split moderator vs owner/admin; sequential-write partial failures and event counts",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "12",
+      "scope": "Server membership",
+      "files": [
+        "customResolvers/mutations/acceptServerAdminInvite.ts",
+        "customResolvers/mutations/acceptServerModInvite.ts",
+        "customResolvers/mutations/cancelInviteServerAdmin.ts",
+        "customResolvers/mutations/cancelInviteServerMod.ts",
+        "customResolvers/mutations/inviteServerAdmin.ts",
+        "customResolvers/mutations/inviteServerMod.ts"
+      ],
+      "baselineCrudSites": 13,
+      "dependencies": "06; write/event contract",
+      "acceptance": "Split admin vs moderator; repeat acceptance, partial failures and events",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "13",
+      "scope": "Reactions/sticky",
+      "files": [
+        "customResolvers/mutations/addEmojiToComment.ts",
+        "customResolvers/mutations/addEmojiToDiscussionChannel.ts",
+        "customResolvers/mutations/removeEmojiFromComment.ts",
+        "customResolvers/mutations/removeEmojiFromDiscussionChannel.ts",
+        "customResolvers/mutations/stickyComment.ts"
+      ],
+      "baselineCrudSites": 6,
+      "dependencies": "Write/event contract",
+      "acceptance": "Actor checks, repeated reactions/removals and sticky order",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "14",
+      "scope": "Votes",
+      "files": [
+        "customResolvers/mutations/upvoteComment.ts",
+        "customResolvers/mutations/undoUpvoteComment.ts",
+        "customResolvers/mutations/upvoteDiscussionChannel.ts",
+        "customResolvers/mutations/undoUpvoteDiscussionChannel.ts",
+        "customResolvers/mutations/undoSuperUpvote.ts"
+      ],
+      "baselineCrudSites": 14,
+      "dependencies": "Write/event contract; retain raw vote ordering",
+      "acceptance": "Split comment/discussion/supervote; weights, author unions, karma and race behavior",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "15",
+      "scope": "Scratchpad",
+      "files": [
+        "customResolvers/mutations/createScratchpadEntry.ts",
+        "customResolvers/mutations/deleteScratchpadEntry.ts",
+        "customResolvers/mutations/updateScratchpadEntryVisibility.ts"
+      ],
+      "baselineCrudSites": 7,
+      "dependencies": "Write/event contract",
+      "acceptance": "Ownership, visibility, missing entries and relationship cleanup",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "16",
+      "scope": "Image creation/profile",
+      "files": [
+        "customResolvers/mutations/createImageWithUploader.ts",
+        "customResolvers/mutations/setProfileImage.ts",
+        "customResolvers/mutations/setChannelIcon.ts"
+      ],
+      "baselineCrudSites": 4,
+      "dependencies": "Storage mocks; write/event contract",
+      "acceptance": "Variant/upload/database ordering and failures, all external IO mocked",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "17",
+      "scope": "Wiki actions",
+      "files": [
+        "customResolvers/mutations/wikiPageLocks.ts",
+        "customResolvers/mutations/wikiPagePins.ts",
+        "customResolvers/mutations/setFeaturedWikiPages.ts"
+      ],
+      "baselineCrudSites": 8,
+      "dependencies": "08; write/event contract",
+      "acceptance": "Permissions, channel scope, ordering and relationship events",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "18",
+      "scope": "Issue target/identity",
+      "files": [
+        "customResolvers/shared/resolveIssueTarget.ts",
+        "customResolvers/mutations/createIssue.ts"
+      ],
+      "baselineCrudSites": 9,
+      "dependencies": "Issue identity and allocation characterization",
+      "acceptance": "Every target kind; mirrors, immutable identity and allocation boundaries",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "19",
+      "scope": "Issue activity/lock",
+      "files": [
+        "hooks/issueActivityFeedHelpers.ts",
+        "middleware/issueActivityFeedMiddleware.ts",
+        "customResolvers/mutations/lockIssue.ts",
+        "customResolvers/mutations/unlockIssue.ts"
+      ],
+      "baselineCrudSites": 11,
+      "dependencies": "18; 05\u201306",
+      "acceptance": "Actor/activity references, lock transitions and notification order",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "20",
+      "scope": "Comment revisions",
+      "files": [
+        "hooks/commentVersionHistoryHook.ts",
+        "middleware/commentVersionHistoryMiddleware.ts"
+      ],
+      "baselineCrudSites": 6,
+      "dependencies": "18\u201319",
+      "acceptance": "Snapshots, deduplication, authors, revision refs and ageGateTouchedAt",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "21",
+      "scope": "Discussion revisions",
+      "files": [
+        "hooks/discussionVersionHistoryHook.ts",
+        "middleware/discussionVersionHistoryMiddleware.ts"
+      ],
+      "baselineCrudSites": 12,
+      "dependencies": "18\u201319",
+      "acceptance": "Title/body/no-op updates, recent-version dedupe and revision refs",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "22",
+      "scope": "Event revisions",
+      "files": [
+        "hooks/eventVersionHistoryHook.ts",
+        "middleware/eventVersionHistoryMiddleware.ts"
+      ],
+      "baselineCrudSites": 9,
+      "dependencies": "18\u201319",
+      "acceptance": "Event-specific snapshots/defaults; no unsupported repository reuse",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "23",
+      "scope": "Wiki revisions/redaction",
+      "files": [
+        "hooks/wikiPageVersionHistoryHook.ts",
+        "middleware/wikiPageVersionHistoryMiddleware.ts",
+        "customResolvers/mutations/redactTextVersionRevision.ts"
+      ],
+      "baselineCrudSites": 9,
+      "dependencies": "18\u201319; 08",
+      "acceptance": "Separate revision/redaction commits; visibility, authors and redaction authorization",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "24",
+      "scope": "Content reports",
+      "files": [
+        "customResolvers/mutations/reportChannel.ts",
+        "customResolvers/mutations/reportComment.ts",
+        "customResolvers/mutations/reportDiscussion.ts",
+        "customResolvers/mutations/reportEvent.ts"
+      ],
+      "baselineCrudSites": 17,
+      "dependencies": "18\u201319; 05\u201306",
+      "acceptance": "Separate entity commits; existing reports, numbering, activity and notifications",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "25",
+      "scope": "Image/profile/wiki reports",
+      "files": [
+        "customResolvers/mutations/reportImage.ts",
+        "customResolvers/mutations/reportProfilePicture.ts",
+        "customResolvers/mutations/reportChannelImage.ts",
+        "customResolvers/mutations/reportWikiEdit.ts"
+      ],
+      "baselineCrudSites": 17,
+      "dependencies": "18\u201319; 05\u201306; 23 for wiki",
+      "acceptance": "Separate image-family/wiki commits; owner vs target and replaced images",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "26",
+      "scope": "Channel moderation",
+      "files": [
+        "customResolvers/mutations/lockChannel.ts",
+        "customResolvers/mutations/unlockChannel.ts"
+      ],
+      "baselineCrudSites": 9,
+      "dependencies": "18\u201319; 05\u201306",
+      "acceptance": "Repeated actions, moderation state, activity and recipients",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "27",
+      "scope": "Comment moderation",
+      "files": [
+        "customResolvers/mutations/archiveComment.ts",
+        "customResolvers/mutations/unarchiveComment.ts"
+      ],
+      "baselineCrudSites": 11,
+      "dependencies": "18\u201320; 05\u201306",
+      "acceptance": "Archive metadata, history, issue effects and notifications",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "28",
+      "scope": "Discussion/event moderation",
+      "files": [
+        "customResolvers/mutations/archiveDiscussion.ts",
+        "customResolvers/mutations/unarchiveDiscussion.ts",
+        "customResolvers/mutations/archiveEvent.ts",
+        "customResolvers/mutations/unarchiveEvent.ts"
+      ],
+      "baselineCrudSites": 18,
+      "dependencies": "18\u201319,21\u201322; 05\u201306",
+      "acceptance": "Split discussion 9/event 9; entity-specific history and notifications",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "29",
+      "scope": "Image moderation/removal",
+      "files": [
+        "customResolvers/mutations/archiveImage.ts",
+        "customResolvers/mutations/unarchiveImage.ts",
+        "customResolvers/mutations/permanentlyRemoveImage.ts"
+      ],
+      "baselineCrudSites": 17,
+      "dependencies": "18\u201319; 05\u201306; storage mocks",
+      "acceptance": "Split archive pair 11/permanent removal 6; storage failure windows",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "30",
+      "scope": "Suspensions",
+      "files": [
+        "customResolvers/mutations/shared/createSuspensionResolver.ts",
+        "customResolvers/mutations/shared/createUnsuspendResolver.ts"
+      ],
+      "baselineCrudSites": 7,
+      "dependencies": "18\u201319; 05\u201306",
+      "acceptance": "All user/mod wrappers, scope, duration, authorization and activity",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "31",
+      "scope": "Discussion create/update",
+      "files": [
+        "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+        "customResolvers/mutations/updateDiscussionWithChannelConnections.ts"
+      ],
+      "baselineCrudSites": 6,
+      "dependencies": "21; 05\u201306; closes 10 adapter",
+      "acceptance": "Connections, explicit transaction propagation, rollback and history",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "32",
+      "scope": "Event create/update",
+      "files": [
+        "customResolvers/mutations/createEventWithChannelConnections.ts",
+        "customResolvers/mutations/updateEventWithChannelConnections.ts"
+      ],
+      "baselineCrudSites": 5,
+      "dependencies": "22; 05\u201306; external transaction/event gate",
+      "acceptance": "Explicit transaction/event timing, rollback and connections",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "33",
+      "scope": "Event recurrence",
+      "files": [
+        "customResolvers/mutations/createEventSeriesWithChannelConnections.ts",
+        "customResolvers/mutations/updateEventInSeries.ts",
+        "customResolvers/mutations/deleteEventInSeries.ts"
+      ],
+      "baselineCrudSites": 19,
+      "dependencies": "32; external transaction/event gate",
+      "acceptance": "Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "34",
+      "scope": "Download review/labels",
+      "files": [
+        "customResolvers/mutations/prepareDownload.ts",
+        "customResolvers/mutations/clearDownloadableFileScan.ts",
+        "customResolvers/mutations/requestDownloadableFileReview.ts",
+        "customResolvers/mutations/updateDownloadLabels.ts"
+      ],
+      "baselineCrudSites": 14,
+      "dependencies": "Retain pipeline adapter until 41/44 controls",
+      "acceptance": "Split review/preparation 7/labels 7; scan state and label history",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "35",
+      "scope": "Plugin read models",
+      "files": [
+        "customResolvers/queries/getServerPluginSecrets.ts",
+        "customResolvers/queries/getInstalledPlugins.ts",
+        "customResolvers/queries/getPluginConfigStatus.ts",
+        "customResolvers/queries/getApplicablePluginPipeline.ts",
+        "customResolvers/queries/getPipelineRuns.ts",
+        "customResolvers/queries/getPluginRunsForDownloadableFile.ts",
+        "customResolvers/queries/getPluginPipelineSummary.ts",
+        "customResolvers/queries/getPublicPluginPipelineRun.ts",
+        "customResolvers/queries/getInternalPluginPipelineRun.ts",
+        "customResolvers/queries/pluginPipelineVisibility.ts",
+        "customResolvers/queries/previewPluginConfigurationReconciliation.ts"
+      ],
+      "baselineCrudSites": 20,
+      "dependencies": "01; visibility/redaction contract",
+      "acceptance": "Split configuration vs run/visibility reads; redaction, order and empty states",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "36",
+      "scope": "Plugin registry/install",
+      "files": [
+        "customResolvers/mutations/refreshPlugins.ts",
+        "customResolvers/mutations/installPluginVersion.ts"
+      ],
+      "baselineCrudSites": 22,
+      "dependencies": "37 secrets before install; external IO mocks",
+      "acceptance": "Two commits refresh 13/install 9; verification/download/write/rename failure ordering",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "37",
+      "scope": "Plugin config/secrets",
+      "files": [
+        "customResolvers/mutations/enableServerPlugin.ts",
+        "customResolvers/mutations/setServerPluginSecret.ts",
+        "customResolvers/mutations/updatePluginPipelines.ts",
+        "customResolvers/mutations/updateChannelPluginPipelines.ts",
+        "services/plugin/reconcileSecrets.ts"
+      ],
+      "baselineCrudSites": 16,
+      "dependencies": "35; configuration/secret masking contract",
+      "acceptance": "Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "38",
+      "scope": "Bot identity/comments",
+      "files": [
+        "services/botUserService.ts",
+        "middleware/channelBotsMiddleware.ts",
+        "services/plugin/buildBotInvocationContext.ts"
+      ],
+      "baselineCrudSites": 13,
+      "dependencies": "03; write/event contract",
+      "acceptance": "Nested identity creation, activation/deprecation, channel links and comment context",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "39",
+      "scope": "Bot reports",
+      "files": [
+        "services/botReportService.ts"
+      ],
+      "baselineCrudSites": 6,
+      "dependencies": "18\u201319; 38",
+      "acceptance": "Issue identity, report deduplication and actor attribution",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "40",
+      "scope": "Pipeline leases/attempts",
+      "files": [
+        "services/plugin/executionLease.ts",
+        "services/plugin/pipelineAttempt.ts",
+        "services/plugin/pipelineWatchdog.ts"
+      ],
+      "baselineCrudSites": 14,
+      "dependencies": "Lease/attempt state characterization; 44 notifications before dependent consumers",
+      "acceptance": "Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "41",
+      "scope": "Pipeline download execution",
+      "files": [
+        "services/plugin/downloadTrigger.ts"
+      ],
+      "baselineCrudSites": 12,
+      "dependencies": "40; 44 notifications; 34 as applicable",
+      "acceptance": "Runner side effects outside retried callbacks; statuses/retries/results",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "42",
+      "scope": "Pipeline channel execution",
+      "files": [
+        "services/plugin/channelTrigger.ts"
+      ],
+      "baselineCrudSites": 13,
+      "dependencies": "40; 44 notifications; 38",
+      "acceptance": "Channel applicability, bots, statuses and execution failure ordering",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "43",
+      "scope": "Pipeline comment execution",
+      "files": [
+        "services/plugin/commentTrigger.ts"
+      ],
+      "baselineCrudSites": 11,
+      "dependencies": "40; 44 notifications; 38",
+      "acceptance": "Comment applicability, recursion guards, middleware wiring and ordering",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "44",
+      "scope": "Pipeline control/notifications",
+      "files": [
+        "customResolvers/mutations/startPluginPipeline.ts",
+        "customResolvers/mutations/rerunPluginPipeline.ts",
+        "customResolvers/mutations/retryDownloadableFileScan.ts",
+        "services/plugin/pipelineNotifications.ts"
+      ],
+      "baselineCrudSites": 18,
+      "dependencies": "Notifications before 40\u201343; controls after 41\u201343 and 34",
+      "acceptance": "Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "45",
+      "scope": "Pipeline campaigns",
+      "files": [
+        "services/plugin/pipelineCampaign.ts",
+        "customResolvers/mutations/pluginPipelineCampaigns.ts",
+        "customResolvers/queries/pluginPipelineCampaigns.ts"
+      ],
+      "baselineCrudSites": 14,
+      "dependencies": "40\u201344",
+      "acceptance": "Progress, cancellation, aggregation and restart behavior",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    },
+    {
+      "id": "46",
+      "scope": "Test seeding endpoint",
+      "files": [
+        "customResolvers/mutations/seedDataForCypressTests.ts"
+      ],
+      "baselineCrudSites": 9,
+      "dependencies": "31\u201333 and other reused creation helpers",
+      "acceptance": "Access restrictions, fixture relationships and composed responses",
+      "status": "pending",
+      "commit": null,
+      "review": null,
+      "verification": []
+    }
+  ]
+}
