@@ -161,6 +161,22 @@ configured database and stay leader-routed for bookmark consistency. This
 reduces production files with direct `ogm.model(...)` access to 24, direct calls
 to 77, and generated OGM type imports to 171.
 
+Download URL authorization now uses a driver-backed snapshot. Production's OGM
+uses the shared application schema: its context-free URL projection invokes the
+URL field resolver anonymously, so authorized callers receive the parent URL.
+The snapshot preserves that fallback, restricted-file filtering, and filtering
+of sensitive discussion authors without inheriting the outer request's JWT.
+Standalone OGM remains in use elsewhere, but no alternate application entry
+point installs this field resolver with standalone OGM initialization. Live
+parity tests exercise both initialization modes and the production behavior.
+This reduces the existing inventory to 23 production files and 76 direct calls;
+generated OGM type imports remain at 171.
+
+The inventory command above counts literal `ogm.model(...)` only. Including
+optional chaining gives a pre-trial baseline of 34 files and 101 calls (33 files
+and 100 calls after the URL slice); neither count captures all indirect model
+dependencies. These are migration tracking counts, not proof of total removal.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

@@ -10,6 +10,7 @@ import type { ContentAuthorizationRepository } from "../services/persistence/con
 import type { CommentCreationAuthorizationRepository } from "../services/persistence/commentCreationAuthorizationRepository.js";
 import type { ContentFeaturePolicyRepository } from "../services/persistence/contentFeaturePolicyRepository.js";
 import type { RequestIdentityRepository } from "../services/persistence/requestIdentityRepository.js";
+import type { DownloadableFileRepository } from "../services/persistence/downloadableFileRepository.js";
 
 /**
  * Compatibility surface for code not yet migrated to repositories. New domain
@@ -94,6 +95,8 @@ export type GraphQLContext = {
   contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
   /** Optional persistence seam for authenticated identity and ownership reads. */
   requestIdentityRepository?: RequestIdentityRepository;
+  /** Optional persistence seam for download authorization and metadata reads. */
+  downloadableFileRepository?: DownloadableFileRepository;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;

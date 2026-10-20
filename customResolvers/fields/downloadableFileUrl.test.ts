@@ -12,6 +12,13 @@ const buildContext = (file: Record<string, unknown> | null = {
   uploadedByUsername: "alice",
   Discussion: { Author: { username: "alice" } },
 }) => ({
+  downloadableFileRepository: {
+    findUrlAccess: async () => file ? {
+      uploadedByUsername: file.uploadedByUsername ?? null,
+      discussionAuthorUsername:
+        (file.Discussion as { Author?: { username?: string } })?.Author?.username ?? null,
+    } : null,
+  },
   ogm: {
     model: () => ({
       find: async () => file ? [file] : [],
@@ -170,4 +177,61 @@ test("allows an authorized moderator to access a failed file for review", async 
   );
 
   assert.equal(result, "https://example.com/file.zip");
+});
+
+const authenticated = (username: string) => ({
+  username, email: null, email_verified: false, data: null,
+});
+
+test("authorizes the discussion author and preserves parent URL or empty fallback", async () => {
+  const resolver = createDownloadableFileUrlResolver(
+    async () => authenticated("author"),
+    async () => { throw new Error("owners bypass moderator checks"); }
+  );
+  const context = () => buildContext({
+    url: "https://example.test/stored.zip",
+    uploadedByUsername: "uploader",
+    Discussion: { Author: { username: "author" } },
+  }) as unknown as ResolverContext;
+  assert.equal(
+    await resolver({ id: "file", url: "https://example.test/parent.zip" }, {}, context()),
+    "https://example.test/parent.zip"
+  );
+  assert.equal(await resolver({ id: "file" }, {}, context()), "");
+});
+
+test("missing id and missing file fail closed without checking moderator permissions", async () => {
+  const resolver = createDownloadableFileUrlResolver(
+    async () => authenticated("alice"),
+    async () => { throw new Error("must not check permissions"); }
+  );
+  const context = buildContext(null) as unknown as ResolverContext;
+  assert.equal(await resolver({ id: "missing", url: "private" }, {}, context), "");
+  context.downloadableFileRepository = {
+    findUrlAccess: async () => { throw new Error("must not read without an id"); },
+  };
+  assert.equal(await resolver({ url: "private" }, {}, context), "");
+});
+
+test("only literal true grants moderator access", async () => {
+  for (const permission of [false, new Error("denied")]) {
+    const resolver = createDownloadableFileUrlResolver(
+      async () => authenticated("moderator"),
+      async () => permission
+    );
+    assert.equal(await resolver(
+      { id: "file", url: "private" }, {}, buildContext() as unknown as ResolverContext
+    ), "");
+  }
+});
+
+test("lookup errors propagate instead of using the parent URL", async () => {
+  const context = buildContext() as unknown as ResolverContext;
+  context.downloadableFileRepository = {
+    findUrlAccess: async () => { throw new Error("database unavailable"); },
+  };
+  const resolver = createDownloadableFileUrlResolver(async () => authenticated("alice"));
+  await assert.rejects(
+    resolver({ id: "file", url: "private" }, {}, context), /database unavailable/
+  );
 });

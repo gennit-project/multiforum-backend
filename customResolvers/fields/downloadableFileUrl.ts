@@ -5,19 +5,11 @@ import {
 } from "../../rules/permission/userDataHelperFunctions.js";
 import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
 import type { GraphQLContext } from "../../types/context.js";
+import { resolveDownloadableFileRepository } from "../../services/persistence/downloadableFileRepository.js";
 
 type DownloadableFileParent = {
   id?: string | null;
   url?: string | null;
-};
-
-type DownloadableFileAccessRecord = {
-  url?: string | null;
-  scanStatus?: string | null;
-  uploadedByUsername?: string | null;
-  Discussion?: {
-    Author?: { username?: string | null } | null;
-  } | null;
 };
 
 type DownloadableFileContext = GraphQLContext &
@@ -56,19 +48,7 @@ export const createDownloadableFileUrlResolver = (
       return "";
     }
 
-    const DownloadableFile = context.ogm.model("DownloadableFile");
-    const records = await DownloadableFile.find({
-      where: { id: parent.id },
-      selectionSet: `{
-        url
-        scanStatus
-        uploadedByUsername
-        Discussion {
-          Author { username }
-        }
-      }`,
-    }) as DownloadableFileAccessRecord[];
-    const file = records[0];
+    const file = await resolveDownloadableFileRepository(context).findUrlAccess(parent.id);
 
     if (!file) {
       return "";
@@ -77,16 +57,20 @@ export const createDownloadableFileUrlResolver = (
     const username = context.user.username;
     const isOwner =
       file.uploadedByUsername === username ||
-      file.Discussion?.Author?.username === username;
+      file.discussionAuthorUsername === username;
+    // The production OGM shared the application schema: its context-free
+    // lookup invoked this URL resolver anonymously and returned an empty URL.
+    // Authorized callers therefore received the parent URL, never a fresh
+    // storage URL. Keep that behavior without the nested GraphQL execution.
     if (isOwner) {
-      return file.url || parent.url || "";
+      return parent.url || "";
     }
 
     const canReview = await checkServerModPermission(
       "canPermanentlyRemoveImage",
       context
     );
-    return canReview === true ? file.url || parent.url || "" : "";
+    return canReview === true ? parent.url || "" : "";
   };
 };
 
