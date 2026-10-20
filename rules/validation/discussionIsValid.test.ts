@@ -9,7 +9,7 @@ import {
   validateDiscussionDownloadPreferences,
 } from "./discussionIsValid.js";
 
-// Configurable policy and file repositories, with the remaining discussion OGM lookup.
+// Configurable policy, file and content validation repositories.
 function makeCtx(opts: { channel?: any; downloadableFile?: any } = {}) {
   const ctx: any = {
     driver: {},
@@ -49,14 +49,7 @@ function makeCtx(opts: { channel?: any; downloadableFile?: any } = {}) {
         allowedFileTypes: [],
       }),
     },
-    ogm: {
-      model(name: string) {
-        assert.equal(name, "Discussion", "attachment reads must not fall back to OGM");
-        return {
-          find: async () => [],
-        };
-      },
-    },
+    contentValidationRepository: {findDiscussionChannels: async () => []},
   };
   return ctx;
 }

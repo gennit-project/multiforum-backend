@@ -28,7 +28,7 @@ const getRemoveEmojiResolver = (input: Input) => {
 
     try {
       const discussionChannel = await assertDiscussionChannelEmojiEnabled(
-        DiscussionChannel,
+        context,
         discussionChannelId
       );
       const updatedEmojiJSON = removeEmoji(discussionChannel.emoji, {

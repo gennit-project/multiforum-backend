@@ -177,10 +177,12 @@
       "baselineCrudSites": 4,
       "dependencies": "Named-schema operation contract; 01",
       "acceptance": "Existing-file/filename fallback, filters, preferences and exact errors",
-      "status": "pending",
+      "status": "reviewed; exact-tree gates pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent review_slice1 approved final13-file patch; restricted nested-content coverage added",
+      "verification": [
+        "43 focused units and7 live parity tests passed; independent30units passed; tsc and scoped lint passed"
+      ]
     },
     {
       "id": "10",
@@ -613,7 +615,39 @@
       "status": "pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "35a",
+          "scope": "Safe configuration reads",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending"
+        },
+        {
+          "id": "35b",
+          "scope": "getPluginConfigStatus interpolated version/ID lookups",
+          "baselineCrudSites": 3,
+          "status": "paused pending explicit literal-variable behavior approval"
+        },
+        {
+          "id": "35c1",
+          "scope": "Applicability and visibility",
+          "baselineCrudSites": 5,
+          "status": "in progress"
+        },
+        {
+          "id": "35c2",
+          "scope": "History and summary reads",
+          "baselineCrudSites": 4,
+          "status": "pending"
+        },
+        {
+          "id": "35c3",
+          "scope": "Public/internal detail reads",
+          "baselineCrudSites": 4,
+          "status": "pending"
+        }
+      ]
     },
     {
       "id": "36",
@@ -784,9 +818,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 447,
-  "remainingModelAcquisitionsIncludingOptional": 80,
-  "remainingRuntimeCrudFiles": 126,
+  "remainingRuntimeCrudSites": 443,
+  "remainingModelAcquisitionsIncludingOptional": 78,
+  "remainingRuntimeCrudFiles": 123,
   "foundations": [
     {
       "id": "F01",
@@ -802,7 +836,7 @@
       ]
     }
   ],
-  "remainingModelAcquisitionFiles": 19,
+  "remainingModelAcquisitionFiles": 17,
   "milestone": {
     "completedSlices": [
       "01",

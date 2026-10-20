@@ -47,7 +47,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | complete; 959d826 |
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete; dd14fee |
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete; 31ea9dd |
-| 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | pending |
+| 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | reviewed; exact-tree gates pending |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | pending |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | pending |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | pending |
@@ -212,3 +212,23 @@ All focused/full unit counts above overlap; they are individual verification run
 Investigation identified services/mail/index.test.ts, “sendEmail returns false when provider is not configured”, at 2026-10-20T13:46:51.427Z. Its fixture restored inherited provider configuration and called the native Resend SDK. The SDK's generic error also covers response parsing, so earlier wording about a request failing to resolve must not be read as proof that no data was transmitted or delivery accepted. No successful response ID or receipt appears in the preserved log; actual transmission/delivery remain unverified. No provider-side access was used to investigate. See mail-test-isolation.md for sanitized evidence.
 
 The independently reviewed test-only correction clears inherited mail settings, denies native Resend and SendGrid sends, and asserts zero native attempts despite caught errors. Configured-provider tests still use injected fake clients. Synthetic ambient-configuration checks pass; deliberate missing-injection tests fail before transport. Infrastructure-only process launching remains mandatory for the broader suite. Original logs are preserved locally and must not be published wholesale.
+
+### Mail boundary committed evidence
+
+Commit `c5120be569429cfcb1964c74c36fbb07dc42d478`, tree `36d4266cc6a1c273a035e8928859cbb861da97ea`: lint, TypeScript and all 1,943 units passed. The synthetic inherited-configuration mail check passed 12/12; independent negative tests detected both deliberately unmocked providers before transport. No provider-side requests were made during investigation. Historical transmission/delivery remain uncertain as documented in mail-test-isolation.md.
+
+### Slice 09 — content validation
+
+Four CRUD sites in three files and two model acquisitions replaced with fixed named operations. Generated input validation, exact projections, filename fallback, preferences and anonymous nested sensitive-content filtering remain unchanged; emoji writes remain in their existing slice. Independent review_slice1 approved after stronger nested-filter tests. Focused43 and live7 tests passed; parent exact-tree gates pending. Remaining443 calls/123files and78 acquisitions/17files, plus2CLI sites.
+
+### Pending behavior decision — slice 35b
+
+Only customResolvers/queries/getPluginConfigStatus.ts is paused: getResolver's Plugin.find, ServerConfig.find and ServerSecret.find (three baseline sites). Version and stored pluginVersion.id currently enter interpolated GraphQL selection text. Synthetic characterization shows ordinary strings retain matching, quotes can produce syntax errors, backslash escapes are decoded, and crafted values can alter selections. Literal variables intentionally change those special-input behaviors and prevent query alteration. No workaround preserving injection and no silent behavior correction is authorized. Parent has requested explicit approval; safe35a and35c continue independently.
+
+If approved, test ordinary version/ID matching, quotes, literal backslashes, attempted extra selections, stored IDs with special characters, missing/not-installed outcomes, authorization/redaction, existing error prefixes, default selections/limits and unchanged graph state. Keep this named operation scoped to the existing generated schema and do not expand access. All35 subdivisions total20 baseline sites (4+3+5+4+4), not additional inventory.
+
+### Continuation verification
+
+Exact published head `658bfe4fcf8469c6f2801c99e90d59d641d5d58a`: Tests CI [39441524212](https://github.com/gennit-project/multiforum-backend/actions/runs/39441524212) and container run [39441524405](https://github.com/gennit-project/multiforum-backend/actions/runs/39441524405) completed successfully. These results apply to that SHA only.
+
+The first slice09 cumulative hook failed two unchanged channel-preference fixtures still injecting OGM and one Node26 V8 native fatal error in localDevAuth.test.ts. The fixture correction preserves all assertions and injects the new boundary; independent review requested. Standalone localDevAuth rerun passed23/23 without source changes. Exact staged production tree passed7/7 live validation tests. Full cumulative rerun remains required before commit.

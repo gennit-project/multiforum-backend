@@ -27,7 +27,7 @@ const getRemoveEmojiResolver = (input: Input) => {
     }
 
     try {
-      const comment = await assertCommentEmojiEnabled(Comment, commentId);
+      const comment = await assertCommentEmojiEnabled(context, commentId);
       const updatedEmojiJSON = removeEmoji(comment.emoji, {
         emojiLabel,
         username,

@@ -1,3 +1,4 @@
+import type { ContentValidationRepository } from "../services/persistence/contentValidationRepository.js";
 import type { NotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import type { WikiGuardRepository } from "../services/persistence/wikiGuardRepository.js";
 import type { NotificationWriter } from "../services/persistence/notificationWriter.js";
@@ -104,6 +105,7 @@ export type GraphQLContext = {
   /** Optional persistence seam for comment-creation target authorization reads. */
   commentCreationAuthorizationRepository?: CommentCreationAuthorizationRepository;
   /** Optional persistence seam for channel and server content feature policies. */
+  contentValidationRepository?: ContentValidationRepository;
   contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
   /** Optional persistence seam for authenticated identity and ownership reads. */
   requestIdentityRepository?: RequestIdentityRepository;

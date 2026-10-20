@@ -28,7 +28,7 @@ const getResolver = (input: Input) => {
     }
 
     try {
-      const comment = await assertCommentEmojiEnabled(Comment, commentId);
+      const comment = await assertCommentEmojiEnabled(context, commentId);
       const updatedEmojiJSON = updateEmoji(comment.emoji, {
         emojiLabel,
         unicode,

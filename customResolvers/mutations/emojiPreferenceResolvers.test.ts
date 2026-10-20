@@ -75,10 +75,11 @@ test("addEmojiToComment rejects disabled emoji channels", async () => {
 
   await assert.rejects(
     withMutedConsoleError(() =>
-      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
+      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("removeEmojiFromComment rejects disabled emoji channels", async () => {
@@ -94,12 +95,13 @@ test("removeEmojiFromComment rejects disabled emoji channels", async () => {
           emojiLabel: emojiArgs.emojiLabel,
           username: emojiArgs.username,
         },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("addEmojiToDiscussionChannel rejects disabled emoji channels", async () => {
@@ -116,12 +118,13 @@ test("addEmojiToDiscussionChannel rejects disabled emoji channels", async () => 
           ...emojiArgs,
           discussionChannelId: "discussion-channel-1",
         },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
 });
 
 test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async () => {
@@ -139,12 +142,13 @@ test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async (
           emojiLabel: emojiArgs.emojiLabel,
           username: emojiArgs.username,
         },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
 });
 
 // Locked/archived content is frozen for reactions (item: "when a comment or
@@ -156,10 +160,11 @@ test("addEmojiToComment rejects when the comment is archived", async () => {
 
   await assert.rejects(
     withMutedConsoleError(() =>
-      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
+      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
     ),
     /this comment is archived/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("addEmojiToComment rejects when the discussion is locked", async () => {
@@ -175,10 +180,11 @@ test("addEmojiToComment rejects when the discussion is locked", async () => {
 
   await assert.rejects(
     withMutedConsoleError(() =>
-      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
+      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
     ),
     /this discussion is locked/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("addEmojiToDiscussionChannel rejects when locked", async () => {
@@ -192,12 +198,13 @@ test("addEmojiToDiscussionChannel rejects when locked", async () => {
       resolver(
         null,
         { ...emojiArgs, discussionChannelId: "discussion-channel-1" },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /this discussion is locked/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
 });
 
 test("addEmojiToDiscussionChannel rejects when archived", async () => {
@@ -211,10 +218,24 @@ test("addEmojiToDiscussionChannel rejects when archived", async () => {
       resolver(
         null,
         { ...emojiArgs, discussionChannelId: "discussion-channel-1" },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /this discussion is archived/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
+});
+
+test("comment emoji validation errors never reach the update", async () => {
+ const Comment=createCommentWith({});
+ const resolver=addEmojiToCommentResolver({Comment:Comment as any});
+ for (const context of [
+  {driver:{}},
+  {contentValidationRepository:{findCommentEmojiState:async()=>{throw new Error("Malformed selected flag");}}},
+  {contentValidationRepository:{findCommentEmojiState:async()=>[{id:"comment-1",emoji:"invalid JSON"}]}},
+ ]) {
+  await assert.rejects(resolver(null,{...emojiArgs,commentId:"comment-1"},context as unknown as GraphQLContext,{} as GraphQLResolveInfo));
+  assert.deepEqual(Comment.updateCalls,[]);
+ }
 });

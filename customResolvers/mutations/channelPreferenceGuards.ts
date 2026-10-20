@@ -1,4 +1,5 @@
-import type { CommentModel, DiscussionChannelModel } from "../../ogm_types.js";
+import { resolveContentValidationRepository } from "../../services/persistence/contentValidationRepository.js";
+import type { GraphQLContext } from "../../types/context.js";
 
 const emojiDisabledMessage = (channelName: string) =>
   `Emoji reactions are disabled in channel '${channelName}'.`;
@@ -33,23 +34,10 @@ const getEmojiEnabledFromChannel = (channel?: {
 };
 
 export const assertDiscussionChannelEmojiEnabled = async (
-  DiscussionChannel: DiscussionChannelModel,
+  context: GraphQLContext,
   discussionChannelId: string
 ) => {
-  const discussionChannels = await DiscussionChannel.find({
-    where: { id: discussionChannelId },
-    selectionSet: `{
-      id
-      emoji
-      locked
-      archived
-      channelUniqueName
-      Channel {
-        uniqueName
-        emojiEnabled
-      }
-    }`,
-  });
+  const discussionChannels = await resolveContentValidationRepository(context).findDiscussionChannelEmojiState(discussionChannelId);
 
   const discussionChannel = discussionChannels?.[0];
   if (!discussionChannel) {
@@ -73,30 +61,10 @@ export const assertDiscussionChannelEmojiEnabled = async (
 };
 
 export const assertCommentEmojiEnabled = async (
-  Comment: CommentModel,
+  context: GraphQLContext,
   commentId: string
 ) => {
-  const comments = await Comment.find({
-    where: { id: commentId },
-    selectionSet: `{
-      id
-      emoji
-      archived
-      Channel {
-        uniqueName
-        emojiEnabled
-      }
-      DiscussionChannel {
-        channelUniqueName
-        locked
-        archived
-        Channel {
-          uniqueName
-          emojiEnabled
-        }
-      }
-    }`,
-  });
+  const comments = await resolveContentValidationRepository(context).findCommentEmojiState(commentId);
 
   const comment = comments?.[0];
   if (!comment) {

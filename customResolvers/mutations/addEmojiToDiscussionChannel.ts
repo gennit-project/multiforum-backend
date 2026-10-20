@@ -29,7 +29,7 @@ const getResolver = (input: Input) => {
 
     try {
       const discussionChannel = await assertDiscussionChannelEmojiEnabled(
-        DiscussionChannel,
+        context,
         discussionChannelId
       );
       const updatedEmojiJSON = updateEmoji(discussionChannel.emoji, {
