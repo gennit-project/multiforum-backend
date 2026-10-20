@@ -71,6 +71,16 @@ const createDriver = () => ({
   }),
 }) as unknown as Driver;
 
+const requestIdentityRepository = {
+  findByUsername: async () => ({
+    username: "alice",
+    dateOfBirth: null,
+    modProfileName: "mod-alice",
+  }),
+  findByEmail: async () => null,
+  userExists: async () => true,
+};
+
 const createUserModel = () =>
   new ModelStub(({ where }) => {
     if (where?.username === "alice") {
@@ -119,6 +129,7 @@ const createContext = (models?: { channelModel?: ModelStub }) => ({
     },
   },
   driver: createDriver(),
+  requestIdentityRepository,
 }) as unknown as GraphQLContext;
 
 test("reportDiscussion creates an issue and reopens it with a report activity item", async () => {

@@ -74,6 +74,16 @@ const createDriver = () => ({
   }),
 });
 
+const requestIdentityRepository = {
+  findByUsername: async () => ({
+    username: "alice",
+    dateOfBirth: null,
+    modProfileName: "mod-alice",
+  }),
+  findByEmail: async () => null,
+  userExists: async () => true,
+};
+
 const createUserModel = () =>
   new ModelStub(({ where }) => {
     if (where?.username === "alice") {
@@ -158,6 +168,7 @@ const createContext = ({
     },
   },
   driver: createDriver(),
+  requestIdentityRepository,
   channelPermissionRepository: {
     findAuthorizationSnapshot: async (channelUniqueName: string) => {
       const channels = await channelModel.find({

@@ -9,6 +9,7 @@ import type { ChannelPermissionRepository } from "../services/persistence/channe
 import type { ContentAuthorizationRepository } from "../services/persistence/contentAuthorizationRepository.js";
 import type { CommentCreationAuthorizationRepository } from "../services/persistence/commentCreationAuthorizationRepository.js";
 import type { ContentFeaturePolicyRepository } from "../services/persistence/contentFeaturePolicyRepository.js";
+import type { RequestIdentityRepository } from "../services/persistence/requestIdentityRepository.js";
 
 /**
  * Compatibility surface for code not yet migrated to repositories. New domain
@@ -91,6 +92,8 @@ export type GraphQLContext = {
   commentCreationAuthorizationRepository?: CommentCreationAuthorizationRepository;
   /** Optional persistence seam for channel and server content feature policies. */
   contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
+  /** Optional persistence seam for authenticated identity and ownership reads. */
+  requestIdentityRepository?: RequestIdentityRepository;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;

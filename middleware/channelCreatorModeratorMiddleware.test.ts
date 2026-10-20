@@ -9,24 +9,24 @@
 // covered none of the real module.)
 import assert from "node:assert/strict";
 import test from "node:test";
+import jwt from "jsonwebtoken";
 import middleware from "./channelCreatorModeratorMiddleware.js";
 
 const M: any = (middleware as any).Mutation;
 
 // Build a ctx. `user` is placed on context.user so setUserDataOnContext returns
-// it without a DB lookup. User.find/Channel.update come from `models`. `updates`
-// records the channels a Moderator connect was attempted on.
+// it without a DB lookup. Channel.update remains on the temporary OGM boundary;
+// `updates` records the channels a Moderator connect was attempted on.
 function makeCtx(opts: {
-  user?: { username: string } | undefined;
-  userRows?: unknown[];
+  user?: {
+    username: string;
+    data?: { ModerationProfile?: { displayName?: string | null } | null } | null;
+  } | undefined;
   channelUpdate?: (args: any) => Promise<unknown>;
 } = {}) {
   const updates: string[] = [];
   const ogm = {
     model(name: string) {
-      if (name === "User") {
-        return { find: async () => opts.userRows ?? [] };
-      }
       if (name === "Channel") {
         return {
           update: async (args: any) => {
@@ -52,10 +52,13 @@ function resolveReturning(result: unknown) {
   return { resolve, state };
 }
 
-const withProfile = [{ ModerationProfile: { displayName: "Mod Alice" } }];
+const userWithProfile = {
+  username: "alice",
+  data: { ModerationProfile: { displayName: "Mod Alice" } },
+};
 
 test("connects the creator as moderator of each created channel", async () => {
-  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: withProfile });
+  const { ctx, updates } = makeCtx({ user: userWithProfile });
   const { resolve, state } = resolveReturning({
     channels: [{ uniqueName: "cats" }, { uniqueName: "dogs" }],
   });
@@ -74,7 +77,7 @@ test("skips moderator assignment for an anonymous caller", async () => {
 });
 
 test("skips when the user has no ModerationProfile", async () => {
-  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: [{}] });
+  const { ctx, updates } = makeCtx({ user: { username: "alice", data: null } });
   const { resolve } = resolveReturning({ channels: [{ uniqueName: "cats" }] });
   const out = await M.createChannels(resolve, null, {}, ctx, {});
   assert.deepEqual(updates, []);
@@ -82,7 +85,7 @@ test("skips when the user has no ModerationProfile", async () => {
 });
 
 test("returns early when there are no created channels", async () => {
-  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: withProfile });
+  const { ctx, updates } = makeCtx({ user: userWithProfile });
   const { resolve } = resolveReturning({ channels: [] });
   const out = await M.createChannels(resolve, null, {}, ctx, {});
   assert.deepEqual(updates, []);
@@ -90,7 +93,7 @@ test("returns early when there are no created channels", async () => {
 });
 
 test("skips channels without a uniqueName", async () => {
-  const { ctx, updates } = makeCtx({ user: { username: "alice" }, userRows: withProfile });
+  const { ctx, updates } = makeCtx({ user: userWithProfile });
   const { resolve } = resolveReturning({ channels: [{}, { uniqueName: "cats" }] as any });
   await M.createChannels(resolve, null, {}, ctx, {});
   assert.deepEqual(updates, ["cats"]); // only the named channel updated
@@ -98,8 +101,7 @@ test("skips channels without a uniqueName", async () => {
 
 test("a failed Channel.update is logged but does not fail channel creation", async () => {
   const { ctx } = makeCtx({
-    user: { username: "alice" },
-    userRows: withProfile,
+    user: userWithProfile,
     channelUpdate: async () => {
       throw new Error("update boom");
     },
@@ -110,21 +112,39 @@ test("a failed Channel.update is logged but does not fail channel creation", asy
   assert.deepEqual(out, { channels: [{ uniqueName: "cats" }] }); // still returns
 });
 
-test("an error while resolving the moderator profile is swallowed", async () => {
-  // User.find throws -> caught by the outer try/catch; the result still returns.
+test("an error while loading request identity is swallowed", async () => {
+  const previousMockAuth = process.env.PLAYWRIGHT_MOCK_AUTH;
+  process.env.PLAYWRIGHT_MOCK_AUTH = "true";
   const ctx: any = {
     ogm: {
       model(name: string) {
-        if (name === "User") return { find: async () => { throw new Error("db down"); } };
         return { find: async () => [], update: async () => ({}) };
       },
     },
     driver: {},
-    req: { headers: {} },
-    user: { username: "alice" },
+    requestIdentityRepository: {
+      findByUsername: async () => {
+        throw new Error("db down");
+      },
+      findByEmail: async () => null,
+      userExists: async () => false,
+    },
+    req: {
+      headers: {
+        authorization: `Bearer ${jwt.sign({ username: "alice" }, "test")}`,
+      },
+    },
   };
   const { resolve, state } = resolveReturning({ channels: [{ uniqueName: "cats" }] });
-  const out = await M.createChannels(resolve, null, {}, ctx, {});
-  assert.equal(state.calls, 1);
-  assert.deepEqual(out, { channels: [{ uniqueName: "cats" }] });
+  try {
+    const out = await M.createChannels(resolve, null, {}, ctx, {});
+    assert.equal(state.calls, 1);
+    assert.deepEqual(out, { channels: [{ uniqueName: "cats" }] });
+  } finally {
+    if (previousMockAuth === undefined) {
+      delete process.env.PLAYWRIGHT_MOCK_AUTH;
+    } else {
+      process.env.PLAYWRIGHT_MOCK_AUTH = previousMockAuth;
+    }
+  }
 });

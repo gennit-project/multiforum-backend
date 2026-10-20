@@ -1,6 +1,5 @@
 import { ERROR_MESSAGES } from "../errorMessages.js";
-import { EmailModel } from "../../ogm_types.js";
-import type { GraphQLContext, GraphQLRequest, Ogm, UserDataOnContext } from "../../types/context.js";
+import type { GraphQLContext, GraphQLRequest, UserDataOnContext } from "../../types/context.js";
 import type { Driver } from "neo4j-driver";
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
@@ -19,6 +18,11 @@ import {
   verifyLocalDevToken,
 } from "../../services/localDevAuth.js";
 import { verifyOidcToken } from "../../services/oidcAuth.js";
+import {
+  resolveRequestIdentityRepository,
+  type PersistedRequestUser,
+  type RequestIdentityRepository,
+} from "../../services/persistence/requestIdentityRepository.js";
 
 type CachedUserInfo = {
   email: string | null;
@@ -88,74 +92,22 @@ const getKey: GetPublicKeyOrSecret = (header: JwtHeader, callback: SigningKeyCal
   }
 };
 
-export const getModProfileNameFromUsername = async (
-  username: string,
-  ogm: Ogm,
-  jwtError?: Error
-) => {
-  const User = ogm.model("User");
-  try {
-    const userData = await User.find({
-      where: { username },
-      selectionSet: `{
-        ModerationProfile {
-          displayName
-        }
-      }`,
-    });
-    return userData[0]?.ModerationProfile?.displayName;
-  } catch (error) {
-    logger.error("Error fetching mod profile name:", error);
-    return null;
-  }
-}
-
-export const getUserFromEmail = async (
-  email: string,
-  EmailModel: EmailModel
-) => {
-  if (email === process.env.CYPRESS_ADMIN_TEST_EMAIL) {
-    // Prevent a catch-22 in which the user data can't be created
-    // because no one has permission to create the user data.
-    return process.env.CYPRESS_ADMIN_TEST_USERNAME;
-  }
-  try {
-    const emailDataWithUser = await EmailModel.find({
-      where: { address: email },
-      selectionSet: `{ User { username } }`,
-    });
-    return emailDataWithUser[0]?.User?.username;
-  } catch (error) {
-    logger.error("Error fetching user from database:", error);
-    return null;
-  }
-};
-
-type PersistedRequestUser = {
-  username: string;
-  dateOfBirth: string | null;
-  modProfileName: string | null;
-};
-
-const normalizeDate = (value: unknown): string | null => {
-  if (value === null || value === undefined) return null;
-  if (typeof value === "string") return value;
-  return String(value);
-};
-
 /**
  * Load all private identity data needed by permission and age-policy checks in
- * one round trip. A raw query is intentional: `User.dateOfBirth` is excluded
- * from every generated GraphQL/OGM read surface so it cannot leak to clients.
+ * one round trip. The repository uses a raw query because `User.dateOfBirth`
+ * is excluded from every generated GraphQL read surface so it cannot leak to
+ * clients.
  */
 export const getPersistedRequestUser = async ({
   driver,
   email,
   username,
+  requestIdentityRepository,
 }: {
   driver: Driver;
   email: string | null;
   username?: string | null;
+  requestIdentityRepository?: RequestIdentityRepository;
 }): Promise<PersistedRequestUser | null> => {
   const bootstrapUsername =
     email === process.env.CYPRESS_ADMIN_TEST_EMAIL
@@ -163,42 +115,16 @@ export const getPersistedRequestUser = async ({
       : null;
   const lookupUsername = username || bootstrapUsername || null;
   if (!lookupUsername && !email) return null;
-
-  // Some internal/direct consumers provide an OGM and a scoped driver rather
-  // than the full application driver. Keep those consumers on the compatible
-  // OGM path below; normal HTTP GraphQL contexts take the consolidated query.
-  if (typeof driver.executeQuery !== "function") return null;
-
-  const session = driver.session();
   try {
-    const result = await session.run(
-      lookupUsername
-        ? `MATCH (user:User {username: $username})
-           OPTIONAL MATCH (user)-[:MODERATION_PROFILE]->(profile:ModerationProfile)
-           RETURN user.username AS username,
-                  toString(user.dateOfBirth) AS dateOfBirth,
-                  profile.displayName AS modProfileName
-           LIMIT 1`
-        : `MATCH (:Email {address: $email})-[:HAS_EMAIL]->(user:User)
-           OPTIONAL MATCH (user)-[:MODERATION_PROFILE]->(profile:ModerationProfile)
-           RETURN user.username AS username,
-                  toString(user.dateOfBirth) AS dateOfBirth,
-                  profile.displayName AS modProfileName
-           LIMIT 1`,
-      { email, username: lookupUsername }
-    );
-    const record = result.records[0];
-    if (!record) return null;
-    return {
-      username: record.get("username"),
-      dateOfBirth: normalizeDate(record.get("dateOfBirth")),
-      modProfileName: record.get("modProfileName") ?? null,
-    };
+    const repository =
+      requestIdentityRepository ??
+      resolveRequestIdentityRepository({ driver });
+    return lookupUsername
+      ? await repository.findByUsername(lookupUsername)
+      : await repository.findByEmail(email as string);
   } catch (error) {
     logger.error("Error fetching request user from database:", error);
     return null;
-  } finally {
-    await session.close();
   }
 };
 
@@ -206,7 +132,7 @@ export const getPersistedRequestUser = async ({
 
 export type AuthContextForUserLookup = {
   driver: Driver;
-  ogm: Ogm;
+  requestIdentityRepository?: RequestIdentityRepository;
   req?: GraphQLRequest;
   jwtError?: Error;
   // May already be populated by an earlier rule/resolver in the same request;
@@ -421,25 +347,15 @@ export const setUserDataOnContext = async (
   }
 
   if (username || email) {
-    if (typeof context.driver?.executeQuery === "function") {
-      const persistedUser = await getPersistedRequestUser({
-        driver: context.driver,
-        email,
-        username,
-      });
-      username = persistedUser?.username || username;
-      modProfileName = persistedUser?.modProfileName;
-      dateOfBirth = persistedUser?.dateOfBirth ?? null;
-    } else {
-      // Compatibility for internal consumers without the full app driver.
-      // HTTP GraphQL contexts always carry a real driver and use one query.
-      if (!username && email) {
-        username = await getUserFromEmail(email, context.ogm.model("Email"));
-      }
-      if (username) {
-        modProfileName = await getModProfileNameFromUsername(username, context.ogm);
-      }
-    }
+    const persistedUser = await getPersistedRequestUser({
+      driver: context.driver,
+      email,
+      username,
+      requestIdentityRepository: context.requestIdentityRepository,
+    });
+    username = persistedUser?.username || username;
+    modProfileName = persistedUser?.modProfileName;
+    dateOfBirth = persistedUser?.dateOfBirth ?? null;
   }
 
   return {

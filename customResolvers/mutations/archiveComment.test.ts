@@ -73,6 +73,16 @@ const createDriver = () => ({
   }),
 });
 
+const requestIdentityRepository = {
+  findByUsername: async () => ({
+    username: "alice",
+    dateOfBirth: null,
+    modProfileName: "mod-alice",
+  }),
+  findByEmail: async () => null,
+  userExists: async () => true,
+};
+
 const createContext = (userModel: ModelStub) => ({
   req: {
     headers: {
@@ -94,6 +104,7 @@ const createContext = (userModel: ModelStub) => ({
     },
   },
   driver: createDriver(),
+  requestIdentityRepository,
 });
 
 const createUserModel = () =>
