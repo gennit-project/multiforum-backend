@@ -1,3 +1,4 @@
+import type { ChannelCreatorModeratorService } from "../services/channelCreatorModerator.js";
 import type { Driver } from "neo4j-driver";
 import type { Request } from "express";
 import type { OGM } from "@neo4j/graphql-ogm";
@@ -10,6 +11,7 @@ import type { ContentAuthorizationRepository } from "../services/persistence/con
 import type { CommentCreationAuthorizationRepository } from "../services/persistence/commentCreationAuthorizationRepository.js";
 import type { ContentFeaturePolicyRepository } from "../services/persistence/contentFeaturePolicyRepository.js";
 import type { RequestIdentityRepository } from "../services/persistence/requestIdentityRepository.js";
+import type { DownloadableFileRepository } from "../services/persistence/downloadableFileRepository.js";
 
 /**
  * Compatibility surface for code not yet migrated to repositories. New domain
@@ -77,6 +79,7 @@ export type GraphQLRequest = Request & {
  */
 export type GraphQLContext = {
   driver: Driver;
+  channelCreatorModeratorService?: ChannelCreatorModeratorService;
   ogm: Ogm;
   /** Optional application-owned override used by permission rules and tests. */
   permissionServerConfigRepository?: PermissionServerConfigRepository;
@@ -94,6 +97,8 @@ export type GraphQLContext = {
   contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
   /** Optional persistence seam for authenticated identity and ownership reads. */
   requestIdentityRepository?: RequestIdentityRepository;
+  /** Optional persistence seam for download authorization and metadata reads. */
+  downloadableFileRepository?: DownloadableFileRepository;
   req?: GraphQLRequest;
   user?: UserDataOnContext;
   jwtError?: Error;

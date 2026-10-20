@@ -56,7 +56,8 @@ const channelCreatorModeratorMiddleware = {
           return result;
         }
 
-        const Channel = context.ogm.model('Channel');
+        const assignment = context.channelCreatorModeratorService;
+        if (!assignment) throw new Error("Creator moderator assignment service is missing");
 
         for (const channel of channels) {
           if (!channel?.uniqueName) {
@@ -64,24 +65,7 @@ const channelCreatorModeratorMiddleware = {
           }
 
           try {
-            await Channel.update({
-              where: { uniqueName: channel.uniqueName },
-              update: {
-                Moderators: [
-                  {
-                    connect: [
-                      {
-                        where: {
-                          node: {
-                            displayName,
-                          },
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-            });
+            await assignment.assign(channel.uniqueName, displayName);
 
             logger.info(`✅ Added creator ${displayName} as moderator of channel ${channel.uniqueName}`);
           } catch (error) {

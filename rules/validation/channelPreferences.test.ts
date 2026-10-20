@@ -22,6 +22,10 @@ const createContext = ({
   serverConfig?: Record<string, unknown>;
 }) => ({
   driver: {},
+  downloadableFileRepository: {
+    findUrlAccess: async () => null,
+    findAttachmentMetadata: async () => downloadableFile ?? null,
+  },
   contentFeaturePolicyRepository: {
     findChannelPolicy: async (uniqueName: string) => ({
       found: channel !== null,
@@ -55,10 +59,6 @@ const createContext = ({
   },
   ogm: {
     model: (name: string) => {
-      if (name === "DownloadableFile") {
-        return new ModelStub(() => (downloadableFile ? [downloadableFile] : []));
-      }
-
       if (name === "Discussion") {
         return new ModelStub(() => (discussion ? [discussion] : []));
       }
