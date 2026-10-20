@@ -387,28 +387,30 @@
           "id": "13a",
           "scope": "Reactions",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "integration_recovery independently verified eight nonfactory patch blobs, exact four reaction-writer constructor changes and retained prior wiring; focused reaction/preference tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review13a-focused.log",
           "preparedPatch": "ogm-slice13a.patch",
           "preparedPatchSha256": "66f54261b418eea31fdbb5d1c70297b7d680b65ac5fe2e073097343de9963aa7",
           "preparedBase": "376ad24",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree c3ab05b624442420df8d50e0a89c63e11c1d939c: lint, TypeScript and2044 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice13a-exact-live.log"
           ],
-          "commit": null
+          "commit": "21b56de485a75f8451d6bd724ecbcb0156559bdb"
         },
         {
           "id": "13b",
           "scope": "Sticky comments",
           "baselineCrudSites": 2,
-          "status": "reviewed; integration pending",
-          "review": "review_subscription",
+          "status": "reviewed; cumulative gates pending",
+          "review": "integration_recovery independently verified four nonfactory patch blobs, exact two sticky repository constructor changes and retained prior wiring;8 focused tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review13b-focused.log",
           "preparedPatch": "ogm-slice13b.patch",
           "preparedPatchSha256": "ae5e0e6e8ac7f08f1f89df5c1518e1e9a4457964430e0ca3859c8bd0753a72a9",
           "preparedBase": "376ad24",
           "verification": [
-            "8 units;5 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1282,9 +1284,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 379,
+  "remainingRuntimeCrudSites": 377,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 87,
+  "remainingRuntimeCrudFiles": 86,
   "foundations": [
     {
       "id": "F01",

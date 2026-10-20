@@ -1,3 +1,4 @@
+import { createStickyCommentRepository } from "../services/persistence/stickyCommentRepository.js";
 import { createReactionWriter } from "../services/persistence/reactionWriter.js";
 import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Mutation resolvers. Extracted from customResolvers.ts; receives the shared
@@ -460,10 +461,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     stickyComment: stickyComment({
-      Comment,
+      stickyCommentRepository: createStickyCommentRepository(driver),
     }),
     unstickyComment: unstickyComment({
-      Comment,
+      stickyCommentRepository: createStickyCommentRepository(driver),
     }),
     archiveDiscussion: archiveDiscussion({
       Issue,
