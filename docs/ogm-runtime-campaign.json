@@ -247,10 +247,51 @@
       "baselineCrudSites": 16,
       "dependencies": "06; write/event contract",
       "acceptance": "Split moderator vs owner/admin; sequential-write partial failures and event counts",
-      "status": "pending",
+      "status": "reviewed subdivisions; integration pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "11a",
+          "scope": "Owner/admin core",
+          "baselineCrudSites": 7,
+          "status": "reviewed; integration pending",
+          "review": "review_subscription",
+          "preparedPatch": "forum-membership11a.patch",
+          "preparedPatchSha256": "1efb27e21e44a95d5d77cf759b4f44174ba135cc02774792ef2e8e35ae0e7280",
+          "preparedBase": "658bfe4",
+          "verification": [
+            "8 units;12 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        },
+        {
+          "id": "11b",
+          "scope": "Moderator core",
+          "baselineCrudSites": 7,
+          "status": "reviewed; integration pending",
+          "review": "review_subscription",
+          "preparedPatch": "forum-membership11b.patch",
+          "preparedPatchSha256": "68871e89b80729da47b1e7dfd5b0b8e7da16b9dea9c7b7aebf1e8b98cfa3b4c9",
+          "preparedBase": "658bfe4 plus11a",
+          "verification": [
+            "13 units;12 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        },
+        {
+          "id": "11c",
+          "scope": "Forum invitations",
+          "baselineCrudSites": 2,
+          "status": "reviewed; integration pending",
+          "review": "review_contributions",
+          "preparedPatch": "forum-invitations11c.patch",
+          "preparedPatchSha256": "26392055092ae69a80756da74c431e98ad843aa32ba49e772219606a36a31b21",
+          "preparedBase": "658bfe4 plus03a/03b/11a",
+          "verification": [
+            "8 units;11 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "12",
@@ -266,10 +307,51 @@
       "baselineCrudSites": 13,
       "dependencies": "06; write/event contract",
       "acceptance": "Split admin vs moderator; repeat acceptance, partial failures and events",
-      "status": "pending",
+      "status": "reviewed subdivisions; integration pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "12a",
+          "scope": "Server admin core",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "review_subscription",
+          "preparedPatch": "server-membership12a.patch",
+          "preparedPatchSha256": "707bd694862603e214319c93b16f89e10bb848460ab36992c8f9abc98e46b1fe",
+          "preparedBase": "658bfe4",
+          "verification": [
+            "6 units;10 parity+4 existing live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        },
+        {
+          "id": "12b",
+          "scope": "Server moderator core",
+          "baselineCrudSites": 5,
+          "status": "reviewed; integration pending",
+          "review": "review_subscription",
+          "preparedPatch": "server-membership12b.patch",
+          "preparedPatchSha256": "dc49f8d8f3fbb13c090d243657c7fc9f1d1c097c16d64217af7fcc19fb765704",
+          "preparedBase": "658bfe4 plus12a",
+          "verification": [
+            "6 units;10 parity+4 existing live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        },
+        {
+          "id": "12c",
+          "scope": "Server invitations",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "review_subscription",
+          "preparedPatch": "server-invitations12c.patch",
+          "preparedPatchSha256": "d156fa0eaf011a89f0227b7021c9184c64e3772f08d248ac3e5344b251eb1073",
+          "preparedBase": "658bfe4 plus03a/03b/11a/11c/12a",
+          "verification": [
+            "10 units;12 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "13",
@@ -284,10 +366,38 @@
       "baselineCrudSites": 6,
       "dependencies": "Write/event contract",
       "acceptance": "Actor checks, repeated reactions/removals and sticky order",
-      "status": "pending",
+      "status": "reviewed subdivisions; integration pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "13a",
+          "scope": "Reactions",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "review_subscription",
+          "preparedPatch": "ogm-slice13a.patch",
+          "preparedPatchSha256": "66f54261b418eea31fdbb5d1c70297b7d680b65ac5fe2e073097343de9963aa7",
+          "preparedBase": "376ad24",
+          "verification": [
+            "23 units;12 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        },
+        {
+          "id": "13b",
+          "scope": "Sticky comments",
+          "baselineCrudSites": 2,
+          "status": "reviewed; integration pending",
+          "review": "review_subscription",
+          "preparedPatch": "ogm-slice13b.patch",
+          "preparedPatchSha256": "ae5e0e6e8ac7f08f1f89df5c1518e1e9a4457964430e0ca3859c8bd0753a72a9",
+          "preparedBase": "376ad24",
+          "verification": [
+            "8 units;5 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "14",
@@ -318,10 +428,15 @@
       "baselineCrudSites": 7,
       "dependencies": "Write/event contract",
       "acceptance": "Ownership, visibility, missing entries and relationship cleanup",
-      "status": "pending",
+      "status": "reviewed; integration pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "review_subscription",
+      "verification": [
+        "8 units;9 parity+20 existing live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+      ],
+      "preparedPatch": "ogm-slice15.patch",
+      "preparedPatchSha256": "06d0e6299f8fdb905b6ad53c58f7debb13642b8bb58a62cf4acec50a3c73eecc",
+      "preparedBase": "376ad24"
     },
     {
       "id": "16",
@@ -365,10 +480,38 @@
       "baselineCrudSites": 9,
       "dependencies": "Issue identity and allocation characterization",
       "acceptance": "Every target kind; mirrors, immutable identity and allocation boundaries",
-      "status": "pending",
+      "status": "reviewed subdivisions; integration pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "18b",
+          "scope": "Issue creation and identity",
+          "baselineCrudSites": 1,
+          "status": "reviewed; integration pending",
+          "review": "review_recovery",
+          "preparedPatch": "ogm-slice18b.patch",
+          "preparedPatchSha256": "15fd57bb9805635b804881b86aa21dc9dd017337eb6547a8841fa88a795a2532",
+          "preparedBase": "0ed821a",
+          "verification": [
+            "23 independent focused;6 live;corrected tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        },
+        {
+          "id": "18a",
+          "scope": "Issue target resolution",
+          "baselineCrudSites": 8,
+          "status": "reviewed; integration pending",
+          "review": "plugin_status",
+          "preparedPatch": "ogm-slice18a.patch",
+          "preparedPatchSha256": "f910740e3ece35bf8a8921ee353abc8155ad93ae66a9c7108a903ad322cf24c7",
+          "preparedBase": "0ed821a",
+          "verification": [
+            "17 units;10 parity+14 existing live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "19",
@@ -688,18 +831,24 @@
           "id": "35c2",
           "scope": "History and summary reads",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_slice1 approved; no unresolved findings",
           "verification": [
-            "12 focused units,3 live parity and4 authorization tests passed; history defaults remain unbounded, sort/read order and public redaction preserved"
+            "12 focused units,3 live parity and4 authorization tests passed; history defaults remain unbounded, sort/read order and public redaction preserved",
+            "Exact committed tree e35f870228aed3befc4f10172912cbeaf7a133e1: lint, TypeScript and1994 full units passed; 3 exact-tree live history and summary parity tests passed"
           ],
-          "commit": null
+          "commit": "55c0701cb88f2ace84991fabc1a4fc118cdc26e4"
         },
         {
           "id": "35c3",
           "scope": "Public/internal detail reads",
           "baselineCrudSites": 4,
-          "status": "pending"
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_slice1 approved; no unresolved findings",
+          "verification": [
+            "13 focused units,3 live parity and4 authorization tests passed; public visibility/redaction and internal diagnostics preserved with exact ordering and defaults"
+          ],
+          "commit": null
         }
       ]
     },
@@ -731,22 +880,36 @@
       "baselineCrudSites": 16,
       "dependencies": "35; configuration/secret masking contract",
       "acceptance": "Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth",
-      "status": "pending",
+      "status": "reviewed subdivisions; integration pending",
       "commit": null,
       "review": null,
       "verification": [],
       "subdivisions": [
         {
           "id": "37a",
-          "scope": "Secret operations",
+          "scope": "Secret persistence",
           "baselineCrudSites": 5,
-          "status": "reviewed; final checks pending"
+          "status": "reviewed; integration pending",
+          "review": "review_slice1; recovery verified",
+          "preparedPatch": "ogm-slice37a.patch",
+          "preparedPatchSha256": "46b01e962456107154c40f6f5ef2316bdd8467a44a8e928786e6a4fea6844db6",
+          "preparedBase": "658bfe4 plus35a",
+          "verification": [
+            "20 units;4 secret+4 installation live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
         },
         {
           "id": "37b1",
           "scope": "Server pipeline configuration",
           "baselineCrudSites": 2,
-          "status": "in progress"
+          "status": "reviewed; integration pending",
+          "review": "review_slice1",
+          "preparedPatch": "ogm-slice37b1.patch",
+          "preparedPatchSha256": "9e606f203ce51ffa2cf0b42a7cec426d23c46bd5d1ad4d4458766dc083420893",
+          "preparedBase": "658bfe4 plus35a",
+          "verification": [
+            "13 units;4 strengthened live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
         },
         {
           "id": "37b2",
@@ -758,7 +921,14 @@
           "id": "37c",
           "scope": "Channel pipeline configuration",
           "baselineCrudSites": 5,
-          "status": "pending"
+          "status": "reviewed; integration pending",
+          "review": "review_recovery",
+          "preparedPatch": "ogm-slice37c.patch",
+          "preparedPatchSha256": "e6dfab0d9ebe665468ba80c0e522581b032d953410479babf089469496d31960",
+          "preparedBase": "658bfe4",
+          "verification": [
+            "7 units;4 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+          ]
         }
       ]
     },
@@ -898,9 +1068,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 416,
+  "remainingRuntimeCrudSites": 412,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 108,
+  "remainingRuntimeCrudFiles": 106,
   "foundations": [
     {
       "id": "F01",

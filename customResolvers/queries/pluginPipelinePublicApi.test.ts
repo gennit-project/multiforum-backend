@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { modelStub } from '../../tests/fixtures/modelStub.js'
 import createApplicablePluginPipeline from './getApplicablePluginPipeline.js'
-import getInternalPluginPipelineRun from './getInternalPluginPipelineRun.js'
+import createInternalPluginPipelineRun from './getInternalPluginPipelineRun.js'
 import createPluginPipelineSummary from './getPluginPipelineSummary.js'
 import createPublicPluginPipelineRun from './getPublicPluginPipelineRun.js'
 
@@ -23,8 +23,17 @@ const getPluginPipelineSummary = (fixtures: RunFixtures) => createPluginPipeline
     findSummaryJobs: async (targetId, targetType) => fixtures.PluginRun.find({ where: {targetId, targetType} }),
   },
 })
+const detailSnapshots = (fixtures: Pick<ResolverDeps, 'PluginPipelineRun' | 'PluginRun'>) => ({
+  findPublicAttempt: async (id: string) => fixtures.PluginPipelineRun.find({where:{id}}),
+  findPublicJobs: async (pipelineId: string) => fixtures.PluginRun.find({where:{pipelineId}}),
+  findInternalAttempt: async (id: string) => fixtures.PluginPipelineRun.find({where:{id}}),
+  findInternalJobs: async (pipelineId: string) => fixtures.PluginRun.find({where:{pipelineId}}),
+})
 const getPublicPluginPipelineRun = (fixtures: RunFixtures) => createPublicPluginPipelineRun({
-  ...fixtures, driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+  driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures), pipelineDetailRepository: detailSnapshots(fixtures),
+})
+const getInternalPluginPipelineRun = (fixtures: Pick<ResolverDeps, 'PluginPipelineRun' | 'PluginRun'>) => createInternalPluginPipelineRun({
+  driver: {} as Driver, pipelineDetailRepository: detailSnapshots(fixtures),
 })
 
 const visibleFile = {

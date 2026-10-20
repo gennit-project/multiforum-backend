@@ -65,7 +65,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     ServerSecret,
     PluginPipelineRun,
     PluginPipelineCampaign,
-    PluginRun,
     DownloadableFile,
   } = deps;
 
@@ -182,12 +181,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getPublicPipelineRun: getPublicPipelineRun({
       driver,
-      PluginPipelineRun,
-      PluginRun,
     }),
     getInternalPluginPipelineRun: getInternalPluginPipelineRun({
-      PluginPipelineRun,
-      PluginRun,
+      driver,
     }),
     previewPluginPipelineCampaign: previewPluginPipelineCampaign({
       DownloadableFile,

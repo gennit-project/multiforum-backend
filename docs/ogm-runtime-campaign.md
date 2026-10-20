@@ -41,22 +41,22 @@ Rows track the current campaign state. A slice is complete only with independent
 |---|---:|---|---|---|
 | 01 Age policy/setup | 2 | None; first implementation slice | Missing/default policy, cache, absent config and setup flags | complete |
 | 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | complete |
-| 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
+| 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | complete |
 | 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | complete |
-| 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | complete; a07af6a |
-| 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | complete; 959d826 |
-| 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete; dd14fee |
-| 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete; 31ea9dd |
-| 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete; 376ad24 |
+| 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | complete |
+| 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | complete |
+| 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete |
+| 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete |
+| 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | complete |
-| 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | pending |
-| 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | pending |
-| 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | pending |
+| 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | reviewed subdivisions; integration pending |
+| 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | reviewed subdivisions; integration pending |
+| 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | reviewed subdivisions; integration pending |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
-| 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | pending |
+| 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | reviewed; integration pending |
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | pending |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | pending |
-| 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | pending |
+| 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | reviewed subdivisions; integration pending |
 | 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | pending |
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | pending |
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | pending |
@@ -75,7 +75,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 34 Download review/labels | 14 | Retain pipeline adapter until 41/44 controls | Split review/preparation 7/labels 7; scan state and label history | pending |
 | 35 Plugin read models | 20 | 01; visibility/redaction contract | Split configuration vs run/visibility reads; redaction, order and empty states | partial; see subdivisions |
 | 36 Plugin registry/install | 22 | 37 secrets before install; external IO mocks | Two commits refresh 13/install 9; verification/download/write/rename failure ordering | pending |
-| 37 Plugin config/secrets | 16 | 35; configuration/secret masking contract | Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth | pending |
+| 37 Plugin config/secrets | 16 | 35; configuration/secret masking contract | Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth | reviewed subdivisions; integration pending |
 | 38 Bot identity/comments | 13 | 03; write/event contract | Nested identity creation, activation/deprecation, channel links and comment context | pending |
 | 39 Bot reports | 6 | 18–19; 38 | Issue identity, report deduplication and actor attribution | pending |
 | 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | pending |
@@ -221,9 +221,9 @@ Commit `c5120be569429cfcb1964c74c36fbb07dc42d478`, tree `36d4266cc6a1c273a035e89
 
 Four CRUD sites in three files and two model acquisitions replaced with fixed named operations. Generated input validation, exact projections, filename fallback, preferences and anonymous nested sensitive-content filtering remain unchanged; emoji writes remain in their existing slice. Independent review_slice1 approved after stronger nested-filter tests. Focused43 and live7 tests passed; parent exact-tree gates pending. Remaining443 calls/123files and78 acquisitions/17files, plus2CLI sites.
 
-### Pending behavior decision — slice 35b
+### Slice35b decision history — subsequently approved
 
-Only customResolvers/queries/getPluginConfigStatus.ts is paused: getResolver's Plugin.find, ServerConfig.find and ServerSecret.find (three baseline sites). Version and stored pluginVersion.id currently enter interpolated GraphQL selection text. Synthetic characterization shows ordinary strings retain matching, quotes can produce syntax errors, backslash escapes are decoded, and crafted values can alter selections. Literal variables intentionally change those special-input behaviors and prevent query alteration. No workaround preserving injection and no silent behavior correction is authorized. Parent has requested explicit approval; safe35a and35c continue independently.
+At the original decision checkpoint, customResolvers/queries/getPluginConfigStatus.ts was paused: getResolver's Plugin.find, ServerConfig.find and ServerSecret.find (three baseline sites). Version and stored pluginVersion.id currently enter interpolated GraphQL selection text. Synthetic characterization shows ordinary strings retain matching, quotes can produce syntax errors, backslash escapes are decoded, and crafted values can alter selections. Literal variables intentionally change those special-input behaviors and prevent query alteration. No workaround preserving injection and no silent behavior correction is authorized. Parent has requested explicit approval; safe35a and35c continue independently.
 
 If approved, test ordinary version/ID matching, quotes, literal backslashes, attempted extra selections, stored IDs with special characters, missing/not-installed outcomes, authorization/redaction, existing error prefixes, default selections/limits and unchanged graph state. Keep this named operation scoped to the existing generated schema and do not expand access. All35 subdivisions total20 baseline sites (4+3+5+4+4), not additional inventory.
 
@@ -285,3 +285,13 @@ Slice35c1 committed `443b7e6d239a720800bf59daea10419621a0c1f4` ([diff](https://g
 ### Slice 35c2 — Pipeline history and summary reads
 
 4 baseline CRUD sites removed. Independent review_slice1 approved; no unresolved findings. 12 focused units,3 live parity and4 authorization tests passed; history defaults remain unbounded, sort/read order and public redaction preserved. Parent cumulative gates pending. Remaining 416 CRUD sites/108 files; 74 acquisitions/15 files; two separate CLI sites.
+
+Slice35c2 committed `55c0701cb88f2ace84991fabc1a4fc118cdc26e4` ([diff](https://github.com/gennit-project/multiforum-backend/commit/55c0701cb88f2ace84991fabc1a4fc118cdc26e4)), tree `e35f870228aed3befc4f10172912cbeaf7a133e1`: lint, TypeScript and all1994 units passed; 3 exact-tree live history and summary parity tests passed. Independent approval recorded above.
+
+### Slice 35c3 — Public and internal pipeline detail reads
+
+4 baseline CRUD sites removed. Independent review_slice1 approved; no unresolved findings. 13 focused units,3 live parity and4 authorization tests passed; public visibility/redaction and internal diagnostics preserved with exact ordering and defaults. Parent cumulative gates pending. Remaining 412 CRUD sites/106 files; 74 acquisitions/15 files; two separate CLI sites.
+
+### Preserved reviewed integration queue
+
+The JSON ledger now records prepared patch hashes, baselines and independent evidence for11a/b/c,12a/b/c,13a/b,15,37a/b1/c and18a. These are reviewed worktree patches, not completed or published slices; integration, cumulative gates and separate commits remain required. Patch paths refer to the preserved cloud workspace. Counts in remainingRuntimeCrudSites include only changes already integrated into this branch, never queued removals.37b2 remains separately paused.
