@@ -1,7 +1,8 @@
+import type { Driver } from "neo4j-driver";
+import { createEmailNotificationRepository } from "../../services/persistence/emailNotificationRepository.js";
 import type {
   ChannelUpdateInput,
   ChannelModel,
-  UserModel,
 } from "../../ogm_types.js";
 import { sendEmailToUser, EmailContent } from "./shared/emailUtils.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -14,12 +15,13 @@ type Args = {
 };
 
 type Input = {
+  driver: Driver;
+  emailDelivery?: Parameters<typeof sendEmailToUser>[2];
   Channel: ChannelModel;
-  User: UserModel;
 };
 
 const getResolver = (input: Input) => {
-  const { Channel, User } = input;
+  const { Channel, driver } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, inviteeUsername } = args;
@@ -87,7 +89,7 @@ ${process.env.FRONTEND_URL}/forums/${channelUniqueName}/accept-invite
       const emailSent = await sendEmailToUser(
         inviteeUsername,
         emailContent,
-        User,
+        input.emailDelivery ?? {emailNotificationRepository: createEmailNotificationRepository(driver)},
         {
           inAppText: notificationMessage,
           createInAppNotification: true

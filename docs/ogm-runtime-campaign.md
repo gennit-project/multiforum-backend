@@ -238,3 +238,9 @@ Slice09 committed `376ad24740f966849d5dd59b3c66760e16eb045d`, tree `9615b2df9a0a
 ### Slice 03a — Account registration and own email summary
 
 5 baseline CRUD sites removed. Independent review_contributions approved; no unresolved findings. 12 focused units,7 live parity and3 existing age integrations passed; exact User/Email defaults, normalization, validation, creation ordering and post-write projection failures retained. Parent cumulative gates pending. Remaining 438 CRUD sites/121 files; 77 acquisitions/17 files; two separate CLI sites.
+
+Slice03a committed `70bffdffc205a75c86209282d22949a290a87392` ([diff](https://github.com/gennit-project/multiforum-backend/commit/70bffdffc205a75c86209282d22949a290a87392)), tree `30950f4967aec5d46565966f9cadede3a87016ef`: lint, TypeScript and all1957 units passed; 7 exact-tree live parity tests passed. Independent approval recorded above.
+
+### Slice 03b — Email recipient and notification persistence
+
+2 baseline CRUD sites removed. Independent review_contributions approved; native provider denial and fake delivery verified. 14 focused units,5 live parity and16 existing invitation integrations passed; omitted notificationType, duplicate events, email-before-in-app ordering and server-invite best effort preserved. Parent cumulative gates pending. Remaining 436 CRUD sites/120 files; 77 acquisitions/17 files; two separate CLI sites.

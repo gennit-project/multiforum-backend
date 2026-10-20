@@ -67,10 +67,22 @@
           "id": "03a",
           "scope": "Account registration and own email summary",
           "baselineCrudSites": 5,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_contributions approved; no unresolved findings",
           "verification": [
-            "12 focused units,7 live parity and3 existing age integrations passed; exact User/Email defaults, normalization, validation, creation ordering and post-write projection failures retained"
+            "12 focused units,7 live parity and3 existing age integrations passed; exact User/Email defaults, normalization, validation, creation ordering and post-write projection failures retained",
+            "Exact committed tree 30950f4967aec5d46565966f9cadede3a87016ef: lint, TypeScript and1957 full units passed; 7 exact-tree live parity tests passed"
+          ],
+          "commit": "70bffdffc205a75c86209282d22949a290a87392"
+        },
+        {
+          "id": "03b",
+          "scope": "Email recipient and notification persistence",
+          "baselineCrudSites": 2,
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_contributions approved; native provider denial and fake delivery verified",
+          "verification": [
+            "14 focused units,5 live parity and16 existing invitation integrations passed; omitted notificationType, duplicate events, email-before-in-app ordering and server-invite best effort preserved"
           ],
           "commit": null
         }
@@ -832,9 +844,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 438,
+  "remainingRuntimeCrudSites": 436,
   "remainingModelAcquisitionsIncludingOptional": 77,
-  "remainingRuntimeCrudFiles": 121,
+  "remainingRuntimeCrudFiles": 120,
   "foundations": [
     {
       "id": "F01",

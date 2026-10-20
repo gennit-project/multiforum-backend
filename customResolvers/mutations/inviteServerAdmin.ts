@@ -1,3 +1,5 @@
+import type { Driver } from "neo4j-driver";
+import { createEmailNotificationRepository } from "../../services/persistence/emailNotificationRepository.js";
 import type {
   ServerConfigUpdateInput,
   ServerConfigModel,
@@ -13,12 +15,14 @@ type Args = {
 };
 
 type Input = {
+  driver: Driver;
+  emailDelivery?: Parameters<typeof sendEmailToUser>[2];
   ServerConfig: ServerConfigModel;
   User: UserModel;
 };
 
 const getResolver = (input: Input) => {
-  const { ServerConfig, User } = input;
+  const { ServerConfig, User, driver } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { serverName, inviteeUsername } = args;
@@ -88,7 +92,7 @@ ${process.env.FRONTEND_URL}/admin/accept-admin-invite
 
     // Delivery is best-effort. The invitation itself succeeded once the
     // PendingAdminInvites relationship was created.
-    await sendEmailToUser(inviteeUsername, emailContent, User, {
+    await sendEmailToUser(inviteeUsername, emailContent, input.emailDelivery ?? {emailNotificationRepository: createEmailNotificationRepository(driver)}, {
       inAppText: notificationMessage,
       createInAppNotification: true,
     });
