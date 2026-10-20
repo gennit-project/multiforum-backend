@@ -184,7 +184,7 @@ const getResolver = (input: Input) => {
       }
 
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,

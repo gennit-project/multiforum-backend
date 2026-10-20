@@ -219,7 +219,7 @@ const getResolver = (input: Input) => {
       }
       existingIssue = issueData.issues[0];
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -287,7 +287,7 @@ const getResolver = (input: Input) => {
         const contentUrl = `${baseUrl}/forums/${channelUniqueName}/events/${eventId}`;
 
         await notifyArchivedContentAuthor({
-          context: { ogm: context.ogm, driver: context.driver },
+          context: { ogm: context.ogm, driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository },
           contentType: 'event',
           authorUsername: eventPosterUsername,
           contentUrl,

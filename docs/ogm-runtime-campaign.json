@@ -105,10 +105,13 @@
       "baselineCrudSites": 8,
       "dependencies": "01 where age filtering applies",
       "acceptance": "Recipients/preferences/actor exclusions; email-before-in-app ordering",
-      "status": "pending",
+      "status": "reviewed",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "review_subscription: fixed Issue relation fixture and added explicit union/recipient coverage; final wiring rereview pending",
+      "verification": [
+        "Independent45 targeted units and6 live parity tests passed",
+        "Final downstream archive fixture corrections passed8 regressioncases; full combined tree gate pending"
+      ]
     },
     {
       "id": "06",
@@ -773,20 +776,21 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 462,
-  "remainingModelAcquisitionsIncludingOptional": 97,
-  "remainingRuntimeCrudFiles": 139,
+  "remainingRuntimeCrudSites": 454,
+  "remainingModelAcquisitionsIncludingOptional": 92,
+  "remainingRuntimeCrudFiles": 132,
   "foundations": [
     {
       "id": "F01",
       "scope": "Supported generated schema operations for named domain snapshots",
-      "status": "reviewed",
-      "commit": null,
+      "status": "complete",
+      "commit": "0b872a877f86a625dfae854a91a54cbe626ad4c5",
       "runtimeCrudSitesRemoved": 0,
       "review": "review_slice1 independently approved; parent reviewed live tests",
       "verification": [
         "5 focused units and4 live production OGM parity tests passed",
-        "Explicit executionContext/custom rootValue are NOT supported; characterize separately before migrating such callers"
+        "Explicit executionContext/custom rootValue are NOT supported; characterize separately before migrating such callers",
+        "Exact source tree passed tsc,5 units,4 live parity tests; cumulative hook lint/tsc/1917 units passed"
       ]
     }
   ]

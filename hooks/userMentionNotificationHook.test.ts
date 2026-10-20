@@ -11,6 +11,7 @@ const buildContext = (users: any[]) => {
 
   return {
     context: {
+      notificationSnapshotRepository: {findMentionRecipients: async () => users},
       ogm: {
         model(modelName: string) {
           assert.equal(modelName, "User");
@@ -264,4 +265,16 @@ test("notifyDiscussionMentions ignores mentions already present before the edit"
 
   assert.equal(sendEmailCalls.length, 0);
   assert.equal(createdNotifications.length, 0);
+});
+
+test("mention in-app creation remains before email and email failure is swallowed", async () => {
+  const { context } = buildContext([{username:"reader",notifyWhenTagged:true,Email:{address:"reader@example.test"}}]);
+  const order: string[] = [];
+  await notifyCommentMentions({
+    context, comment: baseComment, nextText:"@reader", dependencies:{
+      createInAppNotification: async () => {order.push("in-app"); return true;},
+      sendEmail: async () => {order.push("email"); throw new Error("mail failed");},
+    },
+  });
+  assert.deepEqual(order,["in-app","email"]);
 });

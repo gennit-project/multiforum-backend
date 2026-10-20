@@ -177,7 +177,7 @@ export function createSuspensionResolver ({
     }
 
     await notifyIssueSubscribers({
-      IssueModel: Issue,
+      notificationSnapshotRepository: context.notificationSnapshotRepository,
       driver: context.driver,
       issueId,
       actorUsername: loggedInUsername,

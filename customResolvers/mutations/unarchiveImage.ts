@@ -255,7 +255,7 @@ const getResolver = (input: Input) => {
       existingIssue = issueUpdateData.issues[0];
 
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,

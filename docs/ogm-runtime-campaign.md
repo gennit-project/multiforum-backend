@@ -43,7 +43,7 @@ All rows start pending. A slice is complete only with independent review, commit
 | 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | complete |
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
 | 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | complete |
-| 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | pending |
+| 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | reviewed; final wiring/checks pending |
 | 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | pending |
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | pending |
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | pending |
@@ -142,3 +142,17 @@ Explicitly register the unwrapped production schema by driver before applying mi
 ### Test execution environment
 
 Checks use Node26/pnpm10 with an infrastructure-only child environment (HOME/USER/LOGNAME/SHELL/TMPDIR/LANG/LC_ALL/TERM/CI/Docker connection variables plus pinned PATH, TS_NODE_TRANSPILE_ONLY=true, TESTCONTAINERS_REUSE_ENABLE=false). Application configuration and credentials are excluded. An initial unsanitized unit run failed due inherited server/mail settings and was interrupted; one existing mail test attempted a provider request that failed to resolve. No successful delivery was reported. Sanitized reruns passed. This changes only test child environments, never stored credentials.
+
+### Foundation F01 committed evidence
+
+Commit `0b872a877f86a625dfae854a91a54cbe626ad4c5` ([diff](https://github.com/gennit-project/multiforum-backend/commit/0b872a877f86a625dfae854a91a54cbe626ad4c5)). Exact source tree passed TypeScript, 5 units and 4 live production-schema parity tests. Cumulative hooks passed lint, TypeScript and 1,917 units.
+
+### Slice 05 — notification snapshots
+
+Eight domain CRUD sites moved to fixed named generated-schema documents, preserving original $where input types, selection fields, default limits, anonymous sensitive-content filters, scalar errors and union resolution. Five acquisitions removed; 454 CRUD sites in 132 files and 92 acquisitions remain, plus 2 CLI sites. This is a CRUD-site/file metric, not a claim that every affected file has no OGM dependency.
+
+User-model acquisition guards/write dependencies remain in notification hooks for slice06 and runtime wiring cleanup; the existing case-insensitive raw-driver mention fallback is unchanged. No notification writes or event deduplication semantics changed. Independent review verified exact moved selections, recipients, ordering and failure contracts; Issue fixture relationship corrected and nonempty recipient/union cases added. Final downstream archive fixtures now inject the named snapshot dependency through existing callers; no notification assertions weakened. Full combined-tree checks gate the commit.
+
+### Reproducing slice verification
+
+Use a clean child environment as above and the repository-pinned toolchain. Shared gates: `pnpm run lint`, `pnpm run tsc`, `pnpm test`, `pnpm run build`, `pnpm run lint:circular`. Targeted live command: `TS_NODE_TRANSPILE_ONLY=true TESTCONTAINERS_REUSE_ENABLE=false node --loader ts-node/esm --test --test-concurrency=1` followed by the relevant files under tests/integration: instancePolicyRepository.test.ts (01), contributionTargetRepository.test.ts and contributionsQueries.test.ts (02), subscriptionTargetRepository.test.ts (04), generatedSchemaOperations.test.ts (F01), notificationSnapshotRepository.test.ts plus existing commentNotifications.test.ts/issueActivityFeed.test.ts coverage (05; see actual filenames and exact evidence below). All graph data is disposable; external services are mocked.

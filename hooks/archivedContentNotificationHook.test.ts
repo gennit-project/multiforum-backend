@@ -28,6 +28,7 @@ test('notifyArchivedContentAuthor sends notification to content author', async (
   const users = [{ username: 'author' }];
 
   const context = {
+    notificationSnapshotRepository: { findArchivedAuthor: async (username: string) => users.filter(u => u.username === username) },
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
@@ -59,6 +60,7 @@ test('notifyArchivedContentAuthor does not notify if author is the moderator', a
   const users = [{ username: 'mod' }];
 
   const context = {
+    notificationSnapshotRepository: { findArchivedAuthor: async (username: string) => users.filter(u => u.username === username) },
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
@@ -84,6 +86,7 @@ test('notifyArchivedContentAuthor returns false if user not found', async () => 
   const users: any[] = [];
 
   const context = {
+    notificationSnapshotRepository: { findArchivedAuthor: async (username: string) => users.filter(u => u.username === username) },
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
@@ -108,6 +111,7 @@ test('notifyArchivedContentAuthor uses "post" for discussion content type', asyn
   const users = [{ username: 'author' }];
 
   const context = {
+    notificationSnapshotRepository: { findArchivedAuthor: async (username: string) => users.filter(u => u.username === username) },
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
@@ -131,6 +135,7 @@ test('notifyArchivedContentAuthor includes issue link for appeal', async () => {
   const users = [{ username: 'author' }];
 
   const context = {
+    notificationSnapshotRepository: { findArchivedAuthor: async (username: string) => users.filter(u => u.username === username) },
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
@@ -155,6 +160,7 @@ test('notifyArchivedContentAuthor uses "event" label for archived events', async
   const users = [{ username: 'author' }];
 
   const context = {
+    notificationSnapshotRepository: { findArchivedAuthor: async (username: string) => users.filter(u => u.username === username) },
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },
@@ -178,6 +184,7 @@ test('notifyArchivedContentAuthor uses "image" label for archived images', async
   const users = [{ username: 'author' }];
 
   const context = {
+    notificationSnapshotRepository: { findArchivedAuthor: async (username: string) => users.filter(u => u.username === username) },
     ogm: {
       model: () => buildMockUserModel(users, createdNotifications),
     },

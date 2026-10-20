@@ -391,7 +391,7 @@ const getResolver = (input: Input) => {
       existingIssue = issueData.issues[0];
 
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -446,7 +446,7 @@ const getResolver = (input: Input) => {
           : `${baseUrl}/images/${imageId}`;
 
         await notifyArchivedContentAuthor({
-          context: { ogm: context.ogm, driver: context.driver },
+          context: { ogm: context.ogm, driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository },
           contentType: 'image',
           authorUsername: uploaderUsername,
           contentUrl,

@@ -83,7 +83,11 @@ const requestIdentityRepository = {
   userExists: async () => true,
 };
 
-const createContext = (userModel: ModelStub) => ({
+const createContext = (userModel: ModelStub, issueModel: ModelStub) => ({
+  notificationSnapshotRepository: {
+    findIssueSubscribers: (id: string) => issueModel.find({where:{id}}),
+    findArchivedAuthor: (username: string) => userModel.find({where:{username}}),
+  },
   req: {
     headers: {
       authorization: `Bearer ${jwt.sign(
@@ -173,7 +177,7 @@ test("archiveComment creates an issue, closes it, archives the comment, and link
       selectedServerRules: [],
       reportText: "Archiving this comment.",
     },
-    createContext(createUserModel()) as unknown as GraphQLContext,
+    createContext(createUserModel(), Issue) as unknown as GraphQLContext,
     null as unknown as GraphQLResolveInfo
   );
 
@@ -233,7 +237,7 @@ test("archiveComment reuses an existing comment issue and preserves server-rule 
       selectedServerRules: [],
       reportText: "Archiving this comment.",
     },
-    createContext(createUserModel()) as unknown as GraphQLContext,
+    createContext(createUserModel(), Issue) as unknown as GraphQLContext,
     null as unknown as GraphQLResolveInfo
   );
 

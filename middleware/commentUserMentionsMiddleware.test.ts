@@ -26,7 +26,7 @@ function makeCtx(models: Record<string, any> = {}) {
       };
     },
   };
-  return { ctx: { ogm, driver: {}, user: { username: "alice" } } as any, calls, finds };
+  return { ctx: { notificationSnapshotRepository: { findCommentMentionSnapshot: async () => { finds.push("Comment"); return models.Comment?.find?.() ?? []; }, findMentionRecipients: async () => models.User?.find?.() ?? [] }, ogm, driver: {}, user: { username: "alice" } } as any, calls, finds };
 }
 
 function resolveReturning(result: unknown) {

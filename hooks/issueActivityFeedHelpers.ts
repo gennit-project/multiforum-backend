@@ -164,7 +164,6 @@ export const createIssueActivityFeedItems = async (
 
       if (driver) {
         await notifyIssueSubscribers({
-          IssueModel,
           driver,
           issueId,
           actorUsername: actorUsername || attribution.username || null,

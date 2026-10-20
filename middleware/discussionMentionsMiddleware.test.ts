@@ -31,7 +31,7 @@ function makeCtx(models: Record<string, any> = {}) {
       };
     },
   };
-  return { ctx: { ogm, driver: {}, user: { username: "alice" } } as any, calls, finds };
+  return { ctx: { notificationSnapshotRepository: { findDiscussionMentionSnapshot: async () => { finds.push("Discussion"); return models.Discussion?.find?.() ?? []; }, findMentionRecipients: async () => models.User?.find?.() ?? [] }, ogm, driver: {}, user: { username: "alice" } } as any, calls, finds };
 }
 
 function resolveReturning(result: unknown) {
@@ -52,12 +52,12 @@ const snapshot = {
 };
 
 test("createDiscussions: looks up the new discussion and returns the resolver result", async () => {
-  const { ctx, calls } = makeCtx({ Discussion: { find: async () => [snapshot] } });
+  const { ctx, finds } = makeCtx({ Discussion: { find: async () => [snapshot] } });
   const { resolve, state } = resolveReturning({ discussions: [{ id: "d-1" }] });
   const out = await M.createDiscussions(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { discussions: [{ id: "d-1" }] });
   assert.equal(state.calls, 1);
-  assert.ok(calls.includes("Discussion"), "fetched the created discussion snapshot");
+  assert.ok(finds.includes("Discussion"), "fetched the created discussion snapshot");
 });
 
 test("createDiscussions: no created discussions -> no snapshot lookup", async () => {
@@ -77,11 +77,11 @@ test("createDiscussions: entries without an id are skipped", async () => {
 });
 
 test("createDiscussions: a not-found snapshot is skipped without throwing", async () => {
-  const { ctx, calls } = makeCtx({ Discussion: { find: async () => [] } });
+  const { ctx, finds } = makeCtx({ Discussion: { find: async () => [] } });
   const { resolve } = resolveReturning({ discussions: [{ id: "missing" }] });
   const out = await M.createDiscussions(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { discussions: [{ id: "missing" }] });
-  assert.ok(calls.includes("Discussion"));
+  assert.ok(finds.includes("Discussion"));
 });
 
 test("createDiscussions: a failure in the mention lookup is swallowed and the result still returns", async () => {
@@ -99,19 +99,19 @@ test("createDiscussions: a failure in the mention lookup is swallowed and the re
 });
 
 test("createDiscussionWithChannelConnections: handles an array-shaped result", async () => {
-  const { ctx, calls } = makeCtx({ Discussion: { find: async () => [snapshot] } });
+  const { ctx, finds } = makeCtx({ Discussion: { find: async () => [snapshot] } });
   const { resolve } = resolveReturning([{ id: "d-1" }]); // array shape
   const out = await M.createDiscussionWithChannelConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, [{ id: "d-1" }]);
-  assert.ok(calls.includes("Discussion"));
+  assert.ok(finds.includes("Discussion"));
 });
 
 test("createDiscussionWithChannelConnections: handles a { discussions } result", async () => {
-  const { ctx, calls } = makeCtx({ Discussion: { find: async () => [snapshot] } });
+  const { ctx, finds } = makeCtx({ Discussion: { find: async () => [snapshot] } });
   const { resolve } = resolveReturning({ discussions: [{ id: "d-1" }] });
   const out = await M.createDiscussionWithChannelConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { discussions: [{ id: "d-1" }] });
-  assert.ok(calls.includes("Discussion"));
+  assert.ok(finds.includes("Discussion"));
 });
 
 test("createDiscussionWithChannelConnections: swallows a mention-lookup failure and still returns", async () => {

@@ -1,3 +1,4 @@
+import { resolveNotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import { createInAppNotification } from './notificationHelpers.js';
 import { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
 import { sendEmail } from '../services/mail/index.js';
@@ -115,16 +116,7 @@ const resolveMentionedUsers = async (
 
   const UserModel = context?.ogm?.model('User');
   if (UserModel) {
-    const users = await UserModel.find({
-      where: { username_IN: usernames },
-      selectionSet: `{
-        username
-        notifyWhenTagged
-        Email {
-          address
-        }
-      }`,
-    });
+    const users = await resolveNotificationSnapshotRepository(context).findMentionRecipients(usernames);
 
     return users.map((user) => ({
       username: user.username,

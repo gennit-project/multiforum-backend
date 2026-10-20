@@ -1,3 +1,6 @@
+import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
+export { FULL_COMMENT_SELECTION_SET } from "./persistence/notificationSnapshotRepository.js";
+import { resolveNotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 // Callable core of the comment-notification service, extracted from the
 // subscription class so the whole pipeline can be exercised directly against a
 // live database. The class (commentNotificationService.ts) now only owns the
@@ -28,6 +31,7 @@ import { createInAppNotificationsForUsers } from "./inAppNotifications.js";
 export interface NotificationDeps {
   ogm: any;
   driver: any;
+  notificationSnapshotRepository?: NotificationSnapshotRepository;
 }
 
 export interface EmailContent {
@@ -39,120 +43,7 @@ export interface EmailContent {
 // Selection set used to load everything the notification pipeline needs about a
 // newly created comment. Kept as a constant so the handler and tests agree on
 // what shape `fullComment` has.
-export const FULL_COMMENT_SELECTION_SET = `{
-  id
-  text
-  isRootComment
-  isFeedbackComment
-  Channel {
-    uniqueName
-  }
-  CommentAuthor {
-    ... on User {
-      __typename
-      username
-      displayName
-    }
-    ... on ModerationProfile {
-      __typename
-      displayName
-      User {
-        username
-      }
-    }
-  }
-  DiscussionChannel {
-    id
-    discussionId
-    channelUniqueName
-    Channel {
-      uniqueName
-      displayName
-    }
-    Discussion {
-      id
-      title
-      Author {
-        username
-      }
-    }
-    SubscribedToNotifications {
-      username
-    }
-  }
-  Event {
-    id
-    title
-    Poster {
-      username
-    }
-    EventChannels {
-      channelUniqueName
-      Channel {
-        uniqueName
-      }
-    }
-    SubscribedToNotifications {
-      username
-    }
-  }
-  GivesFeedbackOnComment {
-    id
-    CommentAuthor {
-      ... on User {
-        username
-      }
-      ... on ModerationProfile {
-        User {
-          username
-        }
-      }
-    }
-  }
-  GivesFeedbackOnDiscussion {
-    id
-    Author {
-      username
-    }
-  }
-  GivesFeedbackOnEvent {
-    id
-    Poster {
-      username
-    }
-  }
-  ParentComment {
-    id
-    text
-    CommentAuthor {
-      ... on User {
-        __typename
-        username
-        notifyOnReplyToCommentByDefault
-        Email {
-          address
-        }
-      }
-      ... on ModerationProfile {
-        __typename
-        displayName
-        User {
-          username
-          notifyOnReplyToCommentByDefault
-          Email {
-            address
-          }
-        }
-      }
-    }
-    SubscribedToNotifications {
-      username
-      Email {
-        address
-      }
-    }
-  }
-}`;
+
 
 /**
  * Send batch emails to the recipients that have an email address. Failures are
@@ -198,19 +89,7 @@ export const createBatchNotifications = async (
   const session = deps.driver.session();
 
   try {
-    const EntityModel = deps.ogm.model(entityType);
-    const entityResults = await EntityModel.find({
-      where: { id: entityId },
-      selectionSet: `{
-        id
-        SubscribedToNotifications {
-          username
-          Email {
-            address
-          }
-        }
-      }`,
-    });
+    const entityResults = await resolveNotificationSnapshotRepository(deps).findEntitySubscribers(entityType, entityId);
 
     if (!entityResults || !entityResults.length) {
       logger.error("Entity not found for notifications:", { entityType, entityId });
@@ -519,7 +398,7 @@ export const processFeedbackNotification = async (
     }
 
     await notifyFeedback({
-      context: { ogm: deps.ogm, driver: deps.driver },
+      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository },
       feedbackContext: {
         feedbackCommentId: commentId,
         authorUsername,
@@ -554,7 +433,7 @@ export const processModMentionNotifications = async (
     const event = fullComment.Event;
 
     await notifyModMentions({
-      context: { ogm: deps.ogm, driver: deps.driver },
+      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository },
       mentionContext: {
         type: "comment",
         authorUsername,
@@ -584,7 +463,7 @@ export const processUserMentionNotifications = async (
 ): Promise<void> => {
   try {
     await notifyCommentMentions({
-      context: { ogm: deps.ogm, driver: deps.driver },
+      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository },
       comment: {
         id: commentId,
         text: fullComment.text,
@@ -609,12 +488,7 @@ export const handleCommentCreatedNotification = async (
   deps: NotificationDeps,
   commentId: string
 ): Promise<void> => {
-  const CommentModel = deps.ogm.model("Comment");
-
-  const fullComments = await CommentModel.find({
-    where: { id: commentId },
-    selectionSet: FULL_COMMENT_SELECTION_SET,
-  });
+  const fullComments = await resolveNotificationSnapshotRepository(deps).findCommentNotificationSnapshot(commentId);
 
   if (!fullComments || !fullComments.length) {
     logger.error("Could not find comment details for ID:", commentId);
@@ -623,9 +497,10 @@ export const handleCommentCreatedNotification = async (
 
   const fullComment = fullComments[0];
 
+  const author = fullComment.CommentAuthor as {username?: string; User?: {username?: string}} | null;
   const commenterUsername =
-    fullComment.CommentAuthor?.username ||
-    fullComment.CommentAuthor?.User?.username ||
+    author?.username ||
+    author?.User?.username ||
     "Someone";
 
   const commenterDisplayName =

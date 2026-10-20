@@ -1,3 +1,4 @@
+import { resolveNotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
@@ -6,34 +7,19 @@ import {
   type DiscussionSnapshot,
 } from '../hooks/userMentionNotificationHook.js';
 
-const DISCUSSION_SELECTION_SET = `{
-  id
-  title
-  body
-  Author {
-    username
-    displayName
-  }
-  DiscussionChannels {
-    channelUniqueName
-  }
-}`;
+
 
 const processCreatedDiscussions = async (
   context: GraphQLContext,
   createdDiscussions: { id?: string }[]
 ): Promise<void> => {
-  const DiscussionModel = context?.ogm?.model('Discussion');
-  if (!DiscussionModel || !createdDiscussions.length) return;
+  if ((!context?.driver && !context?.notificationSnapshotRepository) || !createdDiscussions.length) return;
 
   for (const createdDiscussion of createdDiscussions) {
     const discussionId = createdDiscussion?.id;
     if (!discussionId) continue;
 
-    const discussions = await DiscussionModel.find({
-      where: { id: discussionId },
-      selectionSet: DISCUSSION_SELECTION_SET,
-    });
+    const discussions = await resolveNotificationSnapshotRepository(context).findDiscussionMentionSnapshot(discussionId);
 
     if (!discussions.length) continue;
     const discussion = discussions[0] as unknown as DiscussionSnapshot;

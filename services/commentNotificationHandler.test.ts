@@ -66,7 +66,7 @@ test("createBatchNotifications stores notificationType on subscription notificat
   };
 
   await createBatchNotifications(
-    { ogm, driver },
+    { ogm, driver, notificationSnapshotRepository: {findEntitySubscribers: async () => ogm.model().find()} as any },
     "alice commented",
     "bob",
     "DiscussionChannel",

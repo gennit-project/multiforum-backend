@@ -134,14 +134,20 @@ const createServerConfigModel = () =>
   ]);
 
 const createContext = ({
+  issueModel,
   userModel,
   channelModel = createChannelModel(),
   serverConfigModel = createServerConfigModel(),
 }: {
   userModel: ModelStub;
+  issueModel: ModelStub;
   channelModel?: ModelStub;
   serverConfigModel?: ModelStub;
 }): GraphQLContext => (({
+  notificationSnapshotRepository: {
+    findIssueSubscribers: (id: string) => issueModel.find({where:{id}}),
+    findArchivedAuthor: (username: string) => userModel.find({where:{username}}),
+  },
   req: {
     headers: {
       authorization: `Bearer ${jwt.sign(
@@ -243,7 +249,7 @@ test("archiveEvent creates an issue, archives the event channel, and links the i
       reportText: "Archiving this event.",
       channelUniqueName: "cats",
     },
-    createContext({ userModel: createUserModel() }),
+    createContext({ userModel: createUserModel(), issueModel: Issue }),
     null as unknown as GraphQLResolveInfo
   );
 
@@ -318,7 +324,7 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
       reportText: "Archiving this event.",
       channelUniqueName: "cats",
     },
-    createContext({ userModel: createUserModel() }),
+    createContext({ userModel: createUserModel(), issueModel: Issue }),
     null as unknown as GraphQLResolveInfo
   );
 

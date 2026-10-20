@@ -1,3 +1,4 @@
+import { resolveNotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
@@ -6,37 +7,7 @@ import {
   type CommentSnapshot,
 } from '../hooks/userMentionNotificationHook.js';
 
-const COMMENT_SELECTION_SET = `{
-  id
-  text
-  CommentAuthor {
-    ... on User {
-      username
-      displayName
-    }
-    ... on ModerationProfile {
-      displayName
-      User {
-        username
-      }
-    }
-  }
-  DiscussionChannel {
-    discussionId
-    channelUniqueName
-    Discussion {
-      id
-      title
-    }
-  }
-  Event {
-    id
-    title
-    EventChannels {
-      channelUniqueName
-    }
-  }
-}`;
+
 
 const commentUserMentionsMiddleware = {
   Mutation: {
@@ -56,9 +27,8 @@ const commentUserMentionsMiddleware = {
 
       try {
         const createdComments = result?.comments || [];
-        const CommentModel = context?.ogm?.model('Comment');
 
-        if (!CommentModel || !createdComments.length) {
+        if ((!context?.driver && !context?.notificationSnapshotRepository) || !createdComments.length) {
           return result;
         }
 
@@ -66,10 +36,7 @@ const commentUserMentionsMiddleware = {
           const commentId = createdComment?.id;
           if (!commentId) continue;
 
-          const comments = await CommentModel.find({
-            where: { id: commentId },
-            selectionSet: COMMENT_SELECTION_SET,
-          });
+          const comments = await resolveNotificationSnapshotRepository(context).findCommentMentionSnapshot(commentId);
 
           if (!comments.length) continue;
           const comment = comments[0] as unknown as CommentSnapshot;

@@ -1,3 +1,4 @@
+import { resolveNotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
@@ -36,10 +37,7 @@ export const notifyFeedback = async ({
     }
 
     // Check if target author wants feedback notifications
-    const users = await UserModel.find({
-      where: { username: targetAuthorUsername },
-      selectionSet: `{ username notifyOnFeedback }`,
-    });
+    const users = await resolveNotificationSnapshotRepository(context).findFeedbackRecipient(targetAuthorUsername);
 
     if (!users.length) {
       return;

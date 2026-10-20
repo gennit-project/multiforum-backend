@@ -1,3 +1,4 @@
+import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 import { execute, parse, subscribe } from 'graphql';
 import { handleCommentCreatedNotification } from './commentNotificationHandler.js';
 import { logger } from "../logger.js";
@@ -18,7 +19,7 @@ export class CommentNotificationService {
   private isRunning: boolean = false;
   private subscriptionIterator: AsyncIterableIterator<any> | null = null;
 
-  constructor(schema: GraphQLSchema, ogm: Ogm, driver?: Driver) {
+  constructor(schema: GraphQLSchema, ogm: Ogm, driver?: Driver, private notificationSnapshotRepository?: NotificationSnapshotRepository) {
     this.schema = schema;
     this.ogm = ogm;
     this.driver = driver;
@@ -106,7 +107,7 @@ export class CommentNotificationService {
 
         try {
           await handleCommentCreatedNotification(
-            { ogm: this.ogm, driver: this.driver },
+            { ogm: this.ogm, driver: this.driver, notificationSnapshotRepository: this.notificationSnapshotRepository },
             commentId
           );
         } catch (error) {
