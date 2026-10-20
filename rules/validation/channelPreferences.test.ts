@@ -21,16 +21,40 @@ const createContext = ({
   downloadableFile?: Record<string, unknown> | null;
   serverConfig?: Record<string, unknown>;
 }) => ({
+  driver: {},
+  contentFeaturePolicyRepository: {
+    findChannelPolicy: async (uniqueName: string) => ({
+      found: channel !== null,
+      uniqueName: channel ? uniqueName : null,
+      eventsEnabled:
+        typeof channel?.eventsEnabled === "boolean" ? channel.eventsEnabled : null,
+      feedbackEnabled:
+        typeof channel?.feedbackEnabled === "boolean"
+          ? channel.feedbackEnabled
+          : null,
+      downloadsEnabled:
+        typeof channel?.downloadsEnabled === "boolean"
+          ? channel.downloadsEnabled
+          : null,
+      imageUploadsEnabled:
+        typeof channel?.imageUploadsEnabled === "boolean"
+          ? channel.imageUploadsEnabled
+          : null,
+      wikiEnabled:
+        typeof channel?.wikiEnabled === "boolean" ? channel.wikiEnabled : null,
+      allowedFileTypes: Array.isArray(channel?.allowedFileTypes)
+        ? channel.allowedFileTypes as string[]
+        : [],
+    }),
+    findServerFileTypePolicy: async () => ({
+      found: true,
+      allowedFileTypes: Array.isArray(serverConfig.allowedFileTypes)
+        ? serverConfig.allowedFileTypes as string[]
+        : [],
+    }),
+  },
   ogm: {
     model: (name: string) => {
-      if (name === "Channel") {
-        return new ModelStub(() => (channel ? [channel] : []));
-      }
-
-      if (name === "ServerConfig") {
-        return new ModelStub(() => [serverConfig]);
-      }
-
       if (name === "DownloadableFile") {
         return new ModelStub(() => (downloadableFile ? [downloadableFile] : []));
       }

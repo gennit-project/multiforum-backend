@@ -14,16 +14,12 @@ import {
   validateDownloadChannelsEnabled,
   validateFileTypePermissions,
 } from "./downloadableFileIsValid.js";
+import { resolveContentFeaturePolicyRepository } from "../../services/persistence/contentFeaturePolicyRepository.js";
 
 type DiscussionInput = {
   title?: string;
   body?: string | null;
   editMode: boolean;
-};
-
-type ChannelImagePreference = {
-  uniqueName?: string | null;
-  imageUploadsEnabled?: boolean | null;
 };
 
 const validateDiscussionInput = (input: DiscussionInput): true | string => {
@@ -95,23 +91,16 @@ async function validateImageUploadsEnabled(
   channelConnections: string[],
   ctx: GraphQLContext
 ) {
-  const Channel = ctx.ogm.model("Channel");
+  const repository = resolveContentFeaturePolicyRepository(ctx);
 
   const uniqueChannelConnections = Array.from(
     new Set(channelConnections.filter(Boolean))
   );
 
   for (const channelName of uniqueChannelConnections) {
-    const channels = (await Channel.find({
-      where: { uniqueName: channelName },
-      selectionSet: `{
-        uniqueName
-        imageUploadsEnabled
-      }`,
-    })) as ChannelImagePreference[];
-    const channel = channels[0];
+    const channel = await repository.findChannelPolicy(channelName);
 
-    if (!channel) {
+    if (!channel.found) {
       return `Channel '${channelName}' not found`;
     }
 

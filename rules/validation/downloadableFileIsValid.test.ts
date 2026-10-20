@@ -4,7 +4,6 @@ import {
   validateDownloadChannelsEnabled,
   validateFileTypePermissions,
 } from "./downloadableFileIsValid.js";
-import { makeOgm } from "../../tests/fixtures/index.js";
 
 type ValidationCtx = Parameters<typeof validateDownloadChannelsEnabled>[1];
 
@@ -17,19 +16,34 @@ const ctxWith = (opts: {
   channels?: Record<string, ChannelStub>;
   serverAllowedFileTypes?: string[];
 }) => ({
-  ogm: makeOgm({
-    Channel: {
-      find: async ({ where }: { where: { uniqueName: string } }) => {
-        const channel = opts.channels?.[where.uniqueName];
-        return channel ? [{ uniqueName: where.uniqueName, ...channel }] : [];
-      },
+  driver: {},
+  ogm: {
+    model: () => {
+      throw new Error("OGM must not be used for feature policy reads");
     },
-    ServerConfig: {
-      find: async () => [
-        { allowedFileTypes: opts.serverAllowedFileTypes ?? [] },
-      ],
+  },
+  contentFeaturePolicyRepository: {
+    findChannelPolicy: async (uniqueName: string) => {
+      const channel = opts.channels?.[uniqueName];
+      return {
+        found: !!channel,
+        uniqueName: channel ? uniqueName : null,
+        eventsEnabled: null,
+        feedbackEnabled: null,
+        downloadsEnabled:
+          typeof channel?.downloadsEnabled === "boolean"
+            ? channel.downloadsEnabled
+            : null,
+        imageUploadsEnabled: null,
+        wikiEnabled: null,
+        allowedFileTypes: channel?.allowedFileTypes ?? [],
+      };
     },
-  }).ogm,
+    findServerFileTypePolicy: async () => ({
+      found: true,
+      allowedFileTypes: opts.serverAllowedFileTypes ?? [],
+    }),
+  },
   req: {},
 } as unknown as ValidationCtx);
 
@@ -121,5 +135,17 @@ test("fails when the target channel has downloads disabled", async () => {
   assert.equal(
     await validateFileTypePermissions("model.stl", ["cats"], ctx),
     "Downloads are disabled in channel 'cats'."
+  );
+});
+
+test("preserves the generic validation error when a policy read fails", async () => {
+  const ctx = ctxWith({});
+  ctx.contentFeaturePolicyRepository!.findServerFileTypePolicy = async () => {
+    throw new Error("database unavailable");
+  };
+
+  assert.equal(
+    await validateFileTypePermissions("model.stl", ["cats"], ctx),
+    "Failed to validate file type permissions"
   );
 });

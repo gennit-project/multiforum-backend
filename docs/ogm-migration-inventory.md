@@ -142,6 +142,15 @@ configured database and stay leader-routed for bookmark consistency. This
 reduces production files with direct `ogm.model(...)` access to 29 and direct
 calls to 91; generated OGM type imports remain at 172.
 
+Content feature-policy reads are now driver-backed. Event, feedback, download,
+image-upload, and wiki enablement checks share one channel-policy repository;
+download uploads also use it for server and channel file-type allow-lists.
+Missing-channel messages, server-before-channel validation order, explicit
+`false` feature disabling, and leading-dot file extensions remain unchanged.
+These reads specify the configured database and stay leader-routed for bookmark
+consistency. This reduces production files with direct `ogm.model(...)` access
+to 26 and direct calls to 81; generated OGM type imports remain at 172.
+
 ## Recommended migration order
 
 1. Move read-only permission helpers to narrow repositories, preserving leader

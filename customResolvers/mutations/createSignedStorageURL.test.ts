@@ -4,7 +4,6 @@ import {
   resolveUploadBucketName,
   validateFile,
 } from "./createSignedStorageURL.js";
-import { ModelStub } from "../../tests/testUtils.js";
 
 const createContext = ({
   channel,
@@ -13,18 +12,29 @@ const createContext = ({
   channel: Record<string, unknown> | null;
   serverConfig?: Record<string, unknown>;
 }) => ({
-  ogm: {
-    model: (name: string) => {
-      if (name === "Channel") {
-        return new ModelStub(() => (channel ? [channel] : []));
-      }
-
-      if (name === "ServerConfig") {
-        return new ModelStub(() => [serverConfig]);
-      }
-
-      throw new Error(`Unexpected model lookup: ${name}`);
-    },
+  driver: {},
+  contentFeaturePolicyRepository: {
+    findChannelPolicy: async (uniqueName: string) => ({
+      found: channel !== null,
+      uniqueName: channel ? uniqueName : null,
+      eventsEnabled: null,
+      feedbackEnabled: null,
+      downloadsEnabled: null,
+      imageUploadsEnabled:
+        typeof channel?.imageUploadsEnabled === "boolean"
+          ? channel.imageUploadsEnabled
+          : null,
+      wikiEnabled: null,
+      allowedFileTypes: Array.isArray(channel?.allowedFileTypes)
+        ? channel.allowedFileTypes as string[]
+        : [],
+    }),
+    findServerFileTypePolicy: async () => ({
+      found: true,
+      allowedFileTypes: Array.isArray(serverConfig.allowedFileTypes)
+        ? serverConfig.allowedFileTypes as string[]
+        : [],
+    }),
   },
 }) as unknown as Parameters<typeof validateFile>[3];
 

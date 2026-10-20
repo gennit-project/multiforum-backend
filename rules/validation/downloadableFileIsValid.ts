@@ -1,5 +1,6 @@
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
+import type { Driver } from "neo4j-driver";
 import type { GraphQLRequest, Ogm } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import {
@@ -10,9 +11,15 @@ import {
   DownloadableFileCreateInput,
   DownloadableFileUpdateInput,
 } from "../../src/generated/graphql.js";
+import {
+  resolveContentFeaturePolicyRepository,
+  type ContentFeaturePolicyRepository,
+} from "../../services/persistence/contentFeaturePolicyRepository.js";
 
 interface ValidationContext {
+  driver: Driver;
   ogm: Ogm;
+  contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
   req?: GraphQLRequest;
 }
 
@@ -25,12 +32,6 @@ type UpdateDownloadableFileArgs = {
   where: any;
 };
 
-type DownloadChannelPreference = {
-  uniqueName?: string | null;
-  downloadsEnabled?: boolean | null;
-  allowedFileTypes?: string[] | null;
-};
-
 export const validateDownloadChannelsEnabled = async (
   channelConnections: string[] | undefined,
   ctx: ValidationContext
@@ -39,19 +40,12 @@ export const validateDownloadChannelsEnabled = async (
     return true;
   }
 
-  const ChannelModel = ctx.ogm.model("Channel");
+  const repository = resolveContentFeaturePolicyRepository(ctx);
 
   for (const channelName of channelConnections) {
-    const channels = (await ChannelModel.find({
-      where: { uniqueName: channelName },
-      selectionSet: `{
-        uniqueName
-        downloadsEnabled
-      }`,
-    })) as DownloadChannelPreference[];
-    const channel = channels?.[0];
+    const channel = await repository.findChannelPolicy(channelName);
 
-    if (!channel) {
+    if (!channel.found) {
       return `Channel '${channelName}' not found`;
     }
 
@@ -81,19 +75,12 @@ export const validateFileTypePermissions = async (
     return "File must have a valid extension";
   }
 
-  const ServerConfigModel = ctx.ogm.model("ServerConfig");
-  const ChannelModel = ctx.ogm.model("Channel");
+  const repository = resolveContentFeaturePolicyRepository(ctx);
 
   try {
     // Get server-wide allowed file types
-    const serverConfigs = await ServerConfigModel.find({
-      selectionSet: `{
-        allowedFileTypes
-      }`
-    });
-
-    const serverConfig = serverConfigs?.[0];
-    const serverAllowedFileTypes = serverConfig?.allowedFileTypes || [];
+    const serverConfig = await repository.findServerFileTypePolicy();
+    const serverAllowedFileTypes = serverConfig.allowedFileTypes;
 
     // Check if file type is allowed server-wide
     // Handle both formats: with dot (.stl) and without dot (stl)
@@ -108,17 +95,8 @@ export const validateFileTypePermissions = async (
     // If there are channel connections, check each channel's allowed file types
     if (channelConnections && channelConnections.length > 0) {
       for (const channelName of channelConnections) {
-        const channels = await ChannelModel.find({
-          where: { uniqueName: channelName },
-          selectionSet: `{
-            uniqueName
-            downloadsEnabled
-            allowedFileTypes
-          }`
-        }) as DownloadChannelPreference[];
-
-        const channel = channels?.[0];
-        if (!channel) {
+        const channel = await repository.findChannelPolicy(channelName);
+        if (!channel.found) {
           return `Channel '${channelName}' not found`;
         }
 
