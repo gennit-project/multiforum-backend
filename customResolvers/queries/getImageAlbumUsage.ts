@@ -1,13 +1,14 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import type { GraphQLContext } from "../../types/context.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 
 type Input = {
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 };
 
 type Args = {
@@ -21,7 +22,7 @@ type AlbumUsage = {
   otherAlbums: Array<Record<string, unknown>>;
 };
 
-const getImageAlbumUsage = ({ driver, ServerConfig }: Input) => {
+const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
   return async (
     _parent: unknown,
     args: Args,
@@ -34,7 +35,7 @@ const getImageAlbumUsage = ({ driver, ServerConfig }: Input) => {
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     if (!canViewSensitiveContent && await isSensitiveContentTarget(driver, { imageId: args.imageId })) {
       throw new GraphQLError("Image not found.");

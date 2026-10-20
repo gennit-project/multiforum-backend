@@ -1,3 +1,4 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from 'graphql'
 import type { Driver } from 'neo4j-driver'
 import {
@@ -5,7 +6,7 @@ import {
   type UserDataOnContext
 } from '../../rules/permission/userDataHelperFunctions.js'
 import type { GraphQLContext } from '../../types/context.js'
-import type { ServerConfigModel } from '../../ogm_types.js'
+
 import { mayAccessSensitiveContent } from '../../services/sensitiveContentAccess.js'
 import { executeManagedWrite } from '../../services/neo4jTransactions.js'
 
@@ -18,7 +19,7 @@ type GetUserData = typeof setUserDataOnContext
 
 type Input = {
   driver: Driver
-  ServerConfig?: ServerConfigModel
+  agePolicyRepository?: AgePolicyReader
   getUserData?: GetUserData
 }
 
@@ -56,7 +57,7 @@ const getCurrentUser = async (input: {
 const trackDownload = ({
   driver,
   getUserData = setUserDataOnContext,
-  ServerConfig
+  agePolicyRepository
 }: Input) => {
   return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { downloadableFileId, discussionId } = args
@@ -74,7 +75,7 @@ const trackDownload = ({
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     })
 
     if (!username) {

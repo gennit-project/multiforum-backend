@@ -194,14 +194,14 @@ test("reports generic OIDC authentication readiness", () => {
 
 test("resolves the named ServerConfig before building status", async () => {
   const calls: unknown[] = [];
-  const ServerConfig = {
-    find: async (args: unknown) => {
+  const instancePolicyRepository = {
+    findSetupConfigs: async (args: unknown) => {
       calls.push(args);
       return [{ enableDownloads: true, enableEvents: true }];
     },
   };
   const resolver = getInstanceSetupStatus({
-    ServerConfig: ServerConfig as never,
+    instancePolicyRepository,
     env: {
       SERVER_CONFIG_NAME: "Community Forum",
       GCS_PRIVATE_DOWNLOAD_BUCKET_NAME: "private-downloads",
@@ -210,12 +210,7 @@ test("resolves the named ServerConfig before building status", async () => {
 
   const result = await resolver();
 
-  assert.deepEqual(calls, [
-    {
-      where: { serverName: "Community Forum" },
-      selectionSet: "{ serverName enableDownloads enableEvents }",
-    },
-  ]);
+  assert.deepEqual(calls, ["Community Forum"]);
   assert.equal(result.downloads.enabled, true);
   assert.equal(result.events.enabled, true);
 });

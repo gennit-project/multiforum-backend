@@ -1,7 +1,8 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { getChannelContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
-import type { ChannelModel, ServerConfigModel } from "../../ogm_types.js";
+import type { ChannelModel } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import { logger } from "../../logger.js";
@@ -9,7 +10,7 @@ import { logger } from "../../logger.js";
 interface Input {
   Channel: ChannelModel;
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 }
 
 interface Args {
@@ -21,14 +22,14 @@ interface Args {
 }
 
 const getChannelContributionsResolver = (input: Input) => {
-  const { driver, Channel, ServerConfig } = input;
+  const { driver, Channel, agePolicyRepository } = input;
 
   return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { channelUniqueName, year, startDate, endDate, limit } = args;
     const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     const session = driver.session({ defaultAccessMode: 'READ' });
 

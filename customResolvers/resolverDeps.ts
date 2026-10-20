@@ -1,3 +1,4 @@
+import { createInstancePolicyRepository } from "../services/persistence/instancePolicyRepository.js";
 // Shared dependency bag for the custom resolver builders.
 //
 // customResolvers.ts used to create the OGM + every model and wire ~140
@@ -15,6 +16,7 @@ export function createOgmAndModels(driver: Driver) {
   return {
     ogm,
     repositories,
+    instancePolicyRepository: createInstancePolicyRepository(driver),
     driver,
     Discussion: ogm.model("Discussion"),
     DiscussionChannel: ogm.model("DiscussionChannel"),

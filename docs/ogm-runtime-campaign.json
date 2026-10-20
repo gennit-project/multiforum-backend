@@ -17,10 +17,13 @@
       "baselineCrudSites": 2,
       "dependencies": "None; first implementation slice",
       "acceptance": "Missing/default policy, cache, absent config and setup flags",
-      "status": "pending",
+      "status": "reviewed",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent review_slice1: no remaining blocking findings; nullable serverName, numeric coercion and required policy dependency corrected",
+      "verification": [
+        "64 targeted unit tests passed; 11 live production-schema parity tests passed (isolated Neo4j)",
+        "Cumulative TypeScript passed; exact committed-tree verification recorded in next ledger update"
+      ]
     },
     {
       "id": "02",
@@ -760,5 +763,7 @@
       "review": null,
       "verification": []
     }
-  ]
+  ],
+  "remainingRuntimeCrudSites": 476,
+  "remainingModelAcquisitionsIncludingOptional": 97
 }

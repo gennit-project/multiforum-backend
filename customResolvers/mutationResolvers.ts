@@ -135,6 +135,7 @@ import setChannelDiscussionFlairConfig from "./mutations/setChannelDiscussionFla
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
+    instancePolicyRepository,
     driver,
     Discussion,
     DiscussionChannel,
@@ -269,9 +270,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createEmailAndUser: getCreateEmailAndUserResolver({
       User,
       Email,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
-    setMyBirthday: setMyBirthday({ driver, ServerConfig }),
+    setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
     inviteForumOwner: inviteForumOwner({
       Channel,
       User
@@ -642,9 +643,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     trackDownload: trackDownload({
       driver,
-      ServerConfig
+      agePolicyRepository: instancePolicyRepository
     }),
     prepareDownload: prepareDownload({
+      agePolicyRepository: instancePolicyRepository,
       DownloadableFile,
       Plugin,
       PluginVersion,

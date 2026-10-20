@@ -12,6 +12,7 @@ const buildInput = (initialFile: Record<string, unknown>) => {
       PluginVersion: {},
       PluginRun: {},
       ServerConfig: {},
+      agePolicyRepository: { findAgePolicyConfigs: async () => [] },
       ServerSecret: {},
       driver: {},
     } as any,

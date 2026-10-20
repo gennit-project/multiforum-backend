@@ -1,3 +1,4 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { Storage } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
 import type {
@@ -26,6 +27,7 @@ type Input = {
   PluginPipelineRun: PluginPipelineRunModel;
   PluginRun: PluginRunModel;
   ServerConfig: ServerConfigModel;
+  agePolicyRepository: AgePolicyReader;
   ServerSecret: ServerSecretModel;
   User?: UserModel;
   driver: Driver;
@@ -162,7 +164,7 @@ export const createPrepareDownloadResolver = (
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver: input.driver,
-      ServerConfig: input.ServerConfig,
+      agePolicyRepository: input.agePolicyRepository,
     });
 
     const originalFile = await selectFile(input.DownloadableFile, downloadableFileId);

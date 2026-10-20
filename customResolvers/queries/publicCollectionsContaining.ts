@@ -1,7 +1,8 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext, Ogm } from "../../types/context.js";
 import { SortDirection } from "../../src/generated/graphql.js";
-import type { CollectionWhere, ServerConfigModel } from "../../ogm_types.js";
+import type { CollectionWhere } from "../../ogm_types.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
@@ -9,7 +10,7 @@ import { logger } from "../../logger.js";
 type Input = {
   driver: Driver;
   ogm: Ogm;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 };
 
 const itemTypeWhereMap: Record<string, CollectionWhere> = {
@@ -90,7 +91,7 @@ export const getPublicCollectionSelectionSet = (canViewSensitiveContent: boolean
       canViewSensitiveContent ? "" : `(where: ${CLEAR_SOURCE_CONTENT_FILTER})`
     );
 
-const publicCollectionsContaining = ({ driver, ogm, ServerConfig }: Input) => {
+const publicCollectionsContaining = ({ driver, ogm, agePolicyRepository }: Input) => {
   return async (_parent: unknown, args: { itemId: string; itemType: string }, context: GraphQLContext) => {
     const { itemId, itemType } = args;
     const whereTemplate = itemTypeWhereMap[itemType];
@@ -102,7 +103,7 @@ const publicCollectionsContaining = ({ driver, ogm, ServerConfig }: Input) => {
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     const target = itemType === "DISCUSSION"
       ? { discussionId: itemId }

@@ -1,3 +1,4 @@
+import { createInstancePolicyRepository } from "../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo, GraphQLSchema } from "graphql";
 import { middleware } from "graphql-middleware";
 import type { IMiddlewareTypeMap } from "graphql-middleware";
@@ -22,7 +23,7 @@ export const applySensitiveContentPolicy = async (
   const access = await mayAccessSensitiveContent({
     context,
     driver: context.driver,
-    ServerConfig: context.ogm.model("ServerConfig"),
+    agePolicyRepository: context.instancePolicyRepository ?? createInstancePolicyRepository(context.driver),
   });
 
   // @neo4j/graphql consumes context.jwt while translating authorization

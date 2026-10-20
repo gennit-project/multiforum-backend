@@ -12,7 +12,7 @@ import type { DiscussionModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { normalizePagination } from "../../services/pagination.js";
 import { buildFulltextQuery } from "../../services/channelFulltext.js";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
@@ -24,7 +24,7 @@ import {
 type Input = {
   Discussion: DiscussionModel;
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
   serverName?: string;
 };
 
@@ -53,7 +53,7 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, ServerConfig, serverName } = input;
+  const { driver, agePolicyRepository, serverName } = input;
 
   return async (
     parent: unknown,
@@ -78,7 +78,7 @@ const getResolver = (input: Input) => {
     const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     const session = driver.session({
       defaultAccessMode: neo4j.session.READ,

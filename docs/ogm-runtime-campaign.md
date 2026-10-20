@@ -39,7 +39,7 @@ All rows start pending. A slice is complete only with independent review, commit
 
 | ID / scope | CRUD sites | Dependencies | Specific acceptance / subdivisions | Status |
 |---|---:|---|---|---|
-| 01 Age policy/setup | 2 | None; first implementation slice | Missing/default policy, cache, absent config and setup flags | pending |
+| 01 Age policy/setup | 2 | None; first implementation slice | Missing/default policy, cache, absent config and setup flags | reviewed; commit evidence below |
 | 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | pending |
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
 | 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | pending |
@@ -108,3 +108,9 @@ Pause the affected chain for unresolved filter compatibility, external-transacti
 Baseline evidence predates this campaign: prior local 1,867 units / 452 integrations passed; merged-main Tests CI run 39427029177 and container run 39427029068 passed. Not a substitute for new exact-head checks.
 
 No implementation slice completed yet. Append each reviewed commit's scope, comparison link, commands/results, reviewer and resolved findings here. Later ledger commits may record the preceding tested SHA to avoid self-referential hashes.
+
+### Slice 01 — age/setup reads
+
+Removed two CRUD sites and one model acquisition (476 runtime sites / 97 acquisitions remain). Named policy/setup repository replaces injected OGM reads through the cache and caller graph. Independent reviewer `review_slice1` approved after nullable serverName, legacy numeric coercion and required prepareDownload dependency corrections. Targeted units 64/64 and live shared-production-schema parity 11/11 passed; all external resources disposable. Cumulative TypeScript passed. Exact commit and committed-tree verification follow in the next ledger update.
+
+The ledger setup commit's hook also runs lint, TypeScript and full units; this validates the working tree, not a claim that the ledger-only commit contains implementation.

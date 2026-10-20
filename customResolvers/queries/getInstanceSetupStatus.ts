@@ -1,4 +1,4 @@
-import type { ServerConfigModel } from "../../ogm_types.js";
+import type { InstancePolicyRepository } from "../../services/persistence/instancePolicyRepository.js";
 import {
   getAuthenticationProvider,
   getLocalDevAuthMissingVariables,
@@ -36,7 +36,7 @@ export type InstanceSetupStatus = {
 };
 
 type Input = {
-  ServerConfig: ServerConfigModel;
+  instancePolicyRepository: Pick<InstancePolicyRepository, "findSetupConfigs">;
   env?: Environment;
 };
 
@@ -172,13 +172,10 @@ export const buildInstanceSetupStatus = ({
   };
 };
 
-const getInstanceSetupStatus = ({ ServerConfig, env = process.env }: Input) => {
+const getInstanceSetupStatus = ({ instancePolicyRepository, env = process.env }: Input) => {
   return async () => {
     const serverName = env.SERVER_CONFIG_NAME?.trim();
-    const serverConfigs = await ServerConfig.find({
-      ...(serverName ? { where: { serverName } } : {}),
-      selectionSet: "{ serverName enableDownloads enableEvents }",
-    });
+    const serverConfigs = await instancePolicyRepository.findSetupConfigs(serverName || undefined);
     const serverConfig = (serverConfigs[0] as ServerFeatureConfig | undefined) ?? null;
 
     return buildInstanceSetupStatus({ env, serverConfig });

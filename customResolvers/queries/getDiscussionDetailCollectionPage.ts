@@ -1,5 +1,6 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
@@ -16,7 +17,7 @@ import {
 
 type Input = {
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 };
 
 type Args = {
@@ -66,7 +67,7 @@ const normalizeCursorDate = (value: unknown): string => {
 
 export const createDiscussionDetailCollectionPageResolver = ({
   driver,
-  ServerConfig,
+  agePolicyRepository,
   kind,
 }: Input & { kind: DetailCollectionKind }) => {
   const config = configs[kind];
@@ -84,7 +85,7 @@ export const createDiscussionDetailCollectionPageResolver = ({
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     const session = driver.session();
 

@@ -6,14 +6,14 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { normalizePagination } from "../../services/pagination.js";
 import { buildFulltextQuery } from "../../services/channelFulltext.js";
 import { ISSUE_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
 type Input = {
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 };
 
 type Args = {
@@ -59,7 +59,7 @@ const normalizeDateEnd = (value: string | null | undefined) => {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, ServerConfig } = input;
+  const { driver, agePolicyRepository } = input;
 
   return async (
     parent: unknown,
@@ -88,7 +88,7 @@ const getResolver = (input: Input) => {
     const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
 
     // A filter that needs an identity is a no-op (matches nothing) when the

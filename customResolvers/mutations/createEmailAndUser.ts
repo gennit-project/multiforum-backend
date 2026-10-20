@@ -1,4 +1,5 @@
-import { EmailModel, ServerConfigModel, UserModel, UserCreateInput } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
+import { EmailModel, UserModel, UserCreateInput } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import neo4j from "neo4j-driver";
@@ -22,7 +23,7 @@ type Args = {
 type Input = {
   User: UserModel;
   Email: EmailModel;
-  ServerConfig: ServerConfigModel;
+  agePolicyRepository: AgePolicyReader;
 };
 
 const toNeo4jDate = (birthday: string) => {
@@ -155,7 +156,7 @@ export const createUsersWithEmails = async (
  * Main resolver that uses createUsersWithEmails
  */
 const getCreateEmailAndUserResolver = (input: Input) => {
-  const { User, Email, ServerConfig } = input;
+  const { User, Email, agePolicyRepository } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { emailAddress, username, birthday } = args;
@@ -170,7 +171,7 @@ const getCreateEmailAndUserResolver = (input: Input) => {
         throw new Error("Account email must match the verified login");
       }
 
-      const agePolicy = await loadAgePolicy(ServerConfig);
+      const agePolicy = await loadAgePolicy(agePolicyRepository);
       const newUser = await createUsersWithEmails(
         User,
         Email,
