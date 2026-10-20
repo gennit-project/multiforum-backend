@@ -337,28 +337,30 @@
           "id": "12b",
           "scope": "Server moderator core",
           "baselineCrudSites": 5,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "integration_recovery independently verified six nonmerge patch blobs, minimal factory/context merge and retained prior wiring;6 focused tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review12b-focused.log",
           "preparedPatch": "server-membership12b.patch",
           "preparedPatchSha256": "dc49f8d8f3fbb13c090d243657c7fc9f1d1c097c16d64217af7fcc19fb765704",
           "preparedBase": "658bfe4 plus12a",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 73929ccb3d5b1d5531a5411e47365ec7225484ad: lint, TypeScript and2028 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice12b-exact-live.log"
           ],
-          "commit": null
+          "commit": "3c82861621d6982ec33c7304877d329759ad37db"
         },
         {
           "id": "12c",
           "scope": "Server invitations",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
-          "review": "review_subscription",
+          "status": "reviewed; cumulative gates pending",
+          "review": "integration_recovery independently verified five nonfactory blobs, minimal factory merge retaining drivers and prior membership wiring;10 focused email tests passed actual exit0 with native Resend/SendGrid guards and zero-attempt assertions; staged diff-check clean. Evidence /tmp/recovery-review12c-focused.log",
           "preparedPatch": "server-invitations12c.patch",
           "preparedPatchSha256": "d156fa0eaf011a89f0227b7021c9184c64e3772f08d248ac3e5344b251eb1073",
           "preparedBase": "658bfe4 plus03a/03b/11a/11c/12a",
           "verification": [
-            "10 units;12 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1205,9 +1207,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 387,
+  "remainingRuntimeCrudSites": 383,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 93,
+  "remainingRuntimeCrudFiles": 91,
   "foundations": [
     {
       "id": "F01",

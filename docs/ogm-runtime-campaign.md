@@ -337,3 +337,11 @@ Slice12a committed `fa87561dea7bb4ea160d21f11f8fcd419eb1c624` ([diff](https://gi
 5 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 387 CRUD sites/93 files; 74 acquisitions/15 files; two separate CLI sites.
 
 12b final integration approval: integration_recovery independently verified six nonmerge patch blobs, minimal factory/context merge and retained prior wiring;6 focused tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review12b-focused.log; live parity passed on identical production sources before this documentation-only update.
+
+Slice12b committed `3c82861621d6982ec33c7304877d329759ad37db` ([diff](https://github.com/gennit-project/multiforum-backend/commit/3c82861621d6982ec33c7304877d329759ad37db)), tree `73929ccb3d5b1d5531a5411e47365ec7225484ad`: lint, TypeScript and all2028 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice12b-exact-live.log. Independent approval recorded above.
+
+### Slice 12c — Server invitation writes
+
+4 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 383 CRUD sites/91 files; 74 acquisitions/15 files; two separate CLI sites.
+
+12c final integration approval: integration_recovery independently verified five nonfactory blobs, minimal factory merge retaining drivers and prior membership wiring;10 focused email tests passed actual exit0 with native Resend/SendGrid guards and zero-attempt assertions; staged diff-check clean. Evidence /tmp/recovery-review12c-focused.log; live parity passed on identical production sources before this documentation-only update.

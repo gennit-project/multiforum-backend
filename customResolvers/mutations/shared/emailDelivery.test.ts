@@ -60,8 +60,11 @@ for(const [name,factory] of Object.entries({inviteForumOwner,inviteForumMod,invi
      connectOwnerInvite:async()=>{order.push("invite");return{channels:[{}]};},
      connectModeratorInvite:async()=>{order.push("invite");return{channels:[{}]};},
     },
-    ServerConfig:{update:async()=>{order.push("invite");return{serverConfigs:[{}]};}} as never,
-    User:{find:async()=>{order.push("exists");return[{username:"recipient"}];}} as never,
+    serverInvitationRepository:{
+     findInvitee:async()=>{order.push("exists");return[{username:"recipient"}];},
+     connectAdminInvite:async()=>{order.push("invite");return{serverConfigs:[{}]};},
+     connectModeratorInvite:async()=>{order.push("invite");return{serverConfigs:[{}]};},
+    },
     emailDelivery:{emailNotificationRepository:repository,sendMail:async()=>{order.push("email");return delivered;}},
    } as never);
    const result=await resolver(null,{inviteeUsername:"recipient",channelUniqueName:"channel",serverName:"server"},{} as never,{} as never);
@@ -80,5 +83,15 @@ for(const factory of [inviteForumOwner,inviteForumMod])test(`${factory.name} for
   }});
   assert.equal(await resolver(null,{inviteeUsername:"recipient",channelUniqueName:"channel"},{} as never,{} as never),false);
   assert.deepEqual(order,["invite"]);
+ }
+});
+
+for(const [name,factory] of Object.entries({inviteServerAdmin,inviteServerMod}))test(`${name} rejects lookup/write failures before best-effort delivery`,async()=>{
+ for(const failure of ["lookup","missing-user","write","missing-server"]){
+  const order:string[]=[];
+  const write=async()=>{order.push("invite");if(failure==="write")throw new Error("write failed");return{serverConfigs:[]};};
+  const resolver=factory({driver:{} as never,serverInvitationRepository:{findInvitee:async()=>{order.push("exists");if(failure==="lookup")throw new Error("lookup failed");return failure==="missing-user"?[]:[{username:"recipient"}];},connectAdminInvite:write,connectModeratorInvite:write},emailDelivery:{emailNotificationRepository:{findRecipient:async()=>{order.push("recipient");return[];},createAfterEmailNotification:async()=>true},sendMail:async()=>{order.push("email");return true;}}});
+  await assert.rejects(resolver(null,{serverName:"server",inviteeUsername:"recipient"},{} as never,{} as never),{message:failure==="lookup"?"lookup failed":failure==="missing-user"?'No user exists with username "recipient".':failure==="write"?"write failed":'No server exists with name "server".'});
+  assert.deepEqual(order,failure==="lookup"||failure==="missing-user"?["exists"]:["exists","invite"]);
  }
 });

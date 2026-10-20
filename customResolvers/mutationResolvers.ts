@@ -286,15 +286,11 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     acceptForumModInvite: acceptForumModInvite(),
     // Server admin/mod invite workflow
     inviteServerAdmin: inviteServerAdmin({
-      ServerConfig,
-      User,
       driver
     }),
     cancelInviteServerAdmin: cancelInviteServerAdmin(),
     acceptServerAdminInvite: acceptServerAdminInvite(),
     inviteServerMod: inviteServerMod({
-      ServerConfig,
-      User,
       driver
     }),
     cancelInviteServerMod: cancelInviteServerMod(),
