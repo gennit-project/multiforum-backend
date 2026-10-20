@@ -169,18 +169,16 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
-      PluginRun
+      driver
     }),
     getPipelineRuns: getPipelineRuns({
-      PluginRun
+      driver
     }),
     getApplicablePluginPipeline: getApplicablePluginPipeline({
       driver,
     }),
     getPipelineSummary: getPipelineSummary({
       driver,
-      PluginPipelineRun,
-      PluginRun,
     }),
     getPublicPipelineRun: getPublicPipelineRun({
       driver,

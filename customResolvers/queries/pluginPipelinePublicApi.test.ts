@@ -16,7 +16,12 @@ const getApplicablePluginPipeline = (fixtures: TargetFixtures & Pick<ResolverDep
   driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
 })
 const getPluginPipelineSummary = (fixtures: RunFixtures) => createPluginPipelineSummary({
-  ...fixtures, driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+  driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+  pipelineHistoryRepository: {
+    findPipelineHistory: async () => [], findDownloadHistory: async () => [],
+    findSummaryAttempts: async (targetId, targetType) => fixtures.PluginPipelineRun.find({ where: {targetId, targetType} }),
+    findSummaryJobs: async (targetId, targetType) => fixtures.PluginRun.find({ where: {targetId, targetType} }),
+  },
 })
 const getPublicPluginPipelineRun = (fixtures: RunFixtures) => createPublicPluginPipelineRun({
   ...fixtures, driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),

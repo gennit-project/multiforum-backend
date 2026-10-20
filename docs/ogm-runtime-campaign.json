@@ -676,18 +676,24 @@
           "id": "35c1",
           "scope": "Applicability and visibility",
           "baselineCrudSites": 5,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_slice1 approved; preserved final patch and strengthened live evidence",
           "verification": [
-            "23 focused units and5 live parity tests passed; exact visibility, anonymous sensitive filters, nested limits and missing-target behavior preserved"
+            "23 focused units and5 live parity tests passed; exact visibility, anonymous sensitive filters, nested limits and missing-target behavior preserved",
+            "Exact committed tree a2816f729b3ddca90f312d3e6cf9b122eda92f1f: lint, TypeScript and1990 full units passed; 5 exact-tree live applicability/visibility parity tests passed"
           ],
-          "commit": null
+          "commit": "443b7e6d239a720800bf59daea10419621a0c1f4"
         },
         {
           "id": "35c2",
           "scope": "History and summary reads",
           "baselineCrudSites": 4,
-          "status": "pending"
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_slice1 approved; no unresolved findings",
+          "verification": [
+            "12 focused units,3 live parity and4 authorization tests passed; history defaults remain unbounded, sort/read order and public redaction preserved"
+          ],
+          "commit": null
         },
         {
           "id": "35c3",
@@ -892,9 +898,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 420,
+  "remainingRuntimeCrudSites": 416,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 111,
+  "remainingRuntimeCrudFiles": 108,
   "foundations": [
     {
       "id": "F01",
