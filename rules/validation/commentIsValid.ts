@@ -12,6 +12,7 @@ import {
   assertReplyRelationship,
   REPLY_ANCESTRY_ERROR_CODE,
 } from "../../services/replyAncestry.js";
+import { resolveContentFeaturePolicyRepository } from "../../services/persistence/contentFeaturePolicyRepository.js";
 
 type CommentTextValidationInput = {
   text: string;
@@ -244,17 +245,10 @@ export const validateFeedbackEnabled = async (
     return "Comment must be connected to a Channel.";
   }
 
-  const Channel = ctx.ogm.model("Channel");
-  const channels = await Channel.find({
-    where: { uniqueName: channelName },
-    selectionSet: `{
-      uniqueName
-      feedbackEnabled
-    }`,
-  });
-
-  const channel = channels?.[0];
-  if (!channel) {
+  const channel = await resolveContentFeaturePolicyRepository(
+    ctx
+  ).findChannelPolicy(channelName);
+  if (!channel.found) {
     return `Channel '${channelName}' not found.`;
   }
 

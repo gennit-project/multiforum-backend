@@ -119,6 +119,30 @@ const buildOgm = ({
 const buildContext = (input: BuildOgmInput = {}) =>
   ({
     ogm: buildOgm(input),
+    contentFeaturePolicyRepository: {
+      findChannelPolicy: async (uniqueName: string) => {
+        const channel = input.channels?.find(
+          (item) => item.uniqueName === uniqueName
+        );
+        return {
+          found: !!channel,
+          uniqueName: channel ? uniqueName : null,
+          eventsEnabled: null,
+          feedbackEnabled: null,
+          downloadsEnabled: null,
+          imageUploadsEnabled: null,
+          wikiEnabled:
+            typeof channel?.wikiEnabled === "boolean"
+              ? channel.wikiEnabled
+              : null,
+          allowedFileTypes: [],
+        };
+      },
+      findServerFileTypePolicy: async () => ({
+        found: false,
+        allowedFileTypes: [],
+      }),
+    },
     channelPermissionRepository: {
       findAuthorizationSnapshot: async () => ({
         locked: false,
@@ -248,6 +272,26 @@ test("blocks wiki page creation when wiki is disabled for the channel", async ()
   );
 
   assert.ok(result instanceof Error);
+});
+
+test("preserves legacy wiki behavior when the channel policy row is missing", async () => {
+  const ctx = buildContext();
+
+  const result = await evaluateCanEditWikiPagesRule(
+    {
+      input: [
+        {
+          channelUniqueName: "legacy-channel",
+          slug: "legacy-wiki",
+          title: "Legacy Wiki",
+          body: "Missing policy rows do not explicitly disable the wiki.",
+        },
+      ],
+    },
+    ctx
+  );
+
+  assert.equal(result, true);
 });
 
 test("blocks wiki page creation for suspended users even when wiki is enabled", async () => {

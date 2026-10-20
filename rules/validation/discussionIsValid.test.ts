@@ -12,18 +12,43 @@ import {
 // ctx.ogm with a configurable Channel row and DownloadableFile lookup.
 function makeCtx(opts: { channel?: any; downloadableFile?: any } = {}) {
   const ctx: any = {
+    driver: {},
+    contentFeaturePolicyRepository: {
+      findChannelPolicy: async (uniqueName: string) => {
+        const channel = opts.channel === null
+          ? null
+          : opts.channel ?? {
+              uniqueName: "cats",
+              imageUploadsEnabled: true,
+              downloadsEnabled: true,
+              allowedFileTypes: [],
+            };
+        return {
+          found: !!channel,
+          uniqueName: channel ? uniqueName : null,
+          eventsEnabled: null,
+          feedbackEnabled: null,
+          downloadsEnabled:
+            typeof channel?.downloadsEnabled === "boolean"
+              ? channel.downloadsEnabled
+              : null,
+          imageUploadsEnabled:
+            typeof channel?.imageUploadsEnabled === "boolean"
+              ? channel.imageUploadsEnabled
+              : null,
+          wikiEnabled: null,
+          allowedFileTypes: channel?.allowedFileTypes ?? [],
+        };
+      },
+      findServerFileTypePolicy: async () => ({
+        found: true,
+        allowedFileTypes: [],
+      }),
+    },
     ogm: {
       model(name: string) {
         return {
           find: async () => {
-            if (name === "Channel") {
-              return opts.channel === null ? [] : [opts.channel ?? {
-                uniqueName: "cats",
-                imageUploadsEnabled: true,
-                downloadsEnabled: true,
-                allowedFileTypes: [],
-              }];
-            }
             if (name === "DownloadableFile") {
               return opts.downloadableFile ? [opts.downloadableFile] : [];
             }

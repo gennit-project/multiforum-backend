@@ -1,6 +1,6 @@
 import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
-import type { GraphQLContext, Ogm } from "../../types/context.js";
+import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import {
@@ -9,6 +9,10 @@ import {
   createUploadAuditRecord,
   getRequesterIp,
 } from "../../services/uploadStorageMetadata.js";
+import {
+  resolveContentFeaturePolicyRepository,
+  type ContentFeaturePolicyRepository,
+} from "../../services/persistence/contentFeaturePolicyRepository.js";
 
 type Args = {
   filename: string;
@@ -18,18 +22,13 @@ type Args = {
 };
 
 interface ValidationContext {
-  ogm: Ogm;
+  driver: Driver;
+  contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
 }
 
 type ResolverContext = ValidationContext & {
-  driver: Driver;
+  ogm: GraphQLContext["ogm"];
 } & Pick<GraphQLContext, "req" | "user">;
-
-type ChannelUploadPreferences = {
-  uniqueName?: string | null;
-  imageUploadsEnabled?: boolean | null;
-  allowedFileTypes?: string[] | null;
-};
 
 /**
  * Validate file type against ServerConfig and Channel allowed file types
@@ -45,19 +44,12 @@ export const validateFileType = async (
     throw new Error("File must have a valid extension");
   }
 
-  const ServerConfigModel = ctx.ogm.model("ServerConfig");
-  const ChannelModel = ctx.ogm.model("Channel");
+  const repository = resolveContentFeaturePolicyRepository(ctx);
 
   try {
     // Get server-wide allowed file types
-    const serverConfigs = await ServerConfigModel.find({
-      selectionSet: `{
-        allowedFileTypes
-      }`
-    });
-
-    const serverConfig = serverConfigs?.[0];
-    const serverAllowedFileTypes = serverConfig?.allowedFileTypes || [];
+    const serverConfig = await repository.findServerFileTypePolicy();
+    const serverAllowedFileTypes = serverConfig.allowedFileTypes;
 
     // Check if file type is allowed server-wide
     // Handle both formats: with dot (.stl) and without dot (stl)
@@ -74,16 +66,8 @@ export const validateFileType = async (
     // If there are channel connections, check each channel's allowed file types
     if (channelConnections.length > 0) {
       for (const channelName of channelConnections) {
-        const channels = (await ChannelModel.find({
-          where: { uniqueName: channelName },
-          selectionSet: `{
-            uniqueName
-            allowedFileTypes
-          }`
-        })) as ChannelUploadPreferences[];
-
-        const channel = channels?.[0];
-        if (!channel) {
+        const channel = await repository.findChannelPolicy(channelName);
+        if (!channel.found) {
           throw new Error(`Channel '${channelName}' not found`);
         }
 
@@ -120,19 +104,12 @@ export const validateImageUploadsEnabled = async (
     return;
   }
 
-  const ChannelModel = ctx.ogm.model("Channel");
+  const repository = resolveContentFeaturePolicyRepository(ctx);
 
   for (const channelName of channelConnections) {
-    const channels = (await ChannelModel.find({
-      where: { uniqueName: channelName },
-      selectionSet: `{
-        uniqueName
-        imageUploadsEnabled
-      }`
-    })) as ChannelUploadPreferences[];
-    const channel = channels?.[0];
+    const channel = await repository.findChannelPolicy(channelName);
 
-    if (!channel) {
+    if (!channel.found) {
       throw new Error(`Channel '${channelName}' not found`);
     }
 

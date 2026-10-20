@@ -3,6 +3,7 @@
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
+import { resolveContentFeaturePolicyRepository } from "../../services/persistence/contentFeaturePolicyRepository.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
 import { checkChannelPermissions } from "../permission/hasChannelPermission.js";
 import { checkChannelModPermissions, ModChannelPermission } from "../permission/hasChannelModPermission.js";
@@ -28,11 +29,6 @@ type WikiPageLookup = {
   ChildPages?: Array<{
     id?: string | null;
   }> | null;
-};
-
-type WikiChannelPreference = {
-  uniqueName?: string | null;
-  wikiEnabled?: boolean | null;
 };
 
 type WikiPageMutationArgs = Partial<
@@ -154,20 +150,13 @@ async function validateWikiChannelsEnabled(
   channelConnections: string[],
   ctx: GraphQLContext
 ) {
-  const Channel = ctx.ogm.model("Channel");
+  const repository = resolveContentFeaturePolicyRepository(ctx);
   const channelNames = Array.from(new Set(channelConnections.filter(Boolean)));
 
   for (const channelName of channelNames) {
-    const channels = (await Channel.find({
-      where: { uniqueName: channelName },
-      selectionSet: `{
-        uniqueName
-        wikiEnabled
-      }`,
-    })) as WikiChannelPreference[];
-    const channel = channels[0];
+    const channel = await repository.findChannelPolicy(channelName);
 
-    if (channel?.wikiEnabled === false) {
+    if (channel.found && channel.wikiEnabled === false) {
       return new Error(`Wiki is disabled in channel '${channelName}'.`);
     }
   }

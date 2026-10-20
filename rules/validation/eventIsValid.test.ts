@@ -8,7 +8,6 @@ import {
   MAX_CHARS_IN_EVENT_TITLE,
   MAX_CHARS_IN_EVENT_DESCRIPTION,
 } from "./constants.js";
-import { makeOgm } from "../../tests/fixtures/index.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 // --- validateEventInput (pure) ---
@@ -76,26 +75,44 @@ test("rejects a URL without a protocol", () => {
 
 // --- validateEventChannelsEnabled (async, OGM-backed) ---
 
-const channelOgm = (channels: Record<string, { eventsEnabled?: boolean }>) =>
-  makeOgm({
-    Channel: {
-      find: async ({ where }: { where: { uniqueName: string } }) => {
-        const channel = channels[where.uniqueName];
-        return channel ? [{ uniqueName: where.uniqueName, ...channel }] : [];
-      },
-    },
-  }).ogm;
+const channelRepository = (
+  channels: Record<string, { eventsEnabled?: boolean }>
+) => ({
+  findChannelPolicy: async (uniqueName: string) => {
+    const channel = channels[uniqueName];
+    return {
+      found: !!channel,
+      uniqueName: channel ? uniqueName : null,
+      eventsEnabled:
+        typeof channel?.eventsEnabled === "boolean"
+          ? channel.eventsEnabled
+          : null,
+      feedbackEnabled: null,
+      downloadsEnabled: null,
+      imageUploadsEnabled: null,
+      wikiEnabled: null,
+      allowedFileTypes: [],
+    };
+  },
+  findServerFileTypePolicy: async () => ({
+    found: false,
+    allowedFileTypes: [],
+  }),
+});
 
 test("passes when events are enabled in every channel", async () => {
   const ctx = {
-    ogm: channelOgm({ cats: { eventsEnabled: true }, dogs: {} }),
+    contentFeaturePolicyRepository: channelRepository({
+      cats: { eventsEnabled: true },
+      dogs: {},
+    }),
   } as unknown as GraphQLContext;
   assert.equal(await validateEventChannelsEnabled(["cats", "dogs"], ctx), true);
 });
 
 test("fails when a channel is not found", async () => {
   const ctx = {
-    ogm: channelOgm({ cats: { eventsEnabled: true } }),
+    contentFeaturePolicyRepository: channelRepository({ cats: { eventsEnabled: true } }),
   } as unknown as GraphQLContext;
   assert.equal(
     await validateEventChannelsEnabled(["ghost"], ctx),
@@ -105,7 +122,7 @@ test("fails when a channel is not found", async () => {
 
 test("fails when events are disabled in a channel", async () => {
   const ctx = {
-    ogm: channelOgm({ cats: { eventsEnabled: false } }),
+    contentFeaturePolicyRepository: channelRepository({ cats: { eventsEnabled: false } }),
   } as unknown as GraphQLContext;
   assert.equal(
     await validateEventChannelsEnabled(["cats"], ctx),

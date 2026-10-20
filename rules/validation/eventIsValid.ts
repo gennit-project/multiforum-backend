@@ -10,6 +10,7 @@ import {
   eventVariantFieldsError,
   getAttemptedEventVariantFields,
 } from "./variantFieldUpdates.js";
+import { resolveContentFeaturePolicyRepository } from "../../services/persistence/contentFeaturePolicyRepository.js";
 
 type EventInput = {
   title?: string | null;
@@ -21,19 +22,11 @@ export const validateEventChannelsEnabled = async (
   channelConnections: string[],
   ctx: GraphQLContext
 ): Promise<true | string> => {
-  const Channel = ctx.ogm.model("Channel");
+  const repository = resolveContentFeaturePolicyRepository(ctx);
 
   for (const channelName of channelConnections) {
-    const channels = await Channel.find({
-      where: { uniqueName: channelName },
-      selectionSet: `{
-        uniqueName
-        eventsEnabled
-      }`,
-    });
-
-    const channel = channels?.[0];
-    if (!channel) {
+    const channel = await repository.findChannelPolicy(channelName);
+    if (!channel.found) {
       return `Channel '${channelName}' not found.`;
     }
 
