@@ -1,3 +1,4 @@
+import { createReactionWriter } from "../services/persistence/reactionWriter.js";
 import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Mutation resolvers. Extracted from customResolvers.ts; receives the shared
 // ResolverDeps and wires each custom mutation to its models/driver. The wiring
@@ -226,16 +227,16 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     addEmojiToComment: addEmojiToComment({
-      Comment,
+      reactionWriter: createReactionWriter(driver),
     }),
     removeEmojiFromComment: removeEmojiFromComment({
-      Comment,
+      reactionWriter: createReactionWriter(driver),
     }),
     addEmojiToDiscussionChannel: addEmojiToDiscussionChannel({
-      DiscussionChannel,
+      reactionWriter: createReactionWriter(driver),
     }),
     removeEmojiFromDiscussionChannel: removeEmojiFromDiscussionChannel({
-      DiscussionChannel,
+      reactionWriter: createReactionWriter(driver),
     }),
     upvoteComment: upvoteComment({
       Comment,

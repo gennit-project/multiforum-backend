@@ -50,7 +50,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | complete |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | complete |
-| 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | partial; see subdivisions |
+| 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | complete |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | reviewed subdivisions; integration pending |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | reviewed; integration pending |
@@ -345,3 +345,15 @@ Slice12b committed `3c82861621d6982ec33c7304877d329759ad37db` ([diff](https://gi
 4 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 383 CRUD sites/91 files; 74 acquisitions/15 files; two separate CLI sites.
 
 12c final integration approval: integration_recovery independently verified five nonfactory blobs, minimal factory merge retaining drivers and prior membership wiring;10 focused email tests passed actual exit0 with native Resend/SendGrid guards and zero-attempt assertions; staged diff-check clean. Evidence /tmp/recovery-review12c-focused.log; live parity passed on identical production sources before this documentation-only update.
+
+Slice12c committed `660336222db451f98b083643c22704f9516e1c5d` ([diff](https://github.com/gennit-project/multiforum-backend/commit/660336222db451f98b083643c22704f9516e1c5d)), tree `33b38d3cf242569a0cca4582dd557515be5ff67f`: lint, TypeScript and all2030 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice12c-exact-live.log. Independent approval recorded above.
+
+### Slice 13a — Reactions
+
+4 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 379 CRUD sites/87 files; 74 acquisitions/15 files; two separate CLI sites.
+
+17/22/23a/23b reviewed artifacts recovered and recorded without counting queued removals.17 default25 fixture and nullable serverName test contract corrected;22 test lib compatibility corrected;23b malformed temporal value retains original body/no events. No corresponding production behavior fixes. Exact c19c537 Tests CI39513884838 and container39513884891 both passed, including eight integration shards, combined coverage and performance budgets. Later-head CI remains separate.
+
+Reviewed24a/38a artifacts recorded without crediting queued removals.38a removes one structural call, so its integration must reduce manual audit adjustment separately from16.24a fixture-only relationship/synchronous-error helper/rowtyping corrections retain original production contracts.
+
+13a final integration approval: integration_recovery independently verified eight nonfactory patch blobs, exact four reaction-writer constructor changes and retained prior wiring; focused reaction/preference tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review13a-focused.log; live parity passed on identical production sources before this documentation-only update.

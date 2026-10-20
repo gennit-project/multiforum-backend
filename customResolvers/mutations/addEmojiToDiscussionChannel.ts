@@ -1,6 +1,6 @@
 import { updateEmoji } from "./updateEmoji.js";
 import { assertDiscussionChannelEmojiEnabled } from "./channelPreferenceGuards.js";
-import type { DiscussionChannelModel } from "../../ogm_types.js";
+import type { ReactionWriter } from "../../services/persistence/reactionWriter.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { logger } from "../../logger.js";
@@ -13,11 +13,11 @@ type Args = {
 };
 
 type Input = {
-  DiscussionChannel: DiscussionChannelModel;
+  reactionWriter: ReactionWriter;
 };
 
 const getResolver = (input: Input) => {
-  const { DiscussionChannel } = input;
+  const { reactionWriter } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { discussionChannelId, emojiLabel, unicode, username } = args;
 
@@ -38,14 +38,7 @@ const getResolver = (input: Input) => {
         username,
       });
 
-      await DiscussionChannel.update({
-        where: {
-          id: discussionChannelId,
-        },
-        update: {
-          emoji: updatedEmojiJSON,
-        },
-      });
+      await reactionWriter.updateDiscussionChannelEmoji(discussionChannelId, updatedEmojiJSON);
 
       return {
         id: discussionChannelId,

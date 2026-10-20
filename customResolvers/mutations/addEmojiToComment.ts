@@ -1,6 +1,6 @@
 import { updateEmoji } from "./updateEmoji.js";
 import { assertCommentEmojiEnabled } from "./channelPreferenceGuards.js";
-import type { CommentModel } from "../../ogm_types.js";
+import type { ReactionWriter } from "../../services/persistence/reactionWriter.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { logger } from "../../logger.js";
@@ -13,11 +13,11 @@ type Args = {
 };
 
 type Input = {
-  Comment: CommentModel;
+  reactionWriter: ReactionWriter;
 };
 
 const getResolver = (input: Input) => {
-  const { Comment } = input;
+  const { reactionWriter } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { commentId, emojiLabel, unicode, username } = args;
 
@@ -35,14 +35,7 @@ const getResolver = (input: Input) => {
         username,
       });
 
-      await Comment.update({
-        where: {
-          id: commentId,
-        },
-        update: {
-          emoji: updatedEmojiJSON,
-        },
-      });
+      await reactionWriter.updateCommentEmoji(commentId, updatedEmojiJSON);
 
       return {
         id: commentId,

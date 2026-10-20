@@ -71,7 +71,7 @@ const createDiscussionChannelWith = (overrides: Record<string, unknown>) =>
 
 test("addEmojiToComment rejects disabled emoji channels", async () => {
   const Comment = createDisabledComment();
-  const resolver = addEmojiToCommentResolver({ Comment: Comment as any });
+  const resolver = addEmojiToCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
@@ -84,7 +84,7 @@ test("addEmojiToComment rejects disabled emoji channels", async () => {
 
 test("removeEmojiFromComment rejects disabled emoji channels", async () => {
   const Comment = createDisabledComment();
-  const resolver = removeEmojiFromCommentResolver({ Comment: Comment as any });
+  const resolver = removeEmojiFromCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
@@ -107,7 +107,7 @@ test("removeEmojiFromComment rejects disabled emoji channels", async () => {
 test("addEmojiToDiscussionChannel rejects disabled emoji channels", async () => {
   const DiscussionChannel = createDisabledDiscussionChannel();
   const resolver = addEmojiToDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -130,7 +130,7 @@ test("addEmojiToDiscussionChannel rejects disabled emoji channels", async () => 
 test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async () => {
   const DiscussionChannel = createDisabledDiscussionChannel();
   const resolver = removeEmojiFromDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -156,7 +156,7 @@ test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async (
 
 test("addEmojiToComment rejects when the comment is archived", async () => {
   const Comment = createCommentWith({ archived: true });
-  const resolver = addEmojiToCommentResolver({ Comment: Comment as any });
+  const resolver = addEmojiToCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
@@ -176,7 +176,7 @@ test("addEmojiToComment rejects when the discussion is locked", async () => {
       Channel: { uniqueName: "cats", emojiEnabled: true },
     },
   });
-  const resolver = addEmojiToCommentResolver({ Comment: Comment as any });
+  const resolver = addEmojiToCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
@@ -190,7 +190,7 @@ test("addEmojiToComment rejects when the discussion is locked", async () => {
 test("addEmojiToDiscussionChannel rejects when locked", async () => {
   const DiscussionChannel = createDiscussionChannelWith({ locked: true });
   const resolver = addEmojiToDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -210,7 +210,7 @@ test("addEmojiToDiscussionChannel rejects when locked", async () => {
 test("addEmojiToDiscussionChannel rejects when archived", async () => {
   const DiscussionChannel = createDiscussionChannelWith({ archived: true });
   const resolver = addEmojiToDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -229,7 +229,7 @@ test("addEmojiToDiscussionChannel rejects when archived", async () => {
 
 test("comment emoji validation errors never reach the update", async () => {
  const Comment=createCommentWith({});
- const resolver=addEmojiToCommentResolver({Comment:Comment as any});
+ const resolver=addEmojiToCommentResolver({reactionWriter:{updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any});
  for (const context of [
   {driver:{}},
   {contentValidationRepository:{findCommentEmojiState:async()=>{throw new Error("Malformed selected flag");}}},
