@@ -161,11 +161,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getServerPluginSecrets: getServerPluginSecrets({
       driver
     }),
-    getPluginConfigStatus: getPluginConfigStatus({
-      Plugin,
-      ServerConfig,
-      ServerSecret
-    }),
+    getPluginConfigStatus: getPluginConfigStatus({ driver }),
     getInstalledPlugins: getInstalledPlugins({
       driver
     }),

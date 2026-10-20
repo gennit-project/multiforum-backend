@@ -73,7 +73,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | pending |
 | 33 Event recurrence | 19 | 32; external transaction/event gate | Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes | pending |
 | 34 Download review/labels | 14 | Retain pipeline adapter until 41/44 controls | Split review/preparation 7/labels 7; scan state and label history | pending |
-| 35 Plugin read models | 20 | 01; visibility/redaction contract | Split configuration vs run/visibility reads; redaction, order and empty states | pending |
+| 35 Plugin read models | 20 | 01; visibility/redaction contract | Split configuration vs run/visibility reads; redaction, order and empty states | partial; see subdivisions |
 | 36 Plugin registry/install | 22 | 37 secrets before install; external IO mocks | Two commits refresh 13/install 9; verification/download/write/rename failure ordering | pending |
 | 37 Plugin config/secrets | 16 | 35; configuration/secret masking contract | Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth | pending |
 | 38 Bot identity/comments | 13 | 03; write/event contract | Nested identity creation, activation/deprecation, channel links and comment context | pending |
@@ -266,3 +266,10 @@ Slice10 committed `0ed821a91bc646006e3a3142abf5d7651c29b1a7` ([diff](https://git
 Recovered clean branch at0ed821a with unpublished03b and10 commits and preserved reviewed patches. Remote remained70bffdf; main006f625. User approved literal ID/version variables for exactly three getPluginConfigStatus lookups (35b), intentionally treating quotes/backslashes as data and preventing selection alteration. Edge-case tests are required. The separate enableServerPlugin operation37b2 remains paused; this approval does not cover it. Historical mail transmission/delivery remains uncertain; the published native-provider test guard is retained.
 
 Slice35a initial cumulative run passed lint/TypeScript and1,975 test entries but failed loading services/pluginRunner.test.ts with a Node26/V8 native “unreachable code” fatal error. Its isolated sanitized rerun passed without source changes; full gate rerun required. Four exact-production-tree live configuration tests passed. The failed attempt is retained and is not counted as successful.
+
+Slice35a committed `012ee3e58a3d488205920f3cdad5209bd385f312` ([diff](https://github.com/gennit-project/multiforum-backend/commit/012ee3e58a3d488205920f3cdad5209bd385f312)), tree `dcf6b9ee09adf973007d0c1bfd7b466c3925954c`: lint, TypeScript and all1976 units passed; 4 live parity tests passed on identical production sources before documentation-only failure evidence update; isolated pluginRunner recheck passed. Independent approval recorded above.
+
+
+### Slice 35b — Approved literal-variable plugin status lookups
+
+3 baseline CRUD sites removed. Independent review_recovery approved; nine unit/auth checks independently rerun. 9 unit/auth and6 live tests passed; user-approved quote/backslash-as-data correction, selection-alteration attempts treated literally, normal behavior/redaction/defaults preserved;37b2 unchanged. Parent cumulative gates pending. Remaining 425 CRUD sites/113 files; 74 acquisitions/15 files; two separate CLI sites.

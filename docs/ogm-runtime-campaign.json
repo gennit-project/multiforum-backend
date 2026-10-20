@@ -651,19 +651,25 @@
           "id": "35a",
           "scope": "Safe configuration reads",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_subscription approved before pause; final patch preserved",
           "verification": [
-            "17 focused units,4 live parity and4 authorization tests passed; exact selections, redaction, registry failures and reconciliation ordering preserved"
+            "17 focused units,4 live parity and4 authorization tests passed; exact selections, redaction, registry failures and reconciliation ordering preserved",
+            "Exact committed tree dcf6b9ee09adf973007d0c1bfd7b466c3925954c: lint, TypeScript and1976 full units passed; 4 live parity tests passed on identical production sources before documentation-only failure evidence update; isolated pluginRunner recheck passed"
           ],
-          "commit": null
+          "commit": "012ee3e58a3d488205920f3cdad5209bd385f312"
         },
         {
           "id": "35b",
           "scope": "getPluginConfigStatus interpolated version/ID lookups",
           "baselineCrudSites": 3,
-          "status": "approved correction; implementation in progress",
-          "approval": "User explicitly approved literal variables for the three getPluginConfigStatus lookups, including quote/backslash semantics. Does not cover37b2."
+          "status": "reviewed; cumulative gates pending",
+          "approval": "User explicitly approved literal variables for the three getPluginConfigStatus lookups, including quote/backslash semantics. Does not cover37b2.",
+          "review": "Independent review_recovery approved; nine unit/auth checks independently rerun",
+          "verification": [
+            "9 unit/auth and6 live tests passed; user-approved quote/backslash-as-data correction, selection-alteration attempts treated literally, normal behavior/redaction/defaults preserved;37b2 unchanged"
+          ],
+          "commit": null
         },
         {
           "id": "35c1",
@@ -880,9 +886,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 428,
+  "remainingRuntimeCrudSites": 425,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 114,
+  "remainingRuntimeCrudFiles": 113,
   "foundations": [
     {
       "id": "F01",
