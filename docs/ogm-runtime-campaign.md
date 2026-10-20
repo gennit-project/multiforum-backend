@@ -244,3 +244,13 @@ Slice03a committed `70bffdffc205a75c86209282d22949a290a87392` ([diff](https://gi
 ### Slice 03b — Email recipient and notification persistence
 
 2 baseline CRUD sites removed. Independent review_contributions approved; native provider denial and fake delivery verified. 14 focused units,5 live parity and16 existing invitation integrations passed; omitted notificationType, duplicate events, email-before-in-app ordering and server-invite best effort preserved. Parent cumulative gates pending. Remaining 436 CRUD sites/120 files; 77 acquisitions/17 files; two separate CLI sites.
+
+Slice03b committed `c090cb21bd20415b2c88bf61e69921d96bcdfcb0` ([diff](https://github.com/gennit-project/multiforum-backend/commit/c090cb21bd20415b2c88bf61e69921d96bcdfcb0)), tree `d6dc41dd7811d72b87c678958f7e5c314448f583`: lint, TypeScript and all1963 units passed; 5 exact-tree live tests passed; external mail fake and native SDKs denied. Independent approval recorded above.
+
+### Slice 10 — Collection reads
+
+4 baseline CRUD sites removed. Independent review_subscription approved; no remaining findings. 15 focused units,6 live parity and4 public collection integrations passed; filter merge precedence, visibility/age filters, defaults and errors preserved; creation adapter retained for31. Parent cumulative gates pending. Remaining 432 CRUD sites/117 files; 74 acquisitions/15 files; two separate CLI sites.
+
+### Additional isolated decision — enableServerPlugin (37b2)
+
+The four-site enableServerPlugin operation also interpolates version and stored plugin-version ID into selection text. Its migration remains paused separately from the three getPluginConfigStatus lookups. Approval scoped to35b does not automatically cover this path. Do not preserve query alteration as a workaround. Required characterization includes ordinary and special-string version/ID matching, quote/backslash handling, attempted selection alteration, existing validation/error order, configuration/installation state, native events and unchanged graph state on rejected requests. Secret operations37a, updatePluginPipelines37b1 and channel configuration37c do not depend on this behavior and may proceed independently.

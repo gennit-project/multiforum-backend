@@ -1,7 +1,8 @@
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
-import type { GraphQLContext, Ogm } from "../../types/context.js";
-import { SortDirection } from "../../src/generated/graphql.js";
+import type { GraphQLContext } from "../../types/context.js";
+import { createCollectionReadRepository, type CollectionReadRepository } from "../../services/persistence/collectionReadRepository.js";
+export { getPublicCollectionSelectionSet } from "../../services/persistence/collectionReadRepository.js";
 import type { CollectionWhere } from "../../ogm_types.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
@@ -9,7 +10,7 @@ import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
-  ogm: Ogm;
+  collectionReadRepository?: CollectionReadRepository;
   agePolicyRepository?: AgePolicyReader;
 };
 
@@ -21,77 +22,7 @@ const itemTypeWhereMap: Record<string, CollectionWhere> = {
   CHANNEL: { Channels_SOME: { uniqueName: undefined } },
 };
 
-const selectionSetTemplate = `
-{
-  id
-  name
-  description
-  visibility
-  collectionType
-  itemCount
-  shareCount
-  createdAt
-  updatedAt
-  itemOrder
-  CreatedBy {
-    username
-    displayName
-    profilePicURL
-  }
-  Downloads(options: { limit: 5 }__DISCUSSION_AGE_FILTER__) {
-    id
-    title
-    createdAt
-    hasSensitiveContent
-    Album {
-      id
-      imageOrder
-      Images__IMAGE_AGE_FILTER__ {
-        id
-        url
-        caption
-      }
-    }
-    DiscussionChannels {
-      id
-      channelUniqueName
-      CommentsAggregate {
-        count
-      }
-      Channel {
-        uniqueName
-        displayName
-      }
-    }
-    Tags {
-      text
-    }
-    Author {
-      username
-      displayName
-      profilePicURL
-      commentKarma
-      discussionKarma
-      createdAt
-    }
-  }
-}
-`;
-
-const CLEAR_SOURCE_CONTENT_FILTER = "{ OR: [{ hasSensitiveContent: false }, { hasSensitiveContent: null }] }";
-
-export const getPublicCollectionSelectionSet = (canViewSensitiveContent: boolean) =>
-  selectionSetTemplate
-    .replace(
-      "__DISCUSSION_AGE_FILTER__",
-      canViewSensitiveContent ? "" : `, where: ${CLEAR_SOURCE_CONTENT_FILTER}`
-    )
-    .replace(
-      "__IMAGE_AGE_FILTER__",
-      canViewSensitiveContent ? "" : `(where: ${CLEAR_SOURCE_CONTENT_FILTER})`
-    );
-
-const publicCollectionsContaining = ({ driver, ogm, agePolicyRepository }: Input) => {
+const publicCollectionsContaining = ({ driver, collectionReadRepository = createCollectionReadRepository(driver), agePolicyRepository }: Input) => {
   return async (_parent: unknown, args: { itemId: string; itemType: string }, context: GraphQLContext) => {
     const { itemId, itemType } = args;
     const whereTemplate = itemTypeWhereMap[itemType];
@@ -127,17 +58,12 @@ const publicCollectionsContaining = ({ driver, ogm, agePolicyRepository }: Input
       where[key].id = itemId;
     }
 
-    const Collection = ogm.model("Collection");
 
     try {
-      const collections = await Collection.find({
-        where: {
-          visibility: "PUBLIC",
-          ...where,
-        },
-        options: { sort: [{ createdAt: SortDirection.Desc }] },
-        selectionSet: getPublicCollectionSelectionSet(canViewSensitiveContent),
-      });
+      const collections = await collectionReadRepository.findPublicContaining({
+        visibility: "PUBLIC",
+        ...where,
+      }, canViewSensitiveContent);
 
       return collections;
     } catch (error) {

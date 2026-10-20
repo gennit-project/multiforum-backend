@@ -214,7 +214,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     publicCollectionsContaining: publicCollectionsContaining({
       driver,
-      ogm,
       agePolicyRepository: instancePolicyRepository
     }),
     getOwnEmail: getOwnEmail({

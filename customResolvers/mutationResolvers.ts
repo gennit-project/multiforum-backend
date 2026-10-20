@@ -161,7 +161,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     DownloadableFile,
     ServerSecret,
     Image,
-    Collection,
     WikiPage,
     TextVersion,
     FilterOption,
@@ -697,8 +696,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
       Discussion,
-      Collection,
-      Channel,
       driver
     }),
     pinWikiPageToChannel: pinWikiPageToChannel({

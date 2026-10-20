@@ -58,8 +58,8 @@
       "baselineCrudSites": 7,
       "dependencies": "01; write/event parity",
       "acceptance": "Ownership, normalization, duplicate account/email and nested creation",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "c090cb21bd20415b2c88bf61e69921d96bcdfcb0",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -79,12 +79,13 @@
           "id": "03b",
           "scope": "Email recipient and notification persistence",
           "baselineCrudSites": 2,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_contributions approved; native provider denial and fake delivery verified",
           "verification": [
-            "14 focused units,5 live parity and16 existing invitation integrations passed; omitted notificationType, duplicate events, email-before-in-app ordering and server-invite best effort preserved"
+            "14 focused units,5 live parity and16 existing invitation integrations passed; omitted notificationType, duplicate events, email-before-in-app ordering and server-invite best effort preserved",
+            "Exact committed tree d6dc41dd7811d72b87c678958f7e5c314448f583: lint, TypeScript and1963 full units passed; 5 exact-tree live tests passed; external mail fake and native SDKs denied"
           ],
-          "commit": null
+          "commit": "c090cb21bd20415b2c88bf61e69921d96bcdfcb0"
         }
       ]
     },
@@ -221,10 +222,12 @@
       "baselineCrudSites": 4,
       "dependencies": "Named-schema operation contract; retain creation adapter until 31",
       "acceptance": "Filter merge precedence, visibility, sensitivity and default sorting",
-      "status": "pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent review_subscription approved; no remaining findings",
+      "verification": [
+        "15 focused units,6 live parity and4 public collection integrations passed; filter merge precedence, visibility/age filters, defaults and errors preserved; creation adapter retained for31"
+      ]
     },
     {
       "id": "11",
@@ -706,7 +709,33 @@
       "status": "pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "37a",
+          "scope": "Secret operations",
+          "baselineCrudSites": 5,
+          "status": "reviewed; final checks pending"
+        },
+        {
+          "id": "37b1",
+          "scope": "Server pipeline configuration",
+          "baselineCrudSites": 2,
+          "status": "in progress"
+        },
+        {
+          "id": "37b2",
+          "scope": "enableServerPlugin interpolated lookups and writes",
+          "baselineCrudSites": 4,
+          "status": "paused; requires separate behavior approval"
+        },
+        {
+          "id": "37c",
+          "scope": "Channel pipeline configuration",
+          "baselineCrudSites": 5,
+          "status": "pending"
+        }
+      ]
     },
     {
       "id": "38",
@@ -844,9 +873,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 436,
-  "remainingModelAcquisitionsIncludingOptional": 77,
-  "remainingRuntimeCrudFiles": 120,
+  "remainingRuntimeCrudSites": 432,
+  "remainingModelAcquisitionsIncludingOptional": 74,
+  "remainingRuntimeCrudFiles": 117,
   "foundations": [
     {
       "id": "F01",
@@ -862,11 +891,12 @@
       ]
     }
   ],
-  "remainingModelAcquisitionFiles": 17,
+  "remainingModelAcquisitionFiles": 15,
   "milestone": {
     "completedSlices": [
       "01",
       "02",
+      "03",
       "04",
       "05",
       "06",

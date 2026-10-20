@@ -1,12 +1,15 @@
+import type { Driver } from "neo4j-driver";
+import { createCollectionReadRepository, type CollectionReadRepository } from "../../services/persistence/collectionReadRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import type { GraphQLContext, Ogm } from "../../types/context.js";
+import type { GraphQLContext } from "../../types/context.js";
 import type { CollectionOptions } from "../../src/generated/graphql.js";
 import type { CollectionWhere } from "../../ogm_types.js";
 import { CollectionVisibility } from "../../ogm_types.js";
 
 type UserCollectionsArgs = {
-  ogm: Ogm;
+  driver: Driver;
+  collectionReadRepository?: CollectionReadRepository;
 };
 
 /**
@@ -20,7 +23,7 @@ type CollectionsArgs = {
   options?: { sort?: unknown[]; [key: string]: unknown };
 };
 
-export default function ({ ogm }: UserCollectionsArgs) {
+export default function ({ driver, collectionReadRepository = createCollectionReadRepository(driver) }: UserCollectionsArgs) {
   return async (
     parent: { username: string },
     args: CollectionsArgs,
@@ -42,7 +45,6 @@ export default function ({ ogm }: UserCollectionsArgs) {
     const requestingUsername = context.user?.username;
     const isOwnProfile = profileUsername === requestingUsername;
 
-    const Collection = ogm.model("Collection");
 
     // Build the filter starting with CreatedBy
     const filter: CollectionWhere = {
@@ -71,42 +73,7 @@ export default function ({ ogm }: UserCollectionsArgs) {
 
     // Get collections with the merged filter
     // Include all relationship fields that clients might request
-    const collections = await Collection.find({
-      where: filter,
-      selectionSet: `{
-        id
-        name
-        description
-        visibility
-        collectionType
-        itemCount
-        itemOrder
-        createdAt
-        updatedAt
-        Channels {
-          uniqueName
-          displayName
-          channelIconURL
-        }
-        Discussions {
-          id
-          title
-        }
-        Comments {
-          id
-          text
-        }
-        Downloads {
-          id
-          title
-        }
-        Images {
-          id
-          url
-        }
-      }`,
-      options: options as CollectionOptions
-    });
+    const collections = await collectionReadRepository.findProfileCollections(filter, options as CollectionOptions);
 
     return collections;
   };

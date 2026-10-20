@@ -1,10 +1,9 @@
+import type { CollectionShareSnapshot } from "../../services/persistence/collectionReadRepository.js";
 import assert from "node:assert/strict";
 import test, { afterEach, beforeEach } from "node:test";
 import jwt from "jsonwebtoken";
 import type { Driver } from "neo4j-driver";
 import type {
-  ChannelModel,
-  CollectionModel,
   DiscussionModel,
 } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -93,8 +92,12 @@ const buildResolver = ({
 
   const resolver = shareCollectionAsDiscussion({
     Discussion: {} as DiscussionModel,
-    Collection: Collection as unknown as CollectionModel,
-    Channel: Channel as unknown as ChannelModel,
+    collectionReadRepository: {
+      findProfileCollections: async () => [],
+      findPublicContaining: async () => [],
+      findOwnedShareTarget: async (id, username) => Collection.find({ where: { id, CreatedBy: { username } } }) as Promise<CollectionShareSnapshot[]>,
+      findShareChannel: async uniqueName => Channel.find({ where: { uniqueName } }) as Promise<Array<{uniqueName: string}>>,
+    },
     driver: {} as Driver,
     checkChannelPermissions: async (args) => {
       calls.permissions.push(args);
@@ -272,4 +275,31 @@ test("shareCollectionAsDiscussion preserves flair validation error metadata", as
     ),
     (error: unknown) => error === flairError
   );
+});
+
+test("collection/channel reads stay outside creation error wrapping and precede permission/create", async () => {
+  const state = buildResolver();
+  const failure = new Error("snapshot failed");
+  state.Collection.find = async () => { throw failure; };
+  await assert.rejects(state.resolver(null, { collectionId:'collection-1',serverId:'cats',title:'Share' },buildContext(),{} as never), error=>error===failure);
+  assert.deepEqual(state.calls.permissions,[]);
+  assert.deepEqual(state.calls.createDiscussions,[]);
+  assert.deepEqual(state.Channel.findCalls,[]);
+
+  const channelFailure = buildResolver();
+  channelFailure.Channel.find = async () => { throw failure; };
+  await assert.rejects(channelFailure.resolver(null, { collectionId:'collection-1',serverId:'cats',title:'Share' },buildContext(),{} as never),error=>error===failure);
+  assert.equal(channelFailure.Collection.findCalls.length,1);
+  assert.deepEqual(channelFailure.calls.permissions,[]);
+  assert.deepEqual(channelFailure.calls.createDiscussions,[]);
+});
+
+test("sharing retains trimmed lookup identities and creation adapter inputs", async () => {
+  const state = buildResolver();
+  await state.resolver(null,{collectionId:' collection-1 ',serverId:' sims4_builds ',title:' Shared ',content:' Content ',shareMessage:' '},buildContext(),{} as never);
+  assert.deepEqual(state.Collection.findCalls,[{where:{id:'collection-1',CreatedBy:{username:'alice'}}}]);
+  assert.deepEqual(state.Channel.findCalls,[{where:{uniqueName:'sims4_builds'}}]);
+  const input=(state.calls.createDiscussions[0] as any)[2][0];
+  assert.equal(input.discussionCreateInput.title,'Shared');
+  assert.equal(input.discussionCreateInput.body,'Content');
 });
