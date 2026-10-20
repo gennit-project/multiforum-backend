@@ -1,3 +1,4 @@
+import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 // Builds the real application GraphQL schema with the real graphql-shield
 // permission layer applied — the same two steps index.ts performs:
 //
@@ -53,6 +54,7 @@ export async function buildPermissionedSchema(options?: {
   const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers });
 
   let schema = await neoSchema.getSchema();
+  registerGeneratedSchema(driver, schema);
   schema = options?.transformSchema?.(schema) ?? schema;
   schema = applyMiddleware(
     schema,

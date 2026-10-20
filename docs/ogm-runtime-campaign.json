@@ -105,12 +105,13 @@
       "baselineCrudSites": 8,
       "dependencies": "01 where age filtering applies",
       "acceptance": "Recipients/preferences/actor exclusions; email-before-in-app ordering",
-      "status": "reviewed",
-      "commit": null,
+      "status": "complete",
+      "commit": "a07af6a9704e247d04d4d5711fa5a55697ca5b72",
       "review": "review_subscription: fixed Issue relation fixture and added explicit union/recipient coverage; final wiring rereview pending",
       "verification": [
         "Independent45 targeted units and6 live parity tests passed",
-        "Final downstream archive fixture corrections passed8 regressioncases; full combined tree gate pending"
+        "Final downstream archive fixture corrections passed8 regressioncases; full combined tree gate pending",
+        "Exact source tree: lint, TypeScript, 1920 units, build and circular checks passed; expanded live results recorded in markdown."
       ]
     },
     {
@@ -138,10 +139,12 @@
       "baselineCrudSites": 4,
       "dependencies": "Named-schema operation contract",
       "acceptance": "Arbitrary/nested filters; missing/multiple-owner fail-closed authorization",
-      "status": "pending",
+      "status": "reviewed; exact-tree gates pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent review_contributions approved; schema registration and capability selection drift tests resolved",
+      "verification": [
+        "39 focused units and 13 live parity/authenticated-role tests passed in isolated worktree; TypeScript and targeted lint passed"
+      ]
     },
     {
       "id": "08",
@@ -776,9 +779,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 454,
-  "remainingModelAcquisitionsIncludingOptional": 92,
-  "remainingRuntimeCrudFiles": 132,
+  "remainingRuntimeCrudSites": 450,
+  "remainingModelAcquisitionsIncludingOptional": 88,
+  "remainingRuntimeCrudFiles": 129,
   "foundations": [
     {
       "id": "F01",

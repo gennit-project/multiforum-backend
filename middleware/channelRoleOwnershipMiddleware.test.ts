@@ -115,13 +115,11 @@ test("nested roles inherit the channel being created", async () => {
 test("channel role connections are scoped and checked against relationship ownership", async () => {
   const finds: Record<string, unknown>[] = [];
   const context = {
-    ogm: {
-      model: () => ({
-        find: async ({ where }: { where: Record<string, unknown> }) => {
+    roleGuardRepository: {
+        findChannelRoleOwners: async (where: Record<string, unknown>) => {
           finds.push(where);
           return [{ Owner: { uniqueName: "cats" } }];
         },
-      }),
     },
   } as unknown as GraphQLContext;
   const result = await updateChannelsWithOwnedRoles(
@@ -148,8 +146,8 @@ test("channel role connections are scoped and checked against relationship owner
 
 test("a role owned by another channel cannot be attached", async () => {
   const context = {
-    ogm: {
-      model: () => ({ find: async () => [{ Owner: { uniqueName: "dogs" } }] }),
+    roleGuardRepository: {
+      findModChannelRoleOwners: async () => [{ Owner: { uniqueName: "dogs" } }],
     },
   } as unknown as GraphQLContext;
   await assert.rejects(
@@ -171,7 +169,7 @@ test("a role owned by another channel cannot be attached", async () => {
   );
 
   const ownerlessContext = {
-    ogm: { model: () => ({ find: async () => [{ Owner: null }] }) },
+    roleGuardRepository: { findModChannelRoleOwners: async () => [{ Owner: null }] },
   } as unknown as GraphQLContext;
   await assert.rejects(
     updateChannelsWithOwnedRoles(
@@ -192,7 +190,7 @@ test("a role owned by another channel cannot be attached", async () => {
   );
 
   const missingContext = {
-    ogm: { model: () => ({ find: async () => [] }) },
+    roleGuardRepository: { findChannelRoleOwners: async () => [] },
   } as unknown as GraphQLContext;
   await assert.rejects(
     updateChannelsWithOwnedRoles(

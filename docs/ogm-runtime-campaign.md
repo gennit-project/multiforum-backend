@@ -35,7 +35,7 @@ Unrelated read/member/entity slices may be developed independently after shared 
 
 ## Slice ledger
 
-All rows start pending. A slice is complete only with independent review, commit and verification evidence; edits alone are not completion. See JSON for concrete full file paths.
+Rows track the current campaign state. A slice is complete only with independent review, commit and verification evidence; edits alone are not completion. See JSON for concrete full file paths.
 
 | ID / scope | CRUD sites | Dependencies | Specific acceptance / subdivisions | Status |
 |---|---:|---|---|---|
@@ -43,9 +43,9 @@ All rows start pending. A slice is complete only with independent review, commit
 | 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | complete |
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
 | 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | complete |
-| 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | reviewed; final wiring/checks pending |
+| 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | complete; a07af6a |
 | 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | pending |
-| 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | pending |
+| 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | reviewed; exact-tree gates pending |
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | pending |
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | pending |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | pending |
@@ -107,7 +107,7 @@ Pause the affected chain for unresolved filter compatibility, external-transacti
 
 Baseline evidence predates this campaign: prior local 1,867 units / 452 integrations passed; merged-main Tests CI run 39427029177 and container run 39427029068 passed. Not a substitute for new exact-head checks.
 
-No implementation slice completed yet. Append each reviewed commit's scope, comparison link, commands/results, reviewer and resolved findings here. Later ledger commits may record the preceding tested SHA to avoid self-referential hashes.
+Reviewed implementation evidence follows. Record each commit's scope, comparison link, commands/results, reviewer and resolved findings here. Later ledger commits may record the preceding tested SHA to avoid self-referential hashes.
 
 ### Slice 01 — age/setup reads
 
@@ -156,3 +156,15 @@ User-model acquisition guards/write dependencies remain in notification hooks fo
 ### Reproducing slice verification
 
 Use a clean child environment as above and the repository-pinned toolchain. Shared gates: `pnpm run lint`, `pnpm run tsc`, `pnpm test`, `pnpm run build`, `pnpm run lint:circular`. Targeted live command: `TS_NODE_TRANSPILE_ONLY=true TESTCONTAINERS_REUSE_ENABLE=false node --loader ts-node/esm --test --test-concurrency=1` followed by the relevant files under tests/integration: instancePolicyRepository.test.ts (01), contributionTargetRepository.test.ts and contributionsQueries.test.ts (02), subscriptionTargetRepository.test.ts (04), generatedSchemaOperations.test.ts (F01), notificationSnapshotRepository.test.ts plus existing commentNotifications.test.ts/issueActivityFeed.test.ts coverage (05; see actual filenames and exact evidence below). All graph data is disposable; external services are mocked.
+
+### Slice 05 committed evidence
+
+Commit `a07af6a9704e247d04d4d5711fa5a55697ca5b72` ([diff](https://github.com/gennit-project/multiforum-backend/commit/a07af6a9704e247d04d4d5711fa5a55697ca5b72)). Independent `review_subscription` approved final wiring and fixture corrections. Exact committed source tree `79ee68d578090853214a43d89e1bbd026e132e7e` passed lint, TypeScript, all 1,920 unit tests, build and circular checks. Expanded live checks passed 41/41 across notificationSnapshotRepository, commentNotifications, issueActivityFeed, notificationHooks, versionHistoryHooks and archiveImage integration files; all against disposable Neo4j.
+
+Post-05 inventory recheck at `a07af6a`: TypeScript receiver analysis found 451 generated-model CRUD calls; three unchanged structurally typed injected operations (buildBotInvocationContext Comment.find, setProfileImage User.update, setChannelIcon Channel.update) bring the domain total to 454 in 132 files. Optional-chain-aware model acquisition scan found 92 acquisitions in 27 files. The structural adapters remain explicitly counted; CLI and generic forwarding are separate.
+
+Exact-head CI for `a07af6a`: [container run 39437972349](https://github.com/gennit-project/multiforum-backend/actions/runs/39437972349) build-publish-smoke passed; publishing jobs skipped on the PR. [Tests CI 39437972218](https://github.com/gennit-project/multiforum-backend/actions/runs/39437972218) performance budgets passed; unit coverage and integration shards were still running when recorded. Earlier-head cancelled shards are not counted as passes.
+
+### Slice 07 — role filter guards
+
+Four CRUD sites and four acquisitions replaced by fixed generated-schema operations in channelRoleEscalation, nestedRoleEscalation and channelRoleOwnershipMiddleware. Arbitrary filters, existing projections, sequential ownership/capability decisions and fail-closed behavior preserved. Independent `review_contributions` approved after adding production-equivalent schema registration to the permission harness and capability field drift tests. Focused units 39/39 and live parity/authenticated-role tests 13/13 passed in the isolated worktree. Parent exact-tree gates pending. Remaining inventory: 450 domain CRUD sites in 129 files, 88 acquisitions, 2 separate CLI sites.

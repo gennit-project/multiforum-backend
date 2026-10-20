@@ -1,4 +1,5 @@
 import type { NotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
+import type { RoleGuardRepository } from "../services/persistence/roleGuardRepository.js";
 import type { InstancePolicyRepository } from "../services/persistence/instancePolicyRepository.js";
 import type { ChannelCreatorModeratorService } from "../services/channelCreatorModerator.js";
 import type { Driver } from "neo4j-driver";
@@ -80,6 +81,7 @@ export type GraphQLRequest = Request & {
  * possibly-absent (`req?.headers`, `if (context.req)`).
  */
 export type GraphQLContext = {
+  roleGuardRepository?: RoleGuardRepository;
   notificationSnapshotRepository?: NotificationSnapshotRepository;
   instancePolicyRepository?: InstancePolicyRepository;
   driver: Driver;

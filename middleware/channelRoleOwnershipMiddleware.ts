@@ -1,3 +1,4 @@
+import { resolveRoleGuardRepository } from "../services/persistence/roleGuardRepository.js";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../types/context.js";
 
@@ -9,10 +10,6 @@ type Resolver = (
 ) => Promise<unknown>;
 
 type RoleModelName = "ChannelRole" | "ModChannelRole";
-
-type RoleLookup = {
-  Owner?: { uniqueName?: string | null } | null;
-};
 
 const roleRelationships: Array<{
   field: string;
@@ -155,10 +152,10 @@ const validateConnects = async (
   context: GraphQLContext
 ) => {
   for (const where of connectFilters(value)) {
-    const roles = (await context.ogm.model(modelName).find({
-      where,
-      selectionSet: `{ Owner { uniqueName } }`,
-    })) as RoleLookup[];
+    const repository = resolveRoleGuardRepository(context);
+    const roles = modelName === "ChannelRole"
+      ? await repository.findChannelRoleOwners(where)
+      : await repository.findModChannelRoleOwners(where);
     if (
       roles.length === 0 ||
       roles.some((role) => role.Owner?.uniqueName !== channelUniqueName)
