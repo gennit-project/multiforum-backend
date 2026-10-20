@@ -58,10 +58,23 @@
       "baselineCrudSites": 7,
       "dependencies": "01; write/event parity",
       "acceptance": "Ownership, normalization, duplicate account/email and nested creation",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "03a",
+          "scope": "Account registration and own email summary",
+          "baselineCrudSites": 5,
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_contributions approved; no unresolved findings",
+          "verification": [
+            "12 focused units,7 live parity and3 existing age integrations passed; exact User/Email defaults, normalization, validation, creation ordering and post-write projection failures retained"
+          ],
+          "commit": null
+        }
+      ]
     },
     {
       "id": "04",
@@ -177,11 +190,12 @@
       "baselineCrudSites": 4,
       "dependencies": "Named-schema operation contract; 01",
       "acceptance": "Existing-file/filename fallback, filters, preferences and exact errors",
-      "status": "reviewed; exact-tree gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "376ad24740f966849d5dd59b3c66760e16eb045d",
       "review": "Independent review_slice1 approved final13-file patch; restricted nested-content coverage added",
       "verification": [
-        "43 focused units and7 live parity tests passed; independent30units passed; tsc and scoped lint passed"
+        "43 focused units and7 live parity tests passed; independent30units passed; tsc and scoped lint passed",
+        "Cumulative lint/tsc and1951units passed;7live on identical production sources before fixture-only correction"
       ]
     },
     {
@@ -818,9 +832,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 443,
-  "remainingModelAcquisitionsIncludingOptional": 78,
-  "remainingRuntimeCrudFiles": 123,
+  "remainingRuntimeCrudSites": 438,
+  "remainingModelAcquisitionsIncludingOptional": 77,
+  "remainingRuntimeCrudFiles": 121,
   "foundations": [
     {
       "id": "F01",
@@ -845,7 +859,8 @@
       "05",
       "06",
       "07",
-      "08"
+      "08",
+      "09"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [

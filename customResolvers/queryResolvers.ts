@@ -1,3 +1,4 @@
+import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Query resolvers. Extracted from customResolvers.ts; receives the shared
 // ResolverDeps and wires the custom query resolvers to their models/driver.
 import type { ResolverDeps } from "./resolverDeps.js";
@@ -66,7 +67,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     PluginPipelineCampaign,
     PluginRun,
     DownloadableFile,
-    Email,
   } = deps;
 
   return {
@@ -218,7 +218,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       agePolicyRepository: instancePolicyRepository
     }),
     getOwnEmail: getOwnEmail({
-      Email
+      accountRegistrationRepository: createAccountRegistrationRepository(driver)
     }),
     getAgePolicy: getAgePolicy({ agePolicyRepository: instancePolicyRepository }),
     getMyAgeProfile: getMyAgeProfile({ driver, agePolicyRepository: instancePolicyRepository }),

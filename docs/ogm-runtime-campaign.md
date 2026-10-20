@@ -47,7 +47,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | complete; 959d826 |
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete; dd14fee |
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete; 31ea9dd |
-| 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | reviewed; exact-tree gates pending |
+| 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete; 376ad24 |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | pending |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | pending |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | pending |
@@ -232,3 +232,9 @@ If approved, test ordinary version/ID matching, quotes, literal backslashes, att
 Exact published head `658bfe4fcf8469c6f2801c99e90d59d641d5d58a`: Tests CI [39441524212](https://github.com/gennit-project/multiforum-backend/actions/runs/39441524212) and container run [39441524405](https://github.com/gennit-project/multiforum-backend/actions/runs/39441524405) completed successfully. These results apply to that SHA only.
 
 The first slice09 cumulative hook failed two unchanged channel-preference fixtures still injecting OGM and one Node26 V8 native fatal error in localDevAuth.test.ts. The fixture correction preserves all assertions and injects the new boundary; independent review requested. Standalone localDevAuth rerun passed23/23 without source changes. Exact staged production tree passed7/7 live validation tests. Full cumulative rerun remains required before commit.
+
+Slice09 committed `376ad24740f966849d5dd59b3c66760e16eb045d`, tree `9615b2df9a0aa4c947281c953d77147364cebb1f`: full lint, TypeScript and unit suite passed;7live passed on identical production sources before independently reviewed fixture correction. Failed initial run retained above.
+
+### Slice 03a — Account registration and own email summary
+
+5 baseline CRUD sites removed. Independent review_contributions approved; no unresolved findings. 12 focused units,7 live parity and3 existing age integrations passed; exact User/Email defaults, normalization, validation, creation ordering and post-write projection failures retained. Parent cumulative gates pending. Remaining 438 CRUD sites/121 files; 77 acquisitions/17 files; two separate CLI sites.

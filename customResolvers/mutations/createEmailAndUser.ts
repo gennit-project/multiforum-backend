@@ -1,5 +1,6 @@
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
-import { EmailModel, UserModel, UserCreateInput } from "../../ogm_types.js";
+import type { UserCreateInput } from "../../ogm_types.js";
+import type { AccountRegistrationRepository } from "../../services/persistence/accountRegistrationRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import neo4j from "neo4j-driver";
@@ -21,8 +22,7 @@ type Args = {
 };
 
 type Input = {
-  User: UserModel;
-  Email: EmailModel;
+  accountRegistrationRepository: AccountRegistrationRepository;
   agePolicyRepository: AgePolicyReader;
 };
 
@@ -35,8 +35,7 @@ const toNeo4jDate = (birthday: string) => {
  * Function to create a user and link an email
  */
 export const createUsersWithEmails = async (
-  User: UserModel,
-  Email: EmailModel,
+  repository: AccountRegistrationRepository,
   emailAddress: string,
   username: string,
   birthday?: string | null,
@@ -60,18 +59,14 @@ export const createUsersWithEmails = async (
   }
 
   // Check if the user already exists
-  const existingUser = await User.find({
-    where: { username },
-  });
+  const existingUser = await repository.findExistingUsername(username);
 
   if (existingUser.length > 0) {
     throw new Error("Username already taken");
   }
 
   // Check if the email already exists
-  const existingEmail = await Email.find({
-    where: { address: emailAddress },
-  });
+  const existingEmail = await repository.findExistingEmail(emailAddress);
 
   if (existingEmail.length > 0) {
     throw new Error("Email already taken");
@@ -127,23 +122,10 @@ export const createUsersWithEmails = async (
   }
 
   // Create the user
-  await User.create({ input: [userCreateInput] });
+  await repository.createAccount(userCreateInput);
 
   // Fetch and return the created user
-  const newUserArray = await User.find({
-    where: { username },
-    selectionSet: `
-    {
-      username
-      Email {
-        address
-      }
-      ModerationProfile {
-        displayName
-      }
-    }
-    `,
-  });
+  const newUserArray = await repository.findCreatedAccount(username);
 
   if (newUserArray.length === 0) {
     throw new Error("Error creating user and linking email");
@@ -156,7 +138,7 @@ export const createUsersWithEmails = async (
  * Main resolver that uses createUsersWithEmails
  */
 const getCreateEmailAndUserResolver = (input: Input) => {
-  const { User, Email, agePolicyRepository } = input;
+  const { accountRegistrationRepository, agePolicyRepository } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { emailAddress, username, birthday } = args;
@@ -173,8 +155,7 @@ const getCreateEmailAndUserResolver = (input: Input) => {
 
       const agePolicy = await loadAgePolicy(agePolicyRepository);
       const newUser = await createUsersWithEmails(
-        User,
-        Email,
+        accountRegistrationRepository,
         verifiedEmail,
         username,
         birthday,

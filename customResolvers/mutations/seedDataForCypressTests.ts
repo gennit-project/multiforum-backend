@@ -1,8 +1,7 @@
+import { createAccountRegistrationRepository } from "../../services/persistence/accountRegistrationRepository.js";
 import {
   ChannelModel,
   EventModel,
-  EmailModel,
-  UserModel,
   DiscussionModel,
   CommentModel,
   TagModel,
@@ -55,8 +54,6 @@ type Input = {
   driver: Driver;
   Channel: ChannelModel;
   Comment: CommentModel;
-  User: UserModel;
-  Email: EmailModel;
   Discussion: DiscussionModel;
   Event: EventModel;
   Tag: TagModel;
@@ -88,8 +85,6 @@ export const linkSeededChannelRoleOwners = async (driver: Driver) => {
 const seedDataForCypressTestsResolver = (input: Input) => {
   const {
     driver,
-    User,
-    Email,
     Channel,
     Comment,
     Discussion,
@@ -196,8 +191,7 @@ const seedDataForCypressTestsResolver = (input: Input) => {
     // Create users and their emails
     for (const user of users) {
       await createUsersWithEmails(
-        User,
-        Email,
+        createAccountRegistrationRepository(driver),
         user.emailAddress,
         user.username
       );

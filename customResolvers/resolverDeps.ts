@@ -26,7 +26,6 @@ export function createOgmAndModels(driver: Driver) {
     Comment: ogm.model("Comment"),
     User: ogm.model("User"),
     ModerationProfile: ogm.model("ModerationProfile"),
-    Email: ogm.model("Email"),
     Channel: ogm.model("Channel"),
     Tag: ogm.model("Tag"),
     Issue,

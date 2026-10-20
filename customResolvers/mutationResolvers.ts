@@ -1,3 +1,4 @@
+import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Mutation resolvers. Extracted from customResolvers.ts; receives the shared
 // ResolverDeps and wires each custom mutation to its models/driver. The wiring
 // is byte-for-byte the original Mutation map, just destructured from `deps`.
@@ -144,7 +145,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     EventSeries,
     Comment,
     User,
-    Email,
     Channel,
     Tag,
     Issue,
@@ -268,8 +268,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     createEmailAndUser: getCreateEmailAndUserResolver({
-      User,
-      Email,
+      accountRegistrationRepository: createAccountRegistrationRepository(driver),
       agePolicyRepository: instancePolicyRepository,
     }),
     setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
@@ -333,8 +332,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Discussion,
       Event,
       Comment,
-      User,
-      Email,
       Tag,
       ChannelRole,
       ModChannelRole,
