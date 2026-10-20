@@ -69,8 +69,7 @@ const buildDefaultOperations = ({
   info: GraphQLResolveInfo
 }): PluginConfigurationApplyOperations => {
   const preview = previewPluginConfigurationReconciliation({
-    ServerConfig: input.ServerConfig,
-    ServerSecret: input.ServerSecret,
+    driver: context.driver,
   })
   const install = installPluginVersion(input)
   const setSecret = setServerPluginSecret({ ServerSecret: input.ServerSecret })

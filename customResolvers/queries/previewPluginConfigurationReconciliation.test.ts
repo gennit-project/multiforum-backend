@@ -8,7 +8,17 @@ import {
   type QueryPreviewPluginConfigurationReconciliationArgs,
 } from '../../src/generated/graphql.js'
 import type { GraphQLContext } from '../../types/context.js'
-import getResolver from './previewPluginConfigurationReconciliation.js'
+import createResolver from './previewPluginConfigurationReconciliation.js'
+import type { Driver } from 'neo4j-driver'
+import type { PluginConfigurationReadRepository } from '../../services/persistence/pluginConfigurationReadRepository.js'
+
+const getResolver = (models: Models) => createResolver({
+  driver: {} as Driver,
+  pluginConfigurationReadRepository: {
+    listReconciliationConfigs: () => models.ServerConfig.find(),
+    listReconciliationSecretStatuses: () => models.ServerSecret.find(),
+  } as unknown as PluginConfigurationReadRepository,
+})
 
 type Models = Pick<ResolverDeps, 'ServerConfig' | 'ServerSecret'>
 

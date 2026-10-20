@@ -1,6 +1,7 @@
+import type { Driver } from "neo4j-driver";
+import { createPluginConfigurationReadRepository, type PluginConfigurationReadRepository } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
 
-import type { ServerConfigModel, ServerSecretModel } from '../../ogm_types.js'
 import {
   PipelineApplicability,
   PipelineCondition,
@@ -17,8 +18,8 @@ import { parseStoredPipelines } from '../../services/plugin/pipelineUtils.js'
 import type { EventPipeline, PipelineStep } from '../../services/plugin/types.js'
 
 type Input = {
-  ServerConfig: ServerConfigModel
-  ServerSecret: ServerSecretModel
+  driver: Driver
+  pluginConfigurationReadRepository?: PluginConfigurationReadRepository
 }
 
 type InstalledVersionEdge = {
@@ -123,33 +124,22 @@ const mapSecretStatus = (secret: {
     : 'SET_UNTESTED',
 })
 
-const getResolver = ({ ServerConfig, ServerSecret }: Input) =>
-  async (
+const getResolver = (input: Input) => {
+  const repository = input.pluginConfigurationReadRepository ?? createPluginConfigurationReadRepository(input.driver)
+  return async (
     _parent: unknown,
     args: QueryPreviewPluginConfigurationReconciliationArgs,
     _context: GraphQLContext,
     _info: GraphQLResolveInfo
   ) => {
-    const configs = await ServerConfig.find({
-      selectionSet: `{
-        pluginPipelines
-        InstalledVersionsConnection {
-          edges {
-            properties { enabled settingsJson }
-            node { version Plugin { name } }
-          }
-        }
-      }`,
-    })
+    const configs = await repository.listReconciliationConfigs()
     const config = configs[0]
     if (!config) throw new Error('Server configuration not found')
 
     const edges = (
       config.InstalledVersionsConnection?.edges ?? []
     ) as InstalledVersionEdge[]
-    const secrets = await ServerSecret.find({
-      selectionSet: `{ pluginId key isValid lastValidatedAt }`,
-    })
+    const secrets = await repository.listReconciliationSecretStatuses()
 
     return buildPluginConfigurationReconciliationPlan({
       desired: mapPluginConfigurationDesiredStateInput(args.manifest),
@@ -170,5 +160,7 @@ const getResolver = ({ ServerConfig, ServerSecret }: Input) =>
       },
     })
   }
+
+}
 
 export default getResolver

@@ -159,7 +159,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     safetyCheck: safetyCheck,
     getServerPluginSecrets: getServerPluginSecrets({
-      ServerSecret
+      driver
     }),
     getPluginConfigStatus: getPluginConfigStatus({
       Plugin,
@@ -167,11 +167,10 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       ServerSecret
     }),
     getInstalledPlugins: getInstalledPlugins({
-      ServerConfig
+      driver
     }),
     previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
-      ServerConfig,
-      ServerSecret,
+      driver,
     }),
     getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
       PluginRun

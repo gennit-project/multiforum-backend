@@ -48,7 +48,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete; dd14fee |
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete; 31ea9dd |
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete; 376ad24 |
-| 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | pending |
+| 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | complete |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | pending |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | pending |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | pending |
@@ -254,3 +254,15 @@ Slice03b committed `c090cb21bd20415b2c88bf61e69921d96bcdfcb0` ([diff](https://gi
 ### Additional isolated decision — enableServerPlugin (37b2)
 
 The four-site enableServerPlugin operation also interpolates version and stored plugin-version ID into selection text. Its migration remains paused separately from the three getPluginConfigStatus lookups. Approval scoped to35b does not automatically cover this path. Do not preserve query alteration as a workaround. Required characterization includes ordinary and special-string version/ID matching, quote/backslash handling, attempted selection alteration, existing validation/error order, configuration/installation state, native events and unchanged graph state on rejected requests. Secret operations37a, updatePluginPipelines37b1 and channel configuration37c do not depend on this behavior and may proceed independently.
+
+Slice10 committed `0ed821a91bc646006e3a3142abf5d7651c29b1a7` ([diff](https://github.com/gennit-project/multiforum-backend/commit/0ed821a91bc646006e3a3142abf5d7651c29b1a7)), tree `9e8b9fd4487cb60238c0231d41d5e1207b2e67ab`: lint, TypeScript and all1970 units passed; 6 exact-tree live parity tests passed. Independent approval recorded above.
+
+### Slice 35a — Plugin configuration reads
+
+4 baseline CRUD sites removed. Independent review_subscription approved before pause; final patch preserved. 17 focused units,4 live parity and4 authorization tests passed; exact selections, redaction, registry failures and reconciliation ordering preserved. Parent cumulative gates pending. Remaining 428 CRUD sites/114 files; 74 acquisitions/15 files; two separate CLI sites.
+
+### Recovery and scoped behavior approval
+
+Recovered clean branch at0ed821a with unpublished03b and10 commits and preserved reviewed patches. Remote remained70bffdf; main006f625. User approved literal ID/version variables for exactly three getPluginConfigStatus lookups (35b), intentionally treating quotes/backslashes as data and preventing selection alteration. Edge-case tests are required. The separate enableServerPlugin operation37b2 remains paused; this approval does not cover it. Historical mail transmission/delivery remains uncertain; the published native-provider test guard is retained.
+
+Slice35a initial cumulative run passed lint/TypeScript and1,975 test entries but failed loading services/pluginRunner.test.ts with a Node26/V8 native “unreachable code” fatal error. Its isolated sanitized rerun passed without source changes; full gate rerun required. Four exact-production-tree live configuration tests passed. The failed attempt is retained and is not counted as successful.

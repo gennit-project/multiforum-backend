@@ -222,11 +222,12 @@
       "baselineCrudSites": 4,
       "dependencies": "Named-schema operation contract; retain creation adapter until 31",
       "acceptance": "Filter merge precedence, visibility, sensitivity and default sorting",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "0ed821a91bc646006e3a3142abf5d7651c29b1a7",
       "review": "Independent review_subscription approved; no remaining findings",
       "verification": [
-        "15 focused units,6 live parity and4 public collection integrations passed; filter merge precedence, visibility/age filters, defaults and errors preserved; creation adapter retained for31"
+        "15 focused units,6 live parity and4 public collection integrations passed; filter merge precedence, visibility/age filters, defaults and errors preserved; creation adapter retained for31",
+        "Exact committed tree 9e8b9fd4487cb60238c0231d41d5e1207b2e67ab: lint, TypeScript and1970 full units passed; 6 exact-tree live parity tests passed"
       ]
     },
     {
@@ -641,7 +642,7 @@
       "baselineCrudSites": 20,
       "dependencies": "01; visibility/redaction contract",
       "acceptance": "Split configuration vs run/visibility reads; redaction, order and empty states",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -650,13 +651,19 @@
           "id": "35a",
           "scope": "Safe configuration reads",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending"
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_subscription approved before pause; final patch preserved",
+          "verification": [
+            "17 focused units,4 live parity and4 authorization tests passed; exact selections, redaction, registry failures and reconciliation ordering preserved"
+          ],
+          "commit": null
         },
         {
           "id": "35b",
           "scope": "getPluginConfigStatus interpolated version/ID lookups",
           "baselineCrudSites": 3,
-          "status": "paused pending explicit literal-variable behavior approval"
+          "status": "approved correction; implementation in progress",
+          "approval": "User explicitly approved literal variables for the three getPluginConfigStatus lookups, including quote/backslash semantics. Does not cover37b2."
         },
         {
           "id": "35c1",
@@ -873,9 +880,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 432,
+  "remainingRuntimeCrudSites": 428,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 117,
+  "remainingRuntimeCrudFiles": 114,
   "foundations": [
     {
       "id": "F01",
@@ -902,7 +909,8 @@
       "06",
       "07",
       "08",
-      "09"
+      "09",
+      "10"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
