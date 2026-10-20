@@ -1,10 +1,13 @@
+import {
+  createContributionTargetRepository,
+  type ContributionTargetRepository,
+} from "../../services/persistence/contributionTargetRepository.js";
 import { getUserWikiEditsCountQuery } from "../cypher/cypherQueries.js";
 import type { Driver } from "neo4j-driver";
-import type { UserModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 
 type Input = {
-  User: UserModel;
+  contributionTargetRepository?: ContributionTargetRepository;
   driver: Driver;
 };
 
@@ -13,19 +16,17 @@ type Args = {
 };
 
 const getUserWikiEditsCountResolver = (input: Input) => {
-  const { driver, User } = input;
+  const { driver } = input;
+  const targets = input.contributionTargetRepository ?? createContributionTargetRepository(driver);
 
   return async (_parent: unknown, args: Args) => {
     const { username } = args;
     const session = driver.session({ defaultAccessMode: "READ" });
 
     try {
-      const userExists = await User.find({
-        where: { username },
-        selectionSet: `{ username }`,
-      });
+      const userExists = await targets.userExists(username);
 
-      if (userExists.length === 0) {
+      if (!userExists) {
         throw new Error(`User ${username} not found.`);
       }
 

@@ -17,12 +17,13 @@
       "baselineCrudSites": 2,
       "dependencies": "None; first implementation slice",
       "acceptance": "Missing/default policy, cache, absent config and setup flags",
-      "status": "reviewed",
-      "commit": null,
+      "status": "complete",
+      "commit": "ff70e15aa4f07dbfae2d7baa3e0ab0729be7b1e4",
       "review": "Independent review_slice1: no remaining blocking findings; nullable serverName, numeric coercion and required policy dependency corrected",
       "verification": [
         "64 targeted unit tests passed; 11 live production-schema parity tests passed (isolated Neo4j)",
-        "Cumulative TypeScript passed; exact committed-tree verification recorded in next ledger update"
+        "Cumulative TypeScript passed; exact committed-tree verification recorded in next ledger update",
+        "Exact committed-tree tsc, 64 focused units and 11 live parity tests passed; see markdown evidence"
       ]
     },
     {
@@ -37,10 +38,13 @@
       "baselineCrudSites": 4,
       "dependencies": "01 age-policy interface when applicable",
       "acceptance": "Missing identity, date ranges, counts, errors and session closure",
-      "status": "pending",
+      "status": "reviewed",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent review_contributions: no blocking findings; four factory arguments removed",
+      "verification": [
+        "Baseline live11/11; migrated focused units23/23 and live13/13 passed",
+        "Independent reviewer reran focused units23/23; full working-tree lint/tsc/1912units passed"
+      ]
     },
     {
       "id": "03",
@@ -764,6 +768,6 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 476,
+  "remainingRuntimeCrudSites": 472,
   "remainingModelAcquisitionsIncludingOptional": 97
 }

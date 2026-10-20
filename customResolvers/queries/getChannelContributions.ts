@@ -1,14 +1,17 @@
-import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
+import {
+  createContributionTargetRepository,
+  type ContributionTargetRepository,
+} from "../../services/persistence/contributionTargetRepository.js";
 import { getChannelContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
-import type { ChannelModel } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import { logger } from "../../logger.js";
 
 interface Input {
-  Channel: ChannelModel;
+  contributionTargetRepository?: ContributionTargetRepository;
   driver: Driver;
   agePolicyRepository?: AgePolicyReader;
 }
@@ -22,7 +25,8 @@ interface Args {
 }
 
 const getChannelContributionsResolver = (input: Input) => {
-  const { driver, Channel, agePolicyRepository } = input;
+  const { driver, agePolicyRepository } = input;
+  const targets = input.contributionTargetRepository ?? createContributionTargetRepository(driver);
 
   return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { channelUniqueName, year, startDate, endDate, limit } = args;
@@ -35,12 +39,9 @@ const getChannelContributionsResolver = (input: Input) => {
 
     try {
       // Verify channel existence
-      const channelExists = await Channel.find({
-        where: { uniqueName: channelUniqueName },
-        selectionSet: `{ uniqueName }`,
-      });
+      const channelExists = await targets.channelExists(channelUniqueName);
 
-      if (channelExists.length === 0) {
+      if (!channelExists) {
         throw new Error(`Channel ${channelUniqueName} not found.`);
       }
 

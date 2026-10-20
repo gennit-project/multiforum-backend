@@ -134,21 +134,17 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     getUserContributions: getUserContributions({
-      User,
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
     getUserWikiEditsCount: getUserWikiEditsCount({
-      User,
       driver,
     }),
     getChannelContributions: getChannelContributions({
-      Channel,
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
     getModContributions: getModContributions({
-      ModerationProfile,
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),

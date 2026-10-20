@@ -39,8 +39,8 @@ All rows start pending. A slice is complete only with independent review, commit
 
 | ID / scope | CRUD sites | Dependencies | Specific acceptance / subdivisions | Status |
 |---|---:|---|---|---|
-| 01 Age policy/setup | 2 | None; first implementation slice | Missing/default policy, cache, absent config and setup flags | reviewed; commit evidence below |
-| 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | pending |
+| 01 Age policy/setup | 2 | None; first implementation slice | Missing/default policy, cache, absent config and setup flags | complete |
+| 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | reviewed; commit evidence below |
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
 | 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | pending |
 | 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | pending |
@@ -114,3 +114,11 @@ No implementation slice completed yet. Append each reviewed commit's scope, comp
 Removed two CRUD sites and one model acquisition (476 runtime sites / 97 acquisitions remain). Named policy/setup repository replaces injected OGM reads through the cache and caller graph. Independent reviewer `review_slice1` approved after nullable serverName, legacy numeric coercion and required prepareDownload dependency corrections. Targeted units 64/64 and live shared-production-schema parity 11/11 passed; all external resources disposable. Cumulative TypeScript passed. Exact commit and committed-tree verification follow in the next ledger update.
 
 The ledger setup commit's hook also runs lint, TypeScript and full units; this validates the working tree, not a claim that the ledger-only commit contains implementation.
+
+### Slice 01 committed evidence
+
+Commit `ff70e15aa4f07dbfae2d7baa3e0ab0729be7b1e4` ([diff](https://github.com/gennit-project/multiforum-backend/commit/ff70e15aa4f07dbfae2d7baa3e0ab0729be7b1e4)). Isolated checkout of that exact commit passed TypeScript, 64 focused units and 11 live production-schema parity tests. Tests use Node26/pnpm10 and disposable Neo4j; child environment excludes application credentials/configuration.
+
+### Slice 02 — contribution identity reads
+
+Removed four CRUD sites (472 remain). Managed READ target existence checks remain separate from existing aggregation sessions. Independent `review_contributions` approved; baseline live11/11, migrated units23/23 and live13/13 passed. The four obsolete model arguments were removed from factory wiring. Exact commit evidence follows in next ledger update.
