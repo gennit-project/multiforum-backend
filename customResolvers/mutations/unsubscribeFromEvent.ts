@@ -1,6 +1,6 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { EventModel } from "../../ogm_types.js";
+import { createSubscriptionTargetRepository, type SubscriptionTargetRepository } from "../../services/persistence/subscriptionTargetRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
@@ -9,12 +9,13 @@ type Args = {
 };
 
 type Input = {
-  Event: EventModel;
+  subscriptionTargetRepository?: SubscriptionTargetRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Event, driver } = input;
+  const { driver } = input;
+  const subscriptionTargets = input.subscriptionTargetRepository ?? createSubscriptionTargetRepository(driver);
 
   return async (
     parent: unknown,
@@ -44,18 +45,7 @@ const getResolver = (input: Input) => {
       );
 
       // Return the updated Event
-      const result = await Event.find({
-        where: { id: eventId },
-        selectionSet: `{
-          id
-          title
-          description
-          createdAt
-          SubscribedToNotifications {
-            username
-          }
-        }`
-      });
+      const result = await subscriptionTargets.findEvent(eventId);
 
       return result[0];
     } catch (error: unknown) {

@@ -38,12 +38,13 @@
       "baselineCrudSites": 4,
       "dependencies": "01 age-policy interface when applicable",
       "acceptance": "Missing identity, date ranges, counts, errors and session closure",
-      "status": "reviewed",
-      "commit": null,
+      "status": "complete",
+      "commit": "021f3a0d86c07b033587fef752e9a081f623879a",
       "review": "Independent review_contributions: no blocking findings; four factory arguments removed",
       "verification": [
         "Baseline live11/11; migrated focused units23/23 and live13/13 passed",
-        "Independent reviewer reran focused units23/23; full working-tree lint/tsc/1912units passed"
+        "Independent reviewer reran focused units23/23; full working-tree lint/tsc/1912units passed",
+        "Exact committed source tree: tsc, 23 units, 13 live tests passed"
       ]
     },
     {
@@ -80,10 +81,13 @@
       "baselineCrudSites": 10,
       "dependencies": "None; preserve existing raw writes",
       "acceptance": "Missing targets, repeats, selected response parity; no new events",
-      "status": "pending",
+      "status": "reviewed",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent review_subscription: numerical/ID/APOC/array parity findings resolved; no blocking findings",
+      "verification": [
+        "22 focused units and 27 live production-schema parity tests passed",
+        "Independent reviewer reran 22 units; full working-tree lint/tsc/1912units passed"
+      ]
     },
     {
       "id": "05",
@@ -768,6 +772,7 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 472,
-  "remainingModelAcquisitionsIncludingOptional": 97
+  "remainingRuntimeCrudSites": 462,
+  "remainingModelAcquisitionsIncludingOptional": 97,
+  "remainingRuntimeCrudFiles": 139
 }

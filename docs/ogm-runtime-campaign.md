@@ -40,9 +40,9 @@ All rows start pending. A slice is complete only with independent review, commit
 | ID / scope | CRUD sites | Dependencies | Specific acceptance / subdivisions | Status |
 |---|---:|---|---|---|
 | 01 Age policy/setup | 2 | None; first implementation slice | Missing/default policy, cache, absent config and setup flags | complete |
-| 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | reviewed; commit evidence below |
+| 02 Contribution reads | 4 | 01 age-policy interface when applicable | Missing identity, date ranges, counts, errors and session closure | complete |
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
-| 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | pending |
+| 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | reviewed; commit evidence below |
 | 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | pending |
 | 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | pending |
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | pending |
@@ -122,3 +122,11 @@ Commit `ff70e15aa4f07dbfae2d7baa3e0ab0729be7b1e4` ([diff](https://github.com/gen
 ### Slice 02 — contribution identity reads
 
 Removed four CRUD sites (472 remain). Managed READ target existence checks remain separate from existing aggregation sessions. Independent `review_contributions` approved; baseline live11/11, migrated units23/23 and live13/13 passed. The four obsolete model arguments were removed from factory wiring. Exact commit evidence follows in next ledger update.
+
+### Slice 02 committed evidence
+
+Commit `021f3a0d86c07b033587fef752e9a081f623879a` ([diff](https://github.com/gennit-project/multiforum-backend/commit/021f3a0d86c07b033587fef752e9a081f623879a)). Exact committed source tree passed TypeScript, 23 targeted units and 13 live tests (production-schema parity plus existing contribution integration coverage).
+
+### Slice 04 — subscription response reads
+
+Removed 10 CRUD sites (462 remain in 139 files; acquisitions remain 97). Existing raw writes and their event behavior are unchanged. Independent `review_subscription` approved after preserving legacy numerical/ID/array and APOC temporal transformations. Targeted units 22/22 and live production-schema parity 27/27 passed, including repeated actual resolver operations. Exact commit evidence follows in next ledger update.

@@ -522,43 +522,33 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       EventChannel
     }),
     subscribeToComment: subscribeToComment({
-      Comment,
       driver
     }),
     unsubscribeFromComment: unsubscribeFromComment({
-      Comment,
       driver
     }),
     subscribeToDiscussionChannel: subscribeToDiscussionChannel({
-      DiscussionChannel,
       driver
     }),
     unsubscribeFromDiscussionChannel: unsubscribeFromDiscussionChannel({
-      DiscussionChannel,
       driver
     }),
     subscribeToEvent: subscribeToEvent({
-      Event,
       driver
     }),
     unsubscribeFromEvent: unsubscribeFromEvent({
-      Event,
       driver
     }),
     subscribeToEventUpdates: subscribeToEventUpdates({
-      Event,
       driver
     }),
     unsubscribeFromEventUpdates: unsubscribeFromEventUpdates({
-      Event,
       driver
     }),
     subscribeToIssue: subscribeToIssue({
-      Issue,
       driver
     }),
     unsubscribeFromIssue: unsubscribeFromIssue({
-      Issue,
       driver
     }),
     sendBugReport: sendBugReport(),

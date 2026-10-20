@@ -1,6 +1,6 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { DiscussionChannelModel } from "../../ogm_types.js";
+import { createSubscriptionTargetRepository, type SubscriptionTargetRepository } from "../../services/persistence/subscriptionTargetRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
@@ -9,12 +9,13 @@ type Args = {
 };
 
 type Input = {
-  DiscussionChannel: DiscussionChannelModel;
+  subscriptionTargetRepository?: SubscriptionTargetRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { DiscussionChannel, driver } = input;
+  const { driver } = input;
+  const subscriptionTargets = input.subscriptionTargetRepository ?? createSubscriptionTargetRepository(driver);
 
   return async (
     parent: unknown,
@@ -60,19 +61,7 @@ const getResolver = (input: Input) => {
       });
 
       // Return the updated DiscussionChannel
-      const result = await DiscussionChannel.find({
-        where: { id: discussionChannelId },
-        selectionSet: `{
-          id
-          discussionId
-          channelUniqueName
-          createdAt
-          archived
-          SubscribedToNotifications {
-            username
-          }
-        }`
-      });
+      const result = await subscriptionTargets.findDiscussionChannel(discussionChannelId);
 
       logger.info('=== DEBUG: Subscription successful, returning DiscussionChannel:', {
         id: result[0]?.id,
