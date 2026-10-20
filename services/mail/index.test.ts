@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 import {
   getDefaultFromEmail,
   getMailProviderName,
@@ -8,41 +10,54 @@ import {
 } from "./index.js";
 
 const ORIGINAL_ENV = { ...process.env };
+const MAIL_ENV_KEYS = [
+  "EMAIL_PROVIDER",
+  "EMAIL_FROM",
+  "SENDGRID_FROM_EMAIL",
+  "SENDGRID_API_KEY",
+  "RESEND_API_KEY",
+] as const;
 
-const resetEnv = () => {
-  for (const key of [
-    "EMAIL_PROVIDER",
-    "EMAIL_FROM",
-    "SENDGRID_FROM_EMAIL",
-    "SENDGRID_API_KEY",
-    "RESEND_API_KEY",
-  ]) {
-    if (Object.prototype.hasOwnProperty.call(ORIGINAL_ENV, key)) {
-      process.env[key] = ORIGINAL_ENV[key];
-    } else {
-      delete process.env[key];
-    }
-  }
+const clearMailEnv = () => {
+  for (const key of MAIL_ENV_KEYS) delete process.env[key];
 };
 
-test.beforeEach(() => {
-  resetEnv();
+test.beforeEach((context) => {
+  assert.ok("mock" in context, "Mail fixtures require an individual test context");
+  // Each fixture starts unconfigured, even when the developer's environment
+  // has real provider credentials. Restore that environment only after tests.
+  clearMailEnv();
+
+  // Every configured-provider test injects its own client. Deny the native
+  // clients as a second boundary so a forgotten injection cannot send mail.
+  // sendEmail normally catches errors, so assert the count after each test
+  // instead of relying on this rejection alone to fail the test.
+  let nativeSendAttempts = 0;
+  const denyNativeSend = async (): Promise<never> => {
+    nativeSendAttempts++;
+    throw new Error("Mail tests must inject a fake provider client");
+  };
+  context.mock.method(sgMail, "send", denyNativeSend);
+  context.mock.method(Resend.prototype, "post", denyNativeSend);
+  context.after(() => {
+    assert.equal(nativeSendAttempts, 0, "A mail test attempted to use a native provider");
+  });
 });
 
 test.after(() => {
-  for (const key of [
-    "EMAIL_PROVIDER",
-    "EMAIL_FROM",
-    "SENDGRID_FROM_EMAIL",
-    "SENDGRID_API_KEY",
-    "RESEND_API_KEY",
-  ]) {
+  for (const key of MAIL_ENV_KEYS) {
     if (Object.prototype.hasOwnProperty.call(ORIGINAL_ENV, key)) {
       process.env[key] = ORIGINAL_ENV[key];
     } else {
       delete process.env[key];
     }
   }
+});
+
+test("mail fixtures clear inherited provider configuration", () => {
+  for (const key of MAIL_ENV_KEYS) process.env[key] = "synthetic-mail-test-sentinel";
+  clearMailEnv();
+  for (const key of MAIL_ENV_KEYS) assert.equal(process.env[key], undefined);
 });
 
 test("getMailProviderName falls back to resend", () => {
