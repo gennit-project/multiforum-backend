@@ -1,10 +1,26 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { modelStub } from '../../tests/fixtures/modelStub.js'
-import getApplicablePluginPipeline from './getApplicablePluginPipeline.js'
+import createApplicablePluginPipeline from './getApplicablePluginPipeline.js'
 import getInternalPluginPipelineRun from './getInternalPluginPipelineRun.js'
-import getPluginPipelineSummary from './getPluginPipelineSummary.js'
-import getPublicPluginPipelineRun from './getPublicPluginPipelineRun.js'
+import createPluginPipelineSummary from './getPluginPipelineSummary.js'
+import createPublicPluginPipelineRun from './getPublicPluginPipelineRun.js'
+
+import type { Driver } from 'neo4j-driver'
+import type { ResolverDeps } from '../resolverDeps.js'
+import { pipelineTargetSnapshots } from '../../tests/fixtures/pipelineTargetSnapshots.js'
+
+type TargetFixtures = Pick<ResolverDeps, 'Discussion' | 'DownloadableFile'>
+type RunFixtures = TargetFixtures & Pick<ResolverDeps, 'PluginPipelineRun' | 'PluginRun'>
+const getApplicablePluginPipeline = (fixtures: TargetFixtures & Pick<ResolverDeps, 'Channel' | 'ServerConfig'>) => createApplicablePluginPipeline({
+  driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+})
+const getPluginPipelineSummary = (fixtures: RunFixtures) => createPluginPipelineSummary({
+  ...fixtures, driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+})
+const getPublicPluginPipelineRun = (fixtures: RunFixtures) => createPublicPluginPipelineRun({
+  ...fixtures, driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+})
 
 const visibleFile = {
   id: 'file-1',

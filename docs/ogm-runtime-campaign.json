@@ -663,19 +663,25 @@
           "id": "35b",
           "scope": "getPluginConfigStatus interpolated version/ID lookups",
           "baselineCrudSites": 3,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "approval": "User explicitly approved literal variables for the three getPluginConfigStatus lookups, including quote/backslash semantics. Does not cover37b2.",
           "review": "Independent review_recovery approved; nine unit/auth checks independently rerun",
           "verification": [
-            "9 unit/auth and6 live tests passed; user-approved quote/backslash-as-data correction, selection-alteration attempts treated literally, normal behavior/redaction/defaults preserved;37b2 unchanged"
+            "9 unit/auth and6 live tests passed; user-approved quote/backslash-as-data correction, selection-alteration attempts treated literally, normal behavior/redaction/defaults preserved;37b2 unchanged",
+            "Exact committed tree 257f3e7691bb2071b99312a796343f27a34777c8: lint, TypeScript and1985 full units passed; 6 integrated live parity/correction tests and focused auth check passed; reviewed auth fixture included"
           ],
-          "commit": null
+          "commit": "3cb0a8ecb11a0727e1c24633c25863850d983dac"
         },
         {
           "id": "35c1",
           "scope": "Applicability and visibility",
           "baselineCrudSites": 5,
-          "status": "in progress"
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_slice1 approved; preserved final patch and strengthened live evidence",
+          "verification": [
+            "23 focused units and5 live parity tests passed; exact visibility, anonymous sensitive filters, nested limits and missing-target behavior preserved"
+          ],
+          "commit": null
         },
         {
           "id": "35c2",
@@ -886,9 +892,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 425,
+  "remainingRuntimeCrudSites": 420,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 113,
+  "remainingRuntimeCrudFiles": 111,
   "foundations": [
     {
       "id": "F01",

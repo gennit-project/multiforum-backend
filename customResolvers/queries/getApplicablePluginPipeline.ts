@@ -1,13 +1,6 @@
 import { GraphQLError } from 'graphql'
-import type {
-  Channel as ChannelType,
-  ChannelModel,
-  DiscussionModel,
-  DownloadableFile as DownloadableFileType,
-  DownloadableFileModel,
-  ServerConfig as ServerConfigType,
-  ServerConfigModel,
-} from '../../ogm_types.js'
+import type { Driver } from "neo4j-driver"
+import { createPipelineTargetRepository, type PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js"
 import type { PluginEdgeData } from '../../services/plugin/types.js'
 import { resolveDownloadPipelinePlan } from '../../services/plugin/downloadPipelinePlan.js'
 import { parseStoredPipelines } from '../../services/plugin/pipelineUtils.js'
@@ -22,15 +15,11 @@ type ApplicablePipelineArgs = {
 }
 
 const getResolver = ({
-  Channel,
-  Discussion,
-  DownloadableFile,
-  ServerConfig,
+  driver,
+  pipelineTargetRepository = createPipelineTargetRepository(driver),
 }: {
-  Channel: ChannelModel
-  Discussion: DiscussionModel
-  DownloadableFile: DownloadableFileModel
-  ServerConfig: ServerConfigModel
+  driver: Driver
+  pipelineTargetRepository?: PipelineTargetRepository
 }) => async (
   _parent: unknown,
   {
@@ -54,8 +43,7 @@ const getResolver = ({
   }
 
   const visibleFile = await assertPublicPipelineTargetVisible({
-    Discussion,
-    DownloadableFile,
+    repository: pipelineTargetRepository,
     targetId: downloadableFileId,
     targetType: 'DownloadableFile',
   }) as {
@@ -83,38 +71,16 @@ const getResolver = ({
     })
   }
 
-  const files = await DownloadableFile.find({
-    where: { id: downloadableFileId },
-    selectionSet: `{ id uploadedAt createdAt }`,
-  })
-  const file = files[0] as DownloadableFileType
-  const configs = await ServerConfig.find({
-    selectionSet: `{
-      pluginPipelines
-      InstalledVersionsConnection {
-        edges {
-          properties { enabled settingsJson }
-          node {
-            id version repoUrl tarballGsUri entryPath manifest
-            settingsDefaults uiSchema
-            Plugin {
-              id name displayName description metadata
-            }
-          }
-        }
-      }
-    }`,
-  })
-  const config = configs[0] as ServerConfigType | undefined
+  const files = await pipelineTargetRepository.findDownloadTiming(downloadableFileId)
+  const file = files[0]
+  const configs = await pipelineTargetRepository.listServerApplicabilityConfigs()
+  const config = configs[0]
   let pipelines = parseStoredPipelines(config?.pluginPipelines)
   let pipelineConfigured = false
 
   if (scope === 'CHANNEL') {
-    const channels = await Channel.find({
-      where: { uniqueName: channelUniqueName as string },
-      selectionSet: `{ uniqueName pluginPipelines }`,
-    })
-    const channel = channels[0] as ChannelType | undefined
+    const channels = await pipelineTargetRepository.findChannelApplicabilityConfig(channelUniqueName as string)
+    const channel = channels[0]
     if (!channel) {
       throw new GraphQLError('Pipeline target not found', {
         extensions: { code: 'NOT_FOUND' },

@@ -1,35 +1,17 @@
 import { GraphQLError } from 'graphql'
-import type {
-  DiscussionModel,
-  DownloadableFileModel,
-} from '../../ogm_types.js'
+import type { PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js"
 
 export const assertPublicPipelineTargetVisible = async ({
-  DownloadableFile,
-  Discussion,
+  repository,
   targetId,
   targetType,
 }: {
-  DownloadableFile: DownloadableFileModel
-  Discussion?: DiscussionModel
+  repository: PipelineTargetRepository
   targetId: string
   targetType: string
 }) => {
-  if (targetType === 'Discussion' && Discussion) {
-    const discussions = await Discussion.find({
-      where: { id: targetId },
-      selectionSet: `{
-        id
-        deleted
-        DownloadableFiles {
-          id
-          permanentlyRemoved
-        }
-        DiscussionChannels {
-          archived
-        }
-      }`,
-    })
+  if (targetType === 'Discussion') {
+    const discussions = await repository.findDiscussionVisibility(targetId)
     const discussion = discussions[0] as typeof discussions[number] & {
       DownloadableFiles?: Array<{ permanentlyRemoved?: boolean | null }>
       DiscussionChannels?: Array<{ archived?: boolean | null }>
@@ -50,21 +32,7 @@ export const assertPublicPipelineTargetVisible = async ({
       return discussion
     }
   } else if (targetType === 'DownloadableFile') {
-    const files = await DownloadableFile.find({
-      where: { id: targetId },
-      selectionSet: `{
-        id
-        permanentlyRemoved
-        Discussion {
-          id
-          deleted
-          DiscussionChannels {
-            channelUniqueName
-            archived
-          }
-        }
-      }`,
-    })
+    const files = await repository.findDownloadVisibility(targetId)
     const file = files[0] as typeof files[number] & {
       Discussion?: {
         deleted?: boolean | null

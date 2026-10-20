@@ -175,20 +175,15 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       PluginRun
     }),
     getApplicablePluginPipeline: getApplicablePluginPipeline({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      ServerConfig,
+      driver,
     }),
     getPipelineSummary: getPipelineSummary({
-      Discussion,
-      DownloadableFile,
+      driver,
       PluginPipelineRun,
       PluginRun,
     }),
     getPublicPipelineRun: getPublicPipelineRun({
-      Discussion,
-      DownloadableFile,
+      driver,
       PluginPipelineRun,
       PluginRun,
     }),

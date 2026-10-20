@@ -273,3 +273,9 @@ Slice35a committed `012ee3e58a3d488205920f3cdad5209bd385f312` ([diff](https://gi
 ### Slice 35b — Approved literal-variable plugin status lookups
 
 3 baseline CRUD sites removed. Independent review_recovery approved; nine unit/auth checks independently rerun. 9 unit/auth and6 live tests passed; user-approved quote/backslash-as-data correction, selection-alteration attempts treated literally, normal behavior/redaction/defaults preserved;37b2 unchanged. Parent cumulative gates pending. Remaining 425 CRUD sites/113 files; 74 acquisitions/15 files; two separate CLI sites.
+
+Slice35b committed `3cb0a8ecb11a0727e1c24633c25863850d983dac` ([diff](https://github.com/gennit-project/multiforum-backend/commit/3cb0a8ecb11a0727e1c24633c25863850d983dac)), tree `257f3e7691bb2071b99312a796343f27a34777c8`: lint, TypeScript and all1985 units passed; 6 integrated live parity/correction tests and focused auth check passed; reviewed auth fixture included. Independent approval recorded above.
+
+### Slice 35c1 — Pipeline applicability and visibility
+
+5 baseline CRUD sites removed. Independent review_slice1 approved; preserved final patch and strengthened live evidence. 23 focused units and5 live parity tests passed; exact visibility, anonymous sensitive filters, nested limits and missing-target behavior preserved. Parent cumulative gates pending. Remaining 420 CRUD sites/111 files; 74 acquisitions/15 files; two separate CLI sites.

@@ -1,6 +1,6 @@
+import type { Driver } from "neo4j-driver"
+import { createPipelineTargetRepository, type PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js"
 import type {
-  DiscussionModel,
-  DownloadableFileModel,
   PluginPipelineRunModel,
   PluginRunModel,
 } from '../../ogm_types.js'
@@ -13,13 +13,13 @@ import {
 import { assertPublicPipelineTargetVisible } from './pluginPipelineVisibility.js'
 
 const getResolver = ({
-  Discussion,
-  DownloadableFile,
+  driver,
+  pipelineTargetRepository = createPipelineTargetRepository(driver),
   PluginPipelineRun,
   PluginRun,
 }: {
-  Discussion: DiscussionModel
-  DownloadableFile: DownloadableFileModel
+  driver: Driver
+  pipelineTargetRepository?: PipelineTargetRepository
   PluginPipelineRun: PluginPipelineRunModel
   PluginRun: PluginRunModel
 }) => async (
@@ -27,8 +27,7 @@ const getResolver = ({
   { targetId, targetType }: { targetId: string; targetType: string }
 ) => {
   await assertPublicPipelineTargetVisible({
-    Discussion,
-    DownloadableFile,
+    repository: pipelineTargetRepository,
     targetId,
     targetType,
   })
