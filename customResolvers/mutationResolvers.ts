@@ -283,17 +283,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Channel,
       driver
     }),
-    cancelInviteForumMod: cancelInviteForumMod({
-      Channel
-    }),
-    removeForumMod: removeForumMod({
-      Channel,
-      User
-    }),
-    acceptForumModInvite: acceptForumModInvite({
-      Channel,
-      User
-    }),
+    cancelInviteForumMod: cancelInviteForumMod(),
+    removeForumMod: removeForumMod(),
+    acceptForumModInvite: acceptForumModInvite(),
     // Server admin/mod invite workflow
     inviteServerAdmin: inviteServerAdmin({
       ServerConfig,

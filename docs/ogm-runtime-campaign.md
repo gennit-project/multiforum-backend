@@ -49,7 +49,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete |
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | complete |
-| 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | reviewed subdivisions; integration pending |
+| 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | partial; see subdivisions |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | reviewed subdivisions; integration pending |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | reviewed subdivisions; integration pending |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
@@ -301,3 +301,11 @@ Slice35c3 committed `c19c5378184e2717d24aaa8ecdb0fb85d8dad7a3` ([diff](https://g
 ### Slice 11a — Forum owner membership
 
 7 baseline CRUD sites removed. Independent review_subscription approved frozen patch; integration_review approved exact factory/context merge and independently passed8 focused checks. 8 focused units and 12 production-schema live parity tests passed on reviewed patch; cumulative gates pending. Parent cumulative gates pending. Remaining 405 CRUD sites/102 files; 74 acquisitions/15 files; two separate CLI sites.
+
+Slice11a committed `3567c3820fa05f2bfd9e80765be99ed683f0b411` ([diff](https://github.com/gennit-project/multiforum-backend/commit/3567c3820fa05f2bfd9e80765be99ed683f0b411)), tree `98ab07aafed3e5c92cd99ad94f6cd01a847e441c`: lint, TypeScript and all2007 units passed; 12 disposable live parity tests passed on identical production sources before documentation-only review update. Independent approval recorded above.
+
+### Slice 11b — Forum moderator membership
+
+7 baseline CRUD sites removed. Independent review_subscription approved original patch; integration_review approved exact factory/context merge and independently passed7 focused checks. 13 focused units and12 live parity tests passed on reviewed patch; cumulative gates pending. Parent cumulative gates pending. Remaining 398 CRUD sites/99 files; 74 acquisitions/15 files; two separate CLI sites.
+
+Reviewed19a/19b/19c artifacts and hashes are recorded in JSON; their removals are not credited until integration. Production initialization omits hidden fields from Issue default projections;19a parity follows that actual initializer.19c retains nested comment writes and original non-atomic failure boundaries.

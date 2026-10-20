@@ -256,28 +256,30 @@
           "id": "11a",
           "scope": "Owner/admin core",
           "baselineCrudSites": 7,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent review_subscription approved frozen patch; integration_review approved exact factory/context merge and independently passed8 focused checks",
           "preparedPatch": "forum-membership11a.patch",
           "preparedPatchSha256": "1efb27e21e44a95d5d77cf759b4f44174ba135cc02774792ef2e8e35ae0e7280",
           "preparedBase": "658bfe4",
           "verification": [
-            "8 focused units and 12 production-schema live parity tests passed on reviewed patch; cumulative gates pending"
+            "8 focused units and 12 production-schema live parity tests passed on reviewed patch; cumulative gates pending",
+            "Exact committed tree 98ab07aafed3e5c92cd99ad94f6cd01a847e441c: lint, TypeScript and2007 full units passed; 12 disposable live parity tests passed on identical production sources before documentation-only review update"
           ],
-          "commit": null
+          "commit": "3567c3820fa05f2bfd9e80765be99ed683f0b411"
         },
         {
           "id": "11b",
           "scope": "Moderator core",
           "baselineCrudSites": 7,
-          "status": "reviewed; integration pending",
-          "review": "review_subscription",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent review_subscription approved original patch; integration_review approved exact factory/context merge and independently passed7 focused checks",
           "preparedPatch": "forum-membership11b.patch",
           "preparedPatchSha256": "68871e89b80729da47b1e7dfd5b0b8e7da16b9dea9c7b7aebf1e8b98cfa3b4c9",
           "preparedBase": "658bfe4 plus11a",
           "verification": [
-            "13 units;12 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "13 focused units and12 live parity tests passed on reviewed patch; cumulative gates pending"
+          ],
+          "commit": null
         },
         {
           "id": "11c",
@@ -526,10 +528,54 @@
       "baselineCrudSites": 11,
       "dependencies": "18; 05\u201306",
       "acceptance": "Actor/activity references, lock transitions and notification order",
-      "status": "pending",
+      "status": "reviewed subdivisions; integration pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "19a",
+          "scope": "Issue activity and history forwarding",
+          "baselineCrudSites": 2,
+          "modelAcquisitionsRemoved": 3,
+          "status": "reviewed; integration pending",
+          "review": "plugin_status",
+          "preparedPatch": "ogm-slice19a.patch",
+          "preparedPatchSha256": "1f8147f30b8724e7f0539abba3bc9fec39a968e459d62a1cd44be1231a512bf8",
+          "preparedBase": "0ed821a plus18a/18b",
+          "verification": [
+            "36 focused;25 live;tsc/lint passed in isolated worktree; cumulative integration gates pending"
+          ]
+        },
+        {
+          "id": "19b",
+          "scope": "Issue delete/edit middleware",
+          "baselineCrudSites": 5,
+          "modelAcquisitionsRemoved": 0,
+          "status": "reviewed; integration pending",
+          "review": "plugin_status",
+          "preparedPatch": "ogm-slice19b.patch",
+          "preparedPatchSha256": "a7c772dafe4074ea4db32efd6a9c99b904a535d1591551f97116ed80b5be1219",
+          "preparedBase": "0ed821a plus18a/18b/19a",
+          "verification": [
+            "20 independent units;7 live;tsc/lint passed in isolated worktree; cumulative integration gates pending"
+          ]
+        },
+        {
+          "id": "19c",
+          "scope": "Issue locking",
+          "baselineCrudSites": 4,
+          "modelAcquisitionsRemoved": 0,
+          "status": "reviewed; integration pending",
+          "review": "review_recovery",
+          "preparedPatch": "ogm-slice19c.patch",
+          "preparedPatchSha256": "2d411b134578e2dd8b983cb043135a7045b67869ae193804ddf9e7491b6accdc",
+          "preparedBase": "0ed821a plus18a/18b",
+          "verification": [
+            "10 independent units;10 live;tsc/lint passed in isolated worktree; cumulative integration gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "20",
@@ -1070,9 +1116,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 405,
+  "remainingRuntimeCrudSites": 398,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 102,
+  "remainingRuntimeCrudFiles": 99,
   "foundations": [
     {
       "id": "F01",

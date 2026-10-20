@@ -1,4 +1,4 @@
-import type { ChannelUpdateInput, ChannelModel } from "../../ogm_types.js";
+import { resolveForumModeratorRepository } from "../../services/persistence/forumModeratorRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { logger } from "../../logger.js";
@@ -8,12 +8,7 @@ type Args = {
   channelUniqueName: string;
 };
 
-type Input = {
-  Channel: ChannelModel;
-};
-
-const getResolver = (input: Input) => {
-  const { Channel } = input; // This refers to the OGM model
+const getResolver = () => {
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, inviteeUsername } = args;
 
@@ -23,29 +18,8 @@ const getResolver = (input: Input) => {
       );
     }
 
-    const channelUpdateInput: ChannelUpdateInput = {
-      PendingModInvites: [
-        {
-          disconnect: [
-            {
-              where: {
-                node: {
-                  username: inviteeUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
     try {
-      const result = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: channelUpdateInput,
-      });
+      const result = await resolveForumModeratorRepository(context).disconnectInvite(channelUniqueName, inviteeUsername);
       if (!result.channels?.length) {
         throw new Error("Channel not found");
       }
