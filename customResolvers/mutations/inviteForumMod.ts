@@ -1,9 +1,6 @@
 import type { Driver } from "neo4j-driver";
 import { createEmailNotificationRepository } from "../../services/persistence/emailNotificationRepository.js";
-import type {
-  ChannelUpdateInput,
-  ChannelModel,
-} from "../../ogm_types.js";
+import { createForumInvitationRepository, type ForumInvitationRepository } from "../../services/persistence/forumInvitationRepository.js";
 import { sendEmailToUser, EmailContent } from "./shared/emailUtils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -17,11 +14,12 @@ type Args = {
 type Input = {
   driver: Driver;
   emailDelivery?: Parameters<typeof sendEmailToUser>[2];
-  Channel: ChannelModel;
+  forumInvitationRepository?: ForumInvitationRepository;
 };
 
 const getResolver = (input: Input) => {
-  const { Channel, driver } = input;
+  const { driver } = input;
+  const repository = input.forumInvitationRepository ?? createForumInvitationRepository(driver);
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, inviteeUsername } = args;
@@ -56,31 +54,10 @@ ${process.env.FRONTEND_URL}/forums/${channelUniqueName}/accept-invite
 `
     };
 
-    // Prepare the OGM update inputs
-    const channelUpdateInput: ChannelUpdateInput = {
-      PendingModInvites: [
-        {
-          connect: [
-            {
-              where: {
-                node: {
-                  username: inviteeUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
 
     try {
       // Update the Channel (add the pending mod invite)
-      const channelUpdateResult = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: channelUpdateInput,
-      });
+      const channelUpdateResult = await repository.connectModeratorInvite(channelUniqueName, inviteeUsername);
       if (!channelUpdateResult.channels[0]) {
         throw new Error("Could not invite user.");
       }

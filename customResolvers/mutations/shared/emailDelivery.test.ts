@@ -56,7 +56,10 @@ for(const [name,factory] of Object.entries({inviteForumOwner,inviteForumMod,invi
    const order:string[]=[];
    const repository:EmailNotificationRepository={findRecipient:async()=>{order.push("recipient");return[{username:"recipient",Email:{address:"recipient@example.test"}}];},createAfterEmailNotification:async()=>{order.push("notification");return true;}};
    const resolver=factory({driver:{} as never,
-    Channel:{update:async()=>{order.push("invite");return{channels:[{}]};}} as never,
+    forumInvitationRepository:{
+     connectOwnerInvite:async()=>{order.push("invite");return{channels:[{}]};},
+     connectModeratorInvite:async()=>{order.push("invite");return{channels:[{}]};},
+    },
     ServerConfig:{update:async()=>{order.push("invite");return{serverConfigs:[{}]};}} as never,
     User:{find:async()=>{order.push("exists");return[{username:"recipient"}];}} as never,
     emailDelivery:{emailNotificationRepository:repository,sendMail:async()=>{order.push("email");return delivered;}},
@@ -67,3 +70,15 @@ for(const [name,factory] of Object.entries({inviteForumOwner,inviteForumMod,invi
   }
  });
 }
+
+for(const factory of [inviteForumOwner,inviteForumMod])test(`${factory.name} forum invite persistence failures stop before delivery`,async()=>{
+ for(const fails of [true,false]){
+  const order:string[]=[];
+  const fail=async()=>{order.push("invite");if(fails)throw new Error("invite write failed");return{channels:[]};};
+  const resolver=factory({driver:{} as never,forumInvitationRepository:{connectOwnerInvite:fail,connectModeratorInvite:fail},emailDelivery:{
+   emailNotificationRepository:{findRecipient:async()=>{order.push("recipient");return[];},createAfterEmailNotification:async()=>{order.push("notification");return true;}},sendMail:async()=>{order.push("email");return true;},
+  }});
+  assert.equal(await resolver(null,{inviteeUsername:"recipient",channelUniqueName:"channel"},{} as never,{} as never),false);
+  assert.deepEqual(order,["invite"]);
+ }
+});

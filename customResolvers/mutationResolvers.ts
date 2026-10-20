@@ -272,7 +272,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
     inviteForumOwner: inviteForumOwner({
-      Channel,
       driver
     }),
     cancelInviteForumOwner: cancelInviteOwner(),
@@ -280,7 +279,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     acceptForumOwnerInvite: acceptForumOwnerInvite(),
     becomeForumAdmin: becomeForumAdmin(),
     inviteForumMod: inviteForumMod({
-      Channel,
       driver
     }),
     cancelInviteForumMod: cancelInviteForumMod(),

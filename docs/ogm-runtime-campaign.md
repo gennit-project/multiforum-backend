@@ -309,3 +309,13 @@ Slice11a committed `3567c3820fa05f2bfd9e80765be99ed683f0b411` ([diff](https://gi
 7 baseline CRUD sites removed. Independent review_subscription approved original patch; integration_review approved exact factory/context merge and independently passed7 focused checks. 13 focused units and12 live parity tests passed on reviewed patch; cumulative gates pending. Parent cumulative gates pending. Remaining 398 CRUD sites/99 files; 74 acquisitions/15 files; two separate CLI sites.
 
 Reviewed19a/19b/19c artifacts and hashes are recorded in JSON; their removals are not credited until integration. Production initialization omits hidden fields from Issue default projections;19a parity follows that actual initializer.19c retains nested comment writes and original non-atomic failure boundaries.
+
+Slice11b committed `100901653b2ab169c0b89f057c8c4392f93418b2` ([diff](https://github.com/gennit-project/multiforum-backend/commit/100901653b2ab169c0b89f057c8c4392f93418b2)), tree `44e10b5249b98d336a4ce290a103a7f950fe7aca`: lint, TypeScript and all2014 units passed; 12 live parity tests passed on identical production sources before documentation-only review update. Independent approval recorded above.
+
+### Slice 11c — Forum invitation writes
+
+2 baseline CRUD sites removed. Independent review_contributions approved original patch; integration_review approved final factory merge and independently passed8 focused email checks with native transports denied. 8 focused units and11 live parity tests passed on reviewed patch; native mail transports denied and injected fake senders; cumulative gates pending. Parent cumulative gates pending. Remaining 396 CRUD sites/97 files; 74 acquisitions/15 files; two separate CLI sites.
+
+14a/b/c votes independently approved in isolatedworktrees; prepared artifacts recorded without crediting queued removals. Initial live fixture assumptions corrected (required-field response failure, Neo4j integer conversion, generated event-envelope IDs, actual relationship name, existing fragment-only User projection failure); strengthened final live checks passed, no production workaround. Final exact-tree static exits confirmed, not inferred from pending processes.
+
+20/21a/21b independently reviewed artifacts recorded without crediting queued removals.20 reversed test relationship corrected with explicit notification title/recipient assertions; final6live passed.21 baseline has no recent-version deduplication; migration preserves repeated snapshots and distinct standard/custom middleware semantics.
