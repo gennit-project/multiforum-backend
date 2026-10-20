@@ -46,7 +46,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | complete; a07af6a |
 | 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | complete; 959d826 |
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete; dd14fee |
-| 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | reviewed; exact-tree gates pending |
+| 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | complete; 31ea9dd |
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | pending |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | pending |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | pending |
@@ -188,3 +188,21 @@ Commit `959d826103c0a4380d679507d519ded6ec3689bc` ([diff](https://github.com/gen
 ### Slice 08 — wiki filter guards
 
 Two CRUD sites and two acquisitions replaced by fixed named queries preserving distinct projections, arbitrary filters,25-item defaults, generated errors, duplicate edit reads and ownership/lock checks. Independent review_slice1 approved;33focused units and9live parity tests passed. Parent exact-tree gates pending. Remaining447CRUD sites/126files,80acquisitions,2CLI sites.
+
+### Slice 08 committed evidence
+
+Commit `31ea9dd0da41d49004525ba9042209bfbcf58874` ([diff](https://github.com/gennit-project/multiforum-backend/commit/31ea9dd0da41d49004525ba9042209bfbcf58874)), tree `5bdb0fa656908460ccf41d0f2864fbe201cdd2e7`: lint, TypeScript, all 1,942 unit tests and 9 live parity tests passed. Independent reviewer also approved the final context merge.
+
+### Milestone and continuation
+
+Seven domain slices (01, 02, 04, 05, 06, 07, 08) and foundation F01 are complete. The runtime-removal checkpoint is **not complete**. Reaudit finds 444 generated-model CRUD calls plus three unchanged structural adapters = **447 calls in 126 files**, with **80 model acquisitions in 19 files**. Two CLI CRUD sites remain separate. Acquisition and type counts overlap the CRUD inventory; do not add them together.
+
+Next unblocked slices: 09 content validation (4 calls), 10 collections (4 calls; retain creation adapter until 31), and 35 plugin read models (20 calls, split configuration reads from run/visibility reads). Account/email slice 03 (7 calls) can follow the established write/event characterization. Continue the approved remaining ledger without requesting renewed authorization. First inspect the latest exact-head CI and resolve in-scope failures. Runtime wiring, CLI, type/package phases and all prohibitions remain as documented above.
+
+### CI suspension test isolation
+
+Published `a07af6a` passed unit coverage, seven integration shards, performance, coverage-report and container smoke gates; shard 1 failed one expired-suspension assertion. Controlled disposable-Neo4j probes reproduced a late-cleanup race on both baseline `006f625` and `a07af6a`: the preceding test's deliberately unawaited production cleanup can remove a newly reset fixture with identical IDs. This explains a sufficient mechanism matching the CI symptom, although its exact historical interleaving cannot be proven.
+
+The independently reviewed fix changes only modSuspensionEnforcement.test.ts: capture and await that test's real cleanup before the next fixture reset, retain the original assertions, and assert the relationship was removed. Six live tests, TypeScript and targeted lint passed before integration. Production cleanup behavior is unchanged. Final cumulative commit gates and exact remote SHA/CI status are recorded in PR #354; a failed or pending CI run is never counted as passing.
+
+All focused/full unit counts above overlap; they are individual verification runs, not additive coverage totals. Failed attempts are retained as history and superseded only by explicitly recorded successful reruns. The environment disconnect was resolved: command execution, disposable live tests, commits and remote SHA verification succeeded afterward.

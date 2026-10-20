@@ -20,11 +20,12 @@ import {
   modContext,
   type ImageModEnv,
 } from "./imageModerationHarness.js";
-import { checkChannelModPermissions } from "../../rules/permission/hasChannelModPermission.js";
+import { checkChannelModPermissions, ModChannelPermission } from "../../rules/permission/hasChannelModPermission.js";
 import { checkChannelPermissions } from "../../rules/permission/hasChannelPermission.js";
 import { getActiveSuspension } from "../../rules/permission/getActiveSuspension.js";
 import { createChannelPermissionRepository } from "../../services/persistence/channelPermissionRepository.js";
 import { disconnectExpiredSuspensions } from "../../rules/permission/disconnectExpiredSuspensions.js";
+import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
 const CHANNEL = "cats";
 const MOD_USER = "moddy";
@@ -152,7 +153,33 @@ test("lifting the suspension re-grants the mod permission", async () => {
 test("an expired time-limited mod suspension auto-re-grants the permission", async () => {
   // suspendedUntil in the past, not indefinite.
   await suspendMod("2000-01-01T00:00:00.000Z");
-  assert.equal(await modCan("canHideComment"), true);
+  const context = ctx(MOD_USER);
+  const effects = createSuspensionEffectsRepository(env.driver);
+  let cleanup: Promise<void> | undefined;
+  context.suspensionEffectsRepository = {
+    ...effects,
+    disconnectExpiredChannelSuspensions(
+      input: Parameters<typeof effects.disconnectExpiredChannelSuspensions>[0]
+    ) {
+      cleanup = effects.disconnectExpiredChannelSuspensions(input);
+      return cleanup;
+    },
+  };
+
+  try {
+    assert.equal(await checkChannelModPermissions({
+      channelConnections: [CHANNEL],
+      context,
+      permissionCheck: ModChannelPermission.canHideComment,
+    }), true);
+    assert.ok(cleanup, "expired suspension cleanup should be scheduled");
+  } finally {
+    // Permission checks deliberately do not await cleanup. Drain it before
+    // the next test resets and recreates the same channel/suspension IDs,
+    // otherwise this old cleanup can disconnect the next fixture's edge.
+    await cleanup;
+  }
+  assert.equal(await suspendedModEdgeCount(), 0);
 });
 
 test("an expired mod suspension is detected and cleaned up from the channel", async () => {
