@@ -1,9 +1,4 @@
-import type {
-  ServerConfig,
-  ServerConfigUpdateInput,
-  ServerConfigModel,
-  UserModel,
-} from "../../ogm_types.js";
+import { resolveServerModeratorRepository } from "../../services/persistence/serverModeratorRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -13,13 +8,7 @@ type Args = {
   serverName: string;
 };
 
-type Input = {
-  ServerConfig: ServerConfigModel;
-  User: UserModel;
-};
-
-const getResolver = (input: Input) => {
-  const { ServerConfig, User } = input;
+const getResolver = () => {
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { serverName } = args;
     if (!serverName) {
@@ -38,90 +27,29 @@ const getResolver = (input: Input) => {
     }
 
     // Get mod name from username
-    const userData = await User.find({
-      where: {
-        username: loggedInUsername,
-      },
-      selectionSet: `{
-        ModerationProfile {
-          displayName
-        }
-      }`,
-    });
+    const userData = await resolveServerModeratorRepository(context).findModeratorProfile(loggedInUsername);
     const displayName = userData[0]?.ModerationProfile?.displayName || null;
     if (!displayName) {
       throw new Error(`User ${loggedInUsername} is not a moderator`);
     }
 
     // Check if there's a pending mod invite first
-    const serverConfigWithPendingInvite = await ServerConfig.find({
-      where: {
-        serverName: serverName,
-      },
-      selectionSet: `{
-        PendingModInvites {
-          username
-        }
-      }`,
-    });
+    const serverConfigWithPendingInvite = await resolveServerModeratorRepository(context).findPendingInvites(serverName);
 
-    const serverConfig: ServerConfig | undefined = serverConfigWithPendingInvite[0];
+    const serverConfig = serverConfigWithPendingInvite[0];
     if (!serverConfig?.PendingModInvites?.some(
       (invite: { username: string }) => invite.username === loggedInUsername
     )) {
       throw new Error(`No pending moderator invite found for user ${loggedInUsername}`);
     }
 
-    // Note: Using type assertion until OGM types are regenerated
-    const addServerModInput = {
-      Moderators: [
-        {
-          connect: [
-            {
-              where: {
-                node: {
-                  displayName,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    } as ServerConfigUpdateInput;
-
-    // Note: Using type assertion until OGM types are regenerated
-    const removePendingInviteInput = {
-      PendingModInvites: [
-        {
-          disconnect: [
-            {
-              where: {
-                node: {
-                  username: loggedInUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    } as ServerConfigUpdateInput;
 
     try {
-      const acceptInviteResult = await ServerConfig.update({
-        where: {
-          serverName: serverName,
-        },
-        update: addServerModInput,
-      });
+      const acceptInviteResult = await resolveServerModeratorRepository(context).connectModerator(serverName, displayName);
       if (!acceptInviteResult.serverConfigs[0]) {
         throw new Error("ServerConfig not found. Could not accept invite.");
       }
-      const removePendingInviteResult = await ServerConfig.update({
-        where: {
-          serverName: serverName,
-        },
-        update: removePendingInviteInput,
-      });
+      const removePendingInviteResult = await resolveServerModeratorRepository(context).disconnectInvite(serverName, loggedInUsername);
       if (!removePendingInviteResult.serverConfigs[0]) {
         throw new Error("ServerConfig not found. Could not remove pending invite");
       }

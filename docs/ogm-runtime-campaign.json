@@ -322,28 +322,30 @@
           "id": "12a",
           "scope": "Server admin core",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "integration_review independently verified seven nonmerge blobs exactly match reviewed patch, factory/context changes limited to two server-admin constructors and repository field/import; prior campaign wiring retained. Independent 6 focused tests passed actual exit 0 (/tmp/review12a-integration-focused.log); diff-check passed. No findings.",
           "preparedPatch": "server-membership12a.patch",
           "preparedPatchSha256": "707bd694862603e214319c93b16f89e10bb848460ab36992c8f9abc98e46b1fe",
           "preparedBase": "658bfe4",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree bfb95eae46963bdce80e443a5231c7524d6d41ef: lint, TypeScript and2022 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice12a-exact-live.log"
           ],
-          "commit": null
+          "commit": "fa87561dea7bb4ea160d21f11f8fcd419eb1c624"
         },
         {
           "id": "12b",
           "scope": "Server moderator core",
           "baselineCrudSites": 5,
-          "status": "reviewed; integration pending",
-          "review": "review_subscription",
+          "status": "reviewed; cumulative gates pending",
+          "review": "integration_recovery independently verified six nonmerge patch blobs, minimal factory/context merge and retained prior wiring;6 focused tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review12b-focused.log",
           "preparedPatch": "server-membership12b.patch",
           "preparedPatchSha256": "dc49f8d8f3fbb13c090d243657c7fc9f1d1c097c16d64217af7fcc19fb765704",
           "preparedBase": "658bfe4 plus12a",
           "verification": [
-            "6 units;10 parity+4 existing live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "12c",
@@ -1203,9 +1205,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 392,
+  "remainingRuntimeCrudSites": 387,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 95,
+  "remainingRuntimeCrudFiles": 93,
   "foundations": [
     {
       "id": "F01",

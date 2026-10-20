@@ -297,13 +297,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       User,
       driver
     }),
-    cancelInviteServerMod: cancelInviteServerMod({
-      ServerConfig
-    }),
-    acceptServerModInvite: acceptServerModInvite({
-      ServerConfig,
-      User
-    }),
+    cancelInviteServerMod: cancelInviteServerMod(),
+    acceptServerModInvite: acceptServerModInvite(),
     dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
     seedDataForCypressTests: seedDataForCypressTestsResolver({
       driver,

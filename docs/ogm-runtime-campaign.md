@@ -50,7 +50,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | complete |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | complete |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | complete |
-| 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | reviewed subdivisions; integration pending |
+| 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | partial; see subdivisions |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | reviewed subdivisions; integration pending |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | reviewed; integration pending |
@@ -329,3 +329,11 @@ Slice11c committed `1f539e8a515e64c5c9854522b39fafe6599579e3` ([diff](https://gi
 16 independently approved artifact recorded without crediting queued removals;4CRUD comprises2typed+2structural calls, requiring audit adjustment3→1 only when integrated. Existing variantUrls map-property rejection preserved; native storage/HTTP attempt guards stayed zero.
 
 12a final integration approval: integration_review independently verified seven nonmerge blobs exactly match reviewed patch, factory/context changes limited to two server-admin constructors and repository field/import; prior campaign wiring retained. Independent 6 focused tests passed actual exit 0 (/tmp/review12a-integration-focused.log); diff-check passed. No findings.; live parity passed on identical production sources before this documentation-only update.
+
+Slice12a committed `fa87561dea7bb4ea160d21f11f8fcd419eb1c624` ([diff](https://github.com/gennit-project/multiforum-backend/commit/fa87561dea7bb4ea160d21f11f8fcd419eb1c624)), tree `bfb95eae46963bdce80e443a5231c7524d6d41ef`: lint, TypeScript and all2022 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice12a-exact-live.log. Independent approval recorded above.
+
+### Slice 12b — Server moderator membership
+
+5 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 387 CRUD sites/93 files; 74 acquisitions/15 files; two separate CLI sites.
+
+12b final integration approval: integration_recovery independently verified six nonmerge patch blobs, minimal factory/context merge and retained prior wiring;6 focused tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review12b-focused.log; live parity passed on identical production sources before this documentation-only update.
