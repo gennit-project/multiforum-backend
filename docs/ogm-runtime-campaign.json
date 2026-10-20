@@ -123,11 +123,12 @@
       "baselineCrudSites": 1,
       "dependencies": "05; shared publisher contract",
       "acceptance": "Nested notification graph/events and caught-error boolean contract",
-      "status": "reviewed; exact-tree gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "959d826103c0a4380d679507d519ded6ec3689bc",
       "review": "Independent review_subscription approved final25-file patch;61units and6live independently passed",
       "verification": [
-        "61 targeted units, 6 live parity and14 version-history integrations passed; tsc and changed-file eslint passed"
+        "61 targeted units, 6 live parity and14 version-history integrations passed; tsc and changed-file eslint passed",
+        "Exact committed source tree passed lint, TypeScript,1937units and6live parity tests;35expanded live tests passed on identical production sources before unit fixture correction"
       ]
     },
     {
@@ -159,10 +160,12 @@
       "baselineCrudSites": 2,
       "dependencies": "Named-schema operation contract",
       "acceptance": "Locked pages, arbitrary filters and unique channel ownership",
-      "status": "pending",
+      "status": "reviewed; exact-tree gates pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent review_slice1 approved;33focused units independently passed,9live parity passed",
+      "verification": [
+        "33focusedunits,9live parity,TypeScript and targetedESLint passed"
+      ]
     },
     {
       "id": "09",
@@ -782,9 +785,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 449,
-  "remainingModelAcquisitionsIncludingOptional": 82,
-  "remainingRuntimeCrudFiles": 128,
+  "remainingRuntimeCrudSites": 447,
+  "remainingModelAcquisitionsIncludingOptional": 80,
+  "remainingRuntimeCrudFiles": 126,
   "foundations": [
     {
       "id": "F01",

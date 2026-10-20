@@ -44,9 +44,9 @@ Rows track the current campaign state. A slice is complete only with independent
 | 03 Account/email | 7 | 01; write/event parity | Ownership, normalization, duplicate account/email and nested creation | pending |
 | 04 Subscription target reads | 10 | None; preserve existing raw writes | Missing targets, repeats, selected response parity; no new events | complete |
 | 05 Notification snapshots | 8 | 01 where age filtering applies | Recipients/preferences/actor exclusions; email-before-in-app ordering | complete; a07af6a |
-| 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | reviewed; exact-tree gates pending |
+| 06 Notification creation | 1 | 05; shared publisher contract | Nested notification graph/events and caught-error boolean contract | complete; 959d826 |
 | 07 Role filter guards | 4 | Named-schema operation contract | Arbitrary/nested filters; missing/multiple-owner fail-closed authorization | complete; dd14fee |
-| 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | pending |
+| 08 Wiki filter guards | 2 | Named-schema operation contract | Locked pages, arbitrary filters and unique channel ownership | reviewed; exact-tree gates pending |
 | 09 Content validation | 4 | Named-schema operation contract; 01 | Existing-file/filename fallback, filters, preferences and exact errors | pending |
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | pending |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | pending |
@@ -180,3 +180,11 @@ Replaced notificationHelpers User.update with one fixed named nested mutation. P
 CI update for `a07af6a`: Tests CI39437972218 completed with one failing moderator-suspension integration assertion (expired list0 vs1); seven other integration shards, unit coverage, coverage report and performance budgets passed. Separate investigation reproduced a pre-existing late-cleanup/fixture-ID race on baseline006f625 and a07af6a. Test-only synchronization fix is under independent review; this failed run is not counted as passing.
 
 Slice06 first cumulative hook attempt: lint/TypeScript passed;1,935 of1,937 units passed, with2 old edit-notification mocks failing. Commit blocked pending fixture migration and full rerun. Expanded live35/35 passed on source tree4f474e956c6c5f8e2532719940f194d93d75879b.
+
+### Slice 06 committed evidence
+
+Commit `959d826103c0a4380d679507d519ded6ec3689bc` ([diff](https://github.com/gennit-project/multiforum-backend/commit/959d826103c0a4380d679507d519ded6ec3689bc)), tree `fd49cca69229f8d244d150d0c548c61c8d4743c4`: lint, TypeScript, all1,937units and6live parity tests passed. Expanded35live tests passed before the test-only edit fixture correction; production sources are identical. Independent reviewer approved both the final fixture correction and integrated context wiring.
+
+### Slice 08 — wiki filter guards
+
+Two CRUD sites and two acquisitions replaced by fixed named queries preserving distinct projections, arbitrary filters,25-item defaults, generated errors, duplicate edit reads and ownership/lock checks. Independent review_slice1 approved;33focused units and9live parity tests passed. Parent exact-tree gates pending. Remaining447CRUD sites/126files,80acquisitions,2CLI sites.

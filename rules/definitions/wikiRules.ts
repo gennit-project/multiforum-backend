@@ -1,5 +1,6 @@
 // Wiki-page graphql-shield rules and their channel-name resolution helpers.
 // Extracted from rules/rules.ts.
+import { resolveWikiGuardRepository, type WikiGuardSnapshot as WikiPageLookup } from "../../services/persistence/wikiGuardRepository.js";
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
@@ -17,19 +18,6 @@ import {
   WikiPageWhere,
 } from "../../src/generated/graphql.js";
 
-type WikiPageLookup = {
-  id?: string | null;
-  Channel?: {
-    uniqueName?: string | null;
-  } | null;
-  locked?: boolean | null;
-  OriginalAuthor?: {
-    username?: string | null;
-  } | null;
-  ChildPages?: Array<{
-    id?: string | null;
-  }> | null;
-};
 
 type WikiPageMutationArgs = Partial<
   MutationCreateWikiPagesArgs &
@@ -68,23 +56,7 @@ async function getWikiPagesByWhere(where: WikiPageWhere | null, ctx: GraphQLCont
     return [];
   }
 
-  const WikiPage = ctx.ogm.model("WikiPage");
-  return (await WikiPage.find({
-    where: where ?? undefined,
-    selectionSet: `{
-      id
-      Channel {
-        uniqueName
-      }
-      locked
-      OriginalAuthor {
-        username
-      }
-      ChildPages {
-        id
-      }
-    }`,
-  })) as WikiPageLookup[];
+  return resolveWikiGuardRepository(ctx).findPermissionTargets(where ?? undefined);
 }
 
 function collectWikiPageChannelNames(wikiPages: WikiPageLookup[]) {
