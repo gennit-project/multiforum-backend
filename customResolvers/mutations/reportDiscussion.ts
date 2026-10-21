@@ -113,12 +113,9 @@ const getResolver = (input: Input) => {
         relatedDiscussionId: discussionId,
         issueNumber,
       });
-      const ChannelModel = context?.ogm?.model("Channel");
-      if (ChannelModel) {
-        const channels = await repository.findChannel(channelUniqueName);
-        if (!channels.length) {
-          delete (issueCreateInput as Record<string, unknown>).Channel;
-        }
+      const channels = await repository.findChannel(channelUniqueName);
+      if (!channels.length) {
+        delete (issueCreateInput as Record<string, unknown>).Channel;
       }
       try {
         const issueData = await repository.createIssue(issueCreateInput);

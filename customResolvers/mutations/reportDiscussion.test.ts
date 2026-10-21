@@ -273,14 +273,12 @@ test("reportDiscussion omits the channel connection when the channel is missing"
 });
 
 const validArgs={discussionId:'discussion',channelUniqueName:'cats',selectedForumRules:['Kind'],selectedServerRules:[],reportText:'text'};
-test('discussion channel capability guard and pre-create lookup failures preserve ordering',async()=>{
+test('discussion channel lookup runs before issue creation and its failure aborts',async()=>{
  process.env.PLAYWRIGHT_MOCK_AUTH='true';
- for(const available of [false,true]){
-  const order:string[]=[];const ctx=createContext();if(!available)delete (ctx as Partial<GraphQLContext>).ogm;
-  const repository={findExisting:async()=>[],findDiscussion:async()=>[],findChannel:async()=>{order.push('channel');throw Error('channel failure');},createIssue:async()=>{order.push('create');return{issues:[{id:'i',issueNumber:1}]};},appendReport:async()=>{order.push('append');return{issues:[{id:'i',issueNumber:1}]};}};
-  const call=reportDiscussionResolver({driver:createDriver(),discussionReportRepository:repository})(null,validArgs,ctx,null as unknown as GraphQLResolveInfo);
-  if(available){await assert.rejects(call,/channel failure/);assert.deepEqual(order,['channel']);}else{await call;assert.deepEqual(order,['create','append']);}
- }
+ const order:string[]=[];const ctx=createContext();
+ const repository={findExisting:async()=>[],findDiscussion:async()=>[],findChannel:async()=>{order.push('channel');throw Error('channel failure');},createIssue:async()=>{order.push('create');return{issues:[{id:'i',issueNumber:1}]};},appendReport:async()=>{order.push('append');return{issues:[{id:'i',issueNumber:1}]};}};
+ const call=reportDiscussionResolver({driver:createDriver(),discussionReportRepository:repository})(null,validArgs,ctx,null as unknown as GraphQLResolveInfo);
+ await assert.rejects(call,/channel failure/);assert.deepEqual(order,['channel']);
 });
 test('discussion detailed create failure differs from generic append failure',async()=>{
  process.env.PLAYWRIGHT_MOCK_AUTH='true';

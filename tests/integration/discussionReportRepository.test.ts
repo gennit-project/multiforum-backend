@@ -68,9 +68,7 @@ for(const existing of [false,true])test(`projection failure preserves committed 
 });
 
 test('optional channel lookup preserves missing channel behavior and identity reconnect semantics',async()=>{
- for(const present of [false,true]){
-  async function run(repo:DiscussionReportRepository){await resetDatabase(driver);await seed();await driver.executeQuery('MATCH(c:Channel) DETACH DELETE c');events=[];let reads=0;const wrapped={...repo,findChannel:async(name:string)=>{reads++;return repo.findChannel(name);}};const ctx=context();if(present)ctx.ogm=ogm;
-   await reportDiscussion({driver,discussionReportRepository:wrapped})(null,args,ctx,null as unknown as GraphQLResolveInfo);assert.equal(reads,present?1:0);return state();}
-  assert.deepEqual(await run(createDiscussionReportRepository(driver)),await run(legacy()));
- }
+ async function run(repo:DiscussionReportRepository){await resetDatabase(driver);await seed();await driver.executeQuery('MATCH(c:Channel) DETACH DELETE c');events=[];let reads=0;const wrapped={...repo,findChannel:async(name:string)=>{reads++;return repo.findChannel(name);}};const ctx=context();
+  await reportDiscussion({driver,discussionReportRepository:wrapped})(null,args,ctx,null as unknown as GraphQLResolveInfo);assert.equal(reads,1);return state();}
+ assert.deepEqual(await run(createDiscussionReportRepository(driver)),await run(legacy()));
 });
