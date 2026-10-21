@@ -253,11 +253,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     createSignedStorageURL: createSignedStorageURL(),
     setProfileImage: setProfileImage({
-      User,
       driver,
     }),
     setChannelIcon: setChannelIcon({
-      Channel,
       driver,
     }),
     createEmailAndUser: getCreateEmailAndUserResolver({
@@ -638,8 +636,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       User
     }),
     createImageWithUploader: createImageWithUploader({
-      Image,
-      User,
       driver
     }),
     addToCollection: addToCollection({

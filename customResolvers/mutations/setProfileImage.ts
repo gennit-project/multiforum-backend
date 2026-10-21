@@ -1,3 +1,4 @@
+import { createProfileImageRepository, type ProfileImageRepository } from "../../services/persistence/imageWriteRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -18,31 +19,13 @@ type Args = {
 };
 
 type ResolverInput = {
-  User: {
-    update: (args: {
-      where: { username: string };
-      update: Record<string, unknown>;
-      selectionSet: string;
-    }) => Promise<{ users: Array<Record<string, unknown>> }>;
-  };
+  repository?: ProfileImageRepository;
   driver: Driver;
   generateVariants?: typeof generateImageVariants;
 };
 
-const selectionSet = `
-  {
-    username
-    profilePicURL
-    variantUrls
-    avatar32Url
-    avatar48Url
-    avatar64Url
-    avatar96Url
-  }
-`;
-
 const getResolver = ({
-  User,
+  repository: injectedRepository,
   driver,
   generateVariants = generateImageVariants,
 }: ResolverInput) => {
@@ -84,14 +67,11 @@ const getResolver = ({
       variantKeys: USER_AVATAR_VARIANT_KEYS,
     });
 
-    const response = await User.update({
-      where: { username: args.username },
-      update: {
+    const repository = injectedRepository ?? createProfileImageRepository(driver);
+    const response = await repository.setProfileImage(args.username, {
         profilePicURL: args.imageUrl,
         ...buildUserAvatarVariantPersistenceFields(generatedVariants),
-      },
-      selectionSet: `{ users ${selectionSet} }`,
-    });
+      });
 
     const updatedUser = response.users[0];
     if (!updatedUser) {

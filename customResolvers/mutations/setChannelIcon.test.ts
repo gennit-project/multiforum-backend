@@ -1,3 +1,10 @@
+import { before, after, afterEach } from "node:test";
+import { denyImageExternalIo } from "../../tests/denyImageExternalIo.js";
+let ioGuard: ReturnType<typeof denyImageExternalIo>;
+before(() => { ioGuard = denyImageExternalIo(); });
+afterEach(() => ioGuard.assertUnused());
+after(() => ioGuard.restore());
+import { CHANNEL_ICON_SELECTION } from "../../services/persistence/imageWriteRepository.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
@@ -96,7 +103,7 @@ test("setChannelIcon persists icon variants for a verified uploaded channel icon
     ],
   }));
   const resolver = setChannelIcon({
-    Channel: Channel as any,
+    repository: {setChannelIcon: async (uniqueName, update) => Channel.update({where:{uniqueName},update,selectionSet:`{ channels ${CHANNEL_ICON_SELECTION} }`})},
     driver,
     generateVariants: async () => ({
       variantUrls: {
@@ -204,7 +211,7 @@ test("setChannelIcon rejects a channel icon without verified upload metadata", a
   const { driver } = buildDriver();
   const Channel = new ChannelModelStub(() => ({ channels: [] }));
   const resolver = setChannelIcon({
-    Channel: Channel as any,
+    repository: {setChannelIcon: async (uniqueName, update) => Channel.update({where:{uniqueName},update,selectionSet:`{ channels ${CHANNEL_ICON_SELECTION} }`})},
     driver,
   });
 

@@ -1,3 +1,4 @@
+import { createChannelIconRepository, type ChannelIconRepository } from "../../services/persistence/imageWriteRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -18,31 +19,13 @@ type Args = {
 };
 
 type ResolverInput = {
-  Channel: {
-    update: (args: {
-      where: { uniqueName: string };
-      update: Record<string, unknown>;
-      selectionSet: string;
-    }) => Promise<{ channels: Array<Record<string, unknown>> }>;
-  };
+  repository?: ChannelIconRepository;
   driver: Driver;
   generateVariants?: typeof generateImageVariants;
 };
 
-const selectionSet = `
-  {
-    uniqueName
-    channelIconURL
-    variantUrls
-    icon32Url
-    icon48Url
-    icon64Url
-    icon96Url
-  }
-`;
-
 const getResolver = ({
-  Channel,
+  repository: injectedRepository,
   driver,
   generateVariants = generateImageVariants,
 }: ResolverInput) => {
@@ -84,14 +67,11 @@ const getResolver = ({
       variantKeys: USER_AVATAR_VARIANT_KEYS,
     });
 
-    const response = await Channel.update({
-      where: { uniqueName: args.channelUniqueName },
-      update: {
+    const repository = injectedRepository ?? createChannelIconRepository(driver);
+    const response = await repository.setChannelIcon(args.channelUniqueName, {
         channelIconURL: args.imageUrl,
         ...buildChannelIconVariantPersistenceFields(generatedVariants),
-      },
-      selectionSet: `{ channels ${selectionSet} }`,
-    });
+      });
 
     const updatedChannel = response.channels[0];
     if (!updatedChannel) {

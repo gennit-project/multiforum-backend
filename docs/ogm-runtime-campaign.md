@@ -52,7 +52,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | complete |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | complete |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | complete |
-| 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | partial; see subdivisions |
+| 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | complete |
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | complete |
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | pending |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | pending |
@@ -401,3 +401,16 @@ Slice14b committed `8efd2478b81c821ae1c6943e788bfbe5583683ae` ([diff](https://gi
 2 baseline CRUD sites removed. Original patch independently approved integration_review; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 356 CRUD sites/78 files; 74 acquisitions/15 files; two separate CLI sites.
 
 14c final integration approval: Independent integration_review_current approved exact tree 8d8f33eae93f9db87c8a6a8562f8a84217fac7c0: four nonfactory blobs match reviewed14c patch; factory only removes unused model arguments and sole unused ScratchpadEntry destructure after15, preserving driver. Independently8 focused ordering tests passed with infrastructure-only launcher; inspected23 completed disposable live tests (3 parity+20 existing). Original raw transaction, scratchpad deletion, union-error behavior, nested defaults and no generated write events preserved. No blocking findings.; live parity passed on identical production sources before this documentation-only update.
+
+Slice14c committed `172cdd9cfd062d0269cf7d1562fbb6b713d7b873` ([diff](https://github.com/gennit-project/multiforum-backend/commit/172cdd9cfd062d0269cf7d1562fbb6b713d7b873)), tree `c8bebc8b5ad591f145ddd7232d8e91da1374f0ae`: lint, TypeScript and all2079 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice14c-exact-live.log. Independent approval recorded above.
+
+### Slice 16 — Image creation/profile
+
+4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 352 CRUD sites/75 files; 74 acquisitions/15 files; two separate CLI sites.
+
+Slice26 channel moderation independently reviewed:9CRUD/0acquisitions prepared, no removal credit until integration. Exact fixture parity uses2admins; a separate same-graph28admin case preserves default25cap characterization. Identity guards, allocation/error/write ordering, duplicate recipients and cleanup retained.
+
+Slice27 comment moderation independently reviewed:11CRUD/0acquisitions prepared, no removal credit until integration. Legacy test adapter corrected to production Issue identity protection; existing moderator-author projection error remains unchanged.33focused and12live passed, including6existing factory integrations.
+
+Slice16 initial live run passed6/7 and failed1/7 due to test ID namespace collision; fixture-only namespace separation independently reviewed, production unchanged; failed log preserved.
+16 final integration approval: Independent integration_review_current approved corrected tree 67d0a0801f2ce3412dcef9e4b8cda242d94dba9d: production sources match original reviewed16 patch; factory retains driver; fixture-only correction separates node/relationship/domain ID namespaces and retains all assertions after initial6/7live failure. Corrected exact-tree7/7live passed; independently35 focused passed on identical production/unit sources using stripped launcher and native storage/HTTP denial guards. Four CRUD sites (two typed+two structural) removed. No blocking findings; existing variant-object database rejection preserved.; live parity passed on identical production sources before this documentation-only update.
