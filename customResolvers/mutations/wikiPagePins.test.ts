@@ -59,8 +59,7 @@ test("pinWikiPageToChannel delegates authorization to canUpdateChannel and merge
   const permissionCalls: unknown[] = [];
   const resolver = pinWikiPageToChannel({
     driver: driver as never,
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never},
     checkPermissions: async (input) => {
       permissionCalls.push(input);
       return true;
@@ -106,8 +105,7 @@ test("unpinWikiPageFromChannel deletes the pin relationship", async () => {
   const { driver, calls } = buildDriver();
   const resolver = unpinWikiPageFromChannel({
     driver: driver as never,
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never},
     checkPermissions: async () => true,
   });
 
@@ -138,8 +136,7 @@ test("pinWikiPageToChannel rejects wiki pages from another forum", async () => {
   const { driver, calls } = buildDriver();
   const resolver = pinWikiPageToChannel({
     driver: driver as never,
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never},
     checkPermissions: async () => {
       throw new Error("permission should not be checked");
     },
@@ -164,8 +161,7 @@ test("pinWikiPageToChannel rejects disabled wiki channels", async () => {
   const { driver, calls } = buildDriver();
   const resolver = pinWikiPageToChannel({
     driver: driver as never,
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never},
     checkPermissions: async () => true,
   });
 
@@ -186,8 +182,7 @@ test("pinWikiPageToChannel surfaces role permission failures", async () => {
   const { driver, calls } = buildDriver();
   const resolver = pinWikiPageToChannel({
     driver: driver as never,
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never},
     checkPermissions: async () => new Error("No channel permission"),
   });
 

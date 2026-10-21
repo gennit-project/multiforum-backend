@@ -52,8 +52,8 @@ const buildModels = ({
 test("setFeaturedWikiPages validates pages and stores ordered IDs", async () => {
   const models = buildModels();
   const resolver = setFeaturedWikiPages({
-    ServerConfig: models.ServerConfig as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findServer: async serverName => models.ServerConfig.find({where:{serverName}}) as never, findPages: async id_IN => models.WikiPage.find({where:{id_IN}}) as never, setFeaturedPages: async (serverName, featuredWikiPageIds) => models.ServerConfig.update({where:{serverName},update:{featuredWikiPageIds}}) as never},
   });
 
   const result = await resolver(null, {
@@ -81,8 +81,8 @@ test("setFeaturedWikiPages validates pages and stores ordered IDs", async () => 
 test("setFeaturedWikiPages rejects duplicate IDs", async () => {
   const models = buildModels();
   const resolver = setFeaturedWikiPages({
-    ServerConfig: models.ServerConfig as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findServer: async serverName => models.ServerConfig.find({where:{serverName}}) as never, findPages: async id_IN => models.WikiPage.find({where:{id_IN}}) as never, setFeaturedPages: async (serverName, featuredWikiPageIds) => models.ServerConfig.update({where:{serverName},update:{featuredWikiPageIds}}) as never},
   });
 
   await assert.rejects(
@@ -99,8 +99,8 @@ test("setFeaturedWikiPages rejects duplicate IDs", async () => {
 test("setFeaturedWikiPages rejects missing wiki pages", async () => {
   const models = buildModels({ wikiPages: [{ id: "w1" }] });
   const resolver = setFeaturedWikiPages({
-    ServerConfig: models.ServerConfig as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findServer: async serverName => models.ServerConfig.find({where:{serverName}}) as never, findPages: async id_IN => models.WikiPage.find({where:{id_IN}}) as never, setFeaturedPages: async (serverName, featuredWikiPageIds) => models.ServerConfig.update({where:{serverName},update:{featuredWikiPageIds}}) as never},
   });
 
   await assert.rejects(
@@ -117,8 +117,8 @@ test("setFeaturedWikiPages rejects missing wiki pages", async () => {
 test("setFeaturedWikiPages allows clearing the featured page list", async () => {
   const models = buildModels();
   const resolver = setFeaturedWikiPages({
-    ServerConfig: models.ServerConfig as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findServer: async serverName => models.ServerConfig.find({where:{serverName}}) as never, findPages: async id_IN => models.WikiPage.find({where:{id_IN}}) as never, setFeaturedPages: async (serverName, featuredWikiPageIds) => models.ServerConfig.update({where:{serverName},update:{featuredWikiPageIds}}) as never},
   });
 
   const result = await resolver(null, {

@@ -1,5 +1,6 @@
+import type { Driver } from "neo4j-driver";
 import { GraphQLError } from "graphql";
-import type { ChannelModel, WikiPageModel } from "../../ogm_types.js";
+import { createWikiLockRepository, type WikiLockRepository } from "../../services/persistence/wikiActionRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
   checkChannelModPermissions,
@@ -20,42 +21,10 @@ type UnlockWikiPageArgs = {
 type PermissionCheck = typeof checkChannelModPermissions;
 
 type Deps = {
-  Channel: ChannelModel;
-  WikiPage: WikiPageModel;
+  driver: Driver;
+  repository?: WikiLockRepository;
   checkPermissions?: PermissionCheck;
 };
-
-type ChannelLookup = {
-  uniqueName?: string | null;
-  wikiEnabled?: boolean | null;
-};
-
-type WikiPageLookup = {
-  id?: string | null;
-  Channel?: { uniqueName?: string | null } | null;
-  locked?: boolean | null;
-};
-
-type WikiPageLockUpdate = {
-  locked: boolean;
-  lockedAt: string | null;
-  lockReason: string | null;
-  lockedByUsername: string | null;
-};
-
-const returnedWikiPageSelectionSet = `{
-  wikiPages {
-    id
-    title
-    body
-    slug
-    channelUniqueName
-    locked
-    lockedAt
-    lockReason
-    lockedByUsername
-  }
-}`;
 
 const validateBaseArgs = (args: UnlockWikiPageArgs) => {
   if (!args.channelUniqueName) {
@@ -68,30 +37,15 @@ const validateBaseArgs = (args: UnlockWikiPageArgs) => {
 };
 
 const getChannelAndWikiPage = async ({
-  Channel,
-  WikiPage,
+  repository,
   args,
 }: {
-  Channel: ChannelModel;
-  WikiPage: WikiPageModel;
+  repository: WikiLockRepository;
   args: UnlockWikiPageArgs;
 }) => {
   const [channels, wikiPages] = await Promise.all([
-    Channel.find({
-      where: { uniqueName: args.channelUniqueName },
-      selectionSet: `{
-        uniqueName
-        wikiEnabled
-      }`,
-    }) as Promise<ChannelLookup[]>,
-    WikiPage.find({
-      where: { id: args.wikiPageId },
-      selectionSet: `{
-        id
-        Channel { uniqueName }
-        locked
-      }`,
-    }) as Promise<WikiPageLookup[]>,
+    repository.findChannel(args.channelUniqueName),
+    repository.findPage(args.wikiPageId),
   ]);
 
   const channel = channels[0];
@@ -137,19 +91,15 @@ const assertCanManageWikiPageLock = async ({
 };
 
 const updateWikiPageLock = async ({
-  WikiPage,
+  repository,
   args,
   update,
 }: {
-  WikiPage: WikiPageModel;
+  repository: WikiLockRepository;
   args: UnlockWikiPageArgs;
-  update: WikiPageLockUpdate;
+  update: Parameters<WikiLockRepository["updateLock"]>[1];
 }) => {
-  const result = await WikiPage.update({
-    where: { id: args.wikiPageId },
-    update: update as never,
-    selectionSet: returnedWikiPageSelectionSet,
-  });
+  const result = await repository.updateLock(args.wikiPageId, update);
 
   const wikiPage = result.wikiPages[0];
 
@@ -161,10 +111,11 @@ const updateWikiPageLock = async ({
 };
 
 export const lockWikiPage = ({
-  Channel,
-  WikiPage,
+  driver,
+  repository: injectedRepository,
   checkPermissions = checkChannelModPermissions,
 }: Deps) => {
+  const repository = injectedRepository ?? createWikiLockRepository(driver);
   return async (_parent: unknown, args: LockWikiPageArgs, context: GraphQLContext) => {
     validateBaseArgs(args);
 
@@ -173,7 +124,7 @@ export const lockWikiPage = ({
       throw new GraphQLError("A lock reason is required.");
     }
 
-    const wikiPage = await getChannelAndWikiPage({ Channel, WikiPage, args });
+    const wikiPage = await getChannelAndWikiPage({ repository, args });
     if (wikiPage.locked === true) {
       throw new GraphQLError("Wiki page is already locked.");
     }
@@ -186,7 +137,7 @@ export const lockWikiPage = ({
     }
 
     return updateWikiPageLock({
-      WikiPage,
+      repository,
       args,
       update: {
         locked: true,
@@ -199,14 +150,15 @@ export const lockWikiPage = ({
 };
 
 export const unlockWikiPage = ({
-  Channel,
-  WikiPage,
+  driver,
+  repository: injectedRepository,
   checkPermissions = checkChannelModPermissions,
 }: Deps) => {
+  const repository = injectedRepository ?? createWikiLockRepository(driver);
   return async (_parent: unknown, args: UnlockWikiPageArgs, context: GraphQLContext) => {
     validateBaseArgs(args);
 
-    const wikiPage = await getChannelAndWikiPage({ Channel, WikiPage, args });
+    const wikiPage = await getChannelAndWikiPage({ repository, args });
     if (wikiPage.locked !== true) {
       throw new GraphQLError("Wiki page is not locked.");
     }
@@ -214,7 +166,7 @@ export const unlockWikiPage = ({
     await assertCanManageWikiPageLock({ args, context, checkPermissions });
 
     return updateWikiPageLock({
-      WikiPage,
+      repository,
       args,
       update: {
         locked: false,

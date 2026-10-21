@@ -536,11 +536,11 @@
       "baselineCrudSites": 8,
       "dependencies": "08; write/event contract",
       "acceptance": "Permissions, channel scope, ordering and relationship events",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "integration_recovery",
+      "review": "scratchpad_review: ten nonfactory blobs match previously approved17 patch; narrow factory driver wiring verified; eight CRUD removals, no acquisition changes. Queue29/30/31/37b2 hashes/statuses match reviewed artifacts without removal credit. Final5live passed; prior20focused/static evidence reused; diff check passed. No remaining findings.",
       "verification": [
-        "Reviewed tree300f2263ab1999e36b16302c2be8d190a9591b36: 20independentfocused;5live;tsc/lint passed with actual exits; cumulative integration gates pending"
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "modelAcquisitionsRemoved": 0,
       "preparedPatch": "ogm-slice17.patch",
@@ -995,10 +995,38 @@
       "baselineCrudSites": 17,
       "dependencies": "18\u201319; 05\u201306; storage mocks",
       "acceptance": "Split archive pair 11/permanent removal 6; storage failure windows",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "29a",
+          "scope": "Image archive/unarchive",
+          "baselineCrudSites": 11,
+          "status": "reviewed; integration pending",
+          "review": "scratchpad_review: final approved exact source/evidence, no remaining findings",
+          "preparedPatch": "ogm-slice29a.patch",
+          "preparedPatchSha256": "39b458b82fb3d75bf7b25ae7b402b99b26c2f53792250dfd60f4dcc8583732b8",
+          "preparedBase": "9341421dda260cdf76c5246f3b9ee5a206570044",
+          "verification": [
+            "Tree a6bb708fd8e82b7f75708b827b876fc959ab6329: 33focused,10live,finaltypes/lint passed; cumulative gates pending"
+          ]
+        },
+        {
+          "id": "29b",
+          "scope": "Permanent image removal flag",
+          "baselineCrudSites": 6,
+          "status": "reviewed; integration pending",
+          "review": "scratchpad_review: final approved exact source/evidence, no remaining findings",
+          "preparedPatch": "ogm-slice29b.patch",
+          "preparedPatchSha256": "2c36a77d8ec4334e9bfb920a5f8f767477b5ddfbac8ab105617d4dd626f95a0a",
+          "preparedBase": "a6bb708fd8e82b7f75708b827b876fc959ab6329",
+          "verification": [
+            "Tree 5b07717fba746819a2442001e5471fe2d6b6dded: 16focused,8live,finaltypes/lint passed; cumulative gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "30",
@@ -1010,10 +1038,15 @@
       "baselineCrudSites": 7,
       "dependencies": "18\u201319; 05\u201306",
       "acceptance": "All user/mod wrappers, scope, duration, authorization and activity",
-      "status": "pending",
+      "status": "reviewed; integration pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "scratchpad_review: final approved exact source/evidence, no remaining findings",
+      "verification": [
+        "Tree a211f02b1797f111767efc3102233500717e7f68: 10finalcorrectedlive,finaltypes/lint;23focused+14existinglive on unchangedproduction passed; cumulative gates pending"
+      ],
+      "preparedPatch": "ogm-slice30.patch",
+      "preparedPatchSha256": "94de71fec82b08351be0c4e9e45b15fe9451b36e51e8213e000368464d59db37",
+      "preparedBase": "9341421dda260cdf76c5246f3b9ee5a206570044"
     },
     {
       "id": "31",
@@ -1025,10 +1058,38 @@
       "baselineCrudSites": 6,
       "dependencies": "21; 05\u201306; closes 10 adapter",
       "acceptance": "Connections, explicit transaction propagation, rollback and history",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "31a",
+          "scope": "Discussion creation",
+          "baselineCrudSites": 3,
+          "status": "reviewed; integration pending",
+          "review": "scratchpad_review: final approved exacttree/files/evidence",
+          "preparedPatch": "ogm-slice31a.patch",
+          "preparedPatchSha256": "c0caf4e6a36795b78b7111cc30210a46cf88b8e69a8978cf5b35d271c47aff9f",
+          "preparedBase": "d20ed128287589a6e996b7cdea7adc9a78540e64",
+          "verification": [
+            "Tree57c88c13c77d740fe3f0cfbe04440b10781cf78c:22focused,8live,types/lint passed; cumulative gates pending"
+          ]
+        },
+        {
+          "id": "31b",
+          "scope": "Discussion update and explicit transaction propagation",
+          "baselineCrudSites": 3,
+          "status": "reviewed; integration pending",
+          "review": "scratchpad_review: approved source and actual test evidence; no blockers",
+          "preparedPatch": "ogm-slice31b.patch",
+          "preparedPatchSha256": "0399a93040facce37bf01a2637c68dcdcd96ad4f1abaa4068a1f4abe0597dd7b",
+          "preparedBaseTree": "57c88c13c77d740fe3f0cfbe04440b10781cf78c",
+          "verification": [
+            "Tree d39f78ba0760037d05f0139e5df6612b8f14c894:27focused,5newlive,6existinglive,types/lint passed; cumulative gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "32",
@@ -1193,7 +1254,7 @@
       "baselineCrudSites": 16,
       "dependencies": "35; configuration/secret masking contract",
       "acceptance": "Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth",
-      "status": "reviewed subdivisions; integration pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -1228,7 +1289,15 @@
           "id": "37b2",
           "scope": "enableServerPlugin interpolated lookups and writes",
           "baselineCrudSites": 4,
-          "status": "paused; requires separate behavior approval"
+          "status": "reviewed; integration pending",
+          "review": "scratchpad_review: exacttree/diff approved, final static and existingfactory checks confirmed",
+          "preparedPatch": "ogm-slice37b2.patch",
+          "preparedPatchSha256": "931f8535cea50c858991725e523e89144a2c81b8771b1e3c7df689a180104440",
+          "preparedBase": "7753e9253696eece1f024d3c8bc966bae88c0112",
+          "verification": [
+            "Tree2fe45df9e4a9c2dd7d9a76d4740cd1430f86b7e4:13focused,7paritylive,4existingfactorylive,finaltypes/lint passed; cumulative gates pending"
+          ],
+          "approvedBehaviorCorrection": "Two reads/three interpolations use GraphQL variables; quote/backslash version and storedID values are data, per userapproval; normal semantics preserved"
         },
         {
           "id": "37c",
@@ -1437,9 +1506,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 352,
+  "remainingRuntimeCrudSites": 344,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 75,
+  "remainingRuntimeCrudFiles": 72,
   "foundations": [
     {
       "id": "F01",

@@ -428,3 +428,17 @@ Usage-conserving workflow: one implementer and one independent reviewer; reuse r
 ### Ownership harness CI correction
 
 7753e92 shard1 job118975360628 failed createImageWithUploader because its older ownership harness omitted generated-schema registration. Added the same unwrapped-schema/driver registration used in production before middleware. Original ownership/auth assertions unchanged.4live ownership tests passed; scratchpad_review approved bloba4ff8d1f00f0382e61ff8b15dd2ff181081602e9. No production change.7753e92 also passed localbuild/circular and2094mandatoryunits; exactCI still has this failure until correctedheadrerun. Mandatoryhooks remain enabled.
+
+### Slice 17 — Wiki actions
+
+8 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 344 CRUD sites/72 files; 74 acquisitions/15 files; two separate CLI sites.
+
+29a/b and30 recovered and independently approved;24CRUD queued, not credited removed.29b retains flags-only storage boundary.30 test correction supported by9-run legacy/candidate ActivityFeed allocation probe; rawIDs checked againstDB, nativeevents remain strictly ordered, no production correction. Final manifests preserve failures and test evidence.
+
+31a recovered/independently approved:3CRUD queued, collection/seeder forwarding closure, plugin Discussion capability retained; no31b transaction-context change included. No removal credit before integration.
+
+31b independently reviewed/queued:3CRUD, caller-owned generated-schema transaction execution preserved. Raw event timestamp equality checked before per-run clock normalization. No removal credit before integration.
+
+37b2 previouslypaused correction is approved and prepared/reviewed:4CRUD queued, no removal credit before integration. Variables replace2interpolatedreads/3insertions; specialvalues intentionally literal. Ordinaryprojections, unboundedserverread, validation/settings/nativeevents/defaultprojectionerrorcontracts retained. Merge overlapping37a/b1 applyPluginConfiguration wiring narrowly.
+
+17 final integration approval: scratchpad_review: ten nonfactory blobs match previously approved17 patch; narrow factory driver wiring verified; eight CRUD removals, no acquisition changes. Queue29/30/31/37b2 hashes/statuses match reviewed artifacts without removal credit. Final5live passed; prior20focused/static evidence reused; diff check passed. No remaining findings.; live parity passed on identical production sources before this documentation-only update.

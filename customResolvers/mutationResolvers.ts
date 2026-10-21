@@ -659,25 +659,18 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     pinWikiPageToChannel: pinWikiPageToChannel({
       driver,
-      Channel,
-      WikiPage,
     }),
     unpinWikiPageFromChannel: unpinWikiPageFromChannel({
       driver,
-      Channel,
-      WikiPage,
     }),
     lockWikiPage: lockWikiPage({
-      Channel,
-      WikiPage,
+      driver,
     }),
     unlockWikiPage: unlockWikiPage({
-      Channel,
-      WikiPage,
+      driver,
     }),
     setFeaturedWikiPages: setFeaturedWikiPages({
-      ServerConfig,
-      WikiPage,
+      driver,
     }),
     setRankingSettings: setRankingSettings({
       driver,

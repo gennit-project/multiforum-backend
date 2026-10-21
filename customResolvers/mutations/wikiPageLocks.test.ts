@@ -58,8 +58,8 @@ test("lockWikiPage delegates authorization and writes lock metadata", async () =
   const models = buildModels();
   const permissionCalls: unknown[] = [];
   const resolver = lockWikiPage({
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never, updateLock: async (id, update) => models.WikiPage.update({where:{id},update}) as never},
     checkPermissions: async (input) => {
       permissionCalls.push(input);
       return true;
@@ -115,8 +115,8 @@ test("unlockWikiPage clears lock metadata", async () => {
     wikiPage: { id: "wiki-1", Channel: { uniqueName: "cats" }, locked: true },
   });
   const resolver = unlockWikiPage({
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never, updateLock: async (id, update) => models.WikiPage.update({where:{id},update}) as never},
     checkPermissions: async () => true,
   });
 
@@ -145,8 +145,8 @@ test("unlockWikiPage clears lock metadata", async () => {
 test("lockWikiPage rejects callers without wiki moderation permission", async () => {
   const models = buildModels();
   const resolver = lockWikiPage({
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never, updateLock: async (id, update) => models.WikiPage.update({where:{id},update}) as never},
     checkPermissions: async () => new Error("No wiki permission"),
   });
 
@@ -167,8 +167,8 @@ test("lockWikiPage rejects an already locked wiki page", async () => {
     wikiPage: { id: "wiki-1", Channel: { uniqueName: "cats" }, locked: true },
   });
   const resolver = lockWikiPage({
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never, updateLock: async (id, update) => models.WikiPage.update({where:{id},update}) as never},
     checkPermissions: async () => {
       throw new Error("permission should not be checked");
     },
@@ -189,8 +189,8 @@ test("lockWikiPage rejects an already locked wiki page", async () => {
 test("unlockWikiPage rejects an unlocked wiki page", async () => {
   const models = buildModels();
   const resolver = unlockWikiPage({
-    Channel: models.Channel as never,
-    WikiPage: models.WikiPage as never,
+    driver: {} as never,
+    repository: {findChannel: async uniqueName => models.Channel.find({where:{uniqueName}}) as never, findPage: async id => models.WikiPage.find({where:{id}}) as never, updateLock: async (id, update) => models.WikiPage.update({where:{id},update}) as never},
     checkPermissions: async () => {
       throw new Error("permission should not be checked");
     },
