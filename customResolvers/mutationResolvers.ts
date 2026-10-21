@@ -368,13 +368,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     lockChannel: lockChannel({
-      Issue,
-      Channel,
       driver
     }),
     unlockChannel: unlockChannel({
-      Issue,
-      Channel,
       driver
     }),
     suspendUser: suspendUser({

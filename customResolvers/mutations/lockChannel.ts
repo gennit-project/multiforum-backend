@@ -1,6 +1,5 @@
+import { createChannelModerationRepository, type ChannelModerationRepository } from "../../services/persistence/channelModerationRepository.js";
 import type {
-  IssueModel,
-  ChannelModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueUpdateInput,
@@ -20,13 +19,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Channel: ChannelModel;
+  channelModerationRepository?: ChannelModerationRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Channel, driver } = input;
+  const { driver } = input;
+  const repository = input.channelModerationRepository ?? createChannelModerationRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, reason, issueId } = args;
 
@@ -55,17 +54,7 @@ const getResolver = (input: Input) => {
     }
 
     // Find the channel and check if it exists
-    const channelData = await Channel.find({
-      where: { uniqueName: channelUniqueName },
-      selectionSet: `{
-        uniqueName
-        displayName
-        locked
-        Admins {
-          username
-        }
-      }`,
-    });
+    const channelData = await repository.findChannel(channelUniqueName);
 
     if (channelData.length === 0) {
       throw new GraphQLError("Channel not found");
@@ -85,17 +74,7 @@ const getResolver = (input: Input) => {
 
     if (!finalIssueId) {
       // Check if there's an existing open issue for this channel
-      const existingIssues = await Issue.find({
-        where: {
-          channelUniqueName: null,
-          relatedChannelUniqueName: channelUniqueName,
-          isOpen: true,
-        },
-        selectionSet: `{
-          id
-          issueNumber
-        }`,
-      });
+      const existingIssues = await repository.findOpenIssues(channelUniqueName);
 
       if (existingIssues.length > 0) {
         finalIssueId = existingIssues[0].id;
@@ -125,15 +104,7 @@ const getResolver = (input: Input) => {
         };
 
         try {
-          const createResult = await Issue.create({
-            input: [issueCreateInput],
-            selectionSet: `{
-              issues {
-                id
-                issueNumber
-              }
-            }`,
-          });
+          const createResult = await repository.createLockIssue(issueCreateInput);
           finalIssueId = createResult.issues[0]?.id || "";
           if (!finalIssueId) {
             throw new GraphQLError("Error creating issue for channel lock");
@@ -205,10 +176,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      await Issue.update({
-        where: { id: finalIssueId },
-        update: issueUpdateInput,
-      });
+      await repository.recordAction(finalIssueId, issueUpdateInput);
     } catch (error) {
       logger.error("Error updating issue with lock action:", error);
       // Continue even if issue update fails - the channel lock is more important
@@ -216,9 +184,7 @@ const getResolver = (input: Input) => {
 
     // Lock the channel
     try {
-      const updateResult = await Channel.update({
-        where: { uniqueName: channelUniqueName },
-        update: {
+      const updateResult = await repository.updateLockState(channelUniqueName, {
           locked: true,
           lockedAt: new Date().toISOString(),
           lockReason: reason,
@@ -231,20 +197,7 @@ const getResolver = (input: Input) => {
               },
             },
           },
-        },
-        selectionSet: `{
-          channels {
-            uniqueName
-            displayName
-            locked
-            lockedAt
-            lockReason
-            LockedBy {
-              displayName
-            }
-          }
-        }`,
-      });
+        });
 
       const updatedChannel = updateResult.channels[0];
       if (!updatedChannel) {

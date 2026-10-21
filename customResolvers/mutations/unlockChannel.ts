@@ -1,6 +1,5 @@
+import { createChannelModerationRepository, type ChannelModerationRepository } from "../../services/persistence/channelModerationRepository.js";
 import type {
-  IssueModel,
-  ChannelModel,
   ModerationActionCreateInput,
   IssueUpdateInput,
 } from "../../ogm_types.js";
@@ -17,13 +16,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Channel: ChannelModel;
+  channelModerationRepository?: ChannelModerationRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Channel, driver } = input;
+  const { driver } = input;
+  const repository = input.channelModerationRepository ?? createChannelModerationRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -53,17 +52,7 @@ const getResolver = (input: Input) => {
     }
 
     // Find the channel and check if it exists
-    const channelData = await Channel.find({
-      where: { uniqueName: channelUniqueName },
-      selectionSet: `{
-        uniqueName
-        displayName
-        locked
-        Admins {
-          username
-        }
-      }`,
-    });
+    const channelData = await repository.findChannel(channelUniqueName);
 
     if (channelData.length === 0) {
       throw new GraphQLError("Channel not found");
@@ -79,17 +68,7 @@ const getResolver = (input: Input) => {
       existingChannel.displayName || channelUniqueName;
 
     // Find the related issue for this channel (if any)
-    const existingIssues = await Issue.find({
-      where: {
-        channelUniqueName: null,
-        relatedChannelUniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-        id
-        issueNumber
-        isOpen
-      }`,
-    });
+    const existingIssues = await repository.findRelatedIssues(channelUniqueName);
 
     const relatedIssue = existingIssues[0];
 
@@ -155,10 +134,7 @@ const getResolver = (input: Input) => {
       };
 
       try {
-        await Issue.update({
-          where: { id: relatedIssue.id },
-          update: issueUpdateInput,
-        });
+        await repository.recordAction(relatedIssue.id, issueUpdateInput);
       } catch (error) {
         logger.error("Error updating issue with unlock action:", error);
         // Continue even if issue update fails - the channel unlock is more important
@@ -167,9 +143,7 @@ const getResolver = (input: Input) => {
 
     // Unlock the channel
     try {
-      const updateResult = await Channel.update({
-        where: { uniqueName: channelUniqueName },
-        update: {
+      const updateResult = await repository.updateLockState(channelUniqueName, {
           locked: false,
           lockedAt: null,
           lockReason: null,
@@ -182,20 +156,7 @@ const getResolver = (input: Input) => {
               },
             },
           },
-        },
-        selectionSet: `{
-          channels {
-            uniqueName
-            displayName
-            locked
-            lockedAt
-            lockReason
-            LockedBy {
-              displayName
-            }
-          }
-        }`,
-      });
+        });
 
       const updatedChannel = updateResult.channels[0];
       if (!updatedChannel) {

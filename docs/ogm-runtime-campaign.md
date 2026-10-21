@@ -63,7 +63,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | complete |
 | 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | complete |
 | 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | complete |
-| 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | partial; see subdivisions |
+| 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | complete |
 | 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | pending |
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | pending |
 | 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | pending |
@@ -616,3 +616,13 @@ Slice25c committed `58bc897e2f08412838d6c344a23d1bdabd295803` ([diff](https://gi
 5 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 254 CRUD sites/49 files; 53 acquisitions/7 files; two separate CLI sites.
 
 25d final integration approval: Independent cumulative review against58bc897: four non-factory blobs identical to prior approved8fc2ca25; factory only removes Issue/WikiPage/TextVersion forwarding retaining driver. Inspected preserved independent6 units/final14 live/static exits and bounded original production diff. Identity attachment/prewrite immutable guard, page/revision attribution and scope, counter outside create catch, explicit selections and create-append error/durability boundaries preserved. Exact cumulative live8 passed zero failed/skipped/cancelled. Diff check clean;5CRUD/0acquisitions, ledger254/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice25d committed `9debcdf6d3e253b15e209c22a723c8a8c3a23654` ([diff](https://github.com/gennit-project/multiforum-backend/commit/9debcdf6d3e253b15e209c22a723c8a8c3a23654)), tree `89d0650bacd922167523f94bec5772ea316a09c6`: lint, TypeScript and all2225 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice25d-exact-live.log. Independent approval recorded above.
+
+### Slice 26 — Channel moderation
+
+9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 245 CRUD sites/47 files; 53 acquisitions/7 files; two separate CLI sites.
+
+36b independently reviewed and queued: 9 CRUD sites; fixed named installation operations preserve registry/integrity/manifest checks, default selections, independent writes, secret carry-over ordering and failure prefix. Ten focused, eleven new live and four existing live checks plus static checks passed. No removal credit before integration.
+
+26 final integration approval: Independent cumulative review against9debcdf6: five non-factory source/test blobs identical to approved05ca0eab; factory only removes Issue/Channel forwarding from lock/unlock retaining driver. Prior independent26 focused and corrected6live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled. Identity protection/full defaults, existing/supplied issue handling, counter/catch boundaries, repeated actions and raw-admin notification session/error/close ordering retained. Diff check clean;9CRUD/0acquisitions, ledger245/53 consistent, queued36b no removal credit. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
