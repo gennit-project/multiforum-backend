@@ -54,7 +54,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | complete |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | complete |
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | complete |
-| 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | pending |
+| 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | complete |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | pending |
 | 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | reviewed subdivisions; integration pending |
 | 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | pending |
@@ -414,3 +414,13 @@ Slice27 comment moderation independently reviewed:11CRUD/0acquisitions prepared,
 
 Slice16 initial live run passed6/7 and failed1/7 due to test ID namespace collision; fixture-only namespace separation independently reviewed, production unchanged; failed log preserved.
 16 final integration approval: Independent integration_review_current approved corrected tree 67d0a0801f2ce3412dcef9e4b8cda242d94dba9d: production sources match original reviewed16 patch; factory retains driver; fixture-only correction separates node/relationship/domain ID namespaces and retains all assertions after initial6/7live failure. Corrected exact-tree7/7live passed; independently35 focused passed on identical production/unit sources using stripped launcher and native storage/HTTP denial guards. Four CRUD sites (two typed+two structural) removed. No blocking findings; existing variant-object database rejection preserved.; live parity passed on identical production sources before this documentation-only update.
+
+Slice16 committed `e6867b8f0548600887cf778321acf33e276fc4bf` ([diff](https://github.com/gennit-project/multiforum-backend/commit/e6867b8f0548600887cf778321acf33e276fc4bf)), tree `1f7708b58eac09ebbc6ec4dae659e5f9442e0b25`: lint, TypeScript and all2094 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice16-corrected-live.log. Independent approval recorded above.
+
+### Scratchpad CI parity correction
+
+Published172cdd9 failed only integration shard3 (run39520312148/job118962562566); seven other shards, unit/performance/coverage-report jobs and container39520312354 passed. A12-run isolated old-old/candidate-candidate probe across3relationship allocation orders showed3legacy sibling-event orders, each matched by the candidate. Installed generated delete collects adjacent relationships without ORDER BY; both paths use the same delete field/schema/context.
+
+Test-only correction retains node-delete-first, exact4events/3typedrelationships, fullpayload/multiplicity/graph comparisons; adds rawrelationship/source/target ID checks against predeleteDB. Only unordered sibling relationships canonicalized before aliasing.11correctedlive,TypeScript,scopedlint,diffcheck passed; scratchpad_review approved testblob d340aff46b28bebf20734f4519cc78aa269946a9. Original CI evidence retained. No production behavior changed. Mandatory hook and new exact-head CI pending.
+
+Usage-conserving workflow: one implementer and one independent reviewer; reuse reviewed artifacts; focused relevant live checks per slice and cumulative CI at meaningful milestones. Repository precommit still mandates full lint,TypeScript,unit suite per commit; it is not bypassed. Architecture issues355–360 remain deferred.37b2 variable correction is now approved per parent handoff; its implementation remains queued.

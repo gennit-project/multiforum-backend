@@ -513,11 +513,12 @@
       "baselineCrudSites": 4,
       "dependencies": "Storage mocks; write/event contract",
       "acceptance": "Variant/upload/database ordering and failures, all external IO mocked",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "e6867b8f0548600887cf778321acf33e276fc4bf",
       "review": "Independent integration_review_current approved corrected tree 67d0a0801f2ce3412dcef9e4b8cda242d94dba9d: production sources match original reviewed16 patch; factory retains driver; fixture-only correction separates node/relationship/domain ID namespaces and retains all assertions after initial6/7live failure. Corrected exact-tree7/7live passed; independently35 focused passed on identical production/unit sources using stripped launcher and native storage/HTTP denial guards. Four CRUD sites (two typed+two structural) removed. No blocking findings; existing variant-object database rejection preserved.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 1f7708b58eac09ebbc6ec4dae659e5f9442e0b25: lint, TypeScript and2094 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice16-corrected-live.log"
       ],
       "preparedPatch": "ogm-slice16.patch",
       "preparedPatchSha256": "a0c05cd13b6c7e4e7c996b09e866ab244c368245045c64e3145c97cbe4aeb84b",
@@ -1472,6 +1473,7 @@
       "13",
       "14",
       "15",
+      "16",
       "35"
     ],
     "runtimeRemovalComplete": false,
@@ -1483,5 +1485,21 @@
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR"
   },
-  "remainingStructuralCrudSites": 1
+  "remainingStructuralCrudSites": 1,
+  "ciCorrections": [
+    {
+      "scope": "Scratchpad delete parity event ordering",
+      "publishedFailureSha": "172cdd9cfd062d0269cf7d1562fbb6b713d7b873",
+      "workflowRun": 39520312148,
+      "job": 118962562566,
+      "status": "independently reviewed; mandatory commit checks and exact-head CI pending",
+      "review": "scratchpad_review approved test blob d340aff46b28bebf20734f4519cc78aa269946a9",
+      "evidence": [
+        "12-run old-old/candidate-candidate probe across three relationship allocation orders: legacy emitted three sibling orders and candidate matched each; node delete always first",
+        "Installed Neo4j generated delete collects adjacent relationships without ORDER BY; both implementations execute the same delete field/schema/context",
+        "11 corrected live tests, TypeScript, scoped lint and diff check passed; no production changes"
+      ],
+      "assertions": "Node-delete-first, exact four events and three typed relationship events, full payload/multiplicity/graph parity retained; raw IDs verified against predelete database. Only sibling relationship events canonicalized before ID aliasing."
+    }
+  ]
 }
