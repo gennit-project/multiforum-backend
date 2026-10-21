@@ -203,9 +203,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     createEventSeriesWithChannelConnections: createEventSeriesWithChannelConnections({
-      EventSeries,
-      Event,
-      Tag,
       driver,
     }),
     updateEventWithChannelConnections: updateEventWithChannelConnections({

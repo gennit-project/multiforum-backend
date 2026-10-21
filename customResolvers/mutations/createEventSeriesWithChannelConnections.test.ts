@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 import getResolver from "./createEventSeriesWithChannelConnections.js";
 import type { GraphQLContext } from "../../types/context.js";
 
+const repositoryFor = (model: {create(input: any): Promise<any>; find(input: any): Promise<any>}) => ({
+  createWithinTransaction: async (input: unknown, tx: unknown) => (await model.create({input: [input], context: {executionContext: tx}})).eventSeries,
+  findCreatedSeries: async (id: string) => model.find({where: {id}}),
+});
+
 const buildDriver = (callbackAttempts = 1) => {
   const sessions: Array<{
     runCalls: any[];
@@ -91,7 +96,7 @@ test("createEventSeriesWithChannelConnections creates series with occurrences", 
   const Event = {};
   const Tag = {};
 
-  const resolver = getResolver({ EventSeries, Event, Tag, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
@@ -122,7 +127,7 @@ test("createEventSeriesWithChannelConnections throws error when no channels prov
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
     resolver(
@@ -146,7 +151,7 @@ test("createEventSeriesWithChannelConnections throws error when no occurrences p
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
     resolver(
@@ -194,7 +199,7 @@ test("createEventSeriesWithChannelConnections handles repeat pattern", async () 
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
@@ -237,7 +242,7 @@ test("createEventSeriesWithChannelConnections connects tags", async () => {
     tags: ["meetup", "community"],
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   const result = await resolver(
     null,
@@ -274,7 +279,7 @@ test("createEventSeriesWithChannelConnections handles location coordinates", asy
     longitude: -112.074,
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await resolver(
     null,
@@ -325,7 +330,7 @@ test("createEventSeriesWithChannelConnections rolls back when an EventChannel ca
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver: customDriver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver: customDriver } as unknown as Parameters<typeof getResolver>[0]);
 
   await assert.rejects(
     resolver(
@@ -350,9 +355,7 @@ test("createEventSeriesWithChannelConnections is safe when Neo4j retries the cal
     },
   };
   const resolver = getResolver({
-    EventSeries,
-    Event: {},
-    Tag: {},
+    eventSeriesCreationRepository: repositoryFor(EventSeries),
     driver,
   } as unknown as Parameters<typeof getResolver>[0]);
 
@@ -383,7 +386,7 @@ test("createEventSeriesWithChannelConnections sets occurrence index correctly", 
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await resolver(
     null,
@@ -412,7 +415,7 @@ test("createEventSeriesWithChannelConnections sets startTimeDayOfWeek and startT
     },
   };
 
-  const resolver = getResolver({ EventSeries, Event: {}, Tag: {}, driver } as unknown as Parameters<typeof getResolver>[0]);
+  const resolver = getResolver({ eventSeriesCreationRepository: repositoryFor(EventSeries), driver } as unknown as Parameters<typeof getResolver>[0]);
 
   await resolver(
     null,

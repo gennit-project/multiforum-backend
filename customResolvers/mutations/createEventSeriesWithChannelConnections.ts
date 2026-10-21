@@ -1,7 +1,7 @@
 import type { Driver } from "neo4j-driver";
 import { createEventChannelQuery } from "../cypher/cypherQueries.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { EventSeriesModel, EventModel, TagModel } from "../../ogm_types.js";
+import { createEventSeriesCreationRepository, type EventSeriesCreationRepository } from "../../services/persistence/eventSeriesCreationRepository.js";
 import { logger } from "../../logger.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 
@@ -45,65 +45,11 @@ type Args = {
 };
 
 type Input = {
-  EventSeries: EventSeriesModel;
-  Event: EventModel;
-  Tag: TagModel;
+  eventSeriesCreationRepository?: EventSeriesCreationRepository;
   driver: Driver;
 };
 
-const eventSeriesSelectionSet = `
-  {
-    id
-    title
-    description
-    locationName
-    address
-    virtualEventUrl
-    cost
-    free
-    isHostedByOP
-    coverImageURL
-    canceled
-    createdAt
-    updatedAt
-    repeatPattern {
-      type
-      count
-      daysOfWeek
-      endType
-      endCount
-      endDate
-    }
-    Poster {
-      username
-    }
-    Tags {
-      text
-    }
-    Occurrences {
-      id
-      title
-      startTime
-      endTime
-      canceled
-      occurrenceIndex
-      EventChannels {
-        id
-        channelUniqueName
-        Channel {
-          uniqueName
-        }
-      }
-    }
-    EventChannels {
-      id
-      channelUniqueName
-      Channel {
-        uniqueName
-      }
-    }
-  }
-`;
+
 
 const eventSelectionSet = `
   {
@@ -161,7 +107,8 @@ const getHourOfDay = (isoDateString: string): number => {
  * Main resolver for creating an event series with occurrences
  */
 const getResolver = (input: Input) => {
-  const { EventSeries, Event, Tag, driver } = input;
+  const { driver } = input;
+  const repository = input.eventSeriesCreationRepository ?? createEventSeriesCreationRepository(driver);
 
   return async (parent: unknown, args: Args, context: GraphQLContext) => {
     const { input: seriesInput } = args;
@@ -285,13 +232,8 @@ const getResolver = (input: Input) => {
         // Create the series, its occurrences, and every EventChannel in one
         // retry-safe unit. If any channel link fails, none of the graph changes
         // from this attempt are committed.
-        const createResult = await EventSeries.create({
-          input: [eventSeriesCreateInput],
-          selectionSet: `{ eventSeries ${eventSeriesSelectionSet} }`,
-          context: { executionContext: transaction },
-        });
-
-        const newEventSeries = createResult.eventSeries[0];
+        const created = await repository.createWithinTransaction(eventSeriesCreateInput, transaction);
+        const newEventSeries = created[0];
 
         for (const occurrence of newEventSeries.Occurrences) {
           for (const channelUniqueName of seriesInput.channelConnections) {
@@ -307,12 +249,7 @@ const getResolver = (input: Input) => {
       });
 
       // Refetch the EventSeries with all related data
-      const fetchedEventSeries = await EventSeries.find({
-        where: {
-          id: eventSeriesId,
-        },
-        selectionSet: eventSeriesSelectionSet,
-      });
+      const fetchedEventSeries = await repository.findCreatedSeries(eventSeriesId);
 
       return fetchedEventSeries[0];
     } catch (error: unknown) {

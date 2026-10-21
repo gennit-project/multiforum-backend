@@ -716,3 +716,17 @@ Pipeline driver-forwarding foundation independently reviewed and queued:46focuse
 Slice32 committed `9ac1d2dbfc650cb4afa2ededacb383bf118429ae` ([diff](https://github.com/gennit-project/multiforum-backend/commit/9ac1d2dbfc650cb4afa2ededacb383bf118429ae)), tree `f29c32553f3e8d44dc0213ac503dbb11e2053ad2`: lint, TypeScript and all2383 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice32-exact-live.log. Independent approval recorded above.
 
 CLI migration integrated: two separate CLI CRUD sites removed, no runtime credit. Cumulative live/review/hooks pending. Actual CLI never executed.
+
+CLI migration committed a860f26debcf4d6f1d0f448d53614baffdd73255: five cumulative live tests, lint,TypeScript and2386units passed; independent integration approval recorded.
+
+### Slice 33a — Event series creation
+
+2 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 179 CRUD sites/31 files; 53 acquisitions/7 files; zero separate CLI CRUD sites.
+
+40a lease helpers independently reviewed and queued:6CRUD;30focused plus overlapping6lease units,8live and static checks passed. Same independent write/partial-failure contracts and heartbeat boundaries. Sequential stale-owner evidence only; no concurrent atomicity redesign. No credit before integration.
+
+33a final integration approval: Independent cumulative33a review against a860f26. Four nonfactory blobs identical to approved b73c53b6; factory removes only unused Event/Tag forwards. Original10focused/6existinglive/4correctednewlive/static evidence reused; exact cumulative4live passed zero failures/skips/cancellations. Caller transaction, nested generated inputs, postcommit refetch, full raw native event/graph parity retained; shared31/32 sources untouched. Diff check clean. Inventory179CRUD/31files includes178typed sites/30files plus explicitly tracked structural buildBotInvocationContext Comment.find;53acquisitions unchanged. Reviewed pending documentation-only correction changes stale two-CLI prose to zero CLI sites; parent will stage with review. Queued40a receives no removal credit. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+33a mandatory TypeScript gate caught one stale EventSeries property forwarded by cumulative factory integration. Removed that unused forwarding; repository/resolver code unchanged. Renewal review and full hooks required. Original4exactlive passed.
+
+33a final integration approval: Renewed exact33a review versus approved6606e102: removes only unused EventSeries forwarding from creation factory, whose Input accepts driver/optional repository. Repository/resolver/test sources unchanged; original exact4live and prior10focused/6existinglive/static evidence retained. Documentation records prior review, corrects zero CLI count and accurately states mandatory TypeScript failure. Corrected TypeScript exit0 confirmed by parent session88320; diff check clean. Prior scope/transaction/native-event/default/input parity review and179CRUD/53acquisition inventory remain applicable. Full mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
