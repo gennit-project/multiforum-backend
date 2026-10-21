@@ -424,7 +424,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Plugin,
       PluginVersion,
       ServerConfig,
-      ServerSecret
+      driver
     }),
     triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({
       DownloadableFile,
@@ -522,7 +522,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       ServerSecret
     }),
     setServerPluginSecret: setServerPluginSecret({
-      ServerSecret
+      driver
     }),
     updatePluginPipelines: updatePluginPipelines({
       ServerConfig

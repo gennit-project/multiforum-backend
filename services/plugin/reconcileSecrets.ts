@@ -1,5 +1,5 @@
 import type { PluginConfigScope } from './configStatus.js'
-import type { ServerSecretModel } from '../../ogm_types.js'
+import type { ServerSecretRepository } from "../persistence/serverSecretRepository.js"
 
 type SecretDefinition = {
   key?: unknown
@@ -86,15 +86,12 @@ export const planSecretRenames = (params: {
 }
 
 export const migrateServerSecretRenames = async (params: {
-  ServerSecret: ServerSecretModel
+  serverSecretRepository: ServerSecretRepository
   pluginId: string
   oldManifest: unknown
   newManifest: unknown
 }): Promise<SecretRename[]> => {
-  const secrets = await params.ServerSecret.find({
-    where: { pluginId: params.pluginId },
-    selectionSet: `{ id key }`
-  })
+  const secrets = await params.serverSecretRepository.findRenameCandidates(params.pluginId)
   const records = secrets.filter(secret =>
     typeof secret.id === 'string' && typeof secret.key === 'string'
   )
@@ -106,10 +103,7 @@ export const migrateServerSecretRenames = async (params: {
   })
   const recordsByKey = new Map(records.map(secret => [secret.key, secret]))
   for (const rename of renames) {
-    await params.ServerSecret.update({
-      where: { id: recordsByKey.get(rename.from)!.id },
-      update: { key: rename.to }
-    })
+    await params.serverSecretRepository.renameKey(recordsByKey.get(rename.from)!.id, rename.to)
   }
   return renames
 }

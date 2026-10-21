@@ -1,7 +1,17 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { migrateServerSecretRenames, planSecretRenames } from './reconcileSecrets.js'
+import { migrateServerSecretRenames as migrateWithRepository, planSecretRenames } from './reconcileSecrets.js'
 import type { ServerSecretModel } from '../../ogm_types.js'
+
+// In-memory legacy fixture adapter; real persistence uses the focused repository.
+const migrateServerSecretRenames = ({ ServerSecret, ...rest }: { ServerSecret: ServerSecretModel; pluginId: string; oldManifest: unknown; newManifest: unknown }) => migrateWithRepository({
+  ...rest,
+  serverSecretRepository: {
+    findForReplacement: async () => [], replaceCiphertext: async () => {}, createEncryptedSecret: async () => {},
+    findRenameCandidates: pluginId => ServerSecret.find({where:{pluginId},selectionSet:'{ id key }'}),
+    renameKey: async (id,key) => { await ServerSecret.update({where:{id},update:{key}}); },
+  },
+})
 
 const oldManifest = {
   secrets: [{ key: 'OLD_API_KEY', scope: 'server' }]
@@ -161,4 +171,19 @@ test('does not update when fetched records are unusable or no rename applies', a
 
   assert.deepEqual(renamed, [])
   assert.deepEqual(updates, [])
+})
+
+test('rename failures propagate after earlier renames without retrying or continuing', async () => {
+  const calls: string[] = []
+  await assert.rejects(migrateWithRepository({
+    pluginId: 'scanner',
+    oldManifest: { secrets: [{key:'A'}, {key:'B'}, {key:'C'}] },
+    newManifest: { secrets: [{key:'X',renamedFrom:'A'}, {key:'Y',renamedFrom:'B'}, {key:'Z',renamedFrom:'C'}] },
+    serverSecretRepository: {
+      findForReplacement: async()=>[], replaceCiphertext: async()=>{}, createEncryptedSecret: async()=>{},
+      findRenameCandidates: async()=>[{id:'a',key:'A'},{id:'b',key:'B'},{id:'c',key:'C'}],
+      renameKey: async(id,key)=>{calls.push(`${id}:${key}`);if(id==='b') throw new Error('second rename failed')},
+    },
+  }), /second rename failed/)
+  assert.deepEqual(calls,['a:X','b:Y'])
 })

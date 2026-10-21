@@ -71,8 +71,8 @@ const buildDefaultOperations = ({
   const preview = previewPluginConfigurationReconciliation({
     driver: context.driver,
   })
-  const install = installPluginVersion(input)
-  const setSecret = setServerPluginSecret({ ServerSecret: input.ServerSecret })
+  const install = installPluginVersion({ ...input, driver: context.driver })
+  const setSecret = setServerPluginSecret({ driver: context.driver })
   const configure = enableServerPlugin(input)
   const updatePipelines = updatePluginPipelines({ ServerConfig: input.ServerConfig })
 

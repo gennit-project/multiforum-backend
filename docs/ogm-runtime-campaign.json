@@ -1410,15 +1410,16 @@
           "id": "36a",
           "scope": "Plugin registry refresh",
           "baselineCrudSites": 13,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative36a review against0556cc6e5e42cb8fa78440ce590c4d0056c9fd2f. Four nonfactory blobs identical to independently approvedc8bf5cdb; factory replaces three unused model forwards with configured driver, matching Input. Original8focused/static evidence reused; exact cumulative12live passed zero failures/skips/cancellations including actual registry parity and existing mocked HTTP/tarball cases. Exact reads/defaults, orphan repair before registry loop, per-version/outer catch and final-refetch fallback, metadata serialization/processedAnyVersion unchanged. Diff check clean; ledger13CRUD/0acquisitions,135remainingCRUD including structural adapter/53acquisitions/0CLI. Queued40c/42 accurately recorded without removal credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice36a.patch",
           "preparedPatchSha256": "eb1656733eee84388e18703f1cdd4a13ea42f512dc3d61909ec043915d7cca4a",
           "preparedBaseCommit": "ae05cc46baa518a7dfb218365ec044dea445b67c",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 833f471f0573e21555060cfe3a2256350f209dd5: lint, TypeScript and2400 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice36a-exact-live.log"
           ],
-          "commit": null
+          "commit": "896d84346b5abf6ef4433309d2b101609f6bdea4"
         },
         {
           "id": "36b",
@@ -1457,14 +1458,15 @@
           "id": "37a",
           "scope": "Secret persistence",
           "baselineCrudSites": 5,
-          "status": "reviewed; integration pending",
-          "review": "review_slice1; recovery verified",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative37a review against896d84346b5abf6ef4433309d2b101609f6bdea4. Preserved review_slice1 approval/recovery and20unit/4secret+4installlive/static ledger evidence reused; original patch SHA25646b01e962456107154c40f6f5ef2316bdd8467a44a8e928786e6a4fea6844db6 verified. All nine nonfactory blobs match prepared patch new-blob IDs; cumulative factory only replaces ServerSecret forwards with driver for install/setter. Inspected default projections, encryption-before-lookup, validation reset, sequential rename and install/apply context.driver wiring; error wrapping/independent commits retained. Exact cumulative8live passed zero failures/skips/cancellations including synthetic encryption and carry-settings rename. Diff check clean. Ledger5CRUD/0acquisitions,130remainingCRUD including structural adapter/53acquisitions/0CLI; corrected43 queue evidence accurate without credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice37a.patch",
           "preparedPatchSha256": "46b01e962456107154c40f6f5ef2316bdd8467a44a8e928786e6a4fea6844db6",
           "preparedBase": "658bfe4 plus35a",
           "verification": [
-            "20 units;4 secret+4 installation live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "37b1",
@@ -1769,10 +1771,26 @@
       "baselineCrudSites": 11,
       "dependencies": "40; 44 notifications; 38",
       "acceptance": "Comment applicability, recursion guards, middleware wiring and ordering",
-      "status": "pending",
+      "status": "reviewed; integration pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent corrected43 six-path review against approved42a23bb88a; SHA25618ae559b67a8267f96a967e1269891039aee9b67f01eb460894f0bdeead835f4 verified. Seven fixed operations preserve11CRUD input expressions/selections, author inline fragments, unbounded configs/secrets and full job defaults; report/comment/thread helpers untouched and existing raw Issue/model forwarding retained. Test-only correction resolves review findings: canonical dc-POSTED_IN_CHANNEL->Discussion with positive id/body parity, explicit User username and ModerationProfile displayName/nested User assertions. Corrected2targetedlive pass plus unchanged5 from original7live; not claimed as one final full run. Original16focused/static reused; corrected TypeScript66109 and scoped lint exit0 confirmed. Primitive writes compare full graph/ordered events after raw identity/temporal checks; actual fake-plugin service smoke asserts guards/status/loader order, not full execution event parity. Existing downstream unit recorders unchanged. Diff check clean; prepared11CRUD/0acquisitions, cumulative integration must preserve38/39 adaptations. Prior rejection superseded only for this corrected tree.",
+      "verification": [
+        "16focused,7initiallive plus2correctedtargetedlive,lint/TypeScript passed. Eleven calls through seven finite named operations; original input/selections/defaults, order and failure contracts preserved. Primitive writes have full graph/ordered native event parity after raw identity validation; actual trigger smoke with fake plugin; canonical discussion relationship and both author-union branches positively asserted after review. Zero credit before integration."
+      ],
+      "preparedEvidence": {
+        "base": "a23bb88a477ec9fbc3b4221bd2628d56305aff5a",
+        "tree": "f980a0d370b94a12e49214b37070713cad1f2d5c",
+        "sha256": "18ae559b67a8267f96a967e1269891039aee9b67f01eb460894f0bdeead835f4",
+        "patch": "/tmp/ogm-slice43.patch",
+        "files": [
+          "services/persistence/commentExecutionRepository.ts",
+          "services/plugin/commentTrigger.ts",
+          "services/plugin/commentTrigger.test.ts",
+          "services/plugin/commentTrigger.execution.test.ts",
+          "tests/fixtures/commentExecutionRepositoryStub.ts",
+          "tests/integration/commentExecutionRepository.test.ts"
+        ]
+      }
     },
     {
       "id": "44",
@@ -1848,9 +1866,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 135,
+  "remainingRuntimeCrudSites": 130,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 24,
+  "remainingRuntimeCrudFiles": 22,
   "foundations": [
     {
       "id": "F01",
@@ -1907,7 +1925,6 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "36a",
       "37a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",

@@ -160,3 +160,20 @@ test("rejects duplicate secret declarations in plugin manifests", async () => {
     /test-plugin@1\.0\.0.*duplicate server secret declarations.*API_KEY/i
   );
 });
+
+test("carry-settings installation renames synthetic secrets through the registered driver repository", async () => {
+  currentManifest = {...structuredClone(baseManifest), secrets:[{key:"NEW_API_KEY",scope:"server",renamedFrom:"OLD_API_KEY"}]};
+  tarball=await buildTarball(currentManifest);
+  registryJson.plugins[0].versions[0].integritySha256=crypto.createHash("sha256").update(tarball).digest("hex");
+  await run(`
+    CREATE (plugin:Plugin {id:'plugin',name:'test-plugin',displayName:'Test Plugin'})
+    CREATE (plugin)-[:HAS_VERSION]->(version:PluginVersion {id:'old-version',version:'0.9.0',repoUrl:'https://registry.test/old.tgz',entryPath:'index.js',manifest:$manifest})
+    CREATE (:ServerConfig {serverName:'test-server',pluginRegistries:[$url]})-[:INSTALLED {enabled:true,settingsJson:'{}'}]->(version)
+    CREATE (:ServerSecret {id:'synthetic-secret',pluginId:'test-plugin',key:'OLD_API_KEY',ciphertext:'synthetic-only',isValid:true,createdAt:datetime(),updatedAt:datetime()})
+  `,{url:REGISTRY_URL,manifest:JSON.stringify({secrets:[{key:'OLD_API_KEY',scope:'server'}]})});
+  await installPluginVersion({pluginId:'test-plugin',version:'1.0.0',carrySettings:true});
+  const result=await run("MATCH (s:ServerSecret {id:'synthetic-secret'}) RETURN s.key AS key,s.ciphertext AS ciphertext,s.isValid AS valid");
+  assert.equal(result[0].key,'NEW_API_KEY');
+  assert.equal(result[0].ciphertext,'synthetic-only');
+  assert.equal(result[0].valid,true);
+});

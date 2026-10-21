@@ -1,9 +1,10 @@
+import type { Driver } from "neo4j-driver"
+import { createServerSecretRepository, type ServerSecretRepository } from "../../services/persistence/serverSecretRepository.js"
 import crypto from 'crypto'
 import type {
   PluginModel,
   PluginVersionModel,
   ServerConfigModel,
-  ServerSecretModel,
   PluginCreateInput,
   PluginUpdateInput,
   PluginVersionCreateInput,
@@ -22,7 +23,8 @@ type Input = {
   Plugin: PluginModel
   PluginVersion: PluginVersionModel
   ServerConfig: ServerConfigModel
-  ServerSecret: ServerSecretModel
+  driver: Driver
+  serverSecretRepository?: ServerSecretRepository
 }
 
 type Args = {
@@ -51,7 +53,7 @@ const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
 })
 
 const getResolver = (input: Input) => {
-  const { Plugin, PluginVersion, ServerConfig, ServerSecret } = input
+  const { Plugin, PluginVersion, ServerConfig, serverSecretRepository = createServerSecretRepository(input.driver) } = input
 
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     const { pluginId, version, carrySettings = false } = args
@@ -357,7 +359,7 @@ const getResolver = (input: Input) => {
         reconciledSettings = reconciled.settings
         carryOverReport = reconciled.report
         carryOverReport.renamedSecrets = await migrateServerSecretRenames({
-          ServerSecret,
+          serverSecretRepository,
           pluginId: pluginSlug,
           oldManifest: previousVersionEdge.node?.manifest,
           newManifest: artifacts.manifest
