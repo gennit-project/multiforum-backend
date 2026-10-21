@@ -83,7 +83,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | complete |
 | 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | complete |
 | 44 Pipeline control/notifications | 18 | Notifications before 40–43; controls after 41–43 and 34 | Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility | complete |
-| 45 Pipeline campaigns | 14 | 40–44 | Progress, cancellation, aggregation and restart behavior | pending |
+| 45 Pipeline campaigns | 14 | 40–44 | Progress, cancellation, aggregation and restart behavior | partial; see subdivisions |
 | 46 Test seeding endpoint | 9 | 31–33 and other reused creation helpers | Access restrictions, fixture relationships and composed responses | pending |
 
 ## Runtime closure slices (after domain consumers)
@@ -994,3 +994,13 @@ Slice44d committed `5fae4b51a1fb8da2505bb9fb5f299c2b6e0626aa` ([diff](https://gi
 Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
 
 45a final integration approval: All ten executable/test blobs exactly match approved1e636119; configured preview driver and shared wiring preserved. Diff check clean, ledger16CRUD/50acquisitions/0CLI and W4 pending correctly distinguished. Exact isolated8/8 live passed without skips. Actual anonymous URL redaction/default25/no dispatch preserved; explicitly synthetic trusted-URL tests only cover downstream sequential effects, future rate window and durable projection-failure prefixes. Prior11focused/static review reused.; live parity passed on identical production sources before this documentation-only update.
+
+Slice45a committed `d83e930898e5c0de0a75f8c7a8a947e91e0fd0c5` ([diff](https://github.com/gennit-project/multiforum-backend/commit/d83e930898e5c0de0a75f8c7a8a947e91e0fd0c5)), tree `68de7479c57d02ee2f65d911aa8fc83dfdd08846`: lint, TypeScript and all2455 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice45a-exact-live.log. Independent approval recorded above.
+
+### Slice 45b — Campaign history queries
+
+3 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 13 CRUD sites/2 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+45b final integration approval: All six executable/test blobs match approvedec39cecd; query factory retains45a preview driver and adds configured query drivers only. Exact isolated5/5live passed without skips, preserving history/status/destination projections, sequential destination resolution, orphan exclusion, archive filtering, unbounded failures, coercion and no read events. Ledger13CRUD/50acquisitions/0CLI and W4 reviewed-but-unintegrated evidence consistent; diff check clean. Prior4focused/static reused.; live parity passed on identical production sources before this documentation-only update.

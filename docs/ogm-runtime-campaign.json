@@ -1995,7 +1995,7 @@
           "id": "45a",
           "scope": "Campaign service and worker operations",
           "baselineCrudSites": 7,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "a029e1671b5c97415919355ec59621a37e440e67",
             "tree": "1e63611912b5c6e37042498bb50787d52d0fb196",
@@ -2016,15 +2016,16 @@
           },
           "review": "All ten executable/test blobs exactly match approved1e636119; configured preview driver and shared wiring preserved. Diff check clean, ledger16CRUD/50acquisitions/0CLI and W4 pending correctly distinguished. Exact isolated8/8 live passed without skips. Actual anonymous URL redaction/default25/no dispatch preserved; explicitly synthetic trusted-URL tests only cover downstream sequential effects, future rate window and durable projection-failure prefixes. Prior11focused/static review reused.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 68de7479c57d02ee2f65d911aa8fc83dfdd08846: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice45a-exact-live.log"
           ],
-          "commit": null
+          "commit": "d83e930898e5c0de0a75f8c7a8a947e91e0fd0c5"
         },
         {
           "id": "45b",
           "scope": "Campaign history and failure queries",
           "baselineCrudSites": 3,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "1e63611912b5c6e37042498bb50787d52d0fb196",
             "tree": "ec39cecdf506c45038313444c63e861ca0cc4de1",
@@ -2039,10 +2040,11 @@
               "tests/integration/campaignQueryRepository.test.ts"
             ]
           },
-          "review": "Independent six-path review against approved45a1e636119; SHA256b319ab341cc21ec06a714372b9f38c5d391603d16b949a4f36202fe005b1c2ce verified, diff check clean. Three named reads preserve full history selection, failed/timed-out/cancelled predicate and destination projection; query factory forwards configured driver while retaining45a preview wiring. Sequential destination lookups, rejection stop, orphan skipping and first nonarchived channel choice unchanged.4focused/5live passed zero failures/skips/cancellations, including positive canonical discussion/channel projections, archive exclusion,30unbounded failures, literal IDs/coercion, response parity/no read events and exact propagated errors. Copied ignored generated source is outside patch; enum stub typing retains original values. Corrected TypeScript6967/final lint exit0 parent-confirmed. Prepared3CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "review": "All six executable/test blobs match approvedec39cecd; query factory retains45a preview driver and adds configured query drivers only. Exact isolated5/5live passed without skips, preserving history/status/destination projections, sequential destination resolution, orphan exclusion, archive filtering, unbounded failures, coercion and no read events. Ledger13CRUD/50acquisitions/0CLI and W4 reviewed-but-unintegrated evidence consistent; diff check clean. Prior4focused/static reused.",
           "verification": [
-            "4focused,5live,lint/TypeScript passed. Exact status filters, destination projections, ordered resolution, orphan exclusion and native read-event absence preserved. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "45c",
@@ -2100,9 +2102,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 16,
+  "remainingRuntimeCrudSites": 13,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 3,
+  "remainingRuntimeCrudFiles": 2,
   "foundations": [
     {
       "id": "F01",
@@ -2168,7 +2170,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "45a"
+      "45b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2692,7 +2694,7 @@
     {
       "id": "W4",
       "scope": "Runtime composition/context without OGM and isolated legacy parity oracle",
-      "status": "prepared; review pending",
+      "status": "reviewed; integration pending",
       "baselineCrudSites": 0,
       "acquisitionsRemoved": 33,
       "preparedEvidence": {
@@ -2827,19 +2829,19 @@
         "acquisitionsRemoved": 33,
         "verification": [
           "Prepared AST0runtimeCRUD/0acquisitions; CLIpreviously0; type/codegen OGM remains intentional",
-          "27unique focused pass; final types90536actual0; lint33771passed before test-only oracle/fixture correction",
-          "Initial live failed: oracle omitted original eager model acquisition before shared-schema init; restored exact original ordered32names. Two new production smoke fixtures corrected expected finiteprojection/requiredcampaignprops. Correctedlive28106pending. Failed log preserved.",
-          "Production-only bootstrap test never constructs legacy OGM; parity oracle and generic adapter moved test-only",
-          "Optional Ogm context type retained only for characterization fixture compatibility; no production runtime context carries it"
+          "27unique focused cases passed; final TypeScript90536actual0; full lint33771pass plus correctedfixturelint7006actual0",
+          "Initial live failed due to legacy oracle missing original eager32model initialization and two new smoke fixture mistakes; preserved /tmp/runtime-composition-wiring-live.log. Corrected25live cases passed28106actual0, /tmp/runtime-composition-wiring-corrected-live.log.",
+          "Production-only bootstrap directly creates production resolvers with noOGM; baseline oracle uses exact original32orderedmodel acquisitions before shared-schema initialization",
+          "Optional Ogm context type retained only for legacyfixture compatibility; no productionruntime context carries it"
         ]
       },
-      "review": "Independent review pending",
+      "review": "Independent121path review: production root no longer constructs/forwards OGM; same configured driver, schema registration before middleware, guaranteed suspension/notification capabilities and anonymous subscription context preserved. Legacy initializer/generic adapter isolated to test fixtures; existing parity assertions unchanged. Corrected oracle exact32ordered acquisitions independently matched old resolverDeps; raw Issue oracle remains raw. New production bootstrap tests use no oracle. Patch SHA2569d8cb3d402a9e98583cee1cfce2969fd8b5f811a2f8bca9f60ffd583dc00837e and diff check clean.27uniquefocused and corrected25live passed; initial fixture failures preserved and explained. Finaltypes90536/full lint33771/correctedfixturelint7006 actualzero confirmed. Optional context OGM type/codegen intentionally retained; cumulative hooks/live still required.",
       "verification": [
         "Prepared AST0runtimeCRUD/0acquisitions; CLIpreviously0; type/codegen OGM remains intentional",
-        "27unique focused pass; final types90536actual0; lint33771passed before test-only oracle/fixture correction",
-        "Initial live failed: oracle omitted original eager model acquisition before shared-schema init; restored exact original ordered32names. Two new production smoke fixtures corrected expected finiteprojection/requiredcampaignprops. Correctedlive28106pending. Failed log preserved.",
-        "Production-only bootstrap test never constructs legacy OGM; parity oracle and generic adapter moved test-only",
-        "Optional Ogm context type retained only for characterization fixture compatibility; no production runtime context carries it"
+        "27unique focused cases passed; final TypeScript90536actual0; full lint33771pass plus correctedfixturelint7006actual0",
+        "Initial live failed due to legacy oracle missing original eager32model initialization and two new smoke fixture mistakes; preserved /tmp/runtime-composition-wiring-live.log. Corrected25live cases passed28106actual0, /tmp/runtime-composition-wiring-corrected-live.log.",
+        "Production-only bootstrap directly creates production resolvers with noOGM; baseline oracle uses exact original32orderedmodel acquisitions before shared-schema initialization",
+        "Optional Ogm context type retained only for legacyfixture compatibility; no productionruntime context carries it"
       ]
     }
   ],

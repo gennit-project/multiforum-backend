@@ -185,9 +185,11 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       ServerConfig,
     }),
     getPluginPipelineCampaigns: getPluginPipelineCampaigns({
+      driver,
       PluginPipelineCampaign,
     }),
     getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
+      driver,
       DownloadableFile,
       PluginPipelineRun,
     }),

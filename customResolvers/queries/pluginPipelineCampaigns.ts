@@ -1,3 +1,4 @@
+import {createCampaignQueryRepository,type CampaignQueryRepository} from "../../services/persistence/campaignQueryRepository.js";
 import type {Driver} from "neo4j-driver";
 import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
 import type {
@@ -6,7 +7,6 @@ import type {
   ServerConfigModel,
   PluginPipelineRunModel,
 } from "../../ogm_types.js";
-import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import { previewPipelineCampaign } from "../../services/plugin/pipelineCampaign.js";
 
 export const previewPluginPipelineCampaign = ({
@@ -24,52 +24,31 @@ export const previewPluginPipelineCampaign = ({
     previewPipelineCampaign({ DownloadableFile, ServerConfig, driver, campaignRepository, policyId });
 
 export const getPluginPipelineCampaigns = ({
-  PluginPipelineCampaign,
+  driver,
+  queryRepository,
 }: {
+  driver?: Driver;
+  queryRepository?: CampaignQueryRepository;
   PluginPipelineCampaign: PluginPipelineCampaignModel;
 }) =>
   async () =>
-    PluginPipelineCampaign.find({
-      selectionSet: `{
-        id policyId eventType scope channelId applicability enforcementBehavior
-        status concurrency rateLimitPerMinute affectedFileCount accessibleFileCount
-        unavailableFileCount estimatedProviderRuns completedCount runningCount
-        failedCount timedOutCount createdByUsername createdAt updatedAt startedAt
-        pausedAt finishedAt
-      }`,
-    });
+    (queryRepository ?? createCampaignQueryRepository(driver!)).findCampaigns();
 
 export const getPluginPipelineCampaignFailures = ({
-  DownloadableFile,
-  PluginPipelineRun,
+  driver,
+  queryRepository,
 }: {
+  driver?: Driver;
+  queryRepository?: CampaignQueryRepository;
   DownloadableFile: DownloadableFileModel;
   PluginPipelineRun: PluginPipelineRunModel;
 }) =>
   async (_parent: unknown, { campaignId }: { campaignId: string }) => {
-    const attempts = await PluginPipelineRun.find({
-      where: {
-        campaignId,
-        status_IN: [
-          PluginPipelineRunStatus.Failed,
-          PluginPipelineRunStatus.TimedOut,
-          PluginPipelineRunStatus.Cancelled,
-        ],
-      },
-      selectionSet: `{ pipelineId targetId status attemptNumber }`,
-    });
+    const repository = queryRepository ?? createCampaignQueryRepository(driver!);
+    const attempts = await repository.findFailures(campaignId);
     const failures = [];
     for (const attempt of attempts) {
-      const files = await DownloadableFile.find({
-        where: { id: attempt.targetId },
-        selectionSet: `{
-          id
-          Discussion {
-            id
-            DiscussionChannels { channelUniqueName archived }
-          }
-        }`,
-      });
+      const files = await repository.findDestination(attempt.targetId);
       const discussion = files[0]?.Discussion;
       const channel = discussion?.DiscussionChannels?.find(
         item => item.archived !== true
