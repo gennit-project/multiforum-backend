@@ -906,28 +906,30 @@
           "id": "25a",
           "scope": "Image reports",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review against1f5df204: four non-factory blobs identical to approveda473bf7; factory only removes Issue/Image forwarding retaining driver. Prior independent5 focused/static evidence reused; exact live7 passed zero failed/skipped/cancelled including restored immutable-update guard. Target/scope/counter/create-append boundaries, nested MODERATED_COMMENT author graph and native projection-failure durability retained. Diff check clean;4CRUD/0acquisitions, ledger267/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice25a.patch",
           "preparedPatchSha256": "b5ea82319f6a23fc67654ba5e2244d5cdb7d8a40f94b8016050c91f7b502a464",
           "preparedBase": "e863e3b",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 6a06b28803a946e7ee9cf4ac3986a95ca048f03e: lint, TypeScript and2209 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice25a-exact-live.log"
           ],
-          "commit": null
+          "commit": "7b6bb93e281d1aa2bfd63f2c0b8954e8a41e6f14"
         },
         {
           "id": "25b",
           "scope": "Profile picture reports",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
-          "review": "reports_reviewer",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against7b6bb93: four non-factory blobs identical to approved649b62c; factory only removes Issue/User forwarding retaining driver. Prior independent5 focused/static evidence reused; exact live6 passed zero failed/skipped/cancelled including immutable-update rejection. Profile identity/scope/counter, selected projections, create-append catches and durable nested activity/native-event behavior retained. Diff check clean;4CRUD/0acquisitions, ledger263/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice25b.patch",
           "preparedPatchSha256": "fc939a5a0b536451ae007df99df20fba113942a5ecdb327008c4e0e25f30e820",
           "preparedBase": "e863e3b",
           "verification": [
-            "Tree 649b62c2ef2644246786a1b74998ca49f07da2dd: 5 focused,6 final live; TypeScript passed; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "25c",
@@ -1638,9 +1640,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 267,
+  "remainingRuntimeCrudSites": 263,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 52,
+  "remainingRuntimeCrudFiles": 51,
   "foundations": [
     {
       "id": "F01",

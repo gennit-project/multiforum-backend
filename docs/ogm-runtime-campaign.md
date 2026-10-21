@@ -63,7 +63,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | complete |
 | 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | complete |
 | 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | complete |
-| 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | pending |
+| 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | partial; see subdivisions |
 | 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | pending |
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | pending |
 | 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | pending |
@@ -590,3 +590,11 @@ Slice24d committed `1f5df204cc76f9005c797ec97becb1ecb5c3d815` ([diff](https://gi
 4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 267 CRUD sites/52 files; 53 acquisitions/7 files; two separate CLI sites.
 
 25a final integration approval: Independent cumulative review against1f5df204: four non-factory blobs identical to approveda473bf7; factory only removes Issue/Image forwarding retaining driver. Prior independent5 focused/static evidence reused; exact live7 passed zero failed/skipped/cancelled including restored immutable-update guard. Target/scope/counter/create-append boundaries, nested MODERATED_COMMENT author graph and native projection-failure durability retained. Diff check clean;4CRUD/0acquisitions, ledger267/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice25a committed `7b6bb93e281d1aa2bfd63f2c0b8954e8a41e6f14` ([diff](https://github.com/gennit-project/multiforum-backend/commit/7b6bb93e281d1aa2bfd63f2c0b8954e8a41e6f14)), tree `6a06b28803a946e7ee9cf4ac3986a95ca048f03e`: lint, TypeScript and all2209 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice25a-exact-live.log. Independent approval recorded above.
+
+### Slice 25b — Profile picture reports
+
+4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 263 CRUD sites/51 files; 53 acquisitions/7 files; two separate CLI sites.
+
+25b final integration approval: Independent cumulative review against7b6bb93: four non-factory blobs identical to approved649b62c; factory only removes Issue/User forwarding retaining driver. Prior independent5 focused/static evidence reused; exact live6 passed zero failed/skipped/cancelled including immutable-update rejection. Profile identity/scope/counter, selected projections, create-append catches and durable nested activity/native-event behavior retained. Diff check clean;4CRUD/0acquisitions, ledger263/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
