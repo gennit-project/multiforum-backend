@@ -1,13 +1,12 @@
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import type { EventModel, EventSeriesModel } from "../../ogm_types.js";
+import {createEventSeriesDeletionRepository, type EventSeriesDeletionRepository} from "../../services/persistence/eventSeriesDeletionRepository.js";
 import { logger } from "../../logger.js";
 import { quarantineConnectorsForDeletedParents } from "../../services/intermediateNodeQuarantine.js";
 
 type Input = {
-  Event: EventModel;
-  EventSeries: EventSeriesModel;
+  eventSeriesDeletionRepository?: EventSeriesDeletionRepository;
   driver: Driver;
 };
 
@@ -17,7 +16,8 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { Event, EventSeries, driver } = input;
+  const { driver } = input;
+  const repository = input.eventSeriesDeletionRepository ?? createEventSeriesDeletionRepository(driver);
 
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const { eventId, scope } = args;
@@ -26,24 +26,7 @@ const getResolver = (input: Input) => {
 
     try {
       // Fetch the event and its series relationship
-      const existingEvents = await Event.find({
-        where: { id: eventId },
-        selectionSet: `
-          {
-            id
-            title
-            occurrenceIndex
-            EventSeries {
-              id
-              title
-              Occurrences {
-                id
-                occurrenceIndex
-              }
-            }
-          }
-        `,
-      });
+      const existingEvents = await repository.findSnapshot(eventId);
 
       const existingEvent = existingEvents[0];
       if (!existingEvent) {
@@ -56,9 +39,7 @@ const getResolver = (input: Input) => {
       switch (scope) {
         case "THIS_ONLY": {
           // Delete only this event
-          await Event.delete({
-            where: { id: eventId },
-          });
+          await repository.deleteOccurrence(eventId);
           deletedEventIds.push(eventId);
           deletedCount = 1;
           break;
@@ -67,9 +48,7 @@ const getResolver = (input: Input) => {
         case "THIS_AND_FUTURE": {
           if (!eventSeries) {
             // No series - just delete this event
-            await Event.delete({
-              where: { id: eventId },
-            });
+            await repository.deleteOccurrence(eventId);
             deletedEventIds.push(eventId);
             deletedCount = 1;
           } else {
@@ -81,9 +60,7 @@ const getResolver = (input: Input) => {
 
             // Delete all future events
             for (const occ of futureOccurrences) {
-              await Event.delete({
-                where: { id: occ.id },
-              });
+              await repository.deleteOccurrence(occ.id);
               deletedEventIds.push(occ.id);
               deletedCount++;
             }
@@ -91,9 +68,7 @@ const getResolver = (input: Input) => {
             // If all occurrences are deleted, delete the series too
             const remainingOccurrences = eventSeries.Occurrences.length - deletedCount;
             if (remainingOccurrences === 0) {
-              await EventSeries.delete({
-                where: { id: eventSeries.id },
-              });
+              await repository.deleteTemplate(eventSeries.id);
             }
           }
           break;
@@ -102,25 +77,19 @@ const getResolver = (input: Input) => {
         case "ALL_IN_SERIES": {
           if (!eventSeries) {
             // No series - just delete this event
-            await Event.delete({
-              where: { id: eventId },
-            });
+            await repository.deleteOccurrence(eventId);
             deletedEventIds.push(eventId);
             deletedCount = 1;
           } else {
             // Delete all events in the series
             for (const occ of eventSeries.Occurrences) {
-              await Event.delete({
-                where: { id: occ.id },
-              });
+              await repository.deleteOccurrence(occ.id);
               deletedEventIds.push(occ.id);
               deletedCount++;
             }
 
             // Delete the series itself
-            await EventSeries.delete({
-              where: { id: eventSeries.id },
-            });
+            await repository.deleteTemplate(eventSeries.id);
           }
           break;
         }

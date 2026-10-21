@@ -1227,28 +1227,30 @@
           "id": "33b",
           "scope": "Event series updates",
           "baselineCrudSites": 9,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative33b review against23338126449c166ab296163c1e352bdb7da3445b. Five nonfactory source/test blobs exactly match independently approvedc31abc6a; factory removes only unused Event/EventSeries forwards, matching driver/optional repository Input. Prior13focused/static evidence reused; exact cumulative21live passed zero failures/skips/cancellations. Same caller transactions/retries, full default selections, three scopes/override flags, nested25cap, channel writes and postcommit notification behavior preserved; prior33a factory correction and31/32 shared changes retained. Diff check clean. Ledger9CRUD/0acquisitions,170remainingCRUD including structural adapter/53acquisitions/0CLI; queued40b receives no credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice33b.patch",
           "preparedPatchSha256": "932741296c824cd82d57cc3fe8025aeb60245d1d7023b9784a03d2ed77ec2464",
           "preparedBaseTree": "b73c53b672145c0551ebd36e179b4a5d7d8d82eb",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 086fa79ae188a6252741ad3b3016464389c3655e: lint, TypeScript and2386 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice33b-exact-live.log"
           ],
-          "commit": null
+          "commit": "adba3d728dde2b37c8b1427209efb3875b76d164"
         },
         {
           "id": "33c",
           "scope": "Event series deletion",
           "baselineCrudSites": 8,
-          "status": "reviewed; integration pending",
-          "review": "campaign_review: exacttree/hash/source/evidence approved after partial-failure fixture repair",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative33c review againstadba3d728dde2b37c8b1427209efb3875b76d164. Four nonfactory blobs identical to independently approveda0171c05; factory removes only unused Event/EventSeries forwards, matching driver/optional repository Input. Original11focused/static and repaired partial-failure evidence reused; exact cumulative20live passed zero failures/skips/cancellations. Snapshot order/nested25, independent delete commits, supported DeleteInfo, second-response failure prefix, quarantine/error boundaries and raw native event/remaining graph checks preserved; no sorting/transaction redesign. Prior33a/b and31/32 shared changes retained. Diff check clean. Ledger8CRUD/0acquisitions,162remainingCRUD including structural adapter/53acquisitions/0CLI consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice33c.patch",
           "preparedPatchSha256": "166964746abe8ab00c9ab8f9c87a66b84cf8115192724d296054517785e7b9fa",
           "preparedBaseTree": "c31abc6a98a7b6469ef866c8a6194687bab1f96e",
           "verification": [
-            "Treea0171c0534b0d4ac7bb292b78973550f1e98f5ba:11focused,10correctednewlive,10existinglive,types/lint passed; cumulativegates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1785,9 +1787,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 170,
+  "remainingRuntimeCrudSites": 162,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 30,
+  "remainingRuntimeCrudFiles": 29,
   "foundations": [
     {
       "id": "F01",
@@ -1842,7 +1844,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "33b"
+      "33c"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

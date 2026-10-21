@@ -212,8 +212,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     deleteEventInSeries: deleteEventInSeries({
-      Event,
-      EventSeries,
       driver,
     }),
     addEmojiToComment: addEmojiToComment({

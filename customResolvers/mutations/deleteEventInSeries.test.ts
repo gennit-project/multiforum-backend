@@ -1,8 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import getResolver from "./deleteEventInSeries.js";
+import getProductionResolver from "./deleteEventInSeries.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
+
+const getResolver = ({Event, EventSeries, ...input}: any) => getProductionResolver({
+  ...input,
+  eventSeriesDeletionRepository: {
+    findSnapshot: id => Event.find({where: {id}}),
+    deleteOccurrence: async id => {await Event.delete({where: {id}});},
+    deleteTemplate: async id => {await EventSeries.delete({where: {id}});},
+  },
+});
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
