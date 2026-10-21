@@ -200,7 +200,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
         driver,
       }),
     createEventWithChannelConnections: createEventWithChannelConnections({
-      Event,
       driver,
     }),
     createEventSeriesWithChannelConnections: createEventSeriesWithChannelConnections({
@@ -210,7 +209,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     updateEventWithChannelConnections: updateEventWithChannelConnections({
-      Event,
       driver,
     }),
     updateEventInSeries: updateEventInSeries({
@@ -287,7 +285,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     seedDataForCypressTests: seedDataForCypressTestsResolver({
       driver,
       Channel,
-      Event,
       Comment,
       Tag,
       ChannelRole,

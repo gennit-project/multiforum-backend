@@ -54,11 +54,14 @@ test("createEventsFromInput creates the event and channel links in one managed w
       createCalls.push(input);
       return { events: [event] };
     },
-    find: async () => [event],
+    find: async (_input?: unknown) => [event],
   };
 
   const result = await createEventsFromInput(
-    Event as never,
+    {
+      createWithinTransaction: async (input: unknown, tx: unknown) => (await Event.create({input: [input], context: {executionContext: tx}} as never)).events,
+      findCreatedEvent: async () => Event.find(),
+    } as never,
     driver,
     [{ eventCreateInput: { title: "Meetup" } as never, channelConnections: ["general", "events"] }],
     { user: { username: "alice" } } as unknown as GraphQLContext
@@ -75,15 +78,18 @@ test("createEventsFromInput is safe when Neo4j retries the callback", async () =
   const { driver, calls } = buildDriver(2);
   let createCalls = 0;
   const Event = {
-    create: async () => {
+    create: async (_input?: unknown) => {
       createCalls += 1;
       return { events: [event] };
     },
-    find: async () => [event],
+    find: async (_input?: unknown) => [event],
   };
 
   const result = await createEventsFromInput(
-    Event as never,
+    {
+      createWithinTransaction: async (input: unknown, tx: unknown) => (await Event.create({input: [input], context: {executionContext: tx}} as never)).events,
+      findCreatedEvent: async () => Event.find(),
+    } as never,
     driver,
     [{ eventCreateInput: { title: "Meetup" } as never, channelConnections: ["general"] }],
     { user: { username: "alice" } } as unknown as GraphQLContext
@@ -99,15 +105,18 @@ test("createEventsFromInput does not return a partially linked event", async () 
   const { driver, calls } = buildDriver(1, true);
   let findCalls = 0;
   const Event = {
-    create: async () => ({ events: [event] }),
-    find: async () => {
+    create: async (_input?: unknown) => ({ events: [event] }),
+    find: async (_input?: unknown) => {
       findCalls += 1;
       return [event];
     },
   };
 
   const result = await createEventsFromInput(
-    Event as never,
+    {
+      createWithinTransaction: async (input: unknown, tx: unknown) => (await Event.create({input: [input], context: {executionContext: tx}} as never)).events,
+      findCreatedEvent: async () => Event.find(),
+    } as never,
     driver,
     [{ eventCreateInput: { title: "Meetup" } as never, channelConnections: ["general"] }],
     { user: { username: "alice" } } as unknown as GraphQLContext

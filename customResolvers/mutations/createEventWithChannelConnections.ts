@@ -3,7 +3,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import { createEventChannelQuery } from "../cypher/cypherQueries.js";
 import { EventCreateInput } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { EventModel } from "../../ogm_types.js";
+import { createEventWriteRepository, type EventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
 import { logger } from "../../logger.js";
 
 type EventCreateInputWithChannels = {
@@ -16,63 +16,17 @@ type Args = {
 };
 
 type Input = {
-  Event: EventModel;
+  eventWriteRepository?: EventWriteRepository;
   driver: Driver;
 };
 
-const selectionSet = `
-  {
-    id
-    title
-    description
-    startTime
-    startTimeDayOfWeek
-    startTimeHourOfDay
-    endTime
-    locationName
-    address
-    virtualEventUrl
-    startTimeDayOfWeek
-    canceled
-    cost
-    isAllDay
-    isHostedByOP
-    coverImageURL
-    Poster {
-      username
-    }
-    EventChannels {
-      id
-      createdAt
-      channelUniqueName
-      eventId
-      archived
-      Channel {
-        uniqueName
-      }
-      Event {
-        id
-      }
-    }
-    SubscribedToNotifications {
-      username
-    }
-    SubscribedToEventUpdates {
-      username
-    }
-    createdAt
-    updatedAt
-    Tags {
-      text
-    }
-  }
-`;
+
 
 /**
  * Function to create events from an input array.
  */
 export const createEventsFromInput = async (
-  Event: EventModel,
+  repository: Pick<EventWriteRepository, "createWithinTransaction" | "findCreatedEvent">,
   driver: Driver,
   input: EventCreateInputWithChannels[],
   context: GraphQLContext
@@ -93,13 +47,8 @@ export const createEventsFromInput = async (
 
       try {
         const newEventId = await session.executeWrite(async (transaction) => {
-          const response = await Event.create({
-            input: [eventCreateInput],
-            selectionSet: `{ events ${selectionSet} }`,
-            context: { executionContext: transaction },
-          });
-
-          const newEvent = response.events[0];
+          const created = await repository.createWithinTransaction(eventCreateInput, transaction);
+          const newEvent = created[0];
 
           for (const channelUniqueName of channelConnections) {
             await transaction.run(createEventChannelQuery, {
@@ -113,12 +62,7 @@ export const createEventsFromInput = async (
         });
 
         // Refetch the event with all related data
-        const fetchedEvent = await Event.find({
-          where: {
-            id: newEventId,
-          },
-          selectionSet,
-        });
+        const fetchedEvent = await repository.findCreatedEvent(newEventId);
 
         events.push(fetchedEvent[0]);
       } catch (error: unknown) {
@@ -152,14 +96,15 @@ export const createEventsFromInput = async (
  * Main resolver that uses createEventsFromInput
  */
 const getResolver = (input: Input) => {
-  const { Event, driver } = input;
+  const { driver } = input;
+  const repository = input.eventWriteRepository ?? createEventWriteRepository(driver);
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input } = args;
 
     try {
       // Use the extracted function to create events
-      const events = await createEventsFromInput(Event, driver, input, context);
+      const events = await createEventsFromInput(repository, driver, input, context);
       return events;
     } catch (error: unknown) {
       logger.error(error);

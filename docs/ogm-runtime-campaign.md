@@ -69,7 +69,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | complete |
 | 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | complete |
 | 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | complete |
-| 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | partial; see subdivisions |
+| 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | complete |
 | 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | pending |
 | 33 Event recurrence | 19 | 32; external transaction/event gate | Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes | pending |
 | 34 Download review/labels | 14 | Retain pipeline adapter until 41/44 controls | Split review/preparation 7/labels 7; scan state and label history | pending |
@@ -700,3 +700,15 @@ Slice31a committed `1b1f7a93f45f1a250ca5b92f31de4cad423acdff` ([diff](https://gi
 31b first mandatory hooks failed two older download-scan unit fixtures still injecting a Discussion model. Corrected only those fixtures to inject the named repository port with identical responses; plugin trigger assertions retained. Original11livepassed; renewedreview and fullhooks required.
 
 31b final integration approval: Renewed exact review against prior approved 51ff92d282b53c5c0fb4e3075b7228c5845bbb5f: only two stale download-scan unit fixtures now inject named repository methods with equivalent empty-update/id-read responses; trigger assertions unchanged, plus accurate ledger note. No executable production changes. Corrected focused 3/3 passed; original exact cumulative 11/11 live evidence remains applicable, zero failures/skips/cancellations. Diff check clean. Prior cumulative scope/transaction/default-projection review retained; mandatory full hooks remain parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice31b committed `50322bc48b26959879c39eff435611d29821deb9` ([diff](https://github.com/gennit-project/multiforum-backend/commit/50322bc48b26959879c39eff435611d29821deb9)), tree `cf9afb9292bb75367143a5324cc889b467efa93a`: lint, TypeScript and all2383 units passed; Eleven cumulative live passed; after test-only stale unit fixture correction three focused passed and renewed independent review; see /tmp/runtime-slice31b-exact-live.log. Independent approval recorded above.
+
+### Slice 32 — Event creation and update
+
+5 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 181 CRUD sites/32 files; 53 acquisitions/7 files; two separate CLI sites.
+
+Pipeline driver-forwarding foundation independently reviewed and queued:46focused,2live and static checks passed. Zero CRUD credit. Explicit configured-driver identity retained across resolver, scheduled campaign and watchdog entry points. No database operation or lease changes.
+
+44a pipeline result notification repository independently reviewed and queued:4CRUD,27focused,8live and static checks passed. Preserves absent-User guard, configured driver, separate claim/write ordering and failure contract. Raw subscription node/relationship IDs checked before normalization. No credit before integration.
+
+32 final integration approval: Independent cumulative review against 50322bc48b26959879c39eff435611d29821deb9. Six resolver/repository/test blobs are identical to original independently approved 939e53e6; factory only removes three unused Event forwards. Seeder preserves 31a Discussion repository cleanup and replaces Event helper dependency with configured-driver repository. 31b caller-owned transaction executor remains unchanged; original default projections, managed transaction/rollback boundaries, per-item creation failures and postcommit history/notification/refetch order preserved. Original six focused/static evidence reused; exact cumulative 14 live passed, zero failures/skips/cancellations. Diff check clean. Ledger five CRUD/zero acquisitions, 181 remaining CRUD/53 acquisitions; queued wiring/44a receive no removal credit. Mandatory hooks remain required.; live parity passed on identical production sources before this documentation-only update.

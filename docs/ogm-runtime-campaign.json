@@ -1134,8 +1134,8 @@
       "baselineCrudSites": 6,
       "dependencies": "21; 05\u201306; closes 10 adapter",
       "acceptance": "Connections, explicit transaction propagation, rollback and history",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "50322bc48b26959879c39eff435611d29821deb9",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1158,15 +1158,16 @@
           "id": "31b",
           "scope": "Discussion update and explicit transaction propagation",
           "baselineCrudSites": 3,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Renewed exact review against prior approved 51ff92d282b53c5c0fb4e3075b7228c5845bbb5f: only two stale download-scan unit fixtures now inject named repository methods with equivalent empty-update/id-read responses; trigger assertions unchanged, plus accurate ledger note. No executable production changes. Corrected focused 3/3 passed; original exact cumulative 11/11 live evidence remains applicable, zero failures/skips/cancellations. Diff check clean. Prior cumulative scope/transaction/default-projection review retained; mandatory full hooks remain parent-owned.",
           "preparedPatch": "ogm-slice31b.patch",
           "preparedPatchSha256": "0399a93040facce37bf01a2637c68dcdcd96ad4f1abaa4068a1f4abe0597dd7b",
           "preparedBaseTree": "57c88c13c77d740fe3f0cfbe04440b10781cf78c",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree cf9afb9292bb75367143a5324cc889b467efa93a: lint, TypeScript and2383 full units passed; Eleven cumulative live passed; after test-only stale unit fixture correction three focused passed and renewed independent review; see /tmp/runtime-slice31b-exact-live.log"
           ],
-          "commit": null
+          "commit": "50322bc48b26959879c39eff435611d29821deb9"
         }
       ]
     },
@@ -1180,11 +1181,11 @@
       "baselineCrudSites": 5,
       "dependencies": "22; 05\u201306; 31b explicit caller-owned transaction support",
       "acceptance": "Explicit transaction/event timing, rollback and connections",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "scratchpad_review: exacttree/hash/source/evidence approved without findings",
+      "review": "Independent cumulative review against 50322bc48b26959879c39eff435611d29821deb9. Six resolver/repository/test blobs are identical to original independently approved 939e53e6; factory only removes three unused Event forwards. Seeder preserves 31a Discussion repository cleanup and replaces Event helper dependency with configured-driver repository. 31b caller-owned transaction executor remains unchanged; original default projections, managed transaction/rollback boundaries, per-item creation failures and postcommit history/notification/refetch order preserved. Original six focused/static evidence reused; exact cumulative 14 live passed, zero failures/skips/cancellations. Diff check clean. Ledger five CRUD/zero acquisitions, 181 remaining CRUD/53 acquisitions; queued wiring/44a receive no removal credit. Mandatory hooks remain required.",
       "verification": [
-        "Tree939e53e6f5b8e8e921b08508dbb1519979c12748:6focused,9newlive,5existinglive,types/lint passed; cumulativegates pending"
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "preparedPatch": "ogm-slice32.patch",
       "preparedPatchSha256": "ec143b139ce1486548951626adc4e700063c6a629ad91c0a363bdd16c0d49d28",
@@ -1659,7 +1660,33 @@
       "status": "pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "44a",
+          "scope": "Pipeline result notifications",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "preparedEvidence": {
+            "base": "825e01ef5c2ffa3c7a1daa51e4cd9d6aea3b7c15",
+            "tree": "157dc1ca249de5ac8bfe7626b2b6906aef946b1e",
+            "sha256": "2e7c486bd49c6d7c68955374708df93800bd092b73397a04fa8a8458de805d40",
+            "patch": "/tmp/ogm-slice44a.patch",
+            "files": [
+              "services/persistence/pipelineNotificationRepository.ts",
+              "services/plugin/downloadTrigger.ts",
+              "services/plugin/pipelineNotifications.test.ts",
+              "services/plugin/pipelineNotifications.ts",
+              "services/plugin/pipelineWatchdog.ts",
+              "tests/integration/pipelineNotificationRepository.test.ts"
+            ]
+          },
+          "review": "Independent six-path incremental review against approved wiring 825e01ef; patch SHA256 2e7c486bd49c6d7c68955374708df93800bd092b73397a04fa8a8458de805d40 verified, diff check clean. Four named operations preserve explicit reads/claim selection and production User default selection, validated against actual initialized OGM. Optional User guard precedes construction/read; both download and watchdog callers forward configured driver. Claim then notification independent commits, propagated errors and no-retry behavior retained. Inspected 27 passing focused and 8 passing live tests, including raw persisted notification UUID/native node and relationship endpoint IDs, temporal validity, ordered native events, canonical Author fallback, coercion and committed projection failure with retry suppression. Final tsc exit 0 confirmed by parent for session71906; scoped lint 0. Prepared only: four CRUD/zero acquisitions, no integration credit.",
+          "verification": [
+            "27focused,8live,lint/TypeScript passed; raw native event IDs/endpoints/temporal validation before full ordered payload comparison. Separate durable claim then notification; projection failure and no-retry behavior retained. Zero credit before integration."
+          ]
+        }
+      ]
     },
     {
       "id": "45",
@@ -1692,9 +1719,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 186,
+  "remainingRuntimeCrudSites": 181,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 34,
+  "remainingRuntimeCrudFiles": 32,
   "foundations": [
     {
       "id": "F01",
@@ -1743,11 +1770,12 @@
       "28",
       "29",
       "30",
+      "31",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "31b"
+      "32"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -1807,6 +1835,17 @@
     "review": "campaign_review approved exact prepared tree; five independent focused checks",
     "verification": [
       "Five focused passed; four live passed plus corrected fifth targeted passed; TypeScript/lint passed. Private CLI schema retains legacy projection, public schema unchanged. Actual CLI never executed."
+    ]
+  },
+  "pipelineDriverWiring": {
+    "base": "2e5e85f1071bceee6e21bafd117b9f932bf064f2",
+    "tree": "825e01ef5c2ffa3c7a1daa51e4cd9d6aea3b7c15",
+    "sha256": "3b742e618a160188f48bc95a5e5658cb1874a112636f09823d7f15d583fa8c03",
+    "patch": "/tmp/ogm-pipeline-driver-wiring.patch",
+    "status": "reviewed; integration pending",
+    "review": "campaign_review approved exact prepared tree; all production entrypoints inspected",
+    "verification": [
+      "46 focused,2 live,lint and TypeScript passed. Explicit configured-driver forwarding only; no operation/transaction/startup changes, zero CRUD credit. Transitional optional argument requiredness finalized at wiring checkpoint."
     ]
   }
 }
