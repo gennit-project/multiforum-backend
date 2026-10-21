@@ -33,7 +33,7 @@ function makeCtx(opts: { channel?: any; serverConfigs?: any[] } = {}) {
       return {};
     },
   });
-  return { ctx: { ogm: { model }, driver: {}, botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>{ops.push("User.create");return {users:[{username:"bot-x"}]};},reactivateIdentity:async()=>{ops.push("User.update");return{users:[]};},findChannelBots:async()=>opts.channel?[opts.channel]:[],connectBot:async()=>{ops.push("Channel.update");return{channels:[]};},disconnectBots:async()=>{ops.push("Channel.update");return{channels:[]};}} } as any, ops };
+  return { ctx: { ogm: { model }, driver: {}, channelBotRepository:{findChannelPlugins:async()=>opts.channel?[opts.channel]:[],findServerPlugins:async()=>opts.serverConfigs??[],deprecateBot:async()=>{ops.push("User.update");return{users:[]};},disconnectOrphans:async()=>{ops.push("Channel.update");return{channels:[]};}}, botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>{ops.push("User.create");return {users:[{username:"bot-x"}]};},reactivateIdentity:async()=>{ops.push("User.update");return{users:[]};},findChannelBots:async()=>opts.channel?[opts.channel]:[],connectBot:async()=>{ops.push("Channel.update");return{channels:[]};},disconnectBots:async()=>{ops.push("Channel.update");return{channels:[]};}} } as any, ops };
 }
 
 function resolveReturning(result: unknown) {
@@ -167,6 +167,7 @@ test("orphaned channel bots are deprecated and disconnected", async () => {
 
 test("errors during sync are swallowed and the resolver result still returns", async () => {
   const ctx: any = {
+    channelBotRepository:{findChannelPlugins:async()=>{throw new Error("db down");}},
     ogm: {
       model: () => ({
         find: async () => {
@@ -188,4 +189,10 @@ test("errors during sync are swallowed and the resolver result still returns", a
   );
   assert.equal(state.calls, 1);
   assert.deepEqual(out, { updateChannels: { channels: [{ uniqueName: "cats" }] } });
+});
+
+test('underlying mutation failure skips bot reads; deprecation failure preserves sequential partial work and skips disconnect',async()=>{
+ const calls:string[]=[];const result={updateChannels:{channels:[{uniqueName:'cats'}]}};const ctx:any={driver:{},channelBotRepository:{findChannelPlugins:async()=>{calls.push('channel');return[{Bots:[{username:'bot-first'},{username:'bot-second'},{username:'human'}],EnabledPluginsConnection:{edges:[]}}];},findServerPlugins:async()=>{calls.push('server');return[];},deprecateBot:async(name:string)=>{calls.push(name);if(name==='bot-second')throw new Error('failure');return{users:[]};},disconnectOrphans:async()=>{calls.push('disconnect');return{channels:[]};}}};
+ await assert.rejects(M.updateChannels(async()=>{throw new Error('mutation failed');},null,{where:{uniqueName:'cats'},update:{EnabledPlugins:[{}]}},ctx,{}),/mutation failed/);assert.equal(calls.length,0);
+ assert.equal(await M.updateChannels(async()=>{calls.push('resolve');return result;},null,{where:{uniqueName:'cats'},update:{EnabledPlugins:[{}]}},ctx,{}),result);assert.deepEqual(calls,['resolve','channel','server','bot-first','bot-second']);
 });
