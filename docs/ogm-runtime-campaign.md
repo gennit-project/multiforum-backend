@@ -79,7 +79,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 38 Bot identity/comments | 13 | 03; write/event contract | Nested identity creation, activation/deprecation, channel links and comment context | complete |
 | 39 Bot reports | 6 | 18–19; 38 | Issue identity, report deduplication and actor attribution | complete |
 | 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | complete |
-| 41 Pipeline download execution | 12 | 40; 44 notifications; 34 as applicable | Runner side effects outside retried callbacks; statuses/retries/results | pending |
+| 41 Pipeline download execution | 12 | 40; 44 notifications; 34 as applicable | Runner side effects outside retried callbacks; statuses/retries/results | complete |
 | 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | pending |
 | 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | pending |
 | 44 Pipeline control/notifications | 18 | Notifications before 40–43; controls after 41–43 and 34 | Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility | partial; see subdivisions |
@@ -930,3 +930,15 @@ Slice40c committed `717ac04a4862f76127342be91f746c3c966b3ee0` ([diff](https://gi
 12 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 61 CRUD sites/9 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
 
 41 final integration approval: Independent cumulative41 against717ac04a. All six executable/test blobs identical to approved19508443; prior21focused/static evidence reused. Exact isolated8live passed zero failures/skips/cancellations. Twelve calls replaced by seven finite ports with original inputs/selections/defaults and ordered lease/attempt/notification effects; primitive native graph/event parity plus actual fake-plugin trigger smoke preserved, not overstated as full service event parity. Diff check clean; ledger61CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice41 committed `21a9778b1d700129f8de2932bd8caf2d1242616f` ([diff](https://github.com/gennit-project/multiforum-backend/commit/21a9778b1d700129f8de2932bd8caf2d1242616f)), tree `462e0dc1e9ea7ac67bf91d28f083b28bc75be233`: lint, TypeScript and all2455 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice41-exact-live.log. Independent approval recorded above.
+
+### Slice 42 — Channel execution
+
+13 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 48 CRUD sites/8 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+42 final integration approval: Independent cumulative42 against21a9778b. All six executable/test blobs identical to approveda23bb88a; prior15focused/static reused. Exact isolated8live passed zero failures/skips/cancellations. Thirteen calls/eight finite ports preserve input/selections, primitive write defaults/native events and failure prefixes. Actual production singular Discussion.DownloadableFile error remains before attempts/plugin effects; no successful production channel-execution claim. Diff check clean;48CRUD/50acquisitions/0CLI accurate. Queued W2a-e approval narratives correct without credit; copied verification pending labels are stale despite confirmed passing logs and parent notified to normalize documentation. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice42 hook recovery: First mandatory unit hook failed because Node26/V8 reported fatal unreachable code while compiling unchanged getActiveServerSuspension.test.ts (2450 pass, one file process failure). Failed log preserved; source/test byte-identical to pre-slice HEAD; exact-snapshot isolated5 tests passed. No source, assertion or toolchain workaround; full mandatory hook rerun required.

@@ -1761,11 +1761,12 @@
       "baselineCrudSites": 12,
       "dependencies": "40; 44 notifications; 34 as applicable",
       "acceptance": "Runner side effects outside retried callbacks; statuses/retries/results",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "21a9778b1d700129f8de2932bd8caf2d1242616f",
       "review": "Independent cumulative41 against717ac04a. All six executable/test blobs identical to approved19508443; prior21focused/static evidence reused. Exact isolated8live passed zero failures/skips/cancellations. Twelve calls replaced by seven finite ports with original inputs/selections/defaults and ordered lease/attempt/notification effects; primitive native graph/event parity plus actual fake-plugin trigger smoke preserved, not overstated as full service event parity. Diff check clean; ledger61CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 462e0dc1e9ea7ac67bf91d28f083b28bc75be233: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice41-exact-live.log"
       ],
       "preparedEvidence": {
         "base": "54806af505df14330d3423ac97ed768d3ba8669d",
@@ -1791,11 +1792,12 @@
       "baselineCrudSites": 13,
       "dependencies": "40; 44 notifications; 38",
       "acceptance": "Channel applicability, bots, statuses and execution failure ordering",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "Independent six-path incremental review against approved4119508443; patch SHA256b7769c7c64e15c5a84822b424c7c7c84f6fcb087011152c8c82e4ac56c3a9de1 verified, diff check clean. Eight finite ports replace13CRUD sites preserving original selection strings/input expressions, sorted nested channel filters, unbounded configs/secrets, full file/job defaults and surrounding lease/attempt/scan/error order. Verified preexisting limitation directly: original Discussion selection asks singular DownloadableFile but production typeDefs exposes plural DownloadableFiles; replacement retains same validation failure rather than changing behavior. Corrected live asserts exact OGM/candidate read error plus no attempts/events/plugin loads in actual trigger; no successful production-channel execution claim. Downstream execution remains characterized by existing mocked recorder units and primitive full graph/ordered-native-event parity with raw IDs/endpoints/temporal checks.15focused/8correctedlive pass zero failures/skips/cancellations; final TypeScript20558 and lint9976 exit0 parent-confirmed. Prepared13CRUD/0acquisitions; cumulative integration/hooks pending.",
+      "review": "Independent cumulative42 against21a9778b. All six executable/test blobs identical to approveda23bb88a; prior15focused/static reused. Exact isolated8live passed zero failures/skips/cancellations. Thirteen calls/eight finite ports preserve input/selections, primitive write defaults/native events and failure prefixes. Actual production singular Discussion.DownloadableFile error remains before attempts/plugin effects; no successful production channel-execution claim. Diff check clean;48CRUD/50acquisitions/0CLI accurate. Queued W2a-e approval narratives correct without credit; copied verification pending labels are stale despite confirmed passing logs and parent notified to normalize documentation. Mandatory hooks parent-owned.",
       "verification": [
-        "15focused,8live,lint/TypeScript passed. Thirteen calls through eight finite named operations; original input/selections/defaults, order and failure contracts preserved. Primitive writes have full graph/ordered native event parity after raw identity validation; actual trigger preserves existing singular Discussion.DownloadableFile validation failure before plugin loads/attempts. Zero credit before integration."
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "First mandatory unit hook failed because Node26/V8 reported fatal unreachable code while compiling unchanged getActiveServerSuspension.test.ts (2450 pass, one file process failure). Failed log preserved; source/test byte-identical to pre-slice HEAD; exact-snapshot isolated5 tests passed. No source, assertion or toolchain workaround; full mandatory hook rerun required."
       ],
       "preparedEvidence": {
         "base": "19508443907fcad3706117e64b12864112691f0e",
@@ -2082,9 +2084,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 61,
+  "remainingRuntimeCrudSites": 48,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 9,
+  "remainingRuntimeCrudFiles": 8,
   "foundations": [
     {
       "id": "F01",
@@ -2142,11 +2144,12 @@
       "37",
       "38",
       "39",
-      "40"
+      "40",
+      "41"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "41"
+      "42"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2289,6 +2292,208 @@
       "review": "Independent W1 review: seven acquisitions replaced by six explicit optional capabilities, preserving pre-delete author reads independently of issue activity, optional report channel lookup, and generated-original-username versus lowercase raw-Cypher mention fallback/session closure. HTTP enables prior all-model capabilities; notification background explicitly enables only generated mentions and handler forwards flags; subscription context/auth unchanged. Added service test verifies enabled versus absent mention lookup through lifecycle; final refreeze only adds that test.19 isolated live cases passed(18main+1report); focused corrections and service5 pass with overlapping runs,42 unique reported. Final TypeScript40920/lint15815 zero parent-confirmed plus final service scoped lint zero. SHA2568bbd55f2f44f12eac3b082ef01138380de3fbe241043e540264722421d8a003d verified; diff check clean. Production unchanged since initial reviewed8c509a7e. Prepared only: cumulative gates remain required; pipeline optional User/remaining model forwarding/OGM boot removal separate.",
       "verification": [
         "42unique focused checks across overlapping runs,19live across main18+targetedreport1,TypeScript/lint passed. Generated mention versus raw-driver fallback and independent optional guards preserved. No removal credit before integration."
+      ]
+    },
+    {
+      "id": "W2a",
+      "scope": "Lease and attempt dependencies without model forwarding",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W2a",
+        "base": "aa730271fb4adecdcf8b4d998146a6f89bc4990b",
+        "tree": "8f75da96ef1a05a6030c08686a55d9a1c7762d68",
+        "patch": "/tmp/ogm-pipeline-leaf-wiring.patch",
+        "sha256": "304f96301716bb037f4f468b2e6e2d976f7f32d3d26ed42196a39c166cf5d620",
+        "files": [
+          "services/plugin/channelTrigger.ts",
+          "services/plugin/commentTrigger.ts",
+          "services/plugin/downloadTrigger.ts",
+          "services/plugin/executionLease.test.ts",
+          "services/plugin/executionLease.ts",
+          "services/plugin/pipelineAttempt.test.ts",
+          "services/plugin/pipelineAttempt.ts",
+          "services/plugin/pipelineWatchdog.ts",
+          "tests/integration/pipelineAttemptRepository.test.ts",
+          "tests/integration/pipelineLeaseRepository.test.ts"
+        ],
+        "scope": "Remove obsolete lease/attempt model parameters and forwarding; retain repository/driver ports and optional notification guards",
+        "verification": {
+          "focused": "51 passed /tmp/pipeline-leaf-focused.log",
+          "live": "pending /tmp/pipeline-leaf-live.log session43890",
+          "types": "pending final /tmp/pipeline-leaf-final-types.log session80871",
+          "lint": "passed /tmp/pipeline-leaf-lint.log; final changes remove whitespace and integration spread only"
+        }
+      },
+      "review": "Independent ten-path W2a review againstaa730271. Removed only obsolete lease/attempt model types/destructures and forwarding from all three triggers/watchdog; configured driver and domain repository ports retained. No query/input/clock/order/event/heartbeat changes; optional notification User guard untouched. Unit adapters retain existing model recorders/assertions; live helpers now exercise repository-only inputs.51focused and20isolatedlive passed zero failures/skips/cancellations; final TypeScript80871/lint44444 exit0 parent-confirmed. SHA256304f96301716bb037f4f468b2e6e2d976f7f32d3d26ed42196a39c166cf5d620 verified, diff check clean. Preparatory only; cumulative gates remain required.",
+      "verification": {
+        "focused": "51 passed /tmp/pipeline-leaf-focused.log",
+        "live": "pending /tmp/pipeline-leaf-live.log session43890",
+        "types": "pending final /tmp/pipeline-leaf-final-types.log session80871",
+        "lint": "passed /tmp/pipeline-leaf-lint.log; final changes remove whitespace and integration spread only"
+      }
+    },
+    {
+      "id": "W2b",
+      "scope": "Explicit uploader notification capability and watchdog dependencies",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W2b",
+        "base": "8f75da96ef1a05a6030c08686a55d9a1c7762d68",
+        "tree": "e41b565255c16d3cd8b9e029185de1e1c31dda6a",
+        "patch": "/tmp/ogm-pipeline-notification-wiring.patch",
+        "sha256": "d964de44d85a2efb984d8a95f0f20db0758f02d15cff37f47a1646d521ee8444",
+        "files": [
+          "customResolvers.ts",
+          "index.ts",
+          "services/plugin/downloadTrigger.ts",
+          "services/plugin/pipelineNotifications.test.ts",
+          "services/plugin/pipelineNotifications.ts",
+          "services/plugin/pipelineWatchdog.test.ts",
+          "services/plugin/pipelineWatchdog.ts",
+          "tests/integration/pipelineNotificationRepository.test.ts",
+          "tests/integration/pipelineWatchdogRepository.test.ts"
+        ],
+        "verification": [
+          "27 focused passed /tmp/pipeline-notification-wiring-focused.log",
+          "TypeScript91894 exit0",
+          "lint88753 pending actual exit; empty log",
+          "live3623 pending /tmp/pipeline-notification-wiring-live.log"
+        ]
+      },
+      "review": "Independent nine-path W2b review against8f75da96. Explicit notificationsEnabled preserves helper optionalUser false/absent early return before persistence construction. Download caller maps Boolean(User); watchdog composition maps Boolean(DownloadableFile&&User), preserving prior outer file guard plus inner user guard. Verified all production callers and renamed watchdog dependency bundle through index. Removed unused model forwarding only; watchdog lifecycle, counters, recovery ordering, query inputs and native event contracts unchanged. Disabled/absent unit coverage retained and live helpers use explicit booleans.27focused and15isolatedlive passed zero failures/skips/cancellations; TypeScript91894/lint88753 zero parent-confirmed. SHA256d964de44d85a2efb984d8a95f0f20db0758f02d15cff37f47a1646d521ee8444 verified; diff check clean. Preparatory only; cumulative gates remain required.",
+      "verification": [
+        "27 focused passed /tmp/pipeline-notification-wiring-focused.log",
+        "TypeScript91894 exit0",
+        "lint88753 pending actual exit; empty log",
+        "live3623 pending /tmp/pipeline-notification-wiring-live.log"
+      ]
+    },
+    {
+      "id": "W2c",
+      "scope": "Explicit comment pipeline capability and model-free bot report dispatch",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 10,
+      "preparedEvidence": {
+        "id": "W2c",
+        "base": "e41b565255c16d3cd8b9e029185de1e1c31dda6a",
+        "tree": "f1580863c4ac1268a4f640d261deaa4f03e2ef55",
+        "patch": "/tmp/ogm-comment-pipeline-wiring.patch",
+        "sha256": "f0ba14ee22f67a8c74929f5e16030df720c96ef21ee6faf07f256406a2b77c1a",
+        "files": [
+          "middleware/commentPluginPipelineMiddleware.test.ts",
+          "middleware/commentPluginPipelineMiddleware.ts",
+          "services/botReportOrdering.test.ts",
+          "services/botReportService.ts",
+          "services/persistence/runtimeCapabilities.ts",
+          "services/plugin/commentTrigger.execution.test.ts",
+          "services/plugin/commentTrigger.test.ts",
+          "services/plugin/commentTrigger.ts",
+          "services/plugin/types.ts",
+          "tests/fixtures/commentExecutionRepositoryStub.ts",
+          "tests/integration/botReportRepository.test.ts",
+          "tests/integration/botServices.test.ts",
+          "tests/integration/commentExecutionRepository.test.ts"
+        ],
+        "acquisitionsRemoved": 10,
+        "verification": [
+          "37focused passed; missing-driver fixture adjusted to same shape without TypeScript-invalid delete afterward",
+          "corrected final TypeScript /tmp/comment-pipeline-wiring-final-types2.log",
+          "lint /tmp/comment-pipeline-wiring-lint.log",
+          "live90259 pending /tmp/comment-pipeline-wiring-live.log"
+        ]
+      },
+      "review": "Independent13-path W2c review againste41b5652. Explicit commentPlugins capability replaces prior required-model conjunction in production HTTP context; absent/false capability keeps dispatch disabled, driver separately required. All actual production callers inspected. Ten acquisitions and unused comment-trigger/bot-report model forwarding removed; raw bot-report repository semantics, prior thread/identity wiring and generated-schema context unchanged. Middleware factory defaults to original trigger; post-resolve serial valid-ID dispatch, first-error stop/swallow, original result identity and pre-dispatch resolver rejection preserved. Stronger injected dispatcher tests directly assert ordering and throwing OGM getter nonaccess.37focused, targeted corrected10middleware and28isolatedlive pass zero failures/skips/cancellations; final TypeScript30470/lint48713 zero parent-confirmed. SHA256f0ba14ee22f67a8c74929f5e16030df720c96ef21ee6faf07f256406a2b77c1a verified, diff check clean. External callers using model carriers must supply explicit capability to opt in; no automatic driver-only enabling. Prepared only; cumulative gates remain required.",
+      "verification": [
+        "37focused passed; missing-driver fixture adjusted to same shape without TypeScript-invalid delete afterward",
+        "corrected final TypeScript /tmp/comment-pipeline-wiring-final-types2.log",
+        "lint /tmp/comment-pipeline-wiring-lint.log",
+        "live90259 pending /tmp/comment-pipeline-wiring-live.log"
+      ]
+    },
+    {
+      "id": "W2d",
+      "scope": "Channel execution and caller forwarding without model bags",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W2d",
+        "base": "f1580863c4ac1268a4f640d261deaa4f03e2ef55",
+        "tree": "925739f521b6a8e1a60e99a6e8aca712251e1dae",
+        "patch": "/tmp/ogm-channel-pipeline-wiring.patch",
+        "sha256": "bdf91be8cefd12a94b07775a50e57eca8e11225facec048b1fc8b9c74c2554d3",
+        "files": [
+          "customResolvers/mutations/createDiscussionPluginPipelineOrder.test.ts",
+          "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+          "customResolvers/mutations/startPluginPipeline.ts",
+          "services/plugin/channelTrigger.execution.test.ts",
+          "services/plugin/channelTrigger.test.ts",
+          "services/plugin/types.ts",
+          "tests/fixtures/channelExecutionRepositoryStub.ts",
+          "tests/integration/channelExecutionRepository.test.ts"
+        ],
+        "verification": [
+          "35focused passed /tmp/channel-pipeline-wiring-focused.log",
+          "TypeScript89399 exit0",
+          "lint47840 pending actual exit",
+          "live86152 pending /tmp/channel-pipeline-wiring-live.log"
+        ]
+      },
+      "review": "Independent eight-path W2d review againstf1580863. Removes unused ChannelTriggerArgs.models, Discussion forwarding from creation helper and start channel model bag; all configured-driver forwarding, server-before-channel sequence, per-channel catches and rerun metadata delegation retained. Test-only model recorders kept via explicit local adapter types. No generated query/default/context changes; existing singular DownloadableFile validation error deliberately preserved.35focused and22isolatedlive passed zero failures/skips/cancellations, covering channel/start/rerun paths; TypeScript89399/lint47840 zero parent-confirmed. SHA256bdf91be8cefd12a94b07775a50e57eca8e11225facec048b1fc8b9c74c2554d3 verified, diff check clean. Prepared only; cumulative gates required.",
+      "verification": [
+        "35focused passed /tmp/channel-pipeline-wiring-focused.log",
+        "TypeScript89399 exit0",
+        "lint47840 pending actual exit",
+        "live86152 pending /tmp/channel-pipeline-wiring-live.log"
+      ]
+    },
+    {
+      "id": "W2e",
+      "scope": "Download execution and caller notification capability",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W2e",
+        "base": "925739f521b6a8e1a60e99a6e8aca712251e1dae",
+        "tree": "12bc67c117ca3b20d74f30409566b19e6fc8dd1b",
+        "patch": "/tmp/ogm-download-pipeline-wiring.patch",
+        "sha256": "672fa508990c6cb16f82566b38a7f21708fbe98f0ea60ff5589dba53d78ec351",
+        "files": [
+          "customResolvers/mutations/createDiscussionPluginPipelineOrder.test.ts",
+          "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+          "customResolvers/mutations/prepareDownload.ts",
+          "customResolvers/mutations/retryDownloadableFileScan.ts",
+          "customResolvers/mutations/startPluginPipeline.ts",
+          "customResolvers/mutations/triggerDownloadableFilePluginRuns.ts",
+          "customResolvers/mutations/updateDiscussionDownloadScan.test.ts",
+          "customResolvers/mutations/updateDiscussionWithChannelConnections.ts",
+          "services/plugin/downloadTrigger.execution.test.ts",
+          "services/plugin/downloadTrigger.test.ts",
+          "services/plugin/downloadTrigger.ts",
+          "services/plugin/pipelineCampaign.ts",
+          "services/plugin/types.ts",
+          "tests/fixtures/downloadExecutionRepositoryStub.ts",
+          "tests/integration/downloadExecutionRepository.test.ts"
+        ],
+        "verification": [
+          "56focused passed /tmp/download-pipeline-wiring-focused.log",
+          "TypeScript8130 exit0",
+          "lint15839 pending actual exit",
+          "live61295 pending /tmp/download-pipeline-wiring-live.log"
+        ]
+      },
+      "review": "Independent15-path W2e review against925739f5. Download TriggerArgs model bag replaced with optional notificationsEnabled; seven production callers derive Boolean from exactly the prior User field (creation, attachment, preparation, retry, start, direct resolver, campaign). Configured drivers, execution metadata, authentication, catches, scan sharing/order and notification timing unchanged. Test-only model recorders remain local adapter inputs; actual smoke false flag matches prior fixture with no User. No query/schema/default projection changes.56focused and22isolatedlive passed zero failures/skips/cancellations; TypeScript8130/lint15839 zero parent-confirmed. SHA256672fa508990c6cb16f82566b38a7f21708fbe98f0ea60ff5589dba53d78ec351 verified, diff check clean. Prepared only; cumulative gates required.",
+      "verification": [
+        "56focused passed /tmp/download-pipeline-wiring-focused.log",
+        "TypeScript8130 exit0",
+        "lint15839 pending actual exit",
+        "live61295 pending /tmp/download-pipeline-wiring-live.log"
       ]
     }
   ]

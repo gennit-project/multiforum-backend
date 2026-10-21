@@ -1,3 +1,4 @@
+import {channelExecutionRepositoryStub} from "../../tests/fixtures/channelExecutionRepositoryStub.js";
 import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
 import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the channel trigger's per-plugin run lifecycle.
@@ -273,4 +274,4 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.ok(statuses.includes("SKIPPED"));
 });
 
-const triggerChannelPluginPipeline:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});
+const triggerChannelPluginPipeline:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,channelRepository:channelExecutionRepositoryStub(args.models),leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});

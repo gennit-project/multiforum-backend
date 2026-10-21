@@ -1,3 +1,4 @@
+import {channelExecutionRepositoryStub} from "../../tests/fixtures/channelExecutionRepositoryStub.js";
 // Unit tests for the channel (discussion-with-download) plugin trigger's
 // decision logic: it fires a configured channel pipeline when a discussion that
 // has a downloadable file is posted. These drive triggerChannelPluginPipeline
@@ -58,7 +59,7 @@ const serverConfigNoPlugins = {
 };
 
 const run = (models: any, event = EVENT) =>
-  triggerChannelPluginPipeline({ discussionId: "d-1", channelUniqueName: "cats", event, models });
+  triggerChannelPluginPipeline({ discussionId: "d-1", channelUniqueName: "cats", event, models }, {channelRepository:channelExecutionRepositoryStub(models)});
 
 test("isChannelEvent recognizes only discussionChannel.created", () => {
   assert.equal(isChannelEvent("discussionChannel.created"), true);
