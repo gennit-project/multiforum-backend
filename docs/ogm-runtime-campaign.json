@@ -936,28 +936,30 @@
           "id": "25c",
           "scope": "Channel image reports",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review againstc945f09: four non-factory blobs identical to previously approvedb6e18dcb recorded in ledger; factory only removes Issue/Channel forwarding retaining driver. Inspected preserved independent5 units/corrected7 live and bounded original production diff: identity attachment and prewrite immutable-update assertion retained with original selections, channel target/server scope/counter and create-append catches. Exact cumulative live7 passed zero failed/skipped/cancelled. Diff check clean;4CRUD/0acquisitions, ledger259/53 consistent; queued36a no removal credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice25c.patch",
           "preparedPatchSha256": "a7ca1bdaa8fa5d12a82fc99089a049773390be597e837706f4e6466cf7e7dcef",
           "preparedBase": "e863e3b",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 1f3fe0c7cbf7dbddd08f50ab8de48c21f365c2d1: lint, TypeScript and2219 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice25c-exact-live.log"
           ],
-          "commit": null
+          "commit": "58bc897e2f08412838d6c344a23d1bdabd295803"
         },
         {
           "id": "25d",
           "scope": "Wiki edit reports",
           "baselineCrudSites": 5,
-          "status": "reviewed; integration pending",
-          "review": "reports_reviewer",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against58bc897: four non-factory blobs identical to prior approved8fc2ca25; factory only removes Issue/WikiPage/TextVersion forwarding retaining driver. Inspected preserved independent6 units/final14 live/static exits and bounded original production diff. Identity attachment/prewrite immutable guard, page/revision attribution and scope, counter outside create catch, explicit selections and create-append error/durability boundaries preserved. Exact cumulative live8 passed zero failed/skipped/cancelled. Diff check clean;5CRUD/0acquisitions, ledger254/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice25d.patch",
           "preparedPatchSha256": "f5e32ee031a84064ca1943fe879409dd3d52e398d3d5b2f480b4498d7c84b21d",
           "preparedBase": "e863e3b",
           "verification": [
-            "Tree 8fc2ca25713caa42d5439d58b4fd65f8774c7d2e: 6 focused,14 live; TypeScript passed; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1657,9 +1659,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 259,
+  "remainingRuntimeCrudSites": 254,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 50,
+  "remainingRuntimeCrudFiles": 49,
   "foundations": [
     {
       "id": "F01",
@@ -1706,7 +1708,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "25c"
+      "25d"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

@@ -308,9 +308,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     reportWikiEdit: reportWikiEdit({
-      Issue,
-      WikiPage,
-      TextVersion,
       driver
     }),
     deleteCommentRevision: redactTextVersionRevision({
