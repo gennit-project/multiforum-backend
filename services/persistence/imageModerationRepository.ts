@@ -4,6 +4,7 @@ import { attachIssueIdentityRelationships, assertIssueIdentityUpdateAllowed } fr
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
 export interface ImageModerationRepository {
+  findPermanentRemovalTarget(id: string): Promise<Image[]>;
   findArchiveTarget(id: string): Promise<Image[]>;
   findUnarchiveTarget(id: string): Promise<Image[]>;
   findIssue(where: IssueWhere): Promise<Issue[]>;
@@ -11,6 +12,15 @@ export interface ImageModerationRepository {
   appendIssueAction(where: IssueWhere, update: IssueUpdateInput): Promise<{issues: Issue[]}>;
   updateModerationState(where: ImageWhere, update: ImageUpdateInput): Promise<{images: Image[]}>;
 }
+export const PERMANENT_REMOVAL_IMAGE_SELECTION = `{
+        id
+        url
+        permanentlyRemoved
+        Uploader {
+          username
+        }
+      }`;
+const PERMANENT_TARGET = `query PermanentImageRemovalTarget($where: ImageWhere!) { images(where: $where) ${PERMANENT_REMOVAL_IMAGE_SELECTION} }`;
 export const ARCHIVE_IMAGE_SELECTION = `{
         id
         url
@@ -66,6 +76,9 @@ const UPDATE_ISSUE = `mutation AppendImageModerationAction($where: IssueWhere!, 
 const UPDATE_IMAGE = `mutation SetImageModerationState($where: ImageWhere!, $update: ImageUpdateInput!) { updateImages(where: $where, update: $update) { images ${IMAGE_MODERATION_DEFAULT_SELECTION} } }`;
 export function createImageModerationRepository(driver: Driver): ImageModerationRepository {
   return {
+    async findPermanentRemovalTarget(id) {
+      return (await executeGeneratedOperation<{images: Image[]}>(driver, PERMANENT_TARGET, {where: {id}})).images;
+    },
     async findArchiveTarget(id) {
       return (await executeGeneratedOperation<{images: Image[]}>(driver, ARCHIVE_TARGET, {where: {id}})).images;
     },

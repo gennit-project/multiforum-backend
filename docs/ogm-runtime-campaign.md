@@ -67,7 +67,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | complete |
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | complete |
 | 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | complete |
-| 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | pending |
+| 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | partial; see subdivisions |
 | 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | pending |
 | 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | pending |
 | 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | pending |
@@ -660,3 +660,11 @@ Slice28b committed `c9e9ca7ce66d627a0468102dea25a5aa7046244d` ([diff](https://gi
 39 independently reviewed and queued:6CRUD. Review rejected an incorrect assumption that bot-report middleware used the mutation-resolver Issue proxy. Corrected patch preserves its raw-model path, including production-schema coercion failure after creation and original standalone-schema success. Eleven focused,21live and static checks passed; no removal credit before integration.
 
 29a final integration approval: Independent cumulative29a review againstc9e9ca7: five non-factory blobs matched approveda6bb708f before EOF-only test cleanup; factory narrowly removes Issue/Image forwarding and adds unarchive driver. Prior ledger final approval/33focused/10live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled on identical executable source; refreeze delta verified only trailing blank-line removal and approved39 queue docs. Full Image defaults, identity guards, scope/counter/catch boundaries and ordered notifications/partial-write effects retained; storage remains untouched. Diff check now clean;11CRUD/0acquisitions, ledger205/53 consistent; queued39 no removal credit. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice29a committed `3ad53a8929631de0176481d3fade46368ebd1e74` ([diff](https://github.com/gennit-project/multiforum-backend/commit/3ad53a8929631de0176481d3fade46368ebd1e74)), tree `2611c89107a4d425c521075d635ca4cd428a1b08`: lint, TypeScript and all2350 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice29a-exact-live.log. Independent approval recorded above.
+
+### Slice 29b — Permanent image flags
+
+6 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 199 CRUD sites/38 files; 53 acquisitions/7 files; two separate CLI sites.
+
+29b final integration approval: Independent cumulative review against3ad53a89: four non-factory blobs identical to approved5b07717f; factory only removes Issue/Image forwarding retaining driver. Ledger final approval and prior16focused/corrected8live/static evidence reused. Exact cumulative5live passed zero failed/skipped/cancelled. Server scope/already-removed validation/counter boundaries, protected issue identity, removal-close-subscriber-state order and durable projection failures retained; stored objects/URLs unchanged. Diff check clean;6CRUD/0acquisitions, ledger199/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.

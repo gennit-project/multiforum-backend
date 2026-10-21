@@ -1075,28 +1075,30 @@
           "id": "29a",
           "scope": "Image archive/unarchive",
           "baselineCrudSites": 11,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative29a review againstc9e9ca7: five non-factory blobs matched approveda6bb708f before EOF-only test cleanup; factory narrowly removes Issue/Image forwarding and adds unarchive driver. Prior ledger final approval/33focused/10live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled on identical executable source; refreeze delta verified only trailing blank-line removal and approved39 queue docs. Full Image defaults, identity guards, scope/counter/catch boundaries and ordered notifications/partial-write effects retained; storage remains untouched. Diff check now clean;11CRUD/0acquisitions, ledger205/53 consistent; queued39 no removal credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice29a.patch",
           "preparedPatchSha256": "39b458b82fb3d75bf7b25ae7b402b99b26c2f53792250dfd60f4dcc8583732b8",
           "preparedBase": "9341421dda260cdf76c5246f3b9ee5a206570044",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 2611c89107a4d425c521075d635ca4cd428a1b08: lint, TypeScript and2350 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice29a-exact-live.log"
           ],
-          "commit": null
+          "commit": "3ad53a8929631de0176481d3fade46368ebd1e74"
         },
         {
           "id": "29b",
           "scope": "Permanent image removal flag",
           "baselineCrudSites": 6,
-          "status": "reviewed; integration pending",
-          "review": "scratchpad_review: final approved exact source/evidence, no remaining findings",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against3ad53a89: four non-factory blobs identical to approved5b07717f; factory only removes Issue/Image forwarding retaining driver. Ledger final approval and prior16focused/corrected8live/static evidence reused. Exact cumulative5live passed zero failed/skipped/cancelled. Server scope/already-removed validation/counter boundaries, protected issue identity, removal-close-subscriber-state order and durable projection failures retained; stored objects/URLs unchanged. Diff check clean;6CRUD/0acquisitions, ledger199/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice29b.patch",
           "preparedPatchSha256": "2c36a77d8ec4334e9bfb920a5f8f767477b5ddfbac8ab105617d4dd626f95a0a",
           "preparedBase": "a6bb708fd8e82b7f75708b827b876fc959ab6329",
           "verification": [
-            "Tree 5b07717fba746819a2442001e5471fe2d6b6dded: 16focused,8live,finaltypes/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1685,9 +1687,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 205,
+  "remainingRuntimeCrudSites": 199,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 39,
+  "remainingRuntimeCrudFiles": 38,
   "foundations": [
     {
       "id": "F01",
@@ -1738,7 +1740,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "29a"
+      "29b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

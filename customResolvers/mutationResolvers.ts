@@ -345,8 +345,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     permanentlyRemoveImage: permanentlyRemoveImage({
-      Issue,
-      Image,
       driver
     }),
     permanentlyDeleteImage: permanentlyDeleteImage({
