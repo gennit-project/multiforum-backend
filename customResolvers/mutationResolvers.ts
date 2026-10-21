@@ -407,9 +407,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       stickyCommentRepository: createStickyCommentRepository(driver),
     }),
     archiveDiscussion: archiveDiscussion({
-      Issue,
-      Discussion,
-      DiscussionChannel,
       driver,
     }),
     archiveEvent: archiveEvent({
@@ -422,8 +419,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     unarchiveDiscussion: unarchiveDiscussion({
-      Issue,
-      DiscussionChannel
+      driver,
     }),
     unarchiveEvent: unarchiveEvent({
       Issue,

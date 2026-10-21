@@ -160,9 +160,14 @@ test("archiveDiscussion creates an issue, archives the discussion channel, and l
   );
 
   const resolver = archiveDiscussionResolver({
-    Issue: Issue as any,
-    Discussion: Discussion as any,
-    DiscussionChannel: DiscussionChannel as any,
+    discussionModerationRepository: {
+      findDiscussion: async (where: any) => Discussion.find({where}),
+      findRelatedIssues: async (where: any) => Issue.find({where}),
+      createArchiveIssue: async (input: any) => Issue.create({input}),
+      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      findDiscussionChannel: async (where: any) => DiscussionChannel.find({where}),
+      setArchived: async (where: any, update: any) => DiscussionChannel.update({where,update}),
+    } as any,
     driver: createDriver() as unknown as Driver,
   });
 
@@ -239,9 +244,14 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
   );
 
   const resolver = archiveDiscussionResolver({
-    Issue: Issue as any,
-    Discussion: Discussion as any,
-    DiscussionChannel: DiscussionChannel as any,
+    discussionModerationRepository: {
+      findDiscussion: async (where: any) => Discussion.find({where}),
+      findRelatedIssues: async (where: any) => Issue.find({where}),
+      createArchiveIssue: async (input: any) => Issue.create({input}),
+      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      findDiscussionChannel: async (where: any) => DiscussionChannel.find({where}),
+      setArchived: async (where: any, update: any) => DiscussionChannel.update({where,update}),
+    } as any,
     driver: createDriver() as unknown as Driver,
   });
 

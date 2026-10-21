@@ -995,11 +995,12 @@
       "baselineCrudSites": 11,
       "dependencies": "18\u201320; 05\u201306",
       "acceptance": "Archive metadata, history, issue effects and notifications",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "ad6778bb194f89d667685e350e15c7d4b8e7bde8",
       "review": "Independent cumulative review against7721da49: six non-factory blobs identical to approved5dd62dfd; factory removes Issue/Comment forwarding and adds required unarchive driver only. Ledger confirms final independent33focused approval despite stale handoff wording; original12live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled. Identity/full Comment defaults, counter catch, activity/close/subscriber/state/author order and legacy moderator fragment error retained. Diff check clean;11CRUD/0acquisitions, ledger234/53 consistent. Mandatory hooks required.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 4819f0c074cda9bc169f5d26543bd4c020f5eb92: lint, TypeScript and2282 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice27-exact-live.log"
       ],
       "preparedPatch": "ogm-slice27.patch",
       "preparedPatchSha256": "f85dd8889ab9f6a2739b54da139c01ddb2be10555091150cc92a39e06b6a8c3c",
@@ -1026,14 +1027,15 @@
           "id": "28a",
           "scope": "Discussion archive/unarchive",
           "baselineCrudSites": 9,
-          "status": "reviewed; integration pending",
-          "review": "review_bot38d: final approved, no remaining findings",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review againstad6778bb: six non-factory blobs identical to approveda956a99b; factory only removes discussion moderation model forwarding and supplies unarchive driver. Prior independent19focused/corrected live/static evidence reused; exact6live passed zero failed/skipped/cancelled. Explicit/full channel defaults, protected issue identity, allocation/catch boundaries and subscriber-before-state/author-after-state effects retained, including postcommit failure behavior. Diff check clean;9CRUD/0acquisitions, ledger225/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice28a.patch",
           "preparedPatchSha256": "c9caee74c383e239742989b81651252468bbe80d52eb93c4faff73c57cc576cb",
           "preparedBase": "d20ed128287589a6e996b7cdea7adc9a78540e64",
           "verification": [
-            "Tree a956a99bc18016eec4b4dee6534129939ad8aaa9: 19independentfocused,6finalparity,6existinglive on identicalproduction; finaltypes/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "28b",
@@ -1674,9 +1676,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 234,
+  "remainingRuntimeCrudSites": 225,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 45,
+  "remainingRuntimeCrudFiles": 43,
   "foundations": [
     {
       "id": "F01",
@@ -1721,11 +1723,12 @@
       "24",
       "25",
       "26",
+      "27",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "27"
+      "28a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
