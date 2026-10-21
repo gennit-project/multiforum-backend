@@ -1500,6 +1500,19 @@
         "11 corrected live tests, TypeScript, scoped lint and diff check passed; no production changes"
       ],
       "assertions": "Node-delete-first, exact four events and three typed relationship events, full payload/multiplicity/graph parity retained; raw IDs verified against predelete database. Only sibling relationship events canonicalized before ID aliasing."
+    },
+    {
+      "scope": "Ownership create integration harness schema registration",
+      "publishedFailureSha": "7753e9253696eece1f024d3c8bc966bae88c0112",
+      "workflowRun": 39524322049,
+      "job": 118975360628,
+      "status": "independently reviewed; mandatory commit checks and exact-head CI pending",
+      "review": "scratchpad_review approved testblob a4ff8d1f00f0382e61ff8b15dd2ff181081602e9",
+      "evidence": [
+        "CI createImageWithUploader failure: Generated schema operations are not initialized for this driver",
+        "Production index.ts registers unwrapped schema before middleware; older harness omitted that registration",
+        "Four live ownership tests passed with original ownership/auth assertions unchanged; no production change"
+      ]
     }
   ]
 }

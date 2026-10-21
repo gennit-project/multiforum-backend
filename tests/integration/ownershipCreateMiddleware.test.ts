@@ -12,6 +12,7 @@ import {
 import typeDefinitions from "../../typeDefs.js";
 import getCustomResolvers from "../../customResolvers.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
+import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import ownershipCreateMiddleware from "../../middleware/ownershipCreateMiddleware.js";
 import type { Ogm } from "../../types/context.js";
 
@@ -46,6 +47,7 @@ before(async () => {
   });
   const schema = await neoSchema.getSchema();
   initializeOgmFromExistingSchema(ogm, neoSchema, schema);
+  registerGeneratedSchema(driver, schema);
   httpSchema = applyMiddleware(schema, ownershipCreateMiddleware);
 }, { timeout: 240000 });
 
