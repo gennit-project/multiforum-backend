@@ -209,8 +209,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     updateEventInSeries: updateEventInSeries({
-      Event,
-      EventSeries,
       driver,
     }),
     deleteEventInSeries: deleteEventInSeries({

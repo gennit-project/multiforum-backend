@@ -7,13 +7,12 @@ import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateN
 import { createInAppNotificationsForUsers } from "../../services/inAppNotifications.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { EventModel, EventSeriesModel } from "../../ogm_types.js";
+import {createEventSeriesUpdateRepository, type EventSeriesUpdateRepository} from "../../services/persistence/eventSeriesUpdateRepository.js";
 import { logger } from "../../logger.js";
 import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
 
 type Input = {
-  Event: EventModel;
-  EventSeries: EventSeriesModel;
+  eventSeriesUpdateRepository?: EventSeriesUpdateRepository;
   driver: Driver;
   dependencies?: {
     sendBatchEmails?: typeof sendBatchEmails;
@@ -89,7 +88,8 @@ function getOccurrenceLevelUpdates(
 }
 
 const getResolver = (input: Input) => {
-  const { Event, EventSeries, driver, dependencies } = input;
+  const { driver, dependencies } = input;
+  const repository = input.eventSeriesUpdateRepository ?? createEventSeriesUpdateRepository(driver);
   const sendBatchEmailsFn = dependencies?.sendBatchEmails || sendBatchEmails;
   const createSeriesUpdateNotificationEmailFn =
     dependencies?.createSeriesUpdateNotificationEmail ||
@@ -109,30 +109,7 @@ const getResolver = (input: Input) => {
 
     try {
       // Fetch the event and its series relationship with fields needed for notifications
-      const existingEvents = await Event.find({
-        where: { id: eventId },
-        selectionSet: `
-          {
-            id
-            title
-            startTime
-            endTime
-            locationName
-            address
-            virtualEventUrl
-            canceled
-            occurrenceIndex
-            EventSeries {
-              id
-              title
-              Occurrences {
-                id
-                occurrenceIndex
-              }
-            }
-          }
-        `,
-      });
+      const existingEvents = await repository.findSnapshot(eventId);
 
       const existingEvent = existingEvents[0];
       if (!existingEvent) {
@@ -145,8 +122,6 @@ const getResolver = (input: Input) => {
       const hasSeriesLevelChanges = Object.keys(seriesLevelUpdates).length > 0;
 
       await executeManagedWrite(driver, async (transaction) => {
-        const ogmContext = { executionContext: transaction };
-
         switch (scope) {
         case "THIS_ONLY": {
           // Update only this event
@@ -163,22 +138,14 @@ const getResolver = (input: Input) => {
             }
           }
 
-          await Event.update({
-            where: { id: eventId },
-            update: updateWithOverrides,
-            context: ogmContext,
-          });
+          await repository.updateOccurrence(eventId, updateWithOverrides, transaction);
           break;
         }
 
         case "THIS_AND_FUTURE": {
           if (!eventSeries) {
             // No series - just update this event
-            await Event.update({
-              where: { id: eventId },
-              update: eventUpdateInput,
-              context: ogmContext,
-            });
+            await repository.updateOccurrence(eventId, eventUpdateInput, transaction);
           } else {
             // Get all events with occurrenceIndex >= this event's index
             const currentIndex = existingEvent.occurrenceIndex || 0;
@@ -188,20 +155,12 @@ const getResolver = (input: Input) => {
 
             // Update all future events
             for (const occ of futureOccurrences) {
-              await Event.update({
-                where: { id: occ.id },
-                update: eventUpdateInput,
-                context: ogmContext,
-              });
+              await repository.updateOccurrence(occ.id, eventUpdateInput, transaction);
             }
 
             // If there are series-level changes, also update the series template
             if (hasSeriesLevelChanges) {
-              await EventSeries.update({
-                where: { id: eventSeries.id },
-                update: seriesLevelUpdates,
-                context: ogmContext,
-              });
+              await repository.updateTemplate(eventSeries.id, seriesLevelUpdates, transaction);
             }
           }
           break;
@@ -210,28 +169,16 @@ const getResolver = (input: Input) => {
         case "ALL_IN_SERIES": {
           if (!eventSeries) {
             // No series - just update this event
-            await Event.update({
-              where: { id: eventId },
-              update: eventUpdateInput,
-              context: ogmContext,
-            });
+            await repository.updateOccurrence(eventId, eventUpdateInput, transaction);
           } else {
             // Update all events in the series
             for (const occ of eventSeries.Occurrences) {
-              await Event.update({
-                where: { id: occ.id },
-                update: eventUpdateInput,
-                context: ogmContext,
-              });
+              await repository.updateOccurrence(occ.id, eventUpdateInput, transaction);
             }
 
             // Also update the series template for series-level fields
             if (hasSeriesLevelChanges) {
-              await EventSeries.update({
-                where: { id: eventSeries.id },
-                update: seriesLevelUpdates,
-                context: ogmContext,
-              });
+              await repository.updateTemplate(eventSeries.id, seriesLevelUpdates, transaction);
             }
           }
           break;
@@ -252,57 +199,9 @@ const getResolver = (input: Input) => {
       });
 
       // Refetch the updated event with subscriber info for notifications
-      const selectionSet = `
-        {
-          id
-          title
-          description
-          startTime
-          startTimeDayOfWeek
-          startTimeHourOfDay
-          endTime
-          locationName
-          address
-          virtualEventUrl
-          canceled
-          cost
-          isAllDay
-          isHostedByOP
-          coverImageURL
-          occurrenceIndex
-          Poster {
-            username
-          }
-          EventSeries {
-            id
-            title
-          }
-          EventChannels {
-            id
-            channelUniqueName
-            eventId
-            Channel {
-              uniqueName
-            }
-          }
-          SubscribedToEventUpdates {
-            username
-            Email {
-              address
-            }
-          }
-          Tags {
-            text
-          }
-          createdAt
-          updatedAt
-        }
-      `;
 
-      const result = await Event.find({
-        where: { id: eventId },
-        selectionSet,
-      });
+
+      const result = await repository.findUpdatedOccurrence(eventId);
 
       const updatedEvent = result[0];
 

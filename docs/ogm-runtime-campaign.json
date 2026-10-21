@@ -1212,28 +1212,30 @@
           "id": "33a",
           "scope": "Event series creation",
           "baselineCrudSites": 2,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Renewed exact33a review versus approved6606e102: removes only unused EventSeries forwarding from creation factory, whose Input accepts driver/optional repository. Repository/resolver/test sources unchanged; original exact4live and prior10focused/6existinglive/static evidence retained. Documentation records prior review, corrects zero CLI count and accurately states mandatory TypeScript failure. Corrected TypeScript exit0 confirmed by parent session88320; diff check clean. Prior scope/transaction/native-event/default/input parity review and179CRUD/53acquisition inventory remain applicable. Full mandatory hooks required.",
           "preparedPatch": "ogm-slice33a.patch",
           "preparedPatchSha256": "367867a3f6beacbc3e9745f67c0479e02d4598985c3b34995972228a64f3dd40",
           "preparedBaseTree": "939e53e6f5b8e8e921b08508dbb1519979c12748",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 87f14ee8b25c22923c7261d62c6adbd96393d273: lint, TypeScript and2386 full units passed; Four cumulative live passed; unused factory EventSeries forwarding removed after TypeScript gate, renewed review and full hooks; see /tmp/runtime-slice33a-exact-live.log"
           ],
-          "commit": null
+          "commit": "23338126449c166ab296163c1e352bdb7da3445b"
         },
         {
           "id": "33b",
           "scope": "Event series updates",
           "baselineCrudSites": 9,
-          "status": "reviewed; integration pending",
-          "review": "campaign_review: exacttree/hash/source/evidence approved without findings",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative33b review against23338126449c166ab296163c1e352bdb7da3445b. Five nonfactory source/test blobs exactly match independently approvedc31abc6a; factory removes only unused Event/EventSeries forwards, matching driver/optional repository Input. Prior13focused/static evidence reused; exact cumulative21live passed zero failures/skips/cancellations. Same caller transactions/retries, full default selections, three scopes/override flags, nested25cap, channel writes and postcommit notification behavior preserved; prior33a factory correction and31/32 shared changes retained. Diff check clean. Ledger9CRUD/0acquisitions,170remainingCRUD including structural adapter/53acquisitions/0CLI; queued40b receives no credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice33b.patch",
           "preparedPatchSha256": "932741296c824cd82d57cc3fe8025aeb60245d1d7023b9784a03d2ed77ec2464",
           "preparedBaseTree": "b73c53b672145c0551ebd36e179b4a5d7d8d82eb",
           "verification": [
-            "Treec31abc6a98a7b6469ef866c8a6194687bab1f96e:13focused,21live,types/lint passed; cumulativegates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "33c",
@@ -1633,6 +1635,37 @@
           "verification": [
             "30focused plus overlapping6lease units,8live,lint/TypeScript passed. Same predicates/defaults/independent write prefixes and timer non-overlap/stop behavior. Raw native IDs/timestamps checked; sequential stale-owner test does not claim concurrent atomicity. Zero credit before integration."
           ]
+        },
+        {
+          "id": "40b",
+          "scope": "Pipeline attempt tracking",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "preparedEvidence": {
+            "base": "ccfd09ee0197f8106d59c75975ffe07207728763",
+            "tree": "2cee7848644240eb1745b59aeea4bcdaabedf548",
+            "sha256": "4c23d84e9267a2f430bf6305c4c222bb69ea6b1eb7fe5d800cc1e1ad10e31c3c",
+            "patch": "/tmp/ogm-slice40b.patch",
+            "files": [
+              "services/persistence/pipelineAttemptRepository.ts",
+              "services/plugin/channelTrigger.execution.test.ts",
+              "services/plugin/channelTrigger.ts",
+              "services/plugin/commentTrigger.execution.test.ts",
+              "services/plugin/commentTrigger.ts",
+              "services/plugin/downloadTrigger.execution.test.ts",
+              "services/plugin/downloadTrigger.ts",
+              "services/plugin/pipelineAttempt.test.ts",
+              "services/plugin/pipelineAttempt.ts",
+              "services/plugin/pipelineWatchdog.test.ts",
+              "services/plugin/pipelineWatchdog.ts",
+              "tests/fixtures/pipelineAttemptRepositoryStub.ts",
+              "tests/integration/pipelineAttemptRepository.test.ts"
+            ]
+          },
+          "review": "Independent thirteen-path incremental review against approved40accfd09ee; SHA2564c23d84e9267a2f430bf6305c4c222bb69ea6b1eb7fe5d800cc1e1ad10e31c3c verified, diff check clean. Four finite operations preserve unbounded attempt-number read and exact predicate, full default projection reused from verified40a, QUEUED create response returned after independent RUNNING update, derived completion status/clock/deadline and failure prefixes. All three triggers and watchdog forward configured driver/domain port; existing execution assertions and recorder arguments retained through test-only adapters. Inspected39focused and12live passes, zero failures/skips/cancellations; live covers29prior attempts, complete ordered events/full graph with raw native node IDs and temporal checks, completion statuses, coercion/missing matches and committed create/running/completion projection errors. Final test-only enum reference preserves literal RUNNING value. Final2 TypeScript exit0 parent-confirmed session58745; lint0. No concurrency redesign or atomic numbering claim. Prepared4CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "verification": [
+            "39focused,12live,lint/TypeScript passed. Unbounded attempt-number reads, QUEUED response before separate RUNNING update, independent write/failure prefixes and deadlines retained. Raw native IDs/timestamps checked. Zero credit before integration."
+          ]
         }
       ]
     },
@@ -1752,9 +1785,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 179,
+  "remainingRuntimeCrudSites": 170,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 31,
+  "remainingRuntimeCrudFiles": 30,
   "foundations": [
     {
       "id": "F01",
@@ -1809,7 +1842,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "33a"
+      "33b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

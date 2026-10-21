@@ -71,7 +71,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | complete |
 | 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | complete |
 | 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | complete |
-| 33 Event recurrence | 19 | 32; external transaction/event gate | Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes | pending |
+| 33 Event recurrence | 19 | 32; external transaction/event gate | Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes | partial; see subdivisions |
 | 34 Download review/labels | 14 | Retain pipeline adapter until 41/44 controls | Split review/preparation 7/labels 7; scan state and label history | pending |
 | 35 Plugin read models | 20 | 01; visibility/redaction contract | Split configuration vs run/visibility reads; redaction, order and empty states | complete |
 | 36 Plugin registry/install | 22 | 37 secrets before install; external IO mocks | Two commits refresh 13/install 9; verification/download/write/rename failure ordering | pending |
@@ -730,3 +730,13 @@ CLI migration committed a860f26debcf4d6f1d0f448d53614baffdd73255: five cumulativ
 33a mandatory TypeScript gate caught one stale EventSeries property forwarded by cumulative factory integration. Removed that unused forwarding; repository/resolver code unchanged. Renewal review and full hooks required. Original4exactlive passed.
 
 33a final integration approval: Renewed exact33a review versus approved6606e102: removes only unused EventSeries forwarding from creation factory, whose Input accepts driver/optional repository. Repository/resolver/test sources unchanged; original exact4live and prior10focused/6existinglive/static evidence retained. Documentation records prior review, corrects zero CLI count and accurately states mandatory TypeScript failure. Corrected TypeScript exit0 confirmed by parent session88320; diff check clean. Prior scope/transaction/native-event/default/input parity review and179CRUD/53acquisition inventory remain applicable. Full mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice33a committed `23338126449c166ab296163c1e352bdb7da3445b` ([diff](https://github.com/gennit-project/multiforum-backend/commit/23338126449c166ab296163c1e352bdb7da3445b)), tree `87f14ee8b25c22923c7261d62c6adbd96393d273`: lint, TypeScript and all2386 units passed; Four cumulative live passed; unused factory EventSeries forwarding removed after TypeScript gate, renewed review and full hooks; see /tmp/runtime-slice33a-exact-live.log. Independent approval recorded above.
+
+### Slice 33b — Event series updates
+
+9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 170 CRUD sites/30 files; 53 acquisitions/7 files; 0 separate CLI CRUD sites.
+
+40b attempt tracking independently reviewed and queued:4CRUD;39focused,12live and static checks passed. Same independent write/partial-failure contracts and full default projections; no atomic sequence redesign. No credit before integration.
+
+33b final integration approval: Independent cumulative33b review against23338126449c166ab296163c1e352bdb7da3445b. Five nonfactory source/test blobs exactly match independently approvedc31abc6a; factory removes only unused Event/EventSeries forwards, matching driver/optional repository Input. Prior13focused/static evidence reused; exact cumulative21live passed zero failures/skips/cancellations. Same caller transactions/retries, full default selections, three scopes/override flags, nested25cap, channel writes and postcommit notification behavior preserved; prior33a factory correction and31/32 shared changes retained. Diff check clean. Ledger9CRUD/0acquisitions,170remainingCRUD including structural adapter/53acquisitions/0CLI; queued40b receives no credit. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.

@@ -1,9 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import getResolver from "./updateEventInSeries.js";
+import getProductionResolver from "./updateEventInSeries.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 
+// Keep the existing scope/retry assertions using their characterized model stubs.
+const getResolver = ({Event, EventSeries, ...input}: any) => getProductionResolver({
+  ...input,
+  eventSeriesUpdateRepository: {
+    findSnapshot: id => Event.find({where: {id}}),
+    updateOccurrence: async (id, update, tx) => {await Event.update({where: {id}, update, context: {executionContext: tx}});},
+    updateTemplate: async (id, update, tx) => {await EventSeries.update({where: {id}, update, context: {executionContext: tx}});},
+    findUpdatedOccurrence: id => Event.find({where: {id}}),
+  },
+});
 type GetResolverArg = Parameters<typeof getResolver>[0];
 
 const buildDriver = (callbackAttempts = 1, failRun = false) => {
