@@ -1677,7 +1677,7 @@
           "id": "40b",
           "scope": "Pipeline attempt tracking",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "ccfd09ee0197f8106d59c75975ffe07207728763",
             "tree": "2cee7848644240eb1745b59aeea4bcdaabedf548",
@@ -1701,9 +1701,10 @@
           },
           "review": "Independent cumulative40b against5011245d. Twelve executable/test blobs identical to approved2cee7848; commentTrigger sole adaptation matches reviewed integrated patch changes and retains bot thread/lease wiring. Exact isolated12live passed zero failures/skips/cancellations. Original39focused/static reused; unbounded prior attempts, full defaults, QUEUED response before separate RUNNING write, completion clock/status and partial committed failure prefixes unchanged. Diff check clean;77CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree c062895cd6d0e58d72e10d73f3e401f855841527: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice40b-exact-live.log"
           ],
-          "commit": null,
+          "commit": "cf26228a72967c6f2288310f3a865edde3897bf3",
           "integrationAdaptation": {
             "id": "40b",
             "patch": "/tmp/ogm-integrated-40b.patch",
@@ -1716,7 +1717,7 @@
           "id": "40c",
           "scope": "Pipeline watchdog recovery",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "2cee7848644240eb1745b59aeea4bcdaabedf548",
             "tree": "54806af505df14330d3423ac97ed768d3ba8669d",
@@ -1730,10 +1731,11 @@
               "tests/integration/pipelineWatchdogRepository.test.ts"
             ]
           },
-          "review": "Independent five-path incremental review against approved40b2cee7848; SHA2569fcec0f6e77cc0c6fbe2888ad4e8b7c6c310506cc2691509f247b1639bede1d9 verified, diff check clean. Four fixed operations preserve unbounded active-job projection, exact active statuses and conditional explicit-deadline/null guard; snapshot expiry fallback and order remain unchanged. Job writes precede unique parent iteration, active-parent/status reads, attempt completion and optional notification; timer/startup and error propagation untouched. Test adapter preserves prior recorder predicates. Inspected4focused/7correctedlive passing with29-job read parity, renewal-after-read guard, legacy fallback, running sibling, notification and partial projection failures. Label-first graph snapshot ordering stabilizes random notification UUID placement without sorting native events or changing production order; raw node/relationship endpoint IDs and temporal checks remain before full ordered payload comparison. TypeScript/lint exit0 parent-confirmed sessions4712/51516. Prepared4CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "review": "Independent cumulative40c againstcf26228a. All five executable/test blobs identical to approved54806af5; prior4focused/static evidence reused. Exact isolated7live passed zero failures/skips/cancellations, covering29unbounded active jobs, renewal-after-read guard, legacy deadline fallback, sibling/notification boundaries and committed projection failure prefixes. Job writes then unique parent/status/attempt/notification order and timers unchanged; raw native IDs/events retained. Diff check clean; ledger73CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "4focused,7live,lint/TypeScript passed. Same unbounded snapshot reads, conditional timeout guards, job/parent/notification ordering; timers unchanged. Graph snapshot ordered by label before UUID aliases, native events remain fully ordered with raw identity checks. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "40w",
@@ -2079,9 +2081,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 77,
+  "remainingRuntimeCrudSites": 73,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 11,
+  "remainingRuntimeCrudFiles": 10,
   "foundations": [
     {
       "id": "F01",
@@ -2142,7 +2144,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "40b"
+      "40c"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

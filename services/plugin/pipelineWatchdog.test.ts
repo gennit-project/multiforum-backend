@@ -1,3 +1,4 @@
+import {pipelineWatchdogRepositoryStub} from "../../tests/fixtures/pipelineWatchdogRepositoryStub.js";
 import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -161,4 +162,4 @@ test("does not time out a lease that was renewed during recovery", async () => {
   assert.equal(parentFindCount, 0);
 });
 
-const recoverExpiredPluginJobs:typeof actualRecover = args => actualRecover({...args,attemptRepository:pipelineAttemptRepositoryStub(args.PluginPipelineRun)});
+const recoverExpiredPluginJobs:typeof actualRecover = args => actualRecover({...args,repository:pipelineWatchdogRepositoryStub(args),attemptRepository:pipelineAttemptRepositoryStub(args.PluginPipelineRun)});

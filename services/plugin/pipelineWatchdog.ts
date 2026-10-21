@@ -1,3 +1,4 @@
+import {createPipelineWatchdogRepository,type PipelineWatchdogRepository} from "../persistence/pipelineWatchdogRepository.js";
 import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
@@ -69,7 +70,7 @@ const asPipelineJobStatus = (status: string): PipelineJobStatus =>
 export const recoverExpiredPluginJobs = async ({
   driver,
   attemptRepository,
-  PluginRun,
+  repository,
   PluginPipelineRun,
   DownloadableFile,
   User,
@@ -78,6 +79,7 @@ export const recoverExpiredPluginJobs = async ({
 }: {
   driver?: Driver;
   attemptRepository?: PipelineAttemptRepository;
+  repository?: PipelineWatchdogRepository;
   PluginRun: PluginRunModel;
   PluginPipelineRun: PluginPipelineRunModel;
   DownloadableFile?: DownloadableFileModel;
@@ -86,14 +88,8 @@ export const recoverExpiredPluginJobs = async ({
   leaseDurationMs?: number;
 }) => {
   const timestamp = now.toISOString();
-  const candidates = (await PluginRun.find({
-    where: {
-      status_IN: ACTIVE_JOB_STATUSES,
-    },
-    selectionSet: `{
-      id pipelineId status queuedAt startedAt heartbeatAt timeoutAt createdAt
-    }`,
-  })) as ExpirableJob[];
+  const persistence = repository ?? createPipelineWatchdogRepository(driver!);
+  const candidates = await persistence.findActiveJobs() as ExpirableJob[];
   const expired = candidates.filter(
     job => {
       const explicitDeadline = job.timeoutAt
@@ -121,23 +117,7 @@ export const recoverExpiredPluginJobs = async ({
   const pipelineIds = new Set<string>();
   let jobsTimedOut = 0;
   for (const job of expired) {
-    const result = await PluginRun.update({
-      where: {
-        id: job.id,
-        status_IN: ACTIVE_JOB_STATUSES,
-        ...(job.timeoutAt
-          ? { timeoutAt_LTE: timestamp }
-          : { timeoutAt: null }),
-      },
-      update: {
-        status: PluginRunStatus.TimedOut,
-        message: "Plugin execution lease expired",
-        heartbeatAt: timestamp,
-        finishedAt: timestamp,
-        timeoutAt: null,
-      },
-      selectionSet: `{ pluginRuns { id } }`,
-    });
+    const result = await persistence.markExpiredJob(job.id, Boolean(job.timeoutAt), timestamp);
     if (result.pluginRuns.length === 0) continue;
     jobsTimedOut += 1;
     if (job.pipelineId) pipelineIds.add(job.pipelineId);
@@ -145,22 +125,10 @@ export const recoverExpiredPluginJobs = async ({
 
   let attemptsTimedOut = 0;
   for (const pipelineId of pipelineIds) {
-    const attempts = (await PluginPipelineRun.find({
-      where: {
-        pipelineId,
-        status_IN: [
-          PluginPipelineRunStatus.Queued,
-          PluginPipelineRunStatus.Running,
-        ],
-      },
-      selectionSet: `{ pipelineId status }`,
-    })) as ActiveAttempt[];
+    const attempts = await persistence.findActiveAttempt(pipelineId) as ActiveAttempt[];
     if (!attempts[0]) continue;
 
-    const jobs = await PluginRun.find({
-      where: { pipelineId },
-      selectionSet: `{ status }`,
-    });
+    const jobs = await persistence.findAttemptJobStatuses(pipelineId);
     const status = await completePipelineAttempt({
       driver,
       repository: attemptRepository,
