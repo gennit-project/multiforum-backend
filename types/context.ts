@@ -1,3 +1,4 @@
+import type { CommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
 import type { IssueActivityMiddlewareRepository } from "../services/persistence/issueActivityMiddlewareRepository.js";
 import type { IssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import type { IssueTargetRepository } from "../services/persistence/issueTargetRepository.js";
@@ -91,6 +92,7 @@ export type GraphQLRequest = Request & {
  * possibly-absent (`req?.headers`, `if (context.req)`).
  */
 export type GraphQLContext = {
+  commentRevisionRepository?: CommentRevisionRepository;
   issueActivityMiddlewareRepository?: IssueActivityMiddlewareRepository;
   issueActivityRepository?: IssueActivityRepository;
   issueTargetRepository?: IssueTargetRepository;

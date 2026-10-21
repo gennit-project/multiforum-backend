@@ -57,7 +57,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | complete |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | complete |
 | 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | complete |
-| 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | partial; see subdivisions |
+| 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | complete |
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | pending |
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | pending |
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | pending |
@@ -490,3 +490,13 @@ Slice19b committed `7d001534d0441dda10bcf15104b778e118cd2a18` ([diff](https://gi
 4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 324 CRUD sites/66 files; 71 acquisitions/15 files; two separate CLI sites.
 
 19c final integration approval: Independent cumulative review against7d00153: five non-factory source/test blobs exactly match independently approved original tree24604ec; shared factory cumulative change only replaces lockIssue/unlockIssue Issue arguments with zero-argument factories. Existing validation/auth/read catch boundaries, non-atomic read/check/write, explicit projections, identity update guard, nested graph/native events and write-notify-return semantics retained. Prior independent10 focused units/static evidence reused; exact cumulative /tmp/runtime-slice19c-exact-live.log reports10 passed, zero failed/skipped/cancelled, including assembled factory integration. Diff check clean. Four CRUD/zero acquisitions removed; ledger324 CRUD/71 acquisitions consistent. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice19c committed `c070e6a721dbc1bcf032d063b1e29a6607cd3140` ([diff](https://github.com/gennit-project/multiforum-backend/commit/c070e6a721dbc1bcf032d063b1e29a6607cd3140)), tree `33e941cd7d366be1fa251e9367c1b5de95dd4c1f`: lint, TypeScript and all2138 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice19c-exact-live.log. Independent approval recorded above.
+
+### Slice 20 — Comment revision persistence
+
+6 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 318 CRUD sites/64 files; 67 acquisitions/13 files; two separate CLI sites.
+
+33b independently reviewed/queued:9CRUD, originalrecurrencescopes/overrideflags/25cap, transactionrollback and orderednativeevents/notificationeffects retained. No removalcredit beforeintegration.
+
+20 final integration approval: Independent cumulative review againstc070e6a: six non-context source/test blobs exactly match approved original tree7528072; context adaptation only adds optional CommentRevisionRepository import/field. Reused original independent16 units and corrected DiscussionChannel fixture/default projection/native event evidence. Exact cumulative /tmp/runtime-slice20-exact-live.log reports20 passes, zero failed/skipped/cancelled. Original separate snapshot/create/existence/connect boundaries, attribution, old-text history, swallowed tracking failures and continued downstream effects retained; no deduplication redesign. Diff check clean. Six CRUD/four acquisitions removed; ledger318 CRUD/67 acquisitions consistent; queued33b approval/tree/hash recorded without removal credit. Mandatory cumulative hooks/build/circular and exact-SHA publication CI remain parent-owned.; live parity passed on identical production sources before this documentation-only update.

@@ -1,3 +1,4 @@
+import { createCommentRevisionRepository, type CommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
 import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import {
   createIssueActivityFeedItems,
@@ -6,12 +7,6 @@ import {
 } from './issueActivityFeedHelpers.js';
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
-import type {
-  CommentModel,
-  CommentUpdateInput,
-  TextVersionModel,
-  UserModel,
-} from '../ogm_types.js';
 import type { TextVersionCreateInput } from '../src/generated/graphql.js';
 import type { CommentSnapshot } from '../utils/buildCommentMentionContext.js';
 import { logger } from "../logger.js";
@@ -55,55 +50,14 @@ export const commentVersionHistoryHandler = async ({
     
     logger.info('Processing version history for comment:', commentId);
     
-    // Access OGM models
-    const { ogm } = context;
-    const CommentModel = ogm.model('Comment');
-    const TextVersionModel = ogm.model('TextVersion');
-    const UserModel = ogm.model('User');
+    const repository = context.commentRevisionRepository ?? createCommentRevisionRepository(context.driver);
     const issueActivityRepository = context.issueActivityRepository ?? createIssueActivityRepository(context.driver);
     
     let comment: CommentSnapshot | null | undefined = commentSnapshot;
 
     if (!comment) {
       // Fetch the current comment to get current values before update
-      const comments = await CommentModel.find({
-        where: { id: commentId },
-        selectionSet: `{
-          id
-          text
-          CommentAuthor {
-            ... on User {
-              username
-            }
-            ... on ModerationProfile {
-              displayName
-              User {
-                username
-              }
-            }
-          }
-          DiscussionChannel {
-            discussionId
-            channelUniqueName
-            Discussion {
-              id
-              title
-            }
-          }
-          Event {
-            id
-            title
-            EventChannels {
-              channelUniqueName
-            }
-          }
-          PastVersions {
-            id
-            body
-            createdAt
-          }
-        }`
-      });
+      const comments = await repository.findSnapshot(commentId);
 
       if (!comments.length) {
         logger.info('Comment not found');
@@ -129,15 +83,13 @@ export const commentVersionHistoryHandler = async ({
       commentAuthor?.username || commentAuthor?.User?.username || null;
 
     // Track text version history if text is being updated
-    // Save the NEW text (post-edit) with the current user attribution
+    // Save the pre-edit text with the current user attribution
     if (isTextUpdated && update.text !== comment.text) {
       await trackTextVersionHistory(
         commentId,
         comment.text,
         username,
-        CommentModel,
-        TextVersionModel,
-        UserModel
+        repository
       );
 
       if (authorUsername && username && authorUsername !== username) {
@@ -204,9 +156,7 @@ async function trackTextVersionHistory(
   commentId: string,
   newText: string | null | undefined,
   username: string | null,
-  CommentModel: CommentModel,
-  TextVersionModel: TextVersionModel,
-  UserModel: UserModel
+  repository: CommentRevisionRepository
 ) {
   logger.info(
     `Tracking text version history for comment ${commentId} by user ${username ?? '[unknown]'}`
@@ -224,10 +174,7 @@ async function trackTextVersionHistory(
     };
 
     if (username) {
-      const users = await UserModel.find({
-        where: { username },
-        selectionSet: `{ username }`,
-      });
+      const users = await repository.findEditor(username);
 
       if (users.length) {
         textVersionInput.Author = {
@@ -238,9 +185,7 @@ async function trackTextVersionHistory(
 
     // Create new TextVersion for the old text
     // The createdAt timestamp will be automatically set by @timestamp directive
-    const textVersionResult = await TextVersionModel.create({
-      input: [textVersionInput],
-    });
+    const textVersionResult = await repository.createPreviousText(textVersionInput);
 
     if (!textVersionResult.textVersions.length) {
       logger.info('Failed to create TextVersion');
@@ -250,12 +195,7 @@ async function trackTextVersionHistory(
     const textVersionId = textVersionResult.textVersions[0].id;
 
     // Fetch the current comment
-    const comments = await CommentModel.find({
-      where: { id: commentId },
-      selectionSet: `{
-        id
-      }`
-    });
+    const comments = await repository.findCommentIds(commentId);
 
     if (!comments.length) {
       logger.info('Comment not found when updating version order');
@@ -263,19 +203,7 @@ async function trackTextVersionHistory(
     }
 
     // Update comment to connect the new TextVersion and set textLastEdited
-    await CommentModel.update({
-      where: { id: commentId },
-      update: {
-        textLastEdited: new Date().toISOString(),
-        PastVersions: {
-          connect: [{
-            where: {
-              node: { id: textVersionId }
-            }
-          }]
-        }
-      } as unknown as CommentUpdateInput
-    });
+    await repository.connectPreviousText(commentId, textVersionId, new Date().toISOString());
 
     logger.info(`Successfully added text version history for comment ${commentId}`);
   } catch (error) {

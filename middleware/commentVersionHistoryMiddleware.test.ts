@@ -1,6 +1,6 @@
 // Unit tests for the comment version-history middleware. Same approach as the
 // discussion middleware: drive its branching (pass-through vs. snapshot fetch on
-// a text change) with a stubbed resolver and a permissive in-memory OGM; the
+// a text change) with a stubbed resolver and a finite revision repository; the
 // delegated hook writes run against the stub. No DB.
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -11,19 +11,15 @@ const RESULT = { comments: [{ id: "c-1" }] };
 
 function makeCtx(models: Record<string, any> = {}) {
   const calls: string[] = [];
-  const ogm = {
-    model(name: string) {
-      calls.push(name);
-      const o = models[name] || {};
-      return {
-        find: o.find ?? (async () => []),
-        create: o.create ?? (async () => ({})),
-        update: o.update ?? (async () => ({})),
-        delete: o.delete ?? (async () => ({})),
-      };
-    },
+  const find = async (name: string) => { calls.push(name); return models[name]?.find?.() ?? []; };
+  const commentRevisionRepository = {
+    findSnapshot: () => find("Comment"),
+    findEditor: () => find("User"),
+    createPreviousText: async () => ({textVersions: []}),
+    findCommentIds: () => find("Comment"),
+    connectPreviousText: async () => {},
   };
-  return { ctx: { ogm, driver: {}, user: { username: "alice" } } as any, calls };
+  return { ctx: { commentRevisionRepository, issueActivityRepository: {findRelatedIssueIds: async () => []}, driver: {}, user: { username: "alice" } } as any, calls };
 }
 
 function countingResolve() {
