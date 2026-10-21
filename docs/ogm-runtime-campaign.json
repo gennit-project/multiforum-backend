@@ -743,11 +743,12 @@
       "baselineCrudSites": 9,
       "dependencies": "18\u201319",
       "acceptance": "Event-specific snapshots/defaults; no unsupported repository reuse",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "8fe3b98d5c9c565369c3a5ed371d4c6bd67886c4",
       "review": "Independent cumulative review againstc471ebb: seven non-context source/test blobs exactly match approved original treeedfb505; context only adds optional EventRevisionRepository import/field. Original independent24 focused and live/static evidence reused. Exact cumulative /tmp/runtime-slice22-exact-live.log reports6 passed, zero failed/skipped/cancelled. Pre-resolver durable history, editor/prior-author attribution, separate helper failure catches, full production defaults/postcommit projection failures and later-notification behavior retained. Diff check clean; nine CRUD/four acquisitions removed; ledger297 CRUD/58 acquisitions consistent. Mandatory cumulative hooks remain required.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 7783a275c319b5318ea3ce2b6141133982f267ee: lint, TypeScript and2169 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice22-exact-live.log"
       ],
       "modelAcquisitionsRemoved": 4,
       "preparedPatch": "ogm-slice22.patch",
@@ -765,7 +766,7 @@
       "baselineCrudSites": 9,
       "dependencies": "18\u201319; 08",
       "acceptance": "Separate revision/redaction commits; visibility, authors and redaction authorization",
-      "status": "reviewed subdivisions; integration pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -775,14 +776,15 @@
           "scope": "Wiki revisions and child snapshots",
           "baselineCrudSites": 7,
           "modelAcquisitionsRemoved": 5,
-          "status": "reviewed; integration pending",
-          "review": "plugin_status",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against8fe3b98: six non-context source/test blobs exactly match approved original tree428308f; context only adds optional WikiRevisionRepository import/field with whitespace normalization. Original independent15 focused and24 live/static evidence reused. Exact cumulative /tmp/runtime-slice23a-exact-live.log reports10 passed, zero failed/skipped/cancelled. Original author/editReason/empty-content rules, title-before-body, separate failure boundaries/default projections and child result-shape/system attribution preserved. Diff check clean; seven CRUD/five acquisitions removed; ledger290 CRUD/53 acquisitions consistent, queued34a carries no removal credit. Mandatory cumulative hooks remain required.",
           "preparedPatch": "ogm-slice23a.patch",
           "preparedPatchSha256": "5293d4944f5ea044cd7d3fb9c31058a744e543449b8a179b23ad250c19902d6b",
           "preparedBase": "18a/b19a/b",
           "verification": [
-            "Reviewed tree428308f27695a77ce9e47e09c643e7e5796e587c: 15independentfocused;24live;tsc/lint passed with actual exits; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "23b",
@@ -1224,10 +1226,25 @@
       "baselineCrudSites": 14,
       "dependencies": "Retain pipeline adapter until 41/44 controls",
       "acceptance": "Split review/preparation 7/labels 7; scan state and label history",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "34a",
+          "scope": "Download review and preparation",
+          "baselineCrudSites": 7,
+          "status": "reviewed; integration pending",
+          "review": "campaign_review: exact tree/hash/code/live/static evidence approved without findings",
+          "preparedPatch": "ogm-slice34a.patch",
+          "preparedPatchSha256": "4bcfd1f14c3baf025637f56df84b32d4e69c2dc6a2639d622a5a15c1ff21bbc9",
+          "preparedBaseCommit": "3e1283d2b3a147dfb116b388b16e985b6dccd85f",
+          "verification": [
+            "Tree1a3b3d7a4cf7042f894fb7f528bbe3a072387989:16focused,12live,types/lint passed; cumulative gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "35",
@@ -1596,9 +1613,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 297,
-  "remainingModelAcquisitionsIncludingOptional": 58,
-  "remainingRuntimeCrudFiles": 60,
+  "remainingRuntimeCrudSites": 290,
+  "remainingModelAcquisitionsIncludingOptional": 53,
+  "remainingRuntimeCrudFiles": 58,
   "foundations": [
     {
       "id": "F01",
@@ -1614,7 +1631,7 @@
       ]
     }
   ],
-  "remainingModelAcquisitionFiles": 9,
+  "remainingModelAcquisitionFiles": 7,
   "milestone": {
     "completedSlices": [
       "01",
@@ -1638,11 +1655,12 @@
       "19",
       "20",
       "21",
+      "22",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "22"
+      "23a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

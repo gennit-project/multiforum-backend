@@ -34,7 +34,12 @@ function makeCtx(models: Record<string, any> = {}) {
       };
     },
   };
-  return { ctx: { ogm, driver: {}, user: { username: "alice" } } as any, log };
+  const wikiRevisionRepository = {
+    findSnapshot: () => ogm.model('WikiPage').find(),findAuthor: () => ogm.model('User').find(),
+    createRevision: (input:any) => ogm.model('TextVersion').create({input:[input]}),findPageId: () => ogm.model('WikiPage').find(),
+    connectRevision: (id:string,revisionId:string) => ogm.model('WikiPage').update({where:{id},update:{PastVersions:{connect:[{where:{node:{id:revisionId}}}]}}}),
+  };
+  return { ctx: { wikiRevisionRepository, ogm, driver: {}, user: { username: "alice" } } as any, log };
 }
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
@@ -181,4 +186,24 @@ test("an empty TextVersion create result skips the WikiPage connect", async () =
   );
   assert.equal(log.filter((c) => c === "TextVersion.create").length, 1);
   assert.ok(!log.includes("WikiPage.update")); // no id to connect
+});
+
+test('child branch wins, uses literal system author, retains duplicate returned children and continues after title failure',async()=>{
+ const calls:string[]=[];const ctx:any={user:{username:'actual-editor'},wikiRevisionRepository:{
+  findSnapshot:async()=>{assert.fail('child branch must not run prior-state hook');},
+  createRevision:async(input:any)=>{calls.push(`create:${input.body}:${input.Author.connect.where.node.username}`);if(input.body==='Title')throw Error('title failed');return {textVersions:[{id:'r'}]};},
+  connectRevision:async()=>{calls.push('connect');},
+ }};
+ const child={id:'child',title:'Title',body:'Body'};const result={updateWikiPages:{wikiPages:[{ChildPages:[child,child]}]}};
+ const out=await M.updateWikiPages(async()=>{calls.push('resolve');return result;},null,{where:{id:'parent'},update:{title:'Changed',ChildPages:{create:[]}}},ctx,{});
+ assert.equal(out,result);assert.deepEqual(calls,['resolve','create:Title:system','create:Body:system','connect','create:Title:system','create:Body:system','connect']);
+});
+test('child ordinary direct result stays no-op and empty edit fields skip hook',async()=>{
+ const {ctx,log}=makeCtx();
+ await M.updateWikiPages(async()=>({wikiPages:[{ChildPages:[{id:'c',title:'T'}]}]}),null,{update:{ChildPages:{create:[]}}},ctx,{});
+ assert.equal(log.length,0);
+ await M.updateWikiPages(async()=>({}),null,{where:{id:'w'},update:{title:'',body:''}},ctx,{});assert.equal(log.length,0);
+});
+test('child resolver failure prevents all revision operations',async()=>{
+ const {ctx,log}=makeCtx();await assert.rejects(()=>M.updateWikiPages(async()=>{throw Error('creation failed');},null,{update:{ChildPages:{create:[]}}},ctx,{}),/creation failed/);assert.equal(log.length,0);
 });

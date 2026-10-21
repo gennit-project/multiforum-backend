@@ -60,7 +60,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | complete |
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | complete |
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | complete |
-| 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | pending |
+| 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | complete |
 | 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | pending |
 | 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | pending |
 | 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | pending |
@@ -526,3 +526,13 @@ Slice21b committed `c471ebb6c0a50856bc991a42ae85cc72c4e6ffa9` ([diff](https://gi
 9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 297 CRUD sites/60 files; 58 acquisitions/9 files; two separate CLI sites.
 
 22 final integration approval: Independent cumulative review againstc471ebb: seven non-context source/test blobs exactly match approved original treeedfb505; context only adds optional EventRevisionRepository import/field. Original independent24 focused and live/static evidence reused. Exact cumulative /tmp/runtime-slice22-exact-live.log reports6 passed, zero failed/skipped/cancelled. Pre-resolver durable history, editor/prior-author attribution, separate helper failure catches, full production defaults/postcommit projection failures and later-notification behavior retained. Diff check clean; nine CRUD/four acquisitions removed; ledger297 CRUD/58 acquisitions consistent. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice22 committed `8fe3b98d5c9c565369c3a5ed371d4c6bd67886c4` ([diff](https://github.com/gennit-project/multiforum-backend/commit/8fe3b98d5c9c565369c3a5ed371d4c6bd67886c4)), tree `7783a275c319b5318ea3ce2b6141133982f267ee`: lint, TypeScript and all2169 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice22-exact-live.log. Independent approval recorded above.
+
+### Slice 23a — Wiki revision persistence
+
+7 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 290 CRUD sites/58 files; 53 acquisitions/7 files; two separate CLI sites.
+
+34a independently reviewed/queued:7CRUD, download preparation/read authorization/default projections and separate scan update/notification/refetch boundaries preserved. Pipeline adapter forwarding retained until pipeline slices; no removal credit before integration.
+
+23a final integration approval: Independent cumulative review against8fe3b98: six non-context source/test blobs exactly match approved original tree428308f; context only adds optional WikiRevisionRepository import/field with whitespace normalization. Original independent15 focused and24 live/static evidence reused. Exact cumulative /tmp/runtime-slice23a-exact-live.log reports10 passed, zero failed/skipped/cancelled. Original author/editReason/empty-content rules, title-before-body, separate failure boundaries/default projections and child result-shape/system attribution preserved. Diff check clean; seven CRUD/five acquisitions removed; ledger290 CRUD/53 acquisitions consistent, queued34a carries no removal credit. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.
