@@ -1824,11 +1824,12 @@
       "baselineCrudSites": 11,
       "dependencies": "40; 44 notifications; 38",
       "acceptance": "Comment applicability, recursion guards, middleware wiring and ordering",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "2f37685d11a6603e024dadf616778cf54110b013",
       "review": "Independent cumulative43 againstae849fec. Five executable/test blobs identical to corrected approvedf980a0d3; sole commentTrigger adaptation matches reviewed integrated patch and preserves38 parent-thread/identity/comment plus39 raw report wiring. Exact isolated7live passed zero failures/skips/cancellations, including corrected positive canonical discussion edge/author union, primitive full native event/graph parity and actual fake-plugin smoke. Prior16focused/static evidence reused. Diff check clean;37CRUD/50acquisitions/0CLI accurate. W2 verification labels now normalized to confirmed outcomes;42 native failure and successful unchanged hook retry accurately retained. Mandatory hooks parent-owned.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 1d72ef0d38adc00519e58534bd33844c5485fb5a: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice43-exact-live.log"
       ],
       "preparedEvidence": {
         "base": "a23bb88a477ec9fbc3b4221bd2628d56305aff5a",
@@ -1899,7 +1900,7 @@
           "id": "44b",
           "scope": "Pipeline start controls",
           "baselineCrudSites": 6,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "f980a0d370b94a12e49214b37070713cad1f2d5c",
             "tree": "88d25c0bc42ad3d958c577c85b40a31e47d45314",
@@ -1915,10 +1916,11 @@
               "tests/integration/pipelineStartRepository.test.ts"
             ]
           },
-          "review": "Independent seven-path review against corrected43f980a0d3; SHA256cd656644eb23bb3fa2802f716e5a179ba3ad7687689d8cac952fa429a73172ce verified, diff check clean. Six finite read operations preserve original target/config/channel/active/refetch selections and caller-constructed predicates; repository constructed only after authentication using context.driver. Ownership/applicability/active-attempt guard, driver and owner metadata forwarding, runner then refetch/missing-attempt error unchanged. Rerun change only optional start port type/test adapter; rerun CRUD untouched. Existing singular Discussion.DownloadableFile validation failure intentionally retained, with exact old/new error live coverage.24focused and5live passed zero failures/skips/cancellations, including unbounded configs/attempts, read-no-event checks, actual owner/unauthenticated/unauthorized paths, runner driver identity and durable attempt refetch/active guard. Existing unit recorder assertions retained; no claim of real plugin execution. Final TypeScript98364/lint63856 exit0 parent-confirmed. Prepared6CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "review": "Independent cumulative44b against2f37685d. All seven executable/test blobs identical to approved88d25c0b; prior24focused/static reused. Exact isolated5live passed zero failures/skips/cancellations. Six fixed reads retain authentication before context-driver repository, ownership/active-attempt guards, runner driver/owner metadata and committed attempt refetch/missing error; singular Discussion selection failure preserved. Rerun optional start adapter/type only at this slice. Diff check clean;31CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "24focused,5live,lint/TypeScript passed. Authentication before repository, ownership/active-attempt checks and configured driver forwarding preserved. Known singular-field production error retained. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "44c",
@@ -2092,9 +2094,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 37,
+  "remainingRuntimeCrudSites": 31,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 7,
+  "remainingRuntimeCrudFiles": 6,
   "foundations": [
     {
       "id": "F01",
@@ -2154,11 +2156,12 @@
       "39",
       "40",
       "41",
-      "42"
+      "42",
+      "43"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "43"
+      "44b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2494,6 +2497,112 @@
         "22 live checks passed /tmp/download-pipeline-wiring-live.log",
         "TypeScript8130 and lint15839 actual exit0"
       ]
+    },
+    {
+      "id": "W3a",
+      "scope": "Campaign service and public API explicit dependencies",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W3a",
+        "base": "12bc67c117ca3b20d74f30409566b19e6fc8dd1b",
+        "tree": "057e55ba16fab1ed90eeabaf132ab9580ac0a7aa",
+        "patch": "/tmp/ogm-campaign-wiring.patch",
+        "sha256": "b404fed3927a8af964801005a564c9b93b16f3495375f68f90df7c520e6c86ad",
+        "files": [
+          "customResolvers.ts",
+          "customResolvers/mutationResolvers.ts",
+          "customResolvers/mutations/pluginPipelineCampaigns.test.ts",
+          "customResolvers/mutations/pluginPipelineCampaigns.ts",
+          "customResolvers/queries/pluginPipelineCampaigns.test.ts",
+          "customResolvers/queries/pluginPipelineCampaigns.ts",
+          "customResolvers/queryResolvers.ts",
+          "index.ts",
+          "services/plugin/pipelineCampaign.test.ts",
+          "services/plugin/pipelineCampaign.ts",
+          "tests/integration/campaignServiceRepository.test.ts"
+        ],
+        "verification": [
+          "16 focused checks passed /tmp/campaign-wiring-focused.log",
+          "20 live checks passed /tmp/campaign-wiring-live.log",
+          "TypeScript83620 and lint79066 actual exit0"
+        ]
+      },
+      "review": "Independent eleven-path W3a review against12bc67c1. Explicit CampaignDependencies carries configured driver, named repository and notification flag; composition root maps Boolean(previous User) and index passes renamed bundle. Query/control factories remove unused models while creation retains context.driver after auth/limits and pause/resume retain configured driver. Policy/preview/read/write operations, sequential dispatch/progress ordering, timers and anonymous URL redaction/default25 unchanged. Unit fixture adapters retain original recorders; direct undefined/false/true flag dispatch tested without models.16focused and20isolatedlive passed zero failures/skips/cancellations; final TypeScript83620/lint79066 zero parent-confirmed. SHA256b404fed3927a8af964801005a564c9b93b16f3495375f68f90df7c520e6c86ad verified, diff check clean. Prepared only; cumulative gates required.",
+      "verification": [
+        "16 focused checks passed /tmp/campaign-wiring-focused.log",
+        "20 live checks passed /tmp/campaign-wiring-live.log",
+        "TypeScript83620 and lint79066 actual exit0"
+      ]
+    },
+    {
+      "id": "W3b",
+      "scope": "Unused discussion list query model ports",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W3b",
+        "base": "057e55ba16fab1ed90eeabaf132ab9580ac0a7aa",
+        "tree": "d1039f10aeaba1bda691183feb2b84eaf9312600",
+        "patch": "/tmp/ogm-list-query-wiring.patch",
+        "sha256": "13b770ab039be1a0c2dc5253730d46a9ecaca9b4609fb6b7511ecede13f32f02",
+        "files": [
+          "customResolvers/queries/discussionRankingParams.test.ts",
+          "customResolvers/queries/getDiscussionsInChannel.test.ts",
+          "customResolvers/queries/getDiscussionsInChannel.ts",
+          "customResolvers/queries/getSiteWideDiscussionList.test.ts",
+          "customResolvers/queries/getSiteWideDiscussionList.ts",
+          "customResolvers/queryResolvers.ts"
+        ],
+        "verification": [
+          "48 focused checks passed /tmp/list-query-wiring-focused.log plus ranking checks /tmp/list-query-wiring-ranking.log",
+          "24 live checks passed /tmp/list-query-wiring-live.log",
+          "Final candidate TypeScript90836 and scoped lint exit0; initial static errors were stale unused model fields in ranking fixture, removed"
+        ]
+      },
+      "review": "Independent six-path W3b review against057e55ba. Entire patch contains only removal of unused Discussion/DiscussionChannel type imports/input fields, factory forwards and dummy test properties; enumerated all changed lines. Cypher, filters, ranking parameters, cursor/pagination, routing and errors unchanged.48focused+2ranking and24isolatedlive passed zero failures/skips/cancellations; final TypeScript90836/scoped lint zero parent-confirmed. SHA25613b770ab039be1a0c2dc5253730d46a9ecaca9b4609fb6b7511ecede13f32f02 verified, diff check clean. Prepared only; cumulative gates required.",
+      "verification": [
+        "48 focused checks passed /tmp/list-query-wiring-focused.log plus ranking checks /tmp/list-query-wiring-ranking.log",
+        "24 live checks passed /tmp/list-query-wiring-live.log",
+        "Final candidate TypeScript90836 and scoped lint exit0; initial static errors were stale unused model fields in ranking fixture, removed"
+      ]
+    },
+    {
+      "id": "W3c",
+      "scope": "Discussion creation and attachment pipeline capabilities",
+      "status": "prepared; review pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W3c",
+        "base": "d1039f10aeaba1bda691183feb2b84eaf9312600",
+        "tree": "3d589b8534ce9f699aab7ee0142aab0158c002f8",
+        "patch": "/tmp/ogm-discussion-pipeline-wiring.patch",
+        "sha256": "e32b9d8135de9a2e393fde68150a4d83e2607cabecb68b5e6f872adba3b55190",
+        "files": [
+          "customResolvers/mutationResolvers.ts",
+          "customResolvers/mutations/createDiscussionPluginPipelineOrder.test.ts",
+          "customResolvers/mutations/createDiscussionWithChannelConnections.test.ts",
+          "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+          "customResolvers/mutations/updateDiscussionDownloadScan.test.ts",
+          "customResolvers/mutations/updateDiscussionWithChannelConnections.test.ts",
+          "customResolvers/mutations/updateDiscussionWithChannelConnections.ts",
+          "customResolvers/resolverDeps.ts"
+        ],
+        "verification": [
+          "43 unique focused cases passed across initial39/43 plus corrected creation16 overlapping run; four new fixtures corrected to supply required channel, no production change",
+          "Final TypeScript74930/lint61057 actual0 before test fixture-only channel correction and blank-line cleanup",
+          "live86999 pending /tmp/discussion-pipeline-wiring-live.log"
+        ]
+      },
+      "review": "Independent review pending",
+      "verification": [
+        "43 unique focused cases passed across initial39/43 plus corrected creation16 overlapping run; four new fixtures corrected to supply required channel, no production change",
+        "Final TypeScript74930/lint61057 actual0 before test fixture-only channel correction and blank-line cleanup",
+        "live86999 pending /tmp/discussion-pipeline-wiring-live.log"
+      ]
     }
   ],
   "deferredPerFileScanning": {
@@ -2501,5 +2610,52 @@
     "priority": "P3",
     "status": "deferred until current migration completes",
     "preservedBehavior": "Singular Discussion.DownloadableFile query validation failure remains unchanged. Per-file server/channel identity, retry/status, edit triggers and backfill behavior are separate follow-up work."
-  }
+  },
+  "remainingWiringPlan": [
+    {
+      "id": "W3c",
+      "scope": "Discussion creation and attachment pipeline capabilities",
+      "dependencies": [
+        "W3b"
+      ]
+    },
+    {
+      "id": "W3d",
+      "scope": "Plugin start/rerun/retry/preparation and direct-trigger public factory dependencies",
+      "dependencies": [
+        "W3c"
+      ]
+    },
+    {
+      "id": "W3e",
+      "scope": "Unused seed/configuration factory dependencies and test-only model types",
+      "dependencies": [
+        "W3d"
+      ]
+    },
+    {
+      "id": "W4",
+      "scope": "Remove composition/context/background OGM boot wiring; keep legacy parity oracle in tests only",
+      "dependencies": [
+        "W1",
+        "W2a",
+        "W2b",
+        "W2c",
+        "W2d",
+        "W2e",
+        "W3a",
+        "W3b",
+        "W3c",
+        "W3d",
+        "W3e"
+      ]
+    },
+    {
+      "id": "W5",
+      "scope": "Zero-runtime/CLI audit plus cumulative unit/integration/static/build/performance/coverage and exact-head CI; assess separate generated-type/package phase",
+      "dependencies": [
+        "W4"
+      ]
+    }
+  ]
 }

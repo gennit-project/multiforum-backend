@@ -81,7 +81,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | complete |
 | 41 Pipeline download execution | 12 | 40; 44 notifications; 34 as applicable | Runner side effects outside retried callbacks; statuses/retries/results | complete |
 | 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | complete |
-| 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | pending |
+| 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | complete |
 | 44 Pipeline control/notifications | 18 | Notifications before 40–43; controls after 41–43 and 34 | Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility | partial; see subdivisions |
 | 45 Pipeline campaigns | 14 | 40–44 | Progress, cancellation, aggregation and restart behavior | pending |
 | 46 Test seeding endpoint | 9 | 31–33 and other reused creation helpers | Access restrictions, fixture relationships and composed responses | pending |
@@ -954,3 +954,13 @@ Runtime wiring preparations recorded with exact trees, patch hashes and per-slic
 Known singular Discussion.DownloadableFile query failure is preserved in this migration. Per-file server/channel scanning is tracked separately in [deferred P3 issue #361](https://github.com/gennit-project/multiforum-backend/issues/361); no plural-file behavior change is included.
 
 43 final integration approval: Independent cumulative43 againstae849fec. Five executable/test blobs identical to corrected approvedf980a0d3; sole commentTrigger adaptation matches reviewed integrated patch and preserves38 parent-thread/identity/comment plus39 raw report wiring. Exact isolated7live passed zero failures/skips/cancellations, including corrected positive canonical discussion edge/author union, primitive full native event/graph parity and actual fake-plugin smoke. Prior16focused/static evidence reused. Diff check clean;37CRUD/50acquisitions/0CLI accurate. W2 verification labels now normalized to confirmed outcomes;42 native failure and successful unchanged hook retry accurately retained. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice43 committed `2f37685d11a6603e024dadf616778cf54110b013` ([diff](https://github.com/gennit-project/multiforum-backend/commit/2f37685d11a6603e024dadf616778cf54110b013)), tree `1d72ef0d38adc00519e58534bd33844c5485fb5a`: lint, TypeScript and all2455 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice43-exact-live.log. Independent approval recorded above.
+
+### Slice 44b — Pipeline start controls
+
+6 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 31 CRUD sites/6 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+44b final integration approval: Independent cumulative44b against2f37685d. All seven executable/test blobs identical to approved88d25c0b; prior24focused/static reused. Exact isolated5live passed zero failures/skips/cancellations. Six fixed reads retain authentication before context-driver repository, ownership/active-attempt guards, runner driver/owner metadata and committed attempt refetch/missing error; singular Discussion selection failure preserved. Rerun optional start adapter/type only at this slice. Diff check clean;31CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.

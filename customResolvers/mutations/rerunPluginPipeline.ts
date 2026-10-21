@@ -1,3 +1,4 @@
+import type {PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
 import { GraphQLError } from "graphql";
 import type {
   ModelMap,
@@ -40,7 +41,7 @@ export type RerunPluginPipelineInput = Pick<
   | "PluginRun"
   | "ServerConfig"
   | "ServerSecret"
-> & Partial<Pick<ModelMap, "User">>;
+> & Partial<Pick<ModelMap, "User">> & { startRepository?: PipelineStartRepository };
 
 type AttemptRecord = Pick<
   PluginPipelineRun,

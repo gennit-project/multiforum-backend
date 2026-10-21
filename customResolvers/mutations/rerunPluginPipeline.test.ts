@@ -1,3 +1,4 @@
+import {pipelineStartRepositoryStub} from "../../tests/fixtures/pipelineStartRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { PluginPipelineRun } from "../../ogm_types.js";
@@ -9,7 +10,7 @@ import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
-  createRerunPluginPipelineResolver,
+  createRerunPluginPipelineResolver as actualFactory,
   type RerunPluginPipelineInput,
 } from "./rerunPluginPipeline.js";
 
@@ -487,3 +488,5 @@ test("reruns a channel pipeline with channel retry lineage", async () => {
     }
   );
 });
+
+const createRerunPluginPipelineResolver:typeof actualFactory = (input,...args)=>actualFactory({...input,startRepository:pipelineStartRepositoryStub(input)},...args);
