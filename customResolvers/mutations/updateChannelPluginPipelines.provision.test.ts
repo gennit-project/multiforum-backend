@@ -1,5 +1,16 @@
 import assert from "node:assert/strict";
-import updateChannelPluginPipelines from "./updateChannelPluginPipelines.js";
+import createChannelPipelines from "./updateChannelPluginPipelines.js";
+
+// Adapt existing in-memory fixtures; real persistence uses fixed schema operations.
+const updateChannelPluginPipelines = (input: any) => createChannelPipelines({
+  ...input, driver: {}, channelPipelineRepository: {
+    findSettings: (uniqueName: string) => input.Channel.find({where:{uniqueName}}),
+    savePipelines: (uniqueName: string, pluginPipelines: string) => input.Channel.update({where:{uniqueName},update:{pluginPipelines}}),
+    listServerSettings: () => input.ServerConfig.find({}),
+    deprecateBot: (username: string, reason: string) => input.User.update({where:{username},update:{isDeprecated:true,deprecatedReason:reason}}),
+    disconnectBots: (uniqueName: string, usernames: string[]) => input.Channel.update({where:{uniqueName},disconnect:{Bots:usernames.map(username=>({where:{node:{username}}}))}}),
+  },
+})
 
 async function testProvisioningRunsForEnabledBotPlugin() {
   let calledArgs: any = null;

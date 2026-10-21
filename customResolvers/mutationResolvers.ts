@@ -529,7 +529,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     updateChannelPluginPipelines: updateChannelPluginPipelines({
       Channel,
-      ServerConfig,
+      driver,
       User
     }),
     createImageWithUploader: createImageWithUploader({

@@ -1490,29 +1490,31 @@
           "id": "37b2",
           "scope": "enableServerPlugin interpolated lookups and writes",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative37b2 review against316dc0c1105bf0041a2b11899d49cc33d3e23a3a. Five nonshared source/test blobs identical to approved2fe45df9; factory removes unused models and forwards driver; apply forwards context.driver while retaining37a/b1/36b integration. Prior13focused/4existingfactorylive/finalstatic evidence reused; exact cumulative7live passed zero failures/skips/cancellations. Previously authorized two-read/three-interpolation variable correction retained exactly: version and stored IDs including quotes/backslashes treated as data. No further behavior changes; optional secrets on enable, unbounded reads, settings validation/null serialization/full defaults and committed projection-failure errors unchanged. Diff check clean. Ledger4CRUD/0acquisitions,115remainingCRUD including structural adapter/53acquisitions/0CLI; queued44d accurate without credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice37b2.patch",
           "preparedPatchSha256": "931f8535cea50c858991725e523e89144a2c81b8771b1e3c7df689a180104440",
           "preparedBase": "7753e9253696eece1f024d3c8bc966bae88c0112",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree ca5eea9eebfa38903ea469e4873ebe061acc38ff: lint, TypeScript and2428 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice37b2-exact-live.log"
           ],
           "approvedBehaviorCorrection": "Two reads/three interpolations use GraphQL variables; quote/backslash version and storedID values are data, per userapproval; normal semantics preserved",
-          "commit": null
+          "commit": "500ae5da5ddcbd55127c7de66d4d938a8481ed0e"
         },
         {
           "id": "37c",
           "scope": "Channel pipeline configuration",
           "baselineCrudSites": 5,
-          "status": "reviewed; integration pending",
-          "review": "review_recovery",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative37c review against500ae5da5ddcbd55127c7de66d4d938a8481ed0e. Preserved review_recovery approval/7units/4live/static evidence reused; original SHA256e6dfab0d9ebe665468ba80c0e522581b032d953410479babf089469496d31960 verified. Five nonfactory blobs match prepared new-blob IDs; factory replaces only ServerConfig with driver and retains Channel/User for bot sync. Exact projections/defaults, configuration save before bot sync, sequential orphan deprecation then disconnection and caught partial failures preserved; prior36/37 shared changes retained. Existing exact isolated cumulative live log completed4/4 zero failures/skips/cancellations, so no duplicate test run. Diff check clean. Ledger5CRUD/0acquisitions,110remainingCRUD including structural adapter/53acquisitions/0CLI consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice37c.patch",
           "preparedPatchSha256": "e6dfab0d9ebe665468ba80c0e522581b032d953410479babf089469496d31960",
           "preparedBase": "658bfe4",
           "verification": [
-            "7 units;4 live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1943,9 +1945,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 115,
+  "remainingRuntimeCrudSites": 110,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 19,
+  "remainingRuntimeCrudFiles": 18,
   "foundations": [
     {
       "id": "F01",
@@ -2003,7 +2005,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "37b2"
+      "37c"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
