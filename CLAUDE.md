@@ -18,11 +18,17 @@ them; the upgrades must be rejected until Neo4j ships support.
   7.x) and `@neo4j/graphql-ogm` declare `peerDependencies: graphql ^16.0.0`.
   graphql 17 is also ESM-only, which crashes CJS transitive deps (e.g.
   `graphql-query-complexity`) with `ERR_REQUIRE_CYCLE_MODULE` during codegen.
-- **neo4j-driver** — pinned to `^5`. `@neo4j/graphql-ogm` requires
-  `neo4j-driver ^5.8.0`; it does not support driver 6.
+- **neo4j-driver** — pinned to `^5`. The blocker here is specifically
+  `@neo4j/graphql-ogm`, which still peer-requires `neo4j-driver ^5.8.0` and does
+  not support driver 6. Note that `@neo4j/graphql` 7.x itself already supports
+  driver 6 (its peer range is `neo4j-driver ^5.8.0 || ^6.0.0`), so once the OGM
+  is removed this pin can move.
 - **@neo4j/graphql** — pinned to `^5.x` to stay aligned with `@neo4j/graphql-ogm`
   (still on the 5.x line, which internally depends on `@neo4j/graphql ^5.11.4`).
   Bumping only the top-level to 7.x creates two mismatched copies in the tree.
+  The OGM is therefore the specific remaining blocker for both driver 6 and
+  `@neo4j/graphql` 7; removing it (campaign #284) unblocks both. graphql 17
+  stays blocked regardless — see the graphql bullet above.
 
 ## Toolchain notes
 - **ts-node + TypeScript 6**: ts-node (10.9.2, no TS6-compatible release exists)
