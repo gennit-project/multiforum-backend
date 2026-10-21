@@ -1181,11 +1181,12 @@
       "baselineCrudSites": 5,
       "dependencies": "22; 05\u201306; 31b explicit caller-owned transaction support",
       "acceptance": "Explicit transaction/event timing, rollback and connections",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "9ac1d2dbfc650cb4afa2ededacb383bf118429ae",
       "review": "Independent cumulative review against 50322bc48b26959879c39eff435611d29821deb9. Six resolver/repository/test blobs are identical to original independently approved 939e53e6; factory only removes three unused Event forwards. Seeder preserves 31a Discussion repository cleanup and replaces Event helper dependency with configured-driver repository. 31b caller-owned transaction executor remains unchanged; original default projections, managed transaction/rollback boundaries, per-item creation failures and postcommit history/notification/refetch order preserved. Original six focused/static evidence reused; exact cumulative 14 live passed, zero failures/skips/cancellations. Diff check clean. Ledger five CRUD/zero acquisitions, 181 remaining CRUD/53 acquisitions; queued wiring/44a receive no removal credit. Mandatory hooks remain required.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree f29c32553f3e8d44dc0213ac503dbb11e2053ad2: lint, TypeScript and2383 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice32-exact-live.log"
       ],
       "preparedPatch": "ogm-slice32.patch",
       "preparedPatchSha256": "ec143b139ce1486548951626adc4e700063c6a629ad91c0a363bdd16c0d49d28",
@@ -1771,11 +1772,12 @@
       "29",
       "30",
       "31",
+      "32",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "32"
+      "33a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -1831,8 +1833,8 @@
       "tests/integration/legacyPipelineMigrationRepository.test.ts"
     ],
     "baselineCrudSites": 2,
-    "status": "reviewed; cumulative integration pending",
-    "review": "campaign_review approved exact prepared tree; five independent focused checks",
+    "status": "reviewed; cumulative gates pending",
+    "review": "Independent cumulative CLI review against 9ac1d2dbfc650cb4afa2ededacb383bf118429ae. All five executable/test blobs exactly identical to independently approved prepared 1a43b504; original five independent focused/static checks reused. Exact cumulative live run now passes all five cases together, zero failures/skips/cancellations, including 29-edge unbounded read/source immutability, standalone default projections, committed projection-error failure prefix and coercion. Private immutable AST changes only three ServerConfig selectable directives, preserves write restrictions/public schema; sequential materialization/save/log and driver-close boundaries unchanged. Diff check clean. Ledger records two separate CLI removals and zero CLI remaining with no runtime credit; runtime inventory remains181 CRUD/53 acquisitions. Actual CLI never executed; mandatory hooks/build remain parent-owned.",
     "verification": [
       "Five focused passed; four live passed plus corrected fifth targeted passed; TypeScript/lint passed. Private CLI schema retains legacy projection, public schema unchanged. Actual CLI never executed."
     ]
@@ -1847,5 +1849,6 @@
     "verification": [
       "46 focused,2 live,lint and TypeScript passed. Explicit configured-driver forwarding only; no operation/transaction/startup changes, zero CRUD credit. Transitional optional argument requiredness finalized at wiring checkpoint."
     ]
-  }
+  },
+  "remainingCliCrudSites": 0
 }

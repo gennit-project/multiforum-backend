@@ -1,8 +1,7 @@
 import 'dotenv/config'
 import neo4j from 'neo4j-driver'
-import { createOgmAndModels } from '../customResolvers/resolverDeps.js'
-import { materializeLegacyDownloadPipelines } from '../services/plugin/legacyPipelineMigration.js'
-import type { PluginEdgeData } from '../services/plugin/types.js'
+import { initializeLegacyPipelineMigration } from '../services/persistence/legacyPipelineMigrationRepository.js'
+import { migrateLegacyPipelineConfigurations } from '../services/plugin/migrateLegacyPipelineConfigurations.js'
 import {
   installDefaultNeo4jDatabase,
   resolveNeo4jDatabase,
@@ -21,44 +20,10 @@ const run = async () => {
     neo4j.driver(uri, neo4j.auth.basic(user, password)),
     resolveNeo4jDatabase()
   )
-  const deps = createOgmAndModels(driver)
-  await deps.ogm.init()
+  const repository = await initializeLegacyPipelineMigration(driver)
 
   try {
-    const configs = await deps.ServerConfig.find({
-      selectionSet: `{
-        serverName
-        pluginPipelines
-        InstalledVersionsConnection {
-          edges {
-            properties { enabled settingsJson }
-            node {
-              id version repoUrl tarballGsUri entryPath manifest
-              settingsDefaults uiSchema
-              Plugin { id name displayName description metadata }
-            }
-          }
-        }
-      }`,
-    })
-
-    for (const config of configs) {
-      const result = materializeLegacyDownloadPipelines({
-        storedPipelines: config.pluginPipelines,
-        installedPluginEdges: (
-          config.InstalledVersionsConnection?.edges || []
-        ) as unknown as PluginEdgeData[],
-      })
-      if (result.addedEvents.length === 0) continue
-
-      await deps.ServerConfig.update({
-        where: { serverName: config.serverName },
-        update: { pluginPipelines: JSON.stringify(result.pipelines) },
-      })
-      console.log(
-        `[pipeline-migration] ${config.serverName}: added ${result.addedEvents.join(', ')}`
-      )
-    }
+    await migrateLegacyPipelineConfigurations(repository, console.log)
   } finally {
     await driver.close()
   }

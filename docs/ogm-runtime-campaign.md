@@ -70,7 +70,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | complete |
 | 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | complete |
 | 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | complete |
-| 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | pending |
+| 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | complete |
 | 33 Event recurrence | 19 | 32; external transaction/event gate | Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes | pending |
 | 34 Download review/labels | 14 | Retain pipeline adapter until 41/44 controls | Split review/preparation 7/labels 7; scan state and label history | pending |
 | 35 Plugin read models | 20 | 01; visibility/redaction contract | Split configuration vs run/visibility reads; redaction, order and empty states | complete |
@@ -712,3 +712,7 @@ Pipeline driver-forwarding foundation independently reviewed and queued:46focuse
 44a pipeline result notification repository independently reviewed and queued:4CRUD,27focused,8live and static checks passed. Preserves absent-User guard, configured driver, separate claim/write ordering and failure contract. Raw subscription node/relationship IDs checked before normalization. No credit before integration.
 
 32 final integration approval: Independent cumulative review against 50322bc48b26959879c39eff435611d29821deb9. Six resolver/repository/test blobs are identical to original independently approved 939e53e6; factory only removes three unused Event forwards. Seeder preserves 31a Discussion repository cleanup and replaces Event helper dependency with configured-driver repository. 31b caller-owned transaction executor remains unchanged; original default projections, managed transaction/rollback boundaries, per-item creation failures and postcommit history/notification/refetch order preserved. Original six focused/static evidence reused; exact cumulative 14 live passed, zero failures/skips/cancellations. Diff check clean. Ledger five CRUD/zero acquisitions, 181 remaining CRUD/53 acquisitions; queued wiring/44a receive no removal credit. Mandatory hooks remain required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice32 committed `9ac1d2dbfc650cb4afa2ededacb383bf118429ae` ([diff](https://github.com/gennit-project/multiforum-backend/commit/9ac1d2dbfc650cb4afa2ededacb383bf118429ae)), tree `f29c32553f3e8d44dc0213ac503dbb11e2053ad2`: lint, TypeScript and all2383 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice32-exact-live.log. Independent approval recorded above.
+
+CLI migration integrated: two separate CLI CRUD sites removed, no runtime credit. Cumulative live/review/hooks pending. Actual CLI never executed.
