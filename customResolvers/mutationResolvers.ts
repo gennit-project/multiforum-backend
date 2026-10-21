@@ -475,11 +475,13 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       ServerConfig,
     }),
     pausePluginPipelineCampaign: pausePluginPipelineCampaign({
+      driver,
       PluginPipelineCampaign,
       DownloadableFile,
       ServerConfig,
     }),
     resumePluginPipelineCampaign: resumePluginPipelineCampaign({
+      driver,
       PluginPipelineCampaign,
       DownloadableFile,
       ServerConfig,

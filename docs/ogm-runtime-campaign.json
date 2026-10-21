@@ -2025,7 +2025,7 @@
           "id": "45b",
           "scope": "Campaign history and failure queries",
           "baselineCrudSites": 3,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "1e63611912b5c6e37042498bb50787d52d0fb196",
             "tree": "ec39cecdf506c45038313444c63e861ca0cc4de1",
@@ -2042,15 +2042,16 @@
           },
           "review": "All six executable/test blobs match approvedec39cecd; query factory retains45a preview driver and adds configured query drivers only. Exact isolated5/5live passed without skips, preserving history/status/destination projections, sequential destination resolution, orphan exclusion, archive filtering, unbounded failures, coercion and no read events. Ledger13CRUD/50acquisitions/0CLI and W4 reviewed-but-unintegrated evidence consistent; diff check clean. Prior4focused/static reused.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 234a25203ca3b1a5ce4cf4b5e1be2383c11e5d63: lint, TypeScript and2457 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice45b-exact-live.log"
           ],
-          "commit": null
+          "commit": "6b98b8640a6c1bb631419b7e9cae1d0bb8fe6a14"
         },
         {
           "id": "45c",
           "scope": "Campaign creation and status controls",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "ec39cecdf506c45038313444c63e861ca0cc4de1",
             "tree": "23d5432b80141f842d09d0305bedfbfe6cdd981f",
@@ -2065,10 +2066,11 @@
               "tests/integration/campaignControlRepository.test.ts"
             ]
           },
-          "review": "Reviewed four named control operations and auth/limits/read-write ordering, complete campaign default projection and configured/context driver forwarding. Corrected fixture only removes unsupported create input.id, uses returned/persisted generated IDs and retains raw native identity and ordered event/graph checks. Seven final isolated live tests and three focused tests pass; final types/lint exit zero confirmed by implementer. No production changes in correction. Patch SHA256 fee5d1e5156432883f39f0f6d1de737ba86e5eb2764240fd120fbe8a29528ba9.",
+          "review": "Five resolver/repository/test blobs identical to corrected approved23d5432b; shared mutation factory delta exactly reproduces two configured-driver additions while preserving prior integrations. Exact isolated7/7live passed without skips/cancellations, including generated IDs/default projection committed failures, validation and anonymous preview context. Original create auth/limits-before-repository, separate reads/writes and pause/resume behavior preserved. Diff check clean; ledger9CRUD/50acquisitions/0CLI consistent. Prior3focused/static evidence reused.",
           "verification": [
-            "3focused,7live,lint/TypeScript passed. Create authentication and limits, default projection errors after committed writes, active-state filters and pause/resume transitions preserved. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -2102,9 +2104,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 13,
+  "remainingRuntimeCrudSites": 9,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 2,
+  "remainingRuntimeCrudFiles": 1,
   "foundations": [
     {
       "id": "F01",
@@ -2170,7 +2172,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "45b"
+      "45c"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

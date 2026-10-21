@@ -1004,3 +1004,13 @@ Slice45a committed `d83e930898e5c0de0a75f8c7a8a947e91e0fd0c5` ([diff](https://gi
 Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
 
 45b final integration approval: All six executable/test blobs match approvedec39cecd; query factory retains45a preview driver and adds configured query drivers only. Exact isolated5/5live passed without skips, preserving history/status/destination projections, sequential destination resolution, orphan exclusion, archive filtering, unbounded failures, coercion and no read events. Ledger13CRUD/50acquisitions/0CLI and W4 reviewed-but-unintegrated evidence consistent; diff check clean. Prior4focused/static reused.; live parity passed on identical production sources before this documentation-only update.
+
+Slice45b committed `6b98b8640a6c1bb631419b7e9cae1d0bb8fe6a14` ([diff](https://github.com/gennit-project/multiforum-backend/commit/6b98b8640a6c1bb631419b7e9cae1d0bb8fe6a14)), tree `234a25203ca3b1a5ce4cf4b5e1be2383c11e5d63`: lint, TypeScript and all2457 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice45b-exact-live.log. Independent approval recorded above.
+
+### Slice 45c — Campaign controls
+
+4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 9 CRUD sites/1 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+45c final integration approval: Five resolver/repository/test blobs identical to corrected approved23d5432b; shared mutation factory delta exactly reproduces two configured-driver additions while preserving prior integrations. Exact isolated7/7live passed without skips/cancellations, including generated IDs/default projection committed failures, validation and anonymous preview context. Original create auth/limits-before-repository, separate reads/writes and pause/resume behavior preserved. Diff check clean; ledger9CRUD/50acquisitions/0CLI consistent. Prior3focused/static evidence reused.; live parity passed on identical production sources before this documentation-only update.
