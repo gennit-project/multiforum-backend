@@ -1027,28 +1027,30 @@
           "id": "28a",
           "scope": "Discussion archive/unarchive",
           "baselineCrudSites": 9,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review againstad6778bb: six non-factory blobs identical to approveda956a99b; factory only removes discussion moderation model forwarding and supplies unarchive driver. Prior independent19focused/corrected live/static evidence reused; exact6live passed zero failed/skipped/cancelled. Explicit/full channel defaults, protected issue identity, allocation/catch boundaries and subscriber-before-state/author-after-state effects retained, including postcommit failure behavior. Diff check clean;9CRUD/0acquisitions, ledger225/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice28a.patch",
           "preparedPatchSha256": "c9caee74c383e239742989b81651252468bbe80d52eb93c4faff73c57cc576cb",
           "preparedBase": "d20ed128287589a6e996b7cdea7adc9a78540e64",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree b1d6269a6d12dda65287552efefa5afb9f64ac23: lint, TypeScript and2299 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice28a-exact-live.log"
           ],
-          "commit": null
+          "commit": "66893c2802db21b955ef2c3dd1b8ca0c3daf939d"
         },
         {
           "id": "28b",
           "scope": "Event archive/unarchive",
           "baselineCrudSites": 9,
-          "status": "reviewed; integration pending",
-          "review": "review_bot38d: final approved, no remaining findings",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against66893c28: six non-factory blobs identical to approved1a00723c; factory removes only event moderation model forwarding and supplies unarchive driver. Prior independent20focused/final12live/static evidence reused; exact cumulative6live passed zero failed/skipped/cancelled. canHideEvent authorization, corrected POSTED_BY positive author fixture, protected identity/full defaults and ordered partial-write/notification behavior retained. Diff check clean;9CRUD/0acquisitions, ledger216/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice28b.patch",
           "preparedPatchSha256": "d985ab928e0cac0aa8a607adf65506a101202fdffd8bd23f1d3bd8e40aa672da",
           "preparedBase": "d20ed128287589a6e996b7cdea7adc9a78540e64",
           "verification": [
-            "Tree 1a00723c41a5fb1ca82d87ea3aa91e073997904c: 20independentfocused,12finallive,finaltypes/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1676,9 +1678,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 225,
+  "remainingRuntimeCrudSites": 216,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 43,
+  "remainingRuntimeCrudFiles": 41,
   "foundations": [
     {
       "id": "F01",
@@ -1728,7 +1730,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "28a"
+      "28b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

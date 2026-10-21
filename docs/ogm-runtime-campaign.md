@@ -66,7 +66,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | complete |
 | 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | complete |
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | complete |
-| 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | pending |
+| 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | partial; see subdivisions |
 | 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | pending |
 | 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | pending |
 | 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | pending |
@@ -642,3 +642,11 @@ Slice27 committed `ad6778bb194f89d667685e350e15c7d4b8e7bde8` ([diff](https://git
 9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 225 CRUD sites/43 files; 53 acquisitions/7 files; two separate CLI sites.
 
 28a final integration approval: Independent cumulative review againstad6778bb: six non-factory blobs identical to approveda956a99b; factory only removes discussion moderation model forwarding and supplies unarchive driver. Prior independent19focused/corrected live/static evidence reused; exact6live passed zero failed/skipped/cancelled. Explicit/full channel defaults, protected issue identity, allocation/catch boundaries and subscriber-before-state/author-after-state effects retained, including postcommit failure behavior. Diff check clean;9CRUD/0acquisitions, ledger225/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice28a committed `66893c2802db21b955ef2c3dd1b8ca0c3daf939d` ([diff](https://github.com/gennit-project/multiforum-backend/commit/66893c2802db21b955ef2c3dd1b8ca0c3daf939d)), tree `b1d6269a6d12dda65287552efefa5afb9f64ac23`: lint, TypeScript and all2299 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice28a-exact-live.log. Independent approval recorded above.
+
+### Slice 28b — Event moderation
+
+9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 216 CRUD sites/41 files; 53 acquisitions/7 files; two separate CLI sites.
+
+28b final integration approval: Independent cumulative review against66893c28: six non-factory blobs identical to approved1a00723c; factory removes only event moderation model forwarding and supplies unarchive driver. Prior independent20focused/final12live/static evidence reused; exact cumulative6live passed zero failed/skipped/cancelled. canHideEvent authorization, corrected POSTED_BY positive author fixture, protected identity/full defaults and ordered partial-write/notification behavior retained. Diff check clean;9CRUD/0acquisitions, ledger216/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.

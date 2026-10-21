@@ -410,9 +410,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     archiveEvent: archiveEvent({
-      Issue,
-      Event,
-      EventChannel,
       driver,
     }),
     unarchiveComment: unarchiveComment({
@@ -422,8 +419,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     unarchiveEvent: unarchiveEvent({
-      Issue,
-      EventChannel
+      driver,
     }),
     subscribeToComment: subscribeToComment({
       driver

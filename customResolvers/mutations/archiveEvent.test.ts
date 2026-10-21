@@ -234,9 +234,14 @@ test("archiveEvent creates an issue, archives the event channel, and links the i
   );
 
   const resolver = archiveEventResolver({
-    Issue: Issue as any,
-    Event: Event as any,
-    EventChannel: EventChannel as any,
+    eventModerationRepository: {
+      findEvent: async (where: any) => Event.find({where}),
+      findRelatedIssues: async (where: any) => Issue.find({where}),
+      createArchiveIssue: async (input: any) => Issue.create({input}),
+      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      findEventChannel: async (where: any) => EventChannel.find({where}),
+      setArchived: async (where: any, update: any) => EventChannel.update({where,update}),
+    } as any,
     driver: createDriver() as unknown as Driver,
   });
 
@@ -309,9 +314,14 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
   );
 
   const resolver = archiveEventResolver({
-    Issue: Issue as any,
-    Event: Event as any,
-    EventChannel: EventChannel as any,
+    eventModerationRepository: {
+      findEvent: async (where: any) => Event.find({where}),
+      findRelatedIssues: async (where: any) => Issue.find({where}),
+      createArchiveIssue: async (input: any) => Issue.create({input}),
+      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      findEventChannel: async (where: any) => EventChannel.find({where}),
+      setArchived: async (where: any, update: any) => EventChannel.update({where,update}),
+    } as any,
     driver: createDriver() as unknown as Driver,
   });
 

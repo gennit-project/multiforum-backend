@@ -1,7 +1,6 @@
+import {createEventModerationRepository, type EventModerationRepository, type EventModerationIssue} from "../../services/persistence/eventModerationRepository.js";
+import type { Driver } from "neo4j-driver";
 import type {
-  Issue,
-  IssueModel,
-  EventChannelModel,
   ModerationActionCreateInput,
   IssueWhere,
   IssueUpdateInput,
@@ -22,12 +21,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  EventChannel: EventChannelModel;
+  driver: Driver;
+  eventModerationRepository?: EventModerationRepository;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, EventChannel } = input;
+  const { driver } = input;
+  const repository = input.eventModerationRepository ?? createEventModerationRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -60,20 +60,13 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = "";
-    let existingIssue: Issue | null = null;
+    let existingIssue: EventModerationIssue | null = null;
 
     // Check if an issue already exists for the event ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
+    const issueData = await repository.findRelatedIssues({
         channelUniqueName: channelUniqueName,
         relatedEventId: eventId,
-      },
-      selectionSet: `{
-              id
-              issueNumber
-              flaggedServerRuleViolation
-          }`,
-    });
+      });
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -110,17 +103,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
@@ -148,10 +131,7 @@ const getResolver = (input: Input) => {
       const eventChannelUpdateInput: EventChannelUpdateInput = {
         archived: false,
       };
-      const eventUpdateData = await EventChannel.update({
-        where: eventChannelUpdateWhere,
-        update: eventChannelUpdateInput,
-      });
+      const eventUpdateData = await repository.setArchived(eventChannelUpdateWhere, eventChannelUpdateInput);
       const eventUpdateId =
         eventUpdateData.eventChannels[0]?.id || null;
       if (!eventUpdateId) {
