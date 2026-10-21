@@ -1,3 +1,4 @@
+import {createDiscussionUpdateRepository, type DiscussionUpdateRepository} from "../../services/persistence/discussionUpdateRepository.js";
 import type { Driver } from "neo4j-driver";
 import { updateDiscussionChannelQuery, severConnectionBetweenDiscussionAndChannelQuery } from "../cypher/cypherQueries.js";
 import { DiscussionWhere, DiscussionUpdateInput } from "../../src/generated/graphql.js";
@@ -7,7 +8,6 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type {
-  DiscussionModel,
   DownloadableFileModel,
   PluginPipelineRunModel,
   PluginRunModel,
@@ -25,7 +25,7 @@ import {
 } from "../../services/discussionFlairSubmission.js";
 
 type Input = {
-  Discussion: DiscussionModel;
+  discussionUpdateRepository?: DiscussionUpdateRepository;
   DownloadableFile: DownloadableFileModel;
   PluginPipelineRun: PluginPipelineRunModel;
   PluginRun: PluginRunModel;
@@ -79,7 +79,6 @@ const getResolver = (
     triggerPluginRunsForDownloadableFile
 ) => {
   const {
-    Discussion,
     DownloadableFile,
     PluginPipelineRun,
     PluginRun,
@@ -88,6 +87,7 @@ const getResolver = (
     User,
     driver,
   } = input;
+  const repository = input.discussionUpdateRepository ?? createDiscussionUpdateRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const {
       where,
@@ -179,19 +179,7 @@ const getResolver = (
         sanitizedUpdateInput.title !== undefined ||
         sanitizedUpdateInput.body !== undefined;
       const discussionSnapshot = shouldTrackVersion
-        ? (await Discussion.find({
-            where,
-            selectionSet: `{
-              id
-              title
-              body
-              Author { username }
-              BodyLastEditedBy { username }
-              DiscussionChannels { channelUniqueName }
-              PastTitleVersions { id body createdAt }
-              PastBodyVersions { id body createdAt }
-            }`,
-          }))[0]
+        ? (await repository.findRevisionSnapshot(where))[0]
         : null;
       
       const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
@@ -204,12 +192,7 @@ const getResolver = (
       // connect, which @neo4j/graphql doesn't stamp, so stamp the attached files
       // here: the reconcile step then flags them in this same transaction.
       await executeManagedWrite(driver, async (tx) => {
-        await Discussion.update({
-          where: where,
-          update: sanitizedUpdateInput,
-          // The OGM runs its query in this transaction.
-          context: { executionContext: tx },
-        });
+        await repository.updateWithinTransaction(where, sanitizedUpdateInput, tx);
         if (connectedDownloadableFileIds.length > 0) {
           await tx.run(stampAttachedDownloadableFilesQuery, {
             ids: connectedDownloadableFileIds,
@@ -285,63 +268,9 @@ const getResolver = (
 
       // Refetch the newly created discussion with the channel connections
       // and disconnections so that we can return it.
-      const selectionSet = `
-        {
-          id
-          title
-          body
-          Author {
-            username
-          }
-          DiscussionChannels {
-            id
-            channelUniqueName
-            discussionId
-            Flairs {
-              id
-              channelUniqueName
-              displayName
-              color
-              order
-              archived
-            }
-            Channel {
-              uniqueName
-            }
-            Discussion {
-              id
-            }
-          }
-          createdAt
-          updatedAt
-          Tags {
-            text
-          }
-          PastTitleVersions {
-            id
-            body
-            createdAt
-            Author {
-              username
-            }
-          }
-          PastBodyVersions {
-            id
-            body
-            createdAt
-            Author {
-              username
-            }
-          }
-        }
-      `;
 
-      const result = await Discussion.find({
-        where: {
-          id: updatedDiscussionId,
-        },
-        selectionSet,
-      });
+
+      const result = await repository.findUpdatedDiscussion(updatedDiscussionId);
       return result[0];
     } catch (error: unknown) {
       logger.error("Error updating discussion:", error);

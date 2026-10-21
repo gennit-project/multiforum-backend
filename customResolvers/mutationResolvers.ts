@@ -191,7 +191,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createIssue: createIssue({ driver }),
     updateDiscussionWithChannelConnections:
       updateDiscussionWithChannelConnections({
-        Discussion,
         DownloadableFile,
         PluginPipelineRun,
         PluginRun,

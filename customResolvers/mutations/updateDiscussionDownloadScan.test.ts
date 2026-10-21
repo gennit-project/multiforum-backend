@@ -22,10 +22,11 @@ test("extracts only newly connected downloadable file IDs", () => {
 
 test("triggers the updated pipeline after connecting a replacement", async () => {
   const calls: any[] = [];
-  const Discussion = {
-    update: async () => ({ discussions: [] }),
-    find: async () => [{ id: "discussion-1" }],
-  } as any;
+  const discussionUpdateRepository = {
+    updateWithinTransaction: async () => {},
+    findRevisionSnapshot: async () => [{ id: "discussion-1" }],
+    findUpdatedDiscussion: async () => [{ id: "discussion-1" }],
+  };
   const session = {
     run: async () => ({ records: [] }),
     executeWrite: async (work: (tx: unknown) => unknown) =>
@@ -33,7 +34,7 @@ test("triggers the updated pipeline after connecting a replacement", async () =>
     close: async () => {},
   };
   const input = {
-    Discussion,
+    discussionUpdateRepository,
     DownloadableFile: { name: "DownloadableFile" },
     PluginPipelineRun: { name: "PluginPipelineRun" },
     PluginRun: { name: "PluginRun" },
@@ -85,9 +86,10 @@ test("triggers the updated pipeline after connecting a replacement", async () =>
 test("does not retrigger scans for unrelated discussion edits", async () => {
   let triggerCount = 0;
   const resolver = getResolver({
-    Discussion: {
-      update: async () => ({ discussions: [] }),
-      find: async () => [{ id: "discussion-1" }],
+    discussionUpdateRepository: {
+      updateWithinTransaction: async () => {},
+      findRevisionSnapshot: async () => [{ id: "discussion-1" }],
+      findUpdatedDiscussion: async () => [{ id: "discussion-1" }],
     },
     DownloadableFile: {},
     PluginRun: {},

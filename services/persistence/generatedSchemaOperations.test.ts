@@ -56,3 +56,13 @@ test("the first GraphQL error is thrown as an ordinary Error without extensions"
     return true;
   });
 });
+
+test("explicit caller-owned transaction is forwarded without inheriting request identity", async () => {
+  const instance = driver();
+  const transaction = {run: async () => ({records: []})} as unknown as import("neo4j-driver").ManagedTransaction;
+  let observed: unknown;
+  registerGeneratedSchema(instance, createSchema((_s,args,context)=>{observed=context;return args.value;}), "isolated");
+  await executeGeneratedOperation(instance,"{read(value:3)}",{jwt:{sub:"untrusted"}},transaction);
+  assert.deepEqual(observed,{sessionConfig:{database:"isolated"},executionContext:transaction});
+  assert.equal((observed as {executionContext:unknown}).executionContext,transaction);
+});

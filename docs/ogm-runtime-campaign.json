@@ -1143,28 +1143,30 @@
           "id": "31a",
           "scope": "Discussion creation",
           "baselineCrudSites": 3,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative31a review against7c246fb: seven non-factory source/test blobs originally identical to approved57c88c13, factory narrowly removes unused Discussion from seed/shareCollection while retaining plugin capability forwarding. New refreeze changes only expected-literal test representation and documentation; exact old/new deep comparison remains. Original22focused/8live/static reused. Cumulative first run3/4 passed; corrected attached-file targeted1/1 now passes with zero failures/skips/cancellations. No production changes or weakened field comparison. Creation/refetch/file selections, raw channel/session/collection failure order preserved. Diff check clean;3CRUD/0acquisitions, ledger189/53 and separate queuedCLI consistent. Prior test-only rejection superseded for this tree; mandatory hooks required.",
           "preparedPatch": "ogm-slice31a.patch",
           "preparedPatchSha256": "c0caf4e6a36795b78b7111cc30210a46cf88b8e69a8978cf5b35d271c47aff9f",
           "preparedBase": "d20ed128287589a6e996b7cdea7adc9a78540e64",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 8b04352c818a5f8452a306c4dd042e0cc60f222f: lint, TypeScript and2382 full units passed; Cumulative original live3/4passed, then corrected expected-literal assertion targeted1passed; exact baseline/candidate comparison unchanged. See /tmp/runtime-slice31a-corrected-live.log"
           ],
-          "commit": null
+          "commit": "1b1f7a93f45f1a250ca5b92f31de4cad423acdff"
         },
         {
           "id": "31b",
           "scope": "Discussion update and explicit transaction propagation",
           "baselineCrudSites": 3,
-          "status": "reviewed; integration pending",
-          "review": "scratchpad_review: approved source and actual test evidence; no blockers",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Renewed exact review against prior approved 51ff92d282b53c5c0fb4e3075b7228c5845bbb5f: only two stale download-scan unit fixtures now inject named repository methods with equivalent empty-update/id-read responses; trigger assertions unchanged, plus accurate ledger note. No executable production changes. Corrected focused 3/3 passed; original exact cumulative 11/11 live evidence remains applicable, zero failures/skips/cancellations. Diff check clean. Prior cumulative scope/transaction/default-projection review retained; mandatory full hooks remain parent-owned.",
           "preparedPatch": "ogm-slice31b.patch",
           "preparedPatchSha256": "0399a93040facce37bf01a2637c68dcdcd96ad4f1abaa4068a1f4abe0597dd7b",
           "preparedBaseTree": "57c88c13c77d740fe3f0cfbe04440b10781cf78c",
           "verification": [
-            "Tree d39f78ba0760037d05f0139e5df6612b8f14c894:27focused,5newlive,6existinglive,types/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1690,9 +1692,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 189,
+  "remainingRuntimeCrudSites": 186,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 35,
+  "remainingRuntimeCrudFiles": 34,
   "foundations": [
     {
       "id": "F01",
@@ -1745,7 +1747,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "31a"
+      "31b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

@@ -1,3 +1,4 @@
+import {DISCUSSION_UPDATE_SNAPSHOT_SELECTION, UPDATED_DISCUSSION_SELECTION} from "../../services/persistence/discussionUpdateRepository.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
@@ -333,7 +334,11 @@ test("updateDiscussionWithChannelConnections enforces and assigns flairs", async
     session: SessionStub
   ) =>
     getUpdateDiscussionWithChannelConnections({
-      Discussion: discussionModel as never,
+      discussionUpdateRepository: {
+        findRevisionSnapshot:async where=>discussionModel.find({where,selectionSet:DISCUSSION_UPDATE_SNAPSHOT_SELECTION}) as never,
+        updateWithinTransaction:async(where,update,tx)=>{await discussionModel.update({where,update,context:{executionContext:tx}} as never);},
+        findUpdatedDiscussion:async id=>discussionModel.find({where:{id},selectionSet:UPDATED_DISCUSSION_SELECTION}) as never,
+      },
       DownloadableFile: {} as never,
       PluginPipelineRun: {} as never,
       PluginRun: {} as never,
@@ -411,7 +416,11 @@ test("updateDiscussionWithChannelConnections disconnects album images", async ()
   const discussionModel = new DiscussionModelStub();
   const session = new SessionStub();
   const resolver = getUpdateDiscussionWithChannelConnections({
-    Discussion: discussionModel as never,
+    discussionUpdateRepository: {
+        findRevisionSnapshot:async where=>discussionModel.find({where,selectionSet:DISCUSSION_UPDATE_SNAPSHOT_SELECTION}) as never,
+        updateWithinTransaction:async(where,update,tx)=>{await discussionModel.update({where,update,context:{executionContext:tx}} as never);},
+        findUpdatedDiscussion:async id=>discussionModel.find({where:{id},selectionSet:UPDATED_DISCUSSION_SELECTION}) as never,
+      },
     DownloadableFile: {} as never,
     PluginPipelineRun: {} as never,
     PluginRun: {} as never,
@@ -444,7 +453,11 @@ test("updateDiscussionWithChannelConnections retries the update and channel chan
   const discussionModel = new DiscussionModelStub();
   const session = new SessionStub(2);
   const resolver = getUpdateDiscussionWithChannelConnections({
-    Discussion: discussionModel as never,
+    discussionUpdateRepository: {
+        findRevisionSnapshot:async where=>discussionModel.find({where,selectionSet:DISCUSSION_UPDATE_SNAPSHOT_SELECTION}) as never,
+        updateWithinTransaction:async(where,update,tx)=>{await discussionModel.update({where,update,context:{executionContext:tx}} as never);},
+        findUpdatedDiscussion:async id=>discussionModel.find({where:{id},selectionSet:UPDATED_DISCUSSION_SELECTION}) as never,
+      },
     DownloadableFile: {} as never,
     PluginPipelineRun: {} as never,
     PluginRun: {} as never,
