@@ -58,7 +58,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | complete |
 | 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | complete |
 | 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | complete |
-| 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | pending |
+| 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | complete |
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | pending |
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | pending |
 | 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | pending |
@@ -500,3 +500,11 @@ Slice19c committed `c070e6a721dbc1bcf032d063b1e29a6607cd3140` ([diff](https://gi
 33b independently reviewed/queued:9CRUD, originalrecurrencescopes/overrideflags/25cap, transactionrollback and orderednativeevents/notificationeffects retained. No removalcredit beforeintegration.
 
 20 final integration approval: Independent cumulative review againstc070e6a: six non-context source/test blobs exactly match approved original tree7528072; context adaptation only adds optional CommentRevisionRepository import/field. Reused original independent16 units and corrected DiscussionChannel fixture/default projection/native event evidence. Exact cumulative /tmp/runtime-slice20-exact-live.log reports20 passes, zero failed/skipped/cancelled. Original separate snapshot/create/existence/connect boundaries, attribution, old-text history, swallowed tracking failures and continued downstream effects retained; no deduplication redesign. Diff check clean. Six CRUD/four acquisitions removed; ledger318 CRUD/67 acquisitions consistent; queued33b approval/tree/hash recorded without removal credit. Mandatory cumulative hooks/build/circular and exact-SHA publication CI remain parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice20 committed `3e1283d2b3a147dfb116b388b16e985b6dccd85f` ([diff](https://github.com/gennit-project/multiforum-backend/commit/3e1283d2b3a147dfb116b388b16e985b6dccd85f)), tree `4bb4705142cdd8649cc45279135f533fe0262cce`: lint, TypeScript and all2150 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice20-exact-live.log. Independent approval recorded above.
+
+### Slice 21a — Discussion revision persistence
+
+10 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 308 CRUD sites/63 files; 64 acquisitions/12 files; two separate CLI sites.
+
+21a final integration approval: Independent cumulative review versus3e1283d: four non-context source/test blobs exactly match independently approved treea2dccf7; context adaptation only adds optional DiscussionRevisionRepository import/field. Reused independent14 focused units and original live/static evidence. Exact cumulative /tmp/runtime-slice21a-exact-live.log reports9 passed, zero failed/skipped/cancelled. Title-before-body attribution, full production defaults, separate writes, swallowed helper failures, orphan revision behavior and outer editor failure suppression preserved; no dedupe/transaction redesign. Diff check clean; ten CRUD/three acquisitions removed and ledger308 CRUD/64 acquisitions consistent. Mandatory cumulative hooks remain parent-owned.; live parity passed on identical production sources before this documentation-only update.

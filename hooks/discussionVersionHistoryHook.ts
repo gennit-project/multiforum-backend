@@ -1,3 +1,4 @@
+import { createDiscussionRevisionRepository, type DiscussionRevisionRepository, type DiscussionSnapshot } from "../services/persistence/discussionRevisionRepository.js";
 import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 
 import {
@@ -8,23 +9,7 @@ import {
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
-import type {
-  DiscussionModel,
-  DiscussionUpdateInput,
-  TextVersionModel,
-  UserModel,
-} from '../ogm_types.js';
 
-type DiscussionSnapshot = {
-  id?: string;
-  title?: string | null;
-  body?: string | null;
-  Author?: { username?: string | null } | null;
-  BodyLastEditedBy?: { username?: string | null } | null;
-  DiscussionChannels?: Array<{ channelUniqueName?: string | null }> | null;
-  PastTitleVersions?: Array<{ id?: string; body?: string | null; createdAt?: string | null }> | null;
-  PastBodyVersions?: Array<{ id?: string; body?: string | null; createdAt?: string | null }> | null;
-};
 
 type DiscussionVersionHistoryHandlerInput = {
   context: GraphQLContext;
@@ -71,44 +56,15 @@ export const discussionVersionHistoryHandler = async ({
     
     logger.info('Processing version history for discussion:', discussionId);
     
-    // Access OGM models
-    const { ogm } = context;
-    const DiscussionModel = ogm.model('Discussion');
-    const TextVersionModel = ogm.model('TextVersion');
-    const UserModel = ogm.model('User');
+    // Resolve the finite revision and issue activity operations
+    const repository = context.discussionRevisionRepository ?? createDiscussionRevisionRepository(context.driver);
     const issueActivityRepository = context.issueActivityRepository ?? createIssueActivityRepository(context.driver);
     
     // Fetch the current discussion to get current values before update
     let discussion: DiscussionSnapshot | null | undefined = discussionSnapshot;
 
     if (!discussion) {
-      const discussions = await DiscussionModel.find({
-        where: { id: discussionId },
-        selectionSet: `{
-          id
-          title
-          body
-          Author {
-            username
-          }
-          BodyLastEditedBy {
-            username
-          }
-          DiscussionChannels {
-            channelUniqueName
-          }
-          PastTitleVersions {
-            id
-            body
-            createdAt
-          }
-          PastBodyVersions {
-            id
-            body
-            createdAt
-          }
-        }`
-      });
+      const discussions = await repository.findSnapshot(discussionId);
 
       if (!discussions.length) {
         logger.info('Discussion not found');
@@ -141,9 +97,7 @@ export const discussionVersionHistoryHandler = async ({
         discussionId,
         discussion.title ?? '',
         titleEditor,
-        DiscussionModel,
-        TextVersionModel,
-        UserModel
+        repository
       );
       if (titleRevisionId) {
         createdRevisionIds.push({ id: titleRevisionId, type: 'title' });
@@ -157,9 +111,7 @@ export const discussionVersionHistoryHandler = async ({
         discussionId,
         discussion.body,
         bodyContentAuthor || '[Unknown]',
-        DiscussionModel,
-        TextVersionModel,
-        UserModel
+        repository
       );
       if (bodyRevisionId) {
         createdRevisionIds.push({ id: bodyRevisionId, type: 'body' });
@@ -167,15 +119,7 @@ export const discussionVersionHistoryHandler = async ({
 
       // Update BodyLastEditedBy to the current editor
       if (editorUsername) {
-        await DiscussionModel.update({
-          where: { id: discussionId },
-          update: {
-            BodyLastEditedBy: {
-              disconnect: {},
-              connect: { where: { node: { username: editorUsername } } }
-            }
-          }
-        });
+        await repository.setBodyEditor(discussionId, editorUsername);
       }
     }
 
@@ -271,19 +215,14 @@ async function trackTitleVersionHistory(
   discussionId: string,
   previousTitle: string,
   username: string,
-  DiscussionModel: DiscussionModel,
-  TextVersionModel: TextVersionModel,
-  UserModel: UserModel
+  repository: DiscussionRevisionRepository
 ): Promise<string | null> {
   logger.info(`Tracking title version history for discussion ${discussionId}`);
   logger.info(`Previous title: "${previousTitle}"`);
 
   try {
     // Get user by username
-    const users = await UserModel.find({
-      where: { username },
-      selectionSet: `{ username }`
-    });
+    const users = await repository.findAuthor(username);
 
     if (!users.length) {
       logger.info('User not found');
@@ -292,14 +231,7 @@ async function trackTitleVersionHistory(
 
     // Create new TextVersion for previous title
     // The createdAt timestamp will be automatically set by @timestamp directive
-    const textVersionResult = await TextVersionModel.create({
-      input: [{
-        body: previousTitle,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      }]
-    });
+    const textVersionResult = await repository.createRevision(previousTitle, username);
 
     if (!textVersionResult.textVersions.length) {
       logger.info('Failed to create TextVersion');
@@ -309,12 +241,7 @@ async function trackTitleVersionHistory(
     const textVersionId = textVersionResult.textVersions[0].id;
 
     // Fetch the current discussion to get current title version order
-    const discussions = await DiscussionModel.find({
-      where: { id: discussionId },
-      selectionSet: `{
-        id
-      }`
-    });
+    const discussions = await repository.findDiscussionId(discussionId);
 
     if (!discussions.length) {
       logger.info('Discussion not found when updating version order');
@@ -322,18 +249,7 @@ async function trackTitleVersionHistory(
     }
     
     // Update discussion to connect the new TextVersion
-    await DiscussionModel.update({
-      where: { id: discussionId },
-      update: {
-        PastTitleVersions: {
-          connect: [{
-            where: {
-              node: { id: textVersionId }
-            }
-          }]
-        }
-      } as unknown as DiscussionUpdateInput
-    });
+    await repository.connectTitleRevision(discussionId, textVersionId);
 
     logger.info(`Successfully added title version history for discussion ${discussionId}`);
     return textVersionId;
@@ -350,9 +266,7 @@ async function trackBodyVersionHistory(
   discussionId: string,
   previousBody: string | null | undefined,
   username: string,
-  DiscussionModel: DiscussionModel,
-  TextVersionModel: TextVersionModel,
-  UserModel: UserModel
+  repository: DiscussionRevisionRepository
 ): Promise<string | null> {
   logger.info(`Tracking body version history for discussion ${discussionId}`);
 
@@ -363,10 +277,7 @@ async function trackBodyVersionHistory(
     const bodyToTrack = previousBody ?? '';
 
     // Get user by username
-    const users = await UserModel.find({
-      where: { username },
-      selectionSet: `{ username }`
-    });
+    const users = await repository.findAuthor(username);
 
     if (!users.length) {
       logger.info('User not found');
@@ -375,14 +286,7 @@ async function trackBodyVersionHistory(
 
     // Create new TextVersion for previous body
     // The createdAt timestamp will be automatically set by @timestamp directive
-    const textVersionResult = await TextVersionModel.create({
-      input: [{
-        body: bodyToTrack,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      }]
-    });
+    const textVersionResult = await repository.createRevision(bodyToTrack, username);
 
     if (!textVersionResult.textVersions.length) {
       logger.info('Failed to create TextVersion');
@@ -392,12 +296,7 @@ async function trackBodyVersionHistory(
     const textVersionId = textVersionResult.textVersions[0].id;
 
     // Fetch the current discussion
-    const discussions = await DiscussionModel.find({
-      where: { id: discussionId },
-      selectionSet: `{
-        id
-      }`
-    });
+    const discussions = await repository.findDiscussionId(discussionId);
 
     if (!discussions.length) {
       logger.info('Discussion not found when updating version order');
@@ -405,18 +304,7 @@ async function trackBodyVersionHistory(
     }
 
     // Update discussion to connect the new TextVersion
-    await DiscussionModel.update({
-      where: { id: discussionId },
-      update: {
-        PastBodyVersions: {
-          connect: [{
-            where: {
-              node: { id: textVersionId }
-            }
-          }]
-        }
-      } as unknown as DiscussionUpdateInput
-    });
+    await repository.connectBodyRevision(discussionId, textVersionId);
 
     logger.info(`Successfully added body version history for discussion ${discussionId}`);
     return textVersionId;
