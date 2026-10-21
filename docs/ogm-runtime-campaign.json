@@ -1530,8 +1530,8 @@
       "baselineCrudSites": 13,
       "dependencies": "03; write/event contract",
       "acceptance": "Nested identity creation, activation/deprecation, channel links and comment context",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "0c6a72eed73d185bf96c64b12f9d307c27f51030",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1586,15 +1586,16 @@
           "id": "38d",
           "scope": "Channel bot synchronization",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review against50c32b5c. Four executable/test blobs identical to approved0ff68c00; preserved ledger confirms review_bot38d independent13focused/3live/static approval, author19focused evidence reused. Context adaptation only adds channelBotRepository while retaining botIdentity and all prior ports. Exact isolated3live passed zero failures/skips/cancellations, including29unbounded server reads, middleware ordering and swallowed postcommit projection error preventing disconnect. Patch SHA256 b2f666bb45674fa18784ef5bf0d96b09e216a2233f02b342f8f10b3e3303d448 verified; diff check clean. Ledger97CRUD/50acquisitions/0CLI and queued46 corrected evidence without credit accurate. Mandatory hooks parent-owned.",
           "preparedPatch": "ogm-slice38d.patch",
           "preparedPatchSha256": "b2f666bb45674fa18784ef5bf0d96b09e216a2233f02b342f8f10b3e3303d448",
           "preparedBase": "ec61b967",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 58d97948d1a2d82def96f3900622ccc9ad67d727: lint, TypeScript and2442 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice38d-exact-live.log"
           ],
-          "commit": null
+          "commit": "0c6a72eed73d185bf96c64b12f9d307c27f51030"
         }
       ]
     },
@@ -1607,11 +1608,11 @@
       "baselineCrudSites": 6,
       "dependencies": "18\u201319; 38",
       "acceptance": "Issue identity, report deduplication and actor attribution",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "campaign_review approved corrected raw-caller tree caba6738866202f9a70f6ca728585e658d7453e0; initial proxy-guard addition rejected and removed",
+      "review": "Independent cumulative review against0c6a72ee. All five executable/test blobs exactly match corrected approved raw-caller caba6738; SHA256476e45c8948a876b53ab359bb23311d5311e2fde8d6b5374c9b0937eed44fc3c verified. Baseline explicitly uses raw app.ogm.model(Issue), matching unchanged middleware; no protected proxy attachment/guard added. Prior38 thread/identity/comment/context wiring unchanged. Exact isolated21live passed zero failures/skips/cancellations, including production-schema attributed create durable prefix then generated-input rejection, raw native event/graph parity and nine existing standalone-schema services. Prior11focused/static evidence reused; diff check clean. Ledger91CRUD/14files/50acquisitions/0CLI and preparatory-only integration review accurate. Mandatory hooks parent-owned.",
       "verification": [
-        "11 focused,12 new production-schema +9 existing standalone-schema live tests, TypeScript/lint passed. Actual middleware passes raw Issue model, not resolverDeps proxy; preserve generated-input rejection after committed creation in production schema. Original attributed standalone fixture restored. Cumulative gates pending."
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "preparedPatch": "ogm-slice39.patch",
       "preparedPatchSha256": "476e45c8948a876b53ab359bb23311d5311e2fde8d6b5374c9b0937eed44fc3c",
@@ -2046,9 +2047,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 97,
+  "remainingRuntimeCrudSites": 91,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 15,
+  "remainingRuntimeCrudFiles": 14,
   "foundations": [
     {
       "id": "F01",
@@ -2103,11 +2104,12 @@
       "34",
       "35",
       "36",
-      "37"
+      "37",
+      "38"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "38d"
+      "39"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2182,5 +2184,38 @@
       "46 focused,2 live,lint and TypeScript passed. Explicit configured-driver forwarding only; no operation/transaction/startup changes, zero CRUD credit. Transitional optional argument requiredness finalized at wiring checkpoint."
     ]
   },
-  "remainingCliCrudSites": 0
+  "remainingCliCrudSites": 0,
+  "pipelineIntegrationPreparatoryReview": {
+    "tree": "cdac69950353a76c95190ae05f28bc923687835f",
+    "approved": true,
+    "scope": "Preparatory review of four integration adaptations only; no runtime removal credit or cumulative gate approval",
+    "review": "All four adapted patch hashes verified. Added/removed lines are identical to original approved40a/40b/43/46 patches; differences only hunk locations/context/indexes.40a/40b/43 preserve38a BotThread repository import and call,38b/c identity/comment integration and39 bot report call.46 retains31 discussion/event repository construction and calls, removes only seed models already covered by original46. Final tree diff check clean. Rehearsal focused20 passed zero failures/skips/cancellations; TypeScript84625 exit0 parent-confirmed. No duplicate tests run. Each cumulative exact live and mandatory hook gate remains required.",
+    "adaptations": [
+      {
+        "id": "40a",
+        "patch": "/tmp/ogm-integrated-40a.patch",
+        "sha256": "0592d17d072e5f570576481af1c15ee7ac411ad76e6c42438cbd840e673cbf6a",
+        "base": "27327dfdadfff3363c1f3ebce8cc40246b6b7054"
+      },
+      {
+        "id": "40b",
+        "patch": "/tmp/ogm-integrated-40b.patch",
+        "sha256": "5b044f1aede774017c0fd2e670d9c0df655b05e21f8055b574f2b8c42d4d3b00",
+        "base": "c4a3ba288b778acabdd85b109b76a1ce9c0173b6"
+      },
+      {
+        "id": "43",
+        "patch": "/tmp/ogm-integrated-43.patch",
+        "sha256": "7fe1dad007f88bb7f7249557082742a82b66cc0ff9015f05feb7c5aedc012741",
+        "base": "5ba84146d8e3164e9ccb7d0e1a35a8da3287366d"
+      },
+      {
+        "id": "46",
+        "patch": "/tmp/ogm-integrated-46.patch",
+        "sha256": "cf7a12577643f1403461e7d1652de13ef02a1d6849abd08a4820d005337edcb7",
+        "base": "4196837c80870af305ad6e9b1b3268d932b2e316"
+      }
+    ],
+    "verification": "Rehearsal TypeScript and20focused tests passed;0CRUD/50acquisitions in rehearsal only. Root counts remain authoritative until each slice integrates."
+  }
 }

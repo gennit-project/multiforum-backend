@@ -6,7 +6,17 @@
 // is left to integration.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createBotReport } from "./botReportService.js";
+import { createBotReport as actualCreateBotReport } from "./botReportService.js";
+
+// Test-only adapter keeps the original assertions and mock failure behavior.
+const createBotReport = (input: any) => actualCreateBotReport({...input,botReportRepository:{
+ findExistingReport:(where:any)=>input.models.Issue.find({where}),
+ findReportedComment:(id:string)=>input.models.Comment.find({where:{id}}),
+ findReportedDiscussion:(id:string)=>input.models.Discussion.find({where:{id}}),
+ findReportedEvent:(id:string)=>input.models.Event.find({where:{id}}),
+ createReportedIssue:(values:any)=>input.models.Issue.create({input:values}),
+ appendBotReport:(where:any,update:any)=>input.models.Issue.update({where,update}),
+}});
 
 // Full model set. User/Channel satisfy ensureBotUserForChannel; Issue.find
 // returns an existing issue so we take the update path; Comment/Discussion/Event
