@@ -1,6 +1,5 @@
+import { createIssueLockRepository, type IssueLockRepository } from "../../services/persistence/issueLockRepository.js";
 import type {
-  IssueModel,
-  IssueWhere,
   IssueUpdateInput,
   ModerationActionCreateInput,
 } from "../../ogm_types.js";
@@ -17,11 +16,12 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
+  issueLockRepository?: IssueLockRepository;
+  notifySubscribers?: typeof notifyIssueSubscribers;
 };
 
-const getResolver = (input: Input) => {
-  const { Issue } = input;
+const getResolver = (input: Input = {}) => {
+  const { issueLockRepository, notifySubscribers = notifyIssueSubscribers } = input;
   return async (
     parent: unknown,
     args: Args,
@@ -51,15 +51,8 @@ const getResolver = (input: Input) => {
     }
 
     // Find the issue and check if it exists
-    const issueData = await Issue.find({
-      where: { id: issueId },
-      selectionSet: `{
-        id
-        issueNumber
-        channelUniqueName
-        locked
-      }`,
-    });
+    const repository = issueLockRepository ?? createIssueLockRepository(context.driver);
+    const issueData = await repository.findLockState(issueId);
 
     if (issueData.length === 0) {
       throw new GraphQLError("Issue not found");
@@ -110,10 +103,6 @@ const getResolver = (input: Input) => {
     };
 
     // Update the issue to unlock it
-    const issueUpdateWhere: IssueWhere = {
-      id: issueId,
-    };
-
     const issueUpdateInput: IssueUpdateInput = {
       locked: false,
       lockedAt: null,
@@ -139,51 +128,14 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const updateResult = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            title
-            body
-            channelUniqueName
-            isOpen
-            createdAt
-            updatedAt
-            relatedCommentId
-            relatedDiscussionId
-            relatedEventId
-            flaggedServerRuleViolation
-            locked
-            lockedAt
-            lockReason
-            LockedBy {
-              displayName
-            }
-            SubscribedToNotifications {
-              username
-            }
-            ActivityFeed {
-              id
-              actionType
-              actionDescription
-              createdAt
-              ModerationProfile {
-                displayName
-              }
-            }
-          }
-        }`,
-      });
+      const updateResult = await repository.updateLock(issueId, issueUpdateInput);
 
       const updatedIssue = updateResult.issues[0];
       if (!updatedIssue) {
         throw new GraphQLError("Error updating issue");
       }
 
-      await notifyIssueSubscribers({
+      await notifySubscribers({
         notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,

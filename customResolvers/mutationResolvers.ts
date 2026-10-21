@@ -420,12 +420,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Channel,
       ServerConfig
     }),
-    lockIssue: lockIssue({
-      Issue
-    }),
-    unlockIssue: unlockIssue({
-      Issue
-    }),
+    lockIssue: lockIssue(),
+    unlockIssue: unlockIssue(),
     archiveComment: archiveComment({
       Issue,
       Comment,
