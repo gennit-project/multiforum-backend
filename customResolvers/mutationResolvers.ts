@@ -522,7 +522,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     updatePluginPipelines: updatePluginPipelines({
-      ServerConfig
+      driver
     }),
     applyPluginConfiguration: applyPluginConfiguration({
       Plugin,
