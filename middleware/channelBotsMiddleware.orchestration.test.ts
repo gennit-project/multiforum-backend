@@ -33,7 +33,7 @@ function makeCtx(opts: { channel?: any; serverConfigs?: any[] } = {}) {
       return {};
     },
   });
-  return { ctx: { ogm: { model }, driver: {} } as any, ops };
+  return { ctx: { ogm: { model }, driver: {}, botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>{ops.push("User.create");return {users:[{username:"bot-x"}]};},reactivateIdentity:async()=>{ops.push("User.update");return{users:[]};},findChannelBots:async()=>opts.channel?[opts.channel]:[],connectBot:async()=>{ops.push("Channel.update");return{channels:[]};},disconnectBots:async()=>{ops.push("Channel.update");return{channels:[]};}} } as any, ops };
 }
 
 function resolveReturning(result: unknown) {

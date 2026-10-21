@@ -223,8 +223,8 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
 
       // Ensure bot users exist and are connected
       await syncBotUsersForChannelProfiles({
-        User,
-        Channel,
+        driver: context.driver,
+        repository: context.botIdentityRepository,
         channelUniqueName,
         botName,
         profiles

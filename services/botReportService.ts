@@ -1,3 +1,4 @@
+import type { BotIdentityRepository } from './persistence/botIdentityRepository.js'
 import type { Driver } from 'neo4j-driver'
 import type {
   ChannelModel,
@@ -51,6 +52,7 @@ type Models = {
  */
 export const createBotReport = async (input: {
   models: Models
+  botIdentityRepository?: BotIdentityRepository
   driver: Driver
   channelUniqueName: string
   reportInput: ReportContentAsBotInput
@@ -67,7 +69,7 @@ export const createBotReport = async (input: {
     profileLabel
   } = reportInput
 
-  const { Channel, Comment, Discussion, Event, Issue, User } = models
+  const { Comment, Discussion, Event, Issue } = models
 
   if (!contentId) {
     throw new Error(`${contentType} ID is required`)
@@ -85,8 +87,8 @@ export const createBotReport = async (input: {
 
   // Ensure the bot user exists and has a ModerationProfile
   const botUser = await ensureBotUserForChannel({
-    User,
-    Channel,
+    driver,
+    repository: input.botIdentityRepository,
     channelUniqueName,
     botName,
     profileId,

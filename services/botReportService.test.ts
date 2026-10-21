@@ -59,7 +59,7 @@ const baseReport = {
 test("throws when contentId is missing", async () => {
   const { models } = makeModels();
   await assert.rejects(
-    createBotReport({ models, driver, channelUniqueName: "cats", reportInput: { ...baseReport, contentId: "" } }),
+    createBotReport({ botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)}, models, driver, channelUniqueName: "cats", reportInput: { ...baseReport, contentId: "" } }),
     /ID is required/
   );
 });
@@ -67,7 +67,7 @@ test("throws when contentId is missing", async () => {
 test("throws when the channel name is missing", async () => {
   const { models } = makeModels();
   await assert.rejects(
-    createBotReport({ models, driver, channelUniqueName: "", reportInput: baseReport }),
+    createBotReport({ botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)}, models, driver, channelUniqueName: "", reportInput: baseReport }),
     /Channel unique name is required/
   );
 });
@@ -75,7 +75,7 @@ test("throws when the channel name is missing", async () => {
 test("throws when no rule is selected", async () => {
   const { models } = makeModels();
   await assert.rejects(
-    createBotReport({
+    createBotReport({ botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)},
       models,
       driver,
       channelUniqueName: "cats",
@@ -89,7 +89,7 @@ test("appends a moderation action to an existing issue for a reported comment", 
   const { models, ops } = makeModels({
     comment: { id: "c-1", text: "bad words", CommentAuthor: { __typename: "User", username: "alice" } },
   });
-  const result = await createBotReport({ models, driver, channelUniqueName: "cats", reportInput: baseReport });
+  const result = await createBotReport({ botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)}, models, driver, channelUniqueName: "cats", reportInput: baseReport });
   assert.equal(result?.issueId, "i-1");
   assert.equal(result?.issueNumber, 5);
   assert.ok(ops.includes("Issue.update"), "updated the existing issue with the report action");
@@ -100,7 +100,7 @@ test("resolves the reported author for a discussion report", async () => {
   const { models, ops } = makeModels({
     discussion: { id: "d-1", title: "Bad discussion", Author: { username: "bob" } },
   });
-  const result = await createBotReport({
+  const result = await createBotReport({ botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)},
     models,
     driver,
     channelUniqueName: "cats",
@@ -114,7 +114,7 @@ test("resolves the reported author for an event report", async () => {
   const { models } = makeModels({
     event: { id: "e-1", title: "Bad event", Poster: { username: "carol" } },
   });
-  const result = await createBotReport({
+  const result = await createBotReport({ botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)},
     models,
     driver,
     channelUniqueName: "cats",

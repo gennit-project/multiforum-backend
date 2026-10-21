@@ -1539,30 +1539,32 @@
           "id": "38a",
           "scope": "Bot parent thread read",
           "baselineCrudSites": 1,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative38a review against753a60ea83b888e33c998b01fa9363bdd8d0a3ac. All five executable/test blobs exactly match approved8fc2ebb2; original integration_recovery3focused/16trigger units/static evidence reused. Exact cumulative2live passed zero failures/skips/cancellations, covering actual author unions/special IDs/missing reads and cycle/depth/chronological thread ordering. commentTrigger only replaces parent-reader injection with configured-driver repository; remaining report/execution logic unchanged. Diff check clean. One structural call removed, zero typed calls/acquisitions: structural adjustment1to0 and total109runtime equals109typed,53acquisitions/0CLI. Queued45a evidence accurate without credit. Mandatory hooks required; future43 integration must retain38a parent-thread wiring.",
           "preparedPatch": "ogm-slice38a.patch",
           "preparedPatchSha256": "e9926505c431424eb5ef45ff55f286e52223f0f11da8c6990c1e2c5d7dd17689",
           "preparedBase": "fa87561",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 113341925bf1e38f21f60e2ec6d75c69ae762f2e: lint, TypeScript and2434 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice38a-exact-live.log"
           ],
           "accountingNote": "One structural call, zero typed calls. Reduce manual structural audit adjustment by one only upon integration (1\u21920 if16 already integrated).",
-          "commit": null
+          "commit": "31e9cc74dca4749fc45b630703f52f6c5df27719"
         },
         {
           "id": "38b",
           "scope": "Bot identity/profile synchronization",
           "baselineCrudSites": 7,
-          "status": "reviewed; integration pending",
-          "review": "integration_recovery",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against31e9cc74: nine nonshared executable/test blobs match prepared ec61b967 exactly; reused original independent19focused/author47focused/static evidence. Three adapted files preserve37c channel pipeline repository and required configured driver,38a parent-thread repository and all existing context ports; add only identity port forwarding/removal of unused model forwarding. Exact isolated15live passed zero failures/skips/cancellations. Identity creation/reactivation stale response, sequential profile reconciliation, missing-channel committed prefix and native event/default projection parity retained. Diff check clean. Ledger102 runtime CRUD/53acquisitions/zero structural/zeroCLI correct;45b queued without credit. Mandatory hooks remain parent-owned.",
           "preparedPatch": "ogm-slice38b.patch",
           "preparedPatchSha256": "87111cf26777e0944e312a6d13509a2518e59b6fd963fd65515c3c6518cba2cb",
           "preparedBase": "fa87561",
           "verification": [
-            "Treeec61b967f3074c67e520cb601decba39a4749862: 19independentfocused;47authorfocused;6correctedlive+9existinglive;tsc/lint actual passes; cumulative integration gates pending"
+            "Original focused/live/static gates passed; final cumulative checks pending"
           ],
-          "integrationNote": "Preserve overlapping37c driver/repository edits and38a parent-thread wiring. Initial5livefixture failures corrected only false-default assumptions/internal event envelope IDs; durable properties/graph/order assertions retained."
+          "integrationNote": "Preserve overlapping37c driver/repository edits and38a parent-thread wiring. Initial5livefixture failures corrected only false-default assumptions/internal event envelope IDs; durable properties/graph/order assertions retained.",
+          "commit": null
         },
         {
           "id": "38c",
@@ -1959,6 +1961,30 @@
           "verification": [
             "11focused,8live,lint/TypeScript passed. Actual25file default limit, anonymous URL redaction, zero dispatch and ordered native events preserved; downstream loops tested in labelled trusted-URL fixture. Zero credit before integration."
           ]
+        },
+        {
+          "id": "45b",
+          "scope": "Campaign history and failure queries",
+          "baselineCrudSites": 3,
+          "status": "reviewed; integration pending",
+          "preparedEvidence": {
+            "base": "1e63611912b5c6e37042498bb50787d52d0fb196",
+            "tree": "ec39cecdf506c45038313444c63e861ca0cc4de1",
+            "sha256": "b319ab341cc21ec06a714372b9f38c5d391603d16b949a4f36202fe005b1c2ce",
+            "patch": "/tmp/ogm-slice45b.patch",
+            "files": [
+              "services/persistence/campaignQueryRepository.ts",
+              "customResolvers/queries/pluginPipelineCampaigns.ts",
+              "customResolvers/queryResolvers.ts",
+              "customResolvers/queries/pluginPipelineCampaigns.test.ts",
+              "tests/fixtures/campaignQueryRepositoryStub.ts",
+              "tests/integration/campaignQueryRepository.test.ts"
+            ]
+          },
+          "review": "Independent six-path review against approved45a1e636119; SHA256b319ab341cc21ec06a714372b9f38c5d391603d16b949a4f36202fe005b1c2ce verified, diff check clean. Three named reads preserve full history selection, failed/timed-out/cancelled predicate and destination projection; query factory forwards configured driver while retaining45a preview wiring. Sequential destination lookups, rejection stop, orphan skipping and first nonarchived channel choice unchanged.4focused/5live passed zero failures/skips/cancellations, including positive canonical discussion/channel projections, archive exclusion,30unbounded failures, literal IDs/coercion, response parity/no read events and exact propagated errors. Copied ignored generated source is outside patch; enum stub typing retains original values. Corrected TypeScript6967/final lint exit0 parent-confirmed. Prepared3CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "verification": [
+            "4focused,5live,lint/TypeScript passed. Exact status filters, destination projections, ordered resolution, orphan exclusion and native read-event absence preserved. Zero credit before integration."
+          ]
         }
       ]
     },
@@ -1977,7 +2003,7 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 109,
+  "remainingRuntimeCrudSites": 102,
   "remainingModelAcquisitionsIncludingOptional": 53,
   "remainingRuntimeCrudFiles": 17,
   "foundations": [
@@ -2038,7 +2064,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "38a"
+      "38b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

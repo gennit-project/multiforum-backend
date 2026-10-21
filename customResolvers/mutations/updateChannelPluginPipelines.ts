@@ -1,3 +1,4 @@
+import type { BotIdentityRepository } from "../../services/persistence/botIdentityRepository.js";
 import type { Driver } from "neo4j-driver"
 import { createChannelPipelineRepository, type ChannelPipelineRepository } from "../../services/persistence/channelPipelineRepository.js"
 import type { Channel, ChannelModel, UserModel } from '../../ogm_types.js'
@@ -12,6 +13,7 @@ import { validatePipelines, type EventPipelineInput } from './updatePluginPipeli
 import { logger } from "../../logger.js";
 
 type Input = {
+  botIdentityRepository?: BotIdentityRepository
   Channel: ChannelModel
   driver: Driver
   channelPipelineRepository?: ChannelPipelineRepository
@@ -161,8 +163,8 @@ const getResolver = (input: Input) => {
 
         // Ensure bot users exist and are connected
         await syncBotsForChannel({
-          User,
-          Channel,
+          driver: input.driver,
+          repository: input.botIdentityRepository,
           channelUniqueName,
           botName,
           profiles

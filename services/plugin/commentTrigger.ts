@@ -563,8 +563,6 @@ export const triggerPluginRunsForComment = async (
 
           return createBotComment({
             Comment,
-            User,
-            Channel,
             driver,
             channelUniqueName,
             text: input.text,
