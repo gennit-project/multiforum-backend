@@ -1,3 +1,4 @@
+import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
 import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import { Storage } from '@google-cloud/storage'
@@ -62,11 +63,13 @@ export const triggerPluginRunsForDownloadableFile = async (
     storage = new Storage(),
     execution,
     leaseRepository,
+    attemptRepository,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     storage?: Pick<Storage, 'bucket'>
     execution?: PipelineExecutionMetadata
     leaseRepository?: PipelineLeaseRepository
+    attemptRepository?: PipelineAttemptRepository
   } = {}
 ) => {
   if (!DOWNLOAD_EVENTS.has(event)) {
@@ -184,6 +187,8 @@ export const triggerPluginRunsForDownloadableFile = async (
   }
 
   await createPipelineAttempt({
+    driver,
+    repository: attemptRepository,
     PluginPipelineRun,
     context: {
       pipelineId,
@@ -625,6 +630,8 @@ export const triggerPluginRunsForDownloadableFile = async (
   }
 
   await completePipelineAttempt({
+    driver,
+    repository: attemptRepository,
     PluginPipelineRun,
     pipelineId,
     statuses: jobStatuses,

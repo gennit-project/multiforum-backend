@@ -1,3 +1,4 @@
+import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
 import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import type {
@@ -66,10 +67,12 @@ export const triggerChannelPluginPipeline = async (
     loadPlugin = loadPluginImplementation,
     execution,
     leaseRepository,
+    attemptRepository,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     execution?: PipelineExecutionMetadata
     leaseRepository?: PipelineLeaseRepository
+    attemptRepository?: PipelineAttemptRepository
   } = {}
 ) => {
   if (!CHANNEL_EVENTS.has(event)) {
@@ -296,6 +299,8 @@ export const triggerChannelPluginPipeline = async (
   let pipelineStopped = false
 
   await createPipelineAttempt({
+    driver,
+    repository: attemptRepository,
     PluginPipelineRun,
     context: {
       pipelineId,
@@ -707,6 +712,8 @@ export const triggerChannelPluginPipeline = async (
   }
 
   await completePipelineAttempt({
+    driver,
+    repository: attemptRepository,
     PluginPipelineRun,
     pipelineId,
     statuses: jobStatuses,

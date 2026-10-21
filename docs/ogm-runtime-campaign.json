@@ -1639,7 +1639,7 @@
           "id": "40a",
           "scope": "Pipeline execution leases",
           "baselineCrudSites": 6,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "157dc1ca249de5ac8bfe7626b2b6906aef946b1e",
             "tree": "ccfd09ee0197f8106d59c75975ffe07207728763",
@@ -1661,9 +1661,10 @@
           },
           "review": "Independent cumulative40a againstca939ef5. Ten executable/test blobs identical to approvedccfd09ee; sole commentTrigger adaptation matches reviewed integrated patch additions/removals and retains38 bot thread/identity/comment wiring. Configured driver and optional lease port forwarded through all three triggers including heartbeat/completion. Exact isolated8live passed zero failures/skips/cancellations. Original30focused plus overlapping6lease units/static reused. Separate job/parent writes, defaults, stale-owner sequential behavior and committed failure/retry contracts preserved; no concurrent atomicity claim. Diff check clean;81CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree d47a6c9db9344278a8f210b7568861dfc05dbcf9: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice40a-exact-live.log"
           ],
-          "commit": null,
+          "commit": "5011245d7704258fd2a5ecb61ce156db585f98d9",
           "integrationAdaptation": {
             "id": "40a",
             "patch": "/tmp/ogm-integrated-40a.patch",
@@ -1676,7 +1677,7 @@
           "id": "40b",
           "scope": "Pipeline attempt tracking",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "ccfd09ee0197f8106d59c75975ffe07207728763",
             "tree": "2cee7848644240eb1745b59aeea4bcdaabedf548",
@@ -1698,10 +1699,18 @@
               "tests/integration/pipelineAttemptRepository.test.ts"
             ]
           },
-          "review": "Independent thirteen-path incremental review against approved40accfd09ee; SHA2564c23d84e9267a2f430bf6305c4c222bb69ea6b1eb7fe5d800cc1e1ad10e31c3c verified, diff check clean. Four finite operations preserve unbounded attempt-number read and exact predicate, full default projection reused from verified40a, QUEUED create response returned after independent RUNNING update, derived completion status/clock/deadline and failure prefixes. All three triggers and watchdog forward configured driver/domain port; existing execution assertions and recorder arguments retained through test-only adapters. Inspected39focused and12live passes, zero failures/skips/cancellations; live covers29prior attempts, complete ordered events/full graph with raw native node IDs and temporal checks, completion statuses, coercion/missing matches and committed create/running/completion projection errors. Final test-only enum reference preserves literal RUNNING value. Final2 TypeScript exit0 parent-confirmed session58745; lint0. No concurrency redesign or atomic numbering claim. Prepared4CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "review": "Independent cumulative40b against5011245d. Twelve executable/test blobs identical to approved2cee7848; commentTrigger sole adaptation matches reviewed integrated patch changes and retains bot thread/lease wiring. Exact isolated12live passed zero failures/skips/cancellations. Original39focused/static reused; unbounded prior attempts, full defaults, QUEUED response before separate RUNNING write, completion clock/status and partial committed failure prefixes unchanged. Diff check clean;77CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "39focused,12live,lint/TypeScript passed. Unbounded attempt-number reads, QUEUED response before separate RUNNING update, independent write/failure prefixes and deadlines retained. Raw native IDs/timestamps checked. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null,
+          "integrationAdaptation": {
+            "id": "40b",
+            "patch": "/tmp/ogm-integrated-40b.patch",
+            "sha256": "5b044f1aede774017c0fd2e670d9c0df655b05e21f8055b574f2b8c42d4d3b00",
+            "base": "c4a3ba288b778acabdd85b109b76a1ce9c0173b6"
+          },
+          "integrationAdaptationReview": "All four adapted patch hashes verified. Added/removed lines are identical to original approved40a/40b/43/46 patches; differences only hunk locations/context/indexes.40a/40b/43 preserve38a BotThread repository import and call,38b/c identity/comment integration and39 bot report call.46 retains31 discussion/event repository construction and calls, removes only seed models already covered by original46. Final tree diff check clean. Rehearsal focused20 passed zero failures/skips/cancellations; TypeScript84625 exit0 parent-confirmed. No duplicate tests run. Each cumulative exact live and mandatory hook gate remains required."
         },
         {
           "id": "40c",
@@ -2070,9 +2079,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 81,
+  "remainingRuntimeCrudSites": 77,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 12,
+  "remainingRuntimeCrudFiles": 11,
   "foundations": [
     {
       "id": "F01",
@@ -2133,7 +2142,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "40a"
+      "40b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

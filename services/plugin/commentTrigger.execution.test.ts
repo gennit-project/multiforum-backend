@@ -1,3 +1,4 @@
+import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
 import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the comment trigger: the per-plugin run lifecycle
 // (PENDING -> RUNNING -> SUCCEEDED/FAILED/SKIPPED). The real plugin loader
@@ -204,4 +205,4 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.match(String(skipped.update?.skippedReason), /Pipeline stopped/);
 });
 
-const triggerPluginRunsForComment:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models)});
+const triggerPluginRunsForComment:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});

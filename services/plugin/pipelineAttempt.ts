@@ -1,3 +1,5 @@
+import type { Driver } from "neo4j-driver";
+import {createPipelineAttemptRepository,type PipelineAttemptRepository} from "../persistence/pipelineAttemptRepository.js";
 import type {
   PluginPipelineRunCreateInput,
   PluginPipelineRunModel,
@@ -70,7 +72,7 @@ export const buildPipelineConfigurationSnapshot = ({
 })
 
 const nextAttemptNumber = async ({
-  PluginPipelineRun,
+  repository,
   targetId,
   targetType,
   eventType,
@@ -79,16 +81,13 @@ const nextAttemptNumber = async ({
   PipelineAttemptContext,
   'targetId' | 'targetType' | 'eventType' | 'scope'
 > & {
-  PluginPipelineRun: PluginPipelineRunModel
+  repository: PipelineAttemptRepository
 }): Promise<number> => {
-  const previous = await PluginPipelineRun.find({
-    where: {
+  const previous = await repository.findAttemptNumbers({
       targetId,
       targetType,
       eventType,
       scope,
-    },
-    selectionSet: `{ attemptNumber }`,
   })
 
   return previous.reduce(
@@ -98,10 +97,13 @@ const nextAttemptNumber = async ({
 }
 
 export const createPipelineAttempt = async ({
-  PluginPipelineRun,
+  driver,
+  repository,
   context,
   now = () => new Date().toISOString(),
 }: {
+  driver?: Driver
+  repository?: PipelineAttemptRepository
   PluginPipelineRun: PluginPipelineRunModel
   context: PipelineAttemptContext
   now?: () => string
@@ -110,17 +112,16 @@ export const createPipelineAttempt = async ({
   const queuedTiming = createQueuedPluginRunTiming({
     now: new Date(timestamp),
   })
+  const persistence = repository ?? createPipelineAttemptRepository(driver!);
   const attemptNumber = await nextAttemptNumber({
-    PluginPipelineRun,
+    repository: persistence,
     targetId: context.targetId,
     targetType: context.targetType,
     eventType: context.eventType,
     scope: context.scope,
   })
 
-  const result = await PluginPipelineRun.create({
-    input: [
-      {
+  const result = await persistence.createQueuedAttempt({
         pipelineId: context.pipelineId,
         targetId: context.targetId,
         targetType: context.targetType,
@@ -143,17 +144,9 @@ export const createPipelineAttempt = async ({
         queuedAt: queuedTiming.queuedAt,
         timeoutAt: queuedTiming.timeoutAt,
         updatedAt: timestamp,
-      } as PluginPipelineRunCreateInput,
-    ],
-  })
+      } as PluginPipelineRunCreateInput)
 
-  await PluginPipelineRun.update({
-    where: { pipelineId: context.pipelineId },
-    update: {
-      status: PluginPipelineRunStatus.Running,
-      startedAt: timestamp,
-    } as PluginPipelineRunUpdateInput,
-  })
+  await persistence.markRunning(context.pipelineId, timestamp)
 
   return result.pluginPipelineRuns[0]
 }
@@ -180,11 +173,14 @@ export const derivePipelineAttemptStatus = (
 }
 
 export const completePipelineAttempt = async ({
-  PluginPipelineRun,
+  driver,
+  repository,
   pipelineId,
   statuses,
   now = () => new Date().toISOString(),
 }: {
+  driver?: Driver
+  repository?: PipelineAttemptRepository
   PluginPipelineRun: PluginPipelineRunModel
   pipelineId: string
   statuses: PipelineJobStatus[]
@@ -197,14 +193,12 @@ export const completePipelineAttempt = async ({
       ? null
       : now()
 
-  await PluginPipelineRun.update({
-    where: { pipelineId },
-    update: {
+  const persistence = repository ?? createPipelineAttemptRepository(driver!);
+  await persistence.completeAttempt(pipelineId, {
       status,
       finishedAt,
       ...(finishedAt ? { timeoutAt: null } : {}),
-    } as PluginPipelineRunUpdateInput,
-  })
+    } as PluginPipelineRunUpdateInput)
 
   return status
 }

@@ -1,4 +1,5 @@
 import { createBotThreadRepository } from "../persistence/botThreadRepository.js"
+import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
 import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import type { CommentTriggerArgs, PluginEdgeData, PluginToRun, PendingRun } from './types.js'
@@ -41,7 +42,7 @@ export const triggerPluginRunsForComment = async (
   }: CommentTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
-  { loadPlugin = loadPluginImplementation, leaseRepository }: { loadPlugin?: typeof loadPluginImplementation; leaseRepository?: PipelineLeaseRepository } = {}
+  { loadPlugin = loadPluginImplementation, leaseRepository, attemptRepository }: { loadPlugin?: typeof loadPluginImplementation; leaseRepository?: PipelineLeaseRepository; attemptRepository?: PipelineAttemptRepository } = {}
 ) => {
   if (!COMMENT_EVENTS.has(event)) {
     throw new Error(`Unsupported comment plugin event: ${event}`)
@@ -327,6 +328,8 @@ export const triggerPluginRunsForComment = async (
   let pipelineStopped = false
 
   await createPipelineAttempt({
+    driver,
+    repository: attemptRepository,
     PluginPipelineRun,
     context: {
       pipelineId,
@@ -803,6 +806,8 @@ export const triggerPluginRunsForComment = async (
   }
 
   await completePipelineAttempt({
+    driver,
+    repository: attemptRepository,
     PluginPipelineRun,
     pipelineId,
     statuses: jobStatuses,

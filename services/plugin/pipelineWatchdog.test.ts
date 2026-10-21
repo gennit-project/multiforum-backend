@@ -1,3 +1,4 @@
+import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap } from "../../ogm_types.js";
@@ -6,7 +7,7 @@ import {
   PluginRunStatus,
 } from "../../ogm_types.js";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
-import { recoverExpiredPluginJobs } from "./pipelineWatchdog.js";
+import { recoverExpiredPluginJobs as actualRecover } from "./pipelineWatchdog.js";
 
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
 type AttemptUpdateArgs =
@@ -159,3 +160,5 @@ test("does not time out a lease that was renewed during recovery", async () => {
   assert.deepEqual(result, { jobsTimedOut: 0, attemptsTimedOut: 0 });
   assert.equal(parentFindCount, 0);
 });
+
+const recoverExpiredPluginJobs:typeof actualRecover = args => actualRecover({...args,attemptRepository:pipelineAttemptRepositoryStub(args.PluginPipelineRun)});

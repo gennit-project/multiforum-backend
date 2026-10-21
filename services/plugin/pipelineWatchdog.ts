@@ -1,3 +1,4 @@
+import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
   PluginPipelineRun,
@@ -67,6 +68,7 @@ const asPipelineJobStatus = (status: string): PipelineJobStatus =>
 
 export const recoverExpiredPluginJobs = async ({
   driver,
+  attemptRepository,
   PluginRun,
   PluginPipelineRun,
   DownloadableFile,
@@ -75,6 +77,7 @@ export const recoverExpiredPluginJobs = async ({
   leaseDurationMs = pluginJobLeaseDurationMs(),
 }: {
   driver?: Driver;
+  attemptRepository?: PipelineAttemptRepository;
   PluginRun: PluginRunModel;
   PluginPipelineRun: PluginPipelineRunModel;
   DownloadableFile?: DownloadableFileModel;
@@ -159,6 +162,8 @@ export const recoverExpiredPluginJobs = async ({
       selectionSet: `{ status }`,
     });
     const status = await completePipelineAttempt({
+      driver,
+      repository: attemptRepository,
       PluginPipelineRun,
       pipelineId,
       statuses: jobs.map(job => asPipelineJobStatus(job.status)),
