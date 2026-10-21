@@ -162,4 +162,4 @@ test("does not time out a lease that was renewed during recovery", async () => {
   assert.equal(parentFindCount, 0);
 });
 
-const recoverExpiredPluginJobs:typeof actualRecover = args => actualRecover({...args,repository:pipelineWatchdogRepositoryStub(args),attemptRepository:pipelineAttemptRepositoryStub(args.PluginPipelineRun)});
+const recoverExpiredPluginJobs = (args: Parameters<typeof actualRecover>[0] & Parameters<typeof pipelineWatchdogRepositoryStub>[0]) => actualRecover({...args,repository:pipelineWatchdogRepositoryStub(args),attemptRepository:pipelineAttemptRepositoryStub(args.PluginPipelineRun),notificationRepository:{findAttempt:async()=>[]} as any});

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { ResolverDeps } from '../resolverDeps.js'
+import type { ModelMap } from '../../ogm_types.js'
 import {
   PipelineApplicability,
   PipelineCondition,
@@ -20,7 +20,7 @@ const getResolver = (models: Models) => createResolver({
   } as unknown as PluginConfigurationReadRepository,
 })
 
-type Models = Pick<ResolverDeps, 'ServerConfig' | 'ServerSecret'>
+type Models = Pick<ModelMap, 'ServerConfig' | 'ServerSecret'>
 
 const args: QueryPreviewPluginConfigurationReconciliationArgs = {
   manifest: {

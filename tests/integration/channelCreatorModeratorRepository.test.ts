@@ -6,7 +6,7 @@ import { createChannelCreatorModeratorService } from "../../services/channelCrea
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import { Neo4jError, type Driver } from "neo4j-driver";
 import { subscribe, parse, type GraphQLSchema } from "graphql";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";

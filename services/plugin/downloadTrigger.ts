@@ -47,6 +47,7 @@ import { createDownloadReadUrl } from '../downloadStorage.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, DownloadableFileUpdateInput, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 import { notifyUploaderOfPipelineResult } from "./pipelineNotifications.js";
+import type { PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -55,7 +56,6 @@ export const triggerPluginRunsForDownloadableFile = async (
     downloadableFileId,
     event,
     driver,
-    models
   }: TriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
@@ -66,6 +66,7 @@ export const triggerPluginRunsForDownloadableFile = async (
     leaseRepository,
     attemptRepository,
     downloadRepository,
+    notificationRepository,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     storage?: Pick<Storage, 'bucket'>
@@ -73,17 +74,12 @@ export const triggerPluginRunsForDownloadableFile = async (
     leaseRepository?: PipelineLeaseRepository
     attemptRepository?: PipelineAttemptRepository
     downloadRepository?: DownloadExecutionRepository
+    notificationRepository?: PipelineNotificationRepository
   } = {}
 ) => {
   if (!DOWNLOAD_EVENTS.has(event)) {
     throw new Error(`Unsupported plugin event: ${event}`)
   }
-
-  const {
-    DownloadableFile,
-    PluginPipelineRun,
-    User,
-  } = models
 
   const repository = downloadRepository ?? createDownloadExecutionRepository(driver!)
 
@@ -527,9 +523,7 @@ export const triggerPluginRunsForDownloadableFile = async (
   })
   await notifyUploaderOfPipelineResult({
     driver,
-    DownloadableFile,
-    PluginPipelineRun,
-    User,
+    repository: notificationRepository,
     pipelineId,
   })
 

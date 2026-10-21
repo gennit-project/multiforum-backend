@@ -26,9 +26,7 @@ interface ValidationContext {
   contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
 }
 
-type ResolverContext = ValidationContext & {
-  ogm: GraphQLContext["ogm"];
-} & Pick<GraphQLContext, "req" | "user">;
+type ResolverContext = ValidationContext & Pick<GraphQLContext, "req" | "user">;
 
 /**
  * Validate file type against ServerConfig and Channel allowed file types

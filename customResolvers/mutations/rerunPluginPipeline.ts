@@ -2,7 +2,6 @@ import {createPipelineRerunRepository, type PipelineRerunRepository} from "../..
 import type {PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
 import { GraphQLError } from "graphql";
 import type {
-  ModelMap,
   PluginPipelineRun,
 } from "../../ogm_types.js";
 import {
@@ -31,18 +30,7 @@ const ELIGIBLE_STATUSES = new Set<PluginPipelineRunStatus>([
   PluginPipelineRunStatus.Cancelled,
 ]);
 
-export type RerunPluginPipelineInput = Pick<
-  ModelMap,
-  | "Channel"
-  | "Discussion"
-  | "DownloadableFile"
-  | "Plugin"
-  | "PluginVersion"
-  | "PluginPipelineRun"
-  | "PluginRun"
-  | "ServerConfig"
-  | "ServerSecret"
-> & Partial<Pick<ModelMap, "User">> & { startRepository?: PipelineStartRepository; rerunRepository?: PipelineRerunRepository };
+export type RerunPluginPipelineInput = { startRepository?: PipelineStartRepository; rerunRepository?: PipelineRerunRepository };
 
 type AttemptRecord = Pick<
   PluginPipelineRun,

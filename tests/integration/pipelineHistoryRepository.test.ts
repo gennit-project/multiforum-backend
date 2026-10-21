@@ -5,7 +5,7 @@ import { SortDirection } from "../../ogm_types.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import type { Driver } from "neo4j-driver";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";

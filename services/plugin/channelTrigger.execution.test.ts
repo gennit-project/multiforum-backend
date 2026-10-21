@@ -20,7 +20,7 @@ type TriggerArgs = Parameters<typeof triggerChannelPluginPipeline>[0];
 type TriggerOptions = NonNullable<
   Parameters<typeof triggerChannelPluginPipeline>[1]
 >;
-type Models = TriggerArgs["models"];
+type Models = import("./types.js").ChannelModels;
 type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
 type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
@@ -274,4 +274,4 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.ok(statuses.includes("SKIPPED"));
 });
 
-const triggerChannelPluginPipeline:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,channelRepository:channelExecutionRepositoryStub(args.models),leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});
+const triggerChannelPluginPipeline = (args: Parameters<typeof actualTrigger>[0] & { models: Models }, options?: Parameters<typeof actualTrigger>[1]) => {const {models, ...rest} = args; return actualTrigger(rest,{...options,channelRepository:channelExecutionRepositoryStub(models),leaseRepository:pipelineLeaseRepositoryStub(models),attemptRepository:pipelineAttemptRepositoryStub(models.PluginPipelineRun)});};

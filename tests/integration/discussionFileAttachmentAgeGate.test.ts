@@ -10,7 +10,7 @@ import {
   type StartedNeo4jContainer,
 } from "@testcontainers/neo4j";
 import typeDefinitions from "../../typeDefs.js";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import { getAgeGateStatements } from "../../services/ageGate/definitions.js";
 import { installAgeGateReconcile } from "../../services/ageGate/reconcile.js";
 import type { GraphQLContext } from "../../types/context.js";

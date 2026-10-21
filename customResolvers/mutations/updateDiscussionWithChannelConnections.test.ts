@@ -339,12 +339,6 @@ test("updateDiscussionWithChannelConnections enforces and assigns flairs", async
         updateWithinTransaction:async(where,update,tx)=>{await discussionModel.update({where,update,context:{executionContext:tx}} as never);},
         findUpdatedDiscussion:async id=>discussionModel.find({where:{id},selectionSet:UPDATED_DISCUSSION_SELECTION}) as never,
       },
-      DownloadableFile: {} as never,
-      PluginPipelineRun: {} as never,
-      PluginRun: {} as never,
-      ServerConfig: {} as never,
-      ServerSecret: {} as never,
-      User: {} as never,
       driver: createDriver(session) as never,
     });
 
@@ -421,12 +415,6 @@ test("updateDiscussionWithChannelConnections disconnects album images", async ()
         updateWithinTransaction:async(where,update,tx)=>{await discussionModel.update({where,update,context:{executionContext:tx}} as never);},
         findUpdatedDiscussion:async id=>discussionModel.find({where:{id},selectionSet:UPDATED_DISCUSSION_SELECTION}) as never,
       },
-    DownloadableFile: {} as never,
-    PluginPipelineRun: {} as never,
-    PluginRun: {} as never,
-    ServerConfig: {} as never,
-    ServerSecret: {} as never,
-    User: {} as never,
     driver: createDriver(session) as never,
   });
 
@@ -458,12 +446,6 @@ test("updateDiscussionWithChannelConnections retries the update and channel chan
         updateWithinTransaction:async(where,update,tx)=>{await discussionModel.update({where,update,context:{executionContext:tx}} as never);},
         findUpdatedDiscussion:async id=>discussionModel.find({where:{id},selectionSet:UPDATED_DISCUSSION_SELECTION}) as never,
       },
-    DownloadableFile: {} as never,
-    PluginPipelineRun: {} as never,
-    PluginRun: {} as never,
-    ServerConfig: {} as never,
-    ServerSecret: {} as never,
-    User: {} as never,
     driver: createDriver(session) as never,
   });
 

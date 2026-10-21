@@ -141,31 +141,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
     instancePolicyRepository,
     driver,
-    Discussion,
-    DiscussionChannel,
-    Event,
-    EventChannel,
-    EventSeries,
-    Comment,
-    User,
-    Channel,
-    Tag,
-    Issue,
-    ChannelRole,
-    ModChannelRole,
-    ServerRole,
-    ModServerRole,
-    ServerConfig,
-    Plugin,
-    PluginVersion,
-    PluginPipelineRun,
-    PluginPipelineCampaign,
-    PluginRun,
-    DownloadableFile,
-    ServerSecret,
-    Image,
-    WikiPage,
-    TextVersion,
   } = deps;
 
   return {
@@ -174,26 +149,11 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
-        Discussion,
         driver,
-        // Plugin pipeline support
-        Channel,
-        DownloadableFile,
-        PluginPipelineRun,
-        PluginRun,
-        ServerConfig,
-        ServerSecret,
-        User,
       }),
     createIssue: createIssue({ driver }),
     updateDiscussionWithChannelConnections:
       updateDiscussionWithChannelConnections({
-        DownloadableFile,
-        PluginPipelineRun,
-        PluginRun,
-        ServerConfig,
-        ServerSecret,
-        User,
         driver,
       }),
     createEventWithChannelConnections: createEventWithChannelConnections({
@@ -274,14 +234,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
     seedDataForCypressTests: seedDataForCypressTestsResolver({
       driver,
-      Channel,
-      Comment,
-      Tag,
-      ChannelRole,
-      ModChannelRole,
-      ServerRole,
-      ModServerRole,
-      ServerConfig,
     }),
     reportComment: reportComment({
       driver
@@ -354,8 +306,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     suspendUser: suspendUser({
-      includeWikiPage: Boolean(WikiPage),
-      includeTextVersion: Boolean(TextVersion)
+      includeWikiPage: true,
+      includeTextVersion: true
     }),
     unsuspendUser: unsuspendUser(),
     suspendMod: suspendMod(),
@@ -423,68 +375,16 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     installPluginVersion: installPluginVersion({
       driver
     }),
-    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    retryDownloadableFileScan: retryDownloadableFileScan({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    startPluginPipeline: startPluginPipeline({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    rerunPluginPipeline: rerunPluginPipeline({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    createPluginPipelineCampaign: createPluginPipelineCampaign({
-      PluginPipelineCampaign,
-      DownloadableFile,
-      ServerConfig,
-    }),
+    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
+    retryDownloadableFileScan: retryDownloadableFileScan({}),
+    startPluginPipeline: startPluginPipeline({}),
+    rerunPluginPipeline: rerunPluginPipeline({}),
+    createPluginPipelineCampaign: createPluginPipelineCampaign({}),
     pausePluginPipelineCampaign: pausePluginPipelineCampaign({
       driver,
-      PluginPipelineCampaign,
-      DownloadableFile,
-      ServerConfig,
     }),
     resumePluginPipelineCampaign: resumePluginPipelineCampaign({
       driver,
-      PluginPipelineCampaign,
-      DownloadableFile,
-      ServerConfig,
     }),
     clearDownloadableFileScan: clearDownloadableFileScan({
       driver
@@ -498,14 +398,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     prepareDownload: prepareDownload({
       agePolicyRepository: instancePolicyRepository,
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
       driver
     }),
     updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
@@ -523,16 +415,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     updatePluginPipelines: updatePluginPipelines({
       driver
     }),
-    applyPluginConfiguration: applyPluginConfiguration({
-      Plugin,
-      PluginVersion,
-      ServerConfig,
-      ServerSecret,
-    }),
+    applyPluginConfiguration: applyPluginConfiguration({}),
     updateChannelPluginPipelines: updateChannelPluginPipelines({
-      Channel,
       driver,
-      User
     }),
     createImageWithUploader: createImageWithUploader({
       driver

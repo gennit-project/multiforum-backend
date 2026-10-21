@@ -9,7 +9,6 @@ import {
 } from "../cypher/buildDiscussionChannelPageQuery.js";
 import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { DiscussionChannelModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
@@ -26,7 +25,6 @@ enum timeFrameOptionKeys {
 }
 
 type Input = {
-  DiscussionChannel: DiscussionChannelModel;
   driver: Driver;
   agePolicyRepository?: AgePolicyReader;
   serverName?: string;

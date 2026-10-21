@@ -3,12 +3,12 @@ import test from 'node:test'
 
 import type { GraphQLResolveInfo } from 'graphql'
 
-import type { ResolverDeps } from '../resolverDeps.js'
+import type { ModelMap } from '../../ogm_types.js'
 import type { GraphQLContext } from '../../types/context.js'
 import getResolver, { parsePluginSettings } from './enableServerPlugin.js'
 
 type Models = Pick<
-  ResolverDeps,
+  ModelMap,
   'Plugin' | 'PluginVersion' | 'ServerConfig' | 'ServerSecret'
 >
 

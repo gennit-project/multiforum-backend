@@ -99,7 +99,6 @@ const baseArgs = {
 test("getSiteWideDiscussionList keeps empty searches off the full-text index", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -114,7 +113,6 @@ test("getSiteWideDiscussionList keeps empty searches off the full-text index", a
 test("getSiteWideDiscussionList drives search from the full-text index", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -138,7 +136,6 @@ test("getSiteWideDiscussionList drives search from the full-text index", async (
 test("getSiteWideDiscussionList passes empty array when no channels selected", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -155,7 +152,6 @@ test("getSiteWideDiscussionList passes empty array when no channels selected", a
 test("getSiteWideDiscussionList passes selected channels to query", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -174,7 +170,6 @@ test("getSiteWideDiscussionList passes selected channels to query", async () => 
 test("getSiteWideDiscussionList passes empty array when no tags selected", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -191,7 +186,6 @@ test("getSiteWideDiscussionList passes empty array when no tags selected", async
 test("getSiteWideDiscussionList passes selected tags to query", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -210,7 +204,6 @@ test("getSiteWideDiscussionList passes selected tags to query", async () => {
 test("getSiteWideDiscussionList passes showArchived=false to exclude archived discussions", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -227,7 +220,6 @@ test("getSiteWideDiscussionList passes showArchived=false to exclude archived di
 test("getSiteWideDiscussionList passes showArchived=true to include archived discussions", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -245,7 +237,6 @@ test("getSiteWideDiscussionList passes showArchived=true to include archived dis
 test("getSiteWideDiscussionList passes hasDownload=false to exclude downloads", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -262,7 +253,6 @@ test("getSiteWideDiscussionList passes hasDownload=false to exclude downloads", 
 test("getSiteWideDiscussionList passes hasDownload=true to filter for downloads", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -280,7 +270,6 @@ test("getSiteWideDiscussionList passes hasDownload=true to filter for downloads"
 test("getSiteWideDiscussionList sorts by new with sortOption=new", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -298,7 +287,6 @@ test("getSiteWideDiscussionList sorts by new with sortOption=new", async () => {
 test("getSiteWideDiscussionList sorts by top with sortOption=top and time frame", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -316,7 +304,6 @@ test("getSiteWideDiscussionList sorts by top with sortOption=top and time frame"
 test("getSiteWideDiscussionList sorts by hot with sortOption=hot as default", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -335,7 +322,6 @@ test("getSiteWideDiscussionList sorts by hot with sortOption=hot as default", as
 test("getSiteWideDiscussionList defaults to hot sort for unknown sort option", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -353,7 +339,6 @@ test("getSiteWideDiscussionList defaults to hot sort for unknown sort option", a
 test("getSiteWideDiscussionList passes offset and limit from options", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -372,7 +357,6 @@ test("getSiteWideDiscussionList passes offset and limit from options", async () 
 test("getSiteWideDiscussionList avoids SKIP on the initial page", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -384,7 +368,6 @@ test("getSiteWideDiscussionList avoids SKIP on the initial page", async () => {
 test("getSiteWideDiscussionList passes resultsOrder from options", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -402,7 +385,6 @@ test("getSiteWideDiscussionList passes resultsOrder from options", async () => {
 test("getSiteWideDiscussionList passes null when no user is logged in", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -419,7 +401,6 @@ test("getSiteWideDiscussionList passes null when no user is logged in", async ()
 test("getSiteWideDiscussionList passes username when user is logged in", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -444,7 +425,6 @@ test("getSiteWideDiscussionList returns discussions and aggregateCount", async (
     { discussion: mockDiscussion, totalCount: 100 },
   ]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -465,7 +445,6 @@ test("getSiteWideDiscussionList fetches one extra row to detect another page", a
     { discussion: { id: "d-3" }, totalCount: 3 },
   ]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -504,7 +483,6 @@ test("getSiteWideDiscussionList decodes an after cursor into seek parameters", a
     },
   ]);
   const firstResolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver: firstDriver,
   });
   const firstPage = await firstResolver(
@@ -515,7 +493,6 @@ test("getSiteWideDiscussionList decodes an after cursor into seek parameters", a
   );
   const nextDriver = createMockDriver([]);
   const nextResolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver: nextDriver,
   });
 
@@ -546,7 +523,6 @@ test("getSiteWideDiscussionList decodes an after cursor into seek parameters", a
 test("getSiteWideDiscussionList returns empty array and zero count when no results", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -564,7 +540,6 @@ test("getSiteWideDiscussionList returns multiple discussions", async () => {
   ];
   const driver = createMockDriver(mockDiscussions);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -595,7 +570,6 @@ test("getSiteWideDiscussionList throws error with message when query fails", asy
     }),
   } as unknown as Driver;
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 
@@ -611,7 +585,6 @@ test("getSiteWideDiscussionList throws error with message when query fails", asy
 test("getSiteWideDiscussionList applies multiple filters together", async () => {
   const driver = createMockDriver([]);
   const resolver = getSiteWideDiscussionListResolver({
-    Discussion: {} as any,
     driver,
   });
 

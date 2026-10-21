@@ -1,8 +1,8 @@
-import type { ResolverDeps } from "../../customResolvers/resolverDeps.js";
+import type { ModelMap } from "../../ogm_types.js";
 import type { PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js";
 
 /** Adapt existing in-memory test fixtures, never real persistence models. */
-export const pipelineTargetSnapshots = (fixtures: Partial<Pick<ResolverDeps,
+export const pipelineTargetSnapshots = (fixtures: Partial<Pick<ModelMap,
   "Discussion" | "DownloadableFile" | "Channel" | "ServerConfig"
 >>): PipelineTargetRepository => ({
   findDiscussionVisibility: () => fixtures.Discussion?.find() ?? Promise.resolve([]),

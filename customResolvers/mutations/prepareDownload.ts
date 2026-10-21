@@ -2,16 +2,6 @@ import { createDownloadReviewRepository, type DownloadReviewRepository } from ".
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { Storage } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
-import type {
-  DownloadableFileModel,
-  PluginModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  PluginVersionModel,
-  ServerConfigModel,
-  ServerSecretModel,
-  UserModel,
-} from "../../ogm_types.js";
 import { hasServerModPermission } from "../../rules/permission/hasServerModPermission.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { SECURITY_SCAN_PLUGIN_ID } from "../../services/plugin/downloadScanOutcome.js";
@@ -23,15 +13,7 @@ import trackDownload from "./trackDownload.js";
 
 type Input = {
   downloadReviewRepository?: DownloadReviewRepository;
-  DownloadableFile: DownloadableFileModel;
-  Plugin: PluginModel;
-  PluginVersion: PluginVersionModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  PluginRun: PluginRunModel;
-  ServerConfig: ServerConfigModel;
   agePolicyRepository: AgePolicyReader;
-  ServerSecret: ServerSecretModel;
-  User?: UserModel;
   driver: Driver;
 };
 
@@ -127,7 +109,6 @@ export const createPrepareDownloadResolver = (
       driver: input.driver,
       downloadableFileId,
       event: "downloadableFile.downloaded",
-      models: input,
     }) as Promise<PluginRunRecord[]>).finally(() => {
       inFlightScans.delete(downloadableFileId);
     });

@@ -66,19 +66,10 @@ test("triggers the updated pipeline after connecting a replacement", async () =>
     calls.map((call) => ({
       downloadableFileId: call.downloadableFileId,
       event: call.event,
-      models: call.models,
     })),
     [{
       downloadableFileId: "replacement-1",
       event: "downloadableFile.updated",
-      models: {
-        DownloadableFile: input.DownloadableFile,
-        PluginPipelineRun: input.PluginPipelineRun,
-        PluginRun: input.PluginRun,
-        ServerConfig: input.ServerConfig,
-        ServerSecret: input.ServerSecret,
-        User: input.User,
-      },
     }]
   );
 });

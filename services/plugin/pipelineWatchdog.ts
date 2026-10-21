@@ -3,9 +3,7 @@ import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRe
 import type { Driver } from "neo4j-driver";
 import type {
   PluginPipelineRun,
-  PluginPipelineRunModel,
   PluginRun,
-  PluginRunModel,
 } from "../../ogm_types.js";
 import {
   PluginPipelineRunStatus,
@@ -17,8 +15,8 @@ import {
   type PipelineJobStatus,
 } from "./pipelineAttempt.js";
 import { pluginJobLeaseDurationMs } from "./executionLease.js";
-import type { DownloadableFileModel, UserModel } from "../../ogm_types.js";
 import { notifyUploaderOfPipelineResult } from "./pipelineNotifications.js";
+import type { PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
 
 const DEFAULT_WATCHDOG_INTERVAL_MS = 60_000;
 const ACTIVE_JOB_STATUSES: string[] = [
@@ -71,19 +69,14 @@ export const recoverExpiredPluginJobs = async ({
   driver,
   attemptRepository,
   repository,
-  PluginPipelineRun,
-  DownloadableFile,
-  User,
+  notificationRepository,
   now = new Date(),
   leaseDurationMs = pluginJobLeaseDurationMs(),
 }: {
   driver?: Driver;
   attemptRepository?: PipelineAttemptRepository;
   repository?: PipelineWatchdogRepository;
-  PluginRun: PluginRunModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  DownloadableFile?: DownloadableFileModel;
-  User?: UserModel;
+  notificationRepository?: PipelineNotificationRepository;
   now?: Date;
   leaseDurationMs?: number;
 }) => {
@@ -138,16 +131,12 @@ export const recoverExpiredPluginJobs = async ({
     });
     if (status === PluginPipelineRunStatus.TimedOut) {
       attemptsTimedOut += 1;
-      if (DownloadableFile) {
-        await notifyUploaderOfPipelineResult({
-          driver,
-          DownloadableFile,
-          PluginPipelineRun,
-          User,
-          pipelineId,
-          now: () => timestamp,
-        });
-      }
+      await notifyUploaderOfPipelineResult({
+        driver,
+        repository: notificationRepository,
+        pipelineId,
+        now: () => timestamp,
+      });
     }
   }
 
@@ -164,10 +153,6 @@ export class PluginPipelineWatchdogService {
   constructor(
     private readonly models: {
       driver?: Driver;
-      PluginRun: PluginRunModel;
-      PluginPipelineRun: PluginPipelineRunModel;
-      DownloadableFile?: DownloadableFileModel;
-      User?: UserModel;
     },
     private readonly intervalMs = pluginPipelineWatchdogIntervalMs()
   ) {}

@@ -103,11 +103,11 @@ test("failure query returns stable public destinations and skips orphaned files"
   }]);
 });
 
-const previewPluginPipelineCampaign:typeof actualFactory = models=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models)});
+const previewPluginPipelineCampaign = (models: Parameters<typeof campaignServiceRepositoryStub>[0])=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models)});
 
-const getPluginPipelineCampaigns:typeof actualgetPluginPipelineCampaigns = models=>actualgetPluginPipelineCampaigns({...models,queryRepository:campaignQueryRepositoryStub(models)});
+const getPluginPipelineCampaigns = (models: Parameters<typeof campaignQueryRepositoryStub>[0])=>actualgetPluginPipelineCampaigns({...models,queryRepository:campaignQueryRepositoryStub(models)});
 
-const getPluginPipelineCampaignFailures:typeof actualgetPluginPipelineCampaignFailures = models=>actualgetPluginPipelineCampaignFailures({...models,queryRepository:campaignQueryRepositoryStub(models)});
+const getPluginPipelineCampaignFailures = (models: Parameters<typeof campaignQueryRepositoryStub>[0])=>actualgetPluginPipelineCampaignFailures({...models,queryRepository:campaignQueryRepositoryStub(models)});
 
 test('campaign failure destinations remain sequential and stop at a lookup rejection', async()=>{
  const calls:string[]=[];

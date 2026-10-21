@@ -8,7 +8,7 @@ import { resolveNotificationSnapshotRepository } from "./persistence/notificatio
 // subscription plumbing (start/stop/restart) and delegates each created-comment
 // event to handleCommentCreatedNotification() here.
 //
-// All DB access goes through the injected deps ({ ogm, driver }); email sending
+// All DB access goes through the injected deps ({ driver }); email sending
 // goes through services/mail, which no-ops when no provider is configured (so
 // tests never send real mail).
 
@@ -30,7 +30,6 @@ import { logger } from "../logger.js";
 import { createInAppNotificationsForUsers } from "./inAppNotifications.js";
 
 export interface NotificationDeps {
-  ogm: any;
   driver: any;
   notificationSnapshotRepository?: NotificationSnapshotRepository;
   notificationWriter?: NotificationWriter;
@@ -400,7 +399,7 @@ export const processFeedbackNotification = async (
     }
 
     await notifyFeedback({
-      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
+      context: { driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
       feedbackContext: {
         feedbackCommentId: commentId,
         authorUsername,
@@ -435,7 +434,7 @@ export const processModMentionNotifications = async (
     const event = fullComment.Event;
 
     await notifyModMentions({
-      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
+      context: { driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
       mentionContext: {
         type: "comment",
         authorUsername,
@@ -465,7 +464,7 @@ export const processUserMentionNotifications = async (
 ): Promise<void> => {
   try {
     await notifyCommentMentions({
-      context: { ogm: deps.ogm, driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
+      context: { driver: deps.driver, notificationSnapshotRepository: deps.notificationSnapshotRepository, notificationWriter: deps.notificationWriter },
       comment: {
         id: commentId,
         text: fullComment.text,

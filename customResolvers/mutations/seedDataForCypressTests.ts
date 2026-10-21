@@ -3,14 +3,6 @@ import {createDiscussionCreationRepository} from "../../services/persistence/dis
 import {createSeedDataRepository,type SeedDataRepository} from "../../services/persistence/seedDataRepository.js";
 import { createAccountRegistrationRepository } from "../../services/persistence/accountRegistrationRepository.js";
 import {
-  ChannelModel,
-  CommentModel,
-  TagModel,
-  ChannelRoleModel,
-  ModChannelRoleModel,
-  ServerRoleModel,
-  ModServerRoleModel,
-  ServerConfigModel,
   ChannelCreateInput,
   CommentCreateInput,
   TagCreateInput,
@@ -54,14 +46,6 @@ type Args = {
 type Input = {
   seedDataRepository?: SeedDataRepository;
   driver: Driver;
-  Channel: ChannelModel;
-  Comment: CommentModel;
-  Tag: TagModel;
-  ChannelRole: ChannelRoleModel;
-  ModChannelRole: ModChannelRoleModel;
-  ServerRole: ServerRoleModel;
-  ModServerRole: ModServerRoleModel;
-  ServerConfig: ServerConfigModel;
 };
 
 export const linkSeededChannelRoleOwners = async (driver: Driver) => {

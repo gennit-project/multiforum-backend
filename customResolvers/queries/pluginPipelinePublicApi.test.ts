@@ -7,12 +7,12 @@ import createPluginPipelineSummary from './getPluginPipelineSummary.js'
 import createPublicPluginPipelineRun from './getPublicPluginPipelineRun.js'
 
 import type { Driver } from 'neo4j-driver'
-import type { ResolverDeps } from '../resolverDeps.js'
+import type { ModelMap } from '../../ogm_types.js'
 import { pipelineTargetSnapshots } from '../../tests/fixtures/pipelineTargetSnapshots.js'
 
-type TargetFixtures = Pick<ResolverDeps, 'Discussion' | 'DownloadableFile'>
-type RunFixtures = TargetFixtures & Pick<ResolverDeps, 'PluginPipelineRun' | 'PluginRun'>
-const getApplicablePluginPipeline = (fixtures: TargetFixtures & Pick<ResolverDeps, 'Channel' | 'ServerConfig'>) => createApplicablePluginPipeline({
+type TargetFixtures = Pick<ModelMap, 'Discussion' | 'DownloadableFile'>
+type RunFixtures = TargetFixtures & Pick<ModelMap, 'PluginPipelineRun' | 'PluginRun'>
+const getApplicablePluginPipeline = (fixtures: TargetFixtures & Pick<ModelMap, 'Channel' | 'ServerConfig'>) => createApplicablePluginPipeline({
   driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
 })
 const getPluginPipelineSummary = (fixtures: RunFixtures) => createPluginPipelineSummary({
@@ -23,7 +23,7 @@ const getPluginPipelineSummary = (fixtures: RunFixtures) => createPluginPipeline
     findSummaryJobs: async (targetId, targetType) => fixtures.PluginRun.find({ where: {targetId, targetType} }),
   },
 })
-const detailSnapshots = (fixtures: Pick<ResolverDeps, 'PluginPipelineRun' | 'PluginRun'>) => ({
+const detailSnapshots = (fixtures: Pick<ModelMap, 'PluginPipelineRun' | 'PluginRun'>) => ({
   findPublicAttempt: async (id: string) => fixtures.PluginPipelineRun.find({where:{id}}),
   findPublicJobs: async (pipelineId: string) => fixtures.PluginRun.find({where:{pipelineId}}),
   findInternalAttempt: async (id: string) => fixtures.PluginPipelineRun.find({where:{id}}),
@@ -32,7 +32,7 @@ const detailSnapshots = (fixtures: Pick<ResolverDeps, 'PluginPipelineRun' | 'Plu
 const getPublicPluginPipelineRun = (fixtures: RunFixtures) => createPublicPluginPipelineRun({
   driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures), pipelineDetailRepository: detailSnapshots(fixtures),
 })
-const getInternalPluginPipelineRun = (fixtures: Pick<ResolverDeps, 'PluginPipelineRun' | 'PluginRun'>) => createInternalPluginPipelineRun({
+const getInternalPluginPipelineRun = (fixtures: Pick<ModelMap, 'PluginPipelineRun' | 'PluginRun'>) => createInternalPluginPipelineRun({
   driver: {} as Driver, pipelineDetailRepository: detailSnapshots(fixtures),
 })
 

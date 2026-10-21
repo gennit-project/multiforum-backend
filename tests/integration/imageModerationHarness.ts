@@ -15,7 +15,7 @@ import { registerGeneratedSchema } from "../../services/persistence/generatedSch
 import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
 import neo4j, { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import { CHANNEL_FULLTEXT_CREATE_CYPHER } from "../../services/channelFulltext.js";
 import { CONTENT_FULLTEXT_CREATE_STATEMENTS } from "../../services/contentFulltext.js";
 

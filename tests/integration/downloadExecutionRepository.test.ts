@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {before,after,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
-import getCustomResolvers from '../../customResolvers.js';
+import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
 import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
@@ -50,11 +50,11 @@ test('actual trigger preserves guards and configured fake-plugin execution with 
  for(const legacy of [true,false]){
   await resetDatabase(driver);events=[];await seed();const m=models();const repository=legacy?old():createDownloadExecutionRepository(driver);const calls:string[]=[];
   const options={downloadRepository:repository,storage:{bucket(){throw Error('unexpected storage request');}},loadPlugin:async()=>{calls.push('loader');return class {async handleEvent(){calls.push('plugin');return {success:true,result:{message:'fixture-complete'}};}};}};
-  await assert.rejects(triggerPluginRunsForDownloadableFile({driver,models:m,downloadableFileId:'file',event:'unsupported'},options),/Unsupported/);
-  await assert.rejects(triggerPluginRunsForDownloadableFile({driver,models:m,downloadableFileId:'missing',event:'downloadableFile.created'},options),/not found/);
-  assert.deepEqual(await triggerPluginRunsForDownloadableFile({driver,models:m,downloadableFileId:'file',event:'downloadableFile.created'},options),[]);
+  await assert.rejects(triggerPluginRunsForDownloadableFile({driver,downloadableFileId:'file',event:'unsupported'},options),/Unsupported/);
+  await assert.rejects(triggerPluginRunsForDownloadableFile({driver,downloadableFileId:'missing',event:'downloadableFile.created'},options),/not found/);
+  assert.deepEqual(await triggerPluginRunsForDownloadableFile({driver,downloadableFileId:'file',event:'downloadableFile.created'},options),[]);
   await driver.executeQuery(`CREATE (s:ServerConfig{serverName:'fixture',pluginPipelines:$pipeline}),(p:Plugin{id:'plugin',name:'plugin'}),(v:PluginVersion{id:'version',version:'1.0.0',repoUrl:'fixture-only',entryPath:'index.js',manifest:$manifest}),(p)-[:HAS_VERSION]->(v),(s)-[:INSTALLED{enabled:true}]->(v)`,{pipeline:JSON.stringify([{event:'downloadableFile.created',steps:[{pluginId:'plugin'}]}]),manifest:JSON.stringify({events:['downloadableFile.created']})});
-  const rows=await triggerPluginRunsForDownloadableFile({driver,models:m,downloadableFileId:'file',event:'downloadableFile.created'},options) as any[];
+  const rows=await triggerPluginRunsForDownloadableFile({driver,downloadableFileId:'file',event:'downloadableFile.created'},options) as any[];
   assert.equal(rows.length,1);assert.equal(rows[0].status,'SUCCEEDED');assert.equal(rows[0].message,'fixture-complete');assert.deepEqual(calls,['loader','plugin']);
   const attempt=(await driver.executeQuery('MATCH(p:PluginPipelineRun) RETURN p.status AS status')).records;assert.equal(attempt.length,1);assert.equal(attempt[0].get('status'),'SUCCEEDED');
  }

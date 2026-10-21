@@ -121,7 +121,7 @@ const makeInput = ({
   discussion?: DiscussionFixture | null;
   channel?: ChannelFixture | null;
   serverConfig?: unknown;
-} = {}): RerunPluginPipelineInput => ({
+} = {}) => ({
   Channel: modelStub<"Channel">({
     find: async () => (channel ? [channel] : []),
   }),
@@ -490,4 +490,4 @@ test("reruns a channel pipeline with channel retry lineage", async () => {
   );
 });
 
-const createRerunPluginPipelineResolver:typeof actualFactory = (input,...args)=>actualFactory({...input,rerunRepository:pipelineRerunRepositoryStub(input),startRepository:pipelineStartRepositoryStub(input)},...args);
+const createRerunPluginPipelineResolver = (input: Parameters<typeof pipelineRerunRepositoryStub>[0] & Parameters<typeof pipelineStartRepositoryStub>[0], ...args: Parameters<typeof actualFactory> extends [unknown, ...infer R] ? R : never)=>actualFactory({rerunRepository:pipelineRerunRepositoryStub(input),startRepository:pipelineStartRepositoryStub(input)},...args);

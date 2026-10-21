@@ -23,13 +23,12 @@ import typeDefs from "../../typeDefs.js";
 import permissions from "../../permissions.js";
 import sensitiveContentPolicyMiddleware from "../../middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateWriteValidatorMiddleware from "../../middleware/ageGateWriteValidatorMiddleware.js";
-import getCustomResolvers from "../../customResolvers.js";
-import type { ResolverDeps } from "../../customResolvers/resolverDeps.js";
+import getCustomResolvers from "./getTestResolvers.js";
 
 export interface PermissionedSchema {
   schema: GraphQLSchema;
   driver: Driver;
-  ogm: ResolverDeps["ogm"];
+  ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 }
 
 export async function buildPermissionedSchema(options?: {
@@ -72,7 +71,7 @@ export function makeRequestContext(options: {
   authorization?: string;
   isMutation?: boolean;
   driver: Driver;
-  ogm: ResolverDeps["ogm"];
+  ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 }) {
   return {
     driver: options.driver,

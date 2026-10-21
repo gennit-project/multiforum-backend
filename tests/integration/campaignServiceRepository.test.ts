@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {before,after,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
-import getCustomResolvers from '../../customResolvers.js';
+import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
 import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
@@ -20,7 +20,7 @@ for(const kind of ['create','update','create_relationship','delete_relationship'
 async function schema(failure=false,trustedUrlFixture=false){const app=getCustomResolvers(driver);const overrides:Record<string,Record<string,(...args:any[])=>any>>={...(failure?{PluginPipelineCampaign:{enforcementBehavior:()=>{throw Error('campaign projection failed');}}}:{}),...(trustedUrlFixture?{DownloadableFile:{url:(parent:{url:string})=>parent.url}}:{})};const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,...overrides},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();ogm=app.ogm;initializeOgmFromExistingSchema(ogm,neo,executable);registerGeneratedSchema(driver,executable);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 
-const models=()=>({driver,DownloadableFile:ogm.model('DownloadableFile'),ServerConfig:ogm.model('ServerConfig'),PluginPipelineRun:ogm.model('PluginPipelineRun'),PluginPipelineCampaign:ogm.model('PluginPipelineCampaign')} as CampaignModels);
+const models=()=>({driver,DownloadableFile:ogm.model('DownloadableFile'),ServerConfig:ogm.model('ServerConfig'),PluginPipelineRun:ogm.model('PluginPipelineRun'),PluginPipelineCampaign:ogm.model('PluginPipelineCampaign')} as Parameters<typeof campaignServiceRepositoryStub>[0]);
 const old=()=>campaignServiceRepositoryStub(models());const now=new Date('2026-01-02T00:00:00Z');
 const campaign={id:'campaign',policyId:'policy',concurrency:2,rateLimitPerMinute:5,createdByUsername:'admin'} as PluginPipelineCampaign;
 async function seed(){await driver.executeQuery(`CREATE(:ServerConfig{serverName:'fixture',pluginPipelines:$policy}),(:PluginPipelineCampaign{id:'campaign',policyId:'policy',eventType:'downloadableFile.created',scope:'SERVER',applicability:'ALL_FILES_GRADUAL',enforcementBehavior:'fixture',status:'RUNNING',concurrency:2,rateLimitPerMinute:5,affectedFileCount:2,accessibleFileCount:2,unavailableFileCount:0,estimatedProviderRuns:4,completedCount:0,runningCount:0,failedCount:0,timedOutCount:0,createdByUsername:'admin',createdAt:datetime('2026-01-01T00:00:00Z'),updatedAt:datetime('2026-01-01T00:00:00Z')}) WITH 1 AS unused UNWIND ['first','second'] AS id CREATE(:DownloadableFile{id:id,url:'https://fixture.invalid/file',uploadedAt:datetime('2025-01-01T00:00:00Z'),createdAt:datetime('2025-01-01T00:00:00Z'),permanentlyRemoved:false})`,{policy:JSON.stringify([{policyId:'policy',event:'downloadableFile.created',effectiveAt:'2026-01-01T00:00:00Z',applicability:'ALL_FILES_GRADUAL',steps:[{pluginId:'one'},{pluginId:'two'}]}])});}

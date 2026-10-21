@@ -1,8 +1,8 @@
-import type {TriggerArgs} from "../../services/plugin/types.js";
+import type {Models} from "../../services/plugin/types.js";
 import type {DownloadExecutionRepository} from "../../services/persistence/downloadExecutionRepository.js";
 import {FILE_SELECTION,CONFIGURATION_SELECTION,RETURNED_RUN_SELECTION,SECRET_SELECTION} from "../../services/persistence/downloadExecutionRepository.js";
 // Original model operations retained only for characterization tests.
-export function downloadExecutionRepositoryStub(models:TriggerArgs['models']):DownloadExecutionRepository {
+export function downloadExecutionRepositoryStub(models:Models):DownloadExecutionRepository {
  return {
  findFile:id=>models.DownloadableFile.find({where:{id},selectionSet:FILE_SELECTION}),
  findConfiguration:()=>models.ServerConfig.find({selectionSet:CONFIGURATION_SELECTION}),

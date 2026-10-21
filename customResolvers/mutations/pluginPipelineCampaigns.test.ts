@@ -108,8 +108,8 @@ test("pauses and resumes only from the matching state", async () => {
   assert.equal(resumed?.status, "RUNNING");
 });
 
-const createPluginPipelineCampaign:typeof actualFactory = models=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models),controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});
+const createPluginPipelineCampaign = (models: CampaignMutationModels)=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models),controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});
 
-const pausePluginPipelineCampaign:typeof actualpausePluginPipelineCampaign = models=>actualpausePluginPipelineCampaign({...models,controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});
+const pausePluginPipelineCampaign = (models: CampaignMutationModels)=>actualpausePluginPipelineCampaign({...models,controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});
 
-const resumePluginPipelineCampaign:typeof actualresumePluginPipelineCampaign = models=>actualresumePluginPipelineCampaign({...models,controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});
+const resumePluginPipelineCampaign = (models: CampaignMutationModels)=>actualresumePluginPipelineCampaign({...models,controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});

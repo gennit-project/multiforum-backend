@@ -49,28 +49,12 @@ import previewPluginConfigurationReconciliation from "./queries/previewPluginCon
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
-    ogm,
     instancePolicyRepository,
     driver,
-    Discussion,
-    DiscussionChannel,
-    Event,
-    Comment,
-    User,
-    ModerationProfile,
-    Channel,
-    Issue,
-    Plugin,
-    ServerConfig,
-    ServerSecret,
-    PluginPipelineRun,
-    PluginPipelineCampaign,
-    DownloadableFile,
   } = deps;
 
   return {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
-      Discussion,
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
@@ -92,7 +76,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getDiscussionsInChannel: getDiscussionsInChannel({
       driver,
-      DiscussionChannel,
       agePolicyRepository: instancePolicyRepository,
     }),
     getDiscussionDetail: getDiscussionDetail({
@@ -181,17 +164,12 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     previewPluginPipelineCampaign: previewPluginPipelineCampaign({
       driver,
-      DownloadableFile,
-      ServerConfig,
     }),
     getPluginPipelineCampaigns: getPluginPipelineCampaigns({
       driver,
-      PluginPipelineCampaign,
     }),
     getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
       driver,
-      DownloadableFile,
-      PluginPipelineRun,
     }),
     publicCollectionsContaining: publicCollectionsContaining({
       driver,

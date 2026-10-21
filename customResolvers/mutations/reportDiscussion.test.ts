@@ -283,7 +283,7 @@ test('discussion channel lookup runs before issue creation and its failure abort
 test('discussion detailed create failure differs from generic append failure',async()=>{
  process.env.PLAYWRIGHT_MOCK_AUTH='true';
  for(const phase of ['create','append']){
- const ctx=createContext();delete (ctx as Partial<GraphQLContext>).ogm;
+ const ctx=createContext();
  const repository={findExisting:async()=>phase==='append'?[{id:'i',issueNumber:1}]:[],findDiscussion:async()=>[],findChannel:async()=>[],createIssue:async()=>{throw Error('specific creation');},appendReport:async()=>{throw Error('specific append');}};
  await assert.rejects(reportDiscussionResolver({driver:createDriver(),discussionReportRepository:repository})(null,validArgs,ctx,null as unknown as GraphQLResolveInfo),new RegExp(phase==='create'?'Error creating issue: specific creation':'^Error updating issue$'));
  }

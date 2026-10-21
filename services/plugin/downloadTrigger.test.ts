@@ -50,7 +50,7 @@ const installedPlugin = (manifestEvents: string[]) => ({
 });
 
 const run = (models: any, event = EVENT) =>
-  triggerPluginRunsForDownloadableFile({ downloadableFileId: "f-1", event, models }, {downloadRepository:downloadExecutionRepositoryStub(models)});
+  triggerPluginRunsForDownloadableFile({ downloadableFileId: "f-1", event }, {downloadRepository:downloadExecutionRepositoryStub(models)});
 
 test("isSupportedEvent recognizes the download events only", () => {
   assert.equal(isSupportedEvent("downloadableFile.created"), true);

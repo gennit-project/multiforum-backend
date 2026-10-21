@@ -105,7 +105,7 @@ const makeInput = ({
         find: async () => (config ? [config] : []),
       }),
       ServerSecret: modelStub<"ServerSecret">(),
-    } satisfies StartPluginPipelineInput,
+    },
     createdAttempt,
   };
 };
@@ -386,4 +386,4 @@ test("starts the explicitly selected channel pipeline", async () => {
   );
 });
 
-const createStartPluginPipelineResolver:typeof actualFactory = (input,...args)=>actualFactory({...input,startRepository:pipelineStartRepositoryStub(input)},...args);
+const createStartPluginPipelineResolver = (input: Parameters<typeof pipelineStartRepositoryStub>[0], ...args: Parameters<typeof actualFactory> extends [unknown, ...infer R] ? R : never)=>actualFactory({startRepository:pipelineStartRepositoryStub(input)},...args);

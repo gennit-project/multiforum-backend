@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Driver } from "neo4j-driver";
-import type { GraphQLContext, Ogm } from "../../types/context.js";
+import type { GraphQLContext } from "../../types/context.js";
 import type {
   ContentChannelLookup,
   ContentChannelPermissionRepository,
@@ -42,7 +42,6 @@ const makeContext = (
   jwtError?: Error
 ): GraphQLContext => ({
   driver: {} as Driver,
-  ogm: {} as Ogm,
   contentChannelPermissionRepository: repository,
   jwtError,
 });

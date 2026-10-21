@@ -335,7 +335,7 @@ test("wikiPageVersionHistoryHandler saves pre-edit title and body versions with 
   );
 
   await wikiPageVersionHistoryHandler({
-    context: { ogm: env.ogm, driver: env.driver },
+    context: { driver: env.driver },
     params: { where: { id: "w1" }, update: { title: "New Title", body: "New body" } },
   });
 

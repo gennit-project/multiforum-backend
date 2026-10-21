@@ -2,19 +2,15 @@ import {createCampaignServiceRepository, type CampaignServiceRepository} from ".
 import type { Driver } from "neo4j-driver";
 import type {
   DownloadableFile,
-  DownloadableFileModel,
   PluginPipelineCampaign,
-  PluginPipelineCampaignModel,
   PluginPipelineRun,
-  PluginPipelineRunModel,
-  ServerConfigModel,
 } from "../../ogm_types.js";
 import {
   PluginPipelineCampaignStatus,
   PluginPipelineRunStatus,
   PluginPipelineRunTrigger,
 } from "../../ogm_types.js";
-import type { EventPipeline, Models } from "./types.js";
+import type { EventPipeline } from "./types.js";
 import { triggerPluginRunsForDownloadableFile } from "./downloadTrigger.js";
 import { parseStoredPipelines } from "./pipelineUtils.js";
 import { logger } from "../../logger.js";
@@ -31,13 +27,9 @@ type CampaignAttempt = Pick<
   "targetId" | "status" | "createdAt"
 >;
 
-export type CampaignModels = Models & {
+export type CampaignModels = {
   driver?: Driver;
   campaignRepository?: CampaignServiceRepository;
-  DownloadableFile: DownloadableFileModel;
-  PluginPipelineCampaign: PluginPipelineCampaignModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  ServerConfig: ServerConfigModel;
 };
 
 const isBefore = (file: CampaignFile, effectiveAt: string) => {
@@ -60,7 +52,6 @@ export const getCampaignPolicy = async ({
   campaignRepository,
   policyId,
 }: {
-  ServerConfig?: ServerConfigModel;
   driver?: Driver;
   campaignRepository?: CampaignServiceRepository;
   policyId: string;
@@ -84,7 +75,9 @@ export const previewPipelineCampaign = async ({
   driver,
   campaignRepository,
   policyId,
-}: Pick<CampaignModels, "DownloadableFile" | "ServerConfig" | "driver" | "campaignRepository"> & {
+}: {
+  driver?: Driver;
+  campaignRepository?: CampaignServiceRepository;
   policyId: string;
 }) => {
   const repository = campaignRepository ?? createCampaignServiceRepository(driver!);
@@ -167,7 +160,6 @@ export const runPipelineCampaign = async ({
         driver: models.driver,
         downloadableFileId: file.id,
         event: policy.event,
-        models,
       },
       {
         execution: {

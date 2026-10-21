@@ -7,14 +7,6 @@ import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type {
-  DownloadableFileModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  ServerConfigModel,
-  ServerSecretModel,
-  UserModel,
-} from "../../ogm_types.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import { logger } from "../../logger.js";
@@ -26,12 +18,6 @@ import {
 
 type Input = {
   discussionUpdateRepository?: DiscussionUpdateRepository;
-  DownloadableFile: DownloadableFileModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  PluginRun: PluginRunModel;
-  ServerConfig: ServerConfigModel;
-  ServerSecret: ServerSecretModel;
-  User: UserModel;
   driver: Driver;
 };
 
@@ -78,15 +64,7 @@ const getResolver = (
   triggerDownloadRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile
 ) => {
-  const {
-    DownloadableFile,
-    PluginPipelineRun,
-    PluginRun,
-    ServerConfig,
-    ServerSecret,
-    User,
-    driver,
-  } = input;
+  const { driver } = input;
   const repository = input.discussionUpdateRepository ?? createDiscussionUpdateRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const {
@@ -247,14 +225,6 @@ const getResolver = (
             driver,
             downloadableFileId,
             event: "downloadableFile.updated",
-            models: {
-              DownloadableFile,
-              PluginPipelineRun,
-              PluginRun,
-              ServerConfig,
-              ServerSecret,
-              User,
-            },
           });
         } catch (triggerError: unknown) {
           const message = triggerError instanceof Error

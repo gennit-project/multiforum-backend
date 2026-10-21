@@ -1,10 +1,5 @@
 import type { Driver } from "neo4j-driver";
 import { createPipelineNotificationRepository, type PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
-import type {
-  DownloadableFileModel,
-  PluginPipelineRunModel,
-  UserModel,
-} from "../../ogm_types.js";
 import {
   PluginPipelineRunStatus,
   type UserUpdateInput,
@@ -18,7 +13,6 @@ const TERMINAL = new Set<PluginPipelineRunStatus>([
 ]);
 
 export const notifyUploaderOfPipelineResult = async ({
-  User,
   driver,
   repository,
   pipelineId,
@@ -26,13 +20,9 @@ export const notifyUploaderOfPipelineResult = async ({
 }: {
   driver?: Driver;
   repository?: PipelineNotificationRepository;
-  DownloadableFile: DownloadableFileModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  User?: UserModel;
   pipelineId: string;
   now?: () => string;
 }) => {
-  if (!User) return false;
   const persistence = repository ?? createPipelineNotificationRepository(driver!);
   const attempts = await persistence.findAttempt(pipelineId);
   const attempt = attempts[0];

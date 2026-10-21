@@ -10,7 +10,7 @@ function fixture(){
     savePipelines:async()=>{calls.push("save");},listServerSettings:async()=>{calls.push("server");return [];},
     deprecateBot:async(username)=>{calls.push(`deprecate:${username}`);},disconnectBots:async(_name,usernames)=>{calls.push(`disconnect:${usernames.join(',')}`);},
   };
-  const resolve=(pipelines=[{event:"comment.created",steps:[{pluginId:"scanner"}]}])=>create({driver:{} as Driver,Channel:{} as ChannelModel,User:{} as UserModel,channelPipelineRepository:repo})(null,{channelUniqueName:"cats",pipelines},{},{});
+  const resolve=(pipelines=[{event:"comment.created",steps:[{pluginId:"scanner"}]}])=>create({driver:{} as Driver,channelPipelineRepository:repo})(null,{channelUniqueName:"cats",pipelines},{},{});
   return {calls,repo,resolve};
 }
 test("channel pipeline validates before reads and does not read server before saving",async()=>{const f=fixture();await assert.rejects(f.resolve([{event:"downloadableFile.created",steps:[{pluginId:"scanner"}]}]),/Invalid event/);assert.deepEqual(f.calls,[]);await f.resolve();assert.deepEqual(f.calls,["read","save","server","deprecate:bot-a","deprecate:bot-b","disconnect:bot-a,bot-b"]);});

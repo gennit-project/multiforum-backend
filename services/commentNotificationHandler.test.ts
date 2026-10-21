@@ -66,7 +66,7 @@ test("createBatchNotifications stores notificationType on subscription notificat
   };
 
   await createBatchNotifications(
-    { ogm, driver, notificationSnapshotRepository: {findEntitySubscribers: async () => ogm.model().find()} as any },
+    { driver, notificationSnapshotRepository: {findEntitySubscribers: async () => ogm.model().find()} as any },
     "alice commented",
     "bob",
     "DiscussionChannel",
@@ -84,7 +84,7 @@ test("createNotificationsForUsers stores notificationType on direct notification
   const { driver, sessions } = buildDriver();
 
   await createNotificationsForUsers(
-    { ogm: { model() {} }, driver },
+    { driver },
     [{ username: "alice", email: null }],
     "bob replied",
     undefined,

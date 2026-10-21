@@ -1,7 +1,4 @@
 import {createPipelineRetryRepository, type PipelineRetryRepository} from "../../services/persistence/pipelineRetryRepository.js";
-import type {
-  ModelMap,
-} from "../../ogm_types.js";
 import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
@@ -9,20 +6,9 @@ import {
   ModChannelPermission,
 } from "../../rules/permission/hasChannelModPermission.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
-import { createRerunPluginPipelineResolver } from "./rerunPluginPipeline.js";
+import { createRerunPluginPipelineResolver, type RerunPluginPipelineInput } from "./rerunPluginPipeline.js";
 
-export type RetryDownloadableFileScanInput = Pick<
-  ModelMap,
-  | "Channel"
-  | "Discussion"
-  | "DownloadableFile"
-  | "Plugin"
-  | "PluginVersion"
-  | "PluginPipelineRun"
-  | "PluginRun"
-  | "ServerConfig"
-  | "ServerSecret"
-> & Partial<Pick<ModelMap, "User">> & { retryRepository?: PipelineRetryRepository };
+export type RetryDownloadableFileScanInput = RerunPluginPipelineInput & { retryRepository?: PipelineRetryRepository };
 
 type FileRecord = {
   uploadedByUsername?: string | null;
@@ -135,7 +121,6 @@ export const createRetryDownloadableFileScanResolver = (
       driver: context.driver,
       downloadableFileId,
       event: "downloadableFile.updated",
-      models: input,
     });
   };
 };

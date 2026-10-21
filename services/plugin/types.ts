@@ -80,7 +80,6 @@ export type TriggerArgs = {
   driver?: Driver
   downloadableFileId: string
   event: string
-  models: Models
 }
 
 export type PipelineExecutionMetadata = {
@@ -105,10 +104,13 @@ export type ChannelTriggerArgs = {
   discussionId: string
   channelUniqueName: string
   event: string
-  models: Models & {
-    Channel: ChannelModel
-    Discussion: DiscussionModel
-  }
+}
+
+// Model shape retained purely as a type for the OGM-backed characterization
+// test fixtures and the campaign service type; no runtime path reads it.
+export type ChannelModels = Models & {
+  Channel: ChannelModel
+  Discussion: DiscussionModel
 }
 
 // Internal type for plugins to run in a pipeline

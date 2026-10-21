@@ -14,16 +14,6 @@ import {
   validateDiscussionFlairSelections,
   type DiscussionChannelFlairSelectionInput,
 } from "../../services/discussionFlairSubmission.js";
-import type {
-  DiscussionModel,
-  ChannelModel,
-  DownloadableFileModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  ServerConfigModel,
-  ServerSecretModel,
-  UserModel,
-} from "../../ogm_types.js";
 
 type DiscussionCreateInputWithChannels = {
   discussionCreateInput: DiscussionCreateInput;
@@ -37,27 +27,7 @@ type Args = {
 
 type Input = {
   discussionCreationRepository?: DiscussionCreationRepository;
-  Discussion: DiscussionModel;
   driver: Driver;
-  // Additional models for plugin pipeline support
-  Channel?: ChannelModel;
-  DownloadableFile?: DownloadableFileModel;
-  PluginPipelineRun?: PluginPipelineRunModel;
-  PluginRun?: PluginRunModel;
-  ServerConfig?: ServerConfigModel;
-  ServerSecret?: ServerSecretModel;
-  User?: UserModel;
-};
-
-type PluginModels = {
-  Discussion: DiscussionModel;
-  Channel: ChannelModel;
-  DownloadableFile: DownloadableFileModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  PluginRun: PluginRunModel;
-  ServerConfig: ServerConfigModel;
-  ServerSecret: ServerSecretModel;
-  User?: UserModel;
 };
 
 export const triggerCreatedDownloadPipelines = async ({
@@ -65,8 +35,6 @@ export const triggerCreatedDownloadPipelines = async ({
   discussionId,
   downloadableFileId,
   channelConnections,
-  Discussion,
-  pluginModels,
   triggerDownload = triggerPluginRunsForDownloadableFile,
   triggerChannel = triggerChannelPluginPipeline,
 }: {
@@ -74,8 +42,6 @@ export const triggerCreatedDownloadPipelines = async ({
   discussionId: string;
   downloadableFileId: string;
   channelConnections: string[];
-  Discussion: DiscussionModel;
-  pluginModels: Omit<PluginModels, "Discussion">;
   triggerDownload?: typeof triggerPluginRunsForDownloadableFile;
   triggerChannel?: typeof triggerChannelPluginPipeline;
 }) => {
@@ -84,14 +50,6 @@ export const triggerCreatedDownloadPipelines = async ({
       driver,
       downloadableFileId,
       event: "downloadableFile.created",
-      models: {
-        DownloadableFile: pluginModels.DownloadableFile,
-        PluginPipelineRun: pluginModels.PluginPipelineRun,
-        PluginRun: pluginModels.PluginRun,
-        ServerConfig: pluginModels.ServerConfig,
-        ServerSecret: pluginModels.ServerSecret,
-        User: pluginModels.User,
-      },
     });
   } catch (triggerError: unknown) {
     const message = triggerError instanceof Error
@@ -110,15 +68,6 @@ export const triggerCreatedDownloadPipelines = async ({
         discussionId,
         channelUniqueName,
         event: 'discussionChannel.created',
-        models: {
-          Channel: pluginModels.Channel,
-          Discussion,
-          DownloadableFile: pluginModels.DownloadableFile,
-          PluginPipelineRun: pluginModels.PluginPipelineRun,
-          PluginRun: pluginModels.PluginRun,
-          ServerConfig: pluginModels.ServerConfig,
-          ServerSecret: pluginModels.ServerSecret,
-        }
       });
     } catch (pipelineError: unknown) {
       const message = pipelineError instanceof Error
@@ -156,8 +105,7 @@ export const createDiscussionsFromInput = async (
   repository: DiscussionCreationRepository,
   driver: Driver,
   input: DiscussionCreateInputWithChannels[],
-  context?: GraphQLContext,
-  pluginModels?: PluginModels
+  context?: GraphQLContext
 ): Promise<unknown[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
@@ -287,7 +235,7 @@ export const createDiscussionsFromInput = async (
       // per created download, mirroring the channel pipeline trigger above.
       // Without this, plugins that handle downloadableFile.created never run on
       // upload.
-      if (hasDownload && pluginModels) {
+      if (hasDownload) {
         try {
           const withFile = await repository.findAttachedFiles(newDiscussionId);
           const downloadableFileId = (
@@ -299,8 +247,6 @@ export const createDiscussionsFromInput = async (
               discussionId: newDiscussionId,
               downloadableFileId,
               channelConnections,
-              Discussion: pluginModels.Discussion,
-              pluginModels,
             });
           }
         } catch (triggerError: unknown) {
@@ -336,24 +282,9 @@ export const createDiscussionsFromInput = async (
  * Main resolver that uses createDiscussionsFromInput
  */
 const getResolver = (input: Input) => {
-  const {
-    Discussion,
-    driver,
-    Channel,
-    DownloadableFile,
-    PluginPipelineRun,
-    PluginRun,
-    ServerConfig,
-    ServerSecret,
-    User,
-  } = input;
+  const { driver } = input;
 
   const repository = input.discussionCreationRepository ?? createDiscussionCreationRepository(driver);
-
-  // Build plugin models object if all required models are provided
-  const pluginModels = Channel && DownloadableFile && PluginPipelineRun && PluginRun && ServerConfig && ServerSecret
-    ? { Discussion, Channel, DownloadableFile, PluginPipelineRun, PluginRun, ServerConfig, ServerSecret, User }
-    : undefined;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input } = args;
@@ -364,8 +295,7 @@ const getResolver = (input: Input) => {
         repository,
         driver,
         input,
-        context,
-        pluginModels
+        context
       );
       return discussions;
     } catch (error: unknown) {

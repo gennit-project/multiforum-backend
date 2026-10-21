@@ -2,11 +2,6 @@ import type {Driver} from "neo4j-driver";
 import {createCampaignControlRepository,type CampaignControlRepository} from "../../services/persistence/campaignControlRepository.js";
 import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
 import { GraphQLError } from "graphql";
-import type {
-  PluginPipelineCampaignModel,
-  ServerConfigModel,
-  DownloadableFileModel,
-} from "../../ogm_types.js";
 import {
   PipelineApplicability,
   PluginPipelineCampaignStatus,
@@ -18,9 +13,6 @@ type Models = {
   driver?: Driver;
   controlRepository?: CampaignControlRepository;
   campaignRepository?: CampaignServiceRepository;
-  PluginPipelineCampaign: PluginPipelineCampaignModel;
-  DownloadableFile: DownloadableFileModel;
-  ServerConfig: ServerConfigModel;
 };
 
 const validateLimit = (name: string, value: number, maximum: number) => {
@@ -85,7 +77,7 @@ export const createPluginPipelineCampaign = (models: Models) =>
   };
 
 const changeCampaignStatus = (
-  models: Pick<Models, "PluginPipelineCampaign" | "driver" | "controlRepository">,
+  models: Pick<Models, "driver" | "controlRepository">,
   status: PluginPipelineCampaignStatus
 ) =>
   async (_parent: unknown, { campaignId }: { campaignId: string }) => {

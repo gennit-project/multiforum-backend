@@ -59,7 +59,7 @@ const serverConfigNoPlugins = {
 };
 
 const run = (models: any, event = EVENT) =>
-  triggerChannelPluginPipeline({ discussionId: "d-1", channelUniqueName: "cats", event, models }, {channelRepository:channelExecutionRepositoryStub(models)});
+  triggerChannelPluginPipeline({ discussionId: "d-1", channelUniqueName: "cats", event }, {channelRepository:channelExecutionRepositoryStub(models)});
 
 test("isChannelEvent recognizes only discussionChannel.created", () => {
   assert.equal(isChannelEvent("discussionChannel.created"), true);

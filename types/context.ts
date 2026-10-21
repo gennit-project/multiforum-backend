@@ -21,8 +21,6 @@ import type { InstancePolicyRepository } from "../services/persistence/instanceP
 import type { ChannelCreatorModeratorService } from "../services/channelCreatorModerator.js";
 import type { Driver } from "neo4j-driver";
 import type { Request } from "express";
-import type { OGM } from "@neo4j/graphql-ogm";
-import type { ModelMap } from "../ogm_types.js";
 import type { PermissionServerConfigRepository } from "../services/persistence/permissionServerConfigRepository.js";
 import type { SuspensionEffectsRepository } from "../services/persistence/suspensionEffectsRepository.js";
 import type { ContentChannelPermissionRepository } from "../services/persistence/contentChannelPermissionRepository.js";
@@ -32,12 +30,6 @@ import type { CommentCreationAuthorizationRepository } from "../services/persist
 import type { ContentFeaturePolicyRepository } from "../services/persistence/contentFeaturePolicyRepository.js";
 import type { RequestIdentityRepository } from "../services/persistence/requestIdentityRepository.js";
 import type { DownloadableFileRepository } from "../services/persistence/downloadableFileRepository.js";
-
-/**
- * Compatibility surface for code not yet migrated to repositories. New domain
- * interfaces must use the application-owned repository contract instead.
- */
-export type Ogm = OGM<ModelMap>;
 
 /** A moderation-profile reference carried on the request user. */
 export type ContextModerationProfile = {
@@ -94,7 +86,7 @@ export type GraphQLRequest = Request & {
  *
  * `req` is optional: HTTP-driven resolvers always have it, but background
  * services (notifications, version history) invoke the same hooks with only
- * `ogm`/`driver` and no request. The auth layer already treats `req` as
+ * `driver` and no request. The auth layer already treats `req` as
  * possibly-absent (`req?.headers`, `if (context.req)`).
  */
 export type GraphQLContext = {
@@ -119,7 +111,6 @@ export type GraphQLContext = {
   instancePolicyRepository?: InstancePolicyRepository;
   driver: Driver;
   channelCreatorModeratorService?: ChannelCreatorModeratorService;
-  ogm: Ogm;
   /** Optional application-owned override used by permission rules and tests. */
   permissionServerConfigRepository?: PermissionServerConfigRepository;
   /** Optional persistence seam for suspension cleanup and notifications. */

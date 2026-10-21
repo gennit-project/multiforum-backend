@@ -83,7 +83,6 @@ test("getSiteWideDiscussionList passes stored discussion ranking settings to Cyp
   const resolver = getSiteWideDiscussionList({
     driver: mock.driver as never,
     serverName: "test-server",
-    Discussion: {} as never,
   });
 
   await resolver(
@@ -115,7 +114,6 @@ test("getDiscussionsInChannel passes stored discussion ranking settings to Cyphe
   const resolver = getDiscussionsInChannel({
     driver: mock.driver as never,
     serverName: "test-server",
-    DiscussionChannel: {} as never,
   });
 
   await resolver(

@@ -21,7 +21,7 @@ type TriggerArgs = Parameters<typeof triggerPluginRunsForDownloadableFile>[0];
 type TriggerOptions = NonNullable<
   Parameters<typeof triggerPluginRunsForDownloadableFile>[1]
 >;
-type Models = TriggerArgs["models"];
+type Models = import("./types.js").Models;
 type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
 type StorageStub = NonNullable<TriggerOptions["storage"]>;
 type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
@@ -647,4 +647,4 @@ test("holds a replacement before the scanner begins", async () => {
   assert.equal(fileUpdates[0]!.update?.scanStatus, "PENDING");
 });
 
-const triggerPluginRunsForDownloadableFile:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,downloadRepository:downloadExecutionRepositoryStub(args.models),leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});
+const triggerPluginRunsForDownloadableFile = (args: Parameters<typeof actualTrigger>[0] & { models: Models }, options?: Parameters<typeof actualTrigger>[1]) => {const {models, ...rest} = args; return actualTrigger(rest,{...options,downloadRepository:downloadExecutionRepositoryStub(models),leaseRepository:pipelineLeaseRepositoryStub(models),attemptRepository:pipelineAttemptRepositoryStub(models.PluginPipelineRun),notificationRepository:{findAttempt:async()=>[]} as any});};

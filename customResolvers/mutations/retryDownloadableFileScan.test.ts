@@ -29,7 +29,7 @@ const baseInput = ({
   attempts?: unknown[];
   findAttempts?: ModelStubMethods<"PluginPipelineRun">["find"];
   jobs?: unknown[];
-}): RetryDownloadableFileScanInput => ({
+}) => ({
   Channel: modelStub<"Channel">(),
   Discussion: modelStub<"Discussion">(),
   DownloadableFile: modelStub<"DownloadableFile">({
@@ -229,4 +229,4 @@ test("retries the latest failed channel scan for an optional channel policy", as
   });
 });
 
-const createRetryDownloadableFileScanResolver:typeof actualFactory = (input,...args)=>actualFactory({...input,retryRepository:pipelineRetryRepositoryStub(input)},...args);
+const createRetryDownloadableFileScanResolver = (input: Parameters<typeof pipelineRetryRepositoryStub>[0], ...args: Parameters<typeof actualFactory> extends [unknown, ...infer R] ? R : never)=>actualFactory({retryRepository:pipelineRetryRepositoryStub(input)},...args);

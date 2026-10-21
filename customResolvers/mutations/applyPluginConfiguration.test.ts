@@ -3,7 +3,6 @@ import test from 'node:test'
 
 import type { GraphQLResolveInfo } from 'graphql'
 
-import type { ResolverDeps } from '../resolverDeps.js'
 import type {
   MutationApplyPluginConfigurationArgs,
   PluginConfigurationDesiredStateInput,
@@ -17,11 +16,6 @@ import {
   createApplyPluginConfigurationResolver,
   type PluginConfigurationApplyOperations,
 } from './applyPluginConfiguration.js'
-
-type Models = Pick<
-  ResolverDeps,
-  'Plugin' | 'PluginVersion' | 'ServerConfig' | 'ServerSecret'
->
 
 const manifest: PluginConfigurationDesiredStateInput = {
   apiVersion: 'multiforum.gennit.dev/v1alpha1',
@@ -62,7 +56,6 @@ const plan = (
   warnings: [],
 })
 
-const models = {} as Models
 const context = {} as GraphQLContext
 const info = {} as GraphQLResolveInfo
 
@@ -74,7 +67,7 @@ const invoke = async ({
   operations: PluginConfigurationApplyOperations
 }) => {
   const resolver = createApplyPluginConfigurationResolver(
-    models,
+    {},
     () => operations
   )
   return resolver({}, args, context, info)

@@ -3,7 +3,6 @@ import { GraphQLError } from "graphql";
 import type {
   Channel as ChannelType,
   DownloadableFile as DownloadableFileType,
-  ModelMap,
   ServerConfig as ServerConfigType,
 } from "../../ogm_types.js";
 import {
@@ -29,18 +28,7 @@ import type {
   PluginEdgeData,
 } from "../../services/plugin/types.js";
 
-export type StartPluginPipelineInput = Pick<
-  ModelMap,
-  | "Channel"
-  | "Discussion"
-  | "DownloadableFile"
-  | "Plugin"
-  | "PluginVersion"
-  | "PluginPipelineRun"
-  | "PluginRun"
-  | "ServerConfig"
-  | "ServerSecret"
-> & Partial<Pick<ModelMap, "User">> & { startRepository?: PipelineStartRepository };
+export type StartPluginPipelineInput = { startRepository?: PipelineStartRepository };
 
 type StartPluginPipelineArgs = {
   targetId: string;
@@ -253,7 +241,6 @@ export const createStartPluginPipelineResolver = (
           driver: context.driver,
           downloadableFileId: targetId,
           event: eventType,
-          models: input,
         },
         { execution }
       );
@@ -264,7 +251,6 @@ export const createStartPluginPipelineResolver = (
           discussionId: targetId,
           channelUniqueName: channelId as string,
           event: eventType,
-          models: input,
         },
         { execution }
       );

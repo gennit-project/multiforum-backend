@@ -25,7 +25,6 @@ beforeEach(async () => {
 
 const anonymousContext = (): GraphQLContext => ({
   driver: env.driver,
-  ogm: env.ogm,
   req: { headers: {}, body: {} } as GraphQLContext["req"],
 });
 

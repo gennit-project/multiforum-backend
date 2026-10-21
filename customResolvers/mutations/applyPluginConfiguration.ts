@@ -1,12 +1,6 @@
 import type { GraphQLResolveInfo } from 'graphql'
 
 import type {
-  PluginModel,
-  PluginVersionModel,
-  ServerConfigModel,
-  ServerSecretModel,
-} from '../../ogm_types.js'
-import type {
   MutationApplyPluginConfigurationArgs,
   PluginConfigurationDesiredStateInput,
 } from '../../src/generated/graphql.js'
@@ -26,12 +20,7 @@ import previewPluginConfigurationReconciliation, {
   mapPluginConfigurationDesiredStateInput,
 } from '../queries/previewPluginConfigurationReconciliation.js'
 
-type Input = {
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
-  ServerConfig: ServerConfigModel
-  ServerSecret: ServerSecretModel
-}
+type Input = Record<string, never>
 
 type ApplyOperation = {
   kind: PluginConfigurationChange['kind']

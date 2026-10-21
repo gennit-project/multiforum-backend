@@ -8,7 +8,6 @@ import {
 } from "../cypher/buildSiteWideDiscussionPageQueries.js";
 import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { DiscussionModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
@@ -22,7 +21,6 @@ import {
 } from "../../services/discussionListCursor.js";
 
 type Input = {
-  Discussion: DiscussionModel;
   driver: Driver;
   agePolicyRepository?: AgePolicyReader;
   serverName?: string;

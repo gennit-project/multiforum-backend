@@ -1,7 +1,7 @@
 import type { BotIdentityRepository } from "../../services/persistence/botIdentityRepository.js";
 import type { Driver } from "neo4j-driver"
 import { createChannelPipelineRepository, type ChannelPipelineRepository } from "../../services/persistence/channelPipelineRepository.js"
-import type { Channel, ChannelModel, UserModel } from '../../ogm_types.js'
+import type { Channel } from '../../ogm_types.js'
 import {
   buildBotUsername,
   getBotNameFromSettings,
@@ -14,10 +14,8 @@ import { logger } from "../../logger.js";
 
 type Input = {
   botIdentityRepository?: BotIdentityRepository
-  Channel: ChannelModel
   driver: Driver
   channelPipelineRepository?: ChannelPipelineRepository
-  User: UserModel
   syncBotsForChannel?: typeof syncBotUsersForChannelProfiles
   getProfiles?: typeof getProfilesFromSettings
   getBotName?: typeof getBotNameFromSettings
@@ -59,7 +57,7 @@ const parseSettingsJson = (settingsJson: unknown) => {
 }
 
 const getResolver = (input: Input) => {
-  const { Channel, User, channelPipelineRepository = createChannelPipelineRepository(input.driver) } = input
+  const { channelPipelineRepository = createChannelPipelineRepository(input.driver) } = input
   const syncBotsForChannel = input.syncBotsForChannel || syncBotUsersForChannelProfiles
   const getProfiles = input.getProfiles || getProfilesFromSettings
   const getBotName = input.getBotName || getBotNameFromSettings

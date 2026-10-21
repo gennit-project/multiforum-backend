@@ -1,45 +1,15 @@
-import type {
-  DownloadableFileModel,
-  PluginModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  PluginVersionModel,
-  ServerConfigModel,
-  ServerSecretModel,
-  UserModel,
-} from '../../ogm_types.js'
 import { triggerPluginRunsForDownloadableFile, isSupportedEvent } from '../../services/pluginRunner.js'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
 
-type Input = {
-  DownloadableFile: DownloadableFileModel
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
-  PluginPipelineRun: PluginPipelineRunModel
-  PluginRun: PluginRunModel
-  ServerConfig: ServerConfigModel
-  ServerSecret: ServerSecretModel
-  User?: UserModel
-}
+type Input = Record<string, never>
 
 type Args = {
   downloadableFileId: string
   event: string
 }
 
-const getResolver = (input: Input) => {
-  const {
-    DownloadableFile,
-    Plugin,
-    PluginVersion,
-    PluginPipelineRun,
-    PluginRun,
-    ServerConfig,
-    ServerSecret,
-    User,
-  } = input
-
+const getResolver = (_input: Input = {}) => {
   return async (
     _parent: unknown,
     args: Args,
@@ -56,16 +26,6 @@ const getResolver = (input: Input) => {
       driver: _context.driver,
       downloadableFileId,
       event,
-      models: {
-        DownloadableFile,
-        Plugin,
-        PluginVersion,
-        PluginPipelineRun,
-        PluginRun,
-        ServerConfig,
-        ServerSecret,
-        User,
-      }
     })
 
     return runs

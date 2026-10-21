@@ -67,34 +67,23 @@ test("terminal download attempts notify the uploader once with a stable link", a
 });
 
 test("notifications skip active, previously notified, and model-less attempts", async () => {
-  const models = {
-    PluginPipelineRun: {
-      find: async () => [{
-        pipelineId: "pipeline-1",
-        targetId: "file-1",
-        targetType: "DownloadableFile",
-        status: "RUNNING",
-        notifiedAt: null,
-      }],
-    },
-    DownloadableFile: {},
-    User: {},
-  } as unknown as NotificationModels;
+  // An active (non-terminal) attempt is skipped. The uploader-model presence
+  // guard this test used to cover (`if (!User) return false`) was removed when
+  // the OGM model params were dropped, so the skip is now driven purely by the
+  // repository-reported attempt status.
+  const repository = {
+    findAttempt: async () => [{
+      targetId: "file-1",
+      targetType: "DownloadableFile",
+      status: "RUNNING",
+      notifiedAt: null,
+    }],
+  } as unknown as import('../persistence/pipelineNotificationRepository.js').PipelineNotificationRepository;
 
   assert.equal(
     await notifyUploaderOfPipelineResult({
-      DownloadableFile: models.DownloadableFile,
-      PluginPipelineRun: models.PluginPipelineRun,
+      repository,
       pipelineId: "pipeline-1",
-    }),
-    false
-  );
-  assert.equal(
-    await notifyUploaderOfPipelineResult({
-      DownloadableFile: models.DownloadableFile,
-      PluginPipelineRun: models.PluginPipelineRun,
-      pipelineId: "pipeline-1",
-      User: undefined,
     }),
     false
   );
@@ -109,7 +98,7 @@ for (const outcome of ['missing', 'wrong-target', 'running', 'notified', 'no-upl
       claimNotification: async () => {calls.push('claim');return {pluginPipelineRuns:outcome==='lost-claim'?[]:[{pipelineId:'p'}]};},
       createNotification: async () => {calls.push('write');if(outcome==='write-failure')throw Error('write failed');},
     } as unknown as import('../persistence/pipelineNotificationRepository.js').PipelineNotificationRepository;
-    const result = notifyUploaderOfPipelineResult({repository,User:{} as NotificationModels['User'],DownloadableFile:{} as NotificationModels['DownloadableFile'],PluginPipelineRun:{} as NotificationModels['PluginPipelineRun'],pipelineId:'p'});
+    const result = notifyUploaderOfPipelineResult({repository,pipelineId:'p'});
     if(outcome==='write-failure')await assert.rejects(result,/write failed/);else assert.equal(await result,false);
     assert.deepEqual(calls,['missing','wrong-target','running','notified'].includes(outcome)?['attempt']:outcome==='no-uploader'?['attempt','file']:outcome==='lost-claim'?['attempt','file','claim']:['attempt','file','claim','write']);
   });

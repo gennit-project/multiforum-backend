@@ -3,7 +3,7 @@ import {before,beforeEach,after,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
 import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
-import getCustomResolvers from '../../customResolvers.js';
+import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
 import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';

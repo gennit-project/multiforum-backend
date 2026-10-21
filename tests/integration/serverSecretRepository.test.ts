@@ -3,7 +3,7 @@ import { before, beforeEach, after, test } from "node:test";
 import { parse, print, type GraphQLResolveInfo } from "graphql";
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
@@ -50,11 +50,11 @@ test("rename preserves ciphertext and native update events; postcommit projectio
   await resetDatabase(driver);await seed(false);events=[];await assert.rejects(repo.renameKey("secret","NEW"),{message:error});assert.deepEqual(await state(),failed);
 });
 test("wired secret setter encrypts synthetic input, resets validation, and wraps lookup errors",async()=>{
-  await app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic-test-value"},{driver,ogm:app.ogm},{} as GraphQLResolveInfo);
+  await app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic-test-value"},{driver},{} as GraphQLResolveInfo);
   const repo=createServerSecretRepository(driver);let secret=(await repo.findForReplacement("scanner","API"))[0];assert.equal(decryptSecret(secret.ciphertext),"synthetic-test-value");assert.equal(secret.isValid,false);
   await driver.executeQuery("MATCH (s:ServerSecret) SET s.isValid=true,s.validationError='old',s.lastValidatedAt=datetime()");
-  await app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic-replacement"},{driver,ogm:app.ogm},{} as GraphQLResolveInfo);
+  await app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic-replacement"},{driver},{} as GraphQLResolveInfo);
   secret=(await repo.findForReplacement("scanner","API"))[0];assert.equal(decryptSecret(secret.ciphertext),"synthetic-replacement");assert.equal(secret.isValid,false);assert.equal(secret.validationError,null);assert.equal(secret.lastValidatedAt,null);
   await driver.executeQuery("MATCH (s:ServerSecret) REMOVE s.createdAt");
-  await assert.rejects(app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic"},{driver,ogm:app.ogm},{} as GraphQLResolveInfo),/Failed to set server plugin secret: Cannot return null/);
+  await assert.rejects(app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic"},{driver},{} as GraphQLResolveInfo),/Failed to set server plugin secret: Cannot return null/);
 });

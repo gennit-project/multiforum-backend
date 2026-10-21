@@ -3,10 +3,10 @@ import test from 'node:test'
 import { modelStub } from '../../tests/fixtures/modelStub.js'
 import { assertPublicPipelineTargetVisible as assertVisible } from './pluginPipelineVisibility.js'
 
-import type { ResolverDeps } from '../resolverDeps.js'
+import type { ModelMap } from '../../ogm_types.js'
 import { pipelineTargetSnapshots } from '../../tests/fixtures/pipelineTargetSnapshots.js'
 
-const assertPublicPipelineTargetVisible = (input: Partial<Pick<ResolverDeps, 'Discussion' | 'DownloadableFile'>> & { targetId: string; targetType: string }) => assertVisible({
+const assertPublicPipelineTargetVisible = (input: Partial<Pick<ModelMap, 'Discussion' | 'DownloadableFile'>> & { targetId: string; targetType: string }) => assertVisible({
   repository: pipelineTargetSnapshots(input), targetId: input.targetId, targetType: input.targetType,
 })
 
