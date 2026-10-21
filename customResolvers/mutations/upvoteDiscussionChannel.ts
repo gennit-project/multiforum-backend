@@ -2,13 +2,12 @@ import { discussionChannelIsUpvotedByUserQuery } from "../cypher/cypherQueries.j
 import { getWeightedVoteBonus } from "./utils.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { DiscussionChannelModel, UserModel } from "../../ogm_types.js";
+import { createDiscussionChannelVoteRepository, type DiscussionChannelVoteRepository } from "../../services/persistence/discussionChannelVoteRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
 type Input = {
-  DiscussionChannel: DiscussionChannelModel;
-  User: UserModel;
+  repository?: DiscussionChannelVoteRepository;
   driver: Driver;
 };
 
@@ -18,7 +17,8 @@ type Args = {
 };
 
 const upvoteDiscussionChannelResolver = (input: Input) => {
-  const { DiscussionChannel, User, driver } = input;
+  const { driver } = input;
+  const repository = input.repository ?? createDiscussionChannelVoteRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -47,32 +47,7 @@ const upvoteDiscussionChannelResolver = (input: Input) => {
         throw new Error("You have already upvoted this discussionChannel");
       }
       // Fetch discussionChannel
-      const discussionChannelSelectionSet = `
-        {
-          id
-          Discussion {
-            Author {
-                username
-                discussionKarma
-                createdAt
-            }
-          }
-          weightedVotesCount
-          UpvotedByUsers {
-            username
-          }
-          UpvotedByUsersAggregate {
-            count
-          }
-        }
-      `;
-
-      const discussionChannelResult = await DiscussionChannel.find({
-        where: {
-          id: discussionChannelId,
-        },
-        selectionSet: discussionChannelSelectionSet,
-      });
+      const discussionChannelResult = await repository.findDiscussionChannel(discussionChannelId);
 
       if (discussionChannelResult.length === 0) {
         throw new Error("DiscussionChannel not found");
@@ -85,18 +60,7 @@ const upvoteDiscussionChannelResolver = (input: Input) => {
 
       // Fetch data of the user who is upvoting the discussionChannel
       // because we need it to calculate the weighted vote bonus.
-      const userSelectionSet = `
-      {
-          username
-          discussionKarma
-      }
-     `;
-      const upvoterUserResult = await User.find({
-        where: {
-          username,
-        },
-        selectionSet: userSelectionSet,
-      });
+      const upvoterUserResult = await repository.findVoter(username);
 
       if (upvoterUserResult.length === 0) {
         throw new Error("User not found");
@@ -126,10 +90,7 @@ const upvoteDiscussionChannelResolver = (input: Input) => {
       // in which case we don't need to update their karma,
       // but the discussionChannel should still be upvoted.
       if (postAuthorUsername) {
-        await User.update({
-          where: { username: postAuthorUsername },
-          update: { discussionKarma: postAuthorKarma + 1 },
-        });
+        await repository.setAuthorKarma(postAuthorUsername, postAuthorKarma + 1);
       }
 
       await tx.commit();

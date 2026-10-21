@@ -437,28 +437,30 @@
           "id": "14a",
           "scope": "Comment votes",
           "baselineCrudSites": 6,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent integration_review_current approved exact tree 71430ccc9ce3564f4f132751288990f8f5d8f749: six nonfactory blobs match reviewed14a patch; factory only removes Comment/User inputs preserving driver. Independently44 focused tests passed with infrastructure-only launcher; inspected3 completed disposable live parity tests. Separate generated karma writes, raw transaction ordering, projections/error behavior and native events preserved. No blocking findings.",
           "preparedPatch": "ogm-slice14a.patch",
           "preparedPatchSha256": "4b63e302f25014525855e4e961509f81ed98bf6905e03f93b15a34bab5ae7ad0",
           "preparedBase": "c19c537",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 2db83d21c53a1c5454ceb7e7df8bd6c3d80e5856: lint, TypeScript and2063 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice14a-exact-live.log"
           ],
-          "commit": null
+          "commit": "757314c367f705e0e27ec875c34a0d7a6877b360"
         },
         {
           "id": "14b",
           "scope": "Discussion votes",
           "baselineCrudSites": 6,
-          "status": "reviewed; integration pending",
-          "review": "integration_review: no remaining findings; independent focused tests passed",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent integration_review_current approved exact tree 822bd95af4be1bf2079eb82fa8a5efa37a9acfc0: five unmerged source/test blobs match original14b patch; factory narrowly drops DiscussionChannel/User inputs preserving driver; shared voteResolvers tests retain14a changes and add only14b adapters. Independently44 focused tests passed using infrastructure-only launcher; inspected3 completed disposable live parity tests. Existing authorization inputs, transaction ordering, separately committed karma writes, projections/errors and events preserved. No blocking findings.",
           "preparedPatch": "ogm-slice14b.patch",
           "preparedPatchSha256": "24426c207d585ce5f9d0274083502744e1aff77c828b21261f8e56dcdff14373",
           "preparedBase": "c19c537",
           "verification": [
-            "Reviewed tree5059343da36e79d5f0b77809ae72db5df39e116a: 44focused;3exactlive;final tsc/lint passed; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "14c",
@@ -1421,9 +1423,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 364,
+  "remainingRuntimeCrudSites": 358,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 81,
+  "remainingRuntimeCrudFiles": 79,
   "foundations": [
     {
       "id": "F01",

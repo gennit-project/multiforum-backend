@@ -52,7 +52,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | complete |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | complete |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | complete |
-| 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
+| 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | partial; see subdivisions |
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | complete |
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | pending |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | pending |
@@ -385,3 +385,11 @@ Reviewed24b/c/d and38b artifacts recorded without crediting queued removals.24c 
 Reviewed25a/b/c/d and38c/d patches queued without crediting removals.25 append operations retain immutable Issue identity guard after independent review finding and old/new rejection tests.38d preserves unbounded server reads, sequential deprecation/disconnect and swallowed synchronization errors; removes3 acquisitions when integrated. Architecture findings remain deferred to separate issues; no fixes included.
 
 14a final integration approval: Independent integration_review_current approved exact tree 71430ccc9ce3564f4f132751288990f8f5d8f749: six nonfactory blobs match reviewed14a patch; factory only removes Comment/User inputs preserving driver. Independently44 focused tests passed with infrastructure-only launcher; inspected3 completed disposable live parity tests. Separate generated karma writes, raw transaction ordering, projections/error behavior and native events preserved. No blocking findings.; live parity passed on identical production sources before this documentation-only update.
+
+Slice14a committed `757314c367f705e0e27ec875c34a0d7a6877b360` ([diff](https://github.com/gennit-project/multiforum-backend/commit/757314c367f705e0e27ec875c34a0d7a6877b360)), tree `2db83d21c53a1c5454ceb7e7df8bd6c3d80e5856`: lint, TypeScript and all2063 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice14a-exact-live.log. Independent approval recorded above.
+
+### Slice 14b — Discussion votes
+
+6 baseline CRUD sites removed. Original patch independently approved integration_review; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 358 CRUD sites/79 files; 74 acquisitions/15 files; two separate CLI sites.
+
+14b final integration approval: Independent integration_review_current approved exact tree 822bd95af4be1bf2079eb82fa8a5efa37a9acfc0: five unmerged source/test blobs match original14b patch; factory narrowly drops DiscussionChannel/User inputs preserving driver; shared voteResolvers tests retain14a changes and add only14b adapters. Independently44 focused tests passed using infrastructure-only launcher; inspected3 completed disposable live parity tests. Existing authorization inputs, transaction ordering, separately committed karma writes, projections/errors and events preserved. No blocking findings.; live parity passed on identical production sources before this documentation-only update.

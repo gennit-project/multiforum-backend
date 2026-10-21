@@ -247,13 +247,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     upvoteDiscussionChannel: upvoteDiscussionChannel({
-      DiscussionChannel,
-      User,
       driver,
     }),
     undoUpvoteDiscussionChannel: undoUpvoteDiscussionChannel({
-      DiscussionChannel,
-      User,
       driver,
     }),
     createSignedStorageURL: createSignedStorageURL(),
