@@ -78,7 +78,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 37 Plugin config/secrets | 16 | 35; configuration/secret masking contract | Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth | complete |
 | 38 Bot identity/comments | 13 | 03; write/event contract | Nested identity creation, activation/deprecation, channel links and comment context | complete |
 | 39 Bot reports | 6 | 18–19; 38 | Issue identity, report deduplication and actor attribution | complete |
-| 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | partial; see subdivisions |
+| 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | complete |
 | 41 Pipeline download execution | 12 | 40; 44 notifications; 34 as applicable | Runner side effects outside retried callbacks; statuses/retries/results | pending |
 | 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | pending |
 | 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | pending |
@@ -922,3 +922,11 @@ Slice40b committed `cf26228a72967c6f2288310f3a865edde3897bf3` ([diff](https://gi
 4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 73 CRUD sites/10 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
 
 40c final integration approval: Independent cumulative40c againstcf26228a. All five executable/test blobs identical to approved54806af5; prior4focused/static evidence reused. Exact isolated7live passed zero failures/skips/cancellations, covering29unbounded active jobs, renewal-after-read guard, legacy deadline fallback, sibling/notification boundaries and committed projection failure prefixes. Job writes then unique parent/status/attempt/notification order and timers unchanged; raw native IDs/events retained. Diff check clean; ledger73CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice40c committed `717ac04a4862f76127342be91f746c3c966b3ee0` ([diff](https://github.com/gennit-project/multiforum-backend/commit/717ac04a4862f76127342be91f746c3c966b3ee0)), tree `1e3cd20d37999e29cfb832b374734d0f1e100c20`: lint, TypeScript and all2455 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice40c-exact-live.log. Independent approval recorded above.
+
+### Slice 41 — Download execution
+
+12 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 61 CRUD sites/9 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+41 final integration approval: Independent cumulative41 against717ac04a. All six executable/test blobs identical to approved19508443; prior21focused/static evidence reused. Exact isolated8live passed zero failures/skips/cancellations. Twelve calls replaced by seven finite ports with original inputs/selections/defaults and ordered lease/attempt/notification effects; primitive native graph/event parity plus actual fake-plugin trigger smoke preserved, not overstated as full service event parity. Diff check clean; ledger61CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.

@@ -1630,8 +1630,8 @@
       "baselineCrudSites": 14,
       "dependencies": "Lease/attempt state characterization; 44 notifications before dependent consumers",
       "acceptance": "Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "717ac04a4862f76127342be91f746c3c966b3ee0",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1717,7 +1717,7 @@
           "id": "40c",
           "scope": "Pipeline watchdog recovery",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "2cee7848644240eb1745b59aeea4bcdaabedf548",
             "tree": "54806af505df14330d3423ac97ed768d3ba8669d",
@@ -1733,9 +1733,10 @@
           },
           "review": "Independent cumulative40c againstcf26228a. All five executable/test blobs identical to approved54806af5; prior4focused/static evidence reused. Exact isolated7live passed zero failures/skips/cancellations, covering29unbounded active jobs, renewal-after-read guard, legacy deadline fallback, sibling/notification boundaries and committed projection failure prefixes. Job writes then unique parent/status/attempt/notification order and timers unchanged; raw native IDs/events retained. Diff check clean; ledger73CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 1e3cd20d37999e29cfb832b374734d0f1e100c20: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice40c-exact-live.log"
           ],
-          "commit": null
+          "commit": "717ac04a4862f76127342be91f746c3c966b3ee0"
         },
         {
           "id": "40w",
@@ -1760,11 +1761,11 @@
       "baselineCrudSites": 12,
       "dependencies": "40; 44 notifications; 34 as applicable",
       "acceptance": "Runner side effects outside retried callbacks; statuses/retries/results",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "Independent six-path review against approved40c54806af5; patch SHA2564a4958bb6547d9ec9d255832a1166702ed4562fa138ceafcf53716e95aa77d75 verified, diff check clean. Seven fixed named ports replace12CRUD calls preserving original input expressions/explicit selection strings, unbounded configuration/secrets reads, full file default matching corrected34a and job default from40a. Unsupported-event/missing-file guards, scan hold before execution, pending jobs, skip/refetch, secret loading, lease/attempt/notification sequencing and independent error/commit boundaries unchanged. Existing test-only adapters retain recorder assertions.21focused and final8live passed zero failures/skips/cancellations; primitive write tests compare full graph/ordered native events after raw node/relationship IDs and timestamp validation, and actual-trigger smoke covers guards plus fake-plugin success/status/message/loader order (not a full end-to-end event comparison). Corrected fixtures respect actual enum/required input/plugin-name selection contracts; no production correction. TypeScript/lint passed per parent and inspected logs. Prepared12CRUD/0acquisitions; cumulative integration/hooks pending.",
+      "review": "Independent cumulative41 against717ac04a. All six executable/test blobs identical to approved19508443; prior21focused/static evidence reused. Exact isolated8live passed zero failures/skips/cancellations. Twelve calls replaced by seven finite ports with original inputs/selections/defaults and ordered lease/attempt/notification effects; primitive native graph/event parity plus actual fake-plugin trigger smoke preserved, not overstated as full service event parity. Diff check clean; ledger61CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.",
       "verification": [
-        "21focused,8live,lint/TypeScript passed. Twelve calls through seven finite named operations; original input/selections/defaults, order and failure contracts preserved. Primitive writes have full graph/ordered native event parity after raw identity validation; actual trigger smoke with fake plugin/storage. Zero credit before integration."
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "preparedEvidence": {
         "base": "54806af505df14330d3423ac97ed768d3ba8669d",
@@ -2081,9 +2082,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 73,
+  "remainingRuntimeCrudSites": 61,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 10,
+  "remainingRuntimeCrudFiles": 9,
   "foundations": [
     {
       "id": "F01",
@@ -2140,11 +2141,12 @@
       "36",
       "37",
       "38",
-      "39"
+      "39",
+      "40"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "40c"
+      "41"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

@@ -1,3 +1,4 @@
+import {downloadExecutionRepositoryStub} from "../../tests/fixtures/downloadExecutionRepositoryStub.js";
 import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
 import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the downloadable-file trigger's per-plugin run
@@ -646,4 +647,4 @@ test("holds a replacement before the scanner begins", async () => {
   assert.equal(fileUpdates[0]!.update?.scanStatus, "PENDING");
 });
 
-const triggerPluginRunsForDownloadableFile:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});
+const triggerPluginRunsForDownloadableFile:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,downloadRepository:downloadExecutionRepositoryStub(args.models),leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});
