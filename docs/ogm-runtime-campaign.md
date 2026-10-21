@@ -62,7 +62,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | complete |
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | complete |
 | 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | complete |
-| 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | pending |
+| 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | partial; see subdivisions |
 | 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | pending |
 | 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | pending |
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | pending |
@@ -556,3 +556,13 @@ Queued34a review correction: original approval withdrawn after the fixture used 
 4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 284 CRUD sites/56 files; 53 acquisitions/7 files; two separate CLI sites.
 
 24a final integration approval: Independent cumulative review againstae05cc4: four non-factory source/test blobs exactly match approved7626ffd; factory only removes Issue/Event forwarding for reportEvent retaining driver. Original independent7 focused/static/live evidence reused; exact cumulative live log reports6 passed zero failed/skipped/cancelled. Explicit selections/root limit, identity guards, separate counter allocation/create/update/activity boundaries and projection-error catches retained. Diff check clean;4CRUD/0acquisitions removed, ledger284/53 consistent. Corrected34a queued tree/hash/evidence recorded with no removal credit. Mandatory hooks remain required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice24a committed `829798d4a8b6b20f08605f5d634fb4782fc7ab32` ([diff](https://github.com/gennit-project/multiforum-backend/commit/829798d4a8b6b20f08605f5d634fb4782fc7ab32)), tree `5922adda969a29a6975e6056f3cd659ec82a4be7`: lint, TypeScript and all2182 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice24a-exact-live.log. Independent approval recorded above.
+
+### Slice 24b — Comment reports
+
+4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 280 CRUD sites/55 files; 53 acquisitions/7 files; two separate CLI sites.
+
+34b independently reviewed/queued:7CRUD, owner/mod authorization and validation retained; separate label/history/moderation operations, added-before-removed history, independently swallowed history/moderation failures and committed projection errors characterized. Corrected34a baseline inherited without changing approved34b delta. No removal credit before integration.
+
+24b final integration approval: Independent cumulative review against829798d: four non-factory source/test blobs identical to approvedff852077; factory only removes Issue/Comment forwarding retaining driver. Prior independent12 focused/static evidence reused; exact live7 passed zero failed/skipped/cancelled. Unconditional author lookup, both union identities, identity guards, separate counter/create/update/activity boundaries and projection failures preserved. Diff check clean;4CRUD/0acquisitions, ledger280/53 consistent; corrected34b queued metadata carries no removal credit. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.

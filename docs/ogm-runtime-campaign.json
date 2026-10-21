@@ -826,28 +826,30 @@
           "id": "24a",
           "scope": "Event reports",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review againstae05cc4: four non-factory source/test blobs exactly match approved7626ffd; factory only removes Issue/Event forwarding for reportEvent retaining driver. Original independent7 focused/static/live evidence reused; exact cumulative live log reports6 passed zero failed/skipped/cancelled. Explicit selections/root limit, identity guards, separate counter allocation/create/update/activity boundaries and projection-error catches retained. Diff check clean;4CRUD/0acquisitions removed, ledger284/53 consistent. Corrected34a queued tree/hash/evidence recorded with no removal credit. Mandatory hooks remain required.",
           "preparedPatch": "ogm-slice24a.patch",
           "preparedPatchSha256": "dc1617f262abf9e528dde4612653f0a9ee9386d9ed9f64bae1e869d7bfed90c8",
           "preparedBase": "18/19 foundation",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 5922adda969a29a6975e6056f3cd659ec82a4be7: lint, TypeScript and2182 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice24a-exact-live.log"
           ],
-          "commit": null
+          "commit": "829798d4a8b6b20f08605f5d634fb4782fc7ab32"
         },
         {
           "id": "24b",
           "scope": "Comment reports",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
-          "review": "reports_reviewer",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against829798d: four non-factory source/test blobs identical to approvedff852077; factory only removes Issue/Comment forwarding retaining driver. Prior independent12 focused/static evidence reused; exact live7 passed zero failed/skipped/cancelled. Unconditional author lookup, both union identities, identity guards, separate counter/create/update/activity boundaries and projection failures preserved. Diff check clean;4CRUD/0acquisitions, ledger280/53 consistent; corrected34b queued metadata carries no removal credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice24b.patch",
           "preparedPatchSha256": "38e7364cc6e73202531bd1da13e4d62cd935ab73c3b5411063835e004a1a1e5a",
           "preparedBase": "9341421",
           "verification": [
-            "Treeff852077196a1bf51fe526fa69ea8c8381468304: 12independentfocused;7live;tsc/lint actual passes; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "24c",
@@ -1247,6 +1249,19 @@
           "verification": [
             "Tree4c012a555d321159f01dbb31a1b6c4c797ce6720:16focused,13correctedlive,types/lint passed; explicit canonical GraphQL author and separate legacy raw notification graph cases; cumulative gates pending"
           ]
+        },
+        {
+          "id": "34b",
+          "scope": "Download label persistence",
+          "baselineCrudSites": 7,
+          "status": "reviewed; integration pending",
+          "review": "campaign_review: exact incremental delta approved and rebase onto corrected34a verified byte-identical",
+          "preparedPatch": "ogm-slice34b.patch",
+          "preparedPatchSha256": "286890fa62055359ca6daba7432a09f2122c8ed7fa0fc348cdb4f8176d710253",
+          "preparedBaseTree": "4c012a555d321159f01dbb31a1b6c4c797ce6720",
+          "verification": [
+            "Tree23ba268ca0adff2bb269e813ec9252286b440470:6focused,8newlive,10existinglive,types/lint passed; cumulative gates pending"
+          ]
         }
       ]
     },
@@ -1617,9 +1632,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 284,
+  "remainingRuntimeCrudSites": 280,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 56,
+  "remainingRuntimeCrudFiles": 55,
   "foundations": [
     {
       "id": "F01",

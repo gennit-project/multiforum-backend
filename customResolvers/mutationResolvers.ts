@@ -299,8 +299,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       ServerConfig,
     }),
     reportComment: reportComment({
-      Issue,
-      Comment,
       driver
     }),
     reportDiscussion: reportDiscussion({
