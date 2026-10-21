@@ -841,29 +841,31 @@
           "id": "24b",
           "scope": "Comment reports",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review against829798d: four non-factory source/test blobs identical to approvedff852077; factory only removes Issue/Comment forwarding retaining driver. Prior independent12 focused/static evidence reused; exact live7 passed zero failed/skipped/cancelled. Unconditional author lookup, both union identities, identity guards, separate counter/create/update/activity boundaries and projection failures preserved. Diff check clean;4CRUD/0acquisitions, ledger280/53 consistent; corrected34b queued metadata carries no removal credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice24b.patch",
           "preparedPatchSha256": "38e7364cc6e73202531bd1da13e4d62cd935ab73c3b5411063835e004a1a1e5a",
           "preparedBase": "9341421",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 8f246ba90d9daa0162cb4dfd590c26a5038b4916: lint, TypeScript and2190 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice24b-exact-live.log"
           ],
-          "commit": null
+          "commit": "e63b7872fa64781781d9decee386937f8afd7efd"
         },
         {
           "id": "24c",
           "scope": "Discussion reports",
           "baselineCrudSites": 5,
-          "status": "reviewed; integration pending",
-          "review": "reports_reviewer",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review againste63b787: four non-factory blobs exactly match approved9d00306; factory only removes Issue/Discussion forwarding retaining driver. Optional Channel capability acquisition retained. Prior independent5 focused/static evidence reused; exact live7 passed zero failed/skipped/cancelled. Issue-first/new-only target lookup, allocation and optional channel-read catch boundaries, identity reconnect, detailed create versus generic update failures preserved. Diff check clean;5CRUD/0acquisitions, ledger275/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice24c.patch",
           "preparedPatchSha256": "0ca6d9746d5b81c2daae5264e161eac2a3fe547912f7469285201d538f747f25",
           "preparedBase": "9341421",
           "verification": [
-            "Tree9d00306fa309b830965c7c1663de1b7e7f45174f: 5independentfocused;7live;tsc/lint actual passes; cumulative integration gates pending"
+            "Original focused/live/static gates passed; final cumulative checks pending"
           ],
-          "accountingNote": "Optional Channel acquisition deliberately retained as capability guard until wiring cleanup."
+          "accountingNote": "Optional Channel acquisition deliberately retained as capability guard until wiring cleanup.",
+          "commit": null
         },
         {
           "id": "24d",
@@ -1632,9 +1634,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 280,
+  "remainingRuntimeCrudSites": 275,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 55,
+  "remainingRuntimeCrudFiles": 54,
   "foundations": [
     {
       "id": "F01",

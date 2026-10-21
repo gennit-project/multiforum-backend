@@ -302,8 +302,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     reportDiscussion: reportDiscussion({
-      Issue,
-      Discussion,
       driver
     }),
     reportEvent: reportEvent({
