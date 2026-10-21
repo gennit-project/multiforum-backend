@@ -1,11 +1,9 @@
+import { createSuspensionWriteRepository } from "../../../services/persistence/suspensionWriteRepository.js";
 import { createIssueTargetRepository } from "../../../services/persistence/issueTargetRepository.js";
 import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../../types/context.js'
 import type {
-  ChannelModel,
-  IssueModel,
-  ServerConfigModel,
   IssueUpdateInput,
   ChannelUpdateInput,
   ServerConfigUpdateInput,
@@ -18,9 +16,6 @@ import { resolveIssueTarget } from '../../shared/resolveIssueTarget.js'
 type CreateSuspensionResolverOptions = {
   includeWikiPage?: boolean
   includeTextVersion?: boolean
-  Issue: IssueModel
-  Channel: ChannelModel
-  ServerConfig: ServerConfigModel
 
   // The name of the field on the Issue that identifies the user or mod to suspend
   issueRelatedAccountField: 'relatedUsername' | 'relatedModProfileName'
@@ -41,9 +36,6 @@ type Args = {
 }
 
 export function createSuspensionResolver ({
-  Issue,
-  Channel,
-  ServerConfig,
   suspendedEntityName,
   includeWikiPage = false,
   includeTextVersion = false,
@@ -109,6 +101,8 @@ export function createSuspensionResolver ({
       issueId
     })
 
+    const repository = context.suspensionWriteRepository ?? createSuspensionWriteRepository(context.driver)
+
     // 6. Update the Issue with the ModerationAction
     let updatedIssue
     const closeIssueUpdateInput: IssueUpdateInput = {
@@ -132,24 +126,8 @@ export function createSuspensionResolver ({
       ]
     }
     try {
-      await Issue.update({
-        where: { id: issueId },
-        update: suspendUpdateInput,
-      })
-      updatedIssue = await Issue.update({
-        where: { id: issueId },
-        update: closeIssueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            ActivityFeed {
-              id
-              actionType
-            }
-          }
-        }`
-      })
+      await repository.appendSuspensionActivity(issueId, suspendUpdateInput)
+      updatedIssue = await repository.closeSuspensionIssue(issueId, closeIssueUpdateInput)
     } catch (err) {
       throw new GraphQLError('Error updating issue')
     }
@@ -254,30 +232,14 @@ export function createSuspensionResolver ({
     if (channelUpdateInput) {
       try {
         if (scope === 'server') {
-          const serverData = await ServerConfig.update({
-            where: { serverName: process.env.SERVER_CONFIG_NAME },
-            update: channelUpdateInput as ServerConfigUpdateInput,
-            selectionSet: `{
-              serverConfigs {
-                serverName
-              }
-            }`,
-          })
+          const serverData = await repository.addServerSuspension(process.env.SERVER_CONFIG_NAME, channelUpdateInput as ServerConfigUpdateInput)
 
           const updatedServer = serverData.serverConfigs?.[0] || null
           if (!updatedServer?.serverName) {
             throw new GraphQLError('Error updating server config')
           }
         } else {
-          const channelData = await Channel.update({
-            where: { uniqueName: channelUniqueName },
-            update: channelUpdateInput as ChannelUpdateInput,
-            selectionSet: `{
-              channels {
-                uniqueName
-              }
-            }`
-          })
+          const channelData = await repository.addChannelSuspension(channelUniqueName, channelUpdateInput as ChannelUpdateInput)
 
           const updatedChannel = channelData.channels?.[0] || null
           if (!updatedChannel?.uniqueName) {

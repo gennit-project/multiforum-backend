@@ -1,0 +1,58 @@
+import type {GraphQLSchema,GraphQLObjectType} from "graphql";
+import assert from 'node:assert/strict';
+import {before,beforeEach,after,test} from 'node:test';
+import {Neo4jGraphQL} from '@neo4j/graphql';
+import type {Driver} from 'neo4j-driver';
+import getCustomResolvers from '../../customResolvers.js';
+import typeDefs from '../../typeDefs.js';
+import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
+import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
+import {protectIssueModelIdentity} from '../../services/issueTargetIdentity.js';
+import {createSuspensionWriteRepository,SUSPENSION_ISSUE_SELECTION,SUSPENSION_CHANNEL_DEFAULT_SELECTION,SUSPENSION_SERVER_DEFAULT_SELECTION} from '../../services/persistence/suspensionWriteRepository.js';
+import suspendUser from '../../customResolvers/mutations/suspendUser.js';
+import suspendMod from '../../customResolvers/mutations/suspendMod.js';
+import unsuspendUser from '../../customResolvers/mutations/unsuspendUser.js';
+import unsuspendMod from '../../customResolvers/mutations/unsuspendMod.js';
+import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
+import {installAgeGateReconcile} from '../../services/ageGate/reconcile.js';
+import {getAgeGateStatements} from '../../services/ageGate/definitions.js';
+import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
+let schema:GraphQLSchema;let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];const engine=createSubscriptionEngine();let events:any[]=[];
+for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
+before(async()=>{process.env.SERVER_CONFIG_NAME='server';driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);ogm=app.ogm;const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240_000});
+beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
+const oldRepository=()=>{const Issue=protectIssueModelIdentity(ogm.model('Issue'));const Channel=ogm.model('Channel');const Server=ogm.model('ServerConfig');return {
+ appendSuspensionActivity:async(id:string,update:any)=>{await Issue.update({where:{id},update});},
+ closeSuspensionIssue:(id:string,update:any)=>Issue.update({where:{id},update,selectionSet:SUSPENSION_ISSUE_SELECTION}),
+ addChannelSuspension:(uniqueName:any,update:any)=>Channel.update({where:{uniqueName},update,selectionSet:'{channels{uniqueName}}'}),
+ addServerSuspension:(serverName:any,update:any)=>Server.update({where:{serverName},update,selectionSet:'{serverConfigs{serverName}}'}),
+ removeChannelSuspensions:async(uniqueName:any,update:any)=>{await Channel.update({where:{uniqueName},update});},
+ removeServerSuspensions:async(serverName:any,update:any)=>{await Server.update({where:{serverName},update});},
+};};
+async function seed(scope='channel',entity='user') {await driver.executeQuery(`CREATE (ch:Channel {uniqueName:'forum',createdAt:datetime()}) CREATE (:ServerConfig {serverName:'server'}) CREATE (:ModerationProfile {displayName:'Actor'}) CREATE (u:User {username:'target',createdAt:datetime()})-[:MODERATION_PROFILE]->(:ModerationProfile {displayName:'TargetMod'}) CREATE (i:Issue {id:'i',issueNumber:1,channelUniqueName:$channel,relatedUsername:$username,relatedModProfileName:$mod,authorName:'Actor',title:'Report',createdAt:datetime(),isOpen:true}) FOREACH (_ IN CASE WHEN $scope='channel' THEN [1] ELSE [] END | CREATE (ch)-[:HAS_ISSUE]->(i))`,{scope,channel:scope==='channel'?'forum':'',username:entity==='user'?'target':null,mod:entity==='mod'?'TargetMod':null});events=[];}
+const normalize=(value:unknown,unorderedActivityFeed=false)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){
+// ActivityFeed has no requested/default sort; native event arrays remain strictly ordered.
+if(unorderedActivityFeed && key==='ActivityFeed' && Array.isArray(value))return [...value].sort((a,b)=>String(a.actionType).localeCompare(String(b.actionType)));
+if(['id','id_from','id_to'].includes(key)){const namespace=this.event ? (key==='id' && this.event.includes('relationship')?'relationship':'node') : 'domain';const identity=namespace+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','createdAt','updatedAt','ageGateTouchedAt'].includes(key)&&value!==null?'<time>':value;}));};
+async function state(){return (await driver.executeQuery(`MATCH(i:Issue {id:'i'}) RETURN i.isOpen AS open, COUNT { (i)-[:ACTIVITY_ON_ISSUE]->() } AS activities, COUNT { (:Channel)-[:SUSPENDED_AS_USER|SUSPENDED_AS_MOD]->() } AS channelCount, COUNT { (:ServerConfig)-[:SUSPENDED_AS_USER|SUSPENDED_AS_MOD]->() } AS serverCount, COUNT { (:Suspension) } AS suspensions`)).records.map(r=>r.toObject());}
+const outcome=async(fn:()=>Promise<unknown>)=>{
+ let result:unknown;
+ try{result=await fn();}catch(e){return {error:(e as Error).message};}
+ if(result && typeof result==='object' && 'ActivityFeed' in result && Array.isArray(result.ActivityFeed)){
+  const persisted=(await driver.executeQuery("MATCH(:Issue{id:'i'})-[:ACTIVITY_ON_ISSUE]->(action:ModerationAction) RETURN action.id AS id,action.actionType AS actionType ORDER BY id")).records.map(record=>record.toObject());
+  // Check raw generated IDs and every returned action before any aliasing/sibling canonicalization.
+  assert.deepEqual(result.ActivityFeed.map(action=>({id:action.id,actionType:action.actionType})).sort((a,b)=>a.id.localeCompare(b.id)),persisted);
+ }
+ return {result:normalize(result,true)};
+};
+async function run(repository:any,entity='user',notifyFails=false){const notifications:string[]=[];const context:any={driver,suspensionWriteRepository:repository,user:{username:'actor',data:{ModerationProfile:{displayName:'Actor'}}},notificationSnapshotRepository:{findIssueSubscribers:async()=>{notifications.push('notify');if(notifyFails)throw Error('fake notification failure');return [];}}};const args={issueId:'i',explanation:' reason ',suspendIndefinitely:true};const first=entity==='user'?suspendUser({}):suspendMod();const second=entity==='user'?unsuspendUser():unsuspendMod();const results=[await outcome(()=>first(null,args as never,context,{} as never))];const suspended=await state();if(!('error' in results[0]))results.push(await outcome(()=>second(null,args as never,context,{} as never)));return {results,suspended,final:await state(),notifications,events:normalize(events)};}
+test('fixed Channel/ServerConfig default selections match initialized production OGM',()=>{for(const [name,selection] of [['Channel',SUSPENSION_CHANNEL_DEFAULT_SELECTION],['ServerConfig',SUSPENSION_SERVER_DEFAULT_SELECTION]])assert.equal(selection.replace(/\s/g,''),(ogm.model(name as any) as any).getSelectionSetOrDefault().replace(/\s/g,''));});
+for(const scope of ['channel','server'])for(const entity of ['user','mod'])test(`${scope} ${entity} suspension cycle preserves responses, graph, native event ordering and notification boundary`,async()=>{await seed(scope,entity);const expected=await run(oldRepository(),entity);assert.ok(!('error' in expected.results[0]),JSON.stringify(expected.results));assert.deepEqual(expected.notifications,['notify','notify']);assert.equal(expected.suspended[0].activities.toNumber(),2);assert.equal(expected.suspended[0][scope==='channel'?'channelCount':'serverCount'].toNumber(),1);assert.equal(expected.final[0].channelCount.toNumber(),0);assert.equal(expected.final[0].serverCount.toNumber(),0);assert.equal(expected.final[0].activities.toNumber(),4);assert.equal(expected.final[0].suspensions.toNumber(),1);await resetDatabase(driver);await seed(scope,entity);assert.deepEqual(await run(createSuspensionWriteRepository(driver),entity),expected);});
+test('notification failure follows committed issue activities and prevents scope suspension',async()=>{await seed();const expected=await run(oldRepository(),'user',true);assert.match((expected.results[0] as any).error,/fake notification failure/);assert.equal(expected.final[0].activities.toNumber(),2);assert.equal(expected.final[0].suspensions.toNumber(),0);await resetDatabase(driver);await seed();assert.deepEqual(await run(createSuspensionWriteRepository(driver),'user',true),expected);});
+test('default Issue projection failure preserves partial-write error contract',async()=>{await seed();await driver.executeQuery("MATCH(i:Issue {id:'i'}) REMOVE i.issueNumber");const expected=await run(oldRepository());assert.match((expected.results[0] as any).error,/Error updating issue/);await resetDatabase(driver);await seed();await driver.executeQuery("MATCH(i:Issue {id:'i'}) REMOVE i.issueNumber");assert.deepEqual(await run(createSuspensionWriteRepository(driver)),expected);});
+test('identity update guard and generated coercion reject with same errors and no writes',async()=>{await seed();for(const method of ['appendSuspensionActivity','closeSuspensionIssue'] as const)for(const update of [{relatedUsername:'different'},{isOpen:'invalid'}]){const expected=await outcome(()=>oldRepository()[method]('i',update));const actual=await outcome(()=>createSuspensionWriteRepository(driver)[method]('i',update as never));assert.deepEqual(actual,expected);assert.ok('error' in actual);}assert.equal((await state())[0].activities.toNumber(),0);assert.equal(events.length,0);});
+
+for(const scope of ['channel','server'])test(`${scope} unsuspend default projection error follows durable disconnect`,async()=>{
+ const field=(schema.getType(scope==='channel'?'Channel':'ServerConfig') as GraphQLObjectType).getFields()[scope==='channel'?'description':'serverDescription'];const original=field.resolve;field.resolve=()=>{throw Error('fixture default projection failure');};
+ try {await seed(scope);const expected=await run(oldRepository());assert.match((expected.results[1] as any).error,/Error unsuspending user/);assert.equal(expected.final[0].channelCount.toNumber(),0);assert.equal(expected.final[0].serverCount.toNumber(),0);assert.equal(expected.final[0].activities.toNumber(),4);await resetDatabase(driver);await seed(scope);assert.deepEqual(await run(createSuspensionWriteRepository(driver)),expected);}finally{field.resolve=original;}
+});

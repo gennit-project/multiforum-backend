@@ -369,27 +369,12 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     suspendUser: suspendUser({
-      Issue,
-      Channel,
-      ServerConfig,
       includeWikiPage: Boolean(WikiPage),
       includeTextVersion: Boolean(TextVersion)
     }),
-    unsuspendUser: unsuspendUser({
-      Issue,
-      Channel,
-      ServerConfig
-    }),
-    suspendMod: suspendMod({
-      Issue,
-      Channel,
-      ServerConfig
-    }),
-    unsuspendMod: unsuspendMod({
-      Issue,
-      Channel,
-      ServerConfig
-    }),
+    unsuspendUser: unsuspendUser(),
+    suspendMod: suspendMod(),
+    unsuspendMod: unsuspendMod(),
     lockIssue: lockIssue(),
     unlockIssue: unlockIssue(),
     archiveComment: archiveComment({

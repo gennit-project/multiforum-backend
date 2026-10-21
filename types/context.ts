@@ -1,3 +1,4 @@
+import type { SuspensionWriteRepository } from "../services/persistence/suspensionWriteRepository.js";
 import type { WikiRevisionRepository } from "../services/persistence/wikiRevisionRepository.js";
 import type { EventRevisionRepository } from "../services/persistence/eventRevisionRepository.js";
 import type { DiscussionRevisionRepository } from "../services/persistence/discussionRevisionRepository.js";
@@ -95,6 +96,7 @@ export type GraphQLRequest = Request & {
  * possibly-absent (`req?.headers`, `if (context.req)`).
  */
 export type GraphQLContext = {
+  suspensionWriteRepository?: SuspensionWriteRepository;
   wikiRevisionRepository?: WikiRevisionRepository;
   eventRevisionRepository?: EventRevisionRepository;
   discussionRevisionRepository?: DiscussionRevisionRepository;

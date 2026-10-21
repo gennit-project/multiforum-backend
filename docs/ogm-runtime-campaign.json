@@ -1066,8 +1066,8 @@
       "baselineCrudSites": 17,
       "dependencies": "18\u201319; 05\u201306; storage mocks",
       "acceptance": "Split archive pair 11/permanent removal 6; storage failure windows",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "e863538e62fbe2773521518461fb621a6ba61d8f",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1090,15 +1090,16 @@
           "id": "29b",
           "scope": "Permanent image removal flag",
           "baselineCrudSites": 6,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review against3ad53a89: four non-factory blobs identical to approved5b07717f; factory only removes Issue/Image forwarding retaining driver. Ledger final approval and prior16focused/corrected8live/static evidence reused. Exact cumulative5live passed zero failed/skipped/cancelled. Server scope/already-removed validation/counter boundaries, protected issue identity, removal-close-subscriber-state order and durable projection failures retained; stored objects/URLs unchanged. Diff check clean;6CRUD/0acquisitions, ledger199/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice29b.patch",
           "preparedPatchSha256": "2c36a77d8ec4334e9bfb920a5f8f767477b5ddfbac8ab105617d4dd626f95a0a",
           "preparedBase": "a6bb708fd8e82b7f75708b827b876fc959ab6329",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 7ba7417163742edd58c66ae47066c43b1fc4e255: lint, TypeScript and2366 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice29b-exact-live.log"
           ],
-          "commit": null
+          "commit": "e863538e62fbe2773521518461fb621a6ba61d8f"
         }
       ]
     },
@@ -1112,11 +1113,11 @@
       "baselineCrudSites": 7,
       "dependencies": "18\u201319; 05\u201306",
       "acceptance": "All user/mod wrappers, scope, duration, authorization and activity",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "scratchpad_review: final approved exact source/evidence, no remaining findings",
+      "review": "Independent cumulative review againste863538: ten non-factory/context blobs identical to approveda211f02b; context only adds optional SuspensionWriteRepository import/field, factory drops suspension model arguments preserving capability flags. Prior23focused/14existing live/final10live/static evidence reused. Exact cumulative10live passed zero failed/skipped/cancelled. Identity protection/full defaults, separate writes/notification/scope-owner/cleanup boundaries and partial failures preserved; original response-only ActivityFeed normalization leaves ordered native events strict. Diff check clean;7CRUD/0acquisitions, ledger192/53 consistent. Mandatory hooks required.",
       "verification": [
-        "Tree a211f02b1797f111767efc3102233500717e7f68: 10finalcorrectedlive,finaltypes/lint;23focused+14existinglive on unchangedproduction passed; cumulative gates pending"
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "preparedPatch": "ogm-slice30.patch",
       "preparedPatchSha256": "94de71fec82b08351be0c4e9e45b15fe9451b36e51e8213e000368464d59db37",
@@ -1687,9 +1688,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 199,
+  "remainingRuntimeCrudSites": 192,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 38,
+  "remainingRuntimeCrudFiles": 36,
   "foundations": [
     {
       "id": "F01",
@@ -1736,11 +1737,12 @@
       "26",
       "27",
       "28",
+      "29",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "29b"
+      "30"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

@@ -59,14 +59,14 @@ test("wiki fallback occurs only without an author and first profile owner is ret
 test("all three caller families retain target errors before authentication or suspension reads",async()=>{
  const failure=new Error("target read failure");const {repository}=makeRepo();repository.findIssue=async()=>{throw failure;};
  const context={driver:{},issueTargetRepository:repository,mayAccessSensitiveContent:true} as unknown as GraphQLContext;
- const writers={Issue:{} as never,Channel:{} as never,ServerConfig:{} as never};
- const resolvers=[suspendUser(writers),unsuspendUser(writers),originalPosterSuspended({})];
+ const writers={};
+ const resolvers=[suspendUser(writers),unsuspendUser(),originalPosterSuspended({})];
  for(const resolver of resolvers)await assert.rejects(resolver(null,{issueId:"i"} as never,context,{} as GraphQLResolveInfo),error=>error===failure);
 });
 test("only explicitly enabled suspension path can read wiki/revision targets",async()=>{
  const failure=new Error("wiki target reached");const {repository}=makeRepo({Channel:{uniqueName:"cats"},relatedWikiPageId:"w"});repository.findWikiAuthors=async()=>{throw failure;};
  const context={driver:{},issueTargetRepository:repository,mayAccessSensitiveContent:true} as unknown as GraphQLContext;
- const writers={Issue:{} as never,Channel:{} as never,ServerConfig:{} as never};
+ const writers={};
  await assert.rejects(suspendUser({...writers,includeWikiPage:true,includeTextVersion:true})(null,{issueId:"i"} as never,context,{} as GraphQLResolveInfo),error=>error===failure);
- for(const resolver of [suspendUser(writers),suspendMod(writers),unsuspendUser(writers),originalPosterSuspended({})])await assert.rejects(resolver(null,{issueId:"i"} as never,context,{} as GraphQLResolveInfo),/Could not find the (user|mod) account name/);
+ for(const resolver of [suspendUser(writers),suspendMod(),unsuspendUser(),originalPosterSuspended({})])await assert.rejects(resolver(null,{issueId:"i"} as never,context,{} as GraphQLResolveInfo),/Could not find the (user|mod) account name/);
 });
