@@ -1639,7 +1639,7 @@
           "id": "40a",
           "scope": "Pipeline execution leases",
           "baselineCrudSites": 6,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "157dc1ca249de5ac8bfe7626b2b6906aef946b1e",
             "tree": "ccfd09ee0197f8106d59c75975ffe07207728763",
@@ -1659,10 +1659,18 @@
               "tests/integration/pipelineLeaseRepository.test.ts"
             ]
           },
-          "review": "Independent incremental review of all eleven paths against approved44a157dc1ca; patch SHA2565f5c1ae57ee8ea012cc5d19751dc14a539b7fa9273a54e64342ade2298e6dd72 verified, diff check clean. Five finite operations replace six CRUD calls with exact pending/running/lease predicates, claim/renew id-only selections and actual production OGM full PluginRun/PluginPipelineRun defaults. Job claim then parent and owned renewal then pending siblings then parent retain separate commits, return shapes and propagated error prefixes. All three trigger paths forward configured driver and optional test port through claim, heartbeat and both completion paths; heartbeat non-overlap, logging and stop code preserved. Test-only adapter retains original recorder arguments/assertions. Inspected30focused pass plus overlapping6lease tests including new heartbeat test;8live pass with raw native IDs/temporal checks before ordered event comparison, defaults/coercion, stale-owner rejection and committed projection-failure/retry behavior. Stale-owner evidence is sequential after committed claim, not proof or redesign of concurrent atomic claims. Final3 TypeScript exit0 parent-confirmed session62269, lint0. Prepared6CRUD/0acquisitions; integration and mandatory hooks pending.",
+          "review": "Independent cumulative40a againstca939ef5. Ten executable/test blobs identical to approvedccfd09ee; sole commentTrigger adaptation matches reviewed integrated patch additions/removals and retains38 bot thread/identity/comment wiring. Configured driver and optional lease port forwarded through all three triggers including heartbeat/completion. Exact isolated8live passed zero failures/skips/cancellations. Original30focused plus overlapping6lease units/static reused. Separate job/parent writes, defaults, stale-owner sequential behavior and committed failure/retry contracts preserved; no concurrent atomicity claim. Diff check clean;81CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "30focused plus overlapping6lease units,8live,lint/TypeScript passed. Same predicates/defaults/independent write prefixes and timer non-overlap/stop behavior. Raw native IDs/timestamps checked; sequential stale-owner test does not claim concurrent atomicity. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null,
+          "integrationAdaptation": {
+            "id": "40a",
+            "patch": "/tmp/ogm-integrated-40a.patch",
+            "sha256": "0592d17d072e5f570576481af1c15ee7ac411ad76e6c42438cbd840e673cbf6a",
+            "base": "27327dfdadfff3363c1f3ebce8cc40246b6b7054"
+          },
+          "integrationAdaptationReview": "All four adapted patch hashes verified. Added/removed lines are identical to original approved40a/40b/43/46 patches; differences only hunk locations/context/indexes.40a/40b/43 preserve38a BotThread repository import and call,38b/c identity/comment integration and39 bot report call.46 retains31 discussion/event repository construction and calls, removes only seed models already covered by original46. Final tree diff check clean. Rehearsal focused20 passed zero failures/skips/cancellations; TypeScript84625 exit0 parent-confirmed. No duplicate tests run. Each cumulative exact live and mandatory hook gate remains required."
         },
         {
           "id": "40b",
@@ -1843,7 +1851,7 @@
           "id": "44a",
           "scope": "Pipeline result notifications",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "825e01ef5c2ffa3c7a1daa51e4cd9d6aea3b7c15",
             "tree": "157dc1ca249de5ac8bfe7626b2b6906aef946b1e",
@@ -1860,9 +1868,10 @@
           },
           "review": "Independent cumulative44a against8cf2470e. All six executable/test blobs identical to approved157dc1ca; original27focused/static review reused. Four finite operations and configured driver callers preserve optionalUser early return, full User default selection, separate claim/write commits and no retry after committed projection failure. Exact isolated8live passed zero failures/skips/cancellations including raw IDs/endpoints, ordered native events and default selection assertion. Diff check clean; ledger87CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 876be0a6f3ad5455657f122b476930a4fd99e20a: lint, TypeScript and2454 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice44a-exact-live.log"
           ],
-          "commit": null
+          "commit": "ca939ef5e2a86457d1d55ce5f5bdb1a0bd3e3268"
         },
         {
           "id": "44b",
@@ -2061,9 +2070,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 87,
+  "remainingRuntimeCrudSites": 81,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 13,
+  "remainingRuntimeCrudFiles": 12,
   "foundations": [
     {
       "id": "F01",
@@ -2124,7 +2133,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "44a"
+      "40a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

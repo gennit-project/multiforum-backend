@@ -1,3 +1,4 @@
+import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the channel trigger's per-plugin run lifecycle.
 // The real plugin loader is replaced via the injectable `loadPlugin` dependency
 // with a fake in-memory plugin; models are stubbed and PluginRun create/update
@@ -11,7 +12,7 @@ import type {
   PluginConstructor,
   PluginRunResult,
 } from "./pluginLoader.js";
-import { triggerChannelPluginPipeline } from "./channelTrigger.js";
+import { triggerChannelPluginPipeline as actualTrigger } from "./channelTrigger.js";
 
 type TriggerArgs = Parameters<typeof triggerChannelPluginPipeline>[0];
 type TriggerOptions = NonNullable<
@@ -270,3 +271,5 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.ok(statuses.includes("FAILED"));
   assert.ok(statuses.includes("SKIPPED"));
 });
+
+const triggerChannelPluginPipeline:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models)});

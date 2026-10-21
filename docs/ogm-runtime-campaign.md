@@ -82,7 +82,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 41 Pipeline download execution | 12 | 40; 44 notifications; 34 as applicable | Runner side effects outside retried callbacks; statuses/retries/results | pending |
 | 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | pending |
 | 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | pending |
-| 44 Pipeline control/notifications | 18 | Notifications before 40–43; controls after 41–43 and 34 | Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility | pending |
+| 44 Pipeline control/notifications | 18 | Notifications before 40–43; controls after 41–43 and 34 | Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility | partial; see subdivisions |
 | 45 Pipeline campaigns | 14 | 40–44 | Progress, cancellation, aggregation and restart behavior | pending |
 | 46 Test seeding endpoint | 9 | 31–33 and other reused creation helpers | Access restrictions, fixture relationships and composed responses | pending |
 
@@ -898,3 +898,11 @@ Slice40w committed `8cf2470e8820e1fa6fe03c45fd8f34c70caf98b9` ([diff](https://gi
 4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 87 CRUD sites/13 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
 
 44a final integration approval: Independent cumulative44a against8cf2470e. All six executable/test blobs identical to approved157dc1ca; original27focused/static review reused. Four finite operations and configured driver callers preserve optionalUser early return, full User default selection, separate claim/write commits and no retry after committed projection failure. Exact isolated8live passed zero failures/skips/cancellations including raw IDs/endpoints, ordered native events and default selection assertion. Diff check clean; ledger87CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice44a committed `ca939ef5e2a86457d1d55ce5f5bdb1a0bd3e3268` ([diff](https://github.com/gennit-project/multiforum-backend/commit/ca939ef5e2a86457d1d55ce5f5bdb1a0bd3e3268)), tree `876be0a6f3ad5455657f122b476930a4fd99e20a`: lint, TypeScript and all2454 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice44a-exact-live.log. Independent approval recorded above.
+
+### Slice 40a — Pipeline leases
+
+6 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 81 CRUD sites/12 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+40a final integration approval: Independent cumulative40a againstca939ef5. Ten executable/test blobs identical to approvedccfd09ee; sole commentTrigger adaptation matches reviewed integrated patch additions/removals and retains38 bot thread/identity/comment wiring. Configured driver and optional lease port forwarded through all three triggers including heartbeat/completion. Exact isolated8live passed zero failures/skips/cancellations. Original30focused plus overlapping6lease units/static reused. Separate job/parent writes, defaults, stale-owner sequential behavior and committed failure/retry contracts preserved; no concurrent atomicity claim. Diff check clean;81CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.

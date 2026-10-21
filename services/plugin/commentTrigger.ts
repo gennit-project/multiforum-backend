@@ -1,4 +1,5 @@
 import { createBotThreadRepository } from "../persistence/botThreadRepository.js"
+import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import type { CommentTriggerArgs, PluginEdgeData, PluginToRun, PendingRun } from './types.js'
 import { COMMENT_EVENTS } from './constants.js'
@@ -40,7 +41,7 @@ export const triggerPluginRunsForComment = async (
   }: CommentTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
-  { loadPlugin = loadPluginImplementation }: { loadPlugin?: typeof loadPluginImplementation } = {}
+  { loadPlugin = loadPluginImplementation, leaseRepository }: { loadPlugin?: typeof loadPluginImplementation; leaseRepository?: PipelineLeaseRepository } = {}
 ) => {
   if (!COMMENT_EVENTS.has(event)) {
     throw new Error(`Unsupported comment plugin event: ${event}`)
@@ -442,6 +443,8 @@ export const triggerPluginRunsForComment = async (
     }
 
     const lease = await claimPluginRunLease({
+      driver,
+      repository: leaseRepository,
       PluginRun,
       PluginPipelineRun,
       pluginRunId,
@@ -450,6 +453,8 @@ export const triggerPluginRunsForComment = async (
     if (!lease) continue
 
     const heartbeat = startPluginRunHeartbeat({
+      driver,
+      repository: leaseRepository,
       PluginRun,
       PluginPipelineRun,
       lease,
@@ -712,6 +717,8 @@ export const triggerPluginRunsForComment = async (
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       await completePluginRunLease({
+      driver,
+      repository: leaseRepository,
         PluginRun,
         lease,
         update: {
@@ -755,6 +762,8 @@ export const triggerPluginRunsForComment = async (
       previousStatus = 'FAILED'
 
       await completePluginRunLease({
+      driver,
+      repository: leaseRepository,
         PluginRun,
         lease,
         update: {

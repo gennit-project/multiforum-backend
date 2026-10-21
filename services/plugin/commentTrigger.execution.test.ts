@@ -1,3 +1,4 @@
+import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the comment trigger: the per-plugin run lifecycle
 // (PENDING -> RUNNING -> SUCCEEDED/FAILED/SKIPPED). The real plugin loader
 // downloads and runs an untrusted tarball, so it is replaced via the injectable
@@ -13,7 +14,7 @@ import type {
   PluginRunResult,
 } from "./pluginLoader.js";
 import type { Driver } from "neo4j-driver";
-import { triggerPluginRunsForComment } from "./commentTrigger.js";
+import { triggerPluginRunsForComment as actualTrigger } from "./commentTrigger.js";
 
 type TriggerArgs = Parameters<typeof triggerPluginRunsForComment>[0];
 type TriggerOptions = NonNullable<
@@ -202,3 +203,5 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.ok(skipped, "second plugin SKIPPED");
   assert.match(String(skipped.update?.skippedReason), /Pipeline stopped/);
 });
+
+const triggerPluginRunsForComment:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models)});

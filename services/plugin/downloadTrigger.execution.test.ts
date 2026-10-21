@@ -1,3 +1,4 @@
+import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the downloadable-file trigger's per-plugin run
 // lifecycle. The real plugin loader is replaced via the injectable `loadPlugin`
 // dependency with a fake in-memory plugin; models are stubbed and PluginRun
@@ -12,7 +13,7 @@ import type {
   PluginConstructor,
   PluginRunResult,
 } from "./pluginLoader.js";
-import { triggerPluginRunsForDownloadableFile } from "./downloadTrigger.js";
+import { triggerPluginRunsForDownloadableFile as actualTrigger } from "./downloadTrigger.js";
 
 type TriggerArgs = Parameters<typeof triggerPluginRunsForDownloadableFile>[0];
 type TriggerOptions = NonNullable<
@@ -643,3 +644,5 @@ test("holds a replacement before the scanner begins", async () => {
 
   assert.equal(fileUpdates[0]!.update?.scanStatus, "PENDING");
 });
+
+const triggerPluginRunsForDownloadableFile:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models)});

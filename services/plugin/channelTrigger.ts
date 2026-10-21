@@ -1,3 +1,4 @@
+import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import type {
   ChannelTriggerArgs,
@@ -56,6 +57,7 @@ export const triggerChannelPluginPipeline = async (
     discussionId,
     channelUniqueName,
     event,
+    driver,
     models
   }: ChannelTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
@@ -63,9 +65,11 @@ export const triggerChannelPluginPipeline = async (
   {
     loadPlugin = loadPluginImplementation,
     execution,
+    leaseRepository,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     execution?: PipelineExecutionMetadata
+    leaseRepository?: PipelineLeaseRepository
   } = {}
 ) => {
   if (!CHANNEL_EVENTS.has(event)) {
@@ -418,6 +422,8 @@ export const triggerChannelPluginPipeline = async (
     }
 
     const lease = await claimPluginRunLease({
+      driver,
+      repository: leaseRepository,
       PluginRun,
       PluginPipelineRun,
       pluginRunId,
@@ -426,6 +432,8 @@ export const triggerChannelPluginPipeline = async (
     if (!lease) continue
 
     const heartbeat = startPluginRunHeartbeat({
+      driver,
+      repository: leaseRepository,
       PluginRun,
       PluginPipelineRun,
       lease,
@@ -592,6 +600,8 @@ export const triggerChannelPluginPipeline = async (
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       await completePluginRunLease({
+      driver,
+      repository: leaseRepository,
         PluginRun,
         lease,
         update: {
@@ -641,6 +651,8 @@ export const triggerChannelPluginPipeline = async (
       previousStatus = 'FAILED'
 
       await completePluginRunLease({
+      driver,
+      repository: leaseRepository,
         PluginRun,
         lease,
         update: {
