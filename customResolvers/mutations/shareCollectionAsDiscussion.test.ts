@@ -4,7 +4,6 @@ import test, { afterEach, beforeEach } from "node:test";
 import jwt from "jsonwebtoken";
 import type { Driver } from "neo4j-driver";
 import type {
-  DiscussionModel,
 } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { GraphQLError } from "graphql";
@@ -91,7 +90,7 @@ const buildResolver = ({
     });
 
   const resolver = shareCollectionAsDiscussion({
-    Discussion: {} as DiscussionModel,
+
     collectionReadRepository: {
       findProfileCollections: async () => [],
       findPublicContaining: async () => [],

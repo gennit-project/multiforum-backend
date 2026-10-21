@@ -288,7 +288,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     seedDataForCypressTests: seedDataForCypressTestsResolver({
       driver,
       Channel,
-      Discussion,
       Event,
       Comment,
       Tag,
@@ -575,7 +574,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
-      Discussion,
       driver
     }),
     pinWikiPageToChannel: pinWikiPageToChannel({

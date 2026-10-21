@@ -1,8 +1,8 @@
+import {createDiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
 import { createAccountRegistrationRepository } from "../../services/persistence/accountRegistrationRepository.js";
 import {
   ChannelModel,
   EventModel,
-  DiscussionModel,
   CommentModel,
   TagModel,
   ChannelRoleModel,
@@ -54,7 +54,6 @@ type Input = {
   driver: Driver;
   Channel: ChannelModel;
   Comment: CommentModel;
-  Discussion: DiscussionModel;
   Event: EventModel;
   Tag: TagModel;
   ChannelRole: ChannelRoleModel;
@@ -87,7 +86,6 @@ const seedDataForCypressTestsResolver = (input: Input) => {
     driver,
     Channel,
     Comment,
-    Discussion,
     Event,
     Tag,
     ChannelRole,
@@ -201,7 +199,7 @@ const seedDataForCypressTestsResolver = (input: Input) => {
     await Channel.create({ input: channels });
     await linkSeededChannelRoleOwners(driver);
     await Tag.create({ input: tags });
-    await createDiscussionsFromInput(Discussion, driver, discussions);
+    await createDiscussionsFromInput(createDiscussionCreationRepository(driver), driver, discussions);
     await createEventsFromInput(Event, driver, events, context);
     await Comment.create({ input: comments });
     return { success: true, message: "All test data has been created." };

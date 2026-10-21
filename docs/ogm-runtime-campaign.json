@@ -1113,11 +1113,12 @@
       "baselineCrudSites": 7,
       "dependencies": "18\u201319; 05\u201306",
       "acceptance": "All user/mod wrappers, scope, duration, authorization and activity",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "7c246fb6976b1ea5dd6cfcb1973ea02b00ee91f6",
       "review": "Independent cumulative review againste863538: ten non-factory/context blobs identical to approveda211f02b; context only adds optional SuspensionWriteRepository import/field, factory drops suspension model arguments preserving capability flags. Prior23focused/14existing live/final10live/static evidence reused. Exact cumulative10live passed zero failed/skipped/cancelled. Identity protection/full defaults, separate writes/notification/scope-owner/cleanup boundaries and partial failures preserved; original response-only ActivityFeed normalization leaves ordered native events strict. Diff check clean;7CRUD/0acquisitions, ledger192/53 consistent. Mandatory hooks required.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 2e5e85f1071bceee6e21bafd117b9f932bf064f2: lint, TypeScript and2382 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice30-exact-live.log"
       ],
       "preparedPatch": "ogm-slice30.patch",
       "preparedPatchSha256": "94de71fec82b08351be0c4e9e45b15fe9451b36e51e8213e000368464d59db37",
@@ -1142,14 +1143,15 @@
           "id": "31a",
           "scope": "Discussion creation",
           "baselineCrudSites": 3,
-          "status": "reviewed; integration pending",
-          "review": "scratchpad_review: final approved exacttree/files/evidence",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative31a review against7c246fb: seven non-factory source/test blobs originally identical to approved57c88c13, factory narrowly removes unused Discussion from seed/shareCollection while retaining plugin capability forwarding. New refreeze changes only expected-literal test representation and documentation; exact old/new deep comparison remains. Original22focused/8live/static reused. Cumulative first run3/4 passed; corrected attached-file targeted1/1 now passes with zero failures/skips/cancellations. No production changes or weakened field comparison. Creation/refetch/file selections, raw channel/session/collection failure order preserved. Diff check clean;3CRUD/0acquisitions, ledger189/53 and separate queuedCLI consistent. Prior test-only rejection superseded for this tree; mandatory hooks required.",
           "preparedPatch": "ogm-slice31a.patch",
           "preparedPatchSha256": "c0caf4e6a36795b78b7111cc30210a46cf88b8e69a8978cf5b35d271c47aff9f",
           "preparedBase": "d20ed128287589a6e996b7cdea7adc9a78540e64",
           "verification": [
-            "Tree57c88c13c77d740fe3f0cfbe04440b10781cf78c:22focused,8live,types/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "31b",
@@ -1688,9 +1690,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 192,
+  "remainingRuntimeCrudSites": 189,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 36,
+  "remainingRuntimeCrudFiles": 35,
   "foundations": [
     {
       "id": "F01",
@@ -1738,11 +1740,12 @@
       "27",
       "28",
       "29",
+      "30",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "30"
+      "31a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -1783,5 +1786,25 @@
         "Four live ownership tests passed with original ownership/auth assertions unchanged; no production change"
       ]
     }
-  ]
+  ],
+  "cliMigration": {
+    "base": "89d0650bacd922167523f94bec5772ea316a09c6",
+    "tree": "1a43b5049372ed75ac93728bb0780ceefcb1337a",
+    "patch": "/tmp/ogm-cli-pipelines.patch",
+    "sha256": "e361be3a0dd8528a4d45c7724fd5d85a314912fd4331b60dd3e2ddc2dacc3e36",
+    "worktree": "/workspace/ogm-cli-pipelines",
+    "files": [
+      "build_scripts/migrateLegacyPluginPipelines.ts",
+      "services/persistence/legacyPipelineMigrationRepository.ts",
+      "services/plugin/migrateLegacyPipelineConfigurations.test.ts",
+      "services/plugin/migrateLegacyPipelineConfigurations.ts",
+      "tests/integration/legacyPipelineMigrationRepository.test.ts"
+    ],
+    "baselineCrudSites": 2,
+    "status": "reviewed; cumulative integration pending",
+    "review": "campaign_review approved exact prepared tree; five independent focused checks",
+    "verification": [
+      "Five focused passed; four live passed plus corrected fifth targeted passed; TypeScript/lint passed. Private CLI schema retains legacy projection, public schema unchanged. Actual CLI never executed."
+    ]
+  }
 }

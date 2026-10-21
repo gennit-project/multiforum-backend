@@ -1,3 +1,4 @@
+import {createDiscussionCreationRepository, type DiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import { createDiscussionChannelQuery } from "../cypher/cypherQueries.js";
@@ -35,6 +36,7 @@ type Args = {
 };
 
 type Input = {
+  discussionCreationRepository?: DiscussionCreationRepository;
   Discussion: DiscussionModel;
   driver: Driver;
   // Additional models for plugin pipeline support
@@ -48,6 +50,7 @@ type Input = {
 };
 
 type PluginModels = {
+  Discussion: DiscussionModel;
   Channel: ChannelModel;
   DownloadableFile: DownloadableFileModel;
   PluginPipelineRun: PluginPipelineRunModel;
@@ -70,7 +73,7 @@ export const triggerCreatedDownloadPipelines = async ({
   downloadableFileId: string;
   channelConnections: string[];
   Discussion: DiscussionModel;
-  pluginModels: PluginModels;
+  pluginModels: Omit<PluginModels, "Discussion">;
   triggerDownload?: typeof triggerPluginRunsForDownloadableFile;
   triggerChannel?: typeof triggerChannelPluginPipeline;
 }) => {
@@ -140,54 +143,13 @@ export const triggerCreatedDownloadPipelines = async ({
 // Therefore, we have to create the Discussion first, then create the
 // DiscussionChannel nodes that are linked to the Discussion and Channel nodes.
 
-const selectionSet = `
-  {
-    id
-    title
-    body
-    Author {
-      username
-    }
-    DiscussionChannels {
-      id
-      createdAt
-      channelUniqueName
-      discussionId
-      archived
-      Flairs {
-        id
-        channelUniqueName
-        displayName
-        color
-        order
-        archived
-      }
-      Channel {
-        uniqueName
-      }
-      Discussion {
-        id
-      }
-      UpvotedByUsers {
-        username
-      }
-      UpvotedByUsersAggregate {
-        count
-      }
-    }
-    createdAt
-    updatedAt
-    Tags {
-      text
-    }
-  }
-`;
+
 
 /**
  * Function to create discussions from an input array.
  */
 export const createDiscussionsFromInput = async (
-  Discussion: DiscussionModel,
+  repository: DiscussionCreationRepository,
   driver: Driver,
   input: DiscussionCreateInputWithChannels[],
   context?: GraphQLContext,
@@ -285,10 +247,7 @@ export const createDiscussionsFromInput = async (
 
     for (const [inputIndex, { discussionCreateInput, channelConnections }] of
       sanitizedInput.entries()) {
-      const response = await Discussion.create({
-        input: [discussionCreateInput],
-        selectionSet: `{ discussions ${selectionSet} }`,
-      });
+      const response = await repository.createDiscussion(discussionCreateInput);
 
       const newDiscussion = response.discussions[0];
       const newDiscussionId = newDiscussion.id;
@@ -326,10 +285,7 @@ export const createDiscussionsFromInput = async (
       // upload.
       if (hasDownload && pluginModels) {
         try {
-          const withFile = await Discussion.find({
-            where: { id: newDiscussionId },
-            selectionSet: `{ id DownloadableFiles { id } }`,
-          });
+          const withFile = await repository.findAttachedFiles(newDiscussionId);
           const downloadableFileId = (
             withFile?.[0] as unknown as { DownloadableFiles?: Array<{ id?: string }> }
           )?.DownloadableFiles?.[0]?.id;
@@ -338,7 +294,7 @@ export const createDiscussionsFromInput = async (
               discussionId: newDiscussionId,
               downloadableFileId,
               channelConnections,
-              Discussion,
+              Discussion: pluginModels.Discussion,
               pluginModels,
             });
           }
@@ -353,12 +309,7 @@ export const createDiscussionsFromInput = async (
       }
 
       // Refetch the discussion with all related data
-      const fetchedDiscussion = await Discussion.find({
-        where: {
-          id: newDiscussionId,
-        },
-        selectionSet,
-      });
+      const fetchedDiscussion = await repository.findCreatedDiscussion(newDiscussionId);
 
       discussions.push(fetchedDiscussion[0]);
     }
@@ -392,9 +343,11 @@ const getResolver = (input: Input) => {
     User,
   } = input;
 
+  const repository = input.discussionCreationRepository ?? createDiscussionCreationRepository(driver);
+
   // Build plugin models object if all required models are provided
   const pluginModels = Channel && DownloadableFile && PluginPipelineRun && PluginRun && ServerConfig && ServerSecret
-    ? { Channel, DownloadableFile, PluginPipelineRun, PluginRun, ServerConfig, ServerSecret, User }
+    ? { Discussion, Channel, DownloadableFile, PluginPipelineRun, PluginRun, ServerConfig, ServerSecret, User }
     : undefined;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
@@ -403,7 +356,7 @@ const getResolver = (input: Input) => {
     try {
       // Use the extracted function to create discussions
       const discussions = await createDiscussionsFromInput(
-        Discussion,
+        repository,
         driver,
         input,
         context,

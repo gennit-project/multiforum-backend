@@ -1,10 +1,8 @@
+import {createDiscussionCreationRepository, type DiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
 import { createCollectionReadRepository, type CollectionReadRepository } from "../../services/persistence/collectionReadRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
-import type {
-  DiscussionModel,
-} from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import {
@@ -27,7 +25,7 @@ type CheckChannelPermissions = typeof defaultCheckChannelPermissions;
 type CreateDiscussions = typeof createDiscussionsFromInput;
 
 type Input = {
-  Discussion: DiscussionModel;
+  discussionCreationRepository?: DiscussionCreationRepository;
   collectionReadRepository?: CollectionReadRepository;
   driver: Driver;
   checkChannelPermissions?: CheckChannelPermissions;
@@ -38,11 +36,11 @@ const getTrimmed = (value: string | null | undefined) => value?.trim() || "";
 
 const getResolver = (input: Input) => {
   const {
-    Discussion,
     driver,
     checkChannelPermissions = defaultCheckChannelPermissions,
     createDiscussions = createDiscussionsFromInput,
   } = input;
+  const repository = input.discussionCreationRepository ?? createDiscussionCreationRepository(driver);
   const collectionsRepository = input.collectionReadRepository ?? createCollectionReadRepository(driver);
 
   return async (
@@ -105,7 +103,7 @@ const getResolver = (input: Input) => {
 
     try {
       const discussions = await createDiscussions(
-        Discussion,
+        repository,
         driver,
         [
           {

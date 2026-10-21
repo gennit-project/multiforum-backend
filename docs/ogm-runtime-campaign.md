@@ -68,7 +68,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | complete |
 | 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | complete |
 | 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | complete |
-| 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | pending |
+| 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | complete |
 | 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | pending |
 | 32 Event create/update | 5 | 22; 05–06; external transaction/event gate | Explicit transaction/event timing, rollback and connections | pending |
 | 33 Event recurrence | 19 | 32; external transaction/event gate | Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes | pending |
@@ -676,3 +676,15 @@ Slice29b committed `e863538e62fbe2773521518461fb621a6ba61d8f` ([diff](https://gi
 7 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 192 CRUD sites/36 files; 53 acquisitions/7 files; two separate CLI sites.
 
 30 final integration approval: Independent cumulative review againste863538: ten non-factory/context blobs identical to approveda211f02b; context only adds optional SuspensionWriteRepository import/field, factory drops suspension model arguments preserving capability flags. Prior23focused/14existing live/final10live/static evidence reused. Exact cumulative10live passed zero failed/skipped/cancelled. Identity protection/full defaults, separate writes/notification/scope-owner/cleanup boundaries and partial failures preserved; original response-only ActivityFeed normalization leaves ordered native events strict. Diff check clean;7CRUD/0acquisitions, ledger192/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice30 committed `7c246fb6976b1ea5dd6cfcb1973ea02b00ee91f6` ([diff](https://github.com/gennit-project/multiforum-backend/commit/7c246fb6976b1ea5dd6cfcb1973ea02b00ee91f6)), tree `2e5e85f1071bceee6e21bafd117b9f932bf064f2`: lint, TypeScript and all2382 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice30-exact-live.log. Independent approval recorded above.
+
+### Slice 31a — Discussion creation
+
+3 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 189 CRUD sites/35 files; 53 acquisitions/7 files; two separate CLI sites.
+
+CLI pipeline migration independently reviewed and queued: two separate CLI CRUD sites, zero runtime credit. Private standalone schema preserves legacy response/error behavior; actual CLI never executed. Final cumulative gates pending.
+
+31a cumulative live first run:3/4passed; exact baseline/candidate comparison passed, but a redundant expected literal assertion compared GraphQL null-prototype records to plain objects. Corrected only that literal comparison through full JSON value conversion, retaining exact baseline/candidate comparison. Targeted rerun and renewed independent review required.
+
+31a final integration approval: Independent cumulative31a review against7c246fb: seven non-factory source/test blobs originally identical to approved57c88c13, factory narrowly removes unused Discussion from seed/shareCollection while retaining plugin capability forwarding. New refreeze changes only expected-literal test representation and documentation; exact old/new deep comparison remains. Original22focused/8live/static reused. Cumulative first run3/4 passed; corrected attached-file targeted1/1 now passes with zero failures/skips/cancellations. No production changes or weakened field comparison. Creation/refetch/file selections, raw channel/session/collection failure order preserved. Diff check clean;3CRUD/0acquisitions, ledger189/53 and separate queuedCLI consistent. Prior test-only rejection superseded for this tree; mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
