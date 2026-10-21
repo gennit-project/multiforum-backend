@@ -188,10 +188,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
         ServerSecret,
         User,
       }),
-    createIssue: createIssue({
-      Issue,
-      driver
-    }),
+    createIssue: createIssue({ driver }),
     updateDiscussionWithChannelConnections:
       updateDiscussionWithChannelConnections({
         Discussion,

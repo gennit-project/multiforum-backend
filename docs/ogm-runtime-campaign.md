@@ -56,7 +56,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | complete |
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | complete |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | complete |
-| 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | reviewed subdivisions; integration pending |
+| 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | partial; see subdivisions |
 | 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | pending |
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | pending |
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | pending |
@@ -456,3 +456,11 @@ CI recovery verified: c70043c8acf4f4a75f54b409c5d93069e1d42679 [Tests39525932570
 32 independently reviewed/queued:5CRUD; preserve31a seeder cleanup and dependon31b explicittransaction executor. Creationpartialfailure/nativeevents and updatepostcommit effects preserved; no removalcredit beforeintegration.
 
 18a final integration approval: Independent cumulative review: 12 non-wiring source/test blobs exactly match previously reviewed 18a; mutation/query/context factory adaptations preserve relation target resolution, capability flags and age-policy context. Eight runtime CRUD removals, zero acquisitions; queued slices not credited. Exact snapshot live evidence /tmp/runtime-slice18a-exact-live.log: 24 passed, zero failed/skipped/cancelled. Prior focused/static evidence reused for unchanged candidate; cumulative diff check passed. Subsequent docs-only milestone.nextUnblocked correction to [18b] is permitted. Mandatory hooks remain parent gate.; live parity passed on identical production sources before this documentation-only update.
+
+Slice18a committed `8f2004707a9c05925d8e507f7cd9dd472d0a04fb` ([diff](https://github.com/gennit-project/multiforum-backend/commit/8f2004707a9c05925d8e507f7cd9dd472d0a04fb)), tree `57c9bd70d2c87e147ee429b9fcc3b1ce1aa873cd`: lint, TypeScript and all2107 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice18a-exact-live.log. Independent approval recorded above.
+
+### Slice 18b — Issue creation
+
+1 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 335 CRUD sites/70 files; 74 acquisitions/15 files; two separate CLI sites.
+
+18b final integration approval: Independent cumulative review: all four non-factory source/test blobs exactly match previously reviewed 18b tree4ea9788; sole factory adaptation removes Issue injection and retains driver. Separate number allocation and close remain outside creation catch; identity attachment stays inside catch; no atomicity redesign. One CRUD removed, zero acquisitions; ledger count335 consistent. Exact snapshot live log /tmp/runtime-slice18b-exact-live.log reports six passed, zero failed/skipped/cancelled. Reused original focused/static evidence; cumulative diff check passed. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.

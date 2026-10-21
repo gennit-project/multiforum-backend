@@ -567,28 +567,30 @@
           "id": "18b",
           "scope": "Issue creation and identity",
           "baselineCrudSites": 1,
-          "status": "reviewed; integration pending",
-          "review": "review_recovery",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review: all four non-factory source/test blobs exactly match previously reviewed 18b tree4ea9788; sole factory adaptation removes Issue injection and retains driver. Separate number allocation and close remain outside creation catch; identity attachment stays inside catch; no atomicity redesign. One CRUD removed, zero acquisitions; ledger count335 consistent. Exact snapshot live log /tmp/runtime-slice18b-exact-live.log reports six passed, zero failed/skipped/cancelled. Reused original focused/static evidence; cumulative diff check passed. Mandatory cumulative hooks remain required.",
           "preparedPatch": "ogm-slice18b.patch",
           "preparedPatchSha256": "15fd57bb9805635b804881b86aa21dc9dd017337eb6547a8841fa88a795a2532",
-          "preparedBase": "0ed821a",
-          "verification": [
-            "23 independent focused;6 live;corrected tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
-          ]
-        },
-        {
-          "id": "18a",
-          "scope": "Issue target resolution",
-          "baselineCrudSites": 8,
-          "status": "reviewed; cumulative gates pending",
-          "review": "Independent cumulative review: 12 non-wiring source/test blobs exactly match previously reviewed 18a; mutation/query/context factory adaptations preserve relation target resolution, capability flags and age-policy context. Eight runtime CRUD removals, zero acquisitions; queued slices not credited. Exact snapshot live evidence /tmp/runtime-slice18a-exact-live.log: 24 passed, zero failed/skipped/cancelled. Prior focused/static evidence reused for unchanged candidate; cumulative diff check passed. Subsequent docs-only milestone.nextUnblocked correction to [18b] is permitted. Mandatory hooks remain parent gate.",
-          "preparedPatch": "ogm-slice18a.patch",
-          "preparedPatchSha256": "f910740e3ece35bf8a8921ee353abc8155ad93ae66a9c7108a903ad322cf24c7",
           "preparedBase": "0ed821a",
           "verification": [
             "Original focused/live/static gates passed; final cumulative checks pending"
           ],
           "commit": null
+        },
+        {
+          "id": "18a",
+          "scope": "Issue target resolution",
+          "baselineCrudSites": 8,
+          "status": "complete",
+          "review": "Independent cumulative review: 12 non-wiring source/test blobs exactly match previously reviewed 18a; mutation/query/context factory adaptations preserve relation target resolution, capability flags and age-policy context. Eight runtime CRUD removals, zero acquisitions; queued slices not credited. Exact snapshot live evidence /tmp/runtime-slice18a-exact-live.log: 24 passed, zero failed/skipped/cancelled. Prior focused/static evidence reused for unchanged candidate; cumulative diff check passed. Subsequent docs-only milestone.nextUnblocked correction to [18b] is permitted. Mandatory hooks remain parent gate.",
+          "preparedPatch": "ogm-slice18a.patch",
+          "preparedPatchSha256": "f910740e3ece35bf8a8921ee353abc8155ad93ae66a9c7108a903ad322cf24c7",
+          "preparedBase": "0ed821a",
+          "verification": [
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 57c9bd70d2c87e147ee429b9fcc3b1ce1aa873cd: lint, TypeScript and2107 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice18a-exact-live.log"
+          ],
+          "commit": "8f2004707a9c05925d8e507f7cd9dd472d0a04fb"
         }
       ]
     },
@@ -1541,9 +1543,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 336,
+  "remainingRuntimeCrudSites": 335,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 71,
+  "remainingRuntimeCrudFiles": 70,
   "foundations": [
     {
       "id": "F01",
