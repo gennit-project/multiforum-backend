@@ -61,7 +61,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | complete |
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | complete |
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | complete |
-| 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | pending |
+| 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | partial; see subdivisions |
 | 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | pending |
 | 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | pending |
 | 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | pending |
@@ -536,3 +536,11 @@ Slice22 committed `8fe3b98d5c9c565369c3a5ed371d4c6bd67886c4` ([diff](https://git
 34a independently reviewed/queued:7CRUD, download preparation/read authorization/default projections and separate scan update/notification/refetch boundaries preserved. Pipeline adapter forwarding retained until pipeline slices; no removal credit before integration.
 
 23a final integration approval: Independent cumulative review against8fe3b98: six non-context source/test blobs exactly match approved original tree428308f; context only adds optional WikiRevisionRepository import/field with whitespace normalization. Original independent15 focused and24 live/static evidence reused. Exact cumulative /tmp/runtime-slice23a-exact-live.log reports10 passed, zero failed/skipped/cancelled. Original author/editReason/empty-content rules, title-before-body, separate failure boundaries/default projections and child result-shape/system attribution preserved. Diff check clean; seven CRUD/five acquisitions removed; ledger290 CRUD/53 acquisitions consistent, queued34a carries no removal credit. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice23a committed `52de2909c3f51393720bbdb585e6f21deab44f0c` ([diff](https://github.com/gennit-project/multiforum-backend/commit/52de2909c3f51393720bbdb585e6f21deab44f0c)), tree `6452f9e45a3911ff226dd2458e3587fe019ac0f6`: lint, TypeScript and all2175 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice23a-exact-live.log. Independent approval recorded above.
+
+### Slice 23b — Revision redaction
+
+2 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 288 CRUD sites/57 files; 53 acquisitions/7 files; two separate CLI sites.
+
+23b final integration approval: Independent cumulative review against52de290: four non-factory source/test blobs exactly match approved original treee863e3b; factory delta only removes TextVersion forwarding for four revision types while preserving driver/type. Original independent16 focused, recovered static/live and existing factory evidence reused. Exact cumulative /tmp/runtime-slice23b-exact-live.log reports7 passed, zero failed/skipped/cancelled. Selected fields, find-before-target/authentication, owner/mod checks, existing target READ-session ownership, native events and temporal transaction-failure boundary preserved. Diff check clean; two shared CRUD/zero acquisitions removed; ledger288 CRUD/53 acquisitions consistent. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.

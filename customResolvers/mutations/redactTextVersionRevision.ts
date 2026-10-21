@@ -1,10 +1,9 @@
+import { createRevisionRedactionRepository, REDACTED_REVISION_BODY, type RevisionRedactionRepository } from "../../services/persistence/revisionRedactionRepository.js";
+export { REDACTED_REVISION_BODY } from "../../services/persistence/revisionRedactionRepository.js";
 import { GraphQLError, type GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
 import type {
-  TextVersion,
-  TextVersionModel,
-  TextVersionUpdateInput,
-  TextVersionWhere
+  TextVersion
 } from '../../ogm_types.js'
 import type { GraphQLContext } from '../../types/context.js'
 import {
@@ -17,7 +16,6 @@ import {
   type UserDataOnContext
 } from '../../rules/permission/userDataHelperFunctions.js'
 
-export const REDACTED_REVISION_BODY = '[deleted]'
 
 type Args = {
   textVersionId: string
@@ -38,7 +36,7 @@ type GetServerMembership = typeof getServerScopedMembership
 type GetUserData = typeof setUserDataOnContext
 
 type Input = {
-  TextVersion: TextVersionModel
+  revisionRedactionRepository?: RevisionRedactionRepository
   driver: Driver
   revisionType: RevisionType
   checkModPermissions?: CheckChannelModPermissions
@@ -214,13 +212,14 @@ export const assertCanRedactRevision = async (input: {
 
 const redactTextVersionRevision = (input: Input) => {
   const {
-    TextVersion,
     driver,
     revisionType,
     checkModPermissions = checkChannelModPermissions,
     getServerMembership = getServerScopedMembership,
     getUserData = setUserDataOnContext
   } = input
+
+  const repository = input.revisionRedactionRepository ?? createRevisionRedactionRepository(driver)
 
   return async (
     parent: unknown,
@@ -234,19 +233,7 @@ const redactTextVersionRevision = (input: Input) => {
       throw new GraphQLError('Revision ID is required')
     }
 
-    const [revision] = await TextVersion.find({
-      where: { id: textVersionId },
-      selectionSet: `{
-        id
-        body
-        editReason
-        createdAt
-        updatedAt
-        Author {
-          username
-        }
-      }`,
-    })
+    const [revision] = await repository.findRevision(textVersionId)
 
     if (!revision) {
       throw new GraphQLError(`${revisionType} revision not found`)
@@ -274,29 +261,7 @@ const redactTextVersionRevision = (input: Input) => {
       return revision
     }
 
-    const where: TextVersionWhere = {
-      id: textVersionId
-    }
-    const update: TextVersionUpdateInput = {
-      body: REDACTED_REVISION_BODY
-    }
-
-    const updateResult = await TextVersion.update({
-      where,
-      update,
-      selectionSet: `{
-        textVersions {
-          id
-          body
-          editReason
-          createdAt
-          updatedAt
-          Author {
-            username
-          }
-        }
-      }`,
-    })
+    const updateResult = await repository.redactRevision(textVersionId)
 
     const updatedRevision = updateResult.textVersions[0]
     if (!updatedRevision) {

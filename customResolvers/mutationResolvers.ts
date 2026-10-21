@@ -320,22 +320,18 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     deleteCommentRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'comment',
     }),
     deleteDiscussionBodyRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'discussion body',
     }),
     deleteEventDescriptionRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'event description',
     }),
     deleteWikiRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'wiki',
     }),

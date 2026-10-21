@@ -71,6 +71,11 @@ const buildDriver = (
   return { driver: driver as unknown as Driver, calls }
 }
 
+const asRevisionRepository = (model:any) => ({
+  findRevision: (id:string) => model.find({where:{id}}),
+  redactRevision: (id:string) => model.update({where:{id},update:{body:REDACTED_REVISION_BODY}}),
+})
+
 const buildResolverInput = ({
   TextVersion,
   driver,
@@ -87,7 +92,7 @@ const buildResolverInput = ({
   checkModPermissions?: any
   getServerMembership?: any
 }) => ({
-  TextVersion,
+  revisionRedactionRepository: asRevisionRepository(TextVersion),
   driver,
   revisionType,
   checkModPermissions,
@@ -98,7 +103,7 @@ test('redactTextVersionRevision requires a revision ID', async () => {
   const { TextVersion } = buildTextVersionModel({})
   const { driver } = buildDriver()
   const resolver = redactTextVersionRevision({
-    TextVersion,
+    revisionRedactionRepository: asRevisionRepository(TextVersion),
     driver,
     revisionType: 'comment'
   })
@@ -113,7 +118,7 @@ test('redactTextVersionRevision throws when the revision is missing', async () =
   const { TextVersion } = buildTextVersionModel({})
   const { driver } = buildDriver()
   const resolver = redactTextVersionRevision({
-    TextVersion,
+    revisionRedactionRepository: asRevisionRepository(TextVersion),
     driver,
     revisionType: 'wiki'
   })
@@ -492,3 +497,25 @@ test('redactTextVersionRevision lets a moderator with the edit permission redact
   assert.deepEqual(permissionCalls[0].channelConnections, ['cats'])
   assert.equal(permissionCalls[0].permissionCheck, 'canEditComments')
 })
+
+test('redaction performs revision read then target lookup then auth then write, and preserves read failures',async()=>{
+ const order:string[]=[];
+ const {driver}=buildDriver();const originalSession=driver.session.bind(driver);
+ driver.session=((...args:any[])=>{order.push('target');return originalSession(...args);}) as any;
+ const repository:any={findRevision:async()=>{order.push('read');return [{id:'v',body:'old'}];},redactRevision:async()=>{order.push('write');return {textVersions:[{id:'v',body:REDACTED_REVISION_BODY}]};}};
+ const resolver=redactTextVersionRevision({driver,revisionType:'comment',revisionRedactionRepository:repository,getUserData:async()=>{order.push('auth');return {username:'alice'} as any;}});
+ await resolver(null,{textVersionId:'v'},{} as any,{} as any);assert.deepEqual(order,['read','target','auth','write']);
+ order.length=0;repository.findRevision=async()=>{order.push('read-error');throw Error('read failed');};
+ await assert.rejects(()=>resolver(null,{textVersionId:'v'},{} as any,{} as any),/read failed/);assert.deepEqual(order,['read-error']);
+});
+test('already redacted body still enforces authorization and never writes on rejection',async()=>{
+ const {driver}=buildDriver();let writes=0;
+ const resolver=redactTextVersionRevision({driver,revisionType:'comment',revisionRedactionRepository:{findRevision:async()=>[{id:'v',body:REDACTED_REVISION_BODY}] as any,redactRevision:async()=>{writes++;return {textVersions:[]};}},getServerMembership:async()=>({isServerAdmin:false,isServerModerator:false}) as any,checkModPermissions:(async()=>false) as any});
+ await assert.rejects(()=>resolver(null,{textVersionId:'v'},{user:{username:'outsider'}} as any,{} as any),/permission/);assert.equal(writes,0);
+});
+test('redaction preserves missing update result and propagated write errors after authorization',async()=>{
+ const {driver}=buildDriver();const repo:any={findRevision:async()=>[{id:'v',body:'old'}],redactRevision:async()=>({textVersions:[]})};
+ const resolver=redactTextVersionRevision({driver,revisionType:'comment',revisionRedactionRepository:repo});
+ await assert.rejects(()=>resolver(null,{textVersionId:'v'},{user:{username:'alice'}} as any,{} as any),/Error redacting comment revision/);
+ repo.redactRevision=async()=>{throw Error('write failure');};await assert.rejects(()=>resolver(null,{textVersionId:'v'},{user:{username:'alice'}} as any,{} as any),/write failure/);
+});
