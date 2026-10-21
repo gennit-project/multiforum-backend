@@ -166,9 +166,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     Image,
     WikiPage,
     TextVersion,
-    FilterOption,
-    ModerationAction,
-    LabelChangeHistory,
   } = deps;
 
   return {
@@ -583,11 +580,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     updateDownloadLabels: updateDownloadLabels({
-      Discussion,
-      DiscussionChannel,
-      FilterOption,
-      ModerationAction,
-      LabelChangeHistory,
+      driver,
     }),
     createScratchpadEntry: createScratchpadEntry({
       scratchpadRepository: createScratchpadRepository(driver),

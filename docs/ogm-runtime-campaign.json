@@ -1276,28 +1276,30 @@
           "id": "34a",
           "scope": "Download review and preparation",
           "baselineCrudSites": 7,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative34a review againste1c52be1b11946141e753ff89f116caf1e28213b. Eight nonfactory source/test blobs identical to corrected approved4c012a55; factory removes unused clearScan model and forwards configured driver to requestReview. Preparation pipeline capability/model forwards retained. Corrected canonical POSTED_DISCUSSION author assertions and separate legacy AUTHORED notification edge cases preserved. Original16focused/static evidence reused; exact cumulative13live passed zero failures/skips/cancellations, including full defaults, authorization reads and committed projection failures/notification boundaries. No transaction/order/routing changes; prior31-33 adaptations retained. Diff check clean. Ledger7CRUD/0acquisitions,155remainingCRUD including structural adapter/53acquisitions/0CLI consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice34a.patch",
           "preparedPatchSha256": "7a4ff9b5d0a5a9643925a0c6b49925e4bba48b89fa6dced1bd4e7d642f9b9c34",
           "preparedBaseCommit": "3e1283d2b3a147dfb116b388b16e985b6dccd85f",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 4e9385db4de9c2a7a23a9ab3070fda67d6ed47ca: lint, TypeScript and2386 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice34a-exact-live.log"
           ],
-          "commit": null
+          "commit": "58aa682b8ff58f50601d6e1d8dc74e602ac030c4"
         },
         {
           "id": "34b",
           "scope": "Download label persistence",
           "baselineCrudSites": 7,
-          "status": "reviewed; integration pending",
-          "review": "campaign_review: exact incremental delta approved and rebase onto corrected34a verified byte-identical",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative34b review against58aa682b8ff58f50601d6e1d8dc74e602ac030c4. Four nonfactory source/test blobs identical to corrected-base approved23ba268c; factory forwards configured driver instead of five unused model inputs and removes three now-unused destructures, with no remaining references. Corrected34a fixture/context changes retained. Original6focused/static evidence reused; exact cumulative18live passed zero failures/skips/cancellations, covering owner/mod permission and label validation plus default/coercion/committed failure and raw native event parity. Adds-before-removes, separate label/history/moderation commits and independently swallowed failures unchanged. Diff check clean. Ledger7CRUD/0acquisitions,148remainingCRUD including structural adapter/53acquisitions/0CLI consistent; queued41 gets no credit and evidence scope accurate. Mandatory hooks/build remain required.",
           "preparedPatch": "ogm-slice34b.patch",
           "preparedPatchSha256": "286890fa62055359ca6daba7432a09f2122c8ed7fa0fc348cdb4f8176d710253",
           "preparedBaseTree": "4c012a555d321159f01dbb31a1b6c4c797ce6720",
           "verification": [
-            "Tree23ba268ca0adff2bb269e813ec9252286b440470:6focused,8newlive,10existinglive,types/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1682,10 +1684,26 @@
       "baselineCrudSites": 12,
       "dependencies": "40; 44 notifications; 34 as applicable",
       "acceptance": "Runner side effects outside retried callbacks; statuses/retries/results",
-      "status": "pending",
+      "status": "reviewed; integration pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "Independent six-path review against approved40c54806af5; patch SHA2564a4958bb6547d9ec9d255832a1166702ed4562fa138ceafcf53716e95aa77d75 verified, diff check clean. Seven fixed named ports replace12CRUD calls preserving original input expressions/explicit selection strings, unbounded configuration/secrets reads, full file default matching corrected34a and job default from40a. Unsupported-event/missing-file guards, scan hold before execution, pending jobs, skip/refetch, secret loading, lease/attempt/notification sequencing and independent error/commit boundaries unchanged. Existing test-only adapters retain recorder assertions.21focused and final8live passed zero failures/skips/cancellations; primitive write tests compare full graph/ordered native events after raw node/relationship IDs and timestamp validation, and actual-trigger smoke covers guards plus fake-plugin success/status/message/loader order (not a full end-to-end event comparison). Corrected fixtures respect actual enum/required input/plugin-name selection contracts; no production correction. TypeScript/lint passed per parent and inspected logs. Prepared12CRUD/0acquisitions; cumulative integration/hooks pending.",
+      "verification": [
+        "21focused,8live,lint/TypeScript passed. Twelve calls through seven finite named operations; original input/selections/defaults, order and failure contracts preserved. Primitive writes have full graph/ordered native event parity after raw identity validation; actual trigger smoke with fake plugin/storage. Zero credit before integration."
+      ],
+      "preparedEvidence": {
+        "base": "54806af505df14330d3423ac97ed768d3ba8669d",
+        "tree": "19508443907fcad3706117e64b12864112691f0e",
+        "sha256": "4a4958bb6547d9ec9d255832a1166702ed4562fa138ceafcf53716e95aa77d75",
+        "patch": "/tmp/ogm-slice41.patch",
+        "files": [
+          "services/persistence/downloadExecutionRepository.ts",
+          "services/plugin/downloadTrigger.ts",
+          "services/plugin/downloadTrigger.test.ts",
+          "services/plugin/downloadTrigger.execution.test.ts",
+          "tests/fixtures/downloadExecutionRepositoryStub.ts",
+          "tests/integration/downloadExecutionRepository.test.ts"
+        ]
+      }
     },
     {
       "id": "42",
@@ -1789,9 +1807,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 155,
+  "remainingRuntimeCrudSites": 148,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 26,
+  "remainingRuntimeCrudFiles": 25,
   "foundations": [
     {
       "id": "F01",
@@ -1847,7 +1865,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "34a"
+      "34b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

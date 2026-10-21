@@ -1,16 +1,7 @@
-import type {
-  DiscussionModel,
-  DiscussionChannelModel,
-  FilterOptionModel,
-  ModerationActionModel,
-  ModerationActionCreateInput,
-} from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import { createDownloadLabelRepository, type DownloadLabelRepository } from "../../services/persistence/downloadLabelRepository.js";
+import type { ModerationActionCreateInput } from "../../ogm_types.js";
 
-// LabelChangeHistory model type - defined locally until OGM types are regenerated
-type LabelChangeHistoryModel = {
-  create: (args: { input: any[] }) => Promise<any>;
-  find: (args: any) => Promise<any[]>;
-};
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import {
   checkChannelModPermissions,
@@ -31,16 +22,10 @@ type Args = {
   labelOptionIds: string[];
 };
 
-type Input = {
-  Discussion: DiscussionModel;
-  DiscussionChannel: DiscussionChannelModel;
-  FilterOption: FilterOptionModel;
-  ModerationAction: ModerationActionModel;
-  LabelChangeHistory: LabelChangeHistoryModel;
-};
+type Input = { driver: Driver; downloadLabelRepository?: DownloadLabelRepository };
 
 const getResolver = (input: Input) => {
-  const { Discussion, DiscussionChannel, FilterOption, ModerationAction, LabelChangeHistory } = input;
+  const repository = input.downloadLabelRepository ?? createDownloadLabelRepository(input.driver);
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const {
@@ -69,18 +54,7 @@ const getResolver = (input: Input) => {
     }
 
     // Get the discussion to check ownership
-    const discussionData = await Discussion.find({
-      where: {
-        id: discussionId,
-      },
-      selectionSet: `{
-        id
-        title
-        Author {
-          username
-        }
-      }`,
-    });
+    const discussionData = await repository.findDiscussion(discussionId);
 
     if (discussionData.length === 0) {
       throw new GraphQLError("Discussion not found");
@@ -119,20 +93,7 @@ const getResolver = (input: Input) => {
     }
 
     // Find the DiscussionChannel
-    const discussionChannelData = await DiscussionChannel.find({
-      where: {
-        discussionId: discussionId,
-        channelUniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-        id
-        LabelOptions {
-          id
-          value
-          displayName
-        }
-      }`,
-    });
+    const discussionChannelData = await repository.findChannel(discussionId, channelUniqueName);
 
     if (discussionChannelData.length === 0) {
       throw new GraphQLError("DiscussionChannel not found");
@@ -144,22 +105,7 @@ const getResolver = (input: Input) => {
 
     let selectedLabels: SelectedLabel[] = [];
     if (labelOptionIds.length > 0) {
-      selectedLabels = await FilterOption.find({
-        where: {
-          id_IN: labelOptionIds,
-        },
-        selectionSet: `{
-          id
-          displayName
-          value
-          group {
-            id
-            key
-            displayName
-            uploadSelection
-          }
-        }`,
-      }) as SelectedLabel[];
+      selectedLabels = await repository.findOptions(labelOptionIds) as SelectedLabel[];
       assertValidUploadSelections(selectedLabels);
     }
 
@@ -217,26 +163,7 @@ const getResolver = (input: Input) => {
     }
 
     // Apply the update
-    const updateResult = await DiscussionChannel.update({
-      where: { id: discussionChannelId },
-      update: updateInput.LabelOptions.length > 0 ? { LabelOptions: updateInput.LabelOptions } : {},
-      selectionSet: `{
-        discussionChannels {
-          id
-          LabelOptions {
-            id
-            value
-            displayName
-            order
-            group {
-              id
-              key
-              displayName
-            }
-          }
-        }
-      }`,
-    });
+    const updateResult = await repository.updateLabels(discussionChannelId, updateInput.LabelOptions.length > 0 ? { LabelOptions: updateInput.LabelOptions } : {});
 
     const updatedDiscussionChannel = updateResult.discussionChannels[0];
 
@@ -277,9 +204,7 @@ const getResolver = (input: Input) => {
           };
         }
 
-        await LabelChangeHistory.create({
-          input: [historyInput],
-        });
+        await repository.createHistory([historyInput]);
       }
 
       // Create records for removed labels
@@ -316,9 +241,7 @@ const getResolver = (input: Input) => {
           };
         }
 
-        await LabelChangeHistory.create({
-          input: [historyInput],
-        });
+        await repository.createHistory([historyInput]);
       }
     } catch (error) {
       logger.error("Error creating label change history:", error);
@@ -346,9 +269,7 @@ const getResolver = (input: Input) => {
       };
 
       try {
-        await ModerationAction.create({
-          input: [moderationActionInput],
-        });
+        await repository.createModerationAction([moderationActionInput]);
       } catch (error) {
         logger.error("Error creating moderation action:", error);
         // Don't fail the label update if moderation action creation fails

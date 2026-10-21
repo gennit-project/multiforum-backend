@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import {before,after,beforeEach,test} from 'node:test';
+import {Neo4jGraphQL} from '@neo4j/graphql';
+import {isInt,type Driver} from 'neo4j-driver';
+import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
+import getCustomResolvers from '../../customResolvers.js';
+import typeDefs from '../../typeDefs.js';
+import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
+import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
+import * as persistence from '../../services/persistence/downloadLabelRepository.js';
+import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
+import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
+let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
+for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
+const seed=()=>driver.executeQuery("CREATE(u:User{username:'owner',createdAt:datetime('2020-01-01T00:00:00Z')})-[:POSTED_DISCUSSION]->(d:Discussion{id:'d',title:'Download',createdAt:datetime('2020-01-01T00:00:00Z')}) CREATE(dc:DiscussionChannel{id:'dc',discussionId:'d',channelUniqueName:'c',createdAt:datetime('2020-01-01T00:00:00Z')})-[:POSTED_IN_CHANNEL]->(d) CREATE(g:FilterGroup{id:'g',key:'size',displayName:'Size',order:1,mode:'INCLUDE',uploadSelection:'MULTIPLE'})-[:HAS_FILTER_OPTION]->(old:FilterOption{id:'old',value:'small',displayName:'Small',order:1}) CREATE(g)-[:HAS_FILTER_OPTION]->(:FilterOption{id:'new',value:'large',displayName:'Large',order:2}) CREATE(dc)-[:HAS_LABEL_OPTION]->(old)");
+function baseline():persistence.DownloadLabelRepository {const d=app.ogm.model('Discussion'),dc=app.ogm.model('DiscussionChannel'),f=app.ogm.model('FilterOption');return {
+ findDiscussion:id=>d.find({where:{id},selectionSet:persistence.FINDDISCUSSION_SELECTION}),
+ findChannel:(discussionId,channelUniqueName)=>dc.find({where:{discussionId,channelUniqueName},selectionSet:persistence.FINDCHANNEL_SELECTION}),
+ findOptions:ids=>f.find({where:{id_IN:ids},selectionSet:persistence.FINDOPTIONS_SELECTION}),
+ updateLabels:(id,update)=>dc.update({where:{id},update,selectionSet:persistence.UPDATELABELS_SELECTION}),
+ createHistory:async input=>{await app.ogm.model('LabelChangeHistory').create({input});},
+ createModerationAction:async input=>{await app.ogm.model('ModerationAction').create({input});},
+};}
+const graph=async()=>({nodes:(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject()),edges:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type')).records.map(r=>r.toObject())});
+const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(_k,x)=>{if(!isInt(x))return x;assert.ok(x.inSafeRange());return x.toNumber();}));
+function checkedResult(before:Awaited<ReturnType<typeof graph>>,after:Awaited<ReturnType<typeof graph>>,response:unknown,error:string|null){
+ const node=(id:string)=>after.nodes.find(n=>n.identity===id)??before.nodes.find(n=>n.identity===id);
+ const alias=(id:string)=>{const n=node(id);assert.ok(n);return ['LabelChangeHistory','ModerationAction'].includes(n.label)?n.label:n.properties.id??n.properties.username;};
+ const uuids=new Map(after.nodes.filter(n=>['LabelChangeHistory','ModerationAction'].includes(n.label)).map(n=>[n.properties.id,n.label]));
+ for(const e of events){if(e.event.includes('relationship')){const edge=(e.event==='delete_relationship'?before:after).edges.find(r=>r.identity===e.id);assert.ok(edge);assert.equal(e.id_from,edge.source);assert.equal(e.id_to,edge.target);assert.equal(e.relationshipName,edge.type);}else{const current=after.nodes.find(n=>n.identity===e.id);assert.ok(current);assert.equal(e.typename,current.label);assert.deepEqual(plain(e.properties.new),plain(current.properties));if(e.event==='update'){const old=before.nodes.find(n=>n.identity===e.id);assert.ok(old);assert.deepEqual(plain(e.properties.old),plain(old.properties));}if(e.event==='create')assert.equal(e.properties.new.createdAt.toStandardDate().getTime(),e.timestamp);}}
+ const normalize=(v:unknown)=>JSON.parse(JSON.stringify(v,function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){if(key==='id'&&this.event.includes('relationship')){const edge=[...after.edges,...before.edges].find(r=>r.identity===value)!;return edge.type+':'+alias(edge.source)+':'+alias(edge.target);}return alias(value);}if(['timestamp','updatedAt','ageGateTouchedAt'].includes(key)||key==='createdAt'&&this.id&&uuids.has(this.id))return '<time>';return typeof value==='string'&&uuids.has(value)?uuids.get(value):value;}));
+ return normalize({response,error,events,nodes:after.nodes.map(n=>({id:alias(n.identity),label:n.label,properties:n.properties})).sort((a,b)=>a.id.localeCompare(b.id)),edges:after.edges.map(r=>({source:alias(r.source),target:alias(r.target),type:r.type})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))});
+}
+test('snapshots preserve exact selected read shapes, missing values and option input coercion',async()=>{await seed();const old=baseline(),next=persistence.createDownloadLabelRepository(driver);assert.deepEqual(await next.findDiscussion('d'),await old.findDiscussion('d'));assert.deepEqual(await next.findChannel('d','c'),await old.findChannel('d','c'));assert.deepEqual(await next.findOptions(['new','old']),await old.findOptions(['new','old']));assert.deepEqual(await next.findDiscussion('missing'),[]);assert.deepEqual(await next.findChannel('d','missing'),[]);assert.deepEqual(await next.findOptions([]),[]);let message='';for(const repo of [old,next])await assert.rejects(repo.findOptions([{}] as never),e=>{if(!message)message=(e as Error).message;assert.equal((e as Error).message,message);return true;});assert.deepEqual(events,[]);});
+test('create projections equal the production OGM defaults',()=>{for(const [name,selection] of [['LabelChangeHistory',persistence.CREATEHISTORY_SELECTION],['ModerationAction',persistence.CREATEMODERATIONACTION_SELECTION]])assert.ok(selection.includes((app.ogm.model(name as never) as any).getSelectionSetOrDefault()));});
+for(const operation of ['labels','history','moderation'] as const)for(const failure of [false,true])test(`${operation} preserves native events, graph and committed projection failure=${failure}`,async()=>{
+ const type=operation==='labels'?'DiscussionChannel':operation==='history'?'LabelChangeHistory':'ModerationAction';
+ const field=(schema.getType(type) as GraphQLObjectType).getFields()[operation==='labels'?'id':'actionType'],original=field.resolve;
+ if(failure)field.resolve=()=>{throw Error('fixture projection failure');};
+ try{let expected:unknown;for(const repo of [baseline(),persistence.createDownloadLabelRepository(driver)]){await resetDatabase(driver);await seed();events=[];const before=await graph();let response:unknown,error:string|null=null;try{if(operation==='labels')response=await repo.updateLabels('dc',{LabelOptions:[{connect:[{where:{node:{id:'new'}}}]},{disconnect:[{where:{node:{id:'old'}}}]}]});else if(operation==='history')await repo.createHistory([{actionType:'added',labelDisplayName:'Large',labelValue:'large',ActorUser:{connect:{where:{node:{username:'owner'}}}}}]);else await repo.createModerationAction([{actionType:'label_update',actionDescription:'Changed labels'}]);}catch(e){error=(e as Error).message;}assert.equal(error,failure?'fixture projection failure':null);const after=await graph();if(operation==='labels'){assert.ok(after.edges.some(e=>e.type==='HAS_LABEL_OPTION'&&after.nodes.find(n=>n.identity===e.target)?.properties.id==='new'));assert.ok(!after.edges.some(e=>e.type==='HAS_LABEL_OPTION'&&after.nodes.find(n=>n.identity===e.target)?.properties.id==='old'));}else assert.equal(after.nodes.filter(n=>n.label===type).length,1);assert.ok(events.length>0);const actual=checkedResult(before,after,response,error);if(expected)assert.deepEqual(actual,expected);else expected=actual;}}finally{field.resolve=original;}
+});
