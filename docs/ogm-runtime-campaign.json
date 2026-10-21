@@ -452,28 +452,30 @@
           "id": "14b",
           "scope": "Discussion votes",
           "baselineCrudSites": 6,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent integration_review_current approved exact tree 822bd95af4be1bf2079eb82fa8a5efa37a9acfc0: five unmerged source/test blobs match original14b patch; factory narrowly drops DiscussionChannel/User inputs preserving driver; shared voteResolvers tests retain14a changes and add only14b adapters. Independently44 focused tests passed using infrastructure-only launcher; inspected3 completed disposable live parity tests. Existing authorization inputs, transaction ordering, separately committed karma writes, projections/errors and events preserved. No blocking findings.",
           "preparedPatch": "ogm-slice14b.patch",
           "preparedPatchSha256": "24426c207d585ce5f9d0274083502744e1aff77c828b21261f8e56dcdff14373",
           "preparedBase": "c19c537",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 09d8704e6b0afa5f031308543ec9ad96ef6f48dc: lint, TypeScript and2071 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice14b-exact-live.log"
           ],
-          "commit": null
+          "commit": "8efd2478b81c821ae1c6943e788bfbe5583683ae"
         },
         {
           "id": "14c",
           "scope": "Undo SuperUpvote",
           "baselineCrudSites": 2,
-          "status": "reviewed; integration pending",
-          "review": "integration_review: no remaining findings; independent focused tests passed",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent integration_review_current approved exact tree 8d8f33eae93f9db87c8a6a8562f8a84217fac7c0: four nonfactory blobs match reviewed14c patch; factory only removes unused model arguments and sole unused ScratchpadEntry destructure after15, preserving driver. Independently8 focused ordering tests passed with infrastructure-only launcher; inspected23 completed disposable live tests (3 parity+20 existing). Original raw transaction, scratchpad deletion, union-error behavior, nested defaults and no generated write events preserved. No blocking findings.",
           "preparedPatch": "ogm-slice14c.patch",
           "preparedPatchSha256": "554055fb7f6c2332dbd6e23bd3f19cbfa94175a86092e54edede803cfd626f3a",
           "preparedBase": "c19c537",
           "verification": [
-            "Reviewed treebfb4f9dffb83e7106bb20c75fc33a4538c0f6b0a: 8focused;3exactlive;20existinglive on identical production;final tsc/lint passed; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1423,9 +1425,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 358,
+  "remainingRuntimeCrudSites": 356,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 79,
+  "remainingRuntimeCrudFiles": 78,
   "foundations": [
     {
       "id": "F01",

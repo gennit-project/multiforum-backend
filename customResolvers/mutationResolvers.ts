@@ -169,7 +169,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     FilterOption,
     ModerationAction,
     LabelChangeHistory,
-    ScratchpadEntry,
   } = deps;
 
   return {
@@ -699,9 +698,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     undoSuperUpvote: undoSuperUpvote({
-      Comment,
-      DiscussionChannel,
-      ScratchpadEntry,
       driver,
     }),
     updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
