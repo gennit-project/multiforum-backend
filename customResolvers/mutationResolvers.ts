@@ -421,9 +421,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     installPluginVersion: installPluginVersion({
-      Plugin,
-      PluginVersion,
-      ServerConfig,
       driver
     }),
     triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({

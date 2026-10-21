@@ -1,10 +1,8 @@
+import { createPluginInstallRepository, type PluginInstallRepository } from "../../services/persistence/pluginInstallRepository.js";
 import type { Driver } from "neo4j-driver"
 import { createServerSecretRepository, type ServerSecretRepository } from "../../services/persistence/serverSecretRepository.js"
 import crypto from 'crypto'
 import type {
-  PluginModel,
-  PluginVersionModel,
-  ServerConfigModel,
   PluginCreateInput,
   PluginUpdateInput,
   PluginVersionCreateInput,
@@ -19,13 +17,7 @@ import { getPluginVersionCompatibility } from '../../services/plugin/compatibili
 import { reconcileSettings, type SettingsCarryOverReport } from '../../services/plugin/reconcileSettings.js'
 import { migrateServerSecretRenames } from '../../services/plugin/reconcileSecrets.js'
 
-type Input = {
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
-  ServerConfig: ServerConfigModel
-  driver: Driver
-  serverSecretRepository?: ServerSecretRepository
-}
+type Input = { driver: Driver; serverSecretRepository?: ServerSecretRepository; pluginInstallRepository?: PluginInstallRepository }
 
 type Args = {
   pluginId: string
@@ -52,20 +44,16 @@ const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
   apiVersion: registryVersion.apiVersion || null
 })
 
-const getResolver = (input: Input) => {
-  const { Plugin, PluginVersion, ServerConfig, serverSecretRepository = createServerSecretRepository(input.driver) } = input
+const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, download = downloadBytes, readManifest = parseManifestFromTarball }: { fetchRegistry?: typeof fetchMergedPluginRegistry; download?: typeof downloadBytes; readManifest?: typeof parseManifestFromTarball } = {}) => {
+  const { serverSecretRepository = createServerSecretRepository(input.driver) } = input
+  const repository = input.pluginInstallRepository ?? createPluginInstallRepository(input.driver)
 
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     const { pluginId, version, carrySettings = false } = args
 
     try {
       // 1. Get server config to find registry URLs
-      const serverConfigs = await ServerConfig.find({
-        selectionSet: `{
-          serverName
-          pluginRegistries
-        }`
-      })
+      const serverConfigs = await repository.findInstallConfigs()
 
       if (!serverConfigs.length || !serverConfigs[0].pluginRegistries?.length) {
         throw new Error('No plugin registries configured')
@@ -74,53 +62,16 @@ const getResolver = (input: Input) => {
       const registryUrls = (serverConfigs[0].pluginRegistries || [])
         .filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
       logger.info('Using plugin registry URLs:', registryUrls)
-      const registryData = await fetchMergedPluginRegistry(registryUrls)
+      const registryData = await fetchRegistry(registryUrls)
 
       // First, resolve the plugin node using either the Neo4j ID or the plugin slug
-      const pluginCandidates = await Plugin.find({
-        where: {
-          OR: [
-            { id: pluginId },
-            { name: pluginId }
-          ]
-        },
-        selectionSet: `{
-          id
-          name
-          displayName
-        }`
-      })
+      const pluginCandidates = await repository.findInstallPlugin(pluginId)
 
       let pluginRecord = pluginCandidates[0] || null
       let pluginSlug = pluginRecord?.name || pluginId
 
       // Check if this version already exists in the database
-      const existingDbVersions = await PluginVersion.find({
-        where: {
-          AND: [
-            { version: version },
-            { Plugin: { name: pluginSlug } }
-          ]
-        },
-        selectionSet: `{
-          id
-          version
-          repoUrl
-          tarballGsUri
-          integritySha256
-          registryUrl
-          releaseNotesUrl
-          sourceRepoUrl
-          sourceCommit
-          minServerVersion
-          apiVersion
-          entryPath
-          Plugin {
-            id
-            name
-          }
-        }`
-      })
+      const existingDbVersions = await repository.findInstallVersion(version, pluginSlug)
 
       let registryVersion: RegistryVersion
 
@@ -159,7 +110,7 @@ const getResolver = (input: Input) => {
       // 3. Download and verify tarball integrity
       logger.info(`Downloading tarball from: ${registryVersion.tarballUrl}`)
       
-      const tarballBytes = await downloadBytes(registryVersion.tarballUrl)
+      const tarballBytes = await download(registryVersion.tarballUrl)
 
       // 4. Verify integrity
       const actualSha256 = crypto.createHash('sha256').update(tarballBytes).digest('hex')
@@ -171,7 +122,7 @@ const getResolver = (input: Input) => {
         throw new Error(`Tarball integrity verification failed: SHA-256 mismatch. Expected: ${registryVersion.integritySha256}, Got: ${actualSha256}`)
       }
 
-      const artifacts = await parseManifestFromTarball(tarballBytes)
+      const artifacts = await readManifest(tarballBytes)
 
       if (artifacts.version !== version) {
         throw new Error(`Manifest version ${artifacts.version} doesn't match requested version ${version}`)
@@ -218,8 +169,7 @@ const getResolver = (input: Input) => {
 
       if (!pluginRecord) {
         logger.info(`Creating new plugin record for ${artifacts.id}`)
-        const createResult = await Plugin.create({
-          input: [
+        const createResult = await repository.createInstallPlugin([
             ({
               name: artifacts.id,
               displayName: pluginUpdatePayload.displayName,
@@ -231,13 +181,10 @@ const getResolver = (input: Input) => {
               tags: pluginUpdatePayload.tags,
               metadata: pluginUpdatePayload.metadata
             } as unknown as PluginCreateInput)
-          ]
-        })
+          ])
         pluginRecord = createResult.plugins[0]
       } else {
-        await Plugin.update({
-          where: { id: pluginRecord.id },
-          update: ({
+        await repository.updateInstallPlugin(pluginRecord.id, ({
             displayName: pluginUpdatePayload.displayName,
             description: pluginUpdatePayload.description,
             authorName: pluginUpdatePayload.authorName,
@@ -246,8 +193,7 @@ const getResolver = (input: Input) => {
             license: pluginUpdatePayload.license,
             tags: pluginUpdatePayload.tags,
             metadata: pluginUpdatePayload.metadata
-          } as unknown as PluginUpdateInput)
-        })
+          } as unknown as PluginUpdateInput))
       }
 
       pluginSlug = artifacts.id
@@ -265,8 +211,7 @@ const getResolver = (input: Input) => {
 
       if (!pluginVersion) {
         logger.info(`Creating new plugin version: ${pluginSlug}@${version}`)
-        const createResult = await PluginVersion.create({
-          input: [
+        const createResult = await repository.createInstallVersion([
             ({
               version,
               repoUrl: String(registryVersion.tarballUrl),
@@ -285,13 +230,10 @@ const getResolver = (input: Input) => {
                 }
               }
             } as unknown as PluginVersionCreateInput)
-          ]
-        })
+          ])
         pluginVersion = createResult.pluginVersions[0]
       } else {
-        await PluginVersion.update({
-          where: { id: pluginVersion.id },
-          update: ({
+        await repository.updateInstallVersion(pluginVersion.id, ({
             repoUrl: String(registryVersion.tarballUrl),
             tarballGsUri: String(registryVersion.tarballUrl),
             integritySha256: String(registryVersion.integritySha256),
@@ -302,38 +244,12 @@ const getResolver = (input: Input) => {
             uiSchema,
             documentationPath,
             readmeMarkdown
-          } as unknown as PluginVersionUpdateInput),
-          connect: {
-            Plugin: {
-              where: { node: { id: pluginRecord!.id } }
-            }
-          }
-        })
+          } as unknown as PluginVersionUpdateInput), pluginRecord!.id)
       }
 
       const serverConfig = serverConfigs[0]
 
-      const installedVersions = await ServerConfig.find({
-        where: { serverName: serverConfig.serverName },
-        selectionSet: `{
-          InstalledVersionsConnection {
-            edges {
-              properties {
-                settingsJson
-              }
-              node {
-                id
-                version
-                manifest
-                Plugin {
-                  id
-                  name
-                }
-              }
-            }
-          }
-        }`
-      })
+      const installedVersions = await repository.findInstalledVersions(serverConfig.serverName)
 
       const installedEdges = (
         installedVersions[0]?.InstalledVersionsConnection?.edges || []
@@ -369,20 +285,9 @@ const getResolver = (input: Input) => {
       if (!isAlreadyInstalled) {
         logger.info('Installing plugin version, serverName:', serverConfig.serverName, 'pluginVersion.id:', pluginVersion.id)
 
-        await ServerConfig.update({
-          where: { serverName: String(serverConfig.serverName) },
-          connect: {
-            InstalledVersions: [{
-              where: { node: { id: String(pluginVersion.id) } },
-              edge: {
-                enabled: false,
-                settingsJson: reconciledSettings
+        await repository.connectInstallation(String(serverConfig.serverName), String(pluginVersion.id), reconciledSettings
                   ? JSON.stringify(reconciledSettings)
-                  : null
-              }
-            }]
-          }
-        })
+                  : null)
       }
 
       return {

@@ -1425,14 +1425,15 @@
           "id": "36b",
           "scope": "Plugin installation",
           "baselineCrudSites": 9,
-          "status": "reviewed; integration pending",
-          "review": "campaign_review: exact prepared tree/hash independently approved without findings",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative36b review against9a2dd6fa511a8cce8bd99ff63b8df85a7b0e0f64. Four nonfactory source/test blobs identical to approved539815eb; factory removes only unused Plugin/PluginVersion/ServerConfig forwards, matching driver/repository Input.37a secret migration repository and applyPluginConfiguration context.driver composition retained. Prior10focused/static evidence reused; exact cumulative15live passed zero failures/skips/cancellations including4existing mocked installs/secret rename and11new actual install parity/default/coercion cases. Integrity/manifest checks, metadata/settings/secret migration ordering, independent commits and projection failure prefixes unchanged. Diff check clean. Ledger9CRUD/0acquisitions,121remainingCRUD including structural adapter/53acquisitions/0CLI; queued44b accurate without credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice36b.patch",
           "preparedPatchSha256": "5de62fafda745d73b1212a3d25d3b8a598403f8d17df2298b16da37702ec1ad0",
           "preparedBaseTree": "944b93e52cf23b3be032188982d35a2e82b208a0",
           "verification": [
-            "Tree 539815eb296b701d2365a671597fa1c8a82508c9: 10 focused, 11 new live, 4 existing live, corrected types/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1458,15 +1459,16 @@
           "id": "37a",
           "scope": "Secret persistence",
           "baselineCrudSites": 5,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative37a review against896d84346b5abf6ef4433309d2b101609f6bdea4. Preserved review_slice1 approval/recovery and20unit/4secret+4installlive/static ledger evidence reused; original patch SHA25646b01e962456107154c40f6f5ef2316bdd8467a44a8e928786e6a4fea6844db6 verified. All nine nonfactory blobs match prepared patch new-blob IDs; cumulative factory only replaces ServerSecret forwards with driver for install/setter. Inspected default projections, encryption-before-lookup, validation reset, sequential rename and install/apply context.driver wiring; error wrapping/independent commits retained. Exact cumulative8live passed zero failures/skips/cancellations including synthetic encryption and carry-settings rename. Diff check clean. Ledger5CRUD/0acquisitions,130remainingCRUD including structural adapter/53acquisitions/0CLI; corrected43 queue evidence accurate without credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice37a.patch",
           "preparedPatchSha256": "46b01e962456107154c40f6f5ef2316bdd8467a44a8e928786e6a4fea6844db6",
           "preparedBase": "658bfe4 plus35a",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree b27933463d02ff3a27b6fdfe0f8887c2703118d5: lint, TypeScript and2404 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice37a-exact-live.log"
           ],
-          "commit": null
+          "commit": "9a2dd6fa511a8cce8bd99ff63b8df85a7b0e0f64"
         },
         {
           "id": "37b1",
@@ -1832,6 +1834,31 @@
           "verification": [
             "27focused,8live,lint/TypeScript passed; raw native event IDs/endpoints/temporal validation before full ordered payload comparison. Separate durable claim then notification; projection failure and no-retry behavior retained. Zero credit before integration."
           ]
+        },
+        {
+          "id": "44b",
+          "scope": "Pipeline start controls",
+          "baselineCrudSites": 6,
+          "status": "reviewed; integration pending",
+          "preparedEvidence": {
+            "base": "f980a0d370b94a12e49214b37070713cad1f2d5c",
+            "tree": "88d25c0bc42ad3d958c577c85b40a31e47d45314",
+            "sha256": "cd656644eb23bb3fa2802f716e5a179ba3ad7687689d8cac952fa429a73172ce",
+            "patch": "/tmp/ogm-slice44b.patch",
+            "files": [
+              "services/persistence/pipelineStartRepository.ts",
+              "customResolvers/mutations/startPluginPipeline.ts",
+              "customResolvers/mutations/startPluginPipeline.test.ts",
+              "customResolvers/mutations/rerunPluginPipeline.ts",
+              "customResolvers/mutations/rerunPluginPipeline.test.ts",
+              "tests/fixtures/pipelineStartRepositoryStub.ts",
+              "tests/integration/pipelineStartRepository.test.ts"
+            ]
+          },
+          "review": "Independent seven-path review against corrected43f980a0d3; SHA256cd656644eb23bb3fa2802f716e5a179ba3ad7687689d8cac952fa429a73172ce verified, diff check clean. Six finite read operations preserve original target/config/channel/active/refetch selections and caller-constructed predicates; repository constructed only after authentication using context.driver. Ownership/applicability/active-attempt guard, driver and owner metadata forwarding, runner then refetch/missing-attempt error unchanged. Rerun change only optional start port type/test adapter; rerun CRUD untouched. Existing singular Discussion.DownloadableFile validation failure intentionally retained, with exact old/new error live coverage.24focused and5live passed zero failures/skips/cancellations, including unbounded configs/attempts, read-no-event checks, actual owner/unauthenticated/unauthorized paths, runner driver identity and durable attempt refetch/active guard. Existing unit recorder assertions retained; no claim of real plugin execution. Final TypeScript98364/lint63856 exit0 parent-confirmed. Prepared6CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "verification": [
+            "24focused,5live,lint/TypeScript passed. Authentication before repository, ownership/active-attempt checks and configured driver forwarding preserved. Known singular-field production error retained. Zero credit before integration."
+          ]
         }
       ]
     },
@@ -1866,9 +1893,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 130,
+  "remainingRuntimeCrudSites": 121,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 22,
+  "remainingRuntimeCrudFiles": 21,
   "foundations": [
     {
       "id": "F01",
@@ -1925,7 +1952,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "37a"
+      "36b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
