@@ -1,6 +1,5 @@
+import { createImageReportRepository, type ImageReportRepository } from "../../services/persistence/imageReportRepository.js";
 import type {
-  IssueModel,
-  ImageModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -24,8 +23,7 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Image: ImageModel;
+  imageReportRepository?: ImageReportRepository;
   driver: Driver;
 };
 
@@ -133,7 +131,8 @@ const getModerationActionCreateInput = (input: {
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Image, driver } = input;
+  const { driver } = input;
+  const repository = input.imageReportRepository ?? createImageReportRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -185,18 +184,7 @@ const getResolver = (input: Input) => {
     }
 
     // Verify the image exists and get uploader info
-    const imageData = await Image.find({
-      where: {
-        id: imageId,
-      },
-      selectionSet: `{
-        id
-        url
-        Uploader {
-          username
-        }
-      }`,
-    });
+    const imageData = await repository.findReportedImage(imageId);
 
     if (imageData.length === 0) {
       throw new GraphQLError("Image not found");
@@ -222,15 +210,7 @@ const getResolver = (input: Input) => {
       issueWhereClause.channelUniqueName = channelUniqueName;
     }
 
-    const existingIssueData = await Issue.find({
-      where: issueWhereClause,
-      selectionSet: `{
-        id
-        issueNumber
-        flaggedServerRuleViolation
-        relatedUsername
-      }`,
-    });
+    const existingIssueData = await repository.findPriorImageReport(issueWhereClause);
 
     if (existingIssueData.length > 0) {
       existingIssueId = existingIssueData[0]?.id || "";
@@ -286,16 +266,7 @@ const getResolver = (input: Input) => {
       }
 
       try {
-        const createResult = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const createResult = await repository.createImageReportIssue(issueCreateInput);
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -339,18 +310,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const updateResult = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-            relatedImageId
-          }
-        }`,
-      });
+      const updateResult = await repository.appendImageReport(issueUpdateWhere, issueUpdateInput);
       const issueId = updateResult.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

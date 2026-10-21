@@ -333,8 +333,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     reportImage: reportImage({
-      Issue,
-      Image,
       driver
     }),
     reportProfilePicture: reportProfilePicture({
