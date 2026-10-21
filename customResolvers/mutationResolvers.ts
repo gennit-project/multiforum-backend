@@ -309,8 +309,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     reportEvent: reportEvent({
-      Issue,
-      Event,
       driver
     }),
     reportWikiEdit: reportWikiEdit({

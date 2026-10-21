@@ -1,6 +1,5 @@
+import { createEventReportRepository, type EventReportRepository } from "../../services/persistence/eventReportRepository.js";
 import type {
-  IssueModel,
-  EventModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -27,13 +26,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Event: EventModel;
+  eventReportRepository?: EventReportRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Event, driver } = input;
+  const { driver } = input;
+  const repository = input.eventReportRepository ?? createEventReportRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -77,17 +76,7 @@ const getResolver = (input: Input) => {
     let existingIssueFlaggedServerRuleViolation = false;
 
     // Check if an issue already exists for the event ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
-        channelUniqueName: channelUniqueName,
-        relatedEventId: eventId,
-      },
-      selectionSet: `{
-            id
-            issueNumber
-            flaggedServerRuleViolation
-        }`,
-    });
+    const issueData = await repository.findExisting(channelUniqueName, eventId);
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -103,15 +92,7 @@ const getResolver = (input: Input) => {
 
     // If an issue does NOT already exist, create a new issue.
     if (!existingIssueId) {
-      const eventData = await Event.find({
-        where: {
-          id: eventId,
-        },
-        selectionSet: `{
-                        id
-                        title            
-                    }`,
-      });
+      const eventData = await repository.findEvent(eventId);
       const contextText = eventData[0]?.title || "";
 
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
@@ -126,16 +107,7 @@ const getResolver = (input: Input) => {
         issueNumber,
       });
       try {
-        const issueData = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const issueData = await repository.createIssue(issueCreateInput);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -177,17 +149,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueData = await repository.appendReport(issueUpdateWhere, issueUpdateInput);
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
