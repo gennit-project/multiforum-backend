@@ -1451,8 +1451,8 @@
       "baselineCrudSites": 16,
       "dependencies": "35; configuration/secret masking contract",
       "acceptance": "Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "753a60ea83b888e33c998b01fa9363bdd8d0a3ac",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1506,15 +1506,16 @@
           "id": "37c",
           "scope": "Channel pipeline configuration",
           "baselineCrudSites": 5,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative37c review against500ae5da5ddcbd55127c7de66d4d938a8481ed0e. Preserved review_recovery approval/7units/4live/static evidence reused; original SHA256e6dfab0d9ebe665468ba80c0e522581b032d953410479babf089469496d31960 verified. Five nonfactory blobs match prepared new-blob IDs; factory replaces only ServerConfig with driver and retains Channel/User for bot sync. Exact projections/defaults, configuration save before bot sync, sequential orphan deprecation then disconnection and caught partial failures preserved; prior36/37 shared changes retained. Existing exact isolated cumulative live log completed4/4 zero failures/skips/cancellations, so no duplicate test run. Diff check clean. Ledger5CRUD/0acquisitions,110remainingCRUD including structural adapter/53acquisitions/0CLI consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice37c.patch",
           "preparedPatchSha256": "e6dfab0d9ebe665468ba80c0e522581b032d953410479babf089469496d31960",
           "preparedBase": "658bfe4",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree b8fa2459523918ec2fdd8af66d18099ae296d13b: lint, TypeScript and2433 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice37c-exact-live.log"
           ],
-          "commit": null
+          "commit": "753a60ea83b888e33c998b01fa9363bdd8d0a3ac"
         }
       ]
     },
@@ -1538,15 +1539,16 @@
           "id": "38a",
           "scope": "Bot parent thread read",
           "baselineCrudSites": 1,
-          "status": "reviewed; integration pending",
-          "review": "integration_recovery",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative38a review against753a60ea83b888e33c998b01fa9363bdd8d0a3ac. All five executable/test blobs exactly match approved8fc2ebb2; original integration_recovery3focused/16trigger units/static evidence reused. Exact cumulative2live passed zero failures/skips/cancellations, covering actual author unions/special IDs/missing reads and cycle/depth/chronological thread ordering. commentTrigger only replaces parent-reader injection with configured-driver repository; remaining report/execution logic unchanged. Diff check clean. One structural call removed, zero typed calls/acquisitions: structural adjustment1to0 and total109runtime equals109typed,53acquisitions/0CLI. Queued45a evidence accurate without credit. Mandatory hooks required; future43 integration must retain38a parent-thread wiring.",
           "preparedPatch": "ogm-slice38a.patch",
           "preparedPatchSha256": "e9926505c431424eb5ef45ff55f286e52223f0f11da8c6990c1e2c5d7dd17689",
           "preparedBase": "fa87561",
           "verification": [
-            "Tree8fc2ebb2d5140c7760d2f06ecb40ae66e84d02ec: 3independentfocused;2live;tsc/lint actual passes; cumulative integration gates pending"
+            "Original focused/live/static gates passed; final cumulative checks pending"
           ],
-          "accountingNote": "One structural call, zero typed calls. Reduce manual structural audit adjustment by one only upon integration (1\u21920 if16 already integrated)."
+          "accountingNote": "One structural call, zero typed calls. Reduce manual structural audit adjustment by one only upon integration (1\u21920 if16 already integrated).",
+          "commit": null
         },
         {
           "id": "38b",
@@ -1928,7 +1930,37 @@
       "status": "pending",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "45a",
+          "scope": "Campaign service and worker operations",
+          "baselineCrudSites": 7,
+          "status": "reviewed; integration pending",
+          "preparedEvidence": {
+            "base": "a029e1671b5c97415919355ec59621a37e440e67",
+            "tree": "1e63611912b5c6e37042498bb50787d52d0fb196",
+            "sha256": "9207bfa909758416679ea8f677bfbd11f50700d7d1630267eea4c8ae875b3544",
+            "patch": "/tmp/ogm-slice45a.patch",
+            "files": [
+              "services/persistence/campaignServiceRepository.ts",
+              "services/plugin/pipelineCampaign.ts",
+              "services/plugin/pipelineCampaign.test.ts",
+              "customResolvers/queries/pluginPipelineCampaigns.ts",
+              "customResolvers/queries/pluginPipelineCampaigns.test.ts",
+              "customResolvers/mutations/pluginPipelineCampaigns.ts",
+              "customResolvers/mutations/pluginPipelineCampaigns.test.ts",
+              "customResolvers/queryResolvers.ts",
+              "tests/fixtures/campaignServiceRepositoryStub.ts",
+              "tests/integration/campaignServiceRepository.test.ts"
+            ]
+          },
+          "review": "Independent ten-path review against approved44da029e167; SHA2569207bfa909758416679ea8f677bfbd11f50700d7d1630267eea4c8ae875b3544 verified, diff check clean. Five fixed ports replace7CRUD calls with original selections/predicates and full Campaign default matching actual initialized OGM capture. Query factory uses configured driver, mutation preview context.driver, worker existing models.driver; timers untouched. Same date/accessibility filters, concurrency/rate arithmetic including future attempts, sequential dispatch then refreshed counts/progress, and partial failure prefixes.11focused/final8live passed zero failures/skips/cancellations; actual production schema explicitly retains25file limit, anonymous URL redaction and zero worker dispatch. Clearly labelled synthetic trusted-URL override only characterizes downstream loop/runner failure/committed projection failure; no production context/auth fix or real dispatch claim. Corrected expected native Campaign update event is explicitly asserted, with full ordered baseline/candidate graph/events and raw identity/temporal validation. Existing unit recorder assertions retained; corrected types63426/lint exit0 parent-confirmed. Prepared7CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "verification": [
+            "11focused,8live,lint/TypeScript passed. Actual25file default limit, anonymous URL redaction, zero dispatch and ordered native events preserved; downstream loops tested in labelled trusted-URL fixture. Zero credit before integration."
+          ]
+        }
+      ]
     },
     {
       "id": "46",
@@ -1945,9 +1977,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 110,
+  "remainingRuntimeCrudSites": 109,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 18,
+  "remainingRuntimeCrudFiles": 17,
   "foundations": [
     {
       "id": "F01",
@@ -2001,11 +2033,12 @@
       "33",
       "34",
       "35",
-      "36"
+      "36",
+      "37"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "37c"
+      "38a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2017,7 +2050,7 @@
       "gates": "Eight integration shards, unit/combined coverage, performance budgets, build/static and container passed"
     }
   },
-  "remainingStructuralCrudSites": 1,
+  "remainingStructuralCrudSites": 0,
   "ciCorrections": [
     {
       "scope": "Scratchpad delete parity event ordering",

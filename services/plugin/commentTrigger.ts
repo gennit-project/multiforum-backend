@@ -1,3 +1,4 @@
+import { createBotThreadRepository } from "../persistence/botThreadRepository.js"
 import { performance } from 'perf_hooks'
 import type { CommentTriggerArgs, PluginEdgeData, PluginToRun, PendingRun } from './types.js'
 import { COMMENT_EVENTS } from './constants.js'
@@ -177,7 +178,7 @@ export const triggerPluginRunsForComment = async (
   })
   const channel: Channel = channels[0]
   const parentComments = await collectParentCommentThread({
-    Comment,
+    repository: createBotThreadRepository(driver),
     parentCommentId: comment.ParentComment?.id || null
   })
 

@@ -1,3 +1,4 @@
+import type { BotThreadRepository, BotCommentSnapshot, BotCommentAuthorSnapshot } from "../persistence/botThreadRepository.js"
 import { MAX_REPLY_DEPTH } from '../replyAncestry.js'
 
 type BotChannelSnapshot = {
@@ -13,22 +14,6 @@ type BotDiscussionSnapshot = {
   body?: string | null
 }
 
-type BotCommentAuthorSnapshot = {
-  username?: string | null
-  displayName?: string | null
-  User?: {
-    username?: string | null
-  } | null
-} | null | undefined
-
-type BotCommentSnapshot = {
-  id?: string | null
-  text?: string | null
-  ParentComment?: {
-    id?: string | null
-  } | null
-  CommentAuthor?: BotCommentAuthorSnapshot
-}
 
 export type BotThreadCommentContext = {
   id: string
@@ -81,12 +66,10 @@ const getCommentAuthorInfo = (author: BotCommentAuthorSnapshot) => {
 }
 
 export const collectParentCommentThread = async ({
-  Comment,
+  repository,
   parentCommentId,
 }: {
-  Comment: {
-    find: (input: { where: { id: string }; selectionSet: string }) => Promise<BotCommentSnapshot[]>
-  }
+  repository: BotThreadRepository
   parentCommentId?: string | null
 }): Promise<BotThreadCommentContext[]> => {
   const parentComments: BotThreadCommentContext[] = []
@@ -99,28 +82,7 @@ export const collectParentCommentThread = async ({
     !visited.has(currentParentCommentId)
   ) {
     visited.add(currentParentCommentId)
-    const [parentComment] = await Comment.find({
-      where: { id: currentParentCommentId },
-      selectionSet: `{
-        id
-        text
-        ParentComment {
-          id
-        }
-        CommentAuthor {
-          ... on User {
-            username
-            displayName
-          }
-          ... on ModerationProfile {
-            displayName
-            User {
-              username
-            }
-          }
-        }
-      }`,
-    })
+    const [parentComment] = await repository.findParent(currentParentCommentId)
 
     if (!parentComment?.id) {
       break

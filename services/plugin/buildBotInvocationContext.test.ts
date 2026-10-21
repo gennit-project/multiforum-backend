@@ -101,8 +101,8 @@ test("collectParentCommentThread walks parent comments back to the root", async 
   };
 
   const result = await collectParentCommentThread({
-    Comment: {
-      find: async ({ where }) => [parentById[where.id]],
+    repository: {
+      findParent: async id => [parentById[id]],
     },
     parentCommentId: "comment-2",
   });
@@ -121,4 +121,13 @@ test("collectParentCommentThread walks parent comments back to the root", async 
       authorLabel: "eve",
     },
   ]);
+});
+
+test('parent walk stops on missing nodes and cycles, keeps moderator fallback and empty text',async()=>{
+ const calls:string[]=[];
+ const repository={findParent:async(id:string)=>{calls.push(id);return [{id,text:null,ParentComment:{id},CommentAuthor:{displayName:'Mod',User:{username:'owner'}}}];}};
+ assert.deepEqual(await collectParentCommentThread({repository,parentCommentId:'cycle'}),[{id:'cycle',text:'',authorUsername:'owner',authorLabel:'Mod'}]);assert.deepEqual(calls,['cycle']);
+ assert.deepEqual(await collectParentCommentThread({repository:{findParent:async()=>[]},parentCommentId:'missing'}),[]);
+ assert.deepEqual(await collectParentCommentThread({repository:{findParent:async()=>{throw new Error('must not read');}},parentCommentId:null}),[]);
+ await assert.rejects(collectParentCommentThread({repository:{findParent:async()=>{throw new Error('read failed');}},parentCommentId:'parent'}),/read failed/);
 });
