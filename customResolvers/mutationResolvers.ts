@@ -418,9 +418,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     sendBugReport: sendBugReport(),
     refreshPlugins: refreshPlugins({
-      Plugin,
-      PluginVersion,
-      ServerConfig
+      driver
     }),
     installPluginVersion: installPluginVersion({
       Plugin,

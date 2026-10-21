@@ -1,7 +1,6 @@
+import type { Driver } from "neo4j-driver";
+import { createPluginRegistryRepository, type PluginRegistryRepository } from "../../services/persistence/pluginRegistryRepository.js";
 import type {
-  PluginModel,
-  PluginVersionModel,
-  ServerConfigModel,
   PluginCreateInput,
   PluginUpdateInput,
   PluginVersionCreateInput,
@@ -13,11 +12,7 @@ import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
 import { fetchMergedPluginRegistry, type RegistryVersion } from '../../services/plugin/registryService.js'
 
-type Input = {
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
-  ServerConfig: ServerConfigModel
-}
+type Input = { driver: Driver; pluginRegistryRepository?: PluginRegistryRepository }
 
 const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
   registryUrl: registryVersion.registryUrl || null,
@@ -29,17 +24,13 @@ const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
 })
 
 
-const getResolver = (input: Input) => {
-  const { Plugin, PluginVersion, ServerConfig } = input
+const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, readArtifacts = getManifestArtifacts }: { fetchRegistry?: typeof fetchMergedPluginRegistry; readArtifacts?: typeof getManifestArtifacts } = {}) => {
+  const repository = input.pluginRegistryRepository ?? createPluginRegistryRepository(input.driver)
 
   return async (_parent: unknown, _args: unknown, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     try {
       // Get the server config to find registry URLs
-      const serverConfigs = await ServerConfig.find({
-        selectionSet: `{
-          pluginRegistries
-        }`
-      })
+      const serverConfigs = await repository.findRegistryConfigs()
 
       logger.info('Found server configs:', serverConfigs.length)
       logger.info('Server config pluginRegistries:', serverConfigs[0]?.pluginRegistries)
@@ -51,7 +42,7 @@ const getResolver = (input: Input) => {
       const registryUrls = (serverConfigs[0].pluginRegistries || [])
         .filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
       logger.info(`Fetching plugin registries from: ${registryUrls.join(', ')}`)
-      const registryData = await fetchMergedPluginRegistry(registryUrls)
+      const registryData = await fetchRegistry(registryUrls)
 
       logger.info(`Registry updated at: ${registryData.updatedAt}`)
       logger.info(`Found ${registryData.plugins.length} plugins in registry`)
@@ -62,13 +53,7 @@ const getResolver = (input: Input) => {
       logger.info('Checking for orphaned plugin versions...')
       
       try {
-        const allVersions = await PluginVersion.find({
-          selectionSet: `{
-            id
-            version
-            repoUrl
-          }`
-        })
+        const allVersions = await repository.findOrphanCandidates()
 
         logger.info(`Found ${allVersions.length} total plugin versions in database`)
 
@@ -77,17 +62,7 @@ const getResolver = (input: Input) => {
           try {
             // Use a more specific query that won't fail on null relationships
             // We'll try to find plugins that are connected to this version
-            const connectedPlugins = await Plugin.find({
-              where: {
-                Versions: {
-                  id: version.id
-                }
-              },
-              selectionSet: `{
-                id
-                name
-              }`
-            })
+            const connectedPlugins = await repository.findPluginsForVersion(version.id)
 
             if (connectedPlugins.length === 0) {
               logger.info(`Found orphaned version: ${version.version} (${version.repoUrl})`)
@@ -99,28 +74,17 @@ const getResolver = (input: Input) => {
                   logger.info(`Attempting to connect orphaned version to plugin: ${registryPlugin.id}`)
                   
                   // Find or create the plugin
-                  let plugins = await Plugin.find({
-                    where: { name: registryPlugin.id }
-                  })
+                  let plugins = await repository.findPluginDefaultByName(registryPlugin.id)
 
                   let plugin = plugins[0]
                   if (!plugin) {
                     logger.info(`Creating plugin for orphaned version: ${registryPlugin.id}`)
-                    const createResult = await Plugin.create({
-                      input: [{ name: registryPlugin.id }]
-                    })
+                    const createResult = await repository.createOrphanPlugin([{ name: registryPlugin.id }])
                     plugin = createResult.plugins[0]
                   }
 
                   // Connect the orphaned version to the plugin
-                  await PluginVersion.update({
-                    where: { id: version.id },
-                    connect: {
-                      Plugin: {
-                        where: { node: { id: plugin.id } }
-                      }
-                    }
-                  })
+                  await repository.connectOrphanVersion(version.id, plugin.id)
                   
                   logger.info(`Successfully connected orphaned version ${version.version} to plugin ${registryPlugin.id}`)
                   break
@@ -143,19 +107,13 @@ const getResolver = (input: Input) => {
 
 // Process each plugin in the registry
 for (const registryPlugin of registryData.plugins) {
-  let pluginRecord = (await Plugin.find({
-    where: { name: registryPlugin.id },
-    selectionSet: `{
-      id
-      name
-    }`
-  }))[0]
+  let pluginRecord = (await repository.findPluginByName(registryPlugin.id))[0]
 
   let processedAnyVersion = false
 
   for (const registryVersion of registryPlugin.versions) {
     try {
-      const artifacts = await getManifestArtifacts(registryVersion.tarballUrl)
+      const artifacts = await readArtifacts(registryVersion.tarballUrl)
       logger.info(`Registry version: ${registryVersion.version}, Manifest version: ${artifacts.version}`)
 
       if (artifacts.id !== registryPlugin.id) {
@@ -200,8 +158,7 @@ for (const registryPlugin of registryData.plugins) {
 
       if (!pluginRecord) {
         logger.info(`Creating new plugin: ${registryPlugin.id}`)
-        const createResult = await Plugin.create({
-          input: [
+        const createResult = await repository.createRegistryPlugin([
             ({
               name: registryPlugin.id,
               displayName: pluginUpdatePayload.displayName,
@@ -213,13 +170,10 @@ for (const registryPlugin of registryData.plugins) {
               tags: pluginUpdatePayload.tags,
               metadata: pluginUpdatePayload.metadata
             } as unknown as PluginCreateInput)
-          ]
-        })
+          ])
         pluginRecord = createResult.plugins[0]
       } else {
-        await Plugin.update({
-          where: { id: pluginRecord.id },
-          update: ({
+        await repository.updateRegistryPlugin(pluginRecord.id, ({
             displayName: pluginUpdatePayload.displayName,
             description: pluginUpdatePayload.description,
             authorName: pluginUpdatePayload.authorName,
@@ -228,24 +182,12 @@ for (const registryPlugin of registryData.plugins) {
             license: pluginUpdatePayload.license,
             tags: pluginUpdatePayload.tags,
             metadata: pluginUpdatePayload.metadata
-          } as unknown as PluginUpdateInput)
-        })
+          } as unknown as PluginUpdateInput))
       }
 
       processedAnyVersion = true
 
-      const existingVersions = await PluginVersion.find({
-        where: {
-          AND: [
-            { version: artifacts.version },
-            { repoUrl: registryVersion.tarballUrl }
-          ]
-        },
-        selectionSet: `{
-          id
-          version
-        }`
-      })
+      const existingVersions = await repository.findRegistryVersion(artifacts.version, registryVersion.tarballUrl)
 
       // Neo4j only accepts primitive types, so stringify nested objects
       const settingsDefaultsRaw = manifest.settingsDefaults ?? manifest.settings ?? null
@@ -259,8 +201,7 @@ for (const registryPlugin of registryData.plugins) {
         logger.info(
           `Creating new plugin version: ${registryPlugin.id}@${artifacts.version} (registry: ${registryVersion.version})`
         )
-        await PluginVersion.create({
-          input: [
+        await repository.createRegistryVersion([
             ({
               version: artifacts.version,
               repoUrl: registryVersion.tarballUrl,
@@ -279,17 +220,14 @@ for (const registryPlugin of registryData.plugins) {
                 }
               }
             } as unknown as PluginVersionCreateInput)
-          ]
-        })
+          ])
       } else {
         const existingVersion = existingVersions[0]
         logger.info(
           `Plugin version already exists: ${registryPlugin.id}@${artifacts.version}, ensuring connection`
         )
 
-        await PluginVersion.update({
-          where: { id: existingVersion.id },
-          update: ({
+        await repository.updateRegistryVersion(existingVersion.id, ({
             tarballGsUri: registryVersion.tarballUrl,
             integritySha256: registryVersion.integritySha256,
             ...releaseMetadataPayload,
@@ -299,13 +237,7 @@ for (const registryPlugin of registryData.plugins) {
             uiSchema,
             documentationPath: artifacts.readmePath ?? null,
             readmeMarkdown: artifacts.readmeMarkdown ?? null
-          } as unknown as PluginVersionUpdateInput),
-          connect: {
-            Plugin: {
-              where: { node: { id: pluginRecord!.id } }
-            }
-          }
-        })
+          } as unknown as PluginVersionUpdateInput), pluginRecord!.id)
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
@@ -325,40 +257,7 @@ for (const registryPlugin of registryData.plugins) {
       const pluginsWithVersions = []
       for (const plugin of updatedPlugins) {
         try {
-          const pluginWithVersions = await Plugin.find({
-            where: { id: plugin.id },
-            selectionSet: `{
-              id
-              name
-              displayName
-              description
-              authorName
-              authorUrl
-              homepage
-              license
-              tags
-              metadata
-              Versions {
-                id
-                version
-                repoUrl
-                tarballGsUri
-                integritySha256
-                registryUrl
-                releaseNotesUrl
-                sourceRepoUrl
-                sourceCommit
-                minServerVersion
-                apiVersion
-                entryPath
-                manifest
-                settingsDefaults
-                uiSchema
-                documentationPath
-                readmeMarkdown
-              }
-            }`
-          })
+          const pluginWithVersions = await repository.findRegistryResult(plugin.id)
           
           if (pluginWithVersions[0]) {
             pluginsWithVersions.push(pluginWithVersions[0])
