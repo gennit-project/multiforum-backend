@@ -1,3 +1,4 @@
+import {pipelineRetryRepositoryStub} from "../../tests/fixtures/pipelineRetryRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
@@ -7,7 +8,7 @@ import {
 } from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
-  createRetryDownloadableFileScanResolver,
+  createRetryDownloadableFileScanResolver as actualFactory,
   type RetryDownloadableFileScanInput,
 } from "./retryDownloadableFileScan.js";
 
@@ -227,3 +228,5 @@ test("retries the latest failed channel scan for an optional channel policy", as
     result: [{ id: "new-channel-job" }],
   });
 });
+
+const createRetryDownloadableFileScanResolver:typeof actualFactory = (input,...args)=>actualFactory({...input,retryRepository:pipelineRetryRepositoryStub(input)},...args);

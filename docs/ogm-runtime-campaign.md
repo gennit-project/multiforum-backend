@@ -974,3 +974,13 @@ Slice44b committed `6bff3a04466e442ae09a361b662978313073c80c` ([diff](https://gi
 Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
 
 44c final integration approval: All five executable/test blobs match independently reviewed d616d2fe; cumulative ledger and shared context preserved, diff check clean. Exact isolated live 9/9 passed without skips. Four finite reads preserve filters, selection, context driver, eligibility/cooldown/rate ordering and existing singular-field failure.; live parity passed on identical production sources before this documentation-only update.
+
+Slice44c committed `8c440d5627ccd53a006709444dd54f9c79b6558f` ([diff](https://github.com/gennit-project/multiforum-backend/commit/8c440d5627ccd53a006709444dd54f9c79b6558f)), tree `f9e7391276c0c4aabf6bb577c73d5f321fe1d7f1`: lint, TypeScript and all2455 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice44c-exact-live.log. Independent approval recorded above.
+
+### Slice 44d — Download scan retry controls
+
+4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 23 CRUD sites/4 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+44d final integration approval: All five executable/test blobs exactly match approved a029e167. Shared factories unchanged; ledger correctly records 23 runtime CRUD,50 acquisitions and queued W3d/W3e without removal credit. Diff check clean. Exact isolated live 6/6 passed with no skips/cancellations: target projections, owner/author/moderator gates, missing/clean/unauthorized errors, latest server/channel rerun and job refetch retained. Context driver and strict permission checks preserved.; live parity passed on identical production sources before this documentation-only update.

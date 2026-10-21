@@ -1927,7 +1927,7 @@
           "id": "44c",
           "scope": "Pipeline rerun controls",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "88d25c0bc42ad3d958c577c85b40a31e47d45314",
             "tree": "d616d2fe2fd744eb0199fc0bc32aa339f7326ffd",
@@ -1943,15 +1943,16 @@
           },
           "review": "All five executable/test blobs match independently reviewed d616d2fe; cumulative ledger and shared context preserved, diff check clean. Exact isolated live 9/9 passed without skips. Four finite reads preserve filters, selection, context driver, eligibility/cooldown/rate ordering and existing singular-field failure.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree f9e7391276c0c4aabf6bb577c73d5f321fe1d7f1: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice44c-exact-live.log"
           ],
-          "commit": null
+          "commit": "8c440d5627ccd53a006709444dd54f9c79b6558f"
         },
         {
           "id": "44d",
           "scope": "Download scan retry controls",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "d616d2fe2fd744eb0199fc0bc32aa339f7326ffd",
             "tree": "a029e1671b5c97415919355ec59621a37e440e67",
@@ -1965,10 +1966,11 @@
               "tests/integration/pipelineRetryRepository.test.ts"
             ]
           },
-          "review": "Independent five-path review against approved44cd616d2fe; SHA256a9fa3a4393d77905f7c44e8453ba428fab54f16a66f478f43b562805d1aa0102 verified, diff check clean. Three fixed reads replace four calls preserving exact target/failed-attempt/job projections and caller predicates, context.driver, read/clean/permission order, strict permission===true and archived-channel exclusion. Latest combined server/channel attempt ordering, rerun delegation followed by job refetch and no-attempt direct trigger unchanged.6focused/6live passed zero failures/skips/cancellations; positive canonical author/channel projections,29unbounded attempts/jobs, owner/author/mod paths, missing/clean/unauthorized errors, configured driver and newest-channel retry lineage covered with fake runners and no read events. Existing test recorder adapter preserves assertions. TypeScript12613/lint exit0 parent-confirmed. Prepared4CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "review": "All five executable/test blobs exactly match approved a029e167. Shared factories unchanged; ledger correctly records 23 runtime CRUD,50 acquisitions and queued W3d/W3e without removal credit. Diff check clean. Exact isolated live 6/6 passed with no skips/cancellations: target projections, owner/author/moderator gates, missing/clean/unauthorized errors, latest server/channel rerun and job refetch retained. Context driver and strict permission checks preserved.",
           "verification": [
-            "6focused,6live,lint/TypeScript passed. Original strict permission/archived-channel gates, latest failed attempt selection and job refetch preserved. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -2096,9 +2098,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 27,
+  "remainingRuntimeCrudSites": 23,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 5,
+  "remainingRuntimeCrudFiles": 4,
   "foundations": [
     {
       "id": "F01",
@@ -2163,7 +2165,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "44c"
+      "44d"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2604,6 +2606,84 @@
         "43 unique focused cases passed across initial39/43 plus corrected creation16 overlapping run; four new fixtures corrected to supply required channel, no production change",
         "Final TypeScript74930/lint61057 actual0 before test fixture-only channel correction and blank-line cleanup",
         "11 isolated live cases passed, actual exit0; /tmp/discussion-pipeline-wiring-live.log"
+      ]
+    },
+    {
+      "id": "W3d",
+      "scope": "Plugin control public dependencies without model ports",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W3d",
+        "base": "3d589b8534ce9f699aab7ee0142aab0158c002f8",
+        "tree": "3c56a790ffa4267f6bdc044ea53175ba97a3eb2d",
+        "patch": "/tmp/ogm-plugin-controls-wiring.patch",
+        "sha256": "22588e38900922e59ce50f2accaff10002c8abf59a5c0814dcc9f6cb093fffbe",
+        "files": [
+          "customResolvers/mutationResolvers.ts",
+          "customResolvers/mutations/prepareDownload.test.ts",
+          "customResolvers/mutations/prepareDownload.ts",
+          "customResolvers/mutations/rerunPluginPipeline.test.ts",
+          "customResolvers/mutations/rerunPluginPipeline.ts",
+          "customResolvers/mutations/retryDownloadableFileScan.test.ts",
+          "customResolvers/mutations/retryDownloadableFileScan.ts",
+          "customResolvers/mutations/startPluginPipeline.test.ts",
+          "customResolvers/mutations/startPluginPipeline.ts",
+          "customResolvers/mutations/triggerDownloadableFilePluginRuns.ts",
+          "tests/fixtures/pipelineRerunRepositoryStub.ts",
+          "tests/fixtures/pipelineRetryRepositoryStub.ts",
+          "tests/fixtures/pipelineStartRepositoryStub.ts"
+        ],
+        "verification": [
+          "37 unique focused cases passed (34 plus3new; overlapping11start cases)",
+          "Final TypeScript99821 and scoped lint76699 exit0",
+          "33 isolated live cases passed;94142exit0; /tmp/plugin-controls-wiring-live.log"
+        ]
+      },
+      "review": "Reviewed thirteen-path dependency cleanup and exact patch hash. Configured notification capability replaces prior User truthiness at factories; request context driver remains owned by start/retry/direct trigger, preparation retains configured driver, and rerun forwards the same input into start. Repository operations, permission gates and order unchanged; legacy ModelMap adapters remain test-only. 37 unique focused and 33 isolated live pass; final TypeScript99821 and lint76699 confirmed zero; diff check clean.",
+      "verification": [
+        "37 unique focused cases passed (34 plus3new; overlapping11start cases)",
+        "Final TypeScript99821 and scoped lint76699 exit0",
+        "33 isolated live cases passed;94142exit0; /tmp/plugin-controls-wiring-live.log"
+      ]
+    },
+    {
+      "id": "W3e",
+      "scope": "Configuration and seed dependencies plus test-only legacy model types",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 0,
+      "preparedEvidence": {
+        "id": "W3e",
+        "base": "3c56a790ffa4267f6bdc044ea53175ba97a3eb2d",
+        "tree": "4283a20ee91f9481141efad61417bf5ce688c63b",
+        "patch": "/tmp/ogm-config-seed-wiring.patch",
+        "sha256": "8ecc4199721077e404ab490875734989c35f558995b169fbdc06f9fc937bf376",
+        "files": [
+          "customResolvers/mutationResolvers.ts",
+          "customResolvers/mutations/applyPluginConfiguration.test.ts",
+          "customResolvers/mutations/applyPluginConfiguration.ts",
+          "customResolvers/mutations/channelPipelineReads.test.ts",
+          "customResolvers/mutations/seedDataForCypressTests.ts",
+          "customResolvers/mutations/updateChannelPluginPipelines.ts",
+          "services/plugin/channelTrigger.execution.test.ts",
+          "services/plugin/downloadTrigger.execution.test.ts",
+          "services/plugin/pipelineCampaign.test.ts",
+          "services/plugin/types.ts",
+          "tests/fixtures/pluginModels.ts"
+        ],
+        "verification": [
+          "43focused cases plus channelPipelineReads focused passed",
+          "Scoped lint and finaltypes29145 exit0",
+          "20isolatedlive cases passed46153actual0"
+        ]
+      },
+      "review": "Reviewed eleven paths and refreeze: only final blank-line trim relative to beb4edc7. Removed seed/channel/config model inputs were unused; seed repository helpers preserved, apply operations injection preserved and install still receives request context.driver. Models alias moved unchanged to test-only fixture; caller/test adaptations preserve assertions. Patch hash 8ecc4199721077e404ab490875734989c35f558995b169fbdc06f9fc937bf376; diff check clean. Existing 43 focused plus 5 channel cases and 20 isolated live passed; final TypeScript29145/lint confirmed zero, reused for whitespace-only refreeze.",
+      "verification": [
+        "43focused cases plus channelPipelineReads focused passed",
+        "Scoped lint and finaltypes29145 exit0",
+        "20isolatedlive cases passed46153actual0"
       ]
     }
   ],
