@@ -1,9 +1,10 @@
+import {campaignServiceRepositoryStub} from "../../tests/fixtures/campaignServiceRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
-  createPluginPipelineCampaign,
+  createPluginPipelineCampaign as actualFactory,
   pausePluginPipelineCampaign,
   resumePluginPipelineCampaign,
 } from "./pluginPipelineCampaigns.js";
@@ -105,3 +106,5 @@ test("pauses and resumes only from the matching state", async () => {
   );
   assert.equal(resumed?.status, "RUNNING");
 });
+
+const createPluginPipelineCampaign:typeof actualFactory = models=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models)});

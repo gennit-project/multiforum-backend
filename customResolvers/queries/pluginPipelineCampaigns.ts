@@ -1,3 +1,5 @@
+import type {Driver} from "neo4j-driver";
+import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
 import type {
   DownloadableFileModel,
   PluginPipelineCampaignModel,
@@ -8,14 +10,18 @@ import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import { previewPipelineCampaign } from "../../services/plugin/pipelineCampaign.js";
 
 export const previewPluginPipelineCampaign = ({
+  driver,
+  campaignRepository,
   DownloadableFile,
   ServerConfig,
 }: {
+  driver?: Driver;
+  campaignRepository?: CampaignServiceRepository;
   DownloadableFile: DownloadableFileModel;
   ServerConfig: ServerConfigModel;
 }) =>
   async (_parent: unknown, { policyId }: { policyId: string }) =>
-    previewPipelineCampaign({ DownloadableFile, ServerConfig, policyId });
+    previewPipelineCampaign({ DownloadableFile, ServerConfig, driver, campaignRepository, policyId });
 
 export const getPluginPipelineCampaigns = ({
   PluginPipelineCampaign,

@@ -1,3 +1,4 @@
+import {campaignServiceRepositoryStub} from "../../tests/fixtures/campaignServiceRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap, PluginPipelineCampaign } from "../../ogm_types.js";
@@ -7,9 +8,9 @@ import {
 } from "../../ogm_types.js";
 import {
   campaignCounts,
-  previewPipelineCampaign,
-  runPipelineCampaign,
-  processRunningPipelineCampaigns,
+  previewPipelineCampaign as actualpreviewPipelineCampaign,
+  runPipelineCampaign as actualrunPipelineCampaign,
+  processRunningPipelineCampaigns as actualprocessRunningPipelineCampaigns,
   PluginPipelineCampaignService,
   type CampaignModels,
 } from "./pipelineCampaign.js";
@@ -273,8 +274,12 @@ test("processor completes empty campaigns and the service can start and stop", a
   );
   assert.match(JSON.stringify(updates[0]), /COMPLETED/);
 
-  const service = new PluginPipelineCampaignService(models, 60_000);
+  const service = new PluginPipelineCampaignService({...models,campaignRepository:campaignServiceRepositoryStub(models)}, 60_000);
   await service.start();
   service.stop();
   assert.equal(campaignFindCount, 2);
 });
+
+const previewPipelineCampaign:typeof actualpreviewPipelineCampaign = input=>actualpreviewPipelineCampaign({...input,campaignRepository:campaignServiceRepositoryStub(input)});
+const runPipelineCampaign:typeof actualrunPipelineCampaign = input=>actualrunPipelineCampaign({...input,models:{...input.models,campaignRepository:campaignServiceRepositoryStub(input.models)}});
+const processRunningPipelineCampaigns:typeof actualprocessRunningPipelineCampaigns = (models,...args)=>actualprocessRunningPipelineCampaigns({...models,campaignRepository:campaignServiceRepositoryStub(models)},...args);

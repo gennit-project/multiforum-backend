@@ -180,6 +180,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     previewPluginPipelineCampaign: previewPluginPipelineCampaign({
+      driver,
       DownloadableFile,
       ServerConfig,
     }),

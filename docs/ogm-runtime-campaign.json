@@ -1865,8 +1865,8 @@
       "baselineCrudSites": 18,
       "dependencies": "Notifications before 40\u201343; controls after 41\u201343 and 34",
       "acceptance": "Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "5fae4b51a1fb8da2505bb9fb5f299c2b6e0626aa",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1952,7 +1952,7 @@
           "id": "44d",
           "scope": "Download scan retry controls",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "d616d2fe2fd744eb0199fc0bc32aa339f7326ffd",
             "tree": "a029e1671b5c97415919355ec59621a37e440e67",
@@ -1968,9 +1968,10 @@
           },
           "review": "All five executable/test blobs exactly match approved a029e167. Shared factories unchanged; ledger correctly records 23 runtime CRUD,50 acquisitions and queued W3d/W3e without removal credit. Diff check clean. Exact isolated live 6/6 passed with no skips/cancellations: target projections, owner/author/moderator gates, missing/clean/unauthorized errors, latest server/channel rerun and job refetch retained. Context driver and strict permission checks preserved.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 5ca606f50453a0f1aa03d8ca4c6c28c5cedd45a8: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice44d-exact-live.log"
           ],
-          "commit": null
+          "commit": "5fae4b51a1fb8da2505bb9fb5f299c2b6e0626aa"
         }
       ]
     },
@@ -1985,7 +1986,7 @@
       "baselineCrudSites": 14,
       "dependencies": "40\u201344",
       "acceptance": "Progress, cancellation, aggregation and restart behavior",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -1994,7 +1995,7 @@
           "id": "45a",
           "scope": "Campaign service and worker operations",
           "baselineCrudSites": 7,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "a029e1671b5c97415919355ec59621a37e440e67",
             "tree": "1e63611912b5c6e37042498bb50787d52d0fb196",
@@ -2013,10 +2014,11 @@
               "tests/integration/campaignServiceRepository.test.ts"
             ]
           },
-          "review": "Independent ten-path review against approved44da029e167; SHA2569207bfa909758416679ea8f677bfbd11f50700d7d1630267eea4c8ae875b3544 verified, diff check clean. Five fixed ports replace7CRUD calls with original selections/predicates and full Campaign default matching actual initialized OGM capture. Query factory uses configured driver, mutation preview context.driver, worker existing models.driver; timers untouched. Same date/accessibility filters, concurrency/rate arithmetic including future attempts, sequential dispatch then refreshed counts/progress, and partial failure prefixes.11focused/final8live passed zero failures/skips/cancellations; actual production schema explicitly retains25file limit, anonymous URL redaction and zero worker dispatch. Clearly labelled synthetic trusted-URL override only characterizes downstream loop/runner failure/committed projection failure; no production context/auth fix or real dispatch claim. Corrected expected native Campaign update event is explicitly asserted, with full ordered baseline/candidate graph/events and raw identity/temporal validation. Existing unit recorder assertions retained; corrected types63426/lint exit0 parent-confirmed. Prepared7CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "review": "All ten executable/test blobs exactly match approved1e636119; configured preview driver and shared wiring preserved. Diff check clean, ledger16CRUD/50acquisitions/0CLI and W4 pending correctly distinguished. Exact isolated8/8 live passed without skips. Actual anonymous URL redaction/default25/no dispatch preserved; explicitly synthetic trusted-URL tests only cover downstream sequential effects, future rate window and durable projection-failure prefixes. Prior11focused/static review reused.",
           "verification": [
-            "11focused,8live,lint/TypeScript passed. Actual25file default limit, anonymous URL redaction, zero dispatch and ordered native events preserved; downstream loops tested in labelled trusted-URL fixture. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "45b",
@@ -2098,9 +2100,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 23,
+  "remainingRuntimeCrudSites": 16,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 4,
+  "remainingRuntimeCrudFiles": 3,
   "foundations": [
     {
       "id": "F01",
@@ -2161,11 +2163,12 @@
       "40",
       "41",
       "42",
-      "43"
+      "43",
+      "44"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "44d"
+      "45a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2684,6 +2687,159 @@
         "43focused cases plus channelPipelineReads focused passed",
         "Scoped lint and finaltypes29145 exit0",
         "20isolatedlive cases passed46153actual0"
+      ]
+    },
+    {
+      "id": "W4",
+      "scope": "Runtime composition/context without OGM and isolated legacy parity oracle",
+      "status": "prepared; review pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 33,
+      "preparedEvidence": {
+        "id": "W4",
+        "base": "4283a20ee91f9481141efad61417bf5ce688c63b",
+        "tree": "c64fdf47e5b2e180dfcee2fb45d36468cb7958b4",
+        "patch": "/tmp/ogm-runtime-composition-wiring.patch",
+        "sha256": "9d8cb3d402a9e98583cee1cfce2969fd8b5f811a2f8bca9f60ffd583dc00837e",
+        "files": [
+          "customResolvers.ts",
+          "customResolvers/mutationResolvers.ts",
+          "customResolvers/mutations/enableServerPlugin.test.ts",
+          "customResolvers/queries/pluginPipelinePublicApi.test.ts",
+          "customResolvers/queries/pluginPipelineVisibility.test.ts",
+          "customResolvers/queries/previewPluginConfigurationReconciliation.test.ts",
+          "customResolvers/queryResolvers.ts",
+          "customResolvers/resolverDeps.ts",
+          "index.ts",
+          "middleware/ownershipCreateMiddleware.ts",
+          "services/commentNotificationHandler.test.ts",
+          "services/commentNotificationHandler.ts",
+          "services/commentNotificationService.test.ts",
+          "services/commentNotificationService.ts",
+          "services/initializeOgmFromExistingSchema.test.ts",
+          "services/persistence/ogm.ts",
+          "services/plugin/pipelineCampaignSchema.test.ts",
+          "tests/fixtures/initializeOgmFromExistingSchema.ts",
+          "tests/fixtures/legacyOgmApp.ts",
+          "tests/fixtures/pipelineTargetSnapshots.ts",
+          "tests/fixtures/repository.test.ts",
+          "tests/fixtures/repository.ts",
+          "tests/helpers/buildPermissionedSchema.ts",
+          "tests/integration/accountRegistrationRepository.test.ts",
+          "tests/integration/botCommentRepository.test.ts",
+          "tests/integration/botIdentityRepository.test.ts",
+          "tests/integration/botReportRepository.test.ts",
+          "tests/integration/botThreadRepository.test.ts",
+          "tests/integration/campaignControlRepository.test.ts",
+          "tests/integration/campaignQueryRepository.test.ts",
+          "tests/integration/campaignServiceRepository.test.ts",
+          "tests/integration/channelBotRepository.test.ts",
+          "tests/integration/channelCreatorModeratorRepository.test.ts",
+          "tests/integration/channelExecutionRepository.test.ts",
+          "tests/integration/channelImageReportRepository.test.ts",
+          "tests/integration/channelModerationRepository.test.ts",
+          "tests/integration/channelPipelineRepository.test.ts",
+          "tests/integration/channelReportRepository.test.ts",
+          "tests/integration/collectionReadRepository.test.ts",
+          "tests/integration/commentExecutionRepository.test.ts",
+          "tests/integration/commentModerationRepository.test.ts",
+          "tests/integration/commentReportRepository.test.ts",
+          "tests/integration/commentRevisionRepository.test.ts",
+          "tests/integration/commentVoteRepository.test.ts",
+          "tests/integration/contentValidationRepository.test.ts",
+          "tests/integration/contributionTargetRepository.test.ts",
+          "tests/integration/discussionCreationRepository.test.ts",
+          "tests/integration/discussionFileAttachmentAgeGate.test.ts",
+          "tests/integration/discussionModerationRepository.test.ts",
+          "tests/integration/discussionReportRepository.test.ts",
+          "tests/integration/discussionRevisionMiddleware.test.ts",
+          "tests/integration/discussionRevisionRepository.test.ts",
+          "tests/integration/discussionUpdateRepository.test.ts",
+          "tests/integration/discussionVoteRepository.test.ts",
+          "tests/integration/downloadExecutionRepository.test.ts",
+          "tests/integration/downloadLabelRepository.test.ts",
+          "tests/integration/downloadReviewRepository.test.ts",
+          "tests/integration/downloadableFileRepository.test.ts",
+          "tests/integration/emailNotificationRepository.test.ts",
+          "tests/integration/eventModerationRepository.test.ts",
+          "tests/integration/eventReportRepository.test.ts",
+          "tests/integration/eventRevisionRepository.test.ts",
+          "tests/integration/eventSeriesCreationRepository.test.ts",
+          "tests/integration/eventSeriesDeletionRepository.test.ts",
+          "tests/integration/eventSeriesUpdateRepository.test.ts",
+          "tests/integration/eventWriteRepository.test.ts",
+          "tests/integration/forumInvitationRepository.test.ts",
+          "tests/integration/forumModeratorRepository.test.ts",
+          "tests/integration/forumOwnerRepository.test.ts",
+          "tests/integration/generatedSchemaOperations.test.ts",
+          "tests/integration/imageModerationHarness.ts",
+          "tests/integration/imageModerationRepository.test.ts",
+          "tests/integration/imagePermanentRemovalRepository.test.ts",
+          "tests/integration/imageReportRepository.test.ts",
+          "tests/integration/imageWriteRepository.test.ts",
+          "tests/integration/instancePolicyRepository.test.ts",
+          "tests/integration/issueActivityMiddlewareRepository.test.ts",
+          "tests/integration/issueActivityRepository.test.ts",
+          "tests/integration/issueCreationRepository.test.ts",
+          "tests/integration/issueLockRepository.test.ts",
+          "tests/integration/issueTargetRepository.test.ts",
+          "tests/integration/legacyPipelineMigrationRepository.test.ts",
+          "tests/integration/notificationSnapshotRepository.test.ts",
+          "tests/integration/notificationWriter.test.ts",
+          "tests/integration/ownershipCreateMiddleware.test.ts",
+          "tests/integration/pipelineAttemptRepository.test.ts",
+          "tests/integration/pipelineDetailRepository.test.ts",
+          "tests/integration/pipelineHistoryRepository.test.ts",
+          "tests/integration/pipelineLeaseRepository.test.ts",
+          "tests/integration/pipelineNotificationRepository.test.ts",
+          "tests/integration/pipelineRerunRepository.test.ts",
+          "tests/integration/pipelineRetryRepository.test.ts",
+          "tests/integration/pipelineStartRepository.test.ts",
+          "tests/integration/pipelineTargetRepository.test.ts",
+          "tests/integration/pipelineWatchdogRepository.test.ts",
+          "tests/integration/pluginConfigurationReadRepository.test.ts",
+          "tests/integration/pluginInstallRepository.test.ts",
+          "tests/integration/pluginRegistryRepository.test.ts",
+          "tests/integration/pluginStatusRepository.test.ts",
+          "tests/integration/profilePictureReportRepository.test.ts",
+          "tests/integration/reactionWriter.test.ts",
+          "tests/integration/revisionRedactionRepository.test.ts",
+          "tests/integration/roleGuardRepository.test.ts",
+          "tests/integration/runtimeComposition.test.ts",
+          "tests/integration/scratchpadRepository.test.ts",
+          "tests/integration/seedDataRepository.test.ts",
+          "tests/integration/serverAdminRepository.test.ts",
+          "tests/integration/serverInvitationRepository.test.ts",
+          "tests/integration/serverModeratorRepository.test.ts",
+          "tests/integration/serverPipelineRepository.test.ts",
+          "tests/integration/serverPluginEnablementRepository.test.ts",
+          "tests/integration/serverSecretRepository.test.ts",
+          "tests/integration/stickyCommentRepository.test.ts",
+          "tests/integration/subscriptionTargetRepository.test.ts",
+          "tests/integration/superVoteUndoRepository.test.ts",
+          "tests/integration/suspensionWriteRepository.test.ts",
+          "tests/integration/wikiActionRepository.test.ts",
+          "tests/integration/wikiEditReportRepository.test.ts",
+          "tests/integration/wikiGuardRepository.test.ts",
+          "tests/integration/wikiRevisionRepository.test.ts",
+          "types/context.ts"
+        ],
+        "acquisitionsRemoved": 33,
+        "verification": [
+          "Prepared AST0runtimeCRUD/0acquisitions; CLIpreviously0; type/codegen OGM remains intentional",
+          "27unique focused pass; final types90536actual0; lint33771passed before test-only oracle/fixture correction",
+          "Initial live failed: oracle omitted original eager model acquisition before shared-schema init; restored exact original ordered32names. Two new production smoke fixtures corrected expected finiteprojection/requiredcampaignprops. Correctedlive28106pending. Failed log preserved.",
+          "Production-only bootstrap test never constructs legacy OGM; parity oracle and generic adapter moved test-only",
+          "Optional Ogm context type retained only for characterization fixture compatibility; no production runtime context carries it"
+        ]
+      },
+      "review": "Independent review pending",
+      "verification": [
+        "Prepared AST0runtimeCRUD/0acquisitions; CLIpreviously0; type/codegen OGM remains intentional",
+        "27unique focused pass; final types90536actual0; lint33771passed before test-only oracle/fixture correction",
+        "Initial live failed: oracle omitted original eager model acquisition before shared-schema init; restored exact original ordered32names. Two new production smoke fixtures corrected expected finiteprojection/requiredcampaignprops. Correctedlive28106pending. Failed log preserved.",
+        "Production-only bootstrap test never constructs legacy OGM; parity oracle and generic adapter moved test-only",
+        "Optional Ogm context type retained only for characterization fixture compatibility; no production runtime context carries it"
       ]
     }
   ],

@@ -1,3 +1,4 @@
+import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
 import { GraphQLError } from "graphql";
 import type {
   PluginPipelineCampaignModel,
@@ -12,6 +13,7 @@ import type { GraphQLContext } from "../../types/context.js";
 import { previewPipelineCampaign } from "../../services/plugin/pipelineCampaign.js";
 
 type Models = {
+  campaignRepository?: CampaignServiceRepository;
   PluginPipelineCampaign: PluginPipelineCampaignModel;
   DownloadableFile: DownloadableFileModel;
   ServerConfig: ServerConfigModel;
@@ -63,7 +65,7 @@ export const createPluginPipelineCampaign = (models: Models) =>
         extensions: { code: "BAD_USER_INPUT" },
       });
     }
-    const preview = await previewPipelineCampaign({ ...models, policyId });
+    const preview = await previewPipelineCampaign({ ...models, driver: context.driver, policyId });
     const timestamp = new Date().toISOString();
     const result = await models.PluginPipelineCampaign.create({
       input: [{

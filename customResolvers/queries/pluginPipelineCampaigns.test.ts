@@ -1,10 +1,11 @@
+import {campaignServiceRepositoryStub} from "../../tests/fixtures/campaignServiceRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap } from "../../ogm_types.js";
 import {
   getPluginPipelineCampaignFailures,
   getPluginPipelineCampaigns,
-  previewPluginPipelineCampaign,
+  previewPluginPipelineCampaign as actualFactory,
 } from "./pluginPipelineCampaigns.js";
 
 test("campaign queries expose previews and campaign history", async () => {
@@ -100,3 +101,5 @@ test("failure query returns stable public destinations and skips orphaned files"
     attemptNumber: 2,
   }]);
 });
+
+const previewPluginPipelineCampaign:typeof actualFactory = models=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models)});
