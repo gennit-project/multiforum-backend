@@ -2,7 +2,7 @@
 // These drive the version-creation path (capture the previous title/description
 // as TextVersions, reconnect DescriptionLastEditedBy) and the in-app edit
 // notification, plus the guard/early-return branches, using a permissive
-// in-memory OGM and driver. No DB.
+// finite repository and driver. No DB.
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -12,31 +12,19 @@ import {
 
 process.env.FRONTEND_URL = "https://app.example.test";
 
-// Permissive OGM: TextVersion.create returns an id; find/update configurable per
-// model. `ops` records writes so we can assert what happened.
+// Finite revision repository; ops records writes.
 function makeContext(opts: { issues?: unknown[]; users?: unknown[] } = {}) {
   const ops: string[] = [];
-  const ogm = {
-    model(name: string) {
-      return {
-        find: async () => {
-          if (name === "User") return opts.users ?? [{ username: "alice" }];
-          if (name === "Issue") return opts.issues ?? [];
-          return [];
-        },
-        create: async () => {
-          ops.push(`${name}.create`);
-          return { textVersions: [{ id: "tv-1" }] };
-        },
-        update: async () => {
-          ops.push(`${name}.update`);
-          return {};
-        },
-      };
-    },
+  const eventRevisionRepository = {
+    findSnapshot: async () => [],
+    findVersionAuthor: async () => opts.users ?? [{username: "alice"}],
+    createPreviousText: async () => {ops.push("TextVersion.create");return {textVersions: [{id: "tv-1"}]};},
+    connectTitleVersion: async () => {ops.push("Event.update");},
+    connectDescriptionVersion: async () => {ops.push("Event.update");},
+    replaceDescriptionEditor: async () => {ops.push("Event.update");},
   };
   const driver = { session: () => ({ run: async () => ({ records: [] }), close: async () => {} }) };
-  const context: any = { issueActivityRepository: { findRelatedIssueIds: async () => opts.issues ?? [], appendActivity: async () => { ops.push("Issue.update"); } }, notificationWriter: {createForUser: async () => {ops.push("notification.create"); return true;}}, ogm, driver, user: { username: "editor", data: {} } };
+  const context: any = { issueActivityRepository: { findRelatedIssueIds: async () => opts.issues ?? [], appendActivity: async () => { ops.push("Issue.update"); } }, notificationWriter: {createForUser: async () => {ops.push("notification.create"); return true;}}, eventRevisionRepository, driver, user: { username: "editor", data: {} } };
   return { context, ops };
 }
 
@@ -102,7 +90,7 @@ test("eventVersionHistoryHandler: writes issue activity items when a related iss
 
 test("eventVersionHistoryHandler: swallows errors (never breaks the mutation)", async () => {
   const context: any = {
-    ogm: { model: () => ({ find: async () => { throw new Error("boom"); }, create: async () => ({}), update: async () => ({}) }) },
+    eventRevisionRepository: {findSnapshot: async () => {throw Error("boom");}},
     driver: {},
     user: { username: "editor" },
   };

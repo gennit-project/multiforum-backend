@@ -59,7 +59,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | complete |
 | 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | complete |
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | complete |
-| 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | partial; see subdivisions |
+| 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | complete |
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | pending |
 | 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | pending |
 | 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | pending |
@@ -518,3 +518,11 @@ Slice21a committed `e28de9924784de37369a0091925bb155a42d09fe` ([diff](https://gi
 33c independently reviewed/queued:8CRUD, original scopes/25cap/independent commits and orderednativeevents retained; exactsamegraphread parity and controlled nonsorted partial-failure input verify surviving identities without cross-allocation assumptions. No removalcredit beforeintegration.
 
 21b final integration approval: Independent cumulative review againste28de99: all four source/test blobs exactly match approved original tree6736a61; no shared adapter changes. Standard full revision snapshot and narrow custom mention snapshot retain history-before-resolver, notifications-after-success, equal-content behavior and custom-wrapper exclusions. Original independent24 combined focused/static evidence reused. Exact live /tmp/runtime-slice21b-exact-live.log reports6 passed, zero failed/skipped/cancelled; diff check clean. Two CRUD/two acquisitions removed; ledger306 CRUD/62 acquisitions consistent and queued33c evidence recorded without removal credit. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice21b committed `c471ebb6c0a50856bc991a42ae85cc72c4e6ffa9` ([diff](https://github.com/gennit-project/multiforum-backend/commit/c471ebb6c0a50856bc991a42ae85cc72c4e6ffa9)), tree `0785519c2b81724fad1ec4c7811a6154b0e27594`: lint, TypeScript and all2159 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice21b-exact-live.log. Independent approval recorded above.
+
+### Slice 22 — Event revision persistence
+
+9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 297 CRUD sites/60 files; 58 acquisitions/9 files; two separate CLI sites.
+
+22 final integration approval: Independent cumulative review againstc471ebb: seven non-context source/test blobs exactly match approved original treeedfb505; context only adds optional EventRevisionRepository import/field. Original independent24 focused and live/static evidence reused. Exact cumulative /tmp/runtime-slice22-exact-live.log reports6 passed, zero failed/skipped/cancelled. Pre-resolver durable history, editor/prior-author attribution, separate helper failure catches, full production defaults/postcommit projection failures and later-notification behavior retained. Diff check clean; nine CRUD/four acquisitions removed; ledger297 CRUD/58 acquisitions consistent. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.
