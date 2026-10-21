@@ -339,8 +339,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     reportChannelImage: reportChannelImage({
-      Issue,
-      Channel,
       driver
     }),
     archiveImage: archiveImage({

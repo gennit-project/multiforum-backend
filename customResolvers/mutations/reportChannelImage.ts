@@ -1,6 +1,5 @@
+import {createChannelImageReportRepository,type ChannelImageReportRepository} from "../../services/persistence/channelImageReportRepository.js";
 import type {
-  IssueModel,
-  ChannelModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -24,8 +23,7 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Channel: ChannelModel;
+  channelImageReportRepository?: ChannelImageReportRepository;
   driver: Driver;
 };
 
@@ -104,7 +102,8 @@ const getModerationActionCreateInput = (input: {
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Channel, driver } = input;
+  const { driver } = input;
+  const repository = input.channelImageReportRepository ?? createChannelImageReportRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, imageType, reportText, selectedServerRules } =
       args;
@@ -138,17 +137,7 @@ const getResolver = (input: Input) => {
     }
 
     // Verify the channel exists and has the specified image type
-    const channelData = await Channel.find({
-      where: {
-        uniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-        uniqueName
-        displayName
-        channelIconURL
-        channelBannerURL
-      }`,
-    });
+    const channelData = await repository.findReportedChannel(channelUniqueName);
 
     if (channelData.length === 0) {
       throw new GraphQLError("Channel not found");
@@ -182,14 +171,7 @@ const getResolver = (input: Input) => {
     }
 
     // Check if an issue already exists for this channel image (server-scoped)
-    const existingIssueData = await Issue.find({
-      where: issueWhereClause,
-      selectionSet: `{
-        id
-        issueNumber
-        flaggedServerRuleViolation
-      }`,
-    });
+    const existingIssueData = await repository.findPriorChannelImageReport(issueWhereClause);
 
     if (existingIssueData.length > 0) {
       existingIssueId = existingIssueData[0]?.id || "";
@@ -236,16 +218,7 @@ const getResolver = (input: Input) => {
       }
 
       try {
-        const createResult = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const createResult = await repository.createChannelImageReportIssue(issueCreateInput);
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -286,20 +259,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const updateResult = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-            relatedChannelUniqueName
-            relatedChannelIconName
-            relatedChannelBannerName
-          }
-        }`,
-      });
+      const updateResult = await repository.appendChannelImageReport(issueUpdateWhere, issueUpdateInput);
       const issueId = updateResult.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
