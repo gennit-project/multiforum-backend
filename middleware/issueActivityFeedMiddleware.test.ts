@@ -131,13 +131,15 @@ test('prior delete activity suppresses both activities only after close',async()
  const {context,calls,resolve}=recordingContext({priorDelete:true});await M.deleteComments(resolve,null,{where:{id:'c'}},context,{});
  assert.deepEqual(calls,['author','resolve','related','close','check']);
 });
-test('individual optional model absence preserves no-op author and issue capabilities',async()=>{
- const {context,calls,resolve}=recordingContext();context.ogm.model=()=>undefined;
+test('no-op author and issue capabilities when neither repositories nor driver are available',async()=>{
+ const {context,calls,resolve}=recordingContext();
+ delete context.issueActivityMiddlewareRepository;delete context.issueActivityRepository;
  await M.deleteComments(resolve,null,{where:{id:'c'}},context,{});assert.deepEqual(calls,['resolve']);
 });
-test('missing OGM preserves no-op capabilities even when repositories are injected',async()=>{
+test('records via injected repositories even when OGM is absent',async()=>{
  const {context,calls,resolve}=recordingContext();delete context.ogm;
- await M.deleteComments(resolve,null,{where:{id:'c'}},context,{});assert.deepEqual(calls,['resolve']);
+ await M.deleteComments(resolve,null,{where:{id:'c'}},context,{});
+ assert.deepEqual(calls,['author','resolve','related','close','check','activity:close','activity:delete']);
 });
 test('edit wrappers retain nonempty-update versus custom no-op difference',async()=>{
  const {context,calls,resolve}=recordingContext();

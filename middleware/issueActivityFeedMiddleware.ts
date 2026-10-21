@@ -133,8 +133,7 @@ const recordDeleteClosure = async (input: {
   context: GraphQLContext;
 }) => {
   const { issueLookup, actionDescription, authorInfo, context } = input;
-  const IssueModel = context?.ogm?.model('Issue');
-  if (!IssueModel) {
+  if (!context?.issueActivityRepository && !context?.driver) {
     return;
   }
 
@@ -195,8 +194,7 @@ const recordEditActivity = async (input: {
   context: GraphQLContext;
 }) => {
   const { issueLookup, actionDescription, context } = input;
-  const IssueModel = context?.ogm?.model('Issue');
-  if (!IssueModel) {
+  if (!context?.issueActivityRepository && !context?.driver) {
     return;
   }
 
@@ -227,8 +225,7 @@ const issueActivityFeedMiddleware = {
       info: GraphQLResolveInfo
     ) => {
       const commentId = args?.where?.id;
-      const CommentModel = context?.ogm?.model('Comment');
-      const authorInfo = commentId && CommentModel
+      const authorInfo = commentId && (context?.issueActivityMiddlewareRepository || context?.driver)
         ? await getCommentAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), commentId)
         : null;
       const result = await resolve(parent, args, context, info);
@@ -250,8 +247,7 @@ const issueActivityFeedMiddleware = {
       info: GraphQLResolveInfo
     ) => {
       const discussionId = args?.where?.id;
-      const DiscussionModel = context?.ogm?.model('Discussion');
-      const authorInfo = discussionId && DiscussionModel
+      const authorInfo = discussionId && (context?.issueActivityMiddlewareRepository || context?.driver)
         ? await getDiscussionAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), discussionId)
         : null;
       const result = await resolve(parent, args, context, info);
@@ -273,8 +269,7 @@ const issueActivityFeedMiddleware = {
       info: GraphQLResolveInfo
     ) => {
       const eventId = args?.where?.id;
-      const EventModel = context?.ogm?.model('Event');
-      const authorInfo = eventId && EventModel
+      const authorInfo = eventId && (context?.issueActivityMiddlewareRepository || context?.driver)
         ? await getEventAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), eventId)
         : null;
       const result = await resolve(parent, args, context, info);
