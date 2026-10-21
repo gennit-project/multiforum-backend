@@ -856,29 +856,31 @@
           "id": "24c",
           "scope": "Discussion reports",
           "baselineCrudSites": 5,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review againste63b787: four non-factory blobs exactly match approved9d00306; factory only removes Issue/Discussion forwarding retaining driver. Optional Channel capability acquisition retained. Prior independent5 focused/static evidence reused; exact live7 passed zero failed/skipped/cancelled. Issue-first/new-only target lookup, allocation and optional channel-read catch boundaries, identity reconnect, detailed create versus generic update failures preserved. Diff check clean;5CRUD/0acquisitions, ledger275/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice24c.patch",
           "preparedPatchSha256": "0ca6d9746d5b81c2daae5264e161eac2a3fe547912f7469285201d538f747f25",
           "preparedBase": "9341421",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree d13671608806a6998f00bdbca9be7c669303632e: lint, TypeScript and2192 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice24c-exact-live.log"
           ],
           "accountingNote": "Optional Channel acquisition deliberately retained as capability guard until wiring cleanup.",
-          "commit": null
+          "commit": "0756cf7c138880d0a89154d3587db59f64de4f2a"
         },
         {
           "id": "24d",
           "scope": "Channel reports",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
-          "review": "reports_reviewer",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against0756cf7: four non-factory source/test blobs exactly match approved0d951828; factory only removes Issue/Channel forwarding retaining driver. Prior independent12 focused/static evidence reused; exact live6 passed zero failed/skipped/cancelled. Channel-before-issue lookup, null server scope/counter, identity guards, flags, selected projections and detailed-create/generic-update boundaries retained. Diff check clean;4CRUD/0acquisitions, ledger271/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice24d.patch",
           "preparedPatchSha256": "ffca24fa4a05b8515b2ddec0a1e1b5f19c63743b973076fbe1adb72e606304eb",
           "preparedBase": "9341421",
           "verification": [
-            "Tree0d95182814009c7a4664698f14b02f8d4ce37f28: 12independentfocused;6live;tsc/lint actual passes; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -1634,9 +1636,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 275,
+  "remainingRuntimeCrudSites": 271,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 54,
+  "remainingRuntimeCrudFiles": 53,
   "foundations": [
     {
       "id": "F01",

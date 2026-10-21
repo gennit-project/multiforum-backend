@@ -330,8 +330,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       revisionType: 'wiki',
     }),
     reportChannel: reportChannel({
-      Issue,
-      Channel,
       driver
     }),
     reportImage: reportImage({
