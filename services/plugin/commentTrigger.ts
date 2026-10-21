@@ -1,4 +1,5 @@
 import { createBotThreadRepository } from "../persistence/botThreadRepository.js"
+import {createCommentExecutionRepository, type CommentExecutionRepository} from "../persistence/commentExecutionRepository.js";
 import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
 import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
@@ -42,7 +43,7 @@ export const triggerPluginRunsForComment = async (
   }: CommentTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
-  { loadPlugin = loadPluginImplementation, leaseRepository, attemptRepository }: { loadPlugin?: typeof loadPluginImplementation; leaseRepository?: PipelineLeaseRepository; attemptRepository?: PipelineAttemptRepository } = {}
+  { loadPlugin = loadPluginImplementation, leaseRepository, attemptRepository, commentRepository }: { loadPlugin?: typeof loadPluginImplementation; leaseRepository?: PipelineLeaseRepository; attemptRepository?: PipelineAttemptRepository; commentRepository?: CommentExecutionRepository } = {}
 ) => {
   if (!COMMENT_EVENTS.has(event)) {
     throw new Error(`Unsupported comment plugin event: ${event}`)
@@ -56,63 +57,12 @@ export const triggerPluginRunsForComment = async (
     Issue,
     PluginPipelineRun,
     PluginRun,
-    ServerConfig,
-    ServerSecret,
     User,
   } = models
 
-  const comments = await Comment.find({
-    where: { id: commentId },
-    selectionSet: `{
-      id
-      text
-      botMentions
-      isFeedbackComment
-      createdAt
-      CommentAuthor {
-        ... on User {
-          username
-          displayName
-          isBot
-        }
-        ... on ModerationProfile {
-          displayName
-          User {
-            username
-          }
-        }
-      }
-      DiscussionChannel {
-        id
-        discussionId
-        channelUniqueName
-        Discussion {
-          id
-          title
-          body
-        }
-      }
-      Channel {
-        uniqueName
-        displayName
-        description
-        rules
-      }
-      Event {
-        id
-        title
-        EventChannels {
-          channelUniqueName
-        }
-      }
-      Issue {
-        id
-      }
-      ParentComment {
-        id
-      }
-    }`
-  })
+  const repository = commentRepository ?? createCommentExecutionRepository(driver!)
+
+  const comments = await repository.findComment(commentId)
 
   if (!comments.length) {
     throw new Error(`Comment "${commentId}" not found`)
@@ -152,32 +102,7 @@ export const triggerPluginRunsForComment = async (
   }
 
   // Fetch channel pipelines and enabled plugins (for channel-level settings)
-  const channels = await Channel.find({
-    where: { uniqueName: channelUniqueName },
-    selectionSet: `{
-      uniqueName
-      displayName
-      description
-      rules
-      pluginPipelines
-      EnabledPluginsConnection {
-        edges {
-          properties {
-            enabled
-            settingsJson
-          }
-          node {
-            id
-            version
-            Plugin {
-              id
-              name
-            }
-          }
-        }
-      }
-    }`
-  })
+  const channels = await repository.findChannel(channelUniqueName)
   const channel: Channel = channels[0]
   const parentComments = await collectParentCommentThread({
     repository: createBotThreadRepository(driver),
@@ -195,37 +120,7 @@ export const triggerPluginRunsForComment = async (
     }
   }
 
-  const serverConfigs = await ServerConfig.find({
-    selectionSet: `{
-      serverName
-      pluginPipelines
-      InstalledVersionsConnection {
-        edges {
-          properties {
-            enabled
-            settingsJson
-          }
-          node {
-            id
-            version
-            repoUrl
-            tarballGsUri
-            entryPath
-            manifest
-            settingsDefaults
-            uiSchema
-            Plugin {
-              id
-              name
-              displayName
-              description
-              metadata
-            }
-          }
-        }
-      }
-    }`
-  })
+  const serverConfigs = await repository.findConfiguration()
 
   const serverConfig: ServerConfig | undefined = serverConfigs[0]
   if (!serverConfig) {
@@ -349,8 +244,7 @@ export const triggerPluginRunsForComment = async (
     const pluginVersionData = edgeData.node
 
     const timing = createQueuedPluginRunTiming()
-    const runCreateResult = await PluginRun.create({
-      input: [
+    const runCreateResult = await repository.createPendingRuns([
         ({
           pluginId,
           pluginName: pluginNode.displayName || pluginNode.name,
@@ -372,8 +266,7 @@ export const triggerPluginRunsForComment = async (
           }),
           updatedAt: new Date().toISOString()
         } as PluginRunCreateInput)
-      ]
-    })
+      ])
 
     pendingRuns.push({
       id: runCreateResult.pluginRuns[0].id,
@@ -392,26 +285,16 @@ export const triggerPluginRunsForComment = async (
     const pluginNode = pluginVersionData.Plugin
 
     if (pipelineStopped) {
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await repository.markSkippedRun(pluginRunId, ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped',
           finishedAt: new Date().toISOString(),
           timeoutAt: null,
-        } as PluginRunUpdateInput)
-      })
+        } as PluginRunUpdateInput))
       jobStatuses[order] = 'SKIPPED'
 
-      const skipped = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const skipped = await repository.findReturnedRun(pluginRunId)
       if (skipped[0]) runs.push(skipped[0])
       continue
     }
@@ -421,26 +304,16 @@ export const triggerPluginRunsForComment = async (
         ? 'Condition not met: previous step did not succeed'
         : 'Condition not met: previous step did not fail'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await repository.markSkippedRun(pluginRunId, ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`,
           finishedAt: new Date().toISOString(),
           timeoutAt: null,
-        } as PluginRunUpdateInput)
-      })
+        } as PluginRunUpdateInput))
       jobStatuses[order] = 'SKIPPED'
 
-      const skipped = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const skipped = await repository.findReturnedRun(pluginRunId)
       if (skipped[0]) runs.push(skipped[0])
       continue
     }
@@ -473,13 +346,7 @@ export const triggerPluginRunsForComment = async (
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
       const PluginClass = await loadPlugin(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
 
-      const serverSecrets = await ServerSecret.find({
-        where: { pluginId },
-        selectionSet: `{
-          key
-          ciphertext
-        }`
-      })
+      const serverSecrets = await repository.findSecrets(pluginId)
 
       const decryptedSecrets: Record<string, string> = {}
       for (const secret of serverSecrets) {
@@ -745,14 +612,7 @@ export const triggerPluginRunsForComment = async (
         pipelineStopped = true
       }
 
-      const updated = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const updated = await repository.findReturnedRun(pluginRunId)
 
       if (updated[0]) {
         runs.push(updated[0])
@@ -784,14 +644,7 @@ export const triggerPluginRunsForComment = async (
       })
       jobStatuses[order] = 'FAILED'
 
-      const updated = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const updated = await repository.findReturnedRun(pluginRunId)
 
       if (updated[0]) {
         runs.push(updated[0])

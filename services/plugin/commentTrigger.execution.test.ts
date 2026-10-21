@@ -1,3 +1,4 @@
+import {commentExecutionRepositoryStub} from "../../tests/fixtures/commentExecutionRepositoryStub.js";
 import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
 import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the comment trigger: the per-plugin run lifecycle
@@ -205,4 +206,4 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.match(String(skipped.update?.skippedReason), /Pipeline stopped/);
 });
 
-const triggerPluginRunsForComment:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});
+const triggerPluginRunsForComment:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,commentRepository:commentExecutionRepositoryStub(args.models),leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});

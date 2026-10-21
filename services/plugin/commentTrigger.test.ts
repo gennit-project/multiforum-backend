@@ -1,3 +1,4 @@
+import {commentExecutionRepositoryStub} from "../../tests/fixtures/commentExecutionRepositoryStub.js";
 // Unit tests for the comment plugin trigger's decision logic: which comments
 // trigger plugin runs, how the channel/server pipelines are selected, and the
 // early-return guards. These drive triggerPluginRunsForComment through its
@@ -55,7 +56,7 @@ const discussionComment = () => ({
 });
 
 const run = (models: any, event = EVENT, commentId = "comment-1") =>
-  triggerPluginRunsForComment({ commentId, event, models, driver: {} as any });
+  triggerPluginRunsForComment({ commentId, event, models, driver: {} as any }, {commentRepository:commentExecutionRepositoryStub(models)});
 
 test("isCommentEvent recognizes only comment.created", () => {
   assert.equal(isCommentEvent("comment.created"), true);

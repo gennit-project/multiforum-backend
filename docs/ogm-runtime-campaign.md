@@ -80,7 +80,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 39 Bot reports | 6 | 18–19; 38 | Issue identity, report deduplication and actor attribution | complete |
 | 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | complete |
 | 41 Pipeline download execution | 12 | 40; 44 notifications; 34 as applicable | Runner side effects outside retried callbacks; statuses/retries/results | complete |
-| 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | pending |
+| 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | complete |
 | 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | pending |
 | 44 Pipeline control/notifications | 18 | Notifications before 40–43; controls after 41–43 and 34 | Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility | partial; see subdivisions |
 | 45 Pipeline campaigns | 14 | 40–44 | Progress, cancellation, aggregation and restart behavior | pending |
@@ -942,3 +942,15 @@ Runtime wiring preparations recorded with exact trees, patch hashes and per-slic
 42 final integration approval: Independent cumulative42 against21a9778b. All six executable/test blobs identical to approveda23bb88a; prior15focused/static reused. Exact isolated8live passed zero failures/skips/cancellations. Thirteen calls/eight finite ports preserve input/selections, primitive write defaults/native events and failure prefixes. Actual production singular Discussion.DownloadableFile error remains before attempts/plugin effects; no successful production channel-execution claim. Diff check clean;48CRUD/50acquisitions/0CLI accurate. Queued W2a-e approval narratives correct without credit; copied verification pending labels are stale despite confirmed passing logs and parent notified to normalize documentation. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
 
 Slice42 hook recovery: First mandatory unit hook failed because Node26/V8 reported fatal unreachable code while compiling unchanged getActiveServerSuspension.test.ts (2450 pass, one file process failure). Failed log preserved; source/test byte-identical to pre-slice HEAD; exact-snapshot isolated5 tests passed. No source, assertion or toolchain workaround; full mandatory hook rerun required.
+
+Slice42 committed `ae849fece59498c1197f263fa4474f94074b8613` ([diff](https://github.com/gennit-project/multiforum-backend/commit/ae849fece59498c1197f263fa4474f94074b8613)), tree `ea3efb14f5880919f5b6fd7bea3c4958896b4745`: lint, TypeScript and all2455 units passed; Exact8live passed; native V8 first hook failure preserved, isolated5 passed and full mandatory retry passed without workaround. Independent approval recorded above.
+
+### Slice 43 — Comment execution
+
+11 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 37 CRUD sites/7 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+Known singular Discussion.DownloadableFile query failure is preserved in this migration. Per-file server/channel scanning is tracked separately in [deferred P3 issue #361](https://github.com/gennit-project/multiforum-backend/issues/361); no plural-file behavior change is included.
+
+43 final integration approval: Independent cumulative43 againstae849fec. Five executable/test blobs identical to corrected approvedf980a0d3; sole commentTrigger adaptation matches reviewed integrated patch and preserves38 parent-thread/identity/comment plus39 raw report wiring. Exact isolated7live passed zero failures/skips/cancellations, including corrected positive canonical discussion edge/author union, primitive full native event/graph parity and actual fake-plugin smoke. Prior16focused/static evidence reused. Diff check clean;37CRUD/50acquisitions/0CLI accurate. W2 verification labels now normalized to confirmed outcomes;42 native failure and successful unchanged hook retry accurately retained. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.

@@ -1792,12 +1792,13 @@
       "baselineCrudSites": 13,
       "dependencies": "40; 44 notifications; 38",
       "acceptance": "Channel applicability, bots, statuses and execution failure ordering",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "ae849fece59498c1197f263fa4474f94074b8613",
       "review": "Independent cumulative42 against21a9778b. All six executable/test blobs identical to approveda23bb88a; prior15focused/static reused. Exact isolated8live passed zero failures/skips/cancellations. Thirteen calls/eight finite ports preserve input/selections, primitive write defaults/native events and failure prefixes. Actual production singular Discussion.DownloadableFile error remains before attempts/plugin effects; no successful production channel-execution claim. Diff check clean;48CRUD/50acquisitions/0CLI accurate. Queued W2a-e approval narratives correct without credit; copied verification pending labels are stale despite confirmed passing logs and parent notified to normalize documentation. Mandatory hooks parent-owned.",
       "verification": [
         "Original focused/live/static gates passed; final cumulative checks pending",
-        "First mandatory unit hook failed because Node26/V8 reported fatal unreachable code while compiling unchanged getActiveServerSuspension.test.ts (2450 pass, one file process failure). Failed log preserved; source/test byte-identical to pre-slice HEAD; exact-snapshot isolated5 tests passed. No source, assertion or toolchain workaround; full mandatory hook rerun required."
+        "First mandatory unit hook failed because Node26/V8 reported fatal unreachable code while compiling unchanged getActiveServerSuspension.test.ts (2450 pass, one file process failure). Failed log preserved; source/test byte-identical to pre-slice HEAD; exact-snapshot isolated5 tests passed. No source, assertion or toolchain workaround; full mandatory hook rerun required.",
+        "Exact committed tree ea3efb14f5880919f5b6fd7bea3c4958896b4745: lint, TypeScript and2455 full units passed; Exact8live passed; native V8 first hook failure preserved, isolated5 passed and full mandatory retry passed without workaround"
       ],
       "preparedEvidence": {
         "base": "19508443907fcad3706117e64b12864112691f0e",
@@ -1823,11 +1824,11 @@
       "baselineCrudSites": 11,
       "dependencies": "40; 44 notifications; 38",
       "acceptance": "Comment applicability, recursion guards, middleware wiring and ordering",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "Independent corrected43 six-path review against approved42a23bb88a; SHA25618ae559b67a8267f96a967e1269891039aee9b67f01eb460894f0bdeead835f4 verified. Seven fixed operations preserve11CRUD input expressions/selections, author inline fragments, unbounded configs/secrets and full job defaults; report/comment/thread helpers untouched and existing raw Issue/model forwarding retained. Test-only correction resolves review findings: canonical dc-POSTED_IN_CHANNEL->Discussion with positive id/body parity, explicit User username and ModerationProfile displayName/nested User assertions. Corrected2targetedlive pass plus unchanged5 from original7live; not claimed as one final full run. Original16focused/static reused; corrected TypeScript66109 and scoped lint exit0 confirmed. Primitive writes compare full graph/ordered events after raw identity/temporal checks; actual fake-plugin service smoke asserts guards/status/loader order, not full execution event parity. Existing downstream unit recorders unchanged. Diff check clean; prepared11CRUD/0acquisitions, cumulative integration must preserve38/39 adaptations. Prior rejection superseded only for this corrected tree.",
+      "review": "Independent cumulative43 againstae849fec. Five executable/test blobs identical to corrected approvedf980a0d3; sole commentTrigger adaptation matches reviewed integrated patch and preserves38 parent-thread/identity/comment plus39 raw report wiring. Exact isolated7live passed zero failures/skips/cancellations, including corrected positive canonical discussion edge/author union, primitive full native event/graph parity and actual fake-plugin smoke. Prior16focused/static evidence reused. Diff check clean;37CRUD/50acquisitions/0CLI accurate. W2 verification labels now normalized to confirmed outcomes;42 native failure and successful unchanged hook retry accurately retained. Mandatory hooks parent-owned.",
       "verification": [
-        "16focused,7initiallive plus2correctedtargetedlive,lint/TypeScript passed. Eleven calls through seven finite named operations; original input/selections/defaults, order and failure contracts preserved. Primitive writes have full graph/ordered native event parity after raw identity validation; actual trigger smoke with fake plugin; canonical discussion relationship and both author-union branches positively asserted after review. Zero credit before integration."
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "preparedEvidence": {
         "base": "a23bb88a477ec9fbc3b4221bd2628d56305aff5a",
@@ -1842,7 +1843,14 @@
           "tests/fixtures/commentExecutionRepositoryStub.ts",
           "tests/integration/commentExecutionRepository.test.ts"
         ]
-      }
+      },
+      "integrationAdaptation": {
+        "id": "43",
+        "patch": "/tmp/ogm-integrated-43.patch",
+        "sha256": "7fe1dad007f88bb7f7249557082742a82b66cc0ff9015f05feb7c5aedc012741",
+        "base": "5ba84146d8e3164e9ccb7d0e1a35a8da3287366d"
+      },
+      "integrationAdaptationReview": "All four adapted patch hashes verified. Added/removed lines are identical to original approved40a/40b/43/46 patches; differences only hunk locations/context/indexes.40a/40b/43 preserve38a BotThread repository import and call,38b/c identity/comment integration and39 bot report call.46 retains31 discussion/event repository construction and calls, removes only seed models already covered by original46. Final tree diff check clean. Rehearsal focused20 passed zero failures/skips/cancellations; TypeScript84625 exit0 parent-confirmed. No duplicate tests run. Each cumulative exact live and mandatory hook gate remains required."
     },
     {
       "id": "44",
@@ -2084,9 +2092,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 48,
+  "remainingRuntimeCrudSites": 37,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 8,
+  "remainingRuntimeCrudFiles": 7,
   "foundations": [
     {
       "id": "F01",
@@ -2145,11 +2153,12 @@
       "38",
       "39",
       "40",
-      "41"
+      "41",
+      "42"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "42"
+      "43"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2319,20 +2328,18 @@
           "tests/integration/pipelineLeaseRepository.test.ts"
         ],
         "scope": "Remove obsolete lease/attempt model parameters and forwarding; retain repository/driver ports and optional notification guards",
-        "verification": {
-          "focused": "51 passed /tmp/pipeline-leaf-focused.log",
-          "live": "pending /tmp/pipeline-leaf-live.log session43890",
-          "types": "pending final /tmp/pipeline-leaf-final-types.log session80871",
-          "lint": "passed /tmp/pipeline-leaf-lint.log; final changes remove whitespace and integration spread only"
-        }
+        "verification": [
+          "51 focused checks passed /tmp/pipeline-leaf-focused.log",
+          "20 live checks passed /tmp/pipeline-leaf-live.log",
+          "Final TypeScript80871 and lint44444 actual exit0"
+        ]
       },
       "review": "Independent ten-path W2a review againstaa730271. Removed only obsolete lease/attempt model types/destructures and forwarding from all three triggers/watchdog; configured driver and domain repository ports retained. No query/input/clock/order/event/heartbeat changes; optional notification User guard untouched. Unit adapters retain existing model recorders/assertions; live helpers now exercise repository-only inputs.51focused and20isolatedlive passed zero failures/skips/cancellations; final TypeScript80871/lint44444 exit0 parent-confirmed. SHA256304f96301716bb037f4f468b2e6e2d976f7f32d3d26ed42196a39c166cf5d620 verified, diff check clean. Preparatory only; cumulative gates remain required.",
-      "verification": {
-        "focused": "51 passed /tmp/pipeline-leaf-focused.log",
-        "live": "pending /tmp/pipeline-leaf-live.log session43890",
-        "types": "pending final /tmp/pipeline-leaf-final-types.log session80871",
-        "lint": "passed /tmp/pipeline-leaf-lint.log; final changes remove whitespace and integration spread only"
-      }
+      "verification": [
+        "51 focused checks passed /tmp/pipeline-leaf-focused.log",
+        "20 live checks passed /tmp/pipeline-leaf-live.log",
+        "Final TypeScript80871 and lint44444 actual exit0"
+      ]
     },
     {
       "id": "W2b",
@@ -2358,18 +2365,16 @@
           "tests/integration/pipelineWatchdogRepository.test.ts"
         ],
         "verification": [
-          "27 focused passed /tmp/pipeline-notification-wiring-focused.log",
-          "TypeScript91894 exit0",
-          "lint88753 pending actual exit; empty log",
-          "live3623 pending /tmp/pipeline-notification-wiring-live.log"
+          "27 focused checks passed /tmp/pipeline-notification-wiring-focused.log",
+          "15 live checks passed /tmp/pipeline-notification-wiring-live.log",
+          "TypeScript91894 and lint88753 actual exit0"
         ]
       },
       "review": "Independent nine-path W2b review against8f75da96. Explicit notificationsEnabled preserves helper optionalUser false/absent early return before persistence construction. Download caller maps Boolean(User); watchdog composition maps Boolean(DownloadableFile&&User), preserving prior outer file guard plus inner user guard. Verified all production callers and renamed watchdog dependency bundle through index. Removed unused model forwarding only; watchdog lifecycle, counters, recovery ordering, query inputs and native event contracts unchanged. Disabled/absent unit coverage retained and live helpers use explicit booleans.27focused and15isolatedlive passed zero failures/skips/cancellations; TypeScript91894/lint88753 zero parent-confirmed. SHA256d964de44d85a2efb984d8a95f0f20db0758f02d15cff37f47a1646d521ee8444 verified; diff check clean. Preparatory only; cumulative gates remain required.",
       "verification": [
-        "27 focused passed /tmp/pipeline-notification-wiring-focused.log",
-        "TypeScript91894 exit0",
-        "lint88753 pending actual exit; empty log",
-        "live3623 pending /tmp/pipeline-notification-wiring-live.log"
+        "27 focused checks passed /tmp/pipeline-notification-wiring-focused.log",
+        "15 live checks passed /tmp/pipeline-notification-wiring-live.log",
+        "TypeScript91894 and lint88753 actual exit0"
       ]
     },
     {
@@ -2401,18 +2406,16 @@
         ],
         "acquisitionsRemoved": 10,
         "verification": [
-          "37focused passed; missing-driver fixture adjusted to same shape without TypeScript-invalid delete afterward",
-          "corrected final TypeScript /tmp/comment-pipeline-wiring-final-types2.log",
-          "lint /tmp/comment-pipeline-wiring-lint.log",
-          "live90259 pending /tmp/comment-pipeline-wiring-live.log"
+          "37 focused checks plus10 overlapping final middleware cases passed /tmp/comment-pipeline-wiring-focused.log /tmp/comment-pipeline-wiring-final-middleware.log",
+          "28 live checks passed /tmp/comment-pipeline-wiring-live.log",
+          "Corrected final TypeScript30470 and lint48713 actual exit0; initial test-only type failures resolved"
         ]
       },
       "review": "Independent13-path W2c review againste41b5652. Explicit commentPlugins capability replaces prior required-model conjunction in production HTTP context; absent/false capability keeps dispatch disabled, driver separately required. All actual production callers inspected. Ten acquisitions and unused comment-trigger/bot-report model forwarding removed; raw bot-report repository semantics, prior thread/identity wiring and generated-schema context unchanged. Middleware factory defaults to original trigger; post-resolve serial valid-ID dispatch, first-error stop/swallow, original result identity and pre-dispatch resolver rejection preserved. Stronger injected dispatcher tests directly assert ordering and throwing OGM getter nonaccess.37focused, targeted corrected10middleware and28isolatedlive pass zero failures/skips/cancellations; final TypeScript30470/lint48713 zero parent-confirmed. SHA256f0ba14ee22f67a8c74929f5e16030df720c96ef21ee6faf07f256406a2b77c1a verified, diff check clean. External callers using model carriers must supply explicit capability to opt in; no automatic driver-only enabling. Prepared only; cumulative gates remain required.",
       "verification": [
-        "37focused passed; missing-driver fixture adjusted to same shape without TypeScript-invalid delete afterward",
-        "corrected final TypeScript /tmp/comment-pipeline-wiring-final-types2.log",
-        "lint /tmp/comment-pipeline-wiring-lint.log",
-        "live90259 pending /tmp/comment-pipeline-wiring-live.log"
+        "37 focused checks plus10 overlapping final middleware cases passed /tmp/comment-pipeline-wiring-focused.log /tmp/comment-pipeline-wiring-final-middleware.log",
+        "28 live checks passed /tmp/comment-pipeline-wiring-live.log",
+        "Corrected final TypeScript30470 and lint48713 actual exit0; initial test-only type failures resolved"
       ]
     },
     {
@@ -2438,18 +2441,16 @@
           "tests/integration/channelExecutionRepository.test.ts"
         ],
         "verification": [
-          "35focused passed /tmp/channel-pipeline-wiring-focused.log",
-          "TypeScript89399 exit0",
-          "lint47840 pending actual exit",
-          "live86152 pending /tmp/channel-pipeline-wiring-live.log"
+          "35 focused checks passed /tmp/channel-pipeline-wiring-focused.log",
+          "22 live checks passed /tmp/channel-pipeline-wiring-live.log",
+          "TypeScript89399 and lint47840 actual exit0"
         ]
       },
       "review": "Independent eight-path W2d review againstf1580863. Removes unused ChannelTriggerArgs.models, Discussion forwarding from creation helper and start channel model bag; all configured-driver forwarding, server-before-channel sequence, per-channel catches and rerun metadata delegation retained. Test-only model recorders kept via explicit local adapter types. No generated query/default/context changes; existing singular DownloadableFile validation error deliberately preserved.35focused and22isolatedlive passed zero failures/skips/cancellations, covering channel/start/rerun paths; TypeScript89399/lint47840 zero parent-confirmed. SHA256bdf91be8cefd12a94b07775a50e57eca8e11225facec048b1fc8b9c74c2554d3 verified, diff check clean. Prepared only; cumulative gates required.",
       "verification": [
-        "35focused passed /tmp/channel-pipeline-wiring-focused.log",
-        "TypeScript89399 exit0",
-        "lint47840 pending actual exit",
-        "live86152 pending /tmp/channel-pipeline-wiring-live.log"
+        "35 focused checks passed /tmp/channel-pipeline-wiring-focused.log",
+        "22 live checks passed /tmp/channel-pipeline-wiring-live.log",
+        "TypeScript89399 and lint47840 actual exit0"
       ]
     },
     {
@@ -2482,19 +2483,23 @@
           "tests/integration/downloadExecutionRepository.test.ts"
         ],
         "verification": [
-          "56focused passed /tmp/download-pipeline-wiring-focused.log",
-          "TypeScript8130 exit0",
-          "lint15839 pending actual exit",
-          "live61295 pending /tmp/download-pipeline-wiring-live.log"
+          "56 focused checks passed /tmp/download-pipeline-wiring-focused.log",
+          "22 live checks passed /tmp/download-pipeline-wiring-live.log",
+          "TypeScript8130 and lint15839 actual exit0"
         ]
       },
       "review": "Independent15-path W2e review against925739f5. Download TriggerArgs model bag replaced with optional notificationsEnabled; seven production callers derive Boolean from exactly the prior User field (creation, attachment, preparation, retry, start, direct resolver, campaign). Configured drivers, execution metadata, authentication, catches, scan sharing/order and notification timing unchanged. Test-only model recorders remain local adapter inputs; actual smoke false flag matches prior fixture with no User. No query/schema/default projection changes.56focused and22isolatedlive passed zero failures/skips/cancellations; TypeScript8130/lint15839 zero parent-confirmed. SHA256672fa508990c6cb16f82566b38a7f21708fbe98f0ea60ff5589dba53d78ec351 verified, diff check clean. Prepared only; cumulative gates required.",
       "verification": [
-        "56focused passed /tmp/download-pipeline-wiring-focused.log",
-        "TypeScript8130 exit0",
-        "lint15839 pending actual exit",
-        "live61295 pending /tmp/download-pipeline-wiring-live.log"
+        "56 focused checks passed /tmp/download-pipeline-wiring-focused.log",
+        "22 live checks passed /tmp/download-pipeline-wiring-live.log",
+        "TypeScript8130 and lint15839 actual exit0"
       ]
     }
-  ]
+  ],
+  "deferredPerFileScanning": {
+    "issue": "https://github.com/gennit-project/multiforum-backend/issues/361",
+    "priority": "P3",
+    "status": "deferred until current migration completes",
+    "preservedBehavior": "Singular Discussion.DownloadableFile query validation failure remains unchanged. Per-file server/channel identity, retry/status, edit triggers and backfill behavior are separate follow-up work."
+  }
 }
