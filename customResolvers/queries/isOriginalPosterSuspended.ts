@@ -1,14 +1,7 @@
+import { createIssueTargetRepository } from "../../services/persistence/issueTargetRepository.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
-import type {
-  IssueModel,
-  CommentModel,
-  DiscussionModel,
-  EventModel,
-  ChannelModel,
-  UserModel,
-} from '../../ogm_types.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import { createChannelPermissionRepository } from '../../services/persistence/channelPermissionRepository.js'
 import { getActiveServerSuspension } from '../../rules/permission/getActiveServerSuspension.js'
@@ -17,17 +10,11 @@ import { mayAccessSensitiveContent } from '../../services/sensitiveContentAccess
 import { isSensitiveContentTarget } from '../../services/sensitiveContentTarget.js'
 
 type Input = {
-  Channel: ChannelModel
-  Issue: IssueModel
-  Comment: CommentModel
-  Discussion: DiscussionModel
-  Event: EventModel
-  User: UserModel
   agePolicyRepository?: AgePolicyReader
 }
 
 export default function getResolver (input: Input) {
-  const { Issue, Event, Comment, Discussion, User, agePolicyRepository } = input
+  const { agePolicyRepository } = input
   return async (parent: unknown, args: { issueId: string }, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { issueId } = args
     if (!issueId) {
@@ -44,11 +31,7 @@ export default function getResolver (input: Input) {
     }
 
     const target = await resolveIssueTarget({
-      Issue,
-      Comment,
-      Discussion,
-      Event,
-      User,
+      repository: context.issueTargetRepository ?? createIssueTargetRepository(context.driver),
       issueId,
     })
 

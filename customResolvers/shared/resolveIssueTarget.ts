@@ -1,48 +1,16 @@
 import { GraphQLError } from 'graphql'
-import type {
-  CommentModel,
-  DiscussionModel,
-  EventModel,
-  IssueModel,
-  ModerationProfile,
-  TextVersionModel,
-  User,
-  UserModel,
-  WikiPageModel,
-} from '../../ogm_types.js'
+import type { IssueTargetRepository, IssueTargetSnapshot, IssueTargetUser, IssueTargetMod } from '../../services/persistence/issueTargetRepository.js'
 
 type ResolveIssueTargetInput = {
-  Issue: IssueModel
-  Comment: CommentModel
-  Discussion: DiscussionModel
-  Event: EventModel
-  User: UserModel
-  WikiPage?: WikiPageModel
-  TextVersion?: TextVersionModel
+  repository: IssueTargetRepository
+  includeWikiPage?: boolean
+  includeTextVersion?: boolean
   issueId: string
   suspendedEntityName?: 'user' | 'mod'
 }
 
 type IssueTarget = {
-  issue: {
-    id?: string | null
-    channelUniqueName?: string | null
-    relatedDiscussionId?: string | null
-    relatedEventId?: string | null
-    relatedCommentId?: string | null
-    relatedWikiPageId?: string | null
-    relatedWikiRevisionId?: string | null
-    relatedUsername?: string | null
-    relatedModProfileName?: string | null
-    Channel?: { uniqueName?: string | null } | null
-    TargetDiscussion?: { id?: string | null } | null
-    TargetEvent?: { id?: string | null } | null
-    TargetComment?: { id?: string | null } | null
-    TargetWikiPage?: { id?: string | null } | null
-    TargetWikiRevision?: { id?: string | null } | null
-    TargetUser?: { username?: string | null; isBot?: boolean | null } | null
-    TargetModProfile?: { displayName?: string | null } | null
-  }
+  issue: IssueTargetSnapshot
   channelUniqueName: string | null
   scope: 'channel' | 'server'
   relatedAccountName: string
@@ -52,31 +20,24 @@ type IssueTarget = {
   isBot: boolean
 }
 
-const isUser = (data: User | ModerationProfile): data is User =>
-  (data as User).username !== undefined
+const isUser = (data: IssueTargetUser | IssueTargetMod): data is IssueTargetUser =>
+  (data as IssueTargetUser).username !== undefined
 
 const findUsernameForModProfile = async ({
-  User,
+  repository,
   displayName,
 }: {
-  User: UserModel
+  repository: IssueTargetRepository
   displayName: string
 }): Promise<string | undefined> => {
-  const [profileOwner] = await User.find({
-    where: { ModerationProfile: { displayName } },
-    selectionSet: `{ username }`,
-  })
+  const [profileOwner] = await repository.findProfileOwner(displayName)
   return profileOwner?.username || undefined
 }
 
 export async function resolveIssueTarget({
-  Issue,
-  Comment,
-  Discussion,
-  Event,
-  User,
-  WikiPage,
-  TextVersion,
+  repository,
+  includeWikiPage = false,
+  includeTextVersion = false,
   issueId,
   suspendedEntityName,
 }: ResolveIssueTargetInput): Promise<IssueTarget> {
@@ -84,28 +45,7 @@ export async function resolveIssueTarget({
     throw new GraphQLError('Issue ID is required')
   }
 
-  const [foundIssue] = await Issue.find({
-    where: { id: issueId },
-    selectionSet: `{
-      id
-      channelUniqueName
-      relatedDiscussionId
-      relatedEventId
-      relatedCommentId
-      relatedWikiPageId
-      relatedWikiRevisionId
-      relatedUsername
-      relatedModProfileName
-      Channel { uniqueName }
-      TargetDiscussion { id }
-      TargetEvent { id }
-      TargetComment { id }
-      TargetWikiPage { id }
-      TargetWikiRevision { id }
-      TargetUser { username isBot }
-      TargetModProfile { displayName }
-    }`,
-  })
+  const [foundIssue] = await repository.findIssue(issueId)
 
   if (!foundIssue) {
     throw new GraphQLError('Issue not found')
@@ -129,7 +69,7 @@ export async function resolveIssueTarget({
     relatedModProfileName
   ) {
     const username = await findUsernameForModProfile({
-      User,
+      repository,
       displayName: relatedModProfileName,
     })
     return {
@@ -146,10 +86,7 @@ export async function resolveIssueTarget({
 
   if (relatedUsername) {
     // Query user to check if they are a bot
-    const [relatedUser] = await User.find({
-      where: { username: relatedUsername },
-      selectionSet: `{ username isBot }`,
-    })
+    const [relatedUser] = await repository.findDirectUser(relatedUsername)
     return {
       issue: foundIssue,
       channelUniqueName,
@@ -167,7 +104,7 @@ export async function resolveIssueTarget({
     )
   }
 
-  let originalPosterData: User | ModerationProfile | null = null
+  let originalPosterData: IssueTargetUser | IssueTargetMod | null = null
 
   const relatedDiscussionId =
     foundIssue.TargetDiscussion?.id || foundIssue.relatedDiscussionId
@@ -180,52 +117,27 @@ export async function resolveIssueTarget({
     foundIssue.TargetWikiPage?.id || foundIssue.relatedWikiPageId
 
   if (relatedDiscussionId) {
-    const [discussion] = await Discussion.find({
-      where: { id: relatedDiscussionId },
-      selectionSet: `{ id Author { username isBot } }`,
-    })
+    const [discussion] = await repository.findDiscussionAuthor(relatedDiscussionId)
     originalPosterData = discussion?.Author || null
   }
 
   if (relatedEventId) {
-    const [event] = await Event.find({
-      where: { id: relatedEventId },
-      selectionSet: `{ id Poster { username isBot } }`,
-    })
+    const [event] = await repository.findEventPoster(relatedEventId)
     originalPosterData = event?.Poster || null
   }
 
   if (relatedCommentId) {
-    const [comment] = await Comment.find({
-      where: { id: relatedCommentId },
-      selectionSet: `{
-        id
-        CommentAuthor {
-          ... on User { username isBot }
-          ... on ModerationProfile { displayName }
-        }
-      }`,
-    })
+    const [comment] = await repository.findCommentAuthor(relatedCommentId)
     originalPosterData = comment?.CommentAuthor || null
   }
 
-  if (relatedWikiRevisionId && TextVersion) {
-    const [revision] = await TextVersion.find({
-      where: { id: relatedWikiRevisionId },
-      selectionSet: `{ id Author { username isBot } }`,
-    })
+  if (relatedWikiRevisionId && includeTextVersion) {
+    const [revision] = await repository.findRevisionAuthor(relatedWikiRevisionId)
     originalPosterData = revision?.Author || null
   }
 
-  if (!originalPosterData && relatedWikiPageId && WikiPage) {
-    const [wikiPage] = await WikiPage.find({
-      where: { id: relatedWikiPageId },
-      selectionSet: `{
-        id
-        OriginalAuthor { username isBot }
-        VersionAuthor { username isBot }
-      }`,
-    })
+  if (!originalPosterData && relatedWikiPageId && includeWikiPage) {
+    const [wikiPage] = await repository.findWikiAuthors(relatedWikiPageId)
     originalPosterData =
       wikiPage?.OriginalAuthor || wikiPage?.VersionAuthor || null
   }
@@ -244,7 +156,7 @@ export async function resolveIssueTarget({
     }
 
     const username = await findUsernameForModProfile({
-      User,
+      repository,
       displayName: originalPosterData.displayName,
     })
     return {

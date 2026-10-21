@@ -405,39 +405,23 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       Issue,
       Channel,
       ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User,
-      WikiPage,
-      TextVersion
+      includeWikiPage: Boolean(WikiPage),
+      includeTextVersion: Boolean(TextVersion)
     }),
     unsuspendUser: unsuspendUser({
       Issue,
       Channel,
-      ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User
+      ServerConfig
     }),
     suspendMod: suspendMod({
       Issue,
       Channel,
-      ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User
+      ServerConfig
     }),
     unsuspendMod: unsuspendMod({
       Issue,
       Channel,
-      ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User
+      ServerConfig
     }),
     lockIssue: lockIssue({
       Issue

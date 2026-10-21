@@ -148,12 +148,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       agePolicyRepository: instancePolicyRepository,
     }),
     isOriginalPosterSuspended: isOriginalPosterSuspended({
-      Issue,
-      Discussion,
-      Event,
-      Comment,
-      Channel,
-      User,
       agePolicyRepository: instancePolicyRepository
     }),
     safetyCheck: safetyCheck,

@@ -55,7 +55,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | complete |
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | complete |
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | complete |
-| 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | pending |
+| 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | complete |
 | 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | reviewed subdivisions; integration pending |
 | 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | pending |
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | pending |
@@ -442,3 +442,17 @@ Usage-conserving workflow: one implementer and one independent reviewer; reuse r
 37b2 previouslypaused correction is approved and prepared/reviewed:4CRUD queued, no removal credit before integration. Variables replace2interpolatedreads/3insertions; specialvalues intentionally literal. Ordinaryprojections, unboundedserverread, validation/settings/nativeevents/defaultprojectionerrorcontracts retained. Merge overlapping37a/b1 applyPluginConfiguration wiring narrowly.
 
 17 final integration approval: scratchpad_review: ten nonfactory blobs match previously approved17 patch; narrow factory driver wiring verified; eight CRUD removals, no acquisition changes. Queue29/30/31/37b2 hashes/statuses match reviewed artifacts without removal credit. Final5live passed; prior20focused/static evidence reused; diff check passed. No remaining findings.; live parity passed on identical production sources before this documentation-only update.
+
+Slice17 committed `54d2674dc01c807e773ae7b8c82752a00df9e1c4` ([diff](https://github.com/gennit-project/multiforum-backend/commit/54d2674dc01c807e773ae7b8c82752a00df9e1c4)), tree `5b492bd08ff4a55ff5629559e4064df5c3697c86`: lint, TypeScript and all2100 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice17-exact-live.log. Independent approval recorded above.
+
+CI recovery verified: c70043c8acf4f4a75f54b409c5d93069e1d42679 [Tests39525932570](https://github.com/gennit-project/multiforum-backend/actions/runs/39525932570) and [container39525932526](https://github.com/gennit-project/multiforum-backend/actions/runs/39525932526) passed, including all eight integration shards, unit/combined coverage, performance budgets and build/static. The scratchpad and ownership harness failures are resolved; runtime implementation continues.
+
+### Slice 18a — Issue target snapshots
+
+8 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 336 CRUD sites/71 files; 74 acquisitions/15 files; two separate CLI sites.
+
+28a/b independently reviewed,18CRUD/0acquisitions queued without removal credit. Event-specific authorization remains distinct; identity/default/notification/partial-failure contracts retained. Fixture-only synchronous-guard and Event POSTED_BY relationship corrections documented in manifests.
+
+32 independently reviewed/queued:5CRUD; preserve31a seeder cleanup and dependon31b explicittransaction executor. Creationpartialfailure/nativeevents and updatepostcommit effects preserved; no removalcredit beforeintegration.
+
+18a final integration approval: Independent cumulative review: 12 non-wiring source/test blobs exactly match previously reviewed 18a; mutation/query/context factory adaptations preserve relation target resolution, capability flags and age-policy context. Eight runtime CRUD removals, zero acquisitions; queued slices not credited. Exact snapshot live evidence /tmp/runtime-slice18a-exact-live.log: 24 passed, zero failed/skipped/cancelled. Prior focused/static evidence reused for unchanged candidate; cumulative diff check passed. Subsequent docs-only milestone.nextUnblocked correction to [18b] is permitted. Mandatory hooks remain parent gate.; live parity passed on identical production sources before this documentation-only update.

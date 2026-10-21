@@ -1,17 +1,14 @@
+import { createIssueTargetRepository } from "../../../services/persistence/issueTargetRepository.js";
 import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../../types/context.js'
 import type {
   ChannelModel,
   IssueModel,
-  CommentModel,
-  DiscussionModel,
-  EventModel,
   ServerConfigModel,
   IssueUpdateInput,
   ChannelUpdateInput,
   ServerConfigUpdateInput,
-  UserModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
 import { getModerationActionCreateInput } from '../reportComment.js'
@@ -22,10 +19,6 @@ type CreateUnsuspendResolverOptions = {
   Issue: IssueModel
   Channel: ChannelModel
   ServerConfig: ServerConfigModel
-  Comment: CommentModel
-  Discussion: DiscussionModel
-  Event: EventModel
-  User: UserModel
 
   // The name of the field on the Issue that identifies the user or mod to suspend
   issueRelatedAccountField: 'relatedUsername' | 'relatedModProfileName'
@@ -48,10 +41,6 @@ export function createUnsuspendResolver ({
   Issue,
   Channel,
   ServerConfig,
-  Discussion,
-  Event,
-  Comment,
-  User,
   suspendedEntityName,
 }: CreateUnsuspendResolverOptions) {
   return async function unsuspendEntityResolver (
@@ -69,11 +58,7 @@ export function createUnsuspendResolver ({
 
     const { scope, channelUniqueName, relatedAccountName, relatedAccountType } =
       await resolveIssueTarget({
-        Issue,
-        Comment,
-        Discussion,
-        Event,
-        User,
+        repository: context.issueTargetRepository ?? createIssueTargetRepository(context.driver),
         issueId,
         suspendedEntityName,
       })
