@@ -38,7 +38,6 @@ export const triggerPluginRunsForComment = async (
   {
     commentId,
     event,
-    models,
     driver
   }: CommentTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
@@ -48,17 +47,6 @@ export const triggerPluginRunsForComment = async (
   if (!COMMENT_EVENTS.has(event)) {
     throw new Error(`Unsupported comment plugin event: ${event}`)
   }
-
-  const {
-    Channel,
-    Comment,
-    Discussion,
-    Event,
-    Issue,
-    PluginPipelineRun,
-    PluginRun,
-    User,
-  } = models
 
   const repository = commentRepository ?? createCommentExecutionRepository(driver!)
 
@@ -225,7 +213,6 @@ export const triggerPluginRunsForComment = async (
   await createPipelineAttempt({
     driver,
     repository: attemptRepository,
-    PluginPipelineRun,
     context: {
       pipelineId,
       targetId: comment.id,
@@ -321,8 +308,6 @@ export const triggerPluginRunsForComment = async (
     const lease = await claimPluginRunLease({
       driver,
       repository: leaseRepository,
-      PluginRun,
-      PluginPipelineRun,
       pluginRunId,
       pipelineId,
     })
@@ -331,8 +316,6 @@ export const triggerPluginRunsForComment = async (
     const heartbeat = startPluginRunHeartbeat({
       driver,
       repository: leaseRepository,
-      PluginRun,
-      PluginPipelineRun,
       lease,
     })
     jobStatuses[order] = 'RUNNING'
@@ -475,7 +458,6 @@ export const triggerPluginRunsForComment = async (
           }
 
           return createBotReport({
-            models: { Channel, Comment, Discussion, Event, Issue, User },
             driver,
             channelUniqueName,
             reportInput: input
@@ -589,7 +571,6 @@ export const triggerPluginRunsForComment = async (
       await completePluginRunLease({
       driver,
       repository: leaseRepository,
-        PluginRun,
         lease,
         update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
@@ -627,7 +608,6 @@ export const triggerPluginRunsForComment = async (
       await completePluginRunLease({
       driver,
       repository: leaseRepository,
-        PluginRun,
         lease,
         update: {
           status: 'FAILED',
@@ -661,7 +641,6 @@ export const triggerPluginRunsForComment = async (
   await completePipelineAttempt({
     driver,
     repository: attemptRepository,
-    PluginPipelineRun,
     pipelineId,
     statuses: jobStatuses,
   })

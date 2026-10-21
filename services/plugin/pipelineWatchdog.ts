@@ -132,7 +132,6 @@ export const recoverExpiredPluginJobs = async ({
     const status = await completePipelineAttempt({
       driver,
       repository: attemptRepository,
-      PluginPipelineRun,
       pipelineId,
       statuses: jobs.map(job => asPipelineJobStatus(job.status)),
       now: () => timestamp,

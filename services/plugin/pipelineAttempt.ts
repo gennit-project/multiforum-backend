@@ -2,7 +2,6 @@ import type { Driver } from "neo4j-driver";
 import {createPipelineAttemptRepository,type PipelineAttemptRepository} from "../persistence/pipelineAttemptRepository.js";
 import type {
   PluginPipelineRunCreateInput,
-  PluginPipelineRunModel,
   PluginPipelineRunUpdateInput,
 } from '../../ogm_types.js'
 import {
@@ -104,7 +103,6 @@ export const createPipelineAttempt = async ({
 }: {
   driver?: Driver
   repository?: PipelineAttemptRepository
-  PluginPipelineRun: PluginPipelineRunModel
   context: PipelineAttemptContext
   now?: () => string
 }) => {
@@ -181,7 +179,6 @@ export const completePipelineAttempt = async ({
 }: {
   driver?: Driver
   repository?: PipelineAttemptRepository
-  PluginPipelineRun: PluginPipelineRunModel
   pipelineId: string
   statuses: PipelineJobStatus[]
   now?: () => string

@@ -60,7 +60,6 @@ export const triggerChannelPluginPipeline = async (
     channelUniqueName,
     event,
     driver,
-    models
   }: ChannelTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
@@ -81,11 +80,6 @@ export const triggerChannelPluginPipeline = async (
   if (!CHANNEL_EVENTS.has(event)) {
     throw new Error(`Unsupported channel plugin event: ${event}`)
   }
-
-  const {
-    PluginPipelineRun,
-    PluginRun,
-  } = models
 
   const repository = channelRepository ?? createChannelExecutionRepository(driver!)
 
@@ -209,7 +203,6 @@ export const triggerChannelPluginPipeline = async (
   await createPipelineAttempt({
     driver,
     repository: attemptRepository,
-    PluginPipelineRun,
     context: {
       pipelineId,
       targetId: discussionId,
@@ -315,8 +308,6 @@ export const triggerChannelPluginPipeline = async (
     const lease = await claimPluginRunLease({
       driver,
       repository: leaseRepository,
-      PluginRun,
-      PluginPipelineRun,
       pluginRunId,
       pipelineId,
     })
@@ -325,8 +316,6 @@ export const triggerChannelPluginPipeline = async (
     const heartbeat = startPluginRunHeartbeat({
       driver,
       repository: leaseRepository,
-      PluginRun,
-      PluginPipelineRun,
       lease,
     })
     jobStatuses[order] = 'RUNNING'
@@ -487,7 +476,6 @@ export const triggerChannelPluginPipeline = async (
       await completePluginRunLease({
       driver,
       repository: leaseRepository,
-        PluginRun,
         lease,
         update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
@@ -531,7 +519,6 @@ export const triggerChannelPluginPipeline = async (
       await completePluginRunLease({
       driver,
       repository: leaseRepository,
-        PluginRun,
         lease,
         update: {
           status: 'FAILED',
@@ -577,7 +564,6 @@ export const triggerChannelPluginPipeline = async (
   await completePipelineAttempt({
     driver,
     repository: attemptRepository,
-    PluginPipelineRun,
     pipelineId,
     statuses: jobStatuses,
   })

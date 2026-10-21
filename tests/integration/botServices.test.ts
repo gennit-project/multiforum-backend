@@ -32,16 +32,6 @@ beforeEach(async () => {
   await resetDb();
 });
 
-const m = (name: string) => env.ogm.model(name);
-const models = () => ({
-  Channel: m("Channel"),
-  Comment: m("Comment"),
-  Discussion: m("Discussion"),
-  Event: m("Event"),
-  Issue: m("Issue"),
-  User: m("User"),
-});
-
 // --- botReportService.createBotReport ---
 
 test("createBotReport ensures a bot, opens an Issue, and records a report action", async () => {
@@ -53,7 +43,6 @@ test("createBotReport ensures a bot, opens an Issue, and records a report action
   );
 
   const result = await createBotReport({
-    models: models(),
     driver: env.driver,
     channelUniqueName: "test-channel",
     reportInput: {
@@ -89,7 +78,6 @@ test("createBotReport throws when no rule is selected", async () => {
   await run(`CREATE (:Channel { uniqueName: 'test-channel', createdAt: datetime() })`);
   await assert.rejects(
     createBotReport({
-      models: models(),
       driver: env.driver,
       channelUniqueName: "test-channel",
       reportInput: {

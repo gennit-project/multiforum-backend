@@ -56,7 +56,7 @@ const discussionComment = () => ({
 });
 
 const run = (models: any, event = EVENT, commentId = "comment-1") =>
-  triggerPluginRunsForComment({ commentId, event, models, driver: {} as any }, {commentRepository:commentExecutionRepositoryStub(models)});
+  triggerPluginRunsForComment({ commentId, event, driver: {} as any }, {commentRepository:commentExecutionRepositoryStub(models)});
 
 test("isCommentEvent recognizes only comment.created", () => {
   assert.equal(isCommentEvent("comment.created"), true);

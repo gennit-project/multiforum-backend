@@ -1,11 +1,8 @@
 import type { Driver } from 'neo4j-driver'
 import type {
   ChannelModel,
-  CommentModel,
   DiscussionModel,
   DownloadableFileModel,
-  EventModel,
-  IssueModel,
   PluginModel,
   PluginPipelineRunModel,
   PluginPipelineCampaignModel,
@@ -99,18 +96,6 @@ export type PipelineExecutionMetadata = {
 export type CommentTriggerArgs = {
   commentId: string
   event: string
-  models: {
-    Channel: ChannelModel
-    Comment: CommentModel
-    Discussion: DiscussionModel
-    Event: EventModel
-    Issue: IssueModel
-    PluginPipelineRun: PluginPipelineRunModel
-    PluginRun: PluginRunModel
-    ServerConfig: ServerConfigModel
-    ServerSecret: ServerSecretModel
-    User: UserModel
-  }
   driver: Driver
 }
 

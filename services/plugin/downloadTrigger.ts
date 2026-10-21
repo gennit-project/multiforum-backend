@@ -82,7 +82,6 @@ export const triggerPluginRunsForDownloadableFile = async (
   const {
     DownloadableFile,
     PluginPipelineRun,
-    PluginRun,
     User,
   } = models
 
@@ -135,7 +134,6 @@ export const triggerPluginRunsForDownloadableFile = async (
   await createPipelineAttempt({
     driver,
     repository: attemptRepository,
-    PluginPipelineRun,
     context: {
       pipelineId,
       targetId: downloadableFile.id,
@@ -278,8 +276,6 @@ export const triggerPluginRunsForDownloadableFile = async (
     const lease = await claimPluginRunLease({
       driver,
       repository: leaseRepository,
-      PluginRun,
-      PluginPipelineRun,
       pluginRunId,
       pipelineId,
     })
@@ -288,8 +284,6 @@ export const triggerPluginRunsForDownloadableFile = async (
     const heartbeat = startPluginRunHeartbeat({
       driver,
       repository: leaseRepository,
-      PluginRun,
-      PluginPipelineRun,
       lease,
     })
     jobStatuses[order] = 'RUNNING'
@@ -435,7 +429,6 @@ export const triggerPluginRunsForDownloadableFile = async (
       await completePluginRunLease({
       driver,
       repository: leaseRepository,
-        PluginRun,
         lease,
         update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
@@ -484,7 +477,6 @@ export const triggerPluginRunsForDownloadableFile = async (
       await completePluginRunLease({
       driver,
       repository: leaseRepository,
-        PluginRun,
         lease,
         update: {
           status: 'FAILED',
@@ -530,7 +522,6 @@ export const triggerPluginRunsForDownloadableFile = async (
   await completePipelineAttempt({
     driver,
     repository: attemptRepository,
-    PluginPipelineRun,
     pipelineId,
     statuses: jobStatuses,
   })

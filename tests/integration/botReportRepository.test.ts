@@ -32,7 +32,7 @@ for(const [kind,existing,failure] of [['comment',false,''],['mod-comment',false,
   fail=false;await resetDatabase(driver);await seed(kind,existing);events=[];
   const repo={...raw,createReportedIssue:async(input:any)=>{fail=failure==='create';return raw.createReportedIssue(input);},appendBotReport:async(where:any,update:any)=>{fail=failure==='append';return raw.appendBotReport(where,update);}};
   const contentType=kind==='discussion'||kind==='event'?kind:'comment';let response:unknown,error:string|null=null;
-  try{response=await createBotReport({models:{} as never,driver,botIdentityRepository:identity,botReportRepository:repo,channelUniqueName:'forum',reportInput:{contentType,contentId:'content',reportText:'Please review',selectedForumRules:['Kindness'],selectedServerRules:[],botName:'helper'}});}catch(e){error=(e as Error).message;}
+  try{response=await createBotReport({driver,botIdentityRepository:identity,botReportRepository:repo,channelUniqueName:'forum',reportInput:{contentType,contentId:'content',reportText:'Please review',selectedForumRules:['Kindness'],selectedServerRules:[],botName:'helper'}});}catch(e){error=(e as Error).message;}
   // The real middleware passes a raw model: preserve production-schema coercion failure, not a mutation-resolver proxy guard.
   const identityFailure=!existing && kind!=='missing' && failure!=='create';
   if(identityFailure)assert.match(error!,/Error updating issue: Variable.*Field "related(?:Username|ModProfileName)" is not defined by type "IssueUpdateInput"/);

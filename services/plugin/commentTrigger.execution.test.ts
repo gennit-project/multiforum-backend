@@ -18,11 +18,22 @@ import type {
 import type { Driver } from "neo4j-driver";
 import { triggerPluginRunsForComment as actualTrigger } from "./commentTrigger.js";
 
-type TriggerArgs = Parameters<typeof triggerPluginRunsForComment>[0];
 type TriggerOptions = NonNullable<
-  Parameters<typeof triggerPluginRunsForComment>[1]
+  Parameters<typeof actualTrigger>[1]
 >;
-type Models = TriggerArgs["models"];
+type Models = Pick<
+  ModelMap,
+  | "Channel"
+  | "Comment"
+  | "ServerConfig"
+  | "ServerSecret"
+  | "PluginPipelineRun"
+  | "PluginRun"
+  | "Discussion"
+  | "Event"
+  | "Issue"
+  | "User"
+>;
 type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
 type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
@@ -144,9 +155,9 @@ const execRun = (models: Models, loadPlugin: LoadPlugin) =>
     {
       commentId: "comment-1",
       event: EVENT,
-      models,
       driver: {} as Driver,
     },
+    models,
     { loadPlugin }
   );
 
@@ -206,4 +217,13 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.match(String(skipped.update?.skippedReason), /Pipeline stopped/);
 });
 
-const triggerPluginRunsForComment:typeof actualTrigger = (args,options) => actualTrigger(args,{...options,commentRepository:commentExecutionRepositoryStub(args.models),leaseRepository:pipelineLeaseRepositoryStub(args.models),attemptRepository:pipelineAttemptRepositoryStub(args.models.PluginPipelineRun)});
+const triggerPluginRunsForComment = (
+  args: Parameters<typeof actualTrigger>[0],
+  models: Models,
+  options: TriggerOptions = {}
+) => actualTrigger(args, {
+  ...options,
+  commentRepository: commentExecutionRepositoryStub(models),
+  leaseRepository: pipelineLeaseRepositoryStub(models),
+  attemptRepository: pipelineAttemptRepositoryStub(models.PluginPipelineRun),
+});

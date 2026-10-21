@@ -209,11 +209,31 @@ test("terminal writes require the current running lease", async () => {
   });
 });
 
-const claimPluginRunLease:typeof actualclaimPluginRunLease = args => actualclaimPluginRunLease({...args,repository:pipelineLeaseRepositoryStub(args)});
+type LeaseModels = {
+  PluginRun?: ModelMap['PluginRun']
+  PluginPipelineRun?: ModelMap['PluginPipelineRun']
+}
 
-const completePluginRunLease:typeof actualcompletePluginRunLease = args => actualcompletePluginRunLease({...args,repository:pipelineLeaseRepositoryStub(args)});
+const claimPluginRunLease = (
+  args: Parameters<typeof actualclaimPluginRunLease>[0] & LeaseModels
+) => {
+  const { PluginRun, PluginPipelineRun, ...rest } = args
+  return actualclaimPluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
+}
 
-const renewPluginRunLease:typeof actualrenewPluginRunLease = args => actualrenewPluginRunLease({...args,repository:pipelineLeaseRepositoryStub(args)});
+const completePluginRunLease = (
+  args: Parameters<typeof actualcompletePluginRunLease>[0] & LeaseModels
+) => {
+  const { PluginRun, PluginPipelineRun, ...rest } = args
+  return actualcompletePluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
+}
+
+const renewPluginRunLease = (
+  args: Parameters<typeof actualrenewPluginRunLease>[0] & LeaseModels
+) => {
+  const { PluginRun, PluginPipelineRun, ...rest } = args
+  return actualrenewPluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
+}
 
 test('heartbeat retains non-overlap, ordered renewal and stop boundary', async t => {
   const {startPluginRunHeartbeat} = await import('./executionLease.js');
@@ -226,6 +246,6 @@ test('heartbeat retains non-overlap, ordered renewal and stop boundary', async t
     extendPendingJobs:async()=>{calls.push('siblings');return {pluginRuns:[]};},
     extendAttempt:async()=>{calls.push('attempt');return {pluginPipelineRuns:[]};},
   } as unknown as import('../persistence/pipelineLeaseRepository.js').PipelineLeaseRepository;
-  const heartbeat=startPluginRunHeartbeat({PluginRun:{} as ModelMap['PluginRun'],PluginPipelineRun:{} as ModelMap['PluginPipelineRun'],repository,lease:{pluginRunId:'job',pipelineId:'pipeline',leaseId:'lease'},intervalMs:10});
+  const heartbeat=startPluginRunHeartbeat({repository,lease:{pluginRunId:'job',pipelineId:'pipeline',leaseId:'lease'},intervalMs:10});
   tick();tick();assert.deepEqual(calls,['unref','renew']);release();await new Promise<void>(resolve=>setImmediate(resolve));assert.deepEqual(calls,['unref','renew','siblings','attempt']);heartbeat.stop();tick();assert.deepEqual(calls,['unref','renew','siblings','attempt','stop']);
 });

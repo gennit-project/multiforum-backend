@@ -3,8 +3,6 @@ import type { Driver } from "neo4j-driver";
 import {createPipelineLeaseRepository,type PipelineLeaseRepository} from "../persistence/pipelineLeaseRepository.js";
 import { randomUUID } from "node:crypto";
 import type {
-  PluginPipelineRunModel,
-  PluginRunModel,
   PluginRunUpdateInput,
 } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
@@ -57,8 +55,6 @@ export const claimPluginRunLease = async ({
 }: {
   driver?: Driver;
   repository?: PipelineLeaseRepository;
-  PluginRun: PluginRunModel;
-  PluginPipelineRun: PluginPipelineRunModel;
   pluginRunId: string;
   pipelineId: string;
   now?: Date;
@@ -93,8 +89,6 @@ export const renewPluginRunLease = async ({
 }: {
   driver?: Driver;
   repository?: PipelineLeaseRepository;
-  PluginRun: PluginRunModel;
-  PluginPipelineRun: PluginPipelineRunModel;
   lease: PluginRunLease;
   now?: Date;
   leaseDurationMs?: number;
@@ -119,7 +113,6 @@ export const completePluginRunLease = async ({
 }: {
   driver?: Driver;
   repository?: PipelineLeaseRepository;
-  PluginRun: PluginRunModel;
   lease: PluginRunLease;
   update: PluginRunUpdateInput;
   now?: Date;
@@ -137,15 +130,11 @@ export const completePluginRunLease = async ({
 export const startPluginRunHeartbeat = ({
   driver,
   repository,
-  PluginRun,
-  PluginPipelineRun,
   lease,
   intervalMs = pluginJobHeartbeatIntervalMs(),
 }: {
   driver?: Driver;
   repository?: PipelineLeaseRepository;
-  PluginRun: PluginRunModel;
-  PluginPipelineRun: PluginPipelineRunModel;
   lease: PluginRunLease;
   intervalMs?: number;
 }) => {
@@ -156,8 +145,6 @@ export const startPluginRunHeartbeat = ({
     renewal = renewPluginRunLease({
       driver,
       repository,
-      PluginRun,
-      PluginPipelineRun,
       lease,
     })
       .then(() => undefined)

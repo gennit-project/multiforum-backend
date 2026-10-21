@@ -2,16 +2,10 @@ import { createBotReportRepository, type BotReportRepository } from "./persisten
 import type { BotIdentityRepository } from './persistence/botIdentityRepository.js'
 import type { Driver } from 'neo4j-driver'
 import type {
-  ChannelModel,
-  CommentModel,
-  DiscussionModel,
-  EventModel,
-  IssueModel,
   IssueCreateInput,
   IssueUpdateInput,
   IssueWhere,
-  ModerationActionCreateInput,
-  UserModel
+  ModerationActionCreateInput
 } from '../ogm_types.js'
 import { ensureBotUserForChannel } from './botUserService.js'
 import {
@@ -38,21 +32,11 @@ type ReportContentAsBotResult = {
   issueNumber: number
 } | null
 
-type Models = {
-  Channel: ChannelModel
-  Comment: CommentModel
-  Discussion: DiscussionModel
-  Event: EventModel
-  Issue: IssueModel
-  User: UserModel
-}
-
 /**
  * Creates or updates a moderation issue report on behalf of a bot user.
  * The bot user is automatically ensured to exist and have a ModerationProfile.
  */
 export const createBotReport = async (input: {
-  models: Models
   botReportRepository?: BotReportRepository
   botIdentityRepository?: BotIdentityRepository
   driver: Driver
