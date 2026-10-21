@@ -78,7 +78,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 37 Plugin config/secrets | 16 | 35; configuration/secret masking contract | Three commits secrets 5/server 6/channel 5; masking, rename, inheritance and auth | complete |
 | 38 Bot identity/comments | 13 | 03; write/event contract | Nested identity creation, activation/deprecation, channel links and comment context | complete |
 | 39 Bot reports | 6 | 18–19; 38 | Issue identity, report deduplication and actor attribution | complete |
-| 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | pending |
+| 40 Pipeline leases/attempts | 14 | Lease/attempt state characterization; 44 notifications before dependent consumers | Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts | partial; see subdivisions |
 | 41 Pipeline download execution | 12 | 40; 44 notifications; 34 as applicable | Runner side effects outside retried callbacks; statuses/retries/results | pending |
 | 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | pending |
 | 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | pending |
@@ -890,3 +890,11 @@ Slice39 committed `739639d7b3097276309a6931c14041820e6c5369` ([diff](https://git
 W1 capability wiring reviewed and queued:7acquisitions,0CRUD;42unique focused tests and19live cases plus TypeScript/lint passed. HTTP full capabilities and explicit background mention capability replace only legacy model-presence signals; missing capabilities and lowercased raw-driver mention fallback remain distinct. No removal credit before integration.
 
 40w final integration approval: Independent cumulative40w review against739639d7. All eleven executable/test added/removed-line sequences match approved driver-foundation patch; inspected cumulative create/updateDiscussion context retaining31 named repositories and configured driver forwarding. Only dependency forwarding/type/test assertions, no operation/order changes. Exact isolated2live passed zero failures/skips/cancellations; prior46focused/static evidence reused. Diff check clean.91CRUD/50acquisitions unchanged;39 complete and W1 queued without credit accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice40w committed `8cf2470e8820e1fa6fe03c45fd8f34c70caf98b9` ([diff](https://github.com/gennit-project/multiforum-backend/commit/8cf2470e8820e1fa6fe03c45fd8f34c70caf98b9)), tree `f23c09aa4fc9a256a71e59e2694bde6186576a66`: lint, TypeScript and all2447 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice40w-exact-live.log. Independent approval recorded above.
+
+### Slice 44a — Pipeline notifications
+
+4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 87 CRUD sites/13 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+44a final integration approval: Independent cumulative44a against8cf2470e. All six executable/test blobs identical to approved157dc1ca; original27focused/static review reused. Four finite operations and configured driver callers preserve optionalUser early return, full User default selection, separate claim/write commits and no retry after committed projection failure. Exact isolated8live passed zero failures/skips/cancellations including raw IDs/endpoints, ordered native events and default selection assertion. Diff check clean; ledger87CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.

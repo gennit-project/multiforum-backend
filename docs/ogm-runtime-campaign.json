@@ -1722,12 +1722,13 @@
           "id": "40w",
           "scope": "Configured pipeline driver forwarding",
           "baselineCrudSites": 0,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative40w review against739639d7. All eleven executable/test added/removed-line sequences match approved driver-foundation patch; inspected cumulative create/updateDiscussion context retaining31 named repositories and configured driver forwarding. Only dependency forwarding/type/test assertions, no operation/order changes. Exact isolated2live passed zero failures/skips/cancellations; prior46focused/static evidence reused. Diff check clean.91CRUD/50acquisitions unchanged;39 complete and W1 queued without credit accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree f23c09aa4fc9a256a71e59e2694bde6186576a66: lint, TypeScript and2447 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice40w-exact-live.log"
           ],
-          "commit": null
+          "commit": "8cf2470e8820e1fa6fe03c45fd8f34c70caf98b9"
         }
       ]
     },
@@ -1833,7 +1834,7 @@
       "baselineCrudSites": 18,
       "dependencies": "Notifications before 40\u201343; controls after 41\u201343 and 34",
       "acceptance": "Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -1842,7 +1843,7 @@
           "id": "44a",
           "scope": "Pipeline result notifications",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "825e01ef5c2ffa3c7a1daa51e4cd9d6aea3b7c15",
             "tree": "157dc1ca249de5ac8bfe7626b2b6906aef946b1e",
@@ -1857,10 +1858,11 @@
               "tests/integration/pipelineNotificationRepository.test.ts"
             ]
           },
-          "review": "Independent six-path incremental review against approved wiring 825e01ef; patch SHA256 2e7c486bd49c6d7c68955374708df93800bd092b73397a04fa8a8458de805d40 verified, diff check clean. Four named operations preserve explicit reads/claim selection and production User default selection, validated against actual initialized OGM. Optional User guard precedes construction/read; both download and watchdog callers forward configured driver. Claim then notification independent commits, propagated errors and no-retry behavior retained. Inspected 27 passing focused and 8 passing live tests, including raw persisted notification UUID/native node and relationship endpoint IDs, temporal validity, ordered native events, canonical Author fallback, coercion and committed projection failure with retry suppression. Final tsc exit 0 confirmed by parent for session71906; scoped lint 0. Prepared only: four CRUD/zero acquisitions, no integration credit.",
+          "review": "Independent cumulative44a against8cf2470e. All six executable/test blobs identical to approved157dc1ca; original27focused/static review reused. Four finite operations and configured driver callers preserve optionalUser early return, full User default selection, separate claim/write commits and no retry after committed projection failure. Exact isolated8live passed zero failures/skips/cancellations including raw IDs/endpoints, ordered native events and default selection assertion. Diff check clean; ledger87CRUD/50acquisitions/0CLI accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "27focused,8live,lint/TypeScript passed; raw native event IDs/endpoints/temporal validation before full ordered payload comparison. Separate durable claim then notification; projection failure and no-retry behavior retained. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "44b",
@@ -2059,9 +2061,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 91,
+  "remainingRuntimeCrudSites": 87,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 14,
+  "remainingRuntimeCrudFiles": 13,
   "foundations": [
     {
       "id": "F01",
@@ -2122,7 +2124,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "40w"
+      "44a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

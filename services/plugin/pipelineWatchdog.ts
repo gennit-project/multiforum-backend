@@ -66,6 +66,7 @@ const asPipelineJobStatus = (status: string): PipelineJobStatus =>
     : "FAILED";
 
 export const recoverExpiredPluginJobs = async ({
+  driver,
   PluginRun,
   PluginPipelineRun,
   DownloadableFile,
@@ -73,6 +74,7 @@ export const recoverExpiredPluginJobs = async ({
   now = new Date(),
   leaseDurationMs = pluginJobLeaseDurationMs(),
 }: {
+  driver?: Driver;
   PluginRun: PluginRunModel;
   PluginPipelineRun: PluginPipelineRunModel;
   DownloadableFile?: DownloadableFileModel;
@@ -166,6 +168,7 @@ export const recoverExpiredPluginJobs = async ({
       attemptsTimedOut += 1;
       if (DownloadableFile) {
         await notifyUploaderOfPipelineResult({
+          driver,
           DownloadableFile,
           PluginPipelineRun,
           User,

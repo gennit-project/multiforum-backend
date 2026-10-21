@@ -1,3 +1,5 @@
+import type { Driver } from "neo4j-driver";
+import { createPipelineNotificationRepository, type PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
 import type {
   DownloadableFileModel,
   PluginPipelineRunModel,
@@ -5,7 +7,6 @@ import type {
 } from "../../ogm_types.js";
 import {
   PluginPipelineRunStatus,
-  type PluginPipelineRunUpdateInput,
   type UserUpdateInput,
 } from "../../ogm_types.js";
 
@@ -17,12 +18,14 @@ const TERMINAL = new Set<PluginPipelineRunStatus>([
 ]);
 
 export const notifyUploaderOfPipelineResult = async ({
-  DownloadableFile,
-  PluginPipelineRun,
   User,
+  driver,
+  repository,
   pipelineId,
   now = () => new Date().toISOString(),
 }: {
+  driver?: Driver;
+  repository?: PipelineNotificationRepository;
   DownloadableFile: DownloadableFileModel;
   PluginPipelineRun: PluginPipelineRunModel;
   User?: UserModel;
@@ -30,12 +33,8 @@ export const notifyUploaderOfPipelineResult = async ({
   now?: () => string;
 }) => {
   if (!User) return false;
-  const attempts = await PluginPipelineRun.find({
-    where: { pipelineId },
-    selectionSet: `{
-      pipelineId targetId targetType status notifiedAt
-    }`,
-  });
+  const persistence = repository ?? createPipelineNotificationRepository(driver!);
+  const attempts = await persistence.findAttempt(pipelineId);
   const attempt = attempts[0];
   if (
     !attempt ||
@@ -45,17 +44,7 @@ export const notifyUploaderOfPipelineResult = async ({
   ) {
     return false;
   }
-  const files = await DownloadableFile.find({
-    where: { id: attempt.targetId },
-    selectionSet: `{
-      id uploadedByUsername
-      Discussion {
-        id title
-        Author { username }
-        DiscussionChannels { channelUniqueName archived }
-      }
-    }`,
-  });
+  const files = await persistence.findTargetFile(attempt.targetId);
   const file = files[0] as (typeof files)[number] & {
     uploadedByUsername?: string | null;
     Discussion?: {
@@ -73,11 +62,7 @@ export const notifyUploaderOfPipelineResult = async ({
   if (!username) return false;
 
   const timestamp = now();
-  const claim = await PluginPipelineRun.update({
-    where: { pipelineId, notifiedAt: null },
-    update: { notifiedAt: timestamp } as PluginPipelineRunUpdateInput,
-    selectionSet: `{ pluginPipelineRuns { pipelineId } }`,
-  });
+  const claim = await persistence.claimNotification(pipelineId, timestamp);
   if (claim.pluginPipelineRuns.length === 0) return false;
 
   const channel = file.Discussion?.DiscussionChannels?.find(
@@ -97,7 +82,7 @@ export const notifyUploaderOfPipelineResult = async ({
       : attempt.status === PluginPipelineRunStatus.TimedOut
         ? "timed out"
         : "did not pass";
-  await User.update({
+  await persistence.createNotification({
     where: { username },
     update: {
       Notifications: [{

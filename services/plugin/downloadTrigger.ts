@@ -51,6 +51,7 @@ export const triggerPluginRunsForDownloadableFile = async (
   {
     downloadableFileId,
     event,
+    driver,
     models
   }: TriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
@@ -618,6 +619,7 @@ export const triggerPluginRunsForDownloadableFile = async (
     statuses: jobStatuses,
   })
   await notifyUploaderOfPipelineResult({
+    driver,
     DownloadableFile,
     PluginPipelineRun,
     User,
