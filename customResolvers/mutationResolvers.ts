@@ -339,13 +339,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     archiveImage: archiveImage({
-      Issue,
-      Image,
       driver
     }),
     unarchiveImage: unarchiveImage({
-      Issue,
-      Image
+      driver,
     }),
     permanentlyRemoveImage: permanentlyRemoveImage({
       Issue,

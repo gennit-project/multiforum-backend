@@ -1018,8 +1018,8 @@
       "baselineCrudSites": 18,
       "dependencies": "18\u201319,21\u201322; 05\u201306",
       "acceptance": "Split discussion 9/event 9; entity-specific history and notifications",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "c9e9ca7ce66d627a0468102dea25a5aa7046244d",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1042,15 +1042,16 @@
           "id": "28b",
           "scope": "Event archive/unarchive",
           "baselineCrudSites": 9,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review against66893c28: six non-factory blobs identical to approved1a00723c; factory removes only event moderation model forwarding and supplies unarchive driver. Prior independent20focused/final12live/static evidence reused; exact cumulative6live passed zero failed/skipped/cancelled. canHideEvent authorization, corrected POSTED_BY positive author fixture, protected identity/full defaults and ordered partial-write/notification behavior retained. Diff check clean;9CRUD/0acquisitions, ledger216/53 consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice28b.patch",
           "preparedPatchSha256": "d985ab928e0cac0aa8a607adf65506a101202fdffd8bd23f1d3bd8e40aa672da",
           "preparedBase": "d20ed128287589a6e996b7cdea7adc9a78540e64",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree ed12ff1c984206b541f3d28a57066e4864b32216: lint, TypeScript and2317 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice28b-exact-live.log"
           ],
-          "commit": null
+          "commit": "c9e9ca7ce66d627a0468102dea25a5aa7046244d"
         }
       ]
     },
@@ -1074,14 +1075,15 @@
           "id": "29a",
           "scope": "Image archive/unarchive",
           "baselineCrudSites": 11,
-          "status": "reviewed; integration pending",
-          "review": "scratchpad_review: final approved exact source/evidence, no remaining findings",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative29a review againstc9e9ca7: five non-factory blobs matched approveda6bb708f before EOF-only test cleanup; factory narrowly removes Issue/Image forwarding and adds unarchive driver. Prior ledger final approval/33focused/10live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled on identical executable source; refreeze delta verified only trailing blank-line removal and approved39 queue docs. Full Image defaults, identity guards, scope/counter/catch boundaries and ordered notifications/partial-write effects retained; storage remains untouched. Diff check now clean;11CRUD/0acquisitions, ledger205/53 consistent; queued39 no removal credit. Mandatory hooks required.",
           "preparedPatch": "ogm-slice29a.patch",
           "preparedPatchSha256": "39b458b82fb3d75bf7b25ae7b402b99b26c2f53792250dfd60f4dcc8583732b8",
           "preparedBase": "9341421dda260cdf76c5246f3b9ee5a206570044",
           "verification": [
-            "Tree a6bb708fd8e82b7f75708b827b876fc959ab6329: 33focused,10live,finaltypes/lint passed; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "29b",
@@ -1567,10 +1569,15 @@
       "baselineCrudSites": 6,
       "dependencies": "18\u201319; 38",
       "acceptance": "Issue identity, report deduplication and actor attribution",
-      "status": "pending",
+      "status": "reviewed; integration pending",
       "commit": null,
-      "review": null,
-      "verification": []
+      "review": "campaign_review approved corrected raw-caller tree caba6738866202f9a70f6ca728585e658d7453e0; initial proxy-guard addition rejected and removed",
+      "verification": [
+        "11 focused,12 new production-schema +9 existing standalone-schema live tests, TypeScript/lint passed. Actual middleware passes raw Issue model, not resolverDeps proxy; preserve generated-input rejection after committed creation in production schema. Original attributed standalone fixture restored. Cumulative gates pending."
+      ],
+      "preparedPatch": "ogm-slice39.patch",
+      "preparedPatchSha256": "476e45c8948a876b53ab359bb23311d5311e2fde8d6b5374c9b0937eed44fc3c",
+      "preparedBaseTree": "877ba339f4e23bf91bd1d3512d2c7d5def6e41ae"
     },
     {
       "id": "40",
@@ -1678,9 +1685,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 216,
+  "remainingRuntimeCrudSites": 205,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 41,
+  "remainingRuntimeCrudFiles": 39,
   "foundations": [
     {
       "id": "F01",
@@ -1726,11 +1733,12 @@
       "25",
       "26",
       "27",
+      "28",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "28b"
+      "29a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

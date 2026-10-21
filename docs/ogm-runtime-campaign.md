@@ -66,7 +66,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | complete |
 | 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | complete |
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | complete |
-| 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | partial; see subdivisions |
+| 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | complete |
 | 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | pending |
 | 30 Suspensions | 7 | 18–19; 05–06 | All user/mod wrappers, scope, duration, authorization and activity | pending |
 | 31 Discussion create/update | 6 | 21; 05–06; closes 10 adapter | Connections, explicit transaction propagation, rollback and history | pending |
@@ -650,3 +650,13 @@ Slice28a committed `66893c2802db21b955ef2c3dd1b8ca0c3daf939d` ([diff](https://gi
 9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 216 CRUD sites/41 files; 53 acquisitions/7 files; two separate CLI sites.
 
 28b final integration approval: Independent cumulative review against66893c28: six non-factory blobs identical to approved1a00723c; factory removes only event moderation model forwarding and supplies unarchive driver. Prior independent20focused/final12live/static evidence reused; exact cumulative6live passed zero failed/skipped/cancelled. canHideEvent authorization, corrected POSTED_BY positive author fixture, protected identity/full defaults and ordered partial-write/notification behavior retained. Diff check clean;9CRUD/0acquisitions, ledger216/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice28b committed `c9e9ca7ce66d627a0468102dea25a5aa7046244d` ([diff](https://github.com/gennit-project/multiforum-backend/commit/c9e9ca7ce66d627a0468102dea25a5aa7046244d)), tree `ed12ff1c984206b541f3d28a57066e4864b32216`: lint, TypeScript and all2317 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice28b-exact-live.log. Independent approval recorded above.
+
+### Slice 29a — Image moderation
+
+11 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 205 CRUD sites/39 files; 53 acquisitions/7 files; two separate CLI sites.
+
+39 independently reviewed and queued:6CRUD. Review rejected an incorrect assumption that bot-report middleware used the mutation-resolver Issue proxy. Corrected patch preserves its raw-model path, including production-schema coercion failure after creation and original standalone-schema success. Eleven focused,21live and static checks passed; no removal credit before integration.
+
+29a final integration approval: Independent cumulative29a review againstc9e9ca7: five non-factory blobs matched approveda6bb708f before EOF-only test cleanup; factory narrowly removes Issue/Image forwarding and adds unarchive driver. Prior ledger final approval/33focused/10live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled on identical executable source; refreeze delta verified only trailing blank-line removal and approved39 queue docs. Full Image defaults, identity guards, scope/counter/catch boundaries and ordered notifications/partial-write effects retained; storage remains untouched. Diff check now clean;11CRUD/0acquisitions, ledger205/53 consistent; queued39 no removal credit. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
