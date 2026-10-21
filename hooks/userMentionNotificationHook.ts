@@ -18,7 +18,6 @@ import {
   createDiscussionMentionNotificationEmail,
 } from '../customResolvers/mutations/shared/emailUtils.js';
 import type { GraphQLContext } from '../types/context.js';
-import type { Record as Neo4jRecord } from 'neo4j-driver';
 
 // Re-export for consumers
 export { getNewMentionUsernames } from '../utils/getNewMentionUsernames.js';
@@ -112,10 +111,7 @@ const resolveMentionedUsers = async (
 ): Promise<MentionedUser[]> => {
   if (!usernames.length) return [];
 
-  const normalized = Array.from(new Set(usernames.map((u) => u.toLowerCase())));
-
-  const UserModel = context?.ogm?.model('User');
-  if (UserModel) {
+  if (context?.notificationSnapshotRepository || context?.driver) {
     const users = await resolveNotificationSnapshotRepository(context).findMentionRecipients(usernames);
 
     return users.map((user) => ({
@@ -125,27 +121,6 @@ const resolveMentionedUsers = async (
     }));
   }
 
-  if (context?.driver) {
-    const session = context.driver.session();
-    try {
-      const result = await session.run(
-        `
-        MATCH (u:User)
-        WHERE toLower(u.username) IN $usernames
-        OPTIONAL MATCH (u)-[:HAS_EMAIL]->(email:Email)
-        RETURN u.username as username, u.notifyWhenTagged as notifyWhenTagged, email.address as email
-        `,
-        { usernames: normalized }
-      );
-      return result.records.map((record: Neo4jRecord) => ({
-        username: record.get('username'),
-        notifyWhenTagged: Boolean(record.get('notifyWhenTagged')),
-        email: record.get('email') || null,
-      }));
-    } finally {
-      await session.close();
-    }
-  }
   return [];
 };
 

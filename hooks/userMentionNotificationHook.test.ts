@@ -13,16 +13,6 @@ const buildContext = (users: any[]) => {
     context: {
       notificationWriter: {createForUser: async () => true},
       notificationSnapshotRepository: {findMentionRecipients: async () => users},
-      ogm: {
-        model(modelName: string) {
-          assert.equal(modelName, "User");
-          return {
-            async find() {
-              return users;
-            },
-          };
-        },
-      },
     } as unknown as GraphQLContext,
     createdNotifications,
   };
