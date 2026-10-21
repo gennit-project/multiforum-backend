@@ -398,8 +398,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     lockIssue: lockIssue(),
     unlockIssue: unlockIssue(),
     archiveComment: archiveComment({
-      Issue,
-      Comment,
       driver,
     }),
     stickyComment: stickyComment({
@@ -421,8 +419,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     unarchiveComment: unarchiveComment({
-      Issue,
-      Comment,
+      driver,
     }),
     unarchiveDiscussion: unarchiveDiscussion({
       Issue,

@@ -1,7 +1,6 @@
+import { createCommentModerationRepository, type CommentModerationRepository } from "../../services/persistence/commentModerationRepository.js";
 import type {
   Issue,
-  IssueModel,
-  CommentModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -33,8 +32,7 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Comment: CommentModel;
+  repository?: CommentModerationRepository;
   driver: Driver;
 };
 
@@ -108,7 +106,8 @@ const buildArchivedCommentUrl = ({
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Comment, driver } = input;
+  const { driver } = input;
+  const repository = input.repository ?? createCommentModerationRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { commentId, selectedForumRules, selectedServerRules, reportText } =
       args;
@@ -143,54 +142,7 @@ const getResolver = (input: Input) => {
     let existingIssueId = "";
     let existingIssue: Issue | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
-    const commentData = await Comment.find({
-      where: {
-        id: commentId,
-      },
-      selectionSet: `{
-            id
-            text
-            CommentAuthor {
-              __typename
-              ... on User {
-                username
-              }
-              ... on ModerationProfile {
-                User {
-                  username
-                }
-              }
-            }
-            Channel {
-              uniqueName
-            }
-            DiscussionChannel {
-              discussionId
-              channelUniqueName
-            }
-            Event {
-              id
-              EventChannels {
-                channelUniqueName
-              }
-            }
-            ParentComment {
-              Channel {
-                uniqueName
-              }
-              DiscussionChannel {
-                discussionId
-                channelUniqueName
-              }
-              Event {
-                id
-                EventChannels {
-                  channelUniqueName
-                }
-              }
-            }
-        }`,
-    });
+    const commentData = await repository.findArchiveTarget(commentId);
     const channelUniqueName =
       commentData[0]?.Channel?.uniqueName ||
       commentData[0]?.DiscussionChannel?.channelUniqueName ||
@@ -206,17 +158,7 @@ const getResolver = (input: Input) => {
     }
 
     // Check if an issue already exists for the comment ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
-        channelUniqueName: channelUniqueName,
-        relatedCommentId: commentId,
-      },
-      selectionSet: `{
-            id
-            issueNumber
-            flaggedServerRuleViolation
-        }`,
-    });
+    const issueData = await repository.findIssue(channelUniqueName, commentId);
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -254,16 +196,7 @@ const getResolver = (input: Input) => {
           relatedModProfileName,
           issueNumber,
         });
-        const issueData = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const issueData = await repository.createArchiveIssue(issueCreateInput);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -333,28 +266,8 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      await Issue.update({
-        where: issueUpdateWhere,
-        update: archiveCommentUpdateIssueInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: closeIssueUpdateIssueInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      await repository.appendIssueAction(issueUpdateWhere, archiveCommentUpdateIssueInput);
+      const issueData = await repository.appendIssueAction(issueUpdateWhere, closeIssueUpdateIssueInput);
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
@@ -396,10 +309,7 @@ const getResolver = (input: Input) => {
           },
         ],
       };
-      const commentUpdateData = await Comment.update({
-        where: commentUpdateWhere,
-        update: commentUpdateInput,
-      });
+      const commentUpdateData = await repository.setArchived(commentUpdateWhere, commentUpdateInput);
       const commentUpdateId = commentUpdateData.comments[0]?.id || null;
       if (!commentUpdateId) {
         throw new GraphQLError("Error updating comment");

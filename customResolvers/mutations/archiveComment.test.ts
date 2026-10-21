@@ -1,5 +1,15 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, {before, after, afterEach, mock} from "node:test";
+import http from "node:http";
+import https from "node:https";
+let externalAttempts = 0;
+let guards: ReturnType<typeof mock.method>[] = [];
+before(() => {
+  const deny = () => { externalAttempts++; throw Error("External IO forbidden"); };
+  guards = [mock.method(globalThis, "fetch", deny), mock.method(http, "request", deny), mock.method(http, "get", deny), mock.method(https, "request", deny), mock.method(https, "get", deny)];
+});
+afterEach(() => assert.equal(externalAttempts, 0));
+after(() => guards.forEach(guard => guard.mock.restore()));
 import jwt from "jsonwebtoken";
 import archiveCommentResolver from "./archiveComment.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -164,8 +174,14 @@ test("archiveComment creates an issue, closes it, archives the comment, and link
   const Comment = createCommentModel();
 
   const resolver = archiveCommentResolver({
-    Issue: Issue as any,
-    Comment: Comment as any,
+    repository: {
+      findArchiveTarget: id => Comment.find({where:{id}}) as any,
+      findUnarchiveTarget: id => Comment.find({where:{id}}) as any,
+      findIssue: (channelUniqueName, relatedCommentId) => Issue.find({where:{channelUniqueName, relatedCommentId}}) as any,
+      createArchiveIssue: input => Issue.create({input:[input]}) as any,
+      appendIssueAction: (where,update) => Issue.update({where,update}) as any,
+      setArchived: (where,update) => Comment.update({where,update}) as any,
+    },
     driver: createDriver() as unknown as Parameters<typeof archiveCommentResolver>[0]["driver"],
   });
 
@@ -224,8 +240,14 @@ test("archiveComment reuses an existing comment issue and preserves server-rule 
   const Comment = createCommentModel();
 
   const resolver = archiveCommentResolver({
-    Issue: Issue as any,
-    Comment: Comment as any,
+    repository: {
+      findArchiveTarget: id => Comment.find({where:{id}}) as any,
+      findUnarchiveTarget: id => Comment.find({where:{id}}) as any,
+      findIssue: (channelUniqueName, relatedCommentId) => Issue.find({where:{channelUniqueName, relatedCommentId}}) as any,
+      createArchiveIssue: input => Issue.create({input:[input]}) as any,
+      appendIssueAction: (where,update) => Issue.update({where,update}) as any,
+      setArchived: (where,update) => Comment.update({where,update}) as any,
+    },
     driver: createDriver() as unknown as Parameters<typeof archiveCommentResolver>[0]["driver"],
   });
 

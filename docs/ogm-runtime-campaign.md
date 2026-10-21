@@ -64,7 +64,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 23 Wiki revisions/redaction | 9 | 18–19; 08 | Separate revision/redaction commits; visibility, authors and redaction authorization | complete |
 | 24 Content reports | 17 | 18–19; 05–06 | Separate entity commits; existing reports, numbering, activity and notifications | complete |
 | 25 Image/profile/wiki reports | 17 | 18–19; 05–06; 23 for wiki | Separate image-family/wiki commits; owner vs target and replaced images | complete |
-| 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | pending |
+| 26 Channel moderation | 9 | 18–19; 05–06 | Repeated actions, moderation state, activity and recipients | complete |
 | 27 Comment moderation | 11 | 18–20; 05–06 | Archive metadata, history, issue effects and notifications | pending |
 | 28 Discussion/event moderation | 18 | 18–19,21–22; 05–06 | Split discussion 9/event 9; entity-specific history and notifications | pending |
 | 29 Image moderation/removal | 17 | 18–19; 05–06; storage mocks | Split archive pair 11/permanent removal 6; storage failure windows | pending |
@@ -626,3 +626,11 @@ Slice25d committed `9debcdf6d3e253b15e209c22a723c8a8c3a23654` ([diff](https://gi
 36b independently reviewed and queued: 9 CRUD sites; fixed named installation operations preserve registry/integrity/manifest checks, default selections, independent writes, secret carry-over ordering and failure prefix. Ten focused, eleven new live and four existing live checks plus static checks passed. No removal credit before integration.
 
 26 final integration approval: Independent cumulative review against9debcdf6: five non-factory source/test blobs identical to approved05ca0eab; factory only removes Issue/Channel forwarding from lock/unlock retaining driver. Prior independent26 focused and corrected6live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled. Identity protection/full defaults, existing/supplied issue handling, counter/catch boundaries, repeated actions and raw-admin notification session/error/close ordering retained. Diff check clean;9CRUD/0acquisitions, ledger245/53 consistent, queued36b no removal credit. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice26 committed `7721da49786f1253f8303cd59280dbd022cdd246` ([diff](https://github.com/gennit-project/multiforum-backend/commit/7721da49786f1253f8303cd59280dbd022cdd246)), tree `6eb8fb3e500480a548d9b281327aa1176bb58504`: lint, TypeScript and all2251 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice26-exact-live.log. Independent approval recorded above.
+
+### Slice 27 — Comment moderation
+
+11 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 234 CRUD sites/45 files; 53 acquisitions/7 files; two separate CLI sites.
+
+27 final integration approval: Independent cumulative review against7721da49: six non-factory blobs identical to approved5dd62dfd; factory removes Issue/Comment forwarding and adds required unarchive driver only. Ledger confirms final independent33focused approval despite stale handoff wording; original12live/static evidence reused. Exact cumulative6live passed zero failed/skipped/cancelled. Identity/full Comment defaults, counter catch, activity/close/subscriber/state/author order and legacy moderator fragment error retained. Diff check clean;11CRUD/0acquisitions, ledger234/53 consistent. Mandatory hooks required.; live parity passed on identical production sources before this documentation-only update.
