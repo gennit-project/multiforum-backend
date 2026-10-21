@@ -1,3 +1,4 @@
+import { createDownloadReviewRepository, type DownloadReviewRepository } from "../../services/persistence/downloadReviewRepository.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { Storage } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
@@ -21,6 +22,7 @@ import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess
 import trackDownload from "./trackDownload.js";
 
 type Input = {
+  downloadReviewRepository?: DownloadReviewRepository;
   DownloadableFile: DownloadableFileModel;
   Plugin: PluginModel;
   PluginVersion: PluginVersionModel;
@@ -91,23 +93,10 @@ const hasFreshCleanScan = ({
 };
 
 const selectFile = async (
-  DownloadableFile: DownloadableFileModel,
+  repository: DownloadReviewRepository,
   downloadableFileId: string
 ): Promise<FileRecord | null> => {
-  const files = await DownloadableFile.find({
-    where: { id: downloadableFileId },
-    selectionSet: `{
-      id
-      url
-      storageBucket
-      storageObjectName
-      scanStatus
-      scanReason
-      scanCheckedAt
-      uploadedByUsername
-      Discussion { id hasSensitiveContent Author { username } }
-    }`,
-  }) as FileRecord[];
+  const files = await repository.findPreparation(downloadableFileId) as FileRecord[];
 
   return files[0] || null;
 };
@@ -127,6 +116,7 @@ export const createPrepareDownloadResolver = (
     scanCacheTtlMs = configuredScanCacheTtlMs(),
   }: PrepareDownloadOptions = {}
 ) => {
+  const repository = input.downloadReviewRepository ?? createDownloadReviewRepository(input.driver);
   const inFlightScans = new Map<string, Promise<PluginRunRecord[]>>();
 
   const runOrJoinScan = (downloadableFileId: string) => {
@@ -167,7 +157,7 @@ export const createPrepareDownloadResolver = (
       agePolicyRepository: input.agePolicyRepository,
     });
 
-    const originalFile = await selectFile(input.DownloadableFile, downloadableFileId);
+    const originalFile = await selectFile(repository, downloadableFileId);
     if (!originalFile || originalFile.Discussion?.id !== discussionId) {
       throw new Error("Downloadable file not found for this discussion");
     }
@@ -206,7 +196,7 @@ export const createPrepareDownloadResolver = (
         };
       }
 
-      scannedFile = await selectFile(input.DownloadableFile, downloadableFileId);
+      scannedFile = await selectFile(repository, downloadableFileId);
     }
     if (!scannedFile) throw new Error("Downloadable file no longer exists");
 

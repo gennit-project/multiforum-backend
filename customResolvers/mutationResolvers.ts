@@ -493,11 +493,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       ServerConfig,
     }),
     clearDownloadableFileScan: clearDownloadableFileScan({
-      DownloadableFile,
       driver
     }),
     requestDownloadableFileReview: requestDownloadableFileReview({
-      DownloadableFile
+      driver
     }),
     trackDownload: trackDownload({
       driver,

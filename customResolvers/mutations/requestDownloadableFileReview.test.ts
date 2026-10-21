@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLContext } from "../../types/context.js";
-import requestDownloadableFileReview from "./requestDownloadableFileReview.js";
+import productionResolver from "./requestDownloadableFileReview.js";
+
+const requestDownloadableFileReview = (input: any, ...rest: any[]) => (productionResolver as any)({ ...input, downloadReviewRepository: {
+  findPreparation: (id: string) => input.DownloadableFile.find({where: {id}}),
+  findReleaseStatus: (id: string) => input.DownloadableFile.find({where: {id}}),
+  clearScan: async (id: string, update: any) => { await input.DownloadableFile.update({where: {id}, update}); },
+  findCleared: (id: string) => input.DownloadableFile.find({where: {id}}),
+  findReviewAuthority: (id: string) => input.DownloadableFile.find({where: {id}}),
+  requestReview: async (id: string, update: any) => { await input.DownloadableFile.update({where: {id}, update}); },
+  findRequested: (id: string) => input.DownloadableFile.find({where: {id}}),
+}}, ...rest);
 
 const contextFor = (username: string) => ({
   user: { username },

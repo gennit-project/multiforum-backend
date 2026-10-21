@@ -1,5 +1,6 @@
+import type { Driver } from "neo4j-driver";
+import { createDownloadReviewRepository, type DownloadReviewRepository } from "../../services/persistence/downloadReviewRepository.js";
 import type {
-  DownloadableFileModel,
   DownloadableFileUpdateInput,
 } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -8,7 +9,7 @@ import {
   type AuthContextForUserLookup,
 } from "../../rules/permission/userDataHelperFunctions.js";
 
-type Input = { DownloadableFile: DownloadableFileModel };
+type Input = { driver: Driver; downloadReviewRepository?: DownloadReviewRepository };
 
 type FileRecord = {
   scanStatus?: string | null;
@@ -18,7 +19,8 @@ type FileRecord = {
 
 type ReviewContext = GraphQLContext & AuthContextForUserLookup;
 
-const requestDownloadableFileReview = ({ DownloadableFile }: Input) => {
+const requestDownloadableFileReview = ({ driver, downloadReviewRepository }: Input) => {
+  const repository = downloadReviewRepository ?? createDownloadReviewRepository(driver);
   return async (
     _parent: unknown,
     args: { downloadableFileId: string; reason?: string | null },
@@ -30,14 +32,7 @@ const requestDownloadableFileReview = ({ DownloadableFile }: Input) => {
     const username = context.user?.username;
     if (!username) throw new Error("You must be logged in to request review");
 
-    const files = await DownloadableFile.find({
-      where: { id: args.downloadableFileId },
-      selectionSet: `{
-        scanStatus
-        uploadedByUsername
-        Discussion { Author { username } }
-      }`,
-    }) as FileRecord[];
+    const files = await repository.findReviewAuthority(args.downloadableFileId) as FileRecord[];
     const file = files[0];
     if (!file) throw new Error("Downloadable file not found");
 
@@ -48,22 +43,13 @@ const requestDownloadableFileReview = ({ DownloadableFile }: Input) => {
       throw new Error("Only held security scans can be sent for human review");
     }
 
-    await DownloadableFile.update({
-      where: { id: args.downloadableFileId },
-      update: ({
+    await repository.requestReview(args.downloadableFileId, ({
         reviewRequestedAt: new Date().toISOString(),
         reviewRequestReason: args.reason?.trim() || null,
         reviewRequestedByUsername: username,
-      } as DownloadableFileUpdateInput),
-    });
+      } as DownloadableFileUpdateInput));
 
-    const updated = await DownloadableFile.find({
-      where: { id: args.downloadableFileId },
-      selectionSet: `{
-        id fileName scanStatus scanReason scanCheckedAt
-        reviewRequestedAt reviewRequestReason reviewRequestedByUsername
-      }`,
-    });
+    const updated = await repository.findRequested(args.downloadableFileId);
     return updated[0];
   };
 };

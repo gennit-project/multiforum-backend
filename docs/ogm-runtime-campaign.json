@@ -1203,8 +1203,8 @@
       "baselineCrudSites": 19,
       "dependencies": "32; external transaction/event gate",
       "acceptance": "Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "e1c52be1b11946141e753ff89f116caf1e28213b",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -1242,15 +1242,16 @@
           "id": "33c",
           "scope": "Event series deletion",
           "baselineCrudSites": 8,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative33c review againstadba3d728dde2b37c8b1427209efb3875b76d164. Four nonfactory blobs identical to independently approveda0171c05; factory removes only unused Event/EventSeries forwards, matching driver/optional repository Input. Original11focused/static and repaired partial-failure evidence reused; exact cumulative20live passed zero failures/skips/cancellations. Snapshot order/nested25, independent delete commits, supported DeleteInfo, second-response failure prefix, quarantine/error boundaries and raw native event/remaining graph checks preserved; no sorting/transaction redesign. Prior33a/b and31/32 shared changes retained. Diff check clean. Ledger8CRUD/0acquisitions,162remainingCRUD including structural adapter/53acquisitions/0CLI consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice33c.patch",
           "preparedPatchSha256": "166964746abe8ab00c9ab8f9c87a66b84cf8115192724d296054517785e7b9fa",
           "preparedBaseTree": "c31abc6a98a7b6469ef866c8a6194687bab1f96e",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 9362c70f5de889994e3caeb3812526f03b210308: lint, TypeScript and2386 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice33c-exact-live.log"
           ],
-          "commit": null
+          "commit": "e1c52be1b11946141e753ff89f116caf1e28213b"
         }
       ]
     },
@@ -1275,14 +1276,15 @@
           "id": "34a",
           "scope": "Download review and preparation",
           "baselineCrudSites": 7,
-          "status": "reviewed; integration pending",
-          "review": "campaign_review: reapproved corrected4c012a55 after author fixture gap repaired; no production change",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative34a review againste1c52be1b11946141e753ff89f116caf1e28213b. Eight nonfactory source/test blobs identical to corrected approved4c012a55; factory removes unused clearScan model and forwards configured driver to requestReview. Preparation pipeline capability/model forwards retained. Corrected canonical POSTED_DISCUSSION author assertions and separate legacy AUTHORED notification edge cases preserved. Original16focused/static evidence reused; exact cumulative13live passed zero failures/skips/cancellations, including full defaults, authorization reads and committed projection failures/notification boundaries. No transaction/order/routing changes; prior31-33 adaptations retained. Diff check clean. Ledger7CRUD/0acquisitions,155remainingCRUD including structural adapter/53acquisitions/0CLI consistent. Mandatory hooks required.",
           "preparedPatch": "ogm-slice34a.patch",
           "preparedPatchSha256": "7a4ff9b5d0a5a9643925a0c6b49925e4bba48b89fa6dced1bd4e7d642f9b9c34",
           "preparedBaseCommit": "3e1283d2b3a147dfb116b388b16e985b6dccd85f",
           "verification": [
-            "Tree4c012a555d321159f01dbb31a1b6c4c797ce6720:16focused,13correctedlive,types/lint passed; explicit canonical GraphQL author and separate legacy raw notification graph cases; cumulative gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "34b",
@@ -1787,9 +1789,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 162,
+  "remainingRuntimeCrudSites": 155,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 29,
+  "remainingRuntimeCrudFiles": 26,
   "foundations": [
     {
       "id": "F01",
@@ -1840,11 +1842,12 @@
       "30",
       "31",
       "32",
+      "33",
       "35"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "33c"
+      "34a"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
