@@ -1,3 +1,4 @@
+import { createDiscussionRevisionRepository } from "../services/persistence/discussionRevisionRepository.js";
 /**
  * Middleware for tracking discussion version history
  * This middleware runs before discussion update operations to capture the previous
@@ -62,34 +63,8 @@ const discussionVersionHistoryMiddleware = {
       // Check if title or body is being updated
       if (update.title !== undefined || update.body !== undefined) {
         if (discussionId) {
-          const DiscussionModel = context.ogm.model("Discussion");
-          const discussions = await DiscussionModel.find({
-            where: { id: discussionId },
-            selectionSet: `{
-              id
-              title
-              body
-              Author {
-                username
-              }
-              BodyLastEditedBy {
-                username
-              }
-              DiscussionChannels {
-                channelUniqueName
-              }
-              PastTitleVersions {
-                id
-                body
-                createdAt
-              }
-              PastBodyVersions {
-                id
-                body
-                createdAt
-              }
-            }`,
-          });
+          const repository = context.discussionRevisionRepository ?? createDiscussionRevisionRepository(context.driver);
+          const discussions = await repository.findSnapshot(discussionId);
           discussionSnapshot = (discussions[0] as unknown as DiscussionSnapshot) ?? null;
         }
 
@@ -144,22 +119,8 @@ const discussionVersionHistoryMiddleware = {
       const isBodyUpdated = discussionUpdateInput.body !== undefined;
 
       if ((isTitleUpdated || isBodyUpdated) && discussionId) {
-        const DiscussionModel = context.ogm.model("Discussion");
-        const discussions = await DiscussionModel.find({
-          where: { id: discussionId },
-          selectionSet: `{
-            id
-            title
-            body
-            Author {
-              username
-              displayName
-            }
-            DiscussionChannels {
-              channelUniqueName
-            }
-          }`,
-        });
+        const repository = context.discussionRevisionRepository ?? createDiscussionRevisionRepository(context.driver);
+        const discussions = await repository.findMentionSnapshot(discussionId);
         discussionSnapshot = (discussions[0] as unknown as DiscussionSnapshot) ?? null;
       }
 
