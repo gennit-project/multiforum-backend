@@ -51,7 +51,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 10 Collections | 4 | Named-schema operation contract; retain creation adapter until 31 | Filter merge precedence, visibility, sensitivity and default sorting | complete |
 | 11 Forum membership | 16 | 06; write/event contract | Split moderator vs owner/admin; sequential-write partial failures and event counts | complete |
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | complete |
-| 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | partial; see subdivisions |
+| 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | complete |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
 | 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | reviewed; integration pending |
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | pending |
@@ -365,3 +365,11 @@ Slice13a committed `21b56de485a75f8451d6bd724ecbcb0156559bdb` ([diff](https://gi
 2 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 377 CRUD sites/86 files; 74 acquisitions/15 files; two separate CLI sites.
 
 13b final integration approval: integration_recovery independently verified four nonfactory patch blobs, exact two sticky repository constructor changes and retained prior wiring;8 focused tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review13b-focused.log; live parity passed on identical production sources before this documentation-only update.
+
+Slice13b committed `a185e6ea7aeaa1098864fe65ed77800e04629f92` ([diff](https://github.com/gennit-project/multiforum-backend/commit/a185e6ea7aeaa1098864fe65ed77800e04629f92)), tree `07ac50e1b38e73a3563a16e97b211b970072318c`: lint, TypeScript and all2047 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice13b-exact-live.log. Independent approval recorded above.
+
+### Slice 15 — Scratchpad
+
+7 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 370 CRUD sites/83 files; 74 acquisitions/15 files; two separate CLI sites.
+
+15 final integration approval: Independent integration_review_current approved exact tree 72a5386ade1c8538a0bf41c4c38849710364d990: all six non-factory source/test blobs match original reviewed patch; factory merge only imports/constructs scratchpad repository and preserves driver/raw transaction and undo wiring. Independently passed 8 focused characterization tests using stripped infrastructure-only launcher; inspected completed 29/29 disposable live tests (9 parity +20 existing). No blocking findings; auth, source projections/default errors, ordering, delete relationships/events preserved.; live parity passed on identical production sources before this documentation-only update.

@@ -1,9 +1,9 @@
-import type { ScratchpadEntryModel } from "../../ogm_types.js";
+import type { ScratchpadRepository } from "../../services/persistence/scratchpadRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 
 type Input = {
-  ScratchpadEntry: ScratchpadEntryModel;
+  scratchpadRepository: ScratchpadRepository;
 };
 
 type Args = {
@@ -11,7 +11,7 @@ type Args = {
 };
 
 const deleteScratchpadEntryResolver = (input: Input) => {
-  const { ScratchpadEntry } = input;
+  const { scratchpadRepository } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { scratchpadEntryId } = args;
@@ -27,15 +27,7 @@ const deleteScratchpadEntryResolver = (input: Input) => {
     }
 
     // Find the entry and verify ownership
-    const entryResult = await ScratchpadEntry.find({
-      where: { id: scratchpadEntryId },
-      selectionSet: `{
-        id
-        Recipient {
-          username
-        }
-      }`,
-    });
+    const entryResult = await scratchpadRepository.findOwnership(scratchpadEntryId);
 
     if (entryResult.length === 0) {
       throw new Error('Scratchpad entry not found');
@@ -50,9 +42,7 @@ const deleteScratchpadEntryResolver = (input: Input) => {
 
     // Delete the entry
     // Note: This does NOT undo the super upvote - the super upvote relationship remains
-    await ScratchpadEntry.delete({
-      where: { id: scratchpadEntryId },
-    });
+    await scratchpadRepository.deleteEntry(scratchpadEntryId);
 
     return true;
   };

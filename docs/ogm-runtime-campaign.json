@@ -378,8 +378,8 @@
       "baselineCrudSites": 6,
       "dependencies": "Write/event contract",
       "acceptance": "Actor checks, repeated reactions/removals and sticky order",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "a185e6ea7aeaa1098864fe65ed77800e04629f92",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -402,15 +402,16 @@
           "id": "13b",
           "scope": "Sticky comments",
           "baselineCrudSites": 2,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "integration_recovery independently verified four nonfactory patch blobs, exact two sticky repository constructor changes and retained prior wiring;8 focused tests passed actual exit0; staged diff-check clean. Evidence /tmp/recovery-review13b-focused.log",
           "preparedPatch": "ogm-slice13b.patch",
           "preparedPatchSha256": "ae5e0e6e8ac7f08f1f89df5c1518e1e9a4457964430e0ca3859c8bd0753a72a9",
           "preparedBase": "376ad24",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 07ac50e1b38e73a3563a16e97b211b970072318c: lint, TypeScript and2047 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice13b-exact-live.log"
           ],
-          "commit": null
+          "commit": "a185e6ea7aeaa1098864fe65ed77800e04629f92"
         }
       ]
     },
@@ -484,11 +485,11 @@
       "baselineCrudSites": 7,
       "dependencies": "Write/event contract",
       "acceptance": "Ownership, visibility, missing entries and relationship cleanup",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "review_subscription",
+      "review": "Independent integration_review_current approved exact tree 72a5386ade1c8538a0bf41c4c38849710364d990: all six non-factory source/test blobs match original reviewed patch; factory merge only imports/constructs scratchpad repository and preserves driver/raw transaction and undo wiring. Independently passed 8 focused characterization tests using stripped infrastructure-only launcher; inspected completed 29/29 disposable live tests (9 parity +20 existing). No blocking findings; auth, source projections/default errors, ordering, delete relationships/events preserved.",
       "verification": [
-        "8 units;9 parity+20 existing live;tsc/lint passed in isolated worktree; integrated exact-tree gates pending"
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "preparedPatch": "ogm-slice15.patch",
       "preparedPatchSha256": "06d0e6299f8fdb905b6ad53c58f7debb13642b8bb58a62cf4acec50a3c73eecc",
@@ -1284,9 +1285,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 377,
+  "remainingRuntimeCrudSites": 370,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 86,
+  "remainingRuntimeCrudFiles": 83,
   "foundations": [
     {
       "id": "F01",
@@ -1317,6 +1318,7 @@
       "10",
       "11",
       "12",
+      "13",
       "35"
     ],
     "runtimeRemovalComplete": false,
@@ -1327,5 +1329,6 @@
       "03"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR"
-  }
+  },
+  "remainingStructuralCrudSites": 3
 }

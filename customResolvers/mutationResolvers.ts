@@ -1,3 +1,4 @@
+import { createScratchpadRepository } from "../services/persistence/scratchpadRepository.js";
 import { createStickyCommentRepository } from "../services/persistence/stickyCommentRepository.js";
 import { createReactionWriter } from "../services/persistence/reactionWriter.js";
 import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
@@ -702,10 +703,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       LabelChangeHistory,
     }),
     createScratchpadEntry: createScratchpadEntry({
-      ScratchpadEntry,
-      Comment,
-      DiscussionChannel,
-      User,
+      scratchpadRepository: createScratchpadRepository(driver),
       driver,
     }),
     undoSuperUpvote: undoSuperUpvote({
@@ -715,10 +713,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
-      ScratchpadEntry,
+      scratchpadRepository: createScratchpadRepository(driver),
     }),
     deleteScratchpadEntry: deleteScratchpadEntry({
-      ScratchpadEntry,
+      scratchpadRepository: createScratchpadRepository(driver),
     }),
   };
 }

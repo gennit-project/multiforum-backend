@@ -1,9 +1,9 @@
 import type { GraphQLResolveInfo } from "graphql";
-import type { ScratchpadEntryModel } from "../../ogm_types.js";
+import type { ScratchpadRepository } from "../../services/persistence/scratchpadRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 type Input = {
-  ScratchpadEntry: ScratchpadEntryModel;
+  scratchpadRepository: ScratchpadRepository;
 };
 
 type Args = {
@@ -12,7 +12,7 @@ type Args = {
 };
 
 const updateScratchpadEntryVisibilityResolver = (input: Input) => {
-  const { ScratchpadEntry } = input;
+  const { scratchpadRepository } = input;
 
   return async (
     parent: unknown,
@@ -37,27 +37,7 @@ const updateScratchpadEntryVisibilityResolver = (input: Input) => {
     }
 
     // Find the entry and verify ownership
-    const entryResult = await ScratchpadEntry.find({
-      where: { id: scratchpadEntryId },
-      selectionSet: `{
-        id
-        isPublic
-        text
-        sourceType
-        sourceId
-        sourceChannelUniqueName
-        discussionId
-        createdAt
-        Recipient {
-          username
-        }
-        Author {
-          username
-          displayName
-          profilePicURL
-        }
-      }`,
-    });
+    const entryResult = await scratchpadRepository.findVisibility(scratchpadEntryId);
 
     if (entryResult.length === 0) {
       throw new Error('Scratchpad entry not found');
@@ -71,10 +51,7 @@ const updateScratchpadEntryVisibilityResolver = (input: Input) => {
     }
 
     // Update the entry
-    await ScratchpadEntry.update({
-      where: { id: scratchpadEntryId },
-      update: { isPublic },
-    });
+    await scratchpadRepository.updateVisibility(scratchpadEntryId, isPublic);
 
     return {
       ...entry,
