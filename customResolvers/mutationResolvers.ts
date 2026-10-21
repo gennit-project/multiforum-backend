@@ -513,10 +513,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     enableServerPlugin: enableServerPlugin({
-      Plugin,
-      PluginVersion,
-      ServerConfig,
-      ServerSecret
+      driver
     }),
     setServerPluginSecret: setServerPluginSecret({
       driver

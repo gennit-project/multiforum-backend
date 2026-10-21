@@ -1,10 +1,6 @@
 import type { GraphQLResolveInfo } from 'graphql'
-import type {
-  PluginModel,
-  PluginVersionModel,
-  ServerConfigModel,
-  ServerSecretModel
-} from '../../ogm_types.js'
+import type { Driver } from 'neo4j-driver'
+import { createServerPluginEnablementRepository, type ServerPluginEnablementRepository } from '../../services/persistence/serverPluginEnablementRepository.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
 import {
@@ -13,12 +9,7 @@ import {
   resolveSecretValidationStatus
 } from '../../services/plugin/configStatus.js'
 
-type Input = {
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
-  ServerConfig: ServerConfigModel
-  ServerSecret: ServerSecretModel
-}
+type Input = { driver?: Driver; repository?: ServerPluginEnablementRepository }
 
 type Args = {
   pluginId: string
@@ -49,43 +40,14 @@ export const parsePluginSettings = (value: unknown): Record<string, unknown> => 
 }
 
 const getResolver = (input: Input) => {
-  const { Plugin, PluginVersion, ServerConfig, ServerSecret } = input
+  const repository = input.repository ?? createServerPluginEnablementRepository(input.driver!)
 
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     const { pluginId, version, enabled, settingsJson } = args
 
     try {
       // 1. Find the plugin and version
-      const plugins = await Plugin.find({
-        where: { name: pluginId },
-        selectionSet: `{
-          id
-          name
-          displayName
-          description
-          authorName
-          authorUrl
-          homepage
-          license
-          tags
-          metadata
-          Versions(where: { version: "${version}" }) {
-            id
-            version
-            manifest
-            settingsDefaults
-            uiSchema
-            documentationPath
-            readmeMarkdown
-            registryUrl
-            releaseNotesUrl
-            sourceRepoUrl
-            sourceCommit
-            minServerVersion
-            apiVersion
-          }
-        }`
-      })
+      const plugins = await repository.findPlugin(pluginId, version)
 
       if (!plugins.length) {
         throw new Error(`Plugin ${pluginId} not found`)
@@ -102,18 +64,7 @@ const getResolver = (input: Input) => {
       const manifest = pluginVersion.manifest || {}
 
       // 2. Get server config
-      const serverConfigs = await ServerConfig.find({
-        selectionSet: `{
-          serverName
-          InstalledVersions(where: { id: "${pluginVersion.id}" }) {
-            id
-            version
-          }
-          InstalledVersionsConnection(where: { node: { id: "${pluginVersion.id}" } }) {
-            edges { properties { settingsJson } }
-          }
-        }`
-      })
+      const serverConfigs = await repository.findInstallations(pluginVersion.id)
 
       if (!serverConfigs.length) {
         throw new Error('Server configuration not found')
@@ -134,15 +85,7 @@ const getResolver = (input: Input) => {
 
       // 3. If enabling, validate all required server-scoped configuration.
       if (enabled) {
-        const secrets = await ServerSecret.find({
-          where: { pluginId },
-          selectionSet: `{
-            key
-            isValid
-            validationError
-            lastValidatedAt
-          }`
-        })
+        const secrets = await repository.findSecrets(pluginId)
 
         const configStatus = buildPluginConfigStatus({
           manifest,
@@ -168,20 +111,7 @@ const getResolver = (input: Input) => {
           ? JSON.stringify(settingsToApply)
           : null
 
-      await ServerConfig.update({
-        where: { serverName: serverConfig.serverName },
-        update: {
-          InstalledVersions: [{
-            where: { node: { id: pluginVersion.id } },
-            update: {
-              edge: {
-                enabled,
-                settingsJson: settingsJsonValue
-              }
-            }
-          }]
-        }
-      })
+      await repository.setInstallation(serverConfig.serverName, pluginVersion.id, enabled, settingsJsonValue)
 
 
 

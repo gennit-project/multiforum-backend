@@ -73,7 +73,7 @@ const buildDefaultOperations = ({
   })
   const install = installPluginVersion({ ...input, driver: context.driver })
   const setSecret = setServerPluginSecret({ driver: context.driver })
-  const configure = enableServerPlugin(input)
+  const configure = enableServerPlugin({ driver: context.driver })
   const updatePipelines = updatePluginPipelines({ driver: context.driver })
 
   return {
