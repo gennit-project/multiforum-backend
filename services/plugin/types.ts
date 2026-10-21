@@ -80,6 +80,7 @@ export type PluginEdgeData = {
 
 // Arguments for downloadable file trigger
 export type TriggerArgs = {
+  driver?: Driver
   downloadableFileId: string
   event: string
   models: Models
@@ -115,6 +116,7 @@ export type CommentTriggerArgs = {
 
 // Arguments for channel trigger
 export type ChannelTriggerArgs = {
+  driver?: Driver
   discussionId: string
   channelUniqueName: string
   event: string

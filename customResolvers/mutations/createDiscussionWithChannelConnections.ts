@@ -61,6 +61,7 @@ type PluginModels = {
 };
 
 export const triggerCreatedDownloadPipelines = async ({
+  driver,
   discussionId,
   downloadableFileId,
   channelConnections,
@@ -69,6 +70,7 @@ export const triggerCreatedDownloadPipelines = async ({
   triggerDownload = triggerPluginRunsForDownloadableFile,
   triggerChannel = triggerChannelPluginPipeline,
 }: {
+  driver?: Driver;
   discussionId: string;
   downloadableFileId: string;
   channelConnections: string[];
@@ -79,6 +81,7 @@ export const triggerCreatedDownloadPipelines = async ({
 }) => {
   try {
     await triggerDownload({
+      driver,
       downloadableFileId,
       event: "downloadableFile.created",
       models: {
@@ -103,6 +106,7 @@ export const triggerCreatedDownloadPipelines = async ({
   for (const channelUniqueName of channelConnections) {
     try {
       await triggerChannel({
+        driver,
         discussionId,
         channelUniqueName,
         event: 'discussionChannel.created',
@@ -291,6 +295,7 @@ export const createDiscussionsFromInput = async (
           )?.DownloadableFiles?.[0]?.id;
           if (downloadableFileId) {
             await triggerCreatedDownloadPipelines({
+              driver,
               discussionId: newDiscussionId,
               downloadableFileId,
               channelConnections,

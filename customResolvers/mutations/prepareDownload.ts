@@ -124,6 +124,7 @@ export const createPrepareDownloadResolver = (
     if (existingScan) return existingScan;
 
     const scan = Promise.resolve(triggerRuns({
+      driver: input.driver,
       downloadableFileId,
       event: "downloadableFile.downloaded",
       models: input,

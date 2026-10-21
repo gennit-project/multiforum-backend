@@ -53,6 +53,7 @@ const getResolver = (input: Input) => {
     }
 
     const runs = await triggerPluginRunsForDownloadableFile({
+      driver: _context.driver,
       downloadableFileId,
       event,
       models: {

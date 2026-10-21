@@ -244,6 +244,7 @@ const getResolver = (
       for (const downloadableFileId of connectedDownloadableFileIds) {
         try {
           await triggerDownloadRuns({
+            driver,
             downloadableFileId,
             event: "downloadableFile.updated",
             models: {

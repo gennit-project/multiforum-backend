@@ -156,6 +156,7 @@ export const createRetryDownloadableFileScanResolver = (
     }
 
     return triggerRuns({
+      driver: context.driver,
       downloadableFileId,
       event: "downloadableFile.updated",
       models: input,

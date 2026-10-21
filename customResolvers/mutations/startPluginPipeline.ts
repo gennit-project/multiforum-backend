@@ -299,6 +299,7 @@ export const createStartPluginPipelineResolver = (
     if (scope === "SERVER") {
       await triggerDownloadRuns(
         {
+          driver: context.driver,
           downloadableFileId: targetId,
           event: eventType,
           models: input,
@@ -308,6 +309,7 @@ export const createStartPluginPipelineResolver = (
     } else {
       await triggerChannelRuns(
         {
+          driver: context.driver,
           discussionId: targetId,
           channelUniqueName: channelId as string,
           event: eventType,

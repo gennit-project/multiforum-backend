@@ -1,3 +1,4 @@
+import type { Driver } from "neo4j-driver";
 import type {
   PluginPipelineRun,
   PluginPipelineRunModel,
@@ -187,6 +188,7 @@ export class PluginPipelineWatchdogService {
 
   constructor(
     private readonly models: {
+      driver?: Driver;
       PluginRun: PluginRunModel;
       PluginPipelineRun: PluginPipelineRunModel;
       DownloadableFile?: DownloadableFileModel;

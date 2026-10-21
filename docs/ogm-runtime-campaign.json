@@ -1608,11 +1608,12 @@
       "baselineCrudSites": 6,
       "dependencies": "18\u201319; 38",
       "acceptance": "Issue identity, report deduplication and actor attribution",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "739639d7b3097276309a6931c14041820e6c5369",
       "review": "Independent cumulative review against0c6a72ee. All five executable/test blobs exactly match corrected approved raw-caller caba6738; SHA256476e45c8948a876b53ab359bb23311d5311e2fde8d6b5374c9b0937eed44fc3c verified. Baseline explicitly uses raw app.ogm.model(Issue), matching unchanged middleware; no protected proxy attachment/guard added. Prior38 thread/identity/comment/context wiring unchanged. Exact isolated21live passed zero failures/skips/cancellations, including production-schema attributed create durable prefix then generated-input rejection, raw native event/graph parity and nine existing standalone-schema services. Prior11focused/static evidence reused; diff check clean. Ledger91CRUD/14files/50acquisitions/0CLI and preparatory-only integration review accurate. Mandatory hooks parent-owned.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 047ca6bdb3001935eed39ac0f4e465b4a8899b7a: lint, TypeScript and2447 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice39-exact-live.log"
       ],
       "preparedPatch": "ogm-slice39.patch",
       "preparedPatchSha256": "476e45c8948a876b53ab359bb23311d5311e2fde8d6b5374c9b0937eed44fc3c",
@@ -1629,7 +1630,7 @@
       "baselineCrudSites": 14,
       "dependencies": "Lease/attempt state characterization; 44 notifications before dependent consumers",
       "acceptance": "Separate lease 6/attempt 4/watchdog 4; competing claims, stale leases, heartbeat, timeouts",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -1716,6 +1717,17 @@
           "verification": [
             "4focused,7live,lint/TypeScript passed. Same unbounded snapshot reads, conditional timeout guards, job/parent/notification ordering; timers unchanged. Graph snapshot ordered by label before UUID aliases, native events remain fully ordered with raw identity checks. Zero credit before integration."
           ]
+        },
+        {
+          "id": "40w",
+          "scope": "Configured pipeline driver forwarding",
+          "baselineCrudSites": 0,
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative40w review against739639d7. All eleven executable/test added/removed-line sequences match approved driver-foundation patch; inspected cumulative create/updateDiscussion context retaining31 named repositories and configured driver forwarding. Only dependency forwarding/type/test assertions, no operation/order changes. Exact isolated2live passed zero failures/skips/cancellations; prior46focused/static evidence reused. Diff check clean.91CRUD/50acquisitions unchanged;39 complete and W1 queued without credit accurate. Mandatory hooks parent-owned.",
+          "verification": [
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         }
       ]
     },
@@ -2105,11 +2117,12 @@
       "35",
       "36",
       "37",
-      "38"
+      "38",
+      "39"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "39"
+      "40w"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2217,5 +2230,42 @@
       }
     ],
     "verification": "Rehearsal TypeScript and20focused tests passed;0CRUD/50acquisitions in rehearsal only. Root counts remain authoritative until each slice integrates."
-  }
+  },
+  "runtimeWiringSubdivisions": [
+    {
+      "id": "W1",
+      "scope": "Explicit mention, issue/author and report capabilities",
+      "status": "reviewed; integration pending",
+      "baselineCrudSites": 0,
+      "acquisitionsRemoved": 7,
+      "preparedEvidence": {
+        "base": "cdac69950353a76c95190ae05f28bc923687835f",
+        "tree": "aa730271fb4adecdcf8b4d998146a6f89bc4990b",
+        "sha256": "8bbd55f2f44f12eac3b082ef01138380de3fbe241043e540264722421d8a003d",
+        "patch": "/tmp/ogm-runtime-capabilities.patch",
+        "files": [
+          "customResolvers/mutations/reportDiscussion.test.ts",
+          "customResolvers/mutations/reportDiscussion.ts",
+          "hooks/userMentionNotificationHook.test.ts",
+          "hooks/userMentionNotificationHook.ts",
+          "index.ts",
+          "middleware/issueActivityFeedMiddleware.test.ts",
+          "middleware/issueActivityFeedMiddleware.ts",
+          "services/commentNotificationHandler.ts",
+          "services/commentNotificationService.ts",
+          "tests/integration/commentNotifications.test.ts",
+          "tests/integration/discussionReportRepository.test.ts",
+          "tests/integration/issueActivityMiddlewareRepository.test.ts",
+          "tests/integration/notificationHooks.test.ts",
+          "types/context.ts",
+          "services/persistence/runtimeCapabilities.ts",
+          "services/commentNotificationService.test.ts"
+        ]
+      },
+      "review": "Independent W1 review: seven acquisitions replaced by six explicit optional capabilities, preserving pre-delete author reads independently of issue activity, optional report channel lookup, and generated-original-username versus lowercase raw-Cypher mention fallback/session closure. HTTP enables prior all-model capabilities; notification background explicitly enables only generated mentions and handler forwards flags; subscription context/auth unchanged. Added service test verifies enabled versus absent mention lookup through lifecycle; final refreeze only adds that test.19 isolated live cases passed(18main+1report); focused corrections and service5 pass with overlapping runs,42 unique reported. Final TypeScript40920/lint15815 zero parent-confirmed plus final service scoped lint zero. SHA2568bbd55f2f44f12eac3b082ef01138380de3fbe241043e540264722421d8a003d verified; diff check clean. Production unchanged since initial reviewed8c509a7e. Prepared only: cumulative gates remain required; pipeline optional User/remaining model forwarding/OGM boot removal separate.",
+      "verification": [
+        "42unique focused checks across overlapping runs,19live across main18+targetedreport1,TypeScript/lint passed. Generated mention versus raw-driver fallback and independent optional guards preserved. No removal credit before integration."
+      ]
+    }
+  ]
 }

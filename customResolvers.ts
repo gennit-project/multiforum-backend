@@ -25,12 +25,14 @@ export default function (driver: Driver) {
     resolvers,
     ogm: deps.ogm,
     pipelineWatchdogModels: {
+      driver,
       PluginRun: deps.PluginRun,
       PluginPipelineRun: deps.PluginPipelineRun,
       DownloadableFile: deps.DownloadableFile,
       User: deps.User,
     },
     pipelineCampaignModels: {
+      driver,
       DownloadableFile: deps.DownloadableFile,
       Plugin: deps.Plugin,
       PluginVersion: deps.PluginVersion,

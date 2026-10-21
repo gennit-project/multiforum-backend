@@ -1,3 +1,4 @@
+import type { Driver } from "neo4j-driver";
 import type {
   DownloadableFile,
   DownloadableFileModel,
@@ -30,6 +31,7 @@ type CampaignAttempt = Pick<
 >;
 
 export type CampaignModels = Models & {
+  driver?: Driver;
   DownloadableFile: DownloadableFileModel;
   PluginPipelineCampaign: PluginPipelineCampaignModel;
   PluginPipelineRun: PluginPipelineRunModel;
@@ -162,6 +164,7 @@ export const runPipelineCampaign = async ({
   for (const file of batch) {
     await trigger(
       {
+        driver: models.driver,
         downloadableFileId: file.id,
         event: policy.event,
         models,

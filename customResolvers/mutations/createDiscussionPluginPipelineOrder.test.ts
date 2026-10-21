@@ -1,3 +1,4 @@
+import type { Driver } from "neo4j-driver";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
@@ -9,13 +10,16 @@ import { triggerCreatedDownloadPipelines } from "./createDiscussionWithChannelCo
 
 test("runs server download security before channel automation", async () => {
   const calls: string[] = [];
+  const driver = {} as Driver;
   const triggerDownload: typeof triggerPluginRunsForDownloadableFile =
-    async () => {
+    async args => {
+      assert.equal(args.driver, driver);
       calls.push("server");
       return [];
     };
   const triggerChannel: typeof triggerChannelPluginPipeline =
-    async ({ channelUniqueName }) => {
+    async ({ channelUniqueName, driver: forwardedDriver }) => {
+      assert.equal(forwardedDriver, driver);
       calls.push(`channel:${channelUniqueName}`);
       return [];
     };
@@ -29,6 +33,7 @@ test("runs server download security before channel automation", async () => {
   };
 
   await triggerCreatedDownloadPipelines({
+    driver,
     discussionId: "discussion-1",
     downloadableFileId: "file-1",
     channelConnections: ["cats", "mods"],
