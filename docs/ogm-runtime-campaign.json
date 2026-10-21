@@ -617,29 +617,31 @@
           "scope": "Issue activity and history forwarding",
           "baselineCrudSites": 2,
           "modelAcquisitionsRemoved": 3,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review: 12 non-context source/test blobs exactly match approved original tree9ed58be; context adaptation only adds optional IssueActivityRepository field/import. Fixed production default Issue selection, committed-write/projection-error behavior, sequential per-ID swallowed errors, optional notification behavior and history attribution retained. Two CRUD and three acquisitions removed; totals333/71 consistent. Exact snapshot /tmp/runtime-slice19a-exact-live.log reports25 passed, zero failed/skipped/cancelled. Prior focused/static evidence reused; cumulative diff check passed. Mandatory hooks remain required.",
           "preparedPatch": "ogm-slice19a.patch",
           "preparedPatchSha256": "1f8147f30b8724e7f0539abba3bc9fec39a968e459d62a1cd44be1231a512bf8",
           "preparedBase": "0ed821a plus18a/18b",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 4815c5815ad5860233b890eca56a3c1a242d3eb0: lint, TypeScript and2118 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice19a-exact-live.log"
           ],
-          "commit": null
+          "commit": "b7237c16e166f4b34f023f66efae29b07a891ab0"
         },
         {
           "id": "19b",
           "scope": "Issue delete/edit middleware",
           "baselineCrudSites": 5,
           "modelAcquisitionsRemoved": 0,
-          "status": "reviewed; integration pending",
-          "review": "plugin_status",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against b7237c1: four non-context source/test blobs exactly match independently approved original tree9341421; context adaptation only adds optional IssueActivityMiddlewareRepository import/field. Five CRUD sites removed, zero acquisitions: optional model capability guards retained. Named generated operations preserve author union/filter selections, full Issue default closure projection, first-error behavior and middleware/delete/closure/activity/notification ordering. Prior 20 focused units and static evidence reused. Exact cumulative snapshot live log /tmp/runtime-slice19b-exact-live.log reports7 passed, zero failed/skipped/cancelled; diff check clean. Ledger totals328 CRUD/71 acquisitions consistent; queued33a manifest/hash recorded without removal credit. Mandatory cumulative hooks remain required.",
           "preparedPatch": "ogm-slice19b.patch",
           "preparedPatchSha256": "a7c772dafe4074ea4db32efd6a9c99b904a535d1591551f97116ed80b5be1219",
           "preparedBase": "0ed821a plus18a/18b/19a",
           "verification": [
-            "20 independent units;7 live;tsc/lint passed in isolated worktree; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "19c",
@@ -1156,10 +1158,25 @@
       "baselineCrudSites": 19,
       "dependencies": "32; external transaction/event gate",
       "acceptance": "Three commits: create 2/update 9/delete 8; recurrence scope and independent deletes",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "33a",
+          "scope": "Event series creation",
+          "baselineCrudSites": 2,
+          "status": "reviewed; integration pending",
+          "review": "scratchpad_review: final exacttree/hash approved after numericfixture finding resolved",
+          "preparedPatch": "ogm-slice33a.patch",
+          "preparedPatchSha256": "367867a3f6beacbc3e9745f67c0479e02d4598985c3b34995972228a64f3dd40",
+          "preparedBaseTree": "939e53e6f5b8e8e921b08508dbb1519979c12748",
+          "verification": [
+            "Treeb73c53b672145c0551ebd36e179b4a5d7d8d82eb:10focused,4newlive,6existinglive,types/lint passed; cumulativegates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "34",
@@ -1545,9 +1562,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 333,
+  "remainingRuntimeCrudSites": 328,
   "remainingModelAcquisitionsIncludingOptional": 71,
-  "remainingRuntimeCrudFiles": 69,
+  "remainingRuntimeCrudFiles": 68,
   "foundations": [
     {
       "id": "F01",
@@ -1588,7 +1605,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "19a"
+      "19b"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

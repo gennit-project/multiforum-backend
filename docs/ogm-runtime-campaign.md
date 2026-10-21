@@ -57,7 +57,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | complete |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | complete |
 | 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | complete |
-| 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | pending |
+| 19 Issue activity/lock | 11 | 18; 05–06 | Actor/activity references, lock transitions and notification order | partial; see subdivisions |
 | 20 Comment revisions | 6 | 18–19 | Snapshots, deduplication, authors, revision refs and ageGateTouchedAt | pending |
 | 21 Discussion revisions | 12 | 18–19 | Title/body/no-op updates, recent-version dedupe and revision refs | pending |
 | 22 Event revisions | 9 | 18–19 | Event-specific snapshots/defaults; no unsupported repository reuse | pending |
@@ -472,3 +472,13 @@ Slice18b committed `128326601c1c9fa45d5fe732ca584d9ffc3d05e6` ([diff](https://gi
 2 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 333 CRUD sites/69 files; 71 acquisitions/15 files; two separate CLI sites.
 
 19a final integration approval: Independent cumulative review: 12 non-context source/test blobs exactly match approved original tree9ed58be; context adaptation only adds optional IssueActivityRepository field/import. Fixed production default Issue selection, committed-write/projection-error behavior, sequential per-ID swallowed errors, optional notification behavior and history attribution retained. Two CRUD and three acquisitions removed; totals333/71 consistent. Exact snapshot /tmp/runtime-slice19a-exact-live.log reports25 passed, zero failed/skipped/cancelled. Prior focused/static evidence reused; cumulative diff check passed. Mandatory hooks remain required.; live parity passed on identical production sources before this documentation-only update.
+
+Slice19a committed `b7237c16e166f4b34f023f66efae29b07a891ab0` ([diff](https://github.com/gennit-project/multiforum-backend/commit/b7237c16e166f4b34f023f66efae29b07a891ab0)), tree `4815c5815ad5860233b890eca56a3c1a242d3eb0`: lint, TypeScript and all2118 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice19a-exact-live.log. Independent approval recorded above.
+
+### Slice 19b — Issue activity middleware
+
+5 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 328 CRUD sites/68 files; 71 acquisitions/15 files; two separate CLI sites.
+
+33a independently reviewed/queued:2CRUD, exactnestedgraph/nativeevent identities and properties checked before safe numeric/clock/ID representation normalization. No productioncorrection; no removalcredit beforeintegration.
+
+19b final integration approval: Independent cumulative review against b7237c1: four non-context source/test blobs exactly match independently approved original tree9341421; context adaptation only adds optional IssueActivityMiddlewareRepository import/field. Five CRUD sites removed, zero acquisitions: optional model capability guards retained. Named generated operations preserve author union/filter selections, full Issue default closure projection, first-error behavior and middleware/delete/closure/activity/notification ordering. Prior 20 focused units and static evidence reused. Exact cumulative snapshot live log /tmp/runtime-slice19b-exact-live.log reports7 passed, zero failed/skipped/cancelled; diff check clean. Ledger totals328 CRUD/71 acquisitions consistent; queued33a manifest/hash recorded without removal credit. Mandatory cumulative hooks remain required.; live parity passed on identical production sources before this documentation-only update.
