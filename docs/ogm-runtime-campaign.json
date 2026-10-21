@@ -1986,8 +1986,8 @@
       "baselineCrudSites": 14,
       "dependencies": "40\u201344",
       "acceptance": "Progress, cancellation, aggregation and restart behavior",
-      "status": "partial; see subdivisions",
-      "commit": null,
+      "status": "complete",
+      "commit": "93a918117b610a51b887a3160d2c0084d87154f7",
       "review": null,
       "verification": [],
       "subdivisions": [
@@ -2051,7 +2051,7 @@
           "id": "45c",
           "scope": "Campaign creation and status controls",
           "baselineCrudSites": 4,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "ec39cecdf506c45038313444c63e861ca0cc4de1",
             "tree": "23d5432b80141f842d09d0305bedfbfe6cdd981f",
@@ -2068,9 +2068,10 @@
           },
           "review": "Five resolver/repository/test blobs identical to corrected approved23d5432b; shared mutation factory delta exactly reproduces two configured-driver additions while preserving prior integrations. Exact isolated7/7live passed without skips/cancellations, including generated IDs/default projection committed failures, validation and anonymous preview context. Original create auth/limits-before-repository, separate reads/writes and pause/resume behavior preserved. Diff check clean; ledger9CRUD/50acquisitions/0CLI consistent. Prior3focused/static evidence reused.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree f966c36134693ba6f5b4a3e340e1b3733ddb25a0: lint, TypeScript and2457 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice45c-exact-live.log"
           ],
-          "commit": null
+          "commit": "93a918117b610a51b887a3160d2c0084d87154f7"
         }
       ]
     },
@@ -2083,11 +2084,11 @@
       "baselineCrudSites": 9,
       "dependencies": "31\u201333 and other reused creation helpers",
       "acceptance": "Access restrictions, fixture relationships and composed responses",
-      "status": "reviewed; integration pending",
+      "status": "reviewed; cumulative gates pending",
       "commit": null,
-      "review": "Independent five-path review: eight finite create operations and fixed default-role connection preserve original inputs, separate commits, ordering, unused response evaluation, session close/error wrapper and owner linking. All eight selection strings byte-identical to actual production OGM capture; capture initializer inspected. Four focused tests pass; eleven unchanged live cases plus corrected relationship case1/1 pass, including raw native identity/endpoints, ordered events, positive required-owner fixtures/cardinality rollback, coercion committed prefix and postcommit projection error. Graph edge-type comparison alone sorted; native event order retained. TypeScript75053 and final lint18816 zero confirmed. Refreeze changes only four whitespace lines, diff check clean; SHA256 e7455b043e01eedf1996d2cf609d16bd2cb2ce3c2181de1a59c1939dde3675f5 verified. Prepared9CRUD/0acquisitions, no integration credit; cumulative integration must preserve31 seed helper adaptations.",
+      "review": "Four repository/test blobs exactly match approved0952b666; seed-helper added/removed lines exactly match independently reviewed integrated46 patch. Existing31 discussion/event repository construction and context forwarding retained. Exact isolated12/12live passed without skips/cancellations; defaults, ordered writes/events, owner cardinality rollback and committed projection failures remain covered. Prior4focused/static/default-capture evidence reused. Diff check clean. Ledger0CRUD/50acquisitions/0CLI correctly leaves runtimeRemovalComplete false pending wiring and mandatory gates.",
       "verification": [
-        "4focused,12live across original11passing and correctedrelationshipcase; lint/TypeScript passed. Nine CRUD sites, zero removal credit before integration. Exact generated defaults, owner cardinality rejection, native events and partial-commit failure behavior preserved."
+        "Original focused/live/static gates passed; final cumulative checks pending"
       ],
       "preparedEvidence": {
         "base": "23d5432b80141f842d09d0305bedfbfe6cdd981f",
@@ -2101,12 +2102,19 @@
           "tests/fixtures/seedDataRepositoryStub.ts",
           "tests/integration/seedDataRepository.test.ts"
         ]
-      }
+      },
+      "integrationAdaptation": {
+        "id": "46",
+        "patch": "/tmp/ogm-integrated-46.patch",
+        "sha256": "cf7a12577643f1403461e7d1652de13ef02a1d6849abd08a4820d005337edcb7",
+        "base": "4196837c80870af305ad6e9b1b3268d932b2e316"
+      },
+      "integrationAdaptationReview": "All four adapted patch hashes verified. Added/removed lines are identical to original approved40a/40b/43/46 patches; differences only hunk locations/context/indexes.40a/40b/43 preserve38a BotThread repository import and call,38b/c identity/comment integration and39 bot report call.46 retains31 discussion/event repository construction and calls, removes only seed models already covered by original46. Final tree diff check clean. Rehearsal focused20 passed zero failures/skips/cancellations; TypeScript84625 exit0 parent-confirmed. No duplicate tests run. Each cumulative exact live and mandatory hook gate remains required."
     }
   ],
-  "remainingRuntimeCrudSites": 9,
+  "remainingRuntimeCrudSites": 0,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 1,
+  "remainingRuntimeCrudFiles": 0,
   "foundations": [
     {
       "id": "F01",
@@ -2168,11 +2176,12 @@
       "41",
       "42",
       "43",
-      "44"
+      "44",
+      "45"
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "45c"
+      "46"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

@@ -83,7 +83,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 42 Pipeline channel execution | 13 | 40; 44 notifications; 38 | Channel applicability, bots, statuses and execution failure ordering | complete |
 | 43 Pipeline comment execution | 11 | 40; 44 notifications; 38 | Comment applicability, recursion guards, middleware wiring and ordering | complete |
 | 44 Pipeline control/notifications | 18 | Notifications before 40–43; controls after 41–43 and 34 | Notifications 4 first, controls 14 later; conditional claim failure windows and retry eligibility | complete |
-| 45 Pipeline campaigns | 14 | 40–44 | Progress, cancellation, aggregation and restart behavior | partial; see subdivisions |
+| 45 Pipeline campaigns | 14 | 40–44 | Progress, cancellation, aggregation and restart behavior | complete |
 | 46 Test seeding endpoint | 9 | 31–33 and other reused creation helpers | Access restrictions, fixture relationships and composed responses | pending |
 
 ## Runtime closure slices (after domain consumers)
@@ -1014,3 +1014,13 @@ Slice45b committed `6b98b8640a6c1bb631419b7e9cae1d0bb8fe6a14` ([diff](https://gi
 Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
 
 45c final integration approval: Five resolver/repository/test blobs identical to corrected approved23d5432b; shared mutation factory delta exactly reproduces two configured-driver additions while preserving prior integrations. Exact isolated7/7live passed without skips/cancellations, including generated IDs/default projection committed failures, validation and anonymous preview context. Original create auth/limits-before-repository, separate reads/writes and pause/resume behavior preserved. Diff check clean; ledger9CRUD/50acquisitions/0CLI consistent. Prior3focused/static evidence reused.; live parity passed on identical production sources before this documentation-only update.
+
+Slice45c committed `93a918117b610a51b887a3160d2c0084d87154f7` ([diff](https://github.com/gennit-project/multiforum-backend/commit/93a918117b610a51b887a3160d2c0084d87154f7)), tree `f966c36134693ba6f5b4a3e340e1b3733ddb25a0`: lint, TypeScript and all2457 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice45c-exact-live.log. Independent approval recorded above.
+
+### Slice 46 — Seed data operations
+
+9 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 0 CRUD sites/0 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+46 final integration approval: Four repository/test blobs exactly match approved0952b666; seed-helper added/removed lines exactly match independently reviewed integrated46 patch. Existing31 discussion/event repository construction and context forwarding retained. Exact isolated12/12live passed without skips/cancellations; defaults, ordered writes/events, owner cardinality rollback and committed projection failures remain covered. Prior4focused/static/default-capture evidence reused. Diff check clean. Ledger0CRUD/50acquisitions/0CLI correctly leaves runtimeRemovalComplete false pending wiring and mandatory gates.; live parity passed on identical production sources before this documentation-only update.
