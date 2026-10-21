@@ -1,5 +1,6 @@
+import type { IssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import type { Driver } from "neo4j-driver";
-import type { IssueModel, ModerationActionCreateInput, IssueWhere } from "../ogm_types.js";
+import type { ModerationActionCreateInput, IssueWhere } from "../ogm_types.js";
 import type { GraphQLContext } from "../types/context.js";
 
 type ActivityAttribution = {
@@ -14,7 +15,7 @@ type RelatedIssueLookup = {
 };
 
 type IssueActivityInput = {
-  IssueModel: IssueModel;
+  issueActivityRepository: IssueActivityRepository;
   driver?: Driver;
   issueIds: string[];
   actionDescription: string;
@@ -37,7 +38,7 @@ export const getAttributionFromContext = (context: GraphQLContext): ActivityAttr
 };
 
 export const getIssueIdsForRelated = async (
-  IssueModel: IssueModel,
+  issueActivityRepository: IssueActivityRepository,
   related: RelatedIssueLookup
 ): Promise<string[]> => {
   try {
@@ -56,12 +57,7 @@ export const getIssueIdsForRelated = async (
       return [];
     }
 
-    const issues = await IssueModel.find({
-      where,
-      selectionSet: `{
-        id
-      }`,
-    });
+    const issues = await issueActivityRepository.findRelatedIssueIds(where);
 
     return issues
       .map((issue: { id?: string }) => issue.id)
@@ -76,7 +72,7 @@ export const createIssueActivityFeedItems = async (
   input: IssueActivityInput
 ) => {
   const {
-    IssueModel,
+    issueActivityRepository,
     driver,
     issueIds,
     actionDescription,
@@ -147,20 +143,7 @@ export const createIssueActivityFeedItems = async (
 
   for (const issueId of issueIds) {
     try {
-      await IssueModel.update({
-        where: { id: issueId },
-        update: {
-          ActivityFeed: [
-            {
-              create: [
-                {
-                  node: activityNode,
-                },
-              ],
-            },
-          ],
-        },
-      });
+      await issueActivityRepository.appendActivity(issueId, activityNode);
 
       if (driver) {
         await notifyIssueSubscribers({

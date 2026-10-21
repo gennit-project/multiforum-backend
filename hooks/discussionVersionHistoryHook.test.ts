@@ -37,7 +37,7 @@ function makeContext(opts: { issues?: unknown[]; users?: unknown[] } = {}) {
     },
   };
   const driver = { session: () => ({ run: async () => ({ records: [] }), close: async () => {} }) };
-  const context: any = { notificationWriter: {createForUser: async () => {ops.push("notification.create"); return true;}}, ogm, driver, user: { username: "editor", data: {} } };
+  const context: any = { issueActivityRepository: { findRelatedIssueIds: async () => opts.issues ?? [], appendActivity: async () => { ops.push("Issue.update"); } }, notificationWriter: {createForUser: async () => {ops.push("notification.create"); return true;}}, ogm, driver, user: { username: "editor", data: {} } };
   return { context, ops };
 }
 

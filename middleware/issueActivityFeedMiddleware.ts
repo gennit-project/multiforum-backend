@@ -1,3 +1,4 @@
+import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
@@ -182,7 +183,7 @@ const recordDeleteClosure = async (input: {
     return;
   }
 
-  const issueIds = await getIssueIdsForRelated(IssueModel, issueLookup);
+  const issueIds = await getIssueIdsForRelated(context.issueActivityRepository ?? createIssueActivityRepository(context.driver), issueLookup);
   if (!issueIds.length) {
     return;
   }
@@ -210,7 +211,7 @@ const recordDeleteClosure = async (input: {
     }
 
     await createIssueActivityFeedItems({
-      IssueModel,
+      issueActivityRepository: context.issueActivityRepository ?? createIssueActivityRepository(context.driver),
       issueIds: [issueId],
       actionDescription:
         'the issue was closed because the reported content was deleted',
@@ -223,7 +224,7 @@ const recordDeleteClosure = async (input: {
       : actionDescription;
 
     await createIssueActivityFeedItems({
-      IssueModel,
+      issueActivityRepository: context.issueActivityRepository ?? createIssueActivityRepository(context.driver),
       driver: context?.driver,
       issueIds: [issueId],
       actionDescription: actionText,
@@ -249,14 +250,14 @@ const recordEditActivity = async (input: {
     return;
   }
 
-  const issueIds = await getIssueIdsForRelated(IssueModel, issueLookup);
+  const issueIds = await getIssueIdsForRelated(context.issueActivityRepository ?? createIssueActivityRepository(context.driver), issueLookup);
   if (!issueIds.length) {
     return;
   }
 
   const attribution = getAttributionFromContext(context);
   await createIssueActivityFeedItems({
-      IssueModel,
+      issueActivityRepository: context.issueActivityRepository ?? createIssueActivityRepository(context.driver),
       driver: context?.driver,
       issueIds,
       actionDescription,

@@ -6,7 +6,7 @@ import {
   getIssueIdsForRelated,
 } from '../hooks/issueActivityFeedHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
-import type { IssueModel } from '../ogm_types.js';
+import type { IssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 
 test('getAttributionFromContext returns username and mod profile name', () => {
   const context = {
@@ -28,13 +28,13 @@ test('getAttributionFromContext returns username and mod profile name', () => {
 test('getIssueIdsForRelated builds where clause and returns ids', async () => {
   let lastWhere: Record<string, string> | null = null;
   const IssueModel = {
-    find: async ({ where }: { where: Record<string, string> }) => {
+    findRelatedIssueIds: async (where: Record<string, string>) => {
       lastWhere = where;
       return [{ id: 'issue-1' }, { id: 'issue-2' }];
     },
   };
 
-  const issueIds = await getIssueIdsForRelated(IssueModel as unknown as IssueModel, {
+  const issueIds = await getIssueIdsForRelated(IssueModel as unknown as IssueActivityRepository, {
     commentId: 'comment-123',
   });
 
@@ -45,13 +45,13 @@ test('getIssueIdsForRelated builds where clause and returns ids', async () => {
 test('createIssueActivityFeedItems connects revision and comment when provided', async () => {
   const updateCalls: Array<Record<string, any>> = [];
   const IssueModel = {
-    update: async (input: Record<string, any>) => {
-      updateCalls.push(input);
+    appendActivity: async (id: string, node: any) => {
+      updateCalls.push({where: {id}, update: {ActivityFeed: [{create: [{node}]}]}});
     },
   };
 
   await createIssueActivityFeedItems({
-    IssueModel: IssueModel as unknown as IssueModel,
+    issueActivityRepository: IssueModel as unknown as IssueActivityRepository,
     issueIds: ['issue-1'],
     actionDescription: 'deleted the comment',
     actionType: 'delete',
@@ -68,4 +68,47 @@ test('createIssueActivityFeedItems connects revision and comment when provided',
   assert.equal(activityNode.User.connect.where.node.username, 'alice');
   assert.equal(activityNode.Revision.connect.where.node.id, 'revision-1');
   assert.equal(activityNode.Comment.connect.where.node.id, 'comment-1');
+});
+
+test('related reads combine every legacy scalar and retain duplicate ids', async () => {
+  const calls: unknown[] = [];
+  const repository: IssueActivityRepository = { appendActivity: async () => {}, findRelatedIssueIds: async where => { calls.push(where); return [{id:'a'}, {}, {id:'a'}]; } };
+  assert.deepEqual(await getIssueIdsForRelated(repository, {}), []);
+  assert.deepEqual(calls, []);
+  assert.deepEqual(await getIssueIdsForRelated(repository, {discussionId:'d',commentId:'c',eventId:'e'}), ['a','a']);
+  assert.deepEqual(calls, [{relatedDiscussionId:'d',relatedCommentId:'c',relatedEventId:'e'}]);
+});
+test('related lookup failure is swallowed', async () => {
+  assert.deepEqual(await getIssueIdsForRelated({findRelatedIssueIds:async()=>{throw Error('read');},appendActivity:async()=>{}},{commentId:'c'}), []);
+});
+test('activity keeps moderator priority, duplicate ids and sequential continuation after failure', async () => {
+  const calls: string[] = [];
+  const repository: IssueActivityRepository = {findRelatedIssueIds:async()=>[],appendActivity:async(id,node)=>{
+    calls.push(id); assert.equal(node.User, undefined); assert.equal(node.ModerationProfile?.connect?.where?.node?.displayName, 'mod');
+    await Promise.resolve(); if(id==='bad') throw Error('write'); calls.push(`done:${id}`);
+  }};
+  await createIssueActivityFeedItems({issueActivityRepository:repository,issueIds:['a','bad','a'],attribution:{username:'u',modProfileName:'mod'},actionDescription:'edited'});
+  assert.deepEqual(calls,['a','done:a','bad','a','done:a']);
+});
+test('empty ids and absent attribution do not write', async () => {
+  const repository: IssueActivityRepository = {findRelatedIssueIds:async()=>[],appendActivity:async()=>{assert.fail('unexpected write');}};
+  await createIssueActivityFeedItems({issueActivityRepository:repository,issueIds:[],attribution:{username:'u'},actionDescription:'x'});
+  await createIssueActivityFeedItems({issueActivityRepository:repository,issueIds:['a'],attribution:{},actionDescription:'x'});
+});
+
+test('omitted driver suppresses notification and false/throw results retain sequential processing', async () => {
+  const {buildSchema}=await import('graphql');
+  const {registerGeneratedSchema}=await import('../services/persistence/generatedSchemaOperations.js');
+  const driver={} as import('neo4j-driver').Driver;
+  const schema=buildSchema(`input IssueWhere {id: ID} type Email {address:String} type User {username:String notifyOnSubscribedIssueUpdates:Boolean Email:Email} type Issue {id:ID issueNumber:Int title:String channelUniqueName:String SubscribedToNotifications:[User]} type Query {issues(where:IssueWhere):[Issue]}`);
+  const calls:string[]=[];
+  schema.getQueryType()!.getFields().issues.resolve=(_source,args)=>{calls.push(`notify:${args.where.id}`);if(args.where.id==='throw')throw Error('notification failed');return [];};
+  registerGeneratedSchema(driver,schema);
+  const repository:IssueActivityRepository={findRelatedIssueIds:async()=>[],appendActivity:async(id)=>{calls.push(`write:${id}`);}};
+  const base={issueActivityRepository:repository,attribution:{username:'u'},actionDescription:'edited'};
+  await createIssueActivityFeedItems({...base,issueIds:['no-driver']});
+  assert.deepEqual(calls,['write:no-driver']);
+  calls.length=0;
+  await createIssueActivityFeedItems({...base,driver,issueIds:['false','throw','after']});
+  assert.deepEqual(calls,['write:false','notify:false','write:throw','notify:throw','write:after','notify:after']);
 });

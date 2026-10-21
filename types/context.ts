@@ -1,3 +1,4 @@
+import type { IssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import type { IssueTargetRepository } from "../services/persistence/issueTargetRepository.js";
 import type { ServerModeratorRepository } from "../services/persistence/serverModeratorRepository.js";
 import type { ServerAdminRepository } from "../services/persistence/serverAdminRepository.js";
@@ -89,6 +90,7 @@ export type GraphQLRequest = Request & {
  * possibly-absent (`req?.headers`, `if (context.req)`).
  */
 export type GraphQLContext = {
+  issueActivityRepository?: IssueActivityRepository;
   issueTargetRepository?: IssueTargetRepository;
   wikiGuardRepository?: WikiGuardRepository;
   serverModeratorRepository?: ServerModeratorRepository;

@@ -1,3 +1,4 @@
+import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 
 import {
   createIssueActivityFeedItems,
@@ -75,7 +76,7 @@ export const discussionVersionHistoryHandler = async ({
     const DiscussionModel = ogm.model('Discussion');
     const TextVersionModel = ogm.model('TextVersion');
     const UserModel = ogm.model('User');
-    const IssueModel = ogm.model('Issue');
+    const issueActivityRepository = context.issueActivityRepository ?? createIssueActivityRepository(context.driver);
     
     // Fetch the current discussion to get current values before update
     let discussion: DiscussionSnapshot | null | undefined = discussionSnapshot;
@@ -182,7 +183,7 @@ export const discussionVersionHistoryHandler = async ({
       return;
     }
 
-    const issueIds = await getIssueIdsForRelated(IssueModel, {
+    const issueIds = await getIssueIdsForRelated(issueActivityRepository, {
       discussionId,
     });
     if (!issueIds.length) {
@@ -192,7 +193,7 @@ export const discussionVersionHistoryHandler = async ({
     const attribution = getAttributionFromContext(context);
     for (const revision of createdRevisionIds) {
       await createIssueActivityFeedItems({
-        IssueModel,
+        issueActivityRepository,
         driver: context?.driver,
         issueIds,
         actionDescription:

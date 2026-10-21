@@ -1,3 +1,4 @@
+import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 
 import {
   createIssueActivityFeedItems,
@@ -75,7 +76,7 @@ export const eventVersionHistoryHandler = async ({
     const EventModel = ogm.model('Event');
     const TextVersionModel = ogm.model('TextVersion');
     const UserModel = ogm.model('User');
-    const IssueModel = ogm.model('Issue');
+    const issueActivityRepository = context.issueActivityRepository ?? createIssueActivityRepository(context.driver);
 
     let event: EventSnapshot | null | undefined = eventSnapshot;
 
@@ -180,7 +181,7 @@ export const eventVersionHistoryHandler = async ({
       return;
     }
 
-    const issueIds = await getIssueIdsForRelated(IssueModel, {
+    const issueIds = await getIssueIdsForRelated(issueActivityRepository, {
       eventId,
     });
     if (!issueIds.length) {
@@ -190,7 +191,7 @@ export const eventVersionHistoryHandler = async ({
     const attribution = getAttributionFromContext(context);
     for (const revision of createdRevisionIds) {
       await createIssueActivityFeedItems({
-        IssueModel,
+        issueActivityRepository,
         driver: context?.driver,
         issueIds,
         actionDescription:

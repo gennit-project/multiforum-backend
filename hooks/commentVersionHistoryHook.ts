@@ -1,3 +1,4 @@
+import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import {
   createIssueActivityFeedItems,
   getAttributionFromContext,
@@ -59,7 +60,7 @@ export const commentVersionHistoryHandler = async ({
     const CommentModel = ogm.model('Comment');
     const TextVersionModel = ogm.model('TextVersion');
     const UserModel = ogm.model('User');
-    const IssueModel = ogm.model('Issue');
+    const issueActivityRepository = context.issueActivityRepository ?? createIssueActivityRepository(context.driver);
     
     let comment: CommentSnapshot | null | undefined = commentSnapshot;
 
@@ -169,7 +170,7 @@ export const commentVersionHistoryHandler = async ({
         }
       }
 
-      const issueIds = await getIssueIdsForRelated(IssueModel, {
+      const issueIds = await getIssueIdsForRelated(issueActivityRepository, {
         commentId,
       });
       if (!issueIds.length) {
@@ -178,7 +179,7 @@ export const commentVersionHistoryHandler = async ({
 
       const attribution = getAttributionFromContext(context);
       await createIssueActivityFeedItems({
-        IssueModel,
+        issueActivityRepository,
         driver: context?.driver,
         issueIds,
         actionDescription: 'edited the comment',

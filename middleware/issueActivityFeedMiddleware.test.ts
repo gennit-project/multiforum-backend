@@ -20,7 +20,7 @@ function makeCtx() {
       };
     },
   };
-  return { ogm, driver: {}, user: { username: "alice" } } as any;
+  return { issueActivityRepository: {findRelatedIssueIds: async () => [], appendActivity: async () => {}}, ogm, driver: {}, user: { username: "alice" } } as any;
 }
 
 // Resolver returning a fixed value, counting invocations.
