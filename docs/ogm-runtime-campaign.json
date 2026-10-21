@@ -1555,29 +1555,31 @@
           "id": "38b",
           "scope": "Bot identity/profile synchronization",
           "baselineCrudSites": 7,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "review": "Independent cumulative review against31e9cc74: nine nonshared executable/test blobs match prepared ec61b967 exactly; reused original independent19focused/author47focused/static evidence. Three adapted files preserve37c channel pipeline repository and required configured driver,38a parent-thread repository and all existing context ports; add only identity port forwarding/removal of unused model forwarding. Exact isolated15live passed zero failures/skips/cancellations. Identity creation/reactivation stale response, sequential profile reconciliation, missing-channel committed prefix and native event/default projection parity retained. Diff check clean. Ledger102 runtime CRUD/53acquisitions/zero structural/zeroCLI correct;45b queued without credit. Mandatory hooks remain parent-owned.",
           "preparedPatch": "ogm-slice38b.patch",
           "preparedPatchSha256": "87111cf26777e0944e312a6d13509a2518e59b6fd963fd65515c3c6518cba2cb",
           "preparedBase": "fa87561",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree c465241d418ded599ff05e5ed144d7c1f24ee361: lint, TypeScript and2438 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice38b-exact-live.log"
           ],
           "integrationNote": "Preserve overlapping37c driver/repository edits and38a parent-thread wiring. Initial5livefixture failures corrected only false-default assumptions/internal event envelope IDs; durable properties/graph/order assertions retained.",
-          "commit": null
+          "commit": "09233b6ea062d4d74263461742580a4bfb70ba67"
         },
         {
           "id": "38c",
           "scope": "Bot comment creation",
           "baselineCrudSites": 1,
-          "status": "reviewed; integration pending",
-          "review": "integration_recovery",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent cumulative review against09233b6e. Five executable/test blobs identical to approvedfc30e825; original independent7focused,29authorfocused,16trigger and static evidence reused. Only adapted executable file removes unused Comment forwarding while retaining38a parent-thread and38b identity repository wiring. Exact isolated12live passed zero failures/skips/cancellations: full default response/connections/native events, pre-identity missing-parent rejection, committed projection failure and existing bot service contracts. SHA2567121dbab1bd887cb044bae14d6f0e50dca447a7aa435f3452db59ef1e5b59ade verified; diff check clean. Ledger101runtimeCRUD/53acquisitions and queued45c without credit consistent. Mandatory hooks parent-owned.",
           "preparedPatch": "ogm-slice38c.patch",
           "preparedPatchSha256": "7121dbab1bd887cb044bae14d6f0e50dca447a7aa435f3452db59ef1e5b59ade",
           "preparedBase": "ec61b967",
           "verification": [
-            "Tree fc30e825f93dba9a9d991f615f479d502206b8b5: 7 independent focused,12 live; TypeScript passed; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "38d",
@@ -1985,6 +1987,30 @@
           "verification": [
             "4focused,5live,lint/TypeScript passed. Exact status filters, destination projections, ordered resolution, orphan exclusion and native read-event absence preserved. Zero credit before integration."
           ]
+        },
+        {
+          "id": "45c",
+          "scope": "Campaign creation and status controls",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "preparedEvidence": {
+            "base": "ec39cecdf506c45038313444c63e861ca0cc4de1",
+            "tree": "23d5432b80141f842d09d0305bedfbfe6cdd981f",
+            "sha256": "fee5d1e5156432883f39f0f6d1de737ba86e5eb2764240fd120fbe8a29528ba9",
+            "patch": "/tmp/ogm-slice45c.patch",
+            "files": [
+              "services/persistence/campaignControlRepository.ts",
+              "customResolvers/mutations/pluginPipelineCampaigns.ts",
+              "customResolvers/mutationResolvers.ts",
+              "customResolvers/mutations/pluginPipelineCampaigns.test.ts",
+              "tests/fixtures/campaignControlRepositoryStub.ts",
+              "tests/integration/campaignControlRepository.test.ts"
+            ]
+          },
+          "review": "Reviewed four named control operations and auth/limits/read-write ordering, complete campaign default projection and configured/context driver forwarding. Corrected fixture only removes unsupported create input.id, uses returned/persisted generated IDs and retains raw native identity and ordered event/graph checks. Seven final isolated live tests and three focused tests pass; final types/lint exit zero confirmed by implementer. No production changes in correction. Patch SHA256 fee5d1e5156432883f39f0f6d1de737ba86e5eb2764240fd120fbe8a29528ba9.",
+          "verification": [
+            "3focused,7live,lint/TypeScript passed. Create authentication and limits, default projection errors after committed writes, active-state filters and pause/resume transitions preserved. Zero credit before integration."
+          ]
         }
       ]
     },
@@ -2003,9 +2029,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 102,
+  "remainingRuntimeCrudSites": 101,
   "remainingModelAcquisitionsIncludingOptional": 53,
-  "remainingRuntimeCrudFiles": 17,
+  "remainingRuntimeCrudFiles": 16,
   "foundations": [
     {
       "id": "F01",
@@ -2064,7 +2090,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "38b"
+      "38c"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {

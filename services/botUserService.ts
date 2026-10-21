@@ -1,5 +1,6 @@
+import { createBotCommentRepository, type BotCommentRepository } from './persistence/botCommentRepository.js'
 import { createBotIdentityRepository, type BotIdentityRepository } from './persistence/botIdentityRepository.js'
-import type { CommentCreateInput, CommentModel, UserCreateInput } from '../ogm_types.js'
+import type { CommentCreateInput, UserCreateInput } from '../ogm_types.js'
 import type { Driver } from 'neo4j-driver'
 import { assertReplyRelationship } from './replyAncestry.js'
 
@@ -221,7 +222,7 @@ export const syncBotUsersForChannelProfiles = async (input: {
 }
 
 export const createBotComment = async (input: {
-  Comment: CommentModel
+  commentRepository?: BotCommentRepository
   driver?: Driver
   repository?: BotIdentityRepository
   channelUniqueName: string
@@ -234,7 +235,7 @@ export const createBotComment = async (input: {
   eventId?: string | null
 }) => {
   const {
-    Comment,
+    commentRepository,
     repository,
     driver,
     channelUniqueName,
@@ -332,9 +333,7 @@ export const createBotComment = async (input: {
     }
   }
 
-  const created = await Comment.create({
-    input: [commentInput]
-  })
+  const created = await (commentRepository ?? createBotCommentRepository(driver as Driver)).createReply(commentInput)
 
   return created.comments[0]
 }

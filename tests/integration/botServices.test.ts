@@ -157,7 +157,6 @@ test("createBotComment creates a comment authored by the bot, in the channel", a
   await run(`CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })`);
 
   const comment = await createBotComment({
-    Comment: m("Comment"),
     driver: env.driver,
     channelUniqueName: "cats",
     text: "Hello from the bot",
@@ -181,7 +180,6 @@ test("createBotComment validates and creates a reply to an existing comment", as
   `);
 
   const comment = await createBotComment({
-    Comment: m("Comment"),
     driver: env.driver,
     channelUniqueName: "cats",
     text: "Bot reply",
@@ -201,7 +199,6 @@ test("createBotComment rejects a missing reply parent before creating records", 
   await run(`CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })`);
 
   await assert.rejects(createBotComment({
-    Comment: m("Comment"),
     driver: env.driver,
     channelUniqueName: "cats",
     text: "Orphaned bot reply",
@@ -221,8 +218,7 @@ test("createBotComment throws when text is empty", async () => {
   await run(`CREATE (:Channel { uniqueName: 'cats', createdAt: datetime() })`);
   await assert.rejects(
     createBotComment({
-      Comment: m("Comment"),
-      driver: env.driver,
+        driver: env.driver,
       channelUniqueName: "cats",
       text: "",
       botName: "helper",
