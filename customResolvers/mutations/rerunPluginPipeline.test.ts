@@ -1,3 +1,4 @@
+import {pipelineRerunRepositoryStub} from "../../tests/fixtures/pipelineRerunRepositoryStub.js";
 import {pipelineStartRepositoryStub} from "../../tests/fixtures/pipelineStartRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -489,4 +490,4 @@ test("reruns a channel pipeline with channel retry lineage", async () => {
   );
 });
 
-const createRerunPluginPipelineResolver:typeof actualFactory = (input,...args)=>actualFactory({...input,startRepository:pipelineStartRepositoryStub(input)},...args);
+const createRerunPluginPipelineResolver:typeof actualFactory = (input,...args)=>actualFactory({...input,rerunRepository:pipelineRerunRepositoryStub(input),startRepository:pipelineStartRepositoryStub(input)},...args);

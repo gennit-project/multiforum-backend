@@ -1900,7 +1900,7 @@
           "id": "44b",
           "scope": "Pipeline start controls",
           "baselineCrudSites": 6,
-          "status": "reviewed; cumulative gates pending",
+          "status": "complete",
           "preparedEvidence": {
             "base": "f980a0d370b94a12e49214b37070713cad1f2d5c",
             "tree": "88d25c0bc42ad3d958c577c85b40a31e47d45314",
@@ -1918,15 +1918,16 @@
           },
           "review": "Independent cumulative44b against2f37685d. All seven executable/test blobs identical to approved88d25c0b; prior24focused/static reused. Exact isolated5live passed zero failures/skips/cancellations. Six fixed reads retain authentication before context-driver repository, ownership/active-attempt guards, runner driver/owner metadata and committed attempt refetch/missing error; singular Discussion selection failure preserved. Rerun optional start adapter/type only at this slice. Diff check clean;31CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.",
           "verification": [
-            "Original focused/live/static gates passed; final cumulative checks pending"
+            "Original focused/live/static gates passed; final cumulative checks pending",
+            "Exact committed tree 2559f2f981ec24ffc4deb684c13ec945f3fb5d92: lint, TypeScript and2455 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice44b-exact-live.log"
           ],
-          "commit": null
+          "commit": "6bff3a04466e442ae09a361b662978313073c80c"
         },
         {
           "id": "44c",
           "scope": "Pipeline rerun controls",
           "baselineCrudSites": 4,
-          "status": "reviewed; integration pending",
+          "status": "reviewed; cumulative gates pending",
           "preparedEvidence": {
             "base": "88d25c0bc42ad3d958c577c85b40a31e47d45314",
             "tree": "d616d2fe2fd744eb0199fc0bc32aa339f7326ffd",
@@ -1940,10 +1941,11 @@
               "tests/integration/pipelineRerunRepository.test.ts"
             ]
           },
-          "review": "Independent five-path review against approved44b88d25c0b; SHA25680e4a4f0f717dc8fd6dbfcad098d7269759b8276911a031423698b698ae3c912 verified, diff check clean. Four fixed reads retain exact selections/predicates and context.driver, including conditional targetVersion/channel filters and unbounded related attempts. Original read-before-start-auth order retained; status/version/latest checks, timestamp conversion/signed cooldown arithmetic/future exclusion in rate count and retry metadata spread order unchanged by inspection. Start composition/model forwarding untouched. Existing singular Discussion.DownloadableFile error preserved.16focused/9live passed zero failures/skips/cancellations, covering reads/missing rows, six eligibility rejections with no runner calls, and owner retry metadata/driver plus committed attempt refetch; no claim that live tests exhaust future timestamp cases. Existing recorder unit assertions preserved. TypeScript31038/lint44913 exit0 parent-confirmed. Prepared4CRUD/0acquisitions; cumulative integration/hooks pending.",
+          "review": "All five executable/test blobs match independently reviewed d616d2fe; cumulative ledger and shared context preserved, diff check clean. Exact isolated live 9/9 passed without skips. Four finite reads preserve filters, selection, context driver, eligibility/cooldown/rate ordering and existing singular-field failure.",
           "verification": [
-            "16focused,9live,lint/TypeScript passed. Original read-before-start-auth, stale target/latest attempt/cooldown/rate checks and retry metadata forwarding preserved. Known singular-field production error retained. Zero credit before integration."
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "44d",
@@ -2094,9 +2096,9 @@
       }
     }
   ],
-  "remainingRuntimeCrudSites": 31,
+  "remainingRuntimeCrudSites": 27,
   "remainingModelAcquisitionsIncludingOptional": 50,
-  "remainingRuntimeCrudFiles": 6,
+  "remainingRuntimeCrudFiles": 5,
   "foundations": [
     {
       "id": "F01",
@@ -2161,7 +2163,7 @@
     ],
     "runtimeRemovalComplete": false,
     "nextUnblocked": [
-      "44b"
+      "44c"
     ],
     "ciFixtureFix": "Pre-existing suspension cleanup race reproduced on006f625 and a07af6a; independently reviewed test-only cleanup synchronization; final commit evidence in PR",
     "lastGreenCi": {
@@ -2572,7 +2574,7 @@
     {
       "id": "W3c",
       "scope": "Discussion creation and attachment pipeline capabilities",
-      "status": "prepared; review pending",
+      "status": "reviewed; integration pending",
       "baselineCrudSites": 0,
       "acquisitionsRemoved": 0,
       "preparedEvidence": {
@@ -2594,14 +2596,14 @@
         "verification": [
           "43 unique focused cases passed across initial39/43 plus corrected creation16 overlapping run; four new fixtures corrected to supply required channel, no production change",
           "Final TypeScript74930/lint61057 actual0 before test fixture-only channel correction and blank-line cleanup",
-          "live86999 pending /tmp/discussion-pipeline-wiring-live.log"
+          "11 isolated live cases passed, actual exit0; /tmp/discussion-pipeline-wiring-live.log"
         ]
       },
-      "review": "Independent review pending",
+      "review": "Independent eight-path W3c review againstd1039f10. Creation downloadPipelines presence replaces former six-model conjunction; production resolverDeps explicitly enables matching all-model production path and notifications, absent capability still disables lookup/dispatch, seed helper still omits it. Update only replaces prior User truthiness with explicit notification flag. Preserves hasDownload gate, repository/driver, server-before-channel order, catches, transaction/retry/author semantics and deferred361 singular-field failure.43unique focused cases across initial39pass and corrected16 overlapping run; four new fixtures only add required channel.11isolatedlive pass zero failures/skips/cancellations. Static74930/lint61057 passed before fixture-only channel/blank-line correction; no production change afterward. SHA256e32b9d8135de9a2e393fde68150a4d83e2607cabecb68b5e6f872adba3b55190 verified, diff check clean. Prepared only; cumulative gates required.",
       "verification": [
         "43 unique focused cases passed across initial39/43 plus corrected creation16 overlapping run; four new fixtures corrected to supply required channel, no production change",
         "Final TypeScript74930/lint61057 actual0 before test fixture-only channel correction and blank-line cleanup",
-        "live86999 pending /tmp/discussion-pipeline-wiring-live.log"
+        "11 isolated live cases passed, actual exit0; /tmp/discussion-pipeline-wiring-live.log"
       ]
     }
   ],

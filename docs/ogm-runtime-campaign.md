@@ -964,3 +964,13 @@ Slice43 committed `2f37685d11a6603e024dadf616778cf54110b013` ([diff](https://git
 Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
 
 44b final integration approval: Independent cumulative44b against2f37685d. All seven executable/test blobs identical to approved88d25c0b; prior24focused/static reused. Exact isolated5live passed zero failures/skips/cancellations. Six fixed reads retain authentication before context-driver repository, ownership/active-attempt guards, runner driver/owner metadata and committed attempt refetch/missing error; singular Discussion selection failure preserved. Rerun optional start adapter/type only at this slice. Diff check clean;31CRUD/50acquisitions/0CLI ledger accurate. Mandatory hooks parent-owned.; live parity passed on identical production sources before this documentation-only update.
+
+Slice44b committed `6bff3a04466e442ae09a361b662978313073c80c` ([diff](https://github.com/gennit-project/multiforum-backend/commit/6bff3a04466e442ae09a361b662978313073c80c)), tree `2559f2f981ec24ffc4deb684c13ec945f3fb5d92`: lint, TypeScript and all2455 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice44b-exact-live.log. Independent approval recorded above.
+
+### Slice 44c — Pipeline rerun controls
+
+4 baseline CRUD sites removed. Original patch independently reviewed; see recorded slice evidence; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 27 CRUD sites/5 files; 50 acquisitions/6 files; 0 separate CLI CRUD sites.
+
+Runtime wiring preparations recorded with exact trees, patch hashes and per-slice review status in the JSON ledger. No runtime removal credit before cumulative integration.
+
+44c final integration approval: All five executable/test blobs match independently reviewed d616d2fe; cumulative ledger and shared context preserved, diff check clean. Exact isolated live 9/9 passed without skips. Four finite reads preserve filters, selection, context driver, eligibility/cooldown/rate ordering and existing singular-field failure.; live parity passed on identical production sources before this documentation-only update.

@@ -1,3 +1,4 @@
+import {createPipelineRerunRepository, type PipelineRerunRepository} from "../../services/persistence/pipelineRerunRepository.js";
 import type {PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
 import { GraphQLError } from "graphql";
 import type {
@@ -41,7 +42,7 @@ export type RerunPluginPipelineInput = Pick<
   | "PluginRun"
   | "ServerConfig"
   | "ServerSecret"
-> & Partial<Pick<ModelMap, "User">> & { startRepository?: PipelineStartRepository };
+> & Partial<Pick<ModelMap, "User">> & { startRepository?: PipelineStartRepository; rerunRepository?: PipelineRerunRepository };
 
 type AttemptRecord = Pick<
   PluginPipelineRun,
@@ -77,13 +78,9 @@ export const createRerunPluginPipelineResolver = (
     { pipelineRunId }: { pipelineRunId: string },
     context: GraphQLContext
   ) => {
-    const sourceAttempts = (await input.PluginPipelineRun.find({
-      where: { pipelineId: pipelineRunId },
-      selectionSet: `{
-        pipelineId targetId targetType targetVersion eventType scope channelId
-        status trigger createdAt
-      }`,
-    })) as AttemptRecord[];
+    const repository = input.rerunRepository ?? createPipelineRerunRepository(context.driver);
+
+    const sourceAttempts = (await repository.findSourceAttempt(pipelineRunId)) as AttemptRecord[];
     const source = sourceAttempts[0];
     if (!source) {
       throw new GraphQLError("Pipeline attempt not found", {
@@ -98,19 +95,11 @@ export const createRerunPluginPipelineResolver = (
     if (source.targetVersion) {
       let currentTargetVersion: string | null | undefined;
       if (source.targetType === "DownloadableFile") {
-        const files = await input.DownloadableFile.find({
-          where: { id: source.targetId },
-          selectionSet: `{ uploadedAt createdAt }`,
-        });
+        const files = await repository.findFileVersion(source.targetId);
         currentTargetVersion =
           files[0]?.uploadedAt || files[0]?.createdAt || null;
       } else if (source.targetType === "Discussion") {
-        const discussions = await input.Discussion.find({
-          where: { id: source.targetId },
-          selectionSet: `{
-            DownloadableFile { uploadedAt createdAt }
-          }`,
-        });
+        const discussions = await repository.findDiscussionVersion(source.targetId);
         const discussion = discussions[0] as unknown as {
           DownloadableFile?: {
             uploadedAt?: string | null;
@@ -132,8 +121,7 @@ export const createRerunPluginPipelineResolver = (
       }
     }
 
-    const relatedAttempts = (await input.PluginPipelineRun.find({
-      where: {
+    const relatedAttempts = (await repository.findRelatedAttempts({
         targetId: source.targetId,
         targetType: source.targetType,
         ...(source.targetVersion
@@ -142,9 +130,7 @@ export const createRerunPluginPipelineResolver = (
         eventType: source.eventType,
         scope: source.scope,
         ...(source.channelId ? { channelId: source.channelId } : {}),
-      },
-      selectionSet: `{ pipelineId status trigger createdAt }`,
-    })) as AttemptRecord[];
+      })) as AttemptRecord[];
     const currentTime = now();
     const latestAttempt = [...relatedAttempts].sort(
       (left, right) =>
