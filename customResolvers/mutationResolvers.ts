@@ -241,13 +241,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       reactionWriter: createReactionWriter(driver),
     }),
     upvoteComment: upvoteComment({
-      Comment,
-      User,
       driver,
     }),
     undoUpvoteComment: undoUpvoteComment({
-      Comment,
-      User,
       driver,
     }),
     upvoteDiscussionChannel: upvoteDiscussionChannel({

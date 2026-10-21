@@ -53,7 +53,7 @@ Rows track the current campaign state. A slice is complete only with independent
 | 12 Server membership | 13 | 06; write/event contract | Split admin vs moderator; repeat acceptance, partial failures and events | complete |
 | 13 Reactions/sticky | 6 | Write/event contract | Actor checks, repeated reactions/removals and sticky order | complete |
 | 14 Votes | 14 | Write/event contract; retain raw vote ordering | Split comment/discussion/supervote; weights, author unions, karma and race behavior | pending |
-| 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | reviewed; integration pending |
+| 15 Scratchpad | 7 | Write/event contract | Ownership, visibility, missing entries and relationship cleanup | complete |
 | 16 Image creation/profile | 4 | Storage mocks; write/event contract | Variant/upload/database ordering and failures, all external IO mocked | pending |
 | 17 Wiki actions | 8 | 08; write/event contract | Permissions, channel scope, ordering and relationship events | pending |
 | 18 Issue target/identity | 9 | Issue identity and allocation characterization | Every target kind; mirrors, immutable identity and allocation boundaries | reviewed subdivisions; integration pending |
@@ -373,3 +373,15 @@ Slice13b committed `a185e6ea7aeaa1098864fe65ed77800e04629f92` ([diff](https://gi
 7 baseline CRUD sites removed. Original patch independently approved review_subscription; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 370 CRUD sites/83 files; 74 acquisitions/15 files; two separate CLI sites.
 
 15 final integration approval: Independent integration_review_current approved exact tree 72a5386ade1c8538a0bf41c4c38849710364d990: all six non-factory source/test blobs match original reviewed patch; factory merge only imports/constructs scratchpad repository and preserves driver/raw transaction and undo wiring. Independently passed 8 focused characterization tests using stripped infrastructure-only launcher; inspected completed 29/29 disposable live tests (9 parity +20 existing). No blocking findings; auth, source projections/default errors, ordering, delete relationships/events preserved.; live parity passed on identical production sources before this documentation-only update.
+
+Slice15 committed `0f4b36bd7d4d5aac29ca6e5b4c5d5eb168c20c06` ([diff](https://github.com/gennit-project/multiforum-backend/commit/0f4b36bd7d4d5aac29ca6e5b4c5d5eb168c20c06)), tree `59b9f7dd03e5897446c4f1e9fd994fbedc5e74fb`: lint, TypeScript and all2055 units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice15-exact-live.log. Independent approval recorded above.
+
+### Slice 14a — Comment votes
+
+6 baseline CRUD sites removed. Original patch independently approved integration_review; cumulative integration review pending. Original focused/live/static gates passed; final cumulative checks pending. Parent cumulative gates pending. Remaining 364 CRUD sites/81 files; 74 acquisitions/15 files; two separate CLI sites.
+
+Reviewed24b/c/d and38b artifacts recorded without crediting queued removals.24c retains optional Channel acquisition as capability guard;38b integration must preserve37c/38a overlaps. No related architectural behavior corrections authorized.
+
+Reviewed25a/b/c/d and38c/d patches queued without crediting removals.25 append operations retain immutable Issue identity guard after independent review finding and old/new rejection tests.38d preserves unbounded server reads, sequential deprecation/disconnect and swallowed synchronization errors; removes3 acquisitions when integrated. Architecture findings remain deferred to separate issues; no fixes included.
+
+14a final integration approval: Independent integration_review_current approved exact tree 71430ccc9ce3564f4f132751288990f8f5d8f749: six nonfactory blobs match reviewed14a patch; factory only removes Comment/User inputs preserving driver. Independently44 focused tests passed with infrastructure-only launcher; inspected3 completed disposable live parity tests. Separate generated karma writes, raw transaction ordering, projections/error behavior and native events preserved. No blocking findings.; live parity passed on identical production sources before this documentation-only update.

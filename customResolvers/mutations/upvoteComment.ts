@@ -2,13 +2,12 @@ import { commentIsUpvotedByUserQuery } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { CommentModel, UserModel } from "../../ogm_types.js";
+import { createCommentVoteRepository, type CommentVoteRepository } from "../../services/persistence/commentVoteRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
 type Input = {
-  Comment: CommentModel;
-  User: UserModel;
+  repository?: CommentVoteRepository;
   driver: Driver;
 };
 
@@ -18,7 +17,8 @@ type Args = {
 };
 
 const upvoteCommentResolver = (input: Input) => {
-  const { Comment, User, driver } = input;
+  const { driver } = input;
+  const repository = input.repository ?? createCommentVoteRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -47,36 +47,7 @@ const upvoteCommentResolver = (input: Input) => {
         throw new Error("You have already upvoted this comment");
       }
       // Fetch comment
-      const commentSelectionSet = `
-        {
-          id
-          CommentAuthor {
-              ... on User {
-                  username
-                  commentKarma
-                  createdAt
-              }
-              ... on ModerationProfile {
-                displayName
-                createdAt
-              }
-          }
-          weightedVotesCount
-          UpvotedByUsers {
-            username
-          }
-          UpvotedByUsersAggregate {
-            count
-          }
-        }
-      `;
-
-      const commentResult = await Comment.find({
-        where: {
-          id: commentId,
-        },
-        selectionSet: commentSelectionSet,
-      });
+      const commentResult = await repository.findComment(commentId);
 
       if (commentResult.length === 0) {
         throw new Error("Comment not found");
@@ -96,18 +67,7 @@ const upvoteCommentResolver = (input: Input) => {
 
       // Fetch data of the user who is upvoting the comment
       // because we need it to calculate the weighted vote bonus.
-      const userSelectionSet = `
-      {
-          username
-          commentKarma
-      }
-     `;
-      const upvoterUserResult = await User.find({
-        where: {
-          username,
-        },
-        selectionSet: userSelectionSet,
-      });
+      const upvoterUserResult = await repository.findVoter(username);
 
       if (upvoterUserResult.length === 0) {
         throw new Error("User not found");
@@ -134,10 +94,7 @@ const upvoteCommentResolver = (input: Input) => {
 
       // Update the post author's karma
       if (postAuthorUsername) {
-        await User.update({
-          where: { username: postAuthorUsername },
-          update: { commentKarma: postAuthorKarma + 1 },
-        });
+        await repository.setAuthorKarma(postAuthorUsername, postAuthorKarma + 1);
       }
 
       await tx.commit();

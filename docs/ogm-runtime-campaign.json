@@ -428,7 +428,7 @@
       "baselineCrudSites": 14,
       "dependencies": "Write/event contract; retain raw vote ordering",
       "acceptance": "Split comment/discussion/supervote; weights, author unions, karma and race behavior",
-      "status": "reviewed subdivisions; integration pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
       "verification": [],
@@ -437,14 +437,15 @@
           "id": "14a",
           "scope": "Comment votes",
           "baselineCrudSites": 6,
-          "status": "reviewed; integration pending",
-          "review": "integration_review: no remaining findings; independent focused tests passed",
+          "status": "reviewed; cumulative gates pending",
+          "review": "Independent integration_review_current approved exact tree 71430ccc9ce3564f4f132751288990f8f5d8f749: six nonfactory blobs match reviewed14a patch; factory only removes Comment/User inputs preserving driver. Independently44 focused tests passed with infrastructure-only launcher; inspected3 completed disposable live parity tests. Separate generated karma writes, raw transaction ordering, projections/error behavior and native events preserved. No blocking findings.",
           "preparedPatch": "ogm-slice14a.patch",
           "preparedPatchSha256": "4b63e302f25014525855e4e961509f81ed98bf6905e03f93b15a34bab5ae7ad0",
           "preparedBase": "c19c537",
           "verification": [
-            "Reviewed treef6f2f05740698ffe29abad1bc0f32ebd9e230350: 44focused;3exactlive;final tsc/lint passed; cumulative integration gates pending"
-          ]
+            "Original focused/live/static gates passed; final cumulative checks pending"
+          ],
+          "commit": null
         },
         {
           "id": "14b",
@@ -485,11 +486,12 @@
       "baselineCrudSites": 7,
       "dependencies": "Write/event contract",
       "acceptance": "Ownership, visibility, missing entries and relationship cleanup",
-      "status": "reviewed; cumulative gates pending",
-      "commit": null,
+      "status": "complete",
+      "commit": "0f4b36bd7d4d5aac29ca6e5b4c5d5eb168c20c06",
       "review": "Independent integration_review_current approved exact tree 72a5386ade1c8538a0bf41c4c38849710364d990: all six non-factory source/test blobs match original reviewed patch; factory merge only imports/constructs scratchpad repository and preserves driver/raw transaction and undo wiring. Independently passed 8 focused characterization tests using stripped infrastructure-only launcher; inspected completed 29/29 disposable live tests (9 parity +20 existing). No blocking findings; auth, source projections/default errors, ordering, delete relationships/events preserved.",
       "verification": [
-        "Original focused/live/static gates passed; final cumulative checks pending"
+        "Original focused/live/static gates passed; final cumulative checks pending",
+        "Exact committed tree 59b9f7dd03e5897446c4f1e9fd994fbedc5e74fb: lint, TypeScript and2055 full units passed; Disposable live parity passed on identical production sources before documentation-only review update; see /tmp/runtime-slice15-exact-live.log"
       ],
       "preparedPatch": "ogm-slice15.patch",
       "preparedPatchSha256": "06d0e6299f8fdb905b6ad53c58f7debb13642b8bb58a62cf4acec50a3c73eecc",
@@ -805,6 +807,46 @@
           "verification": [
             "Tree7626ffd7c6d7e2824110ea2c6fab1f0eeccfbf72: 7independentfocused;6live;tsc/lint actual passes; cumulative integration gates pending"
           ]
+        },
+        {
+          "id": "24b",
+          "scope": "Comment reports",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "reports_reviewer",
+          "preparedPatch": "ogm-slice24b.patch",
+          "preparedPatchSha256": "38e7364cc6e73202531bd1da13e4d62cd935ab73c3b5411063835e004a1a1e5a",
+          "preparedBase": "9341421",
+          "verification": [
+            "Treeff852077196a1bf51fe526fa69ea8c8381468304: 12independentfocused;7live;tsc/lint actual passes; cumulative integration gates pending"
+          ]
+        },
+        {
+          "id": "24c",
+          "scope": "Discussion reports",
+          "baselineCrudSites": 5,
+          "status": "reviewed; integration pending",
+          "review": "reports_reviewer",
+          "preparedPatch": "ogm-slice24c.patch",
+          "preparedPatchSha256": "0ca6d9746d5b81c2daae5264e161eac2a3fe547912f7469285201d538f747f25",
+          "preparedBase": "9341421",
+          "verification": [
+            "Tree9d00306fa309b830965c7c1663de1b7e7f45174f: 5independentfocused;7live;tsc/lint actual passes; cumulative integration gates pending"
+          ],
+          "accountingNote": "Optional Channel acquisition deliberately retained as capability guard until wiring cleanup."
+        },
+        {
+          "id": "24d",
+          "scope": "Channel reports",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "reports_reviewer",
+          "preparedPatch": "ogm-slice24d.patch",
+          "preparedPatchSha256": "ffca24fa4a05b8515b2ddec0a1e1b5f19c63743b973076fbe1adb72e606304eb",
+          "preparedBase": "9341421",
+          "verification": [
+            "Tree0d95182814009c7a4664698f14b02f8d4ce37f28: 12independentfocused;6live;tsc/lint actual passes; cumulative integration gates pending"
+          ]
         }
       ]
     },
@@ -820,10 +862,64 @@
       "baselineCrudSites": 17,
       "dependencies": "18\u201319; 05\u201306; 23 for wiki",
       "acceptance": "Separate image-family/wiki commits; owner vs target and replaced images",
-      "status": "pending",
+      "status": "partial; see subdivisions",
       "commit": null,
       "review": null,
-      "verification": []
+      "verification": [],
+      "subdivisions": [
+        {
+          "id": "25a",
+          "scope": "Image reports",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "reports_reviewer",
+          "preparedPatch": "ogm-slice25a.patch",
+          "preparedPatchSha256": "b5ea82319f6a23fc67654ba5e2244d5cdb7d8a40f94b8016050c91f7b502a464",
+          "preparedBase": "e863e3b",
+          "verification": [
+            "Tree a473bf7122a5b630e9f6995a17453874ae94a2a9: 5 focused,7 final live; TypeScript passed; cumulative integration gates pending"
+          ]
+        },
+        {
+          "id": "25b",
+          "scope": "Profile picture reports",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "reports_reviewer",
+          "preparedPatch": "ogm-slice25b.patch",
+          "preparedPatchSha256": "fc939a5a0b536451ae007df99df20fba113942a5ecdb327008c4e0e25f30e820",
+          "preparedBase": "e863e3b",
+          "verification": [
+            "Tree 649b62c2ef2644246786a1b74998ca49f07da2dd: 5 focused,6 final live; TypeScript passed; cumulative integration gates pending"
+          ]
+        },
+        {
+          "id": "25c",
+          "scope": "Channel image reports",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "reports_reviewer",
+          "preparedPatch": "ogm-slice25c.patch",
+          "preparedPatchSha256": "a7ca1bdaa8fa5d12a82fc99089a049773390be597e837706f4e6466cf7e7dcef",
+          "preparedBase": "e863e3b",
+          "verification": [
+            "Tree b6e18dcba4eaf2eca45d6f6c5050402e4f9735fd: 5 focused,7 final live; TypeScript passed; cumulative integration gates pending"
+          ]
+        },
+        {
+          "id": "25d",
+          "scope": "Wiki edit reports",
+          "baselineCrudSites": 5,
+          "status": "reviewed; integration pending",
+          "review": "reports_reviewer",
+          "preparedPatch": "ogm-slice25d.patch",
+          "preparedPatchSha256": "f5e32ee031a84064ca1943fe879409dd3d52e398d3d5b2f480b4498d7c84b21d",
+          "preparedBase": "e863e3b",
+          "verification": [
+            "Tree 8fc2ca25713caa42d5439d58b4fd65f8774c7d2e: 6 focused,14 live; TypeScript passed; cumulative integration gates pending"
+          ]
+        }
+      ]
     },
     {
       "id": "26",
@@ -1162,6 +1258,46 @@
             "Tree8fc2ebb2d5140c7760d2f06ecb40ae66e84d02ec: 3independentfocused;2live;tsc/lint actual passes; cumulative integration gates pending"
           ],
           "accountingNote": "One structural call, zero typed calls. Reduce manual structural audit adjustment by one only upon integration (1\u21920 if16 already integrated)."
+        },
+        {
+          "id": "38b",
+          "scope": "Bot identity/profile synchronization",
+          "baselineCrudSites": 7,
+          "status": "reviewed; integration pending",
+          "review": "integration_recovery",
+          "preparedPatch": "ogm-slice38b.patch",
+          "preparedPatchSha256": "87111cf26777e0944e312a6d13509a2518e59b6fd963fd65515c3c6518cba2cb",
+          "preparedBase": "fa87561",
+          "verification": [
+            "Treeec61b967f3074c67e520cb601decba39a4749862: 19independentfocused;47authorfocused;6correctedlive+9existinglive;tsc/lint actual passes; cumulative integration gates pending"
+          ],
+          "integrationNote": "Preserve overlapping37c driver/repository edits and38a parent-thread wiring. Initial5livefixture failures corrected only false-default assumptions/internal event envelope IDs; durable properties/graph/order assertions retained."
+        },
+        {
+          "id": "38c",
+          "scope": "Bot comment creation",
+          "baselineCrudSites": 1,
+          "status": "reviewed; integration pending",
+          "review": "integration_recovery",
+          "preparedPatch": "ogm-slice38c.patch",
+          "preparedPatchSha256": "7121dbab1bd887cb044bae14d6f0e50dca447a7aa435f3452db59ef1e5b59ade",
+          "preparedBase": "ec61b967",
+          "verification": [
+            "Tree fc30e825f93dba9a9d991f615f479d502206b8b5: 7 independent focused,12 live; TypeScript passed; cumulative integration gates pending"
+          ]
+        },
+        {
+          "id": "38d",
+          "scope": "Channel bot synchronization",
+          "baselineCrudSites": 4,
+          "status": "reviewed; integration pending",
+          "review": "review_bot38d",
+          "preparedPatch": "ogm-slice38d.patch",
+          "preparedPatchSha256": "b2f666bb45674fa18784ef5bf0d96b09e216a2233f02b342f8f10b3e3303d448",
+          "preparedBase": "ec61b967",
+          "verification": [
+            "Tree 0ff68c0001668bfed286810b7d62025c4a648f6f: 13 independent focused,3 independent live; TypeScript passed; cumulative integration gates pending"
+          ]
         }
       ]
     },
@@ -1285,9 +1421,9 @@
       "verification": []
     }
   ],
-  "remainingRuntimeCrudSites": 370,
+  "remainingRuntimeCrudSites": 364,
   "remainingModelAcquisitionsIncludingOptional": 74,
-  "remainingRuntimeCrudFiles": 83,
+  "remainingRuntimeCrudFiles": 81,
   "foundations": [
     {
       "id": "F01",
@@ -1319,6 +1455,7 @@
       "11",
       "12",
       "13",
+      "15",
       "35"
     ],
     "runtimeRemovalComplete": false,
