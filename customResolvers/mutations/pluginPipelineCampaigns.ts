@@ -1,9 +1,7 @@
+import type {Driver} from "neo4j-driver";
+import {createCampaignControlRepository,type CampaignControlRepository} from "../../services/persistence/campaignControlRepository.js";
+import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
 import { GraphQLError } from "graphql";
-import type {
-  PluginPipelineCampaignModel,
-  ServerConfigModel,
-  DownloadableFileModel,
-} from "../../ogm_types.js";
 import {
   PipelineApplicability,
   PluginPipelineCampaignStatus,
@@ -12,9 +10,9 @@ import type { GraphQLContext } from "../../types/context.js";
 import { previewPipelineCampaign } from "../../services/plugin/pipelineCampaign.js";
 
 type Models = {
-  PluginPipelineCampaign: PluginPipelineCampaignModel;
-  DownloadableFile: DownloadableFileModel;
-  ServerConfig: ServerConfigModel;
+  driver?: Driver;
+  controlRepository?: CampaignControlRepository;
+  campaignRepository?: CampaignServiceRepository;
 };
 
 const validateLimit = (name: string, value: number, maximum: number) => {
@@ -47,26 +45,16 @@ export const createPluginPipelineCampaign = (models: Models) =>
     }
     validateLimit("concurrency", concurrency, 20);
     validateLimit("rateLimitPerMinute", rateLimitPerMinute, 1_000);
-    const existing = await models.PluginPipelineCampaign.find({
-      where: {
-        policyId,
-        status_IN: [
-          PluginPipelineCampaignStatus.Draft,
-          PluginPipelineCampaignStatus.Running,
-          PluginPipelineCampaignStatus.Paused,
-        ],
-      },
-      selectionSet: `{ id }`,
-    });
+    const repository = models.controlRepository ?? createCampaignControlRepository(context.driver);
+    const existing = await repository.findActive(policyId);
     if (existing[0]) {
       throw new GraphQLError("An active campaign already exists for this policy", {
         extensions: { code: "BAD_USER_INPUT" },
       });
     }
-    const preview = await previewPipelineCampaign({ ...models, policyId });
+    const preview = await previewPipelineCampaign({ ...models, driver: context.driver, policyId });
     const timestamp = new Date().toISOString();
-    const result = await models.PluginPipelineCampaign.create({
-      input: [{
+    const result = await repository.create([{
         ...preview,
         applicability:
           preview.applicability === "ALL_FILES_IMMEDIATE"
@@ -84,20 +72,17 @@ export const createPluginPipelineCampaign = (models: Models) =>
         createdByUsername,
         startedAt: timestamp,
         updatedAt: timestamp,
-      }],
-    });
+      }]);
     return result.pluginPipelineCampaigns[0];
   };
 
 const changeCampaignStatus = (
-  models: Pick<Models, "PluginPipelineCampaign">,
+  models: Pick<Models, "driver" | "controlRepository">,
   status: PluginPipelineCampaignStatus
 ) =>
   async (_parent: unknown, { campaignId }: { campaignId: string }) => {
-    const current = await models.PluginPipelineCampaign.find({
-      where: { id: campaignId },
-      selectionSet: `{ id status }`,
-    });
+    const repository = models.controlRepository ?? createCampaignControlRepository(models.driver!);
+    const current = await repository.findStatus(campaignId);
     if (!current[0]) {
       throw new GraphQLError("Campaign not found", {
         extensions: { code: "NOT_FOUND" },
@@ -113,15 +98,12 @@ const changeCampaignStatus = (
       });
     }
     const timestamp = new Date().toISOString();
-    const result = await models.PluginPipelineCampaign.update({
-      where: { id: campaignId },
-      update: {
+    const result = await repository.updateStatus(campaignId, {
         status,
         ...(status === PluginPipelineCampaignStatus.Paused
           ? { pausedAt: timestamp }
           : { pausedAt: null }),
-      },
-    });
+      });
     return result.pluginPipelineCampaigns[0];
   };
 

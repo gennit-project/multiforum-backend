@@ -1,3 +1,10 @@
+import { before, after, afterEach } from "node:test";
+import { denyImageExternalIo } from "../../tests/denyImageExternalIo.js";
+let ioGuard: ReturnType<typeof denyImageExternalIo>;
+before(() => { ioGuard = denyImageExternalIo(); });
+afterEach(() => ioGuard.assertUnused());
+after(() => ioGuard.restore());
+import { PROFILE_IMAGE_SELECTION } from "../../services/persistence/imageWriteRepository.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
@@ -96,7 +103,7 @@ test("setProfileImage persists avatar variants for a verified uploaded profile i
     ],
   }));
   const resolver = setProfileImage({
-    User: User as any,
+    repository: {setProfileImage: async (username, update) => User.update({where:{username},update,selectionSet:`{ users ${PROFILE_IMAGE_SELECTION} }`})},
     driver,
     generateVariants: async () => ({
       variantUrls: {
@@ -204,7 +211,7 @@ test("setProfileImage rejects a profile image without verified upload metadata",
   const { driver } = buildDriver();
   const User = new UserModelStub(() => ({ users: [] }));
   const resolver = setProfileImage({
-    User: User as any,
+    repository: {setProfileImage: async (username, update) => User.update({where:{username},update,selectionSet:`{ users ${PROFILE_IMAGE_SELECTION} }`})},
     driver,
   });
 
@@ -225,7 +232,7 @@ test("setProfileImage rejects updates to another user's profile image", async ()
   const { driver } = buildDriver();
   const User = new UserModelStub(() => ({ users: [] }));
   const resolver = setProfileImage({
-    User: User as any,
+    repository: {setProfileImage: async (username, update) => User.update({where:{username},update,selectionSet:`{ users ${PROFILE_IMAGE_SELECTION} }`})},
     driver,
   });
 

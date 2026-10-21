@@ -1,3 +1,4 @@
+import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import type { ModelMap } from '../../ogm_types.js'
@@ -5,8 +6,8 @@ import { PluginPipelineRunStatus } from '../../ogm_types.js'
 import { modelStub } from '../../tests/fixtures/modelStub.js'
 import {
   buildPipelineConfigurationSnapshot,
-  completePipelineAttempt,
-  createPipelineAttempt,
+  completePipelineAttempt as actualcompletePipelineAttempt,
+  createPipelineAttempt as actualcreatePipelineAttempt,
   derivePipelineAttemptStatus,
 } from './pipelineAttempt.js'
 
@@ -270,3 +271,17 @@ test('uses server timestamps when callers do not provide a clock', async () => {
     }
   )
 })
+
+const createPipelineAttempt = (
+  args: Parameters<typeof actualcreatePipelineAttempt>[0] & { PluginPipelineRun: ModelMap['PluginPipelineRun'] }
+) => {
+  const { PluginPipelineRun, ...rest } = args
+  return actualcreatePipelineAttempt({...rest,repository:pipelineAttemptRepositoryStub(PluginPipelineRun)})
+}
+
+const completePipelineAttempt = (
+  args: Parameters<typeof actualcompletePipelineAttempt>[0] & { PluginPipelineRun: ModelMap['PluginPipelineRun'] }
+) => {
+  const { PluginPipelineRun, ...rest } = args
+  return actualcompletePipelineAttempt({...rest,repository:pipelineAttemptRepositoryStub(PluginPipelineRun)})
+}

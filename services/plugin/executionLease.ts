@@ -1,10 +1,10 @@
+import { PluginRunStatus } from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import {createPipelineLeaseRepository,type PipelineLeaseRepository} from "../persistence/pipelineLeaseRepository.js";
 import { randomUUID } from "node:crypto";
 import type {
-  PluginPipelineRunModel,
-  PluginRunModel,
   PluginRunUpdateInput,
 } from "../../ogm_types.js";
-import { PluginRunStatus } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 
 const DEFAULT_LEASE_DURATION_MS = 5 * 60_000;
@@ -45,16 +45,16 @@ export type PluginRunLease = {
 };
 
 export const claimPluginRunLease = async ({
-  PluginRun,
-  PluginPipelineRun,
+  driver,
+  repository,
   pluginRunId,
   pipelineId,
   now = new Date(),
   leaseDurationMs = pluginJobLeaseDurationMs(),
   leaseId = randomUUID(),
 }: {
-  PluginRun: PluginRunModel;
-  PluginPipelineRun: PluginPipelineRunModel;
+  driver?: Driver;
+  repository?: PipelineLeaseRepository;
   pluginRunId: string;
   pipelineId: string;
   now?: Date;
@@ -63,104 +63,78 @@ export const claimPluginRunLease = async ({
 }): Promise<PluginRunLease | null> => {
   const timestamp = now.toISOString();
   const timeoutAt = leaseDeadline(now, leaseDurationMs);
-  const result = await PluginRun.update({
-    where: { id: pluginRunId, status: PluginRunStatus.Pending },
-    update: {
+  const persistence = repository ?? createPipelineLeaseRepository(driver!);
+  const result = await persistence.claimPendingJob(pluginRunId, {
       status: PluginRunStatus.Running,
       leaseId,
       startedAt: timestamp,
       heartbeatAt: timestamp,
       timeoutAt,
-    },
-    selectionSet: `{ pluginRuns { id } }`,
   });
   if (result.pluginRuns.length === 0) return null;
 
-  await PluginPipelineRun.update({
-    where: { pipelineId },
-    update: {
+  await persistence.extendAttempt(pipelineId, {
       heartbeatAt: timestamp,
       timeoutAt,
-    },
   });
   return { pluginRunId, pipelineId, leaseId };
 };
 
 export const renewPluginRunLease = async ({
-  PluginRun,
-  PluginPipelineRun,
+  driver,
+  repository,
   lease,
   now = new Date(),
   leaseDurationMs = pluginJobLeaseDurationMs(),
 }: {
-  PluginRun: PluginRunModel;
-  PluginPipelineRun: PluginPipelineRunModel;
+  driver?: Driver;
+  repository?: PipelineLeaseRepository;
   lease: PluginRunLease;
   now?: Date;
   leaseDurationMs?: number;
 }) => {
   const timestamp = now.toISOString();
   const timeoutAt = leaseDeadline(now, leaseDurationMs);
-  const result = await PluginRun.update({
-    where: {
-      id: lease.pluginRunId,
-      leaseId: lease.leaseId,
-      status: PluginRunStatus.Running,
-    },
-    update: { heartbeatAt: timestamp, timeoutAt },
-    selectionSet: `{ pluginRuns { id } }`,
-  });
+  const persistence = repository ?? createPipelineLeaseRepository(driver!);
+  const result = await persistence.renewOwnedJob(lease, { heartbeatAt: timestamp, timeoutAt });
   if (result.pluginRuns.length === 0) return false;
 
-  await PluginRun.update({
-    where: {
-      pipelineId: lease.pipelineId,
-      status: PluginRunStatus.Pending,
-    },
-    update: { timeoutAt },
-  });
-  await PluginPipelineRun.update({
-    where: { pipelineId: lease.pipelineId },
-    update: { heartbeatAt: timestamp, timeoutAt },
-  });
+  await persistence.extendPendingJobs(lease.pipelineId, timeoutAt);
+  await persistence.extendAttempt(lease.pipelineId, { heartbeatAt: timestamp, timeoutAt });
   return true;
 };
 
 export const completePluginRunLease = async ({
-  PluginRun,
+  driver,
+  repository,
   lease,
   update,
   now = new Date(),
 }: {
-  PluginRun: PluginRunModel;
+  driver?: Driver;
+  repository?: PipelineLeaseRepository;
   lease: PluginRunLease;
   update: PluginRunUpdateInput;
   now?: Date;
 }) => {
   const timestamp = now.toISOString();
-  return PluginRun.update({
-    where: {
-      id: lease.pluginRunId,
-      leaseId: lease.leaseId,
-      status: PluginRunStatus.Running,
-    },
-    update: {
+  const persistence = repository ?? createPipelineLeaseRepository(driver!);
+  return persistence.completeOwnedJob(lease, {
       ...update,
       heartbeatAt: timestamp,
       finishedAt: timestamp,
       timeoutAt: null,
-    },
   });
 };
 
 export const startPluginRunHeartbeat = ({
-  PluginRun,
-  PluginPipelineRun,
+  driver,
+  repository,
   lease,
   intervalMs = pluginJobHeartbeatIntervalMs(),
 }: {
-  PluginRun: PluginRunModel;
-  PluginPipelineRun: PluginPipelineRunModel;
+  driver?: Driver;
+  repository?: PipelineLeaseRepository;
   lease: PluginRunLease;
   intervalMs?: number;
 }) => {
@@ -169,8 +143,8 @@ export const startPluginRunHeartbeat = ({
   const timer = setInterval(() => {
     if (stopped || renewal) return;
     renewal = renewPluginRunLease({
-      PluginRun,
-      PluginPipelineRun,
+      driver,
+      repository,
       lease,
     })
       .then(() => undefined)

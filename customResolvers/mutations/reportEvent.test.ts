@@ -124,8 +124,12 @@ test("reportEvent creates an issue and reopens it with a report activity item", 
   ]);
 
   const resolver = reportEventResolver({
-    Issue: Issue as any,
-    Event: Event as any,
+    eventReportRepository: {
+      findExisting: (channelUniqueName, eventId) => Issue.find({where:{channelUniqueName,relatedEventId:eventId}}),
+      findEvent: eventId => Event.find({where:{id:eventId}}),
+      createIssue: input => Issue.create({input:[input]}),
+      appendReport: (where, update) => Issue.update({where,update}),
+    },
     driver: createDriver(),
   });
 
@@ -174,8 +178,12 @@ test("reportEvent reuses existing issues and preserves server-rule flagging", as
   const Event = new ModelStub(() => []);
 
   const resolver = reportEventResolver({
-    Issue: Issue as any,
-    Event: Event as any,
+    eventReportRepository: {
+      findExisting: (channelUniqueName, eventId) => Issue.find({where:{channelUniqueName,relatedEventId:eventId}}),
+      findEvent: eventId => Event.find({where:{id:eventId}}),
+      createIssue: input => Issue.create({input:[input]}),
+      appendReport: (where, update) => Issue.update({where,update}),
+    },
     driver: createDriver(),
   });
 
@@ -211,8 +219,12 @@ test("reportEvent flags new issues for server-rule violations", async () => {
   ]);
 
   const resolver = reportEventResolver({
-    Issue: Issue as any,
-    Event: Event as any,
+    eventReportRepository: {
+      findExisting: (channelUniqueName, eventId) => Issue.find({where:{channelUniqueName,relatedEventId:eventId}}),
+      findEvent: eventId => Event.find({where:{id:eventId}}),
+      createIssue: input => Issue.create({input:[input]}),
+      appendReport: (where, update) => Issue.update({where,update}),
+    },
     driver: createDriver(),
   });
 
@@ -231,4 +243,44 @@ test("reportEvent flags new issues for server-rule violations", async () => {
 
   assert.equal(Issue.createCalls[0].input[0].flaggedServerRuleViolation, true);
   assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+});
+
+const validArgs = {eventId:'event-1', channelUniqueName:'cats', selectedForumRules:['Kind'], selectedServerRules:[], reportText:'report'};
+const info = null as unknown as GraphQLResolveInfo;
+test('reportEvent validates before identity or persistence', async () => {
+ const calls:string[]=[];
+ const repository={findExisting:async()=>{calls.push('find');return[];},findEvent:async()=>[],createIssue:async()=>({issues:[]}),appendReport:async()=>({issues:[]})};
+ const resolve=reportEventResolver({driver:createDriver(),eventReportRepository:repository});
+ for(const [args,message] of [[{...validArgs,eventId:''},'Event ID is required'],[{...validArgs,channelUniqueName:''},'Channel unique name is required'],[{...validArgs,selectedForumRules:[]},'At least one rule must be selected']] as Array<[typeof validArgs,string]>){
+  await assert.rejects(resolve(null,args,{} as GraphQLContext,info),new RegExp(message));
+ }
+ assert.deepEqual(calls,[]);
+});
+test('reportEvent preserves read and allocation errors outside write catches',async()=>{
+ process.env.PLAYWRIGHT_MOCK_AUTH='true';
+ for(const failure of ['existing','event','allocate']){
+  const order:string[]=[];
+  const repository={findExisting:async()=>{order.push('existing');if(failure==='existing')throw Error('existing failed');return[];},findEvent:async()=>{order.push('event');if(failure==='event')throw Error('event failed');return[];},createIssue:async()=>{order.push('create');return{issues:[]};},appendReport:async()=>{order.push('append');return{issues:[]};}};
+  const driver={session:()=>({executeWrite:async()=>{order.push('allocate');throw Error('allocate failed');},close:async()=>{order.push('close');}})} as unknown as Driver;
+  await assert.rejects(reportEventResolver({driver,eventReportRepository:repository})(null,validArgs,createContext(),info),new RegExp(failure+' failed'));
+  assert.deepEqual(order,failure==='existing'?['existing']:failure==='event'?['existing','event']:['existing','event','allocate','close']);
+ }
+});
+test('reportEvent catches create failures and empty results without attempting activity',async()=>{
+ process.env.PLAYWRIGHT_MOCK_AUTH='true';
+ for(const throws of [false,true]){
+  const order:string[]=[];
+  const repository={findExisting:async()=>[],findEvent:async()=>[],createIssue:async()=>{order.push('create');if(throws)throw Error('internal');return{issues:[]};},appendReport:async()=>{order.push('append');return{issues:[]};}};
+  await assert.rejects(reportEventResolver({driver:createDriver(),eventReportRepository:repository})(null,validArgs,createContext(),info),/Error creating issue/);
+  assert.deepEqual(order,['create']);
+ }
+});
+test('reportEvent catches activity failures and empty results after selecting existing issue',async()=>{
+ process.env.PLAYWRIGHT_MOCK_AUTH='true';
+ for(const throws of [false,true]){
+  const order:string[]=[];
+  const repository={findExisting:async()=>[{id:'existing',issueNumber:3}],findEvent:async()=>{order.push('event');return[];},createIssue:async()=>{order.push('create');return{issues:[]};},appendReport:async()=>{order.push('append');if(throws)throw Error('internal');return{issues:[]};}};
+  await assert.rejects(reportEventResolver({driver:createDriver(),eventReportRepository:repository})(null,validArgs,createContext(),info),/Error updating issue/);
+  assert.deepEqual(order,['append']);
+ }
 });

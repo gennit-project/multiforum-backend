@@ -84,8 +84,8 @@ test("loads the named server policy", async () => {
   let receivedName = "";
   const policy = await loadAgePolicy(
     {
-      find: async ({ where }) => {
-        receivedName = where.serverName;
+      findAgePolicyConfigs: async (serverName) => {
+        receivedName = serverName;
         return [{ accountAgeGateEnabled: true, minimumAccountAge: 16 }];
       },
     },

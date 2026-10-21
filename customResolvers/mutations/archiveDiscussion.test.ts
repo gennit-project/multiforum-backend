@@ -81,7 +81,11 @@ const requestIdentityRepository = {
   userExists: async () => true,
 };
 
-const createContext = (userModel: ModelStub): GraphQLContext => (({
+const createContext = (userModel: ModelStub, issueModel: ModelStub): GraphQLContext => (({
+  notificationSnapshotRepository: {
+    findIssueSubscribers: (id: string) => issueModel.find({where:{id}}),
+    findArchivedAuthor: (username: string) => userModel.find({where:{username}}),
+  },
   req: {
     headers: {
       authorization: `Bearer ${jwt.sign(
@@ -156,9 +160,14 @@ test("archiveDiscussion creates an issue, archives the discussion channel, and l
   );
 
   const resolver = archiveDiscussionResolver({
-    Issue: Issue as any,
-    Discussion: Discussion as any,
-    DiscussionChannel: DiscussionChannel as any,
+    discussionModerationRepository: {
+      findDiscussion: async (where: any) => Discussion.find({where}),
+      findRelatedIssues: async (where: any) => Issue.find({where}),
+      createArchiveIssue: async (input: any) => Issue.create({input}),
+      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      findDiscussionChannel: async (where: any) => DiscussionChannel.find({where}),
+      setArchived: async (where: any, update: any) => DiscussionChannel.update({where,update}),
+    } as any,
     driver: createDriver() as unknown as Driver,
   });
 
@@ -171,7 +180,7 @@ test("archiveDiscussion creates an issue, archives the discussion channel, and l
       reportText: "Archiving this discussion.",
       channelUniqueName: "cats",
     },
-    createContext(createUserModel()),
+    createContext(createUserModel(), Issue),
     null as unknown as GraphQLResolveInfo
   );
 
@@ -235,9 +244,14 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
   );
 
   const resolver = archiveDiscussionResolver({
-    Issue: Issue as any,
-    Discussion: Discussion as any,
-    DiscussionChannel: DiscussionChannel as any,
+    discussionModerationRepository: {
+      findDiscussion: async (where: any) => Discussion.find({where}),
+      findRelatedIssues: async (where: any) => Issue.find({where}),
+      createArchiveIssue: async (input: any) => Issue.create({input}),
+      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      findDiscussionChannel: async (where: any) => DiscussionChannel.find({where}),
+      setArchived: async (where: any, update: any) => DiscussionChannel.update({where,update}),
+    } as any,
     driver: createDriver() as unknown as Driver,
   });
 
@@ -250,7 +264,7 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
       reportText: "Archiving this discussion.",
       channelUniqueName: "cats",
     },
-    createContext(createUserModel()),
+    createContext(createUserModel(), Issue),
     null as unknown as GraphQLResolveInfo
   );
 

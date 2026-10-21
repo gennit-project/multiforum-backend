@@ -1,3 +1,4 @@
+import type { AgePolicyReader, ServerAgeConfig } from "./persistence/instancePolicyRepository.js";
 export const DEFAULT_ACCOUNT_MINIMUM_AGE = 13;
 export const DEFAULT_SENSITIVE_CONTENT_MINIMUM_AGE = 18;
 export const MINIMUM_CONFIGURABLE_AGE = 1;
@@ -17,20 +18,6 @@ export const DEFAULT_AGE_POLICY: AgePolicy = {
   minimumSensitiveContentAge: DEFAULT_SENSITIVE_CONTENT_MINIMUM_AGE,
 };
 
-type ServerAgeConfig = Partial<{
-  accountAgeGateEnabled: boolean | null;
-  minimumAccountAge: number | null;
-  sensitiveContentAgeGateEnabled: boolean | null;
-  minimumSensitiveContentAge: number | null;
-}>;
-
-export type ServerConfigReader = {
-  find(options: {
-    where: { serverName: string };
-    selectionSet: string;
-  }): Promise<ServerAgeConfig[]>;
-};
-
 export function normalizeAgePolicy(config?: ServerAgeConfig | null): AgePolicy {
   return {
     accountAgeGateEnabled:
@@ -47,22 +34,14 @@ export function normalizeAgePolicy(config?: ServerAgeConfig | null): AgePolicy {
 }
 
 export async function loadAgePolicy(
-  ServerConfig: ServerConfigReader,
+  agePolicyRepository: AgePolicyReader,
   serverName = process.env.SERVER_CONFIG_NAME
 ): Promise<AgePolicy> {
   if (!serverName) {
     return DEFAULT_AGE_POLICY;
   }
 
-  const configs = await ServerConfig.find({
-    where: { serverName },
-    selectionSet: `{
-      accountAgeGateEnabled
-      minimumAccountAge
-      sensitiveContentAgeGateEnabled
-      minimumSensitiveContentAge
-    }`,
-  });
+  const configs = await agePolicyRepository.findAgePolicyConfigs(serverName);
 
   return normalizeAgePolicy(configs[0]);
 }

@@ -1,3 +1,4 @@
+import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Query resolvers. Extracted from customResolvers.ts; receives the shared
 // ResolverDeps and wires the custom query resolvers to their models/driver.
 import type { ResolverDeps } from "./resolverDeps.js";
@@ -48,31 +49,14 @@ import previewPluginConfigurationReconciliation from "./queries/previewPluginCon
 
 export default function buildQueryResolvers(deps: ResolverDeps) {
   const {
-    ogm,
+    instancePolicyRepository,
     driver,
-    Discussion,
-    DiscussionChannel,
-    Event,
-    Comment,
-    User,
-    ModerationProfile,
-    Channel,
-    Issue,
-    Plugin,
-    ServerConfig,
-    ServerSecret,
-    PluginPipelineRun,
-    PluginPipelineCampaign,
-    PluginRun,
-    DownloadableFile,
-    Email,
   } = deps;
 
   return {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
-      Discussion,
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getRankingSettings: getRankingSettings({
       driver,
@@ -81,162 +65,133 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     getInstanceSetupStatus: getInstanceSetupStatus({
-      ServerConfig,
+      instancePolicyRepository,
     }),
     getSiteWideIssueList: getSiteWideIssueList({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getSiteWideWikiList: getSiteWideWikiList({
       driver,
     }),
     getDiscussionsInChannel: getDiscussionsInChannel({
       driver,
-      DiscussionChannel,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getDiscussionDetail: getDiscussionDetail({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getDiscussionDetailAnswers: createDiscussionDetailCollectionPageResolver({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
       kind: "answer",
     }),
     getDiscussionDetailFiles: createDiscussionDetailCollectionPageResolver({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
       kind: "file",
     }),
     getDiscussionDetailImages: createDiscussionDetailCollectionPageResolver({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
       kind: "image",
     }),
     getCommentSection: getCommentSection({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getEventComments: getEventComments({
       driver,
     }),
     getCommentReplies: getCommentReplies({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getUserFavoriteComment: getUserFavoriteComment({
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getSortedChannels: getSortedChannels({
       driver,
     }),
     getUserContributions: getUserContributions({
-      User,
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getUserWikiEditsCount: getUserWikiEditsCount({
-      User,
       driver,
     }),
     getChannelContributions: getChannelContributions({
-      Channel,
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getModContributions: getModContributions({
-      ModerationProfile,
       driver,
-      ServerConfig,
+      agePolicyRepository: instancePolicyRepository,
     }),
     isOriginalPosterSuspended: isOriginalPosterSuspended({
-      Issue,
-      Discussion,
-      Event,
-      Comment,
-      Channel,
-      User,
-      ServerConfig
+      agePolicyRepository: instancePolicyRepository
     }),
     safetyCheck: safetyCheck,
     getServerPluginSecrets: getServerPluginSecrets({
-      ServerSecret
+      driver
     }),
-    getPluginConfigStatus: getPluginConfigStatus({
-      Plugin,
-      ServerConfig,
-      ServerSecret
-    }),
+    getPluginConfigStatus: getPluginConfigStatus({ driver }),
     getInstalledPlugins: getInstalledPlugins({
-      ServerConfig
+      driver
     }),
     previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
-      ServerConfig,
-      ServerSecret,
+      driver,
     }),
     getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
-      PluginRun
+      driver
     }),
     getPipelineRuns: getPipelineRuns({
-      PluginRun
+      driver
     }),
     getApplicablePluginPipeline: getApplicablePluginPipeline({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      ServerConfig,
+      driver,
     }),
     getPipelineSummary: getPipelineSummary({
-      Discussion,
-      DownloadableFile,
-      PluginPipelineRun,
-      PluginRun,
+      driver,
     }),
     getPublicPipelineRun: getPublicPipelineRun({
-      Discussion,
-      DownloadableFile,
-      PluginPipelineRun,
-      PluginRun,
+      driver,
     }),
     getInternalPluginPipelineRun: getInternalPluginPipelineRun({
-      PluginPipelineRun,
-      PluginRun,
+      driver,
     }),
     previewPluginPipelineCampaign: previewPluginPipelineCampaign({
-      DownloadableFile,
-      ServerConfig,
+      driver,
     }),
     getPluginPipelineCampaigns: getPluginPipelineCampaigns({
-      PluginPipelineCampaign,
+      driver,
     }),
     getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
-      DownloadableFile,
-      PluginPipelineRun,
+      driver,
     }),
     publicCollectionsContaining: publicCollectionsContaining({
       driver,
-      ogm,
-      ServerConfig
+      agePolicyRepository: instancePolicyRepository
     }),
     getOwnEmail: getOwnEmail({
-      Email
+      accountRegistrationRepository: createAccountRegistrationRepository(driver)
     }),
-    getAgePolicy: getAgePolicy({ ServerConfig }),
-    getMyAgeProfile: getMyAgeProfile({ driver, ServerConfig }),
-    getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, ServerConfig }),
+    getAgePolicy: getAgePolicy({ agePolicyRepository: instancePolicyRepository }),
+    getMyAgeProfile: getMyAgeProfile({ driver, agePolicyRepository: instancePolicyRepository }),
+    getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, agePolicyRepository: instancePolicyRepository }),
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
       driver,
-      ServerConfig
+      agePolicyRepository: instancePolicyRepository
     }),
     getImageAlbumUsage: getImageAlbumUsage({
       driver,
-      ServerConfig
+      agePolicyRepository: instancePolicyRepository
     }),
     getServerHealthDashboard: getServerHealthDashboard({
       driver
     }),
-    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, ServerConfig })
+    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, agePolicyRepository: instancePolicyRepository })
   };
 }

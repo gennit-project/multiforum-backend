@@ -16,19 +16,9 @@ const commentPluginPipelineMiddleware = {
 
       try {
         const createdComments = result?.comments || []
-        const Channel = context?.ogm?.model('Channel')
-        const Comment = context?.ogm?.model('Comment')
-        const Discussion = context?.ogm?.model('Discussion')
-        const Event = context?.ogm?.model('Event')
-        const Issue = context?.ogm?.model('Issue')
-        const PluginPipelineRun = context?.ogm?.model('PluginPipelineRun')
-        const PluginRun = context?.ogm?.model('PluginRun')
-        const ServerConfig = context?.ogm?.model('ServerConfig')
-        const ServerSecret = context?.ogm?.model('ServerSecret')
-        const User = context?.ogm?.model('User')
         const driver = context?.driver
 
-        if (!Channel || !Comment || !PluginPipelineRun || !PluginRun || !ServerConfig || !ServerSecret || !User || !driver) {
+        if (!driver) {
           return result
         }
 
@@ -39,18 +29,6 @@ const commentPluginPipelineMiddleware = {
           await triggerPluginRunsForComment({
             commentId,
             event: 'comment.created',
-            models: {
-              Channel,
-              Comment,
-              Discussion,
-              Event,
-              Issue,
-              PluginPipelineRun,
-              PluginRun,
-              ServerConfig,
-              ServerSecret,
-              User
-            },
             driver
           })
         }

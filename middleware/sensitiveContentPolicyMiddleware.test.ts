@@ -70,8 +70,8 @@ test.describe("clears the cached age policy after ServerConfig writes", () => {
   ] as const) {
     test(`${parentType}.${fieldName} -> ${expectedLoads} policy load(s)`, async () => {
       let loads = 0;
-      const ServerConfig = { find: async () => { loads += 1; return []; } } as any;
-      await loadCachedAgePolicy({ ServerConfig, serverName: "s" });
+      const agePolicyRepository = { findAgePolicyConfigs: async () => { loads += 1; return []; } } as any;
+      await loadCachedAgePolicy({ agePolicyRepository, serverName: "s" });
 
       await applySensitiveContentPolicy(
         resolver,
@@ -80,7 +80,7 @@ test.describe("clears the cached age policy after ServerConfig writes", () => {
         contextWithAccess(true),
         { parentType: { name: parentType }, fieldName } as unknown as GraphQLResolveInfo
       );
-      await loadCachedAgePolicy({ ServerConfig, serverName: "s" });
+      await loadCachedAgePolicy({ agePolicyRepository, serverName: "s" });
 
       assert.equal(loads, expectedLoads);
     });

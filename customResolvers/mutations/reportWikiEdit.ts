@@ -1,15 +1,13 @@
+import {createWikiEditReportRepository,type WikiEditReportRepository} from "../../services/persistence/wikiEditReportRepository.js";
 import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
 import type { GraphQLContext } from '../../types/context.js'
 import type {
   IssueCreateInput,
-  IssueModel,
   IssueUpdateInput,
   IssueWhere,
   ModerationActionCreateInput,
-  TextVersionModel,
-  WikiPageModel
 } from '../../ogm_types.js'
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js'
 import {
@@ -29,14 +27,13 @@ type Args = {
 }
 
 type Input = {
-  Issue: IssueModel
-  WikiPage: WikiPageModel
-  TextVersion: TextVersionModel
+  wikiEditReportRepository?: WikiEditReportRepository
   driver: Driver
 }
 
 const getResolver = (input: Input) => {
-  const { Issue, WikiPage, TextVersion, driver } = input
+  const { driver } = input
+  const repository = input.wikiEditReportRepository ?? createWikiEditReportRepository(driver)
 
   return async (
     parent: unknown,
@@ -83,18 +80,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`)
     }
 
-    const [wikiPage] = await WikiPage.find({
-      where: { id: wikiPageId },
-      selectionSet: `{
-        id
-        title
-        body
-        Channel { uniqueName }
-        VersionAuthor {
-          username
-        }
-      }`
-    })
+    const [wikiPage] = await repository.findReportedWiki(wikiPageId)
 
     if (!wikiPage) {
       throw new GraphQLError('Wiki page not found')
@@ -110,16 +96,7 @@ const getResolver = (input: Input) => {
     let contextText = wikiPage.title || wikiPage.body || ''
 
     if (wikiRevisionId) {
-      const [revision] = await TextVersion.find({
-        where: { id: wikiRevisionId },
-        selectionSet: `{
-          id
-          body
-          Author {
-            username
-          }
-        }`
-      })
+      const [revision] = await repository.findReportedRevision(wikiRevisionId)
 
       if (!revision) {
         throw new GraphQLError('Wiki revision not found')
@@ -138,15 +115,7 @@ const getResolver = (input: Input) => {
       issueWhere.relatedWikiRevisionId = wikiRevisionId
     }
 
-    const issueData = await Issue.find({
-      where: issueWhere,
-      selectionSet: `{
-        id
-        issueNumber
-        flaggedServerRuleViolation
-        relatedUsername
-      }`
-    })
+    const issueData = await repository.findPriorWikiReport(issueWhere)
 
     let existingIssueId = ''
     let existingIssueFlaggedServerRuleViolation = false
@@ -179,16 +148,7 @@ const getResolver = (input: Input) => {
       })
 
       try {
-        const createdIssueData = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`
-        })
+        const createdIssueData = await repository.createWikiReportIssue(issueCreateInput)
         const issueId = createdIssueData.issues[0]?.id || null
         if (!issueId) {
           throw new GraphQLError('Error creating issue')
@@ -229,17 +189,7 @@ const getResolver = (input: Input) => {
     }
 
     try {
-      const updatedIssueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`
-      })
+      const updatedIssueData = await repository.appendWikiReport(issueUpdateWhere, issueUpdateInput)
       const issueId = updatedIssueData.issues[0]?.id || null
       if (!issueId) {
         throw new GraphQLError('Error updating issue')

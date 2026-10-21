@@ -3,7 +3,7 @@ import type { Driver } from 'neo4j-driver';
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js';
 import { ERROR_MESSAGES } from '../../rules/errorMessages.js';
 import type { GraphQLContext } from '../../types/context.js';
-import type { ImageModel, UserModel } from '../../ogm_types.js';
+import { createImageCreationRepository, type ImageCreationRepository } from "../../services/persistence/imageWriteRepository.js";
 import { logger } from "../../logger.js";
 import {
   claimUploadAuditMetadata,
@@ -32,41 +32,13 @@ type Args = {
 };
 
 type Input = {
-  Image: ImageModel;
-  User: UserModel;
+  repository?: ImageCreationRepository;
   driver?: Driver;
   generateVariants?: typeof generateImageVariants;
 };
 
-const selectionSet = `
-  {
-    id
-    url
-    storageBucket
-    storageObjectName
-    storageUrl
-    uploadedAt
-    uploadedByUsername
-    uploadedByIp
-    alt
-    caption
-    longDescription
-    copyright
-    createdAt
-    hasSensitiveContent
-    hasSpoiler
-    scanStatus
-    Uploader {
-      username
-    }
-    Albums {
-      id
-    }
-  }
-`;
-
 const getResolver = (input: Input) => {
-  const { Image, User, driver, generateVariants = generateImageVariants } = input;
+  const { driver, generateVariants = generateImageVariants } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input: imageInput } = args;
@@ -83,10 +55,8 @@ const getResolver = (input: Input) => {
     }
 
     // Verify the user exists in the database
-    const users = await User.find({
-      where: { username },
-      selectionSet: `{ username }`,
-    });
+    const repository = input.repository ?? createImageCreationRepository(driver!);
+    const users = await repository.findUploader(username);
 
     if (users.length === 0) {
       throw new GraphQLError(ERROR_MESSAGES.image.noUploader);
@@ -166,10 +136,7 @@ const getResolver = (input: Input) => {
     }
 
     try {
-      const response = await Image.create({
-        input: [createInput],
-        selectionSet: `{ images ${selectionSet} }`,
-      });
+      const response = await repository.createImage(createInput);
 
       const createdImage = response.images[0];
 

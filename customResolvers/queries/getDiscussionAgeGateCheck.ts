@@ -1,12 +1,13 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { getAgeEligibility, loadAgePolicy } from "../../services/agePolicy.js";
 
 type Input = {
   driver: Driver;
-  ServerConfig: ServerConfigModel;
+  agePolicyRepository: AgePolicyReader;
 };
 
 type Args = {
@@ -57,13 +58,13 @@ const readOne = async <T>(params: {
  * discussion with this id exists, and only while the gate is on.
  */
 const getDiscussionAgeGateCheck =
-  ({ driver, ServerConfig }: Input) =>
+  ({ driver, agePolicyRepository }: Input) =>
   async (
     _parent: unknown,
     { discussionId }: Args,
     context: GraphQLContext
   ): Promise<AgeGateCheck> => {
-    const policy = await loadAgePolicy(ServerConfig);
+    const policy = await loadAgePolicy(agePolicyRepository);
     if (!policy.sensitiveContentAgeGateEnabled) return NOT_REQUIRED;
 
     // Read the mark directly: the API's authorization filter hides the

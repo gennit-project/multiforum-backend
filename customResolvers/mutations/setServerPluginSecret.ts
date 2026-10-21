@@ -1,13 +1,13 @@
-import type {
-  ServerSecretModel
-} from '../../ogm_types.js'
+import type { Driver } from "neo4j-driver"
+import { createServerSecretRepository, type ServerSecretRepository } from "../../services/persistence/serverSecretRepository.js"
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
 import { encryptSecret } from '../../services/plugin/encryption.js'
 import { logger } from "../../logger.js";
 
 type Input = {
-  ServerSecret: ServerSecretModel
+  driver: Driver
+  serverSecretRepository?: ServerSecretRepository
 }
 
 type Args = {
@@ -17,7 +17,7 @@ type Args = {
 }
 
 const getResolver = (input: Input) => {
-  const { ServerSecret } = input
+  const { serverSecretRepository = createServerSecretRepository(input.driver) } = input
 
   return async (
     _parent: unknown,
@@ -32,39 +32,11 @@ const getResolver = (input: Input) => {
       const ciphertext = encryptSecret(value)
 
       // Find existing secret or create new one
-      const existingSecrets = await ServerSecret.find({
-        where: {
-          AND: [
-            { pluginId },
-            { key }
-          ]
-        }
-      })
-
+      const existingSecrets = await serverSecretRepository.findForReplacement(pluginId, key)
       if (existingSecrets.length > 0) {
-        // Update existing secret
-        await ServerSecret.update({
-          where: { id: existingSecrets[0].id },
-          update: {
-            ciphertext,
-            isValid: false, // Reset validation status when value changes
-            lastValidatedAt: null,
-            validationError: null
-          }
-        })
+        await serverSecretRepository.replaceCiphertext(existingSecrets[0].id, ciphertext)
       } else {
-        // Create new secret
-        await ServerSecret.create({
-          input: [
-            {
-              pluginId,
-              key,
-              ciphertext,
-              isValid: false,
-              updatedAt: new Date().toISOString()
-            }
-          ]
-        })
+        await serverSecretRepository.createEncryptedSecret(pluginId, key, ciphertext, new Date().toISOString())
       }
 
       return true

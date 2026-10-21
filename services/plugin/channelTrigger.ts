@@ -1,3 +1,6 @@
+import {createChannelExecutionRepository, type ChannelExecutionRepository} from "../persistence/channelExecutionRepository.js";
+import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
+import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import type {
   ChannelTriggerArgs,
@@ -56,75 +59,32 @@ export const triggerChannelPluginPipeline = async (
     discussionId,
     channelUniqueName,
     event,
-    models
+    driver,
   }: ChannelTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
   {
     loadPlugin = loadPluginImplementation,
     execution,
+    leaseRepository,
+    attemptRepository,
+    channelRepository,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     execution?: PipelineExecutionMetadata
+    leaseRepository?: PipelineLeaseRepository
+    attemptRepository?: PipelineAttemptRepository
+    channelRepository?: ChannelExecutionRepository
   } = {}
 ) => {
   if (!CHANNEL_EVENTS.has(event)) {
     throw new Error(`Unsupported channel plugin event: ${event}`)
   }
 
-  const {
-    Channel,
-    Discussion,
-    DownloadableFile,
-    PluginPipelineRun,
-    PluginRun,
-    ServerConfig,
-    ServerSecret,
-  } = models
+  const repository = channelRepository ?? createChannelExecutionRepository(driver!)
 
   // Get the channel with its pipeline configuration and enabled plugins (for channel-level settings)
-  const channels = await Channel.find({
-    where: { uniqueName: channelUniqueName },
-    selectionSet: `{
-      uniqueName
-      displayName
-      description
-      rules
-      pluginPipelines
-      Tags {
-        text
-      }
-      FilterGroups(options: { sort: [{ order: ASC }] }) {
-        id
-        key
-        displayName
-        mode
-        order
-        options(options: { sort: [{ order: ASC }] }) {
-          id
-          value
-          displayName
-          order
-        }
-      }
-      EnabledPluginsConnection {
-        edges {
-          properties {
-            enabled
-            settingsJson
-          }
-          node {
-            id
-            version
-            Plugin {
-              id
-              name
-            }
-          }
-        }
-      }
-    }`
-  })
+  const channels = await repository.findChannel(channelUniqueName)
 
   if (!channels.length) {
     throw new Error(`Channel "${channelUniqueName}" not found`)
@@ -151,25 +111,7 @@ export const triggerChannelPluginPipeline = async (
   }
 
   // Get the discussion with its downloadable file
-  const discussions = await Discussion.find({
-    where: { id: discussionId },
-    selectionSet: `{
-      id
-      title
-      body
-      DownloadableFile {
-        id
-        fileName
-        url
-        kind
-        size
-        uploadedAt
-        createdAt
-        storageBucket
-        storageObjectName
-      }
-    }`
-  })
+  const discussions = await repository.findDiscussion(discussionId)
 
   if (!discussions.length) {
     throw new Error(`Discussion "${discussionId}" not found`)
@@ -189,37 +131,7 @@ export const triggerChannelPluginPipeline = async (
   }
 
   // Get server config for enabled plugins (channels can only use server-enabled plugins)
-  const serverConfigs = await ServerConfig.find({
-    selectionSet: `{
-      serverName
-      pluginPipelines
-      InstalledVersionsConnection {
-        edges {
-          properties {
-            enabled
-            settingsJson
-          }
-          node {
-            id
-            version
-            repoUrl
-            tarballGsUri
-            entryPath
-            manifest
-            settingsDefaults
-            uiSchema
-            Plugin {
-              id
-              name
-              displayName
-              description
-              metadata
-            }
-          }
-        }
-      }
-    }`
-  })
+  const serverConfigs = await repository.findConfiguration()
 
   const serverConfig: ServerConfig | undefined = serverConfigs[0]
   if (!serverConfig) {
@@ -279,20 +191,18 @@ export const triggerChannelPluginPipeline = async (
   let securityScanOutcome: DownloadScanOutcome | null = null
 
   if (securityScanExpected) {
-    await DownloadableFile.update({
-      where: { id: downloadableFile.id },
-      update: ({
+    await repository.writeScanState(downloadableFile.id, ({
         scanStatus: 'PENDING',
         scanReason: null,
         scanCheckedAt: null,
-      } as DownloadableFileUpdateInput),
-    })
+      } as DownloadableFileUpdateInput))
   }
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
 
   await createPipelineAttempt({
-    PluginPipelineRun,
+    driver,
+    repository: attemptRepository,
     context: {
       pipelineId,
       targetId: discussionId,
@@ -317,8 +227,7 @@ export const triggerChannelPluginPipeline = async (
     const pluginVersionData = edgeData.node
 
     const timing = createQueuedPluginRunTiming()
-    const runCreateResult = await PluginRun.create({
-      input: [
+    const runCreateResult = await repository.createPendingRuns([
         ({
           pluginId,
           pluginName: pluginNode.displayName || pluginNode.name,
@@ -341,8 +250,7 @@ export const triggerChannelPluginPipeline = async (
           }),
           updatedAt: new Date().toISOString()
         } as PluginRunCreateInput)
-      ]
-    })
+      ])
 
     pendingRuns.push({
       id: runCreateResult.pluginRuns[0].id,
@@ -363,26 +271,16 @@ export const triggerChannelPluginPipeline = async (
 
     // Check if pipeline was stopped
     if (pipelineStopped) {
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await repository.markSkippedRun(pluginRunId, ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped',
           finishedAt: new Date().toISOString(),
           timeoutAt: null,
-        } as PluginRunUpdateInput)
-      })
+        } as PluginRunUpdateInput))
       jobStatuses[order] = 'SKIPPED'
 
-      const skipped = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const skipped = await repository.findReturnedRun(pluginRunId)
       if (skipped[0]) runs.push(skipped[0])
       continue
     }
@@ -393,41 +291,31 @@ export const triggerChannelPluginPipeline = async (
         ? 'Condition not met: previous step did not succeed'
         : 'Condition not met: previous step did not fail'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await repository.markSkippedRun(pluginRunId, ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`,
           finishedAt: new Date().toISOString(),
           timeoutAt: null,
-        } as PluginRunUpdateInput)
-      })
+        } as PluginRunUpdateInput))
       jobStatuses[order] = 'SKIPPED'
 
-      const skipped = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const skipped = await repository.findReturnedRun(pluginRunId)
       if (skipped[0]) runs.push(skipped[0])
       continue
     }
 
     const lease = await claimPluginRunLease({
-      PluginRun,
-      PluginPipelineRun,
+      driver,
+      repository: leaseRepository,
       pluginRunId,
       pipelineId,
     })
     if (!lease) continue
 
     const heartbeat = startPluginRunHeartbeat({
-      PluginRun,
-      PluginPipelineRun,
+      driver,
+      repository: leaseRepository,
       lease,
     })
     jobStatuses[order] = 'RUNNING'
@@ -441,13 +329,7 @@ export const triggerChannelPluginPipeline = async (
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
       const PluginClass = await loadPlugin(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
 
-      const serverSecrets = await ServerSecret.find({
-        where: { pluginId },
-        selectionSet: `{
-          key
-          ciphertext
-        }`
-      })
+      const serverSecrets = await repository.findSecrets(pluginId)
 
       const decryptedSecrets: Record<string, string> = {}
       for (const secret of serverSecrets) {
@@ -592,7 +474,8 @@ export const triggerChannelPluginPipeline = async (
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       await completePluginRunLease({
-        PluginRun,
+      driver,
+      repository: leaseRepository,
         lease,
         update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
@@ -617,14 +500,7 @@ export const triggerChannelPluginPipeline = async (
         pipelineStopped = true
       }
 
-      const updated = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const updated = await repository.findReturnedRun(pluginRunId)
 
       if (updated[0]) {
         runs.push(updated[0])
@@ -641,7 +517,8 @@ export const triggerChannelPluginPipeline = async (
       previousStatus = 'FAILED'
 
       await completePluginRunLease({
-        PluginRun,
+      driver,
+      repository: leaseRepository,
         lease,
         update: {
           status: 'FAILED',
@@ -663,14 +540,7 @@ export const triggerChannelPluginPipeline = async (
         pipelineStopped = true
       }
 
-      const updated = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const updated = await repository.findReturnedRun(pluginRunId)
 
       if (updated[0]) {
         runs.push(updated[0])
@@ -684,18 +554,16 @@ export const triggerChannelPluginPipeline = async (
     const outcome = securityScanOutcome || failedDownloadScanOutcome(
       'The security scan was skipped before it could complete.'
     )
-    await DownloadableFile.update({
-      where: { id: downloadableFile.id },
-      update: ({
+    await repository.writeScanState(downloadableFile.id, ({
         scanStatus: outcome.status,
         scanReason: outcome.reason,
         scanCheckedAt: new Date().toISOString(),
-      } as DownloadableFileUpdateInput),
-    })
+      } as DownloadableFileUpdateInput))
   }
 
   await completePipelineAttempt({
-    PluginPipelineRun,
+    driver,
+    repository: attemptRepository,
     pipelineId,
     statuses: jobStatuses,
   })

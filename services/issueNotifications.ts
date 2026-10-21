@@ -1,8 +1,9 @@
+import { resolveNotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 import type { Driver } from "neo4j-driver";
 import { sendBatchEmails } from "./mail/index.js";
 import { createIssueSubscriptionNotificationEmail } from "../customResolvers/mutations/shared/emailUtils.js";
 import { appendNotificationFooter } from "../utils/notificationFooter.js";
-import type { IssueModel } from "../ogm_types.js";
+import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 import { createInAppNotificationsForUsers } from "./inAppNotifications.js";
 
 type IssueNotificationDependencies = {
@@ -11,7 +12,7 @@ type IssueNotificationDependencies = {
 };
 
 type NotifyIssueSubscribersInput = {
-  IssueModel: IssueModel;
+  notificationSnapshotRepository?: NotificationSnapshotRepository;
   driver: Driver;
   issueId: string;
   actorUsername?: string | null;
@@ -70,7 +71,7 @@ const getIssueNotificationCopy = (input: {
 };
 
 export const notifyIssueSubscribers = async ({
-  IssueModel,
+  notificationSnapshotRepository,
   driver,
   issueId,
   actorUsername = null,
@@ -88,22 +89,7 @@ export const notifyIssueSubscribers = async ({
     dependencies?.createIssueSubscriptionNotificationEmail ||
     createIssueSubscriptionNotificationEmail;
 
-  const [issue] = await IssueModel.find({
-    where: { id: issueId },
-    selectionSet: `{
-      id
-      issueNumber
-      title
-      channelUniqueName
-      SubscribedToNotifications {
-        username
-        notifyOnSubscribedIssueUpdates
-        Email {
-          address
-        }
-      }
-    }`,
-  });
+  const [issue] = await resolveNotificationSnapshotRepository({driver, notificationSnapshotRepository}).findIssueSubscribers(issueId);
 
   if (!issue) {
     return false;

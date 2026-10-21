@@ -1,9 +1,6 @@
 import type { GraphQLResolveInfo } from 'graphql'
-import type {
-  PluginModel,
-  ServerConfigModel,
-  ServerSecretModel
-} from '../../ogm_types.js'
+import type { Driver } from 'neo4j-driver'
+import { createPluginStatusRepository, type PluginStatusRepository } from '../../services/persistence/pluginStatusRepository.js'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from '../../logger.js'
 import {
@@ -12,11 +9,7 @@ import {
   type PluginConfigScope
 } from '../../services/plugin/configStatus.js'
 
-type Input = {
-  Plugin: PluginModel
-  ServerConfig: ServerConfigModel
-  ServerSecret: ServerSecretModel
-}
+type Input = { driver: Driver; pluginStatusRepository?: PluginStatusRepository }
 
 type Args = {
   pluginId: string
@@ -24,43 +17,24 @@ type Args = {
   scope?: PluginConfigScope
 }
 
-const getResolver = ({ Plugin, ServerConfig, ServerSecret }: Input) =>
+const getResolver = ({ driver, pluginStatusRepository: repository = createPluginStatusRepository(driver) }: Input) =>
   async (_parent: unknown, args: Args, _context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const scope = args.scope || 'server'
     try {
-      const plugins = await Plugin.find({
-        where: { name: args.pluginId },
-        selectionSet: `{
-          Versions(where: { version: "${args.version}" }) {
-            id
-            manifest
-          }
-        }`
-      })
+      const plugins = await repository.findVersion(args.pluginId, args.version)
       const pluginVersion = plugins[0]?.Versions?.[0]
       if (!pluginVersion) {
         throw new Error(`Plugin ${args.pluginId} version ${args.version} not found`)
       }
 
-      const serverConfigs = await ServerConfig.find({
-        selectionSet: `{
-          InstalledVersionsConnection(where: { node: { id: "${pluginVersion.id}" } }) {
-            edges {
-              properties { settingsJson }
-            }
-          }
-        }`
-      })
+      const serverConfigs = await repository.findInstallation(pluginVersion.id)
       const edge = serverConfigs[0]?.InstalledVersionsConnection?.edges?.[0]
       if (!edge) {
         throw new Error(`Plugin ${args.pluginId} version ${args.version} is not installed`)
       }
 
       const secrets = scope === 'server'
-        ? await ServerSecret.find({
-            where: { pluginId: args.pluginId },
-            selectionSet: `{ key isValid lastValidatedAt validationError }`
-          })
+        ? await repository.findSecretStatuses(args.pluginId)
         : []
 
       return buildPluginConfigStatus({

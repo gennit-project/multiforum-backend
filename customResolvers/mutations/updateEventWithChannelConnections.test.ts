@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { Driver } from "neo4j-driver";
 import getResolver from "./updateEventWithChannelConnections.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { EventModel } from "../../ogm_types.js";
+import type { EventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
 
 const buildDriver = (callbackAttempts = 1) => {
@@ -114,7 +114,11 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
   };
 
   const resolver = getResolver({
-    Event: Event as unknown as EventModel,
+    eventWriteRepository: {
+      findUpdateSnapshot: async (where) => Event.find({where}),
+      updateWithinTransaction: async (where, update, tx) => { await Event.update({where,update,context:{executionContext:tx}}); },
+      findUpdatedEvent: async (id) => Event.find({where:{id}}),
+    } as EventWriteRepository,
     driver: driver as unknown as Driver,
     dependencies: {
       buildEventUpdateNotificationPayload() {
@@ -179,16 +183,20 @@ test("updateEventWithChannelConnections skips notifications when no meaningful e
   const sendBatchEmailsCalls: any[] = [];
 
   const Event = {
-    async find() {
+    async find(_input?: unknown) {
       return [baseExistingEvent];
     },
-    async update() {
+    async update(_input?: unknown) {
       return {};
     },
   };
 
   const resolver = getResolver({
-    Event: Event as unknown as EventModel,
+    eventWriteRepository: {
+      findUpdateSnapshot: async (where) => Event.find({where}),
+      updateWithinTransaction: async (where, update, tx) => { await Event.update({where,update,context:{executionContext:tx}}); },
+      findUpdatedEvent: async (id) => Event.find({where:{id}}),
+    } as EventWriteRepository,
     driver: driver as unknown as Driver,
     dependencies: {
       buildEventUpdateNotificationPayload() {
@@ -227,7 +235,7 @@ test("updateEventWithChannelConnections does not duplicate email when Neo4j retr
   let findCalls = 0;
   let updateCalls = 0;
   const Event = {
-    async find() {
+    async find(_input?: unknown) {
       findCalls += 1;
       return findCalls === 1
         ? [baseExistingEvent]
@@ -238,13 +246,17 @@ test("updateEventWithChannelConnections does not duplicate email when Neo4j retr
             ],
           }];
     },
-    async update() {
+    async update(_input?: unknown) {
       updateCalls += 1;
       return {};
     },
   };
   const resolver = getResolver({
-    Event: Event as unknown as EventModel,
+    eventWriteRepository: {
+      findUpdateSnapshot: async (where) => Event.find({where}),
+      updateWithinTransaction: async (where, update, tx) => { await Event.update({where,update,context:{executionContext:tx}}); },
+      findUpdatedEvent: async (id) => Event.find({where:{id}}),
+    } as EventWriteRepository,
     driver: driver as unknown as Driver,
     dependencies: {
       buildEventUpdateNotificationPayload: () => ({

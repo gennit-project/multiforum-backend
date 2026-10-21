@@ -82,7 +82,7 @@ export const createIssueSubscriptionNotificationMiddleware = (
 
         for (const node of activityNodes) {
           await notifyIssueSubscribersFn({
-            IssueModel: context?.ogm?.model("Issue"),
+            notificationSnapshotRepository: context.notificationSnapshotRepository,
             driver: context?.driver,
             issueId,
             actorUsername: context?.user?.username || null,

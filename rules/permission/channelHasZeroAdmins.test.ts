@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Driver } from "neo4j-driver";
-import type { GraphQLContext, Ogm } from "../../types/context.js";
+import type { GraphQLContext } from "../../types/context.js";
 import type {
   ChannelAuthorizationSnapshot,
   ChannelPermissionRepository,
@@ -12,7 +12,6 @@ const contextWith = (
   findAuthorizationSnapshot: () => Promise<ChannelAuthorizationSnapshot | null>
 ): GraphQLContext => ({
   driver: {} as Driver,
-  ogm: {} as Ogm,
   channelPermissionRepository: {
     findAuthorizationSnapshot,
     async findTargetedSuspensions() {

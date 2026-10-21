@@ -2,23 +2,9 @@ import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { logger } from "../../logger.js";
-import type { EmailModel } from "../../ogm_types.js";
+import type { AccountRegistrationRepository } from "../../services/persistence/accountRegistrationRepository.js";
 
-type Input = {
-  Email: EmailModel;
-};
-
-// Shape we read out of the OGM selection set. Typed loosely because the
-// generated EmailModel type doesn't surface the aggregate field.
-type EmailLookupRow = {
-  address?: string | null;
-  User?: {
-    username?: string | null;
-    profilePicURL?: string | null;
-    ModerationProfile?: { displayName?: string | null } | null;
-    NotificationsAggregate?: { count?: number | null } | null;
-  } | null;
-};
+type Input = { accountRegistrationRepository: AccountRegistrationRepository };
 
 /**
  * Returns the authenticated caller's OWN account summary, keyed off the
@@ -38,7 +24,7 @@ type EmailLookupRow = {
  * is exactly the onboarding case. The self-scoping here is the access control.
  */
 const getResolver = (input: Input) => {
-  const { Email } = input;
+  const { accountRegistrationRepository } = input;
 
   return async (
     _parent: unknown,
@@ -58,22 +44,7 @@ const getResolver = (input: Input) => {
     }
 
     try {
-      const rows = (await Email.find({
-        where: { address: email },
-        selectionSet: `{
-          address
-          User {
-            username
-            profilePicURL
-            ModerationProfile {
-              displayName
-            }
-            NotificationsAggregate(where: { read: false }) {
-              count
-            }
-          }
-        }`,
-      })) as EmailLookupRow[];
+      const rows = await accountRegistrationRepository.findOwnAccountSummary(email);
 
       const row = rows[0];
       const user = row?.User;

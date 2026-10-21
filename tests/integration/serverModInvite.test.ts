@@ -40,7 +40,7 @@ const inviteServerMod = (args: Record<string, unknown>) =>
 const acceptServerModInvite = (args: Record<string, unknown>, ctx: any) =>
   env.resolvers.Mutation.acceptServerModInvite(null, args, ctx);
 const cancelInviteServerMod = (args: Record<string, unknown>) =>
-  env.resolvers.Mutation.cancelInviteServerMod(null, args, {});
+  env.resolvers.Mutation.cancelInviteServerMod(null, args, {driver: env.driver});
 
 const pendingInvitesFor = (serverName: string) =>
   run(

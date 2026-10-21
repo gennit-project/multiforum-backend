@@ -1,16 +1,26 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { ResolverDeps } from '../resolverDeps.js'
+import type { ModelMap } from '../../ogm_types.js'
 import {
   PipelineApplicability,
   PipelineCondition,
   type QueryPreviewPluginConfigurationReconciliationArgs,
 } from '../../src/generated/graphql.js'
 import type { GraphQLContext } from '../../types/context.js'
-import getResolver from './previewPluginConfigurationReconciliation.js'
+import createResolver from './previewPluginConfigurationReconciliation.js'
+import type { Driver } from 'neo4j-driver'
+import type { PluginConfigurationReadRepository } from '../../services/persistence/pluginConfigurationReadRepository.js'
 
-type Models = Pick<ResolverDeps, 'ServerConfig' | 'ServerSecret'>
+const getResolver = (models: Models) => createResolver({
+  driver: {} as Driver,
+  pluginConfigurationReadRepository: {
+    listReconciliationConfigs: () => models.ServerConfig.find(),
+    listReconciliationSecretStatuses: () => models.ServerSecret.find(),
+  } as unknown as PluginConfigurationReadRepository,
+})
+
+type Models = Pick<ModelMap, 'ServerConfig' | 'ServerSecret'>
 
 const args: QueryPreviewPluginConfigurationReconciliationArgs = {
   manifest: {

@@ -1,6 +1,6 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { IssueModel } from "../../ogm_types.js";
+import { createSubscriptionTargetRepository, type SubscriptionTargetRepository } from "../../services/persistence/subscriptionTargetRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
@@ -9,12 +9,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
+  subscriptionTargetRepository?: SubscriptionTargetRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, driver } = input;
+  const { driver } = input;
+  const subscriptionTargets = input.subscriptionTargetRepository ?? createSubscriptionTargetRepository(driver);
 
   return async (
     parent: unknown,
@@ -44,19 +45,7 @@ const getResolver = (input: Input) => {
       );
 
       // Return the updated Issue
-      const result = await Issue.find({
-        where: { id: issueId },
-        selectionSet: `{
-          id
-          issueNumber
-          title
-          channelUniqueName
-          createdAt
-          SubscribedToNotifications {
-            username
-          }
-        }`
-      });
+      const result = await subscriptionTargets.findIssue(issueId);
 
       return result[0];
     } catch (error: unknown) {

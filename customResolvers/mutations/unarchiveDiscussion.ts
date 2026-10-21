@@ -1,7 +1,6 @@
+import {createDiscussionModerationRepository, type DiscussionModerationRepository, type DiscussionModerationIssue} from "../../services/persistence/discussionModerationRepository.js";
+import type { Driver } from "neo4j-driver";
 import type {
-  Issue,
-  IssueModel,
-  DiscussionChannelModel,
   ModerationActionCreateInput,
   IssueWhere,
   IssueUpdateInput,
@@ -22,12 +21,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  DiscussionChannel: DiscussionChannelModel;
+  driver: Driver;
+  discussionModerationRepository?: DiscussionModerationRepository;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, DiscussionChannel } = input;
+  const { driver } = input;
+  const repository = input.discussionModerationRepository ?? createDiscussionModerationRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -60,20 +60,13 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = "";
-    let existingIssue: Issue | null = null;
+    let existingIssue: DiscussionModerationIssue | null = null;
 
     // Check if an issue already exists for the discussion ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
+    const issueData = await repository.findRelatedIssues({
         channelUniqueName: channelUniqueName,
         relatedDiscussionId: discussionId,
-      },
-      selectionSet: `{
-              id
-              issueNumber
-              flaggedServerRuleViolation
-          }`,
-    });
+      });
 
     if (issueData.length > 0 && issueData[0]?.id) {
       existingIssueId = issueData[0]?.id || "";
@@ -110,24 +103,14 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
       }
       existingIssue = issueData.issues[0];
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -148,10 +131,7 @@ const getResolver = (input: Input) => {
       const discussionChannelUpdateInput: DiscussionChannelUpdateInput = {
         archived: false,
       };
-      const discussionUpdateData = await DiscussionChannel.update({
-        where: discussionChannelUpdateWhere,
-        update: discussionChannelUpdateInput,
-      });
+      const discussionUpdateData = await repository.setArchived(discussionChannelUpdateWhere, discussionChannelUpdateInput);
       const discussionUpdateId =
         discussionUpdateData.discussionChannels[0]?.id || null;
       if (!discussionUpdateId) {

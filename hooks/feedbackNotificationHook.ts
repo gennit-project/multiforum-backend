@@ -1,3 +1,4 @@
+import { resolveNotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
@@ -29,17 +30,10 @@ export const notifyFeedback = async ({
   targetAuthorUsername,
 }: NotifyFeedbackInput): Promise<void> => {
   try {
-    const UserModel = context?.ogm?.model('User');
-    if (!UserModel) {
-      logger.error('UserModel not available for feedback notification');
-      return;
-    }
+    if (!context?.driver && !context?.notificationWriter) return;
 
     // Check if target author wants feedback notifications
-    const users = await UserModel.find({
-      where: { username: targetAuthorUsername },
-      selectionSet: `{ username notifyOnFeedback }`,
-    });
+    const users = await resolveNotificationSnapshotRepository(context).findFeedbackRecipient(targetAuthorUsername);
 
     if (!users.length) {
       return;
@@ -67,7 +61,7 @@ export const notifyFeedback = async ({
     }
 
     await createInAppNotification({
-      UserModel,
+      context,
       username: targetAuthorUsername,
       text: notificationText,
       notificationType: 'feedback',

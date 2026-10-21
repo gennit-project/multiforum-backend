@@ -1,13 +1,11 @@
+import {createEventModerationRepository, type EventModerationRepository} from "../../services/persistence/eventModerationRepository.js";
 import type {
-  IssueModel,
-  EventModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
   IssueUpdateInput,
   EventChannelUpdateInput,
   EventChannelWhere,
-  EventChannelModel,
 } from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -37,14 +35,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Event: EventModel;
-  EventChannel: EventChannelModel;
+  eventModerationRepository?: EventModerationRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Event, EventChannel, driver } = input;
+  const { driver } = input;
+  const repository = input.eventModerationRepository ?? createEventModerationRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const {
       eventId,
@@ -97,31 +94,15 @@ const getResolver = (input: Input) => {
     let existingIssueId = "";
     let existingIssue: { id?: string; issueNumber?: number } | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
-    const eventData = await Event.find({
-      where: {
+    const eventData = await repository.findEvent({
         id: eventId,
-      },
-      selectionSet: `{
-            id
-            title
-            Poster {
-              username
-            }
-        }`,
-    });
+      });
 
     // Check if an issue already exists for the event ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
+    const issueData = await repository.findRelatedIssues({
         channelUniqueName: channelUniqueName,
         relatedEventId: eventId,
-      },
-      selectionSet: `{
-            id
-            issueNumber
-            flaggedServerRuleViolation
-        }`,
-    });
+      });
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -145,16 +126,7 @@ const getResolver = (input: Input) => {
       });
 
       try {
-        const issueData = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const issueData = await repository.createArchiveIssue([issueCreateInput]);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -202,24 +174,14 @@ const getResolver = (input: Input) => {
           selectedServerRules.length > 0,
       };
 
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
       }
       existingIssue = issueData.issues[0];
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -236,15 +198,10 @@ const getResolver = (input: Input) => {
       // to the event under RelatedIssues.
       // First we need to find the eventChannel that matches the given event ID
       // and channel unique name.
-      const eventChannel = await EventChannel.find({
-        where: {
+      const eventChannel = await repository.findEventChannel({
           eventId: eventId,
           channelUniqueName: channelUniqueName,
-        },
-        selectionSet: `{
-            id
-        }`,
-      });
+        });
       const eventChannelId = eventChannel[0]?.id || null;
       if (!eventChannelId) {
         throw new GraphQLError("Error finding eventChannel");
@@ -268,10 +225,7 @@ const getResolver = (input: Input) => {
           },
         ],
       };
-      const eventChannelUpdateData = await EventChannel.update({
-        where: eventChannelUpdateWhere,
-        update: eventChannelUpdateInput,
-      });
+      const eventChannelUpdateData = await repository.setArchived(eventChannelUpdateWhere, eventChannelUpdateInput);
       const eventChannelUpdateId =
         eventChannelUpdateData.eventChannels[0]?.id || null;
       if (!eventChannelUpdateId) {
@@ -287,7 +241,7 @@ const getResolver = (input: Input) => {
         const contentUrl = `${baseUrl}/forums/${channelUniqueName}/events/${eventId}`;
 
         await notifyArchivedContentAuthor({
-          context: { ogm: context.ogm, driver: context.driver },
+          context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },
           contentType: 'event',
           authorUsername: eventPosterUsername,
           contentUrl,

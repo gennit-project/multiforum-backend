@@ -74,7 +74,7 @@ test("start() processes each created comment then the loop completes", async () 
     { createdComment: null }, // invalid event -> skipped
     { createdComment: { id: "c-2" } },
   ]);
-  const svc = new CommentNotificationService(schema, ogm);
+  const svc = new CommentNotificationService(schema, undefined, {findCommentNotificationSnapshot: async (id: string) => { handled.push(id); return []; }} as any);
   await svc.start();
   await flush();
   await flush();

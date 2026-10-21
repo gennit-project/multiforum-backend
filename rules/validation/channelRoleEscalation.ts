@@ -1,3 +1,4 @@
+import { resolveRoleGuardRepository } from "../../services/persistence/roleGuardRepository.js";
 // No-privilege-escalation guard for CHANNEL role authoring (PR-4c; extends PR-4
 // to the channel scope — docs/isadmin-phaseout-design.md §5).
 //
@@ -45,11 +46,7 @@ async function ownsChannel(
   if (!username) {
     return false;
   }
-  const Channel = ctx.ogm.model("Channel");
-  const channels = (await Channel.find({
-    where: { uniqueName: channelUniqueName },
-    selectionSet: `{ Admins { username } }`,
-  })) as Array<{ Admins?: Array<{ username?: string | null }> | null }>;
+  const channels = await resolveRoleGuardRepository(ctx).findChannelAdmins(channelUniqueName);
 
   return isChannelAdmin(channels?.[0]?.Admins, username);
 }
@@ -106,10 +103,11 @@ const channelRoleTargetIsOwnedRule = (
     if (!ctx.user?.username) {
       ctx.user = await setUserDataOnContext({ context: ctx });
     }
-    const roles = await ctx.ogm.model(modelName).find({
-      where: args.where as any,
-      selectionSet: `{ Owner { uniqueName } }`,
-    }) as Array<{ Owner?: { uniqueName?: string | null } | null }>;
+    const repository = resolveRoleGuardRepository(ctx);
+    const where = args.where as Record<string, unknown> | undefined;
+    const roles = modelName === "ChannelRole"
+      ? await repository.findChannelRoleOwners(where)
+      : await repository.findModChannelRoleOwners(where);
     if (roles.length === 0) {
       return "Channel role not found.";
     }

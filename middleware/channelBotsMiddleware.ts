@@ -1,3 +1,4 @@
+import { createChannelBotRepository } from "../services/persistence/channelBotRepository.js";
 import { GraphQLResolveInfo } from 'graphql';
 import {
   buildBotUsername,
@@ -85,36 +86,10 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
       return;
     }
 
-    const { ogm } = context;
-    const Channel = ogm.model('Channel');
-    const User = ogm.model('User');
-    const ServerConfig = ogm.model('ServerConfig');
+    const repository = context.channelBotRepository ?? createChannelBotRepository(context.driver);
 
     // Fetch channel with its enabled plugins
-    const channels = await Channel.find({
-      where: { uniqueName: channelUniqueName },
-      selectionSet: `{
-        uniqueName
-        Bots {
-          username
-        }
-        EnabledPluginsConnection {
-          edges {
-            properties {
-              enabled
-              settingsJson
-            }
-            node {
-              settingsDefaults
-              Plugin {
-                name
-                tags
-              }
-            }
-          }
-        }
-      }`
-    });
+    const channels = await repository.findChannelPlugins(channelUniqueName);
 
     const channel = channels?.[0];
     if (!channel) {
@@ -122,27 +97,7 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
     }
 
     // Fetch server-level plugin settings
-    const serverConfigs = await ServerConfig.find({
-      selectionSet: `{
-        serverName
-        InstalledVersionsConnection {
-          edges {
-            properties {
-              enabled
-              settingsJson
-            }
-            node {
-              version
-              settingsDefaults
-              Plugin {
-                name
-                tags
-              }
-            }
-          }
-        }
-      }`
-    });
+    const serverConfigs = await repository.findServerPlugins();
 
     const serverConfig = serverConfigs?.[0];
     const serverEdges: ServerPluginEdge[] =
@@ -223,8 +178,8 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
 
       // Ensure bot users exist and are connected
       await syncBotUsersForChannelProfiles({
-        User,
-        Channel,
+        driver: context.driver,
+        repository: context.botIdentityRepository,
         channelUniqueName,
         botName,
         profiles
@@ -247,24 +202,11 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
 
       // Mark the bots as deprecated before disconnecting
       for (const username of botsToDisconnect) {
-        await User.update({
-          where: { username },
-          update: {
-            isDeprecated: true,
-            deprecatedReason: `Bot profile removed from channel "${channelUniqueName}"`
-          }
-        });
+        await repository.deprecateBot(username, `Bot profile removed from channel "${channelUniqueName}"`);
       }
 
       // Disconnect the deprecated bots from the channel
-      await Channel.update({
-        where: { uniqueName: channelUniqueName },
-        disconnect: {
-          Bots: botsToDisconnect.map((username: string) => ({
-            where: { node: { username } }
-          }))
-        }
-      });
+      await repository.disconnectOrphans(channelUniqueName, botsToDisconnect);
     }
   } catch (error) {
     logger.warn(

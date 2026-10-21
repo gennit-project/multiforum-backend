@@ -1,15 +1,16 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
 
 type Input = {
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 };
 
 type Args = {
@@ -17,13 +18,13 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, ServerConfig } = input;
+  const { driver, agePolicyRepository } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { commentId } = args;
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     if (!canViewSensitiveContent && await isSensitiveContentTarget(driver, { commentId })) {
       return false;

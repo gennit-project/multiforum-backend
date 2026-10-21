@@ -1,6 +1,5 @@
+import { createProfilePictureReportRepository, type ProfilePictureReportRepository } from "../../services/persistence/profilePictureReportRepository.js";
 import type {
-  IssueModel,
-  UserModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -21,8 +20,7 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  User: UserModel;
+  profilePictureReportRepository?: ProfilePictureReportRepository;
   driver: Driver;
 };
 
@@ -101,7 +99,8 @@ const getModerationActionCreateInput = (input: {
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, User, driver } = input;
+  const { driver } = input;
+  const repository = input.profilePictureReportRepository ?? createProfilePictureReportRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -135,16 +134,7 @@ const getResolver = (input: Input) => {
     }
 
     // Verify the user exists and has a profile picture
-    const userData = await User.find({
-      where: {
-        username: username,
-      },
-      selectionSet: `{
-        username
-        displayName
-        profilePicURL
-      }`,
-    });
+    const userData = await repository.findReportedProfile(username);
 
     if (userData.length === 0) {
       throw new GraphQLError("User not found");
@@ -161,17 +151,7 @@ const getResolver = (input: Input) => {
     let existingIssueFlaggedServerRuleViolation = false;
 
     // Check if an issue already exists for this user's profile picture (server-scoped)
-    const existingIssueData = await Issue.find({
-      where: {
-        channelUniqueName: null,
-        relatedProfilePicUserId: username,
-      },
-      selectionSet: `{
-        id
-        issueNumber
-        flaggedServerRuleViolation
-      }`,
-    });
+    const existingIssueData = await repository.findPriorProfileReport(username);
 
     if (existingIssueData.length > 0) {
       existingIssueId = existingIssueData[0]?.id || "";
@@ -212,16 +192,7 @@ const getResolver = (input: Input) => {
       };
 
       try {
-        const createResult = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const createResult = await repository.createProfileReportIssue(issueCreateInput);
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -262,18 +233,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const updateResult = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-            relatedProfilePicUserId
-          }
-        }`,
-      });
+      const updateResult = await repository.appendProfileReport(issueUpdateWhere, issueUpdateInput);
       const issueId = updateResult.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

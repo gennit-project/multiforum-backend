@@ -1,3 +1,6 @@
+import {commentExecutionRepositoryStub} from "../../tests/fixtures/commentExecutionRepositoryStub.js";
+import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
+import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the comment trigger: the per-plugin run lifecycle
 // (PENDING -> RUNNING -> SUCCEEDED/FAILED/SKIPPED). The real plugin loader
 // downloads and runs an untrusted tarball, so it is replaced via the injectable
@@ -13,13 +16,24 @@ import type {
   PluginRunResult,
 } from "./pluginLoader.js";
 import type { Driver } from "neo4j-driver";
-import { triggerPluginRunsForComment } from "./commentTrigger.js";
+import { triggerPluginRunsForComment as actualTrigger } from "./commentTrigger.js";
 
-type TriggerArgs = Parameters<typeof triggerPluginRunsForComment>[0];
 type TriggerOptions = NonNullable<
-  Parameters<typeof triggerPluginRunsForComment>[1]
+  Parameters<typeof actualTrigger>[1]
 >;
-type Models = TriggerArgs["models"];
+type Models = Pick<
+  ModelMap,
+  | "Channel"
+  | "Comment"
+  | "ServerConfig"
+  | "ServerSecret"
+  | "PluginPipelineRun"
+  | "PluginRun"
+  | "Discussion"
+  | "Event"
+  | "Issue"
+  | "User"
+>;
 type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
 type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
@@ -141,9 +155,9 @@ const execRun = (models: Models, loadPlugin: LoadPlugin) =>
     {
       commentId: "comment-1",
       event: EVENT,
-      models,
       driver: {} as Driver,
     },
+    models,
     { loadPlugin }
   );
 
@@ -201,4 +215,15 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   const skipped = updates.find(update => update.update?.status === "SKIPPED");
   assert.ok(skipped, "second plugin SKIPPED");
   assert.match(String(skipped.update?.skippedReason), /Pipeline stopped/);
+});
+
+const triggerPluginRunsForComment = (
+  args: Parameters<typeof actualTrigger>[0],
+  models: Models,
+  options: TriggerOptions = {}
+) => actualTrigger(args, {
+  ...options,
+  commentRepository: commentExecutionRepositoryStub(models),
+  leaseRepository: pipelineLeaseRepositoryStub(models),
+  attemptRepository: pipelineAttemptRepositoryStub(models.PluginPipelineRun),
 });

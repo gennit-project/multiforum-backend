@@ -1,15 +1,11 @@
+import { createBotReportRepository, type BotReportRepository } from "./persistence/botReportRepository.js";
+import type { BotIdentityRepository } from './persistence/botIdentityRepository.js'
 import type { Driver } from 'neo4j-driver'
 import type {
-  ChannelModel,
-  CommentModel,
-  DiscussionModel,
-  EventModel,
-  IssueModel,
   IssueCreateInput,
   IssueUpdateInput,
   IssueWhere,
-  ModerationActionCreateInput,
-  UserModel
+  ModerationActionCreateInput
 } from '../ogm_types.js'
 import { ensureBotUserForChannel } from './botUserService.js'
 import {
@@ -36,26 +32,18 @@ type ReportContentAsBotResult = {
   issueNumber: number
 } | null
 
-type Models = {
-  Channel: ChannelModel
-  Comment: CommentModel
-  Discussion: DiscussionModel
-  Event: EventModel
-  Issue: IssueModel
-  User: UserModel
-}
-
 /**
  * Creates or updates a moderation issue report on behalf of a bot user.
  * The bot user is automatically ensured to exist and have a ModerationProfile.
  */
 export const createBotReport = async (input: {
-  models: Models
+  botReportRepository?: BotReportRepository
+  botIdentityRepository?: BotIdentityRepository
   driver: Driver
   channelUniqueName: string
   reportInput: ReportContentAsBotInput
 }): Promise<ReportContentAsBotResult> => {
-  const { models, driver, channelUniqueName, reportInput } = input
+  const { driver, channelUniqueName, reportInput } = input
   const {
     contentType,
     contentId,
@@ -67,7 +55,7 @@ export const createBotReport = async (input: {
     profileLabel
   } = reportInput
 
-  const { Channel, Comment, Discussion, Event, Issue, User } = models
+  const repository = input.botReportRepository ?? createBotReportRepository(driver)
 
   if (!contentId) {
     throw new Error(`${contentType} ID is required`)
@@ -85,8 +73,8 @@ export const createBotReport = async (input: {
 
   // Ensure the bot user exists and has a ModerationProfile
   const botUser = await ensureBotUserForChannel({
-    User,
-    Channel,
+    driver,
+    repository: input.botIdentityRepository,
     channelUniqueName,
     botName,
     profileId,
@@ -117,16 +105,7 @@ export const createBotReport = async (input: {
       break
   }
 
-  const existingIssues = await Issue.find({
-    where: issueWhereClause,
-    selectionSet: `{
-      id
-      issueNumber
-      flaggedServerRuleViolation
-      relatedUsername
-      relatedModProfileName
-    }`
-  })
+  const existingIssues = await repository.findExistingReport(issueWhereClause)
 
   if (existingIssues.length > 0) {
     existingIssueId = existingIssues[0]?.id || ''
@@ -140,22 +119,7 @@ export const createBotReport = async (input: {
 
   switch (contentType) {
     case 'comment': {
-      const commentData = await Comment.find({
-        where: { id: contentId },
-        selectionSet: `{
-          id
-          text
-          CommentAuthor {
-            __typename
-            ... on User {
-              username
-            }
-            ... on ModerationProfile {
-              displayName
-            }
-          }
-        }`
-      })
+      const commentData = await repository.findReportedComment(contentId)
       contextText = commentData[0]?.text || ''
       const author = commentData[0]?.CommentAuthor
       if (author?.__typename === 'User') {
@@ -166,31 +130,13 @@ export const createBotReport = async (input: {
       break
     }
     case 'discussion': {
-      const discussionData = await Discussion.find({
-        where: { id: contentId },
-        selectionSet: `{
-          id
-          title
-          Author {
-            username
-          }
-        }`
-      })
+      const discussionData = await repository.findReportedDiscussion(contentId)
       contextText = discussionData[0]?.title || ''
       relatedUsername = discussionData[0]?.Author?.username ?? undefined
       break
     }
     case 'event': {
-      const eventData = await Event.find({
-        where: { id: contentId },
-        selectionSet: `{
-          id
-          title
-          Poster {
-            username
-          }
-        }`
-      })
+      const eventData = await repository.findReportedEvent(contentId)
       contextText = eventData[0]?.title || ''
       relatedUsername = eventData[0]?.Poster?.username ?? undefined
       break
@@ -222,16 +168,7 @@ export const createBotReport = async (input: {
     })
 
     try {
-      const issueData = await Issue.create({
-        input: [issueCreateInput],
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`
-      })
+      const issueData = await repository.createReportedIssue([issueCreateInput])
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
         throw new Error('Error creating issue')
@@ -284,17 +221,7 @@ export const createBotReport = async (input: {
   }
 
   try {
-    const issueData = await Issue.update({
-      where: issueUpdateWhere,
-      update: issueUpdateInput,
-      selectionSet: `{
-        issues {
-          id
-          issueNumber
-          flaggedServerRuleViolation
-        }
-      }`
-    })
+    const issueData = await repository.appendBotReport(issueUpdateWhere, issueUpdateInput)
     const issue = issueData.issues[0]
     if (!issue?.id) {
       throw new Error('Error updating issue')

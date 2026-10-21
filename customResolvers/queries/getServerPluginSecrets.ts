@@ -1,12 +1,12 @@
+import type { Driver } from "neo4j-driver";
+import { createPluginConfigurationReadRepository, type PluginConfigurationReadRepository } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
-import type {
-  ServerSecretModel
-} from '../../ogm_types.js'
 
 type Input = {
-  ServerSecret: ServerSecretModel
+  driver: Driver
+  pluginConfigurationReadRepository?: PluginConfigurationReadRepository
 }
 
 type Args = {
@@ -14,22 +14,14 @@ type Args = {
 }
 
 const getResolver = (input: Input) => {
-  const { ServerSecret } = input
+  const repository = input.pluginConfigurationReadRepository ?? createPluginConfigurationReadRepository(input.driver)
 
   return async (_parent: unknown, args: Args, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     const { pluginId } = args
 
     try {
       // Find all secrets for this plugin
-      const secrets = await ServerSecret.find({
-        where: { pluginId },
-        selectionSet: `{
-          key
-          isValid
-          lastValidatedAt
-          validationError
-        }`
-      })
+      const secrets = await repository.listPluginSecretStatuses(pluginId)
 
       // Map to the response format
       return secrets.map(secret => ({

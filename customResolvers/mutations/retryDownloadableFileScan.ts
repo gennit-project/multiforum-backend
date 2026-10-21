@@ -1,6 +1,4 @@
-import type {
-  ModelMap,
-} from "../../ogm_types.js";
+import {createPipelineRetryRepository, type PipelineRetryRepository} from "../../services/persistence/pipelineRetryRepository.js";
 import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
@@ -8,20 +6,9 @@ import {
   ModChannelPermission,
 } from "../../rules/permission/hasChannelModPermission.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
-import { createRerunPluginPipelineResolver } from "./rerunPluginPipeline.js";
+import { createRerunPluginPipelineResolver, type RerunPluginPipelineInput } from "./rerunPluginPipeline.js";
 
-export type RetryDownloadableFileScanInput = Pick<
-  ModelMap,
-  | "Channel"
-  | "Discussion"
-  | "DownloadableFile"
-  | "Plugin"
-  | "PluginVersion"
-  | "PluginPipelineRun"
-  | "PluginRun"
-  | "ServerConfig"
-  | "ServerSecret"
-> & Partial<Pick<ModelMap, "User">>;
+export type RetryDownloadableFileScanInput = RerunPluginPipelineInput & { retryRepository?: PipelineRetryRepository };
 
 type FileRecord = {
   uploadedByUsername?: string | null;
@@ -50,21 +37,9 @@ export const createRetryDownloadableFileScanResolver = (
     { downloadableFileId }: { downloadableFileId: string },
     context: GraphQLContext
   ) => {
-    const files = await input.DownloadableFile.find({
-      where: { id: downloadableFileId },
-      selectionSet: `{
-        uploadedByUsername
-        scanStatus
-        Discussion {
-          id
-          Author { username }
-          DiscussionChannels {
-            channelUniqueName
-            archived
-          }
-        }
-      }`,
-    }) as FileRecord[];
+    const repository = input.retryRepository ?? createPipelineRetryRepository(context.driver);
+
+    const files = await repository.findScanTarget(downloadableFileId) as FileRecord[];
     const file = files[0];
 
     if (!file) throw new Error("Downloadable file not found");
@@ -97,8 +72,7 @@ export const createRetryDownloadableFileScanResolver = (
       if (canReview !== true) throw new Error("Not authorized to retry this scan");
     }
 
-    const serverAttempts = await input.PluginPipelineRun.find({
-      where: {
+    const serverAttempts = await repository.findFailedAttempts({
         targetId: downloadableFileId,
         targetType: "DownloadableFile",
         eventType_IN: [
@@ -110,12 +84,9 @@ export const createRetryDownloadableFileScanResolver = (
           PluginPipelineRunStatus.TimedOut,
           PluginPipelineRunStatus.Cancelled,
         ],
-      },
-      selectionSet: `{ pipelineId createdAt }`,
-    });
+      });
     const channelAttempts = file.Discussion?.id
-      ? await input.PluginPipelineRun.find({
-          where: {
+      ? await repository.findFailedAttempts({
             targetId: file.Discussion.id,
             targetType: "Discussion",
             eventType: "discussionChannel.created",
@@ -124,9 +95,7 @@ export const createRetryDownloadableFileScanResolver = (
               PluginPipelineRunStatus.TimedOut,
               PluginPipelineRunStatus.Cancelled,
             ],
-          },
-          selectionSet: `{ pipelineId createdAt }`,
-        })
+          })
       : [];
     const attempts = [...serverAttempts, ...channelAttempts];
     const sourceAttempt = [...attempts].sort(
@@ -145,20 +114,13 @@ export const createRetryDownloadableFileScanResolver = (
         { pipelineRunId: sourceAttempt.pipelineId },
         context
       );
-      return input.PluginRun.find({
-        where: { pipelineId: newAttempt.pipelineId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder
-          skippedReason createdAt updatedAt
-        }`,
-      });
+      return repository.findRetryJobs(newAttempt.pipelineId);
     }
 
     return triggerRuns({
+      driver: context.driver,
       downloadableFileId,
       event: "downloadableFile.updated",
-      models: input,
     });
   };
 };

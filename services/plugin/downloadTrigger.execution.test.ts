@@ -1,3 +1,6 @@
+import {downloadExecutionRepositoryStub} from "../../tests/fixtures/downloadExecutionRepositoryStub.js";
+import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
+import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the downloadable-file trigger's per-plugin run
 // lifecycle. The real plugin loader is replaced via the injectable `loadPlugin`
 // dependency with a fake in-memory plugin; models are stubbed and PluginRun
@@ -12,13 +15,13 @@ import type {
   PluginConstructor,
   PluginRunResult,
 } from "./pluginLoader.js";
-import { triggerPluginRunsForDownloadableFile } from "./downloadTrigger.js";
+import { triggerPluginRunsForDownloadableFile as actualTrigger } from "./downloadTrigger.js";
 
 type TriggerArgs = Parameters<typeof triggerPluginRunsForDownloadableFile>[0];
 type TriggerOptions = NonNullable<
   Parameters<typeof triggerPluginRunsForDownloadableFile>[1]
 >;
-type Models = TriggerArgs["models"];
+type Models = import("./types.js").Models;
 type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
 type StorageStub = NonNullable<TriggerOptions["storage"]>;
 type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
@@ -643,3 +646,5 @@ test("holds a replacement before the scanner begins", async () => {
 
   assert.equal(fileUpdates[0]!.update?.scanStatus, "PENDING");
 });
+
+const triggerPluginRunsForDownloadableFile = (args: Parameters<typeof actualTrigger>[0] & { models: Models }, options?: Parameters<typeof actualTrigger>[1]) => {const {models, ...rest} = args; return actualTrigger(rest,{...options,downloadRepository:downloadExecutionRepositoryStub(models),leaseRepository:pipelineLeaseRepositoryStub(models),attemptRepository:pipelineAttemptRepositoryStub(models.PluginPipelineRun),notificationRepository:{findAttempt:async()=>[]} as any});};

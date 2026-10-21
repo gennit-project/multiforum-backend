@@ -119,6 +119,10 @@ const buildOgm = ({
 const buildContext = (input: BuildOgmInput = {}) =>
   ({
     ogm: buildOgm(input),
+    wikiGuardRepository: {
+      findPermissionTargets: async (where: unknown) => buildOgm(input).model("WikiPage").find({ where } as never),
+      findChildCreationOwners: async (where: unknown) => buildOgm(input).model("WikiPage").find({ where } as never),
+    },
     contentFeaturePolicyRepository: {
       findChannelPolicy: async (uniqueName: string) => {
         const channel = input.channels?.find(
@@ -505,4 +509,23 @@ test("blocks wiki page deletion when the user is not the original author or a pe
   );
 
   assert.ok(result instanceof Error);
+});
+
+test("wiki permission lookup skips absent/empty filters and preserves two edit snapshots", async () => {
+  const filters: unknown[] = [];
+  const ctx = buildContext();
+  ctx.wikiGuardRepository = {
+    findPermissionTargets: async where => {
+      filters.push(where);
+      return [{ id: "page", Channel: { uniqueName: "cats" }, locked: true }];
+    },
+    findChildCreationOwners: async () => [],
+  };
+  for (const where of [undefined, {}, null]) {
+    await evaluateCanEditWikiPagesRule({ where } as never, ctx);
+  }
+  assert.deepEqual(filters, []);
+  const where = { OR: [{ id: "page" }, { title_CONTAINS: "guide" }] };
+  assert.equal(await evaluateCanEditWikiPagesRule({ where }, ctx, async () => true), true);
+  assert.deepEqual(filters, [where, where]);
 });

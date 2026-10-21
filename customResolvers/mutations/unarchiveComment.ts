@@ -1,7 +1,7 @@
+import { createCommentModerationRepository, type CommentModerationRepository } from "../../services/persistence/commentModerationRepository.js";
+import type { Driver } from "neo4j-driver";
 import type {
   Issue,
-  IssueModel,
-  CommentModel,
   ModerationActionCreateInput,
   IssueWhere,
   IssueUpdateInput,
@@ -22,12 +22,12 @@ type Args = {
 }
 
 type Input = {
-  Issue: IssueModel
-  Comment: CommentModel
+  repository?: CommentModerationRepository;
+  driver: Driver;
 }
 
 const getResolver = (input: Input) => {
-  const { Issue, Comment } = input
+  const repository = input.repository ?? createCommentModerationRepository(input.driver)
   return async (
     parent: unknown,
     args: Args,
@@ -57,39 +57,7 @@ const getResolver = (input: Input) => {
     let existingIssueId = ''
     let existingIssue: Issue | null = null
 
-    const commentData = await Comment.find({
-      where: {
-        id: commentId
-      },
-      selectionSet: `{
-              id
-              text
-              Channel {
-                uniqueName
-              }
-              DiscussionChannel {
-                channelUniqueName
-              }
-              Event {
-                EventChannels {
-                  channelUniqueName
-                }
-              }
-              ParentComment {
-                Channel {
-                  uniqueName
-                }
-                DiscussionChannel {
-                  channelUniqueName
-                }
-                Event {
-                  EventChannels {
-                    channelUniqueName
-                  }
-                }
-              }
-          }`
-    })
+    const commentData = await repository.findUnarchiveTarget(commentId)
     const channelUniqueName =
       commentData[0]?.Channel?.uniqueName ||
       commentData[0]?.DiscussionChannel?.channelUniqueName ||
@@ -105,17 +73,7 @@ const getResolver = (input: Input) => {
     }
 
     // Check if an issue already exists for the comment ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
-        channelUniqueName: channelUniqueName,
-        relatedCommentId: commentId
-      },
-      selectionSet: `{
-              id
-              issueNumber
-              flaggedServerRuleViolation
-          }`
-    })
+    const issueData = await repository.findIssue(channelUniqueName, commentId)
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || ''
@@ -180,28 +138,8 @@ const getResolver = (input: Input) => {
     }
 
     try {
-      await Issue.update({
-        where: issueUpdateWhere,
-        update: unarchiveCreateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`
-      })
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueCloseCreateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`
-      })
+      await repository.appendIssueAction(issueUpdateWhere, unarchiveCreateInput)
+      const issueData = await repository.appendIssueAction(issueUpdateWhere, issueCloseCreateInput)
       logger.info('issueData', JSON.stringify(issueData))
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
@@ -209,7 +147,7 @@ const getResolver = (input: Input) => {
       }
       existingIssue = issueData.issues[0]
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -229,10 +167,7 @@ const getResolver = (input: Input) => {
       const commentUpdateInput: CommentUpdateInput = {
         archived: false
       }
-      const commentUpdateData = await Comment.update({
-        where: commentUpdateWhere,
-        update: commentUpdateInput
-      })
+      const commentUpdateData = await repository.setArchived(commentUpdateWhere, commentUpdateInput)
       const commentUpdateId = commentUpdateData.comments[0]?.id || null
       if (!commentUpdateId) {
         throw new GraphQLError('Error updating comment')

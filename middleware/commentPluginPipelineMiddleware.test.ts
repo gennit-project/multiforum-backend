@@ -1,44 +1,22 @@
 // Unit tests for the comment plugin-pipeline middleware. After createComments
-// runs, it gathers the OGM models and fires triggerPluginRunsForComment for each
-// created comment (the trigger itself is tested separately). These tests drive
-// the middleware's wiring — the required-model guard, the missing-id skip, the
+// runs, it fires triggerPluginRunsForComment for each created comment (the
+// trigger itself, and its persistence, are tested separately). These tests drive
+// the middleware's wiring — the driver guard, the missing-id skip, the
 // per-comment dispatch, and the error path that swallows failures and still
-// returns the resolver result — with a stubbed resolver and a permissive OGM.
+// returns the resolver result — with a stubbed resolver and a minimal context.
 import assert from "node:assert/strict";
 import test from "node:test";
 import middleware from "./commentPluginPipelineMiddleware.js";
 
 const M: any = (middleware as any).Mutation;
 
-const REQUIRED = [
-  "Channel",
-  "Comment",
-  "PluginPipelineRun",
-  "PluginRun",
-  "ServerConfig",
-  "ServerSecret",
-  "User",
-];
-
-// Build a ctx whose ogm returns permissive model stubs. `missing` names a model
-// whose lookup returns null, to exercise the required-model guard. `finds`
-// records which models had find() called.
-function makeCtx(opts: { missing?: string; commentRows?: unknown[] } = {}) {
-  const finds: string[] = [];
-  const ogm = {
-    model(name: string) {
-      if (name === opts.missing) return null;
-      return {
-        find: async () => {
-          finds.push(name);
-          return name === "Comment" ? opts.commentRows ?? [] : [];
-        },
-        create: async () => ({}),
-        update: async () => ({}),
-      };
-    },
-  };
-  return { ctx: { ogm, driver: {}, user: { username: "alice" } } as any, finds };
+// Build a ctx with a driver by default. Pass `driver: null` to exercise the
+// driver guard. The real trigger resolves persistence through driver-backed
+// repositories, so a placeholder driver makes the dispatch path throw, which the
+// middleware swallows — the observable contract here is the returned result.
+function makeCtx(opts: { driver?: unknown } = {}) {
+  const driver = "driver" in opts ? opts.driver : {};
+  return { ctx: { driver, user: { username: "alice" } } as any };
 }
 
 function resolveReturning(result: unknown) {
@@ -51,14 +29,42 @@ function resolveReturning(result: unknown) {
 }
 
 test("dispatches the trigger for each created comment and returns the resolver result", async () => {
-  // The trigger finds each comment but classifies it as a feedback comment, so it
-  // returns fast without touching the (slow) plugin-execution path.
-  const feedback = { id: "c-1", isFeedbackComment: true, DiscussionChannel: null };
-  const { ctx } = makeCtx({ commentRows: [feedback] });
+  const { buildSchema } = await import("graphql");
+  const { registerGeneratedSchema } = await import("../services/persistence/generatedSchemaOperations.js");
+  // Register a minimal generated schema on the stub driver so the driver-backed
+  // trigger resolves findComment. The resolver records which comment ids were
+  // looked up (proving per-comment dispatch) and returns a non-discussion comment
+  // so each trigger invocation exits fast without reaching the plugin-run path.
+  const dispatched: string[] = [];
+  const schema = buildSchema(`
+    type User { username: String displayName: String isBot: Boolean }
+    type ModerationProfile { displayName: String User: User }
+    union CommentAuthor = User | ModerationProfile
+    type Discussion { id: ID title: String body: String }
+    type DiscussionChannel { id: ID discussionId: String channelUniqueName: String Discussion: Discussion }
+    type Channel { uniqueName: String displayName: String description: String rules: String }
+    type EventChannel { channelUniqueName: String }
+    type Event { id: ID title: String EventChannels: [EventChannel] }
+    type Issue { id: ID }
+    type ParentComment { id: ID }
+    type Comment { id: ID text: String botMentions: [String] isFeedbackComment: Boolean createdAt: String CommentAuthor: CommentAuthor DiscussionChannel: DiscussionChannel Channel: Channel Event: Event Issue: Issue ParentComment: ParentComment }
+    input CommentWhere { id: ID }
+    type Query { comments(where: CommentWhere): [Comment] }
+  `);
+  schema.getQueryType()!.getFields().comments.resolve = (_parent: unknown, { where }: { where?: { id?: string } }) => {
+    dispatched.push(where?.id as string);
+    return [{ id: where?.id, isFeedbackComment: false, botMentions: [], DiscussionChannel: null, Channel: null, Event: null, Issue: null, CommentAuthor: null, ParentComment: null }];
+  };
+  const driver = {} as any;
+  registerGeneratedSchema(driver, schema);
+
+  const ctx = { driver, user: { username: "alice" } } as any;
   const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }, { id: "c-2" }] });
   const out = await M.createComments(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "c-1" }, { id: "c-2" }] });
   assert.equal(state.calls, 1);
+  // The middleware dispatched the trigger once per created comment, in order.
+  assert.deepEqual(dispatched, ["c-1", "c-2"]);
 });
 
 test("no created comments -> returns the result without dispatching", async () => {
@@ -76,16 +82,14 @@ test("undefined result is returned unchanged", async () => {
   assert.equal(out, undefined);
 });
 
-for (const model of REQUIRED) {
-  test(`returns early when the required '${model}' model is unavailable`, async () => {
-    const { ctx, finds } = makeCtx({ missing: model });
-    const { resolve } = resolveReturning({ comments: [{ id: "c-1" }] });
-    const out = await M.createComments(resolve, null, {}, ctx, {});
-    assert.deepEqual(out, { comments: [{ id: "c-1" }] });
-    // guard short-circuits before any comment lookup runs
-    assert.ok(!finds.includes("Comment"), "did not reach the per-comment dispatch");
-  });
-}
+test("returns early when the driver is unavailable", async () => {
+  const { ctx } = makeCtx({ driver: null });
+  const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }] });
+  const out = await M.createComments(resolve, null, {}, ctx, {});
+  // Guard short-circuits before any dispatch, returning the resolver result as-is.
+  assert.deepEqual(out, { comments: [{ id: "c-1" }] });
+  assert.equal(state.calls, 1);
+});
 
 test("comments without an id are skipped", async () => {
   const { ctx } = makeCtx();
@@ -95,15 +99,9 @@ test("comments without an id are skipped", async () => {
 });
 
 test("a failure while dispatching is swallowed and the result still returns", async () => {
-  // ogm.model throws -> the whole try block fails and is caught.
-  const ctx = {
-    ogm: {
-      model() {
-        throw new Error("ogm down");
-      },
-    },
-    driver: {},
-  } as any;
+  // The placeholder driver makes the trigger's repository lookups throw; the
+  // middleware catches the failure and still returns the resolver result.
+  const { ctx } = makeCtx();
   const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }] });
   const out = await M.createComments(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "c-1" }] });

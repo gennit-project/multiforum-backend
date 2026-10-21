@@ -1,19 +1,12 @@
+import { createSuspensionWriteRepository } from "../../../services/persistence/suspensionWriteRepository.js";
+import { createIssueTargetRepository } from "../../../services/persistence/issueTargetRepository.js";
 import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../../types/context.js'
 import type {
-  ChannelModel,
-  IssueModel,
-  CommentModel,
-  DiscussionModel,
-  EventModel,
-  ServerConfigModel,
   IssueUpdateInput,
   ChannelUpdateInput,
   ServerConfigUpdateInput,
-  TextVersionModel,
-  UserModel,
-  WikiPageModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
 import { getModerationActionCreateInput } from '../reportComment.js'
@@ -21,15 +14,8 @@ import { notifyIssueSubscribers } from '../../../services/issueNotifications.js'
 import { resolveIssueTarget } from '../../shared/resolveIssueTarget.js'
 
 type CreateSuspensionResolverOptions = {
-  Issue: IssueModel
-  Channel: ChannelModel
-  ServerConfig: ServerConfigModel
-  Comment: CommentModel
-  Discussion: DiscussionModel
-  Event: EventModel
-  User: UserModel
-  WikiPage?: WikiPageModel
-  TextVersion?: TextVersionModel
+  includeWikiPage?: boolean
+  includeTextVersion?: boolean
 
   // The name of the field on the Issue that identifies the user or mod to suspend
   issueRelatedAccountField: 'relatedUsername' | 'relatedModProfileName'
@@ -50,16 +36,9 @@ type Args = {
 }
 
 export function createSuspensionResolver ({
-  Issue,
-  Channel,
-  ServerConfig,
-  Discussion,
-  Event,
-  Comment,
-  User,
-  WikiPage,
-  TextVersion,
   suspendedEntityName,
+  includeWikiPage = false,
+  includeTextVersion = false,
 }: CreateSuspensionResolverOptions) {
   return async function suspendEntityResolver (
     parent: unknown,
@@ -82,13 +61,9 @@ export function createSuspensionResolver ({
       username,
     } =
       await resolveIssueTarget({
-        Issue,
-        Comment,
-        Discussion,
-        Event,
-        User,
-        WikiPage,
-        TextVersion,
+        repository: context.issueTargetRepository ?? createIssueTargetRepository(context.driver),
+        includeWikiPage,
+        includeTextVersion,
         issueId,
         suspendedEntityName,
       })
@@ -126,6 +101,8 @@ export function createSuspensionResolver ({
       issueId
     })
 
+    const repository = context.suspensionWriteRepository ?? createSuspensionWriteRepository(context.driver)
+
     // 6. Update the Issue with the ModerationAction
     let updatedIssue
     const closeIssueUpdateInput: IssueUpdateInput = {
@@ -149,24 +126,8 @@ export function createSuspensionResolver ({
       ]
     }
     try {
-      await Issue.update({
-        where: { id: issueId },
-        update: suspendUpdateInput,
-      })
-      updatedIssue = await Issue.update({
-        where: { id: issueId },
-        update: closeIssueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            ActivityFeed {
-              id
-              actionType
-            }
-          }
-        }`
-      })
+      await repository.appendSuspensionActivity(issueId, suspendUpdateInput)
+      updatedIssue = await repository.closeSuspensionIssue(issueId, closeIssueUpdateInput)
     } catch (err) {
       throw new GraphQLError('Error updating issue')
     }
@@ -177,7 +138,7 @@ export function createSuspensionResolver ({
     }
 
     await notifyIssueSubscribers({
-      IssueModel: Issue,
+      notificationSnapshotRepository: context.notificationSnapshotRepository,
       driver: context.driver,
       issueId,
       actorUsername: loggedInUsername,
@@ -271,30 +232,14 @@ export function createSuspensionResolver ({
     if (channelUpdateInput) {
       try {
         if (scope === 'server') {
-          const serverData = await ServerConfig.update({
-            where: { serverName: process.env.SERVER_CONFIG_NAME },
-            update: channelUpdateInput as ServerConfigUpdateInput,
-            selectionSet: `{
-              serverConfigs {
-                serverName
-              }
-            }`,
-          })
+          const serverData = await repository.addServerSuspension(process.env.SERVER_CONFIG_NAME, channelUpdateInput as ServerConfigUpdateInput)
 
           const updatedServer = serverData.serverConfigs?.[0] || null
           if (!updatedServer?.serverName) {
             throw new GraphQLError('Error updating server config')
           }
         } else {
-          const channelData = await Channel.update({
-            where: { uniqueName: channelUniqueName },
-            update: channelUpdateInput as ChannelUpdateInput,
-            selectionSet: `{
-              channels {
-                uniqueName
-              }
-            }`
-          })
+          const channelData = await repository.addChannelSuspension(channelUniqueName, channelUpdateInput as ChannelUpdateInput)
 
           const updatedChannel = channelData.channels?.[0] || null
           if (!updatedChannel?.uniqueName) {

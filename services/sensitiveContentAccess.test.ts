@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 import type { Driver } from "neo4j-driver";
-import type { ServerConfigModel } from "../ogm_types.js";
+import type { AgePolicyReader } from "./persistence/instancePolicyRepository.js";
 import type { GraphQLContext } from "../types/context.js";
 import { mayAccessSensitiveContent } from "./sensitiveContentAccess.js";
 import { invalidateAgePolicyCache } from "./agePolicyCache.js";
@@ -13,13 +13,13 @@ beforeEach(() => {
 
 const policyModel = (enabled: boolean, minimumAge = 18) =>
   ({
-    find: async () => [{
+    findAgePolicyConfigs: async () => [{
       accountAgeGateEnabled: false,
       minimumAccountAge: 13,
       sensitiveContentAgeGateEnabled: enabled,
       minimumSensitiveContentAge: minimumAge,
     }],
-  }) as unknown as ServerConfigModel;
+  }) as unknown as AgePolicyReader;
 
 const createDriver = (birthday: string | null) => {
   let sessionCount = 0;
@@ -71,7 +71,7 @@ test("allows all callers without reading birthdays when the gate is disabled", a
   assert.equal(await mayAccessSensitiveContent({
     context,
     driver,
-    ServerConfig: policyModel(false),
+    agePolicyRepository: policyModel(false),
     now,
     serverName: "test",
   }), true);
@@ -84,7 +84,7 @@ test("denies an anonymous caller when the gate is enabled", async () => {
   assert.equal(await mayAccessSensitiveContent({
     context: contextFor(null),
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   }), false);
@@ -96,7 +96,7 @@ test("fails closed without a GraphQL context when the gate is enabled", async ()
 
   assert.equal(await mayAccessSensitiveContent({
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   }), false);
@@ -109,7 +109,7 @@ test("denies an authenticated caller whose birthday is missing", async () => {
   assert.equal(await mayAccessSensitiveContent({
     context: contextFor("alice"),
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   }), false);
@@ -122,7 +122,7 @@ test("denies an authenticated caller below the sensitive-content age", async () 
   assert.equal(await mayAccessSensitiveContent({
     context: contextFor("alice"),
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   }), false);
@@ -134,7 +134,7 @@ test("allows an authenticated caller who meets the sensitive-content age", async
   assert.equal(await mayAccessSensitiveContent({
     context: contextFor("alice"),
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   }), true);
@@ -146,7 +146,7 @@ test("uses the birthday already resolved with identity without another DB call",
   assert.equal(await mayAccessSensitiveContent({
     context: resolvedContextFor("alice", "2000-01-01"),
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   }), true);
@@ -159,7 +159,7 @@ test("treats a resolved missing birthday as ineligible without another DB call",
   assert.equal(await mayAccessSensitiveContent({
     context: resolvedContextFor("alice", null),
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   }), false);
@@ -172,7 +172,7 @@ test("caches the decision on the request context", async () => {
   const input = {
     context,
     driver,
-    ServerConfig: policyModel(true),
+    agePolicyRepository: policyModel(true),
     now,
     serverName: "test",
   };

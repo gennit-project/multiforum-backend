@@ -3,17 +3,20 @@ import assert from "node:assert/strict";
 import { commentVersionHistoryHandler } from "../hooks/commentVersionHistoryHook.js";
 import { discussionEditNotificationHandler } from "../hooks/discussionVersionHistoryHook.js";
 import type { GraphQLContext } from "../types/context.js";
+import type { NotificationInput } from "../services/persistence/notificationWriter.js";
 import type { CommentSnapshot } from "../utils/buildCommentMentionContext.js";
 
 const buildUserModel = () => {
-  const updates: Array<any> = [];
+  const updates: NotificationInput[] = [];
   return {
     updates,
-    model: {
-      update: async (input: any) => {
+    notificationWriter: {
+      createForUser: async (input: NotificationInput) => {
         updates.push(input);
-        return { users: [{ username: input?.where?.username || "" }] };
+        return true;
       },
+    },
+    model: {
       find: async () => [{ username: "modUser" }],
     },
   };
@@ -37,10 +40,11 @@ const buildCommentModels = (userModel: any) => {
 
 test("comment edit by mod notifies OP", async () => {
   process.env.FRONTEND_URL = "https://example.com";
-  const { model: UserModel, updates } = buildUserModel();
+  const { model: UserModel, notificationWriter, updates } = buildUserModel();
   const { CommentModel, TextVersionModel, IssueModel } = buildCommentModels(UserModel);
 
   const context = {
+    notificationWriter,
     user: {
       username: "modUser",
       data: {
@@ -76,9 +80,9 @@ test("comment edit by mod notifies OP", async () => {
 
   assert.equal(updates.length, 1);
   const notification = updates[0];
-  assert.equal(notification.where.username, "opUser");
+  assert.equal(notification.username, "opUser");
   const notificationText =
-    notification.update.Notifications[0].create[0].node.text;
+    notification.text;
   assert.match(notificationText, /Mod A edited your comment/);
   assert.match(
     notificationText,
@@ -88,10 +92,11 @@ test("comment edit by mod notifies OP", async () => {
 
 test("comment edit by OP does not notify", async () => {
   process.env.FRONTEND_URL = "https://example.com";
-  const { model: UserModel, updates } = buildUserModel();
+  const { model: UserModel, notificationWriter, updates } = buildUserModel();
   const { CommentModel, TextVersionModel, IssueModel } = buildCommentModels(UserModel);
 
   const context = {
+    notificationWriter,
     user: {
       username: "opUser",
     },
@@ -127,9 +132,10 @@ test("comment edit by OP does not notify", async () => {
 
 test("discussion edit by mod notifies OP", async () => {
   process.env.FRONTEND_URL = "https://example.com";
-  const { model: UserModel, updates } = buildUserModel();
+  const { model: UserModel, notificationWriter, updates } = buildUserModel();
 
   const context = {
+    notificationWriter,
     user: {
       username: "modUser",
       data: {
@@ -158,9 +164,9 @@ test("discussion edit by mod notifies OP", async () => {
 
   assert.equal(updates.length, 1);
   const notification = updates[0];
-  assert.equal(notification.where.username, "opUser");
+  assert.equal(notification.username, "opUser");
   const notificationText =
-    notification.update.Notifications[0].create[0].node.text;
+    notification.text;
   assert.match(notificationText, /Mod A edited your discussion/);
   assert.match(
     notificationText,
@@ -170,9 +176,10 @@ test("discussion edit by mod notifies OP", async () => {
 
 test("discussion edit by OP does not notify", async () => {
   process.env.FRONTEND_URL = "https://example.com";
-  const { model: UserModel, updates } = buildUserModel();
+  const { model: UserModel, notificationWriter, updates } = buildUserModel();
 
   const context = {
+    notificationWriter,
     user: {
       username: "opUser",
     },

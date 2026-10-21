@@ -71,19 +71,20 @@ const createDiscussionChannelWith = (overrides: Record<string, unknown>) =>
 
 test("addEmojiToComment rejects disabled emoji channels", async () => {
   const Comment = createDisabledComment();
-  const resolver = addEmojiToCommentResolver({ Comment: Comment as any });
+  const resolver = addEmojiToCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
-      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
+      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("removeEmojiFromComment rejects disabled emoji channels", async () => {
   const Comment = createDisabledComment();
-  const resolver = removeEmojiFromCommentResolver({ Comment: Comment as any });
+  const resolver = removeEmojiFromCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
@@ -94,18 +95,19 @@ test("removeEmojiFromComment rejects disabled emoji channels", async () => {
           emojiLabel: emojiArgs.emojiLabel,
           username: emojiArgs.username,
         },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("addEmojiToDiscussionChannel rejects disabled emoji channels", async () => {
   const DiscussionChannel = createDisabledDiscussionChannel();
   const resolver = addEmojiToDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -116,18 +118,19 @@ test("addEmojiToDiscussionChannel rejects disabled emoji channels", async () => 
           ...emojiArgs,
           discussionChannelId: "discussion-channel-1",
         },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
 });
 
 test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async () => {
   const DiscussionChannel = createDisabledDiscussionChannel();
   const resolver = removeEmojiFromDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -139,12 +142,13 @@ test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async (
           emojiLabel: emojiArgs.emojiLabel,
           username: emojiArgs.username,
         },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /Emoji reactions are disabled in channel 'cats'/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
 });
 
 // Locked/archived content is frozen for reactions (item: "when a comment or
@@ -152,14 +156,15 @@ test("removeEmojiFromDiscussionChannel rejects disabled emoji channels", async (
 
 test("addEmojiToComment rejects when the comment is archived", async () => {
   const Comment = createCommentWith({ archived: true });
-  const resolver = addEmojiToCommentResolver({ Comment: Comment as any });
+  const resolver = addEmojiToCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
-      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
+      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
     ),
     /this comment is archived/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("addEmojiToComment rejects when the discussion is locked", async () => {
@@ -171,20 +176,21 @@ test("addEmojiToComment rejects when the discussion is locked", async () => {
       Channel: { uniqueName: "cats", emojiEnabled: true },
     },
   });
-  const resolver = addEmojiToCommentResolver({ Comment: Comment as any });
+  const resolver = addEmojiToCommentResolver({ reactionWriter: {updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any });
 
   await assert.rejects(
     withMutedConsoleError(() =>
-      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
+      resolver(null, { ...emojiArgs, commentId: "comment-1" }, {contentValidationRepository: {findCommentEmojiState: async (id: string) => Comment.find({where:{id}})}} as unknown as GraphQLContext, null as unknown as GraphQLResolveInfo)
     ),
     /this discussion is locked/
   );
+  assert.deepEqual(Comment.updateCalls, []);
 });
 
 test("addEmojiToDiscussionChannel rejects when locked", async () => {
   const DiscussionChannel = createDiscussionChannelWith({ locked: true });
   const resolver = addEmojiToDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -192,18 +198,19 @@ test("addEmojiToDiscussionChannel rejects when locked", async () => {
       resolver(
         null,
         { ...emojiArgs, discussionChannelId: "discussion-channel-1" },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /this discussion is locked/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
 });
 
 test("addEmojiToDiscussionChannel rejects when archived", async () => {
   const DiscussionChannel = createDiscussionChannelWith({ archived: true });
   const resolver = addEmojiToDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
+    reactionWriter: {updateDiscussionChannelEmoji: async (id: string,emoji: string) => DiscussionChannel.update({where:{id},update:{emoji}})} as any,
   });
 
   await assert.rejects(
@@ -211,10 +218,24 @@ test("addEmojiToDiscussionChannel rejects when archived", async () => {
       resolver(
         null,
         { ...emojiArgs, discussionChannelId: "discussion-channel-1" },
-        {} as unknown as GraphQLContext,
+        {contentValidationRepository: {findDiscussionChannelEmojiState: async (id: string) => DiscussionChannel.find({where:{id}})}} as unknown as GraphQLContext,
         null as unknown as GraphQLResolveInfo
       )
     ),
     /this discussion is archived/
   );
+  assert.deepEqual(DiscussionChannel.updateCalls, []);
+});
+
+test("comment emoji validation errors never reach the update", async () => {
+ const Comment=createCommentWith({});
+ const resolver=addEmojiToCommentResolver({reactionWriter:{updateCommentEmoji: async (id: string,emoji: string) => Comment.update({where:{id},update:{emoji}})} as any});
+ for (const context of [
+  {driver:{}},
+  {contentValidationRepository:{findCommentEmojiState:async()=>{throw new Error("Malformed selected flag");}}},
+  {contentValidationRepository:{findCommentEmojiState:async()=>[{id:"comment-1",emoji:"invalid JSON"}]}},
+ ]) {
+  await assert.rejects(resolver(null,{...emojiArgs,commentId:"comment-1"},context as unknown as GraphQLContext,{} as GraphQLResolveInfo));
+  assert.deepEqual(Comment.updateCalls,[]);
+ }
 });

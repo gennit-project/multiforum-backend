@@ -1,3 +1,5 @@
+import {pipelineRerunRepositoryStub} from "../../tests/fixtures/pipelineRerunRepositoryStub.js";
+import {pipelineStartRepositoryStub} from "../../tests/fixtures/pipelineStartRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { PluginPipelineRun } from "../../ogm_types.js";
@@ -9,7 +11,7 @@ import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
-  createRerunPluginPipelineResolver,
+  createRerunPluginPipelineResolver as actualFactory,
   type RerunPluginPipelineInput,
 } from "./rerunPluginPipeline.js";
 
@@ -119,7 +121,7 @@ const makeInput = ({
   discussion?: DiscussionFixture | null;
   channel?: ChannelFixture | null;
   serverConfig?: unknown;
-} = {}): RerunPluginPipelineInput => ({
+} = {}) => ({
   Channel: modelStub<"Channel">({
     find: async () => (channel ? [channel] : []),
   }),
@@ -487,3 +489,5 @@ test("reruns a channel pipeline with channel retry lineage", async () => {
     }
   );
 });
+
+const createRerunPluginPipelineResolver = (input: Parameters<typeof pipelineRerunRepositoryStub>[0] & Parameters<typeof pipelineStartRepositoryStub>[0], ...args: Parameters<typeof actualFactory> extends [unknown, ...infer R] ? R : never)=>actualFactory({rerunRepository:pipelineRerunRepositoryStub(input),startRepository:pipelineStartRepositoryStub(input)},...args);

@@ -1,3 +1,4 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -6,16 +7,16 @@ import {
   getAgeEligibility,
   loadAgePolicy,
 } from "../../services/agePolicy.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 
 type Input = {
   driver: Driver;
-  ServerConfig: ServerConfigModel;
+  agePolicyRepository: AgePolicyReader;
 };
 
 type Args = { birthday: string };
 
-const setMyBirthday = ({ driver, ServerConfig }: Input) => async (
+const setMyBirthday = ({ driver, agePolicyRepository }: Input) => async (
   _parent: unknown,
   { birthday }: Args,
   context: GraphQLContext
@@ -41,7 +42,7 @@ const setMyBirthday = ({ driver, ServerConfig }: Input) => async (
       throw new Error("BIRTHDAY_ALREADY_SET");
     }
 
-    const policy = await loadAgePolicy(ServerConfig);
+    const policy = await loadAgePolicy(agePolicyRepository);
     return {
       birthday: storedBirthday,
       ...getAgeEligibility({ birthday: storedBirthday, policy }),

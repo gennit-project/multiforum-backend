@@ -1,10 +1,11 @@
+import {pipelineStartRepositoryStub} from "../../tests/fixtures/pipelineStartRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { PLUGIN_EVENTS } from "../../services/plugin/constants.js";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
-  createStartPluginPipelineResolver,
+  createStartPluginPipelineResolver as actualFactory,
   type StartPluginPipelineInput,
 } from "./startPluginPipeline.js";
 
@@ -104,7 +105,7 @@ const makeInput = ({
         find: async () => (config ? [config] : []),
       }),
       ServerSecret: modelStub<"ServerSecret">(),
-    } satisfies StartPluginPipelineInput,
+    },
     createdAttempt,
   };
 };
@@ -384,3 +385,5 @@ test("starts the explicitly selected channel pipeline", async () => {
     }
   );
 });
+
+const createStartPluginPipelineResolver = (input: Parameters<typeof pipelineStartRepositoryStub>[0], ...args: Parameters<typeof actualFactory> extends [unknown, ...infer R] ? R : never)=>actualFactory({startRepository:pipelineStartRepositoryStub(input)},...args);

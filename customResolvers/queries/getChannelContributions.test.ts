@@ -33,9 +33,11 @@ test("getChannelContributions executes only the contribution query", async () =>
     }),
   } as unknown as Driver;
   const resolver = getChannelContributionsResolver({
-    Channel: {
-      find: async () => [{ uniqueName: "cats" }],
-    } as any,
+    contributionTargetRepository: {
+      channelExists: async () => true,
+      userExists: async () => false,
+      moderationProfileExists: async () => false,
+    },
     driver,
   });
   const context = {

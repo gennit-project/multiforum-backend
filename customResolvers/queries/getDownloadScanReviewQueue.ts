@@ -1,13 +1,14 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import type { GraphQLContext } from "../../types/context.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 
-type Input = { driver: Driver; ServerConfig?: ServerConfigModel };
+type Input = { driver: Driver; agePolicyRepository?: AgePolicyReader };
 
-const getDownloadScanReviewQueue = ({ driver, ServerConfig }: Input) => {
+const getDownloadScanReviewQueue = ({ driver, agePolicyRepository }: Input) => {
   return async (_parent: unknown, args: { limit?: number | null } = {}, context: GraphQLContext) => {
-    const canViewSensitiveContent = await mayAccessSensitiveContent({ context, driver, ServerConfig });
+    const canViewSensitiveContent = await mayAccessSensitiveContent({ context, driver, agePolicyRepository });
     const limit = Math.min(Math.max(args.limit || 50, 1), 100);
     const session = driver.session();
     try {

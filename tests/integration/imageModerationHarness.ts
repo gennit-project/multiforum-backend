@@ -1,3 +1,4 @@
+import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 // Harness for integration-testing the image-moderation mutation resolvers
 // against a live Neo4j. These resolvers are heavy DB orchestration (create an
 // Issue, ModerationActions, flip Image flags), so they can only be meaningfully
@@ -14,7 +15,7 @@
 import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
 import neo4j, { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import { CHANNEL_FULLTEXT_CREATE_CYPHER } from "../../services/channelFulltext.js";
 import { CONTENT_FULLTEXT_CREATE_STATEMENTS } from "../../services/contentFulltext.js";
 
@@ -47,6 +48,7 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
 
   const { ogm, resolvers } = getCustomResolvers(driver);
   await ogm.init();
+  registerGeneratedSchema(driver, ogm.schema);
 
   // Production creates full-text indexes on startup via ensureSchemaConstraints
   // (the OGM's assertIndexesAndConstraints). This harness wires resolvers

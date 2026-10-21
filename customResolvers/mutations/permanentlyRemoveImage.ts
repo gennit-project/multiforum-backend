@@ -1,7 +1,6 @@
+import { createImageModerationRepository, type ImageModerationRepository } from "../../services/persistence/imageModerationRepository.js";
 import type {
   Issue,
-  IssueModel,
-  ImageModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -24,8 +23,7 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Image: ImageModel;
+  repository?: ImageModerationRepository;
   driver: Driver;
 };
 
@@ -83,7 +81,8 @@ const getModerationActionCreateInput = (input: {
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Image, driver } = input;
+  const { driver } = input;
+  const repository = input.repository ?? createImageModerationRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { imageId, explanation } = args;
 
@@ -107,19 +106,7 @@ const getResolver = (input: Input) => {
     }
 
     // Verify the image exists
-    const imageData = await Image.find({
-      where: {
-        id: imageId,
-      },
-      selectionSet: `{
-        id
-        url
-        permanentlyRemoved
-        Uploader {
-          username
-        }
-      }`,
-    });
+    const imageData = await repository.findPermanentRemovalTarget(imageId);
 
     if (imageData.length === 0) {
       throw new GraphQLError("Image not found");
@@ -145,14 +132,7 @@ const getResolver = (input: Input) => {
       channelUniqueName: null, // Server-scoped
     };
 
-    const existingIssueData = await Issue.find({
-      where: issueWhereClause,
-      selectionSet: `{
-        id
-        issueNumber
-        flaggedServerRuleViolation
-      }`,
-    });
+    const existingIssueData = await repository.findIssue(issueWhereClause);
 
     if (existingIssueData.length > 0) {
       existingIssueId = existingIssueData[0]?.id || "";
@@ -186,16 +166,7 @@ const getResolver = (input: Input) => {
       };
 
       try {
-        const createResult = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const createResult = await repository.createModerationIssue(issueCreateInput);
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -258,29 +229,9 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      await Issue.update({
-        where: issueUpdateWhere,
-        update: removeUpdateIssueInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      await repository.appendIssueAction(issueUpdateWhere, removeUpdateIssueInput);
 
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: closeIssueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueData = await repository.appendIssueAction(issueUpdateWhere, closeIssueUpdateInput);
 
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
@@ -289,7 +240,7 @@ const getResolver = (input: Input) => {
       existingIssue = issueData.issues[0];
 
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -334,10 +285,7 @@ const getResolver = (input: Input) => {
         ],
       };
 
-      const imageUpdateData = await Image.update({
-        where: imageUpdateWhere,
-        update: imageUpdateInput,
-      });
+      const imageUpdateData = await repository.updateModerationState(imageUpdateWhere, imageUpdateInput);
 
       const imageUpdateId = imageUpdateData.images[0]?.id || null;
       if (!imageUpdateId) {

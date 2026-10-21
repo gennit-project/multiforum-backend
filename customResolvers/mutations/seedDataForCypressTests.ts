@@ -1,16 +1,8 @@
+import { createEventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
+import {createDiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
+import {createSeedDataRepository,type SeedDataRepository} from "../../services/persistence/seedDataRepository.js";
+import { createAccountRegistrationRepository } from "../../services/persistence/accountRegistrationRepository.js";
 import {
-  ChannelModel,
-  EventModel,
-  EmailModel,
-  UserModel,
-  DiscussionModel,
-  CommentModel,
-  TagModel,
-  ChannelRoleModel,
-  ModChannelRoleModel,
-  ServerRoleModel,
-  ModServerRoleModel,
-  ServerConfigModel,
   ChannelCreateInput,
   CommentCreateInput,
   TagCreateInput,
@@ -52,19 +44,8 @@ type Args = {
 };
 
 type Input = {
+  seedDataRepository?: SeedDataRepository;
   driver: Driver;
-  Channel: ChannelModel;
-  Comment: CommentModel;
-  User: UserModel;
-  Email: EmailModel;
-  Discussion: DiscussionModel;
-  Event: EventModel;
-  Tag: TagModel;
-  ChannelRole: ChannelRoleModel;
-  ModChannelRole: ModChannelRoleModel;
-  ServerRole: ServerRoleModel;
-  ModServerRole: ModServerRoleModel;
-  ServerConfig: ServerConfigModel;
 };
 
 export const linkSeededChannelRoleOwners = async (driver: Driver) => {
@@ -88,18 +69,6 @@ export const linkSeededChannelRoleOwners = async (driver: Driver) => {
 const seedDataForCypressTestsResolver = (input: Input) => {
   const {
     driver,
-    User,
-    Email,
-    Channel,
-    Comment,
-    Discussion,
-    Event,
-    Tag,
-    ChannelRole,
-    ModChannelRole,
-    ServerRole,
-    ModServerRole,
-    ServerConfig,
   } = input;
 
   return async (
@@ -122,67 +91,21 @@ const seedDataForCypressTestsResolver = (input: Input) => {
       serverConfigs,
     } = args;
 
+    const repository = input.seedDataRepository ?? createSeedDataRepository(driver);
+
     // Create entities in the correct order to satisfy dependencies
-    await ModChannelRole.create({ input: modChannelRoles });
-    await ChannelRole.create({ input: channelRoles });
-    await ModServerRole.create({ input: modServerRoles });
-    await ServerRole.create({ input: serverRoles });
+    await repository.createModChannelRoles(modChannelRoles);
+    await repository.createChannelRoles(channelRoles);
+    await repository.createModServerRoles(modServerRoles);
+    await repository.createServerRoles(serverRoles);
 
     // Create server configurations
-    await ServerConfig.create({ input: serverConfigs });
+    await repository.createServerConfigs(serverConfigs);
 
     // Update the default server role in the server configuration
     const session = driver.session();
     try {
-      await ServerConfig.update({
-        where: { serverName: "Cypress Test Server" },
-        update: {
-          DefaultServerRole: {
-            connect: {
-              where: {
-                node: { name: "CanCreateAnything" },
-              },
-              overwrite: true,
-            },
-          },
-          DefaultSuspendedRole: {
-            connect: {
-              where: {
-                node: { name: "Suspended Role" },
-              },
-              overwrite: true,
-            },
-          },
-          DefaultElevatedModRole: {
-            connect: {
-              where: { 
-                node: {
-                  name: "DefaultElevatedModRole" 
-                },
-              },
-              overwrite: true,
-            }
-          },
-          DefaultModRole: {
-            connect: {
-              where: {
-                node: {
-                  name: "BasicModRole"
-                }
-              }
-            }
-          },
-          DefaultSuspendedModRole: {
-            connect: {
-              where: {
-                node: {
-                  name: "DefaultSuspendedModRole"
-                }
-              }
-            }
-          }
-        },
-      });
+      await repository.connectDefaultRoles();
     } catch (error: unknown) {
       logger.error("Error updating server configuration:", error);
       const message = error instanceof Error ? error.message : String(error);
@@ -196,20 +119,19 @@ const seedDataForCypressTestsResolver = (input: Input) => {
     // Create users and their emails
     for (const user of users) {
       await createUsersWithEmails(
-        User,
-        Email,
+        createAccountRegistrationRepository(driver),
         user.emailAddress,
         user.username
       );
     }
 
     // Create other entities
-    await Channel.create({ input: channels });
+    await repository.createChannels(channels);
     await linkSeededChannelRoleOwners(driver);
-    await Tag.create({ input: tags });
-    await createDiscussionsFromInput(Discussion, driver, discussions);
-    await createEventsFromInput(Event, driver, events, context);
-    await Comment.create({ input: comments });
+    await repository.createTags(tags);
+    await createDiscussionsFromInput(createDiscussionCreationRepository(driver), driver, discussions);
+    await createEventsFromInput(createEventWriteRepository(driver), driver, events, context);
+    await repository.createComments(comments);
     return { success: true, message: "All test data has been created." };
   };
 };

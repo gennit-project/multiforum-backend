@@ -2,20 +2,9 @@ import type { Driver } from 'neo4j-driver';
 import type { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../../types/context.js';
 import { logger } from "../../logger.js";
-import type {
-  ScratchpadEntryModel,
-  CommentModel,
-  DiscussionChannelModel,
-  UserModel,
-} from '../../ogm_types.js';
+import type { ScratchpadRepository } from '../../services/persistence/scratchpadRepository.js';
 
-type Input = {
-  ScratchpadEntry: ScratchpadEntryModel;
-  Comment: CommentModel;
-  DiscussionChannel: DiscussionChannelModel;
-  User: UserModel;
-  driver: Driver;
-};
+type Input = { scratchpadRepository: ScratchpadRepository; driver: Driver };
 
 type Args = {
   recipientUsername: string;
@@ -28,9 +17,7 @@ type Args = {
 const MAX_TEXT_LENGTH = 500;
 
 const createScratchpadEntryResolver = (input: Input) => {
-  // ScratchpadEntry intentionally unused: the entry is created via Cypher inside
-  // the transaction (below) so it is atomic with the super-upvote/notification.
-  const { Comment, DiscussionChannel, User, driver } = input;
+  const { scratchpadRepository, driver } = input;
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { recipientUsername, text, sourceType, sourceId, sourceChannelUniqueName } = args;
@@ -66,10 +53,7 @@ const createScratchpadEntryResolver = (input: Input) => {
 
     try {
       // 1. Verify the recipient user exists
-      const recipientResult = await User.find({
-        where: { username: recipientUsername },
-        selectionSet: `{ username displayName }`,
-      });
+      const recipientResult = await scratchpadRepository.findRecipient(recipientUsername);
 
       if (recipientResult.length === 0) {
         throw new Error('Recipient user not found');
@@ -87,18 +71,7 @@ const createScratchpadEntryResolver = (input: Input) => {
       let postAuthorUsername: string | null = null;
 
       if (sourceType === 'comment') {
-        const commentResult = await Comment.find({
-          where: { id: sourceId },
-          selectionSet: `{
-            id
-            UpvotedByUsers { username }
-            SuperUpvotedByUsers { username }
-            DiscussionChannel { discussionId channelUniqueName }
-            CommentAuthor {
-              ... on User { username }
-            }
-          }`,
-        });
+        const commentResult = await scratchpadRepository.findCommentSource(sourceId);
 
         if (commentResult.length === 0) {
           throw new Error('Comment not found');
@@ -115,17 +88,7 @@ const createScratchpadEntryResolver = (input: Input) => {
           commentAuthor && 'username' in commentAuthor ? commentAuthor.username : null;
       } else {
         // sourceType === 'discussion'
-        const dcResult = await DiscussionChannel.find({
-          where: { id: sourceId },
-          selectionSet: `{
-            id
-            discussionId
-            channelUniqueName
-            UpvotedByUsers { username }
-            SuperUpvotedByUsers { username }
-            Discussion { Author { username } }
-          }`,
-        });
+        const dcResult = await scratchpadRepository.findDiscussionSource(sourceId);
 
         if (dcResult.length === 0) {
           throw new Error('Discussion not found');

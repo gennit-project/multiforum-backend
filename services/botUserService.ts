@@ -1,4 +1,6 @@
-import type { ChannelModel, CommentCreateInput, CommentModel, UserCreateInput, UserModel } from '../ogm_types.js'
+import { createBotCommentRepository, type BotCommentRepository } from './persistence/botCommentRepository.js'
+import { createBotIdentityRepository, type BotIdentityRepository } from './persistence/botIdentityRepository.js'
+import type { CommentCreateInput, UserCreateInput } from '../ogm_types.js'
 import type { Driver } from 'neo4j-driver'
 import { assertReplyRelationship } from './replyAncestry.js'
 
@@ -51,35 +53,25 @@ const buildBotDisplayName = (profile?: BotProfile | null): string | null => {
 }
 
 export const ensureBotUserForChannel = async (input: {
-  User: UserModel
-  Channel: ChannelModel
+  driver?: Driver
+  repository?: BotIdentityRepository
   channelUniqueName: string
   botName: string
   profileId?: string | null
   profileLabel?: string | null
 }) => {
-  const { User, Channel, channelUniqueName, botName, profileId, profileLabel } = input
+  const { driver, repository: injectedRepository, channelUniqueName, botName, profileId, profileLabel } = input
 
   const username = buildBotUsername(channelUniqueName, botName, profileId)
   const displayName = buildBotDisplayName(profileId ? { id: profileId, label: profileLabel } : null)
 
-  const existingUsers = await User.find({
-    where: { username },
-    selectionSet: `{
-      username
-      isBot
-      botProfileId
-      isDeprecated
-      deprecatedReason
-    }`
-  })
+  const repository = injectedRepository ?? createBotIdentityRepository(driver as Driver)
+  const existingUsers = await repository.findIdentity(username)
 
   let user = existingUsers[0] || null
 
   if (!user) {
-    const created = await User.create({
-      input: [
-        ({
+    const created = await repository.createIdentity({
           username,
           displayName,
           isBot: true,
@@ -92,8 +84,6 @@ export const ensureBotUserForChannel = async (input: {
             }
           }
         } as unknown as UserCreateInput)
-      ]
-    })
     user = created.users[0]
   } else {
     // Check if bot needs updates: profile mismatch, or needs to be reactivated from deprecated state
@@ -103,28 +93,17 @@ export const ensureBotUserForChannel = async (input: {
       user.deprecatedReason
 
     if (needsUpdate) {
-      await User.update({
-        where: { username: user.username },
-        update: {
+      await repository.reactivateIdentity(user.username, {
           isBot: true,
           botProfileId: profileId || null,
           displayName,
           isDeprecated: false,
           deprecatedReason: null
-        }
       })
     }
   }
 
-  const channelResult = await Channel.find({
-    where: { uniqueName: channelUniqueName },
-    selectionSet: `{
-      uniqueName
-      Bots {
-        username
-      }
-    }`
-  })
+  const channelResult = await repository.findChannelBots(channelUniqueName)
 
   const channel = channelResult[0]
   if (!channel) {
@@ -134,12 +113,7 @@ export const ensureBotUserForChannel = async (input: {
   const existingBotUsernames = new Set((channel.Bots || []).map((bot: { username: string }) => bot.username))
 
   if (!existingBotUsernames.has(username)) {
-    await Channel.update({
-      where: { uniqueName: channelUniqueName },
-      connect: {
-        Bots: [{ where: { node: { username } } }]
-      }
-    })
+    await repository.connectBot(channelUniqueName, username)
   }
 
   return user
@@ -197,13 +171,14 @@ export const getBotNameFromSettings = (settingsJson: unknown) => {
 }
 
 export const syncBotUsersForChannelProfiles = async (input: {
-  User: UserModel
-  Channel: ChannelModel
+  driver?: Driver
+  repository?: BotIdentityRepository
   channelUniqueName: string
   botName: string
   profiles: BotProfile[]
 }) => {
-  const { User, Channel, channelUniqueName, botName, profiles } = input
+  const { driver, repository: injectedRepository, channelUniqueName, botName, profiles } = input
+  const repository = injectedRepository ?? createBotIdentityRepository(driver as Driver)
 
   // Calculate desired usernames for profile-specific bots only (no base bot)
   const desiredUsernames = new Set(
@@ -216,8 +191,8 @@ export const syncBotUsersForChannelProfiles = async (input: {
   for (const profile of profiles || []) {
     if (!profile?.id) continue
     await ensureBotUserForChannel({
-      User,
-      Channel,
+      driver,
+      repository,
       channelUniqueName,
       botName,
       profileId: profile.id,
@@ -225,15 +200,7 @@ export const syncBotUsersForChannelProfiles = async (input: {
     })
   }
 
-  const channelResult = await Channel.find({
-    where: { uniqueName: channelUniqueName },
-    selectionSet: `{
-      uniqueName
-      Bots {
-        username
-      }
-    }`
-  })
+  const channelResult = await repository.findChannelBots(channelUniqueName)
 
   const channel = channelResult[0]
   if (!channel) {
@@ -250,22 +217,14 @@ export const syncBotUsersForChannelProfiles = async (input: {
     .filter((username: string) => !desiredUsernames.has(username))
 
   if (botsToDisconnect.length > 0) {
-    await Channel.update({
-      where: { uniqueName: channelUniqueName },
-      disconnect: {
-        Bots: botsToDisconnect.map((username: string) => ({
-          where: { node: { username } }
-        }))
-      }
-    })
+    await repository.disconnectBots(channelUniqueName, botsToDisconnect)
   }
 }
 
 export const createBotComment = async (input: {
-  Comment: CommentModel
-  User: UserModel
-  Channel: ChannelModel
+  commentRepository?: BotCommentRepository
   driver?: Driver
+  repository?: BotIdentityRepository
   channelUniqueName: string
   text: string
   botName: string
@@ -276,9 +235,8 @@ export const createBotComment = async (input: {
   eventId?: string | null
 }) => {
   const {
-    Comment,
-    User,
-    Channel,
+    commentRepository,
+    repository,
     driver,
     channelUniqueName,
     text,
@@ -305,8 +263,8 @@ export const createBotComment = async (input: {
   }
 
   const botUser = await ensureBotUserForChannel({
-    User,
-    Channel,
+    driver,
+    repository,
     channelUniqueName,
     botName,
     profileId,
@@ -375,9 +333,7 @@ export const createBotComment = async (input: {
     }
   }
 
-  const created = await Comment.create({
-    input: [commentInput]
-  })
+  const created = await (commentRepository ?? createBotCommentRepository(driver as Driver)).createReply(commentInput)
 
   return created.comments[0]
 }

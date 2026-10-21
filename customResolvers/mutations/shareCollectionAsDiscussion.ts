@@ -1,11 +1,8 @@
+import {createDiscussionCreationRepository, type DiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
+import { createCollectionReadRepository, type CollectionReadRepository } from "../../services/persistence/collectionReadRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
-import type {
-  ChannelModel,
-  CollectionModel,
-  DiscussionModel,
-} from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import {
@@ -23,62 +20,28 @@ type Args = {
   flairIds?: string[] | null;
 };
 
-type CollectionRecord = {
-  id: string;
-  name: string;
-  description?: string | null;
-  visibility: string;
-  CreatedBy?: {
-    username?: string | null;
-  } | null;
-};
-
-type ChannelRecord = {
-  uniqueName: string;
-};
-
 type CheckChannelPermissions = typeof defaultCheckChannelPermissions;
 
 type CreateDiscussions = typeof createDiscussionsFromInput;
 
 type Input = {
-  Discussion: DiscussionModel;
-  Collection: CollectionModel;
-  Channel: ChannelModel;
+  discussionCreationRepository?: DiscussionCreationRepository;
+  collectionReadRepository?: CollectionReadRepository;
   driver: Driver;
   checkChannelPermissions?: CheckChannelPermissions;
   createDiscussions?: CreateDiscussions;
 };
 
-const collectionSelectionSet = `
-  {
-    id
-    name
-    description
-    visibility
-    CreatedBy {
-      username
-    }
-  }
-`;
-
-const channelSelectionSet = `
-  {
-    uniqueName
-  }
-`;
-
 const getTrimmed = (value: string | null | undefined) => value?.trim() || "";
 
 const getResolver = (input: Input) => {
   const {
-    Discussion,
-    Collection,
-    Channel,
     driver,
     checkChannelPermissions = defaultCheckChannelPermissions,
     createDiscussions = createDiscussionsFromInput,
   } = input;
+  const repository = input.discussionCreationRepository ?? createDiscussionCreationRepository(driver);
+  const collectionsRepository = input.collectionReadRepository ?? createCollectionReadRepository(driver);
 
   return async (
     _parent: unknown,
@@ -111,15 +74,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("You must be logged in to share a collection.");
     }
 
-    const collections = (await Collection.find({
-      where: {
-        id: collectionId,
-        CreatedBy: {
-          username,
-        },
-      },
-      selectionSet: collectionSelectionSet,
-    })) as CollectionRecord[];
+    const collections = await collectionsRepository.findOwnedShareTarget(collectionId, username);
 
     const collection = collections[0];
     if (!collection) {
@@ -130,12 +85,7 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("Only public collections can be shared to a forum discussion.");
     }
 
-    const channels = (await Channel.find({
-      where: {
-        uniqueName: channelUniqueName,
-      },
-      selectionSet: channelSelectionSet,
-    })) as ChannelRecord[];
+    const channels = await collectionsRepository.findShareChannel(channelUniqueName);
 
     if (channels.length === 0) {
       throw new GraphQLError("Forum not found.");
@@ -153,7 +103,7 @@ const getResolver = (input: Input) => {
 
     try {
       const discussions = await createDiscussions(
-        Discussion,
+        repository,
         driver,
         [
           {

@@ -1,3 +1,4 @@
+import { registerGeneratedSchema } from "./services/persistence/generatedSchemaOperations.js";
 import { createSubscriptionEngine } from "./services/subscriptionEngine.js";
 import { createChannelCreatorModeratorService } from "./services/channelCreatorModerator.js";
 import { createChannelCreatorModeratorRepository } from "./services/persistence/channelCreatorModeratorRepository.js";
@@ -55,7 +56,6 @@ import { createVersionHistoryRepository } from "./services/persistence/versionHi
 import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdog.js";
 import { PluginPipelineCampaignService } from "./services/plugin/pipelineCampaign.js";
 import { ensureSchemaConstraints } from "./services/schemaConstraints.js";
-import { initializeOgmFromExistingSchema } from "./services/initializeOgmFromExistingSchema.js";
 import { provisionInstanceOnStartup } from "./services/startupProvisioning.js";
 import {
   assertAuthenticationConfiguration,
@@ -65,7 +65,7 @@ import { getNeo4jAuthorizationJwt } from "./services/neo4jAuthorization.js";
 import { setUserDataOnContext } from "./rules/permission/userDataHelperFunctions.js";
 import { logCriticalError, errorHandlingPlugin } from "./errorHandling.js";
 import type { GraphQLSchema } from "graphql";
-import type { Ogm, GraphQLRequest, GraphQLContext } from "./types/context.js";
+import type { GraphQLRequest, GraphQLContext } from "./types/context.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -169,12 +169,7 @@ const driver = installRequestScopedBookmarks(
   )
 );
 
-const {
-  ogm,
-  resolvers,
-  pipelineWatchdogModels,
-  pipelineCampaignModels,
-} = getCustomResolvers(driver);
+const { resolvers } = getCustomResolvers(driver);
 
 const subscriptionEngine = createSubscriptionEngine();
 const channelCreatorModeratorService = createChannelCreatorModeratorService(
@@ -223,7 +218,7 @@ async function initializeServer() {
     await ensureCriticalPropertyConstraints(driver, edition);
 
     const ogmSchema = await neoSchema.getSchema();
-    initializeOgmFromExistingSchema(ogm, neoSchema, ogmSchema);
+    registerGeneratedSchema(driver, ogmSchema);
     let schema = ogmSchema;
     type AppMiddleware = IMiddleware<unknown, GraphQLContext>;
     schema = applyMiddleware(
@@ -343,7 +338,6 @@ async function initializeServer() {
             channelCreatorModeratorService,
             driver,
             req,
-            ogm,
           };
 
           // @neo4j/graphql accepts a decoded identity in context.jwt. Reuse the
@@ -373,7 +367,7 @@ async function initializeServer() {
     startEventLoopMonitor();
 
     // Start services with enhanced error handling
-    startBackgroundServices(schema, ogm, driver);
+    startBackgroundServices(schema, driver);
   } catch (e) {
     logger.error("💥 Failed to initialize server:", e);
     logCriticalError(e as Error, {
@@ -389,14 +383,13 @@ async function initializeServer() {
  */
 async function startBackgroundServices(
   schema: GraphQLSchema,
-  ogm: Ogm,
   driver: Driver
 ) {
   const versionHistoryRepository = createVersionHistoryRepository(driver);
   const services = [
     {
       name: 'Comment Notification Service',
-      service: () => new CommentNotificationService(schema, ogm, driver),
+      service: () => new CommentNotificationService(schema, driver),
       critical: false
     },
     {
@@ -419,12 +412,12 @@ async function startBackgroundServices(
     },
     {
       name: 'Plugin Pipeline Watchdog',
-      service: () => new PluginPipelineWatchdogService(pipelineWatchdogModels),
+      service: () => new PluginPipelineWatchdogService({ driver }),
       critical: false
     },
     {
       name: 'Plugin Pipeline Campaigns',
-      service: () => new PluginPipelineCampaignService(pipelineCampaignModels),
+      service: () => new PluginPipelineCampaignService({ driver }),
       critical: false
     }
   ];

@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import getDiscussionAgeGateCheck from "./getDiscussionAgeGateCheck.js";
 
-// loadAgePolicy reads the ServerConfig named here; without it the gate is off.
+// loadAgePolicy reads the agePolicyRepository named here; without it the gate is off.
 process.env.SERVER_CONFIG_NAME = "Test Server";
 
 type Scenario = {
@@ -17,10 +17,10 @@ type Scenario = {
 
 const policyModel = (gateEnabled: boolean) =>
   ({
-    find: async () => [
+    findAgePolicyConfigs: async () => [
       { sensitiveContentAgeGateEnabled: gateEnabled, minimumSensitiveContentAge: 18 },
     ],
-  }) as unknown as ServerConfigModel;
+  }) as unknown as AgePolicyReader;
 
 // Answers the discussion lookup and the birthday lookup by query shape.
 const driverFor = ({ sensitive, birthday }: Scenario) =>
@@ -48,7 +48,7 @@ const contextFor = (username: string | null) =>
 const check = (scenario: Scenario) =>
   getDiscussionAgeGateCheck({
     driver: driverFor(scenario),
-    ServerConfig: policyModel(scenario.gateEnabled ?? true),
+    agePolicyRepository: policyModel(scenario.gateEnabled ?? true),
   })(undefined, { discussionId: "d" }, contextFor(scenario.username ?? null));
 
 const NOT_REQUIRED = { requiresAgeCheck: false, status: "ALLOWED", minimumAge: null };

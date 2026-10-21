@@ -2,18 +2,9 @@ import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
-import type {
-  CommentModel,
-  DiscussionChannelModel,
-  ScratchpadEntryModel,
-} from "../../ogm_types.js";
+import { createSuperVoteUndoRepository, type SuperVoteUndoRepository } from "../../services/persistence/superVoteUndoRepository.js";
 
-type Input = {
-  Comment: CommentModel;
-  DiscussionChannel: DiscussionChannelModel;
-  ScratchpadEntry: ScratchpadEntryModel;
-  driver: Driver;
-};
+type Input = { driver: Driver; repository?: SuperVoteUndoRepository; };
 
 type Args = {
   sourceType: 'comment' | 'discussion';
@@ -21,9 +12,8 @@ type Args = {
 };
 
 const undoSuperUpvoteResolver = (input: Input) => {
-  // ScratchpadEntry intentionally unused: the entry is deleted via Cypher inside
-  // the transaction (below) so it is atomic with the relationship/weight/karma.
-  const { Comment, DiscussionChannel, driver } = input;
+  const { driver } = input;
+  const repository = input.repository ?? createSuperVoteUndoRepository(driver);
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { sourceType, sourceId } = args;
@@ -52,16 +42,7 @@ const undoSuperUpvoteResolver = (input: Input) => {
       let postAuthorUsername: string | null = null;
 
       if (sourceType === 'comment') {
-        const commentResult = await Comment.find({
-          where: { id: sourceId },
-          selectionSet: `{
-            id
-            SuperUpvotedByUsers { username }
-            CommentAuthor {
-              ... on User { username }
-            }
-          }`,
-        });
+        const commentResult = await repository.findComment(sourceId);
 
         if (commentResult.length === 0) {
           throw new Error('Comment not found');
@@ -74,14 +55,7 @@ const undoSuperUpvoteResolver = (input: Input) => {
           commentAuthor && 'username' in commentAuthor ? commentAuthor.username : null;
       } else {
         // sourceType === 'discussion'
-        const dcResult = await DiscussionChannel.find({
-          where: { id: sourceId },
-          selectionSet: `{
-            id
-            SuperUpvotedByUsers { username }
-            Discussion { Author { username } }
-          }`,
-        });
+        const dcResult = await repository.findDiscussion(sourceId);
 
         if (dcResult.length === 0) {
           throw new Error('Discussion not found');

@@ -1,14 +1,11 @@
+import {createDiscussionModerationRepository, type DiscussionModerationRepository, type DiscussionModerationIssue} from "../../services/persistence/discussionModerationRepository.js";
 import type {
-  Issue,
-  IssueModel,
-  DiscussionModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
   IssueUpdateInput,
   DiscussionChannelUpdateInput,
   DiscussionChannelWhere,
-  DiscussionChannelModel,
 } from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -34,14 +31,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Discussion: DiscussionModel;
-  DiscussionChannel: DiscussionChannelModel;
+  discussionModerationRepository?: DiscussionModerationRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Discussion, DiscussionChannel, driver } = input;
+  const { driver } = input;
+  const repository = input.discussionModerationRepository ?? createDiscussionModerationRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const {
       discussionId,
@@ -83,33 +79,17 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = "";
-    let existingIssue: Issue | null = null;
+    let existingIssue: DiscussionModerationIssue | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
-    const discussionData = await Discussion.find({
-      where: {
+    const discussionData = await repository.findDiscussion({
         id: discussionId,
-      },
-      selectionSet: `{
-            id
-            title
-            Author {
-              username
-            }
-        }`,
-    });
+      });
 
     // Check if an issue already exists for the discussion ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
+    const issueData = await repository.findRelatedIssues({
         channelUniqueName: channelUniqueName,
         relatedDiscussionId: discussionId,
-      },
-      selectionSet: `{
-            id
-            issueNumber
-            flaggedServerRuleViolation
-        }`,
-    });
+      });
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -133,16 +113,7 @@ const getResolver = (input: Input) => {
       })
 
       try {
-        const issueData = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const issueData = await repository.createArchiveIssue([issueCreateInput]);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -190,24 +161,14 @@ const getResolver = (input: Input) => {
           selectedServerRules.length > 0,
       };
 
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
       }
       existingIssue = issueData.issues[0];
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -224,15 +185,10 @@ const getResolver = (input: Input) => {
       // to the discussion under RelatedIssues.
       // First we need to find the discussionChannel that matches the given discussion ID
       // and channel unique name.
-      const discussionChannel = await DiscussionChannel.find({
-        where: {
+      const discussionChannel = await repository.findDiscussionChannel({
           discussionId: discussionId,
           channelUniqueName: channelUniqueName,
-        },
-        selectionSet: `{
-            id
-        }`,
-      });
+        });
       const discussionChannelId = discussionChannel[0]?.id || null;
       if (!discussionChannelId) {
         throw new GraphQLError("Error finding discussionChannel");
@@ -256,10 +212,7 @@ const getResolver = (input: Input) => {
           },
         ],
       };
-      const discussionChannelUpdateData = await DiscussionChannel.update({
-        where: discussionChannelUpdateWhere,
-        update: discussionChannelUpdateInput,
-      });
+      const discussionChannelUpdateData = await repository.setArchived(discussionChannelUpdateWhere, discussionChannelUpdateInput);
       const discussionChannelUpdateId =
         discussionChannelUpdateData.discussionChannels[0]?.id || null;
       if (!discussionChannelUpdateId) {
@@ -275,7 +228,7 @@ const getResolver = (input: Input) => {
         const contentUrl = `${baseUrl}/forums/${channelUniqueName}/discussions/${discussionId}`;
 
         await notifyArchivedContentAuthor({
-          context: { ogm: context.ogm, driver: context.driver },
+          context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },
           contentType: 'discussion',
           authorUsername: discussionAuthorUsername,
           contentUrl,

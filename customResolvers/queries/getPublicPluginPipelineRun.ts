@@ -1,46 +1,30 @@
-import type {
-  DiscussionModel,
-  DownloadableFileModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-} from '../../ogm_types.js'
-import { SortDirection } from '../../ogm_types.js'
+import type { Driver } from "neo4j-driver"
+import { createPipelineTargetRepository, type PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js"
+import { createPipelineDetailRepository, type PipelineDetailRepository } from "../../services/persistence/pipelineDetailRepository.js"
 import {
-  PUBLIC_PIPELINE_ATTEMPT_SELECTION,
-  PUBLIC_PLUGIN_JOB_SELECTION,
   toPublicPipelineRun,
 } from '../../services/plugin/publicPipeline.js'
 import { assertPublicPipelineTargetVisible } from './pluginPipelineVisibility.js'
 
 const getResolver = ({
-  Discussion,
-  DownloadableFile,
-  PluginPipelineRun,
-  PluginRun,
+  driver,
+  pipelineTargetRepository = createPipelineTargetRepository(driver),
+  pipelineDetailRepository = createPipelineDetailRepository(driver),
 }: {
-  Discussion: DiscussionModel
-  DownloadableFile: DownloadableFileModel
-  PluginPipelineRun: PluginPipelineRunModel
-  PluginRun: PluginRunModel
+  driver: Driver
+  pipelineTargetRepository?: PipelineTargetRepository
+  pipelineDetailRepository?: PipelineDetailRepository
 }) => async (_parent: unknown, { pipelineRunId }: { pipelineRunId: string }) => {
-  const attempts = await PluginPipelineRun.find({
-    where: { id: pipelineRunId },
-    selectionSet: PUBLIC_PIPELINE_ATTEMPT_SELECTION,
-  })
+  const attempts = await pipelineDetailRepository.findPublicAttempt(pipelineRunId)
   const attempt = attempts[0]
   if (!attempt) return null
 
   await assertPublicPipelineTargetVisible({
-    Discussion,
-    DownloadableFile,
+    repository: pipelineTargetRepository,
     targetId: attempt.targetId,
     targetType: attempt.targetType,
   })
-  const jobs = await PluginRun.find({
-    where: { pipelineId: attempt.pipelineId },
-    options: { sort: [{ executionOrder: SortDirection.Asc }] },
-    selectionSet: PUBLIC_PLUGIN_JOB_SELECTION,
-  })
+  const jobs = await pipelineDetailRepository.findPublicJobs(attempt.pipelineId)
 
   return toPublicPipelineRun({
     attempt,

@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLContext } from "../../types/context.js";
-import { createPrepareDownloadResolver } from "./prepareDownload.js";
+import { createPrepareDownloadResolver as productionResolver } from "./prepareDownload.js";
+
+const createPrepareDownloadResolver = (input: any, ...rest: any[]) => (productionResolver as any)({ ...input, downloadReviewRepository: {
+  findPreparation: (id: string) => input.DownloadableFile.find({where: {id}}),
+  findReleaseStatus: (id: string) => input.DownloadableFile.find({where: {id}}),
+  clearScan: async (id: string, update: any) => { await input.DownloadableFile.update({where: {id}, update}); },
+  findCleared: (id: string) => input.DownloadableFile.find({where: {id}}),
+  findReviewAuthority: (id: string) => input.DownloadableFile.find({where: {id}}),
+  requestReview: async (id: string, update: any) => { await input.DownloadableFile.update({where: {id}, update}); },
+  findRequested: (id: string) => input.DownloadableFile.find({where: {id}}),
+}}, ...rest);
 
 const buildInput = (initialFile: Record<string, unknown>) => {
   let file = initialFile;
@@ -12,6 +22,7 @@ const buildInput = (initialFile: Record<string, unknown>) => {
       PluginVersion: {},
       PluginRun: {},
       ServerConfig: {},
+      agePolicyRepository: { findAgePolicyConfigs: async () => [] },
       ServerSecret: {},
       driver: {},
     } as any,

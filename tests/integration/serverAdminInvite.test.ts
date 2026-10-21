@@ -41,7 +41,7 @@ const inviteServerAdmin = (args: Record<string, unknown>) =>
 const acceptServerAdminInvite = (args: Record<string, unknown>, ctx: any) =>
   env.resolvers.Mutation.acceptServerAdminInvite(null, args, ctx);
 const cancelInviteServerAdmin = (args: Record<string, unknown>) =>
-  env.resolvers.Mutation.cancelInviteServerAdmin(null, args, {});
+  env.resolvers.Mutation.cancelInviteServerAdmin(null, args, {driver: env.driver});
 
 const pendingAdminInvitesFor = (serverName: string) =>
   run(

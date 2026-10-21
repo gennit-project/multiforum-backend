@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test, { beforeEach, afterEach } from "node:test";
 import jwt from "jsonwebtoken";
 import type { Driver } from "neo4j-driver";
-import type { DiscussionModel } from "../../ogm_types.js";
+import {DISCUSSION_CREATE_SELECTION, type DiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { createDiscussionsFromInput } from "./createDiscussionWithChannelConnections.js";
 
@@ -141,7 +141,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     const result = await createDiscussionsFromInput(
-      discussionModel as unknown as DiscussionModel,
+      asRepository(discussionModel),
       driver,
       [
         {
@@ -174,7 +174,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     });
 
     await createDiscussionsFromInput(
-      discussionModel as unknown as DiscussionModel,
+      asRepository(discussionModel),
       createDriver(session),
       [
         {
@@ -211,7 +211,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     await assert.rejects(
       () =>
         createDiscussionsFromInput(
-          discussionModel as unknown as DiscussionModel,
+          asRepository(discussionModel),
           createDriver(session),
           [
             {
@@ -237,7 +237,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     const result = await createDiscussionsFromInput(
-      discussionModel as unknown as DiscussionModel,
+      asRepository(discussionModel),
       driver,
       [
         {
@@ -264,7 +264,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
 
     await assert.rejects(
       async () => {
-        await createDiscussionsFromInput(discussionModel as unknown as DiscussionModel, driver, []);
+        await createDiscussionsFromInput(asRepository(discussionModel), driver, []);
       },
       {
         message: "Input cannot be empty",
@@ -280,7 +280,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     await assert.rejects(
       async () => {
         await createDiscussionsFromInput(
-          discussionModel as unknown as DiscussionModel,
+          asRepository(discussionModel),
           driver,
           [
             {
@@ -307,7 +307,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
 
     // Should not throw, should skip the duplicate
     const result = await createDiscussionsFromInput(
-      discussionModel as unknown as DiscussionModel,
+      asRepository(discussionModel),
       driver,
       [
         {
@@ -330,7 +330,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     await createDiscussionsFromInput(
-      discussionModel as unknown as DiscussionModel,
+      asRepository(discussionModel),
       driver,
       [
         {
@@ -369,7 +369,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const context = createContext("albumuser");
 
     await createDiscussionsFromInput(
-      discussionModel as unknown as DiscussionModel,
+      asRepository(discussionModel),
       driver,
       [
         {
@@ -401,7 +401,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     await assert.rejects(
       async () => {
         await createDiscussionsFromInput(
-          discussionModel as unknown as DiscussionModel,
+          asRepository(discussionModel),
           driver,
           [
             {
@@ -432,7 +432,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     const driver = createDriver(session);
 
     const result = await createDiscussionsFromInput(
-      discussionModel as unknown as DiscussionModel,
+      asRepository(discussionModel),
       driver,
       [
         {
@@ -451,3 +451,9 @@ test("createDiscussionWithChannelConnections", async (t) => {
     assert.equal(session.runCalls.length, 2);
   });
 });
+
+function asRepository(model: DiscussionModelStub): DiscussionCreationRepository {return {
+ createDiscussion:async(input)=>model.create({input:[input as any],selectionSet:`{ discussions ${DISCUSSION_CREATE_SELECTION} }`}) as any,
+ findAttachedFiles:async(id)=>model.find({where:{id},selectionSet:'{ id DownloadableFiles { id } }'}) as any,
+ findCreatedDiscussion:async(id)=>model.find({where:{id},selectionSet:DISCUSSION_CREATE_SELECTION}) as any,
+};}

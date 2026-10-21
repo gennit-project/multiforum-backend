@@ -1,3 +1,5 @@
+import { createEventRevisionRepository, type EventRevisionRepository, type EventRevisionSnapshot } from "../services/persistence/eventRevisionRepository.js";
+import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 
 import {
   createIssueActivityFeedItems,
@@ -7,23 +9,7 @@ import {
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
-import type {
-  EventModel,
-  EventUpdateInput,
-  TextVersionModel,
-  UserModel,
-} from '../ogm_types.js';
-
-export type EventSnapshot = {
-  id?: string;
-  title?: string | null;
-  description?: string | null;
-  Poster?: { username?: string | null } | null;
-  DescriptionLastEditedBy?: { username?: string | null } | null;
-  EventChannels?: Array<{ channelUniqueName?: string | null }> | null;
-  PastTitleVersions?: Array<{ id?: string; body?: string | null; createdAt?: string | null }> | null;
-  PastDescriptionVersions?: Array<{ id?: string; body?: string | null; createdAt?: string | null }> | null;
-};
+export type EventSnapshot = EventRevisionSnapshot;
 
 type EventVersionHistoryHandlerInput = {
   context: GraphQLContext;
@@ -71,42 +57,13 @@ export const eventVersionHistoryHandler = async ({
 
     logger.info('Processing version history for event:', eventId);
 
-    const { ogm } = context;
-    const EventModel = ogm.model('Event');
-    const TextVersionModel = ogm.model('TextVersion');
-    const UserModel = ogm.model('User');
-    const IssueModel = ogm.model('Issue');
+    const repository = context.eventRevisionRepository ?? createEventRevisionRepository(context.driver);
+    const issueActivityRepository = context.issueActivityRepository ?? createIssueActivityRepository(context.driver);
 
     let event: EventSnapshot | null | undefined = eventSnapshot;
 
     if (!event) {
-      const events = await EventModel.find({
-        where: { id: eventId },
-        selectionSet: `{
-          id
-          title
-          description
-          Poster {
-            username
-          }
-          DescriptionLastEditedBy {
-            username
-          }
-          EventChannels {
-            channelUniqueName
-          }
-          PastTitleVersions {
-            id
-            body
-            createdAt
-          }
-          PastDescriptionVersions {
-            id
-            body
-            createdAt
-          }
-        }`
-      });
+      const events = await repository.findSnapshot(eventId);
 
       if (!events.length) {
         logger.info('Event not found');
@@ -140,9 +97,7 @@ export const eventVersionHistoryHandler = async ({
         eventId,
         event.title ?? '',
         titleEditor,
-        EventModel,
-        TextVersionModel,
-        UserModel
+        repository
       );
       if (titleRevisionId) {
         createdRevisionIds.push({ id: titleRevisionId, type: 'title' });
@@ -154,9 +109,7 @@ export const eventVersionHistoryHandler = async ({
         eventId,
         event.description,
         descriptionContentAuthor || '[Unknown]',
-        EventModel,
-        TextVersionModel,
-        UserModel
+        repository
       );
       if (descriptionRevisionId) {
         createdRevisionIds.push({ id: descriptionRevisionId, type: 'description' });
@@ -164,15 +117,7 @@ export const eventVersionHistoryHandler = async ({
 
       // Update DescriptionLastEditedBy to the current editor
       if (editorUsername) {
-        await EventModel.update({
-          where: { id: eventId },
-          update: {
-            DescriptionLastEditedBy: {
-              disconnect: {},
-              connect: { where: { node: { username: editorUsername } } }
-            }
-          }
-        });
+        await repository.replaceDescriptionEditor(eventId, editorUsername);
       }
     }
 
@@ -180,7 +125,7 @@ export const eventVersionHistoryHandler = async ({
       return;
     }
 
-    const issueIds = await getIssueIdsForRelated(IssueModel, {
+    const issueIds = await getIssueIdsForRelated(issueActivityRepository, {
       eventId,
     });
     if (!issueIds.length) {
@@ -190,7 +135,7 @@ export const eventVersionHistoryHandler = async ({
     const attribution = getAttributionFromContext(context);
     for (const revision of createdRevisionIds) {
       await createIssueActivityFeedItems({
-        IssueModel,
+        issueActivityRepository,
         driver: context?.driver,
         issueIds,
         actionDescription:
@@ -251,9 +196,8 @@ export const eventEditNotificationHandler = async ({
     const eventTitle = eventSnapshot?.title || 'event';
     const notificationText = `${editorLabel} edited your event [${eventTitle}](${notificationUrl})`;
 
-    const UserModel = context.ogm.model('User');
     await createInAppNotification({
-      UserModel,
+      context,
       username: authorUsername,
       text: notificationText,
     });
@@ -269,31 +213,19 @@ async function trackTitleVersionHistory(
   eventId: string,
   previousTitle: string,
   username: string,
-  EventModel: EventModel,
-  TextVersionModel: TextVersionModel,
-  UserModel: UserModel
+  repository: EventRevisionRepository
 ): Promise<string | null> {
   logger.info(`Tracking title version history for event ${eventId}`);
 
   try {
-    const users = await UserModel.find({
-      where: { username },
-      selectionSet: `{ username }`
-    });
+    const users = await repository.findVersionAuthor(username);
 
     if (!users.length) {
       logger.info('User not found');
       return null;
     }
 
-    const textVersionResult = await TextVersionModel.create({
-      input: [{
-        body: previousTitle,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      }]
-    });
+    const textVersionResult = await repository.createPreviousText(previousTitle, username);
 
     if (!textVersionResult.textVersions.length) {
       logger.info('Failed to create TextVersion');
@@ -302,18 +234,7 @@ async function trackTitleVersionHistory(
 
     const textVersionId = textVersionResult.textVersions[0].id;
 
-    await EventModel.update({
-      where: { id: eventId },
-      update: {
-        PastTitleVersions: {
-          connect: [{
-            where: {
-              node: { id: textVersionId }
-            }
-          }]
-        }
-      } as unknown as EventUpdateInput
-    });
+    await repository.connectTitleVersion(eventId, textVersionId);
 
     logger.info(`Successfully added title version history for event ${eventId}`);
     return textVersionId;
@@ -330,9 +251,7 @@ async function trackDescriptionVersionHistory(
   eventId: string,
   previousDescription: string | null | undefined,
   username: string,
-  EventModel: EventModel,
-  TextVersionModel: TextVersionModel,
-  UserModel: UserModel
+  repository: EventRevisionRepository
 ): Promise<string | null> {
   logger.info(`Tracking description version history for event ${eventId}`);
 
@@ -341,24 +260,14 @@ async function trackDescriptionVersionHistory(
     // description are still attributed in the revision history.
     const descriptionToTrack = previousDescription ?? '';
 
-    const users = await UserModel.find({
-      where: { username },
-      selectionSet: `{ username }`
-    });
+    const users = await repository.findVersionAuthor(username);
 
     if (!users.length) {
       logger.info('User not found');
       return null;
     }
 
-    const textVersionResult = await TextVersionModel.create({
-      input: [{
-        body: descriptionToTrack,
-        Author: {
-          connect: { where: { node: { username } } }
-        }
-      }]
-    });
+    const textVersionResult = await repository.createPreviousText(descriptionToTrack, username);
 
     if (!textVersionResult.textVersions.length) {
       logger.info('Failed to create TextVersion');
@@ -367,18 +276,7 @@ async function trackDescriptionVersionHistory(
 
     const textVersionId = textVersionResult.textVersions[0].id;
 
-    await EventModel.update({
-      where: { id: eventId },
-      update: {
-        PastDescriptionVersions: {
-          connect: [{
-            where: {
-              node: { id: textVersionId }
-            }
-          }]
-        }
-      } as unknown as EventUpdateInput
-    });
+    await repository.connectDescriptionVersion(eventId, textVersionId);
 
     logger.info(`Successfully added description version history for event ${eventId}`);
     return textVersionId;

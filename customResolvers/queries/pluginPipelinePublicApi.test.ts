@@ -1,10 +1,40 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { modelStub } from '../../tests/fixtures/modelStub.js'
-import getApplicablePluginPipeline from './getApplicablePluginPipeline.js'
-import getInternalPluginPipelineRun from './getInternalPluginPipelineRun.js'
-import getPluginPipelineSummary from './getPluginPipelineSummary.js'
-import getPublicPluginPipelineRun from './getPublicPluginPipelineRun.js'
+import createApplicablePluginPipeline from './getApplicablePluginPipeline.js'
+import createInternalPluginPipelineRun from './getInternalPluginPipelineRun.js'
+import createPluginPipelineSummary from './getPluginPipelineSummary.js'
+import createPublicPluginPipelineRun from './getPublicPluginPipelineRun.js'
+
+import type { Driver } from 'neo4j-driver'
+import type { ModelMap } from '../../ogm_types.js'
+import { pipelineTargetSnapshots } from '../../tests/fixtures/pipelineTargetSnapshots.js'
+
+type TargetFixtures = Pick<ModelMap, 'Discussion' | 'DownloadableFile'>
+type RunFixtures = TargetFixtures & Pick<ModelMap, 'PluginPipelineRun' | 'PluginRun'>
+const getApplicablePluginPipeline = (fixtures: TargetFixtures & Pick<ModelMap, 'Channel' | 'ServerConfig'>) => createApplicablePluginPipeline({
+  driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+})
+const getPluginPipelineSummary = (fixtures: RunFixtures) => createPluginPipelineSummary({
+  driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures),
+  pipelineHistoryRepository: {
+    findPipelineHistory: async () => [], findDownloadHistory: async () => [],
+    findSummaryAttempts: async (targetId, targetType) => fixtures.PluginPipelineRun.find({ where: {targetId, targetType} }),
+    findSummaryJobs: async (targetId, targetType) => fixtures.PluginRun.find({ where: {targetId, targetType} }),
+  },
+})
+const detailSnapshots = (fixtures: Pick<ModelMap, 'PluginPipelineRun' | 'PluginRun'>) => ({
+  findPublicAttempt: async (id: string) => fixtures.PluginPipelineRun.find({where:{id}}),
+  findPublicJobs: async (pipelineId: string) => fixtures.PluginRun.find({where:{pipelineId}}),
+  findInternalAttempt: async (id: string) => fixtures.PluginPipelineRun.find({where:{id}}),
+  findInternalJobs: async (pipelineId: string) => fixtures.PluginRun.find({where:{pipelineId}}),
+})
+const getPublicPluginPipelineRun = (fixtures: RunFixtures) => createPublicPluginPipelineRun({
+  driver: {} as Driver, pipelineTargetRepository: pipelineTargetSnapshots(fixtures), pipelineDetailRepository: detailSnapshots(fixtures),
+})
+const getInternalPluginPipelineRun = (fixtures: Pick<ModelMap, 'PluginPipelineRun' | 'PluginRun'>) => createInternalPluginPipelineRun({
+  driver: {} as Driver, pipelineDetailRepository: detailSnapshots(fixtures),
+})
 
 const visibleFile = {
   id: 'file-1',

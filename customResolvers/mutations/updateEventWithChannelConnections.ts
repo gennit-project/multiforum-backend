@@ -7,13 +7,13 @@ import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateN
 import { createInAppNotificationsForUsers } from "../../services/inAppNotifications.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { EventModel } from "../../ogm_types.js";
+import { createEventWriteRepository, type EventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
 import { eventVersionHistoryHandler } from "../../hooks/eventVersionHistoryHook.js";
 import { logger } from "../../logger.js";
 import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
 
 type Input = {
-  Event: EventModel;
+  eventWriteRepository?: EventWriteRepository;
   driver: Driver;
   dependencies?: {
     sendBatchEmails?: typeof sendBatchEmails;
@@ -35,7 +35,8 @@ type NotifiableUser = {
 };
 
 const getResolver = (input: Input) => {
-  const { Event, driver, dependencies } = input;
+  const { driver, dependencies } = input;
+  const repository = input.eventWriteRepository ?? createEventWriteRepository(driver);
   const sendBatchEmailsFn = dependencies?.sendBatchEmails || sendBatchEmails;
   const createEventUpdateNotificationEmailFn =
     dependencies?.createEventUpdateNotificationEmail ||
@@ -52,27 +53,7 @@ const getResolver = (input: Input) => {
     } = args;
 
     try {
-      const existingEvents = await Event.find({
-        where,
-        selectionSet: `
-          {
-            id
-            title
-            description
-            startTime
-            endTime
-            locationName
-            address
-            virtualEventUrl
-            canceled
-            Poster { username }
-            DescriptionLastEditedBy { username }
-            EventChannels { channelUniqueName }
-            PastTitleVersions { id body createdAt }
-            PastDescriptionVersions { id body createdAt }
-          }
-        `,
-      });
+      const existingEvents = await repository.findUpdateSnapshot(where);
 
       const existingEvent = existingEvents[0];
       if (!existingEvent) {
@@ -82,11 +63,7 @@ const getResolver = (input: Input) => {
       const updatedEventId = where.id;
 
       await executeManagedWrite(driver, async (transaction) => {
-        await Event.update({
-          where,
-          update: eventUpdateInput,
-          context: { executionContext: transaction },
-        });
+        await repository.updateWithinTransaction(where, eventUpdateInput, transaction);
 
         await applyEventChannelChanges({
           transaction,
@@ -114,61 +91,7 @@ const getResolver = (input: Input) => {
       }
       // Refetch the newly created event with the channel connections
       // and disconnections so that we can return it.
-      const selectionSet = `
-        {
-          id
-          title
-          description
-          startTime
-          startTimeDayOfWeek
-          startTimeHourOfDay
-          endTime
-          locationName
-          address
-          virtualEventUrl
-          startTimeDayOfWeek
-          canceled
-          cost
-          isAllDay
-          isHostedByOP
-          coverImageURL
-          Poster {
-            username
-          }
-          EventChannels {
-            id
-            channelUniqueName
-            eventId
-            Channel {
-              uniqueName
-            }
-            Event {
-              id
-            }
-          }
-          SubscribedToNotifications {
-            username
-          }
-          SubscribedToEventUpdates {
-            username
-            Email {
-              address
-            }
-          }
-          createdAt
-          updatedAt
-          Tags {
-            text
-          }
-        }
-      `;
-
-      const result = await Event.find({
-        where: {
-          id: updatedEventId,
-        },
-        selectionSet,
-      });
+      const result = await repository.findUpdatedEvent(updatedEventId);
 
       const updatedEvent = result[0];
       const eventUpdateNotification = buildEventUpdateNotificationPayloadFn(

@@ -1,3 +1,4 @@
+import { createWikiRevisionRepository, type WikiRevisionRepository } from "../services/persistence/wikiRevisionRepository.js";
 /**
  * Middleware for tracking wikiPage version history
  * This middleware runs before wikiPage update operations to capture the previous
@@ -10,11 +11,6 @@ import { GraphQLResolveInfo } from 'graphql';
 import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
 import { logger } from "../logger.js";
-import type {
-  TextVersionModel,
-  WikiPageModel,
-  WikiPageUpdateInput,
-} from "../ogm_types.js";
 
 // Define types for the middleware
 interface UpdateWikiPagesArgs {
@@ -98,9 +94,7 @@ async function handleChildWikiPageCreation(
   context: GraphQLContext
 ) {
   try {
-    const { ogm } = context;
-    const TextVersionModel = ogm.model('TextVersion');
-    const WikiPageModel = ogm.model('WikiPage');
+    const repository = context.wikiRevisionRepository ?? createWikiRevisionRepository(context.driver);
     
     // Get the updated WikiPages from the result
     const wikiPages = result?.updateWikiPages?.wikiPages;
@@ -130,23 +124,21 @@ async function handleChildWikiPageCreation(
         
         if (childPage.title) {
           await createFirstTextVersion(
-            TextVersionModel,
+            repository,
             childPage.id,
             childPage.title,
             childPage.editReason,
-            currentUsername,
-            WikiPageModel
+            currentUsername
           );
         }
         
         if (childPage.body) {
           await createFirstTextVersion(
-            TextVersionModel,
+            repository,
             childPage.id,
             childPage.body,
             childPage.editReason,
-            currentUsername,
-            WikiPageModel
+            currentUsername
           );
         }
       }
@@ -163,12 +155,11 @@ async function handleChildWikiPageCreation(
  * Create a TextVersion and connect it to a WikiPage
  */
 async function createFirstTextVersion(
-  TextVersionModel: TextVersionModel,
+  repository: WikiRevisionRepository,
   wikiPageId: string,
   content: string,
   editReason: string | null | undefined,
-  username: string,
-  WikiPageModel: WikiPageModel
+  username: string
 ) {
   try {
     const textVersionInput: TextVersionCreateInput = {
@@ -183,9 +174,7 @@ async function createFirstTextVersion(
     }
 
     // Create the TextVersion
-    const textVersionResult = await TextVersionModel.create({
-      input: [textVersionInput]
-    });
+    const textVersionResult = await repository.createRevision(textVersionInput);
 
     if (!textVersionResult.textVersions.length) {
       logger.info('Failed to create TextVersion');
@@ -195,21 +184,7 @@ async function createFirstTextVersion(
     const textVersionId = textVersionResult.textVersions[0].id;
 
     // Connect the TextVersion to the WikiPage
-    await WikiPageModel.update({
-      where: { id: wikiPageId },
-      // The OGM-generated WikiPageUpdateInput expects PastVersions as an array of
-      // update-field inputs; this connect-shaped payload is the runtime shape the
-      // OGM accepts, so cast to satisfy the generated type without changing behavior.
-      update: {
-        PastVersions: {
-          connect: [{
-            where: {
-              node: { id: textVersionId }
-            }
-          }]
-        }
-      } as unknown as WikiPageUpdateInput
-    });
+    await repository.connectRevision(wikiPageId, textVersionId);
 
     logger.info(`Successfully created first TextVersion for WikiPage ${wikiPageId}`);
   } catch (error) {

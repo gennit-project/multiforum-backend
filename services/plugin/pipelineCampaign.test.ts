@@ -1,3 +1,4 @@
+import {campaignServiceRepositoryStub} from "../../tests/fixtures/campaignServiceRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap, PluginPipelineCampaign } from "../../ogm_types.js";
@@ -7,15 +8,16 @@ import {
 } from "../../ogm_types.js";
 import {
   campaignCounts,
-  previewPipelineCampaign,
-  runPipelineCampaign,
-  processRunningPipelineCampaigns,
+  previewPipelineCampaign as actualpreviewPipelineCampaign,
+  runPipelineCampaign as actualrunPipelineCampaign,
+  processRunningPipelineCampaigns as actualprocessRunningPipelineCampaigns,
   PluginPipelineCampaignService,
-  type CampaignModels,
 } from "./pipelineCampaign.js";
-import type { Models } from "./types.js";
 
 type PreviewModels = Pick<ModelMap, "DownloadableFile" | "ServerConfig">;
+// The OGM-backed campaign repository stub still needs model handles even
+// though the production campaign service no longer threads them.
+type StubModels = Parameters<typeof campaignServiceRepositoryStub>[0];
 
 const previewModels = ({
   files = [
@@ -148,7 +150,7 @@ test("campaign runner honors concurrency and records provenance", async () => {
         return { pluginPipelineCampaigns: [] };
       },
     },
-  } as unknown as CampaignModels;
+  } as unknown as StubModels;
   const triggered: Array<{
     fileId: string;
     execution?: Parameters<
@@ -211,7 +213,7 @@ test("campaign runner does not exceed active concurrency", async () => {
         return { pluginPipelineCampaigns: [] };
       },
     },
-  } as unknown as CampaignModels;
+  } as unknown as StubModels;
   let triggered = false;
 
   const result = await runPipelineCampaign({
@@ -262,7 +264,7 @@ test("processor completes empty campaigns and the service can start and stop", a
         return { pluginPipelineCampaigns: [] };
       },
     },
-  } as unknown as CampaignModels;
+  } as unknown as StubModels;
 
   assert.equal(
     await processRunningPipelineCampaigns(
@@ -273,8 +275,12 @@ test("processor completes empty campaigns and the service can start and stop", a
   );
   assert.match(JSON.stringify(updates[0]), /COMPLETED/);
 
-  const service = new PluginPipelineCampaignService(models, 60_000);
+  const service = new PluginPipelineCampaignService({...models,campaignRepository:campaignServiceRepositoryStub(models)}, 60_000);
   await service.start();
   service.stop();
   assert.equal(campaignFindCount, 2);
 });
+
+const previewPipelineCampaign = (input: StubModels & { policyId: string })=>actualpreviewPipelineCampaign({...input,campaignRepository:campaignServiceRepositoryStub(input)});
+const runPipelineCampaign = (input: Omit<Parameters<typeof actualrunPipelineCampaign>[0], "models"> & { models: StubModels })=>actualrunPipelineCampaign({...input,models:{...input.models,campaignRepository:campaignServiceRepositoryStub(input.models)}});
+const processRunningPipelineCampaigns = (models: StubModels, ...args: [now?: Date])=>actualprocessRunningPipelineCampaigns({...models,campaignRepository:campaignServiceRepositoryStub(models)},...args);

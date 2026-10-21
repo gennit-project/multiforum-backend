@@ -1,3 +1,10 @@
+import { before, after, afterEach } from "node:test";
+import { denyImageExternalIo } from "../../tests/denyImageExternalIo.js";
+let ioGuard: ReturnType<typeof denyImageExternalIo>;
+before(() => { ioGuard = denyImageExternalIo(); });
+afterEach(() => ioGuard.assertUnused());
+after(() => ioGuard.restore());
+import { CREATED_IMAGE_SELECTION } from "../../services/persistence/imageWriteRepository.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import jwt from "jsonwebtoken";
@@ -77,8 +84,7 @@ test("createImageWithUploader rejects when user is not logged in", async () => {
   const User = new ModelStub();
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await assert.rejects(
@@ -104,8 +110,7 @@ test("createImageWithUploader rejects when user not found in database", async ()
   const User = new ModelStub(() => []); // Returns empty array = user not found
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await assert.rejects(
@@ -143,8 +148,7 @@ test("createImageWithUploader sets Uploader to logged-in user", async () => {
   const User = new ModelStub(() => [{ username: "alice" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await resolver(
@@ -190,8 +194,7 @@ test("createImageWithUploader ignores any client-provided Uploader field", async
   const User = new ModelStub(() => [{ username: "real-user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   // Note: The resolver only accepts specific fields from input
@@ -237,8 +240,7 @@ test("createImageWithUploader preserves all image properties", async () => {
   const User = new ModelStub(() => [{ username: "user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await resolver(
@@ -287,8 +289,7 @@ test("createImageWithUploader connects to album when albumId provided", async ()
   const User = new ModelStub(() => [{ username: "user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await resolver(
@@ -335,8 +336,7 @@ test("createImageWithUploader does not connect album when albumId not provided",
   const User = new ModelStub(() => [{ username: "user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await resolver(
@@ -372,8 +372,7 @@ test("createImageWithUploader handles empty string albumId as no album", async (
   const User = new ModelStub(() => [{ username: "user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await resolver(
@@ -418,8 +417,7 @@ test("createImageWithUploader returns the created image", async () => {
   const User = new ModelStub(() => [{ username: "photographer" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   const result = await resolver(
@@ -450,8 +448,7 @@ test("createImageWithUploader wraps Image.create errors", async () => {
   const User = new ModelStub(() => [{ username: "user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await assert.rejects(
@@ -476,8 +473,7 @@ test("createImageWithUploader throws when no image is created", async () => {
   const User = new ModelStub(() => [{ username: "user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   await assert.rejects(
@@ -511,8 +507,7 @@ test("createImageWithUploader works with only url provided", async () => {
   const User = new ModelStub(() => [{ username: "user" }]);
 
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: User as any,
+    repository: {findUploader: async username => User.find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
   });
 
   const result = await resolver(
@@ -579,8 +574,7 @@ const createWithUpload = async ({ generateVariants, input }: UploadCallParams) =
     () => ({ images: [{ id: "img-1", url: uploadMetadata.storageUrl }] })
   );
   const resolver = createImageWithUploaderResolver({
-    Image: Image as any,
-    User: createUserOgmModel("alice") as any,
+    repository: {findUploader: async username => createUserOgmModel("alice").find({where:{username},selectionSet:"{ username }"}), createImage: async input => Image.create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`})},
     driver: buildUploadDriver(),
     generateVariants: generateVariants as any,
   });

@@ -1,6 +1,5 @@
+import { createDiscussionReportRepository, type DiscussionReportRepository } from "../../services/persistence/discussionReportRepository.js";
 import type {
-  IssueModel,
-  DiscussionModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -28,13 +27,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Discussion: DiscussionModel;
+  discussionReportRepository?: DiscussionReportRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Discussion, driver } = input;
+  const { driver } = input;
+  const repository = input.discussionReportRepository ?? createDiscussionReportRepository(driver);
   return async (
     parent: unknown,
     args: Args,
@@ -84,17 +83,7 @@ const getResolver = (input: Input) => {
     let existingIssueFlaggedServerRuleViolation = false;
 
     // Check if an issue already exists for the discussion ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
-        relatedDiscussionId: discussionId,
-        channelUniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-            id
-            issueNumber
-            flaggedServerRuleViolation
-        }`,
-    });
+    const issueData = await repository.findExisting(channelUniqueName, discussionId);
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -110,15 +99,7 @@ const getResolver = (input: Input) => {
 
     // If an issue does NOT already exist, create a new issue.
     if (!existingIssueId) {
-      const discussionData = await Discussion.find({
-        where: {
-          id: discussionId,
-        },
-        selectionSet: `{
-                    id
-                    title            
-                }`,
-      });
+      const discussionData = await repository.findDiscussion(discussionId);
       const contextText = discussionData[0]?.title || "";
 
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
@@ -132,29 +113,12 @@ const getResolver = (input: Input) => {
         relatedDiscussionId: discussionId,
         issueNumber,
       });
-      const ChannelModel = context?.ogm?.model("Channel");
-      if (ChannelModel) {
-        const channels = await ChannelModel.find({
-          where: { uniqueName: channelUniqueName },
-          selectionSet: `{
-            uniqueName
-          }`,
-        });
-        if (!channels.length) {
-          delete (issueCreateInput as Record<string, unknown>).Channel;
-        }
+      const channels = await repository.findChannel(channelUniqueName);
+      if (!channels.length) {
+        delete (issueCreateInput as Record<string, unknown>).Channel;
       }
       try {
-        const issueData = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const issueData = await repository.createIssue(issueCreateInput);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -202,17 +166,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueData = await repository.appendReport(issueUpdateWhere, issueUpdateInput);
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

@@ -1,11 +1,13 @@
+import {campaignControlRepositoryStub} from "../../tests/fixtures/campaignControlRepositoryStub.js";
+import {campaignServiceRepositoryStub} from "../../tests/fixtures/campaignServiceRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
-  createPluginPipelineCampaign,
-  pausePluginPipelineCampaign,
-  resumePluginPipelineCampaign,
+  createPluginPipelineCampaign as actualFactory,
+  pausePluginPipelineCampaign as actualpausePluginPipelineCampaign,
+  resumePluginPipelineCampaign as actualresumePluginPipelineCampaign,
 } from "./pluginPipelineCampaigns.js";
 
 type CampaignMutationModels = Pick<
@@ -105,3 +107,9 @@ test("pauses and resumes only from the matching state", async () => {
   );
   assert.equal(resumed?.status, "RUNNING");
 });
+
+const createPluginPipelineCampaign = (models: CampaignMutationModels)=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models),controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});
+
+const pausePluginPipelineCampaign = (models: CampaignMutationModels)=>actualpausePluginPipelineCampaign({...models,controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});
+
+const resumePluginPipelineCampaign = (models: CampaignMutationModels)=>actualresumePluginPipelineCampaign({...models,controlRepository:campaignControlRepositoryStub(models.PluginPipelineCampaign)});

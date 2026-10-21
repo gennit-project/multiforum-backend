@@ -1,6 +1,5 @@
+import { createCommentReportRepository, type CommentReportRepository } from "../../services/persistence/commentReportRepository.js"
 import type {
-  IssueModel,
-  CommentModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -24,8 +23,7 @@ type Args = {
 }
 
 type Input = {
-  Issue: IssueModel
-  Comment: CommentModel
+  commentReportRepository?: CommentReportRepository
   driver: Driver
 }
 
@@ -262,7 +260,8 @@ export const getRelatedIssueAccountFields = (
 }
 
 const getResolver = (input: Input) => {
-  const { Issue, Comment, driver } = input
+  const { driver } = input
+  const repository = input.commentReportRepository ?? createCommentReportRepository(driver)
   return async (
     parent: unknown,
     args: Args,
@@ -311,19 +310,7 @@ const getResolver = (input: Input) => {
     let existingIssueFlaggedServerRuleViolation = false
 
     // Check if an issue already exists for the comment ID and channel unique name.
-    const issueData = await Issue.find({
-      where: {
-        channelUniqueName: channelUniqueName,
-        relatedCommentId: commentId
-      },
-      selectionSet: `{
-            id
-            issueNumber
-            flaggedServerRuleViolation
-            relatedUsername
-            relatedModProfileName
-        }`
-    })
+    const issueData = await repository.findExisting(channelUniqueName, commentId)
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || ''
@@ -337,24 +324,7 @@ const getResolver = (input: Input) => {
       selectedServerRules
     })
 
-    const commentData = await Comment.find({
-      where: {
-        id: commentId
-      },
-      selectionSet: `{
-              id
-              text
-              CommentAuthor {
-                __typename
-                ... on User {
-                  username
-                }
-                ... on ModerationProfile {
-                  displayName
-                }
-              }
-          }`
-    })
+    const commentData = await repository.findComment(commentId)
     const commentText = commentData[0]?.text || ''
     const {
       relatedUsername,
@@ -377,16 +347,7 @@ const getResolver = (input: Input) => {
         issueNumber
       })
       try {
-        const issueData = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`
-        })
+        const issueData = await repository.createIssue(issueCreateInput)
         const issueId = issueData.issues[0]?.id || null
         if (!issueId) {
           throw new GraphQLError('Error creating issue')
@@ -427,17 +388,7 @@ const getResolver = (input: Input) => {
     }
 
     try {
-      const issueData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`
-      })
+      const issueData = await repository.appendReport(issueUpdateWhere, issueUpdateInput)
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
         throw new GraphQLError('Error updating issue')

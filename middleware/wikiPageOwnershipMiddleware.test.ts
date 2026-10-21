@@ -67,10 +67,8 @@ test("create middleware handles an omitted input list", async () => {
 
 test("child pages inherit the relationship owner of their parent", async () => {
   const context = {
-    ogm: {
-      model: () => ({
-        find: async () => [{ Channel: { uniqueName: "cats" } }],
-      }),
+    wikiGuardRepository: {
+      findChildCreationOwners: async () => [{ Channel: { uniqueName: "cats" } }],
     },
   } as unknown as GraphQLContext;
   const result = await createOwnedChildWikiPages(
@@ -97,13 +95,11 @@ test("child pages inherit the relationship owner of their parent", async () => {
 
 test("child creation refuses ambiguous parent ownership", async () => {
   const context = {
-    ogm: {
-      model: () => ({
-        find: async () => [
-          { Channel: { uniqueName: "cats" } },
-          { Channel: { uniqueName: "dogs" } },
-        ],
-      }),
+    wikiGuardRepository: {
+      findChildCreationOwners: async () => [
+        { Channel: { uniqueName: "cats" } },
+        { Channel: { uniqueName: "dogs" } },
+      ],
     },
   } as unknown as GraphQLContext;
   await assert.rejects(
@@ -128,7 +124,7 @@ test("child middleware passes through unrelated updates", async () => {
 
 test("child middleware supports array-shaped relationship updates", async () => {
   const context = {
-    ogm: { model: () => ({ find: async () => [{ Channel: { uniqueName: "cats" } }] }) },
+    wikiGuardRepository: { findChildCreationOwners: async () => [{ Channel: { uniqueName: "cats" } }] },
   } as unknown as GraphQLContext;
   const result = await createOwnedChildWikiPages(
     resolver as never,
@@ -178,4 +174,44 @@ test("wiki home creation requires one channel uniqueName", async () => {
     ),
     /single channel uniqueName/
   );
+});
+
+test("owner lookup keeps undefined/empty filters and rejects missing owners before resolving", async () => {
+  for (const where of [undefined, {}]) {
+    for (const pages of [[], [{ Channel: null }]]) {
+      let called = false;
+      const context = { wikiGuardRepository: {
+        findChildCreationOwners: async (filter: unknown) => {
+          assert.equal(filter, where);
+          return pages;
+        },
+      } } as unknown as GraphQLContext;
+      await assert.rejects(createOwnedChildWikiPages(async () => { called = true; }, null,
+        { where, update: { ChildPages: { create: [{ node: {} }] } } }, context, info), /one channel owner/);
+      assert.equal(called, false);
+    }
+  }
+});
+
+test("ownerless alongside one owner retains the existing unique-owner decision", async () => {
+  const context = { wikiGuardRepository: {
+    findChildCreationOwners: async () => [{ Channel: null }, { Channel: { uniqueName: "cats" } }],
+  } } as unknown as GraphQLContext;
+  const result = await createOwnedChildWikiPages(resolver as never, null,
+    { update: { ChildPages: { create: [{ node: {} }] } } }, context, info) as Record<string, any>;
+  assert.equal(result.update.ChildPages.create[0].node.channelUniqueName, "cats");
+});
+
+test("owner lookup errors propagate without invoking the write resolver", async () => {
+  const failure = new Error("generated filter failed");
+  const context = { wikiGuardRepository: { findChildCreationOwners: async () => { throw failure; } } } as unknown as GraphQLContext;
+  await assert.rejects(createOwnedChildWikiPages(async () => assert.fail("must not write"), null,
+    { update: { ChildPages: { create: [{ node: {} }] } } }, context, info), error => error === failure);
+});
+
+test("missing schema registration rejects before invoking a guarded write", async () => {
+  const context = { driver: {} } as GraphQLContext;
+  await assert.rejects(createOwnedChildWikiPages(async () => assert.fail("must not write"), null,
+    { update: { ChildPages: { create: [{ node: {} }] } } }, context, info),
+    { message: "Generated schema operations are not initialized for this driver" });
 });

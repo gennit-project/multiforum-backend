@@ -67,7 +67,7 @@ const channelVariantUrls = createVariantUrlsResolver({
 });
 
 export default function buildTypeResolvers(deps: ResolverDeps) {
-  const { ogm } = deps;
+  const { driver } = deps;
 
   return {
     JSON: GraphQLJSON,
@@ -98,7 +98,7 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       },
     },
     User: {
-      Collections: userCollections({ ogm }),
+      Collections: userCollections({ driver }),
       variantUrls: userVariantUrls,
     },
     Image: {

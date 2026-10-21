@@ -38,9 +38,11 @@ const createDriver = (count: number) => {
 test("getUserWikiEditsCount returns the counted wiki edits for an existing user", async () => {
   const { driver, runCalls } = createDriver(3);
   const resolver = getUserWikiEditsCountResolver({
-    User: {
-      find: async () => [{ username: "alice" }],
-    } as any,
+    contributionTargetRepository: {
+      userExists: async () => true,
+      channelExists: async () => false,
+      moderationProfileExists: async () => false,
+    },
     driver: driver as any,
   });
 
@@ -56,9 +58,11 @@ test("getUserWikiEditsCount returns the counted wiki edits for an existing user"
 test("getUserWikiEditsCount throws when the user does not exist", async () => {
   const { driver } = createDriver(0);
   const resolver = getUserWikiEditsCountResolver({
-    User: {
-      find: async () => [],
-    } as any,
+    contributionTargetRepository: {
+      userExists: async () => false,
+      channelExists: async () => false,
+      moderationProfileExists: async () => false,
+    },
     driver: driver as any,
   });
 

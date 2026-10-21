@@ -7,7 +7,6 @@ import {
   validateDiscussionImagePreferences,
 } from "./discussionIsValid.js";
 import { validateEventChannelsEnabled } from "./eventIsValid.js";
-import { ModelStub } from "../../tests/testUtils.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 const createContext = ({
@@ -57,12 +56,11 @@ const createContext = ({
         : [],
     }),
   },
+  contentValidationRepository: {
+    findDiscussionChannels: async () => discussion ? [discussion] : [],
+  },
   ogm: {
     model: (name: string) => {
-      if (name === "Discussion") {
-        return new ModelStub(() => (discussion ? [discussion] : []));
-      }
-
       throw new Error(`Unexpected model lookup: ${name}`);
     },
   },

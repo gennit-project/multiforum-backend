@@ -1,8 +1,10 @@
-import type { ServerConfigModel } from '../../ogm_types.js'
+import type { Driver } from "neo4j-driver"
+import { createServerPipelineRepository, type ServerPipelineRepository } from "../../services/persistence/serverPipelineRepository.js"
 import { randomUUID } from 'node:crypto'
 
 type Input = {
-  ServerConfig: ServerConfigModel
+  driver: Driver
+  serverPipelineRepository?: ServerPipelineRepository
 }
 
 export type PipelineStepInput = {
@@ -81,7 +83,7 @@ export const validatePipelines = (pipelines: EventPipelineInput[]): string | nul
 }
 
 const getResolver = (input: Input) => {
-  const { ServerConfig } = input
+  const { serverPipelineRepository = createServerPipelineRepository(input.driver) } = input
 
   return async (_parent: unknown, args: Args, _context: unknown, _resolveInfo: unknown) => {
     const { pipelines } = args
@@ -93,9 +95,7 @@ const getResolver = (input: Input) => {
     }
 
     // Get server config
-    const existingConfigs = await ServerConfig.find({
-      selectionSet: `{ serverName pluginPipelines }`
-    })
+    const existingConfigs = await serverPipelineRepository.listCurrent()
 
     if (existingConfigs.length === 0) {
       throw new Error('No server config found')
@@ -106,12 +106,7 @@ const getResolver = (input: Input) => {
     const normalizedPipelines = normalizePipelinesForStorage(pipelines)
 
     // Update the pluginPipelines JSON field (serialized as string for Neo4j)
-    await ServerConfig.update({
-      where: { serverName: serverConfig.serverName },
-      update: {
-        pluginPipelines: JSON.stringify(normalizedPipelines)
-      }
-    })
+    await serverPipelineRepository.save(serverConfig.serverName, JSON.stringify(normalizedPipelines))
 
     return normalizedPipelines
   }

@@ -1,12 +1,7 @@
+import { createWikiRevisionRepository, type WikiRevisionRepository } from "../services/persistence/wikiRevisionRepository.js";
 import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
 import { logger } from "../logger.js";
-import type {
-  WikiPageModel,
-  WikiPageUpdateInput,
-  TextVersionModel,
-  UserModel,
-} from "../ogm_types.js";
 
 type WikiPageVersionHistoryHandlerInput = {
   context: GraphQLContext;
@@ -46,30 +41,11 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
     
     logger.info('Processing version history for wikiPage:', wikiPageId);
     
-    // Access OGM models
-    const { ogm } = context;
-    const WikiPageModel = ogm.model('WikiPage');
-    const TextVersionModel = ogm.model('TextVersion');
-    const UserModel = ogm.model('User');
+    // Resolve finite wiki revision operations
+    const repository = context.wikiRevisionRepository ?? createWikiRevisionRepository(context.driver);
     
     // Fetch the current wikiPage to get current values before update
-    const wikiPages = await WikiPageModel.find({
-      where: { id: wikiPageId },
-      selectionSet: `{
-        id
-        title
-        body
-        editReason
-        VersionAuthor {
-          username
-        }
-        PastVersions {
-          id
-          body
-          createdAt
-        }
-      }`
-    });
+    const wikiPages = await repository.findSnapshot(wikiPageId);
 
     if (!wikiPages.length) {
       logger.info('WikiPage not found');
@@ -91,9 +67,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
         wikiPage.title,
         wikiPage.editReason,
         username,
-        WikiPageModel,
-        TextVersionModel,
-        UserModel
+        repository
       );
     }
     
@@ -104,9 +78,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
         wikiPage.body,
         wikiPage.editReason,
         username,
-        WikiPageModel,
-        TextVersionModel,
-        UserModel
+        repository
       );
     }
   } catch (error) {
@@ -123,9 +95,7 @@ async function trackVersionHistory(
   previousContent: string,
   editReason: string | null | undefined,
   username: string,
-  WikiPageModel: WikiPageModel,
-  TextVersionModel: TextVersionModel,
-  UserModel: UserModel
+  repository: WikiRevisionRepository
 ) {
   logger.info(`Tracking version history for wikiPage ${wikiPageId}`);
 
@@ -137,10 +107,7 @@ async function trackVersionHistory(
     }
 
     // Get user by username
-    const users = await UserModel.find({
-      where: { username },
-      selectionSet: `{ username }`
-    });
+    const users = await repository.findAuthor(username);
 
     if (!users.length) {
       logger.info('User not found');
@@ -160,9 +127,7 @@ async function trackVersionHistory(
       textVersionInput.editReason = editReason;
     }
 
-    const textVersionResult = await TextVersionModel.create({
-      input: [textVersionInput]
-    });
+    const textVersionResult = await repository.createRevision(textVersionInput);
 
     if (!textVersionResult.textVersions.length) {
       logger.info('Failed to create TextVersion');
@@ -172,12 +137,7 @@ async function trackVersionHistory(
     const textVersionId = textVersionResult.textVersions[0].id;
 
     // Fetch the current wikiPage
-    const wikiPages = await WikiPageModel.find({
-      where: { id: wikiPageId },
-      selectionSet: `{
-        id
-      }`
-    });
+    const wikiPages = await repository.findPageId(wikiPageId);
 
     if (!wikiPages.length) {
       logger.info('WikiPage not found when updating version history');
@@ -185,18 +145,7 @@ async function trackVersionHistory(
     }
 
     // Update wikiPage to connect the new TextVersion
-    await WikiPageModel.update({
-      where: { id: wikiPageId },
-      update: {
-        PastVersions: {
-          connect: [{
-            where: {
-              node: { id: textVersionId }
-            }
-          }]
-        }
-      } as unknown as WikiPageUpdateInput
-    });
+    await repository.connectRevision(wikiPageId, textVersionId);
 
     logger.info(`Successfully added version history for wikiPage ${wikiPageId}`);
   } catch (error) {

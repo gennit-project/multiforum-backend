@@ -84,8 +84,6 @@ const updateInSeriesWithEmailSpy = async (
   }
 ) => {
   const resolver = getUpdateEventInSeriesResolver({
-    Event: env.ogm.model("Event") as any,
-    EventSeries: env.ogm.model("EventSeries") as any,
     driver: env.driver as any,
     dependencies: {
       async sendBatchEmails(messages) {

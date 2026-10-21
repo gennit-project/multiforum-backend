@@ -1,85 +1,27 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createInAppNotification } from "./notificationHelpers.js";
-import type { UserModel } from "../ogm_types.js";
+import type { NotificationInput } from "../services/persistence/notificationWriter.js";
 
-// Minimal fake of the OGM User model: captures the update payload and returns a
-// configurable result (or throws).
-const fakeUserModel = (
-  result: unknown,
-  options: { throwError?: boolean } = {}
-) => {
-  const calls: any[] = [];
-  return {
-    calls,
-    update: async (input: any) => {
-      calls.push(input);
-      if (options.throwError) {
-        throw new Error("db error");
-      }
-      return result;
-    },
-  };
-};
-
-test("returns true when the update reports an updated user", async () => {
-  const UserModel = fakeUserModel({ users: [{ username: "alice" }] });
-  const ok = await createInAppNotification({
-    UserModel: UserModel as unknown as UserModel,
-    username: "alice",
-    text: "hello",
+for (const result of [true, false]) {
+  test(`returns ${result} when the writer reports ${result}`, async () => {
+    const actual = await createInAppNotification({context:{notificationWriter:{createForUser:async()=>result}},username:"alice",text:"hello"});
+    assert.equal(actual,result);
   });
-  assert.equal(ok, true);
+}
+test("returns false rather than throwing on write failure", async () => {
+  assert.equal(await createInAppNotification({context:{notificationWriter:{createForUser:async()=>{throw new Error("db error");}}},username:"alice",text:"hello"}),false);
 });
-
-test("returns false when no user was updated", async () => {
-  const UserModel = fakeUserModel({ users: [] });
-  const ok = await createInAppNotification({
-    UserModel: UserModel as unknown as UserModel,
-    username: "ghost",
-    text: "hello",
-  });
-  assert.equal(ok, false);
+test("targets the recipient and defaults the notification category to general", async () => {
+  const calls: NotificationInput[]=[];
+  await createInAppNotification({context:{notificationWriter:{createForUser:async input=>{calls.push(input);return true;}}},username:"alice",text:"hello"});
+  assert.deepEqual(calls,[{username:"alice",text:"hello",notificationType:"general"}]);
 });
-
-test("returns false (and does not throw) when the update errors", async () => {
-  const UserModel = fakeUserModel(null, { throwError: true });
-  const ok = await createInAppNotification({
-    UserModel: UserModel as unknown as UserModel,
-    username: "alice",
-    text: "hello",
-  });
-  assert.equal(ok, false);
+test("preserves an explicitly provided notification category", async () => {
+  const calls: NotificationInput[]=[];
+  await createInAppNotification({context:{notificationWriter:{createForUser:async input=>{calls.push(input);return true;}}},username:"alice",text:"feedback",notificationType:"feedback"});
+  assert.deepEqual(calls,[{username:"alice",text:"feedback",notificationType:"feedback"}]);
 });
-
-test("targets the right user and creates an unread notification", async () => {
-  const UserModel = fakeUserModel({ users: [{ username: "alice" }] });
-  await createInAppNotification({
-    UserModel: UserModel as unknown as UserModel,
-    username: "alice",
-    text: "you were mentioned",
-  });
-
-  const node =
-    UserModel.calls[0].update.Notifications[0].create[0].node;
-  assert.equal(UserModel.calls[0].where.username, "alice");
-  assert.equal(node.text, "you were mentioned");
-  assert.equal(node.read, false);
-  // notificationType defaults to "general" so the notification is never
-  // null-typed (which would hide it from both notification tabs).
-  assert.equal(node.notificationType, "general");
-});
-
-test("includes notificationType when provided", async () => {
-  const UserModel = fakeUserModel({ users: [{ username: "alice" }] });
-  await createInAppNotification({
-    UserModel: UserModel as unknown as UserModel,
-    username: "alice",
-    text: "feedback left",
-    notificationType: "feedback",
-  });
-
-  const node =
-    UserModel.calls[0].update.Notifications[0].create[0].node;
-  assert.equal(node.notificationType, "feedback");
+test("missing writer dependencies retain the false-return failure contract",async()=>{
+ assert.equal(await createInAppNotification({context:{},username:"alice",text:"hello"}),false);
 });

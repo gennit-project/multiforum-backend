@@ -1,7 +1,7 @@
+import { createImageModerationRepository, type ImageModerationRepository } from "../../services/persistence/imageModerationRepository.js";
+import type { Driver } from "neo4j-driver";
 import type {
   Issue,
-  IssueModel,
-  ImageModel,
   ModerationActionCreateInput,
   IssueWhere,
   IssueUpdateInput,
@@ -22,8 +22,8 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Image: ImageModel;
+  repository?: ImageModerationRepository;
+  driver: Driver;
 };
 
 const getModerationActionCreateInput = (input: {
@@ -101,7 +101,7 @@ const getModerationActionCreateInput = (input: {
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Image } = input;
+  const repository = input.repository ?? createImageModerationRepository(input.driver);
   return async (
     parent: unknown,
     args: Args,
@@ -129,15 +129,7 @@ const getResolver = (input: Input) => {
     }
 
     // Verify the image exists
-    const imageData = await Image.find({
-      where: {
-        id: imageId,
-      },
-      selectionSet: `{
-        id
-        archived
-      }`,
-    });
+    const imageData = await repository.findUnarchiveTarget(imageId);
 
     if (imageData.length === 0) {
       throw new GraphQLError("Image not found");
@@ -159,14 +151,7 @@ const getResolver = (input: Input) => {
       issueWhereClause.channelUniqueName = channelUniqueName;
     }
 
-    const issueData = await Issue.find({
-      where: issueWhereClause,
-      selectionSet: `{
-        id
-        issueNumber
-        flaggedServerRuleViolation
-      }`,
-    });
+    const issueData = await repository.findIssue(issueWhereClause);
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -224,29 +209,9 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      await Issue.update({
-        where: issueUpdateWhere,
-        update: unarchiveUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      await repository.appendIssueAction(issueUpdateWhere, unarchiveUpdateInput);
 
-      const issueUpdateData = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueCloseUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
+      const issueUpdateData = await repository.appendIssueAction(issueUpdateWhere, issueCloseUpdateInput);
 
       const issueId = issueUpdateData.issues[0]?.id || null;
       if (!issueId) {
@@ -255,7 +220,7 @@ const getResolver = (input: Input) => {
       existingIssue = issueUpdateData.issues[0];
 
       await notifyIssueSubscribers({
-        IssueModel: Issue,
+        notificationSnapshotRepository: context.notificationSnapshotRepository,
         driver: context.driver,
         issueId,
         actorUsername: loggedInUsername,
@@ -277,10 +242,7 @@ const getResolver = (input: Input) => {
         archived: false,
       };
 
-      const imageUpdateData = await Image.update({
-        where: imageUpdateWhere,
-        update: imageUpdateInput,
-      });
+      const imageUpdateData = await repository.updateModerationState(imageUpdateWhere, imageUpdateInput);
 
       const imageUpdateId = imageUpdateData.images[0]?.id || null;
       if (!imageUpdateId) {

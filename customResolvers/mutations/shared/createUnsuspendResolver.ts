@@ -1,17 +1,12 @@
+import { createSuspensionWriteRepository } from "../../../services/persistence/suspensionWriteRepository.js";
+import { createIssueTargetRepository } from "../../../services/persistence/issueTargetRepository.js";
 import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../../types/context.js'
 import type {
-  ChannelModel,
-  IssueModel,
-  CommentModel,
-  DiscussionModel,
-  EventModel,
-  ServerConfigModel,
   IssueUpdateInput,
   ChannelUpdateInput,
   ServerConfigUpdateInput,
-  UserModel
 } from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
 import { getModerationActionCreateInput } from '../reportComment.js'
@@ -19,13 +14,6 @@ import { notifyIssueSubscribers } from '../../../services/issueNotifications.js'
 import { resolveIssueTarget } from '../../shared/resolveIssueTarget.js'
 
 type CreateUnsuspendResolverOptions = {
-  Issue: IssueModel
-  Channel: ChannelModel
-  ServerConfig: ServerConfigModel
-  Comment: CommentModel
-  Discussion: DiscussionModel
-  Event: EventModel
-  User: UserModel
 
   // The name of the field on the Issue that identifies the user or mod to suspend
   issueRelatedAccountField: 'relatedUsername' | 'relatedModProfileName'
@@ -45,13 +33,6 @@ type Args = {
 }
 
 export function createUnsuspendResolver ({
-  Issue,
-  Channel,
-  ServerConfig,
-  Discussion,
-  Event,
-  Comment,
-  User,
   suspendedEntityName,
 }: CreateUnsuspendResolverOptions) {
   return async function unsuspendEntityResolver (
@@ -69,11 +50,7 @@ export function createUnsuspendResolver ({
 
     const { scope, channelUniqueName, relatedAccountName, relatedAccountType } =
       await resolveIssueTarget({
-        Issue,
-        Comment,
-        Discussion,
-        Event,
-        User,
+        repository: context.issueTargetRepository ?? createIssueTargetRepository(context.driver),
         issueId,
         suspendedEntityName,
       })
@@ -121,23 +98,12 @@ export function createUnsuspendResolver ({
       ]
     }
 
+    const repository = context.suspensionWriteRepository ?? createSuspensionWriteRepository(context.driver)
+
     // 6. Update the Issue with the ModerationAction
     let updatedIssue
     try {
-      updatedIssue = await Issue.update({
-        where: { id: issueId },
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            ActivityFeed {
-              id
-              actionType
-            }
-          }
-        }`
-      })
+      updatedIssue = await repository.closeSuspensionIssue(issueId, issueUpdateInput)
     } catch (err) {
       throw new GraphQLError('Error updating issue')
     }
@@ -148,7 +114,7 @@ export function createUnsuspendResolver ({
     }
 
     await notifyIssueSubscribers({
-      IssueModel: Issue,
+      notificationSnapshotRepository: context.notificationSnapshotRepository,
       driver: context.driver,
       issueId,
       actorUsername: loggedInUsername,
@@ -200,15 +166,9 @@ export function createUnsuspendResolver ({
     if (channelUpdateInput) {
       try {
         if (scope === 'server') {
-          await ServerConfig.update({
-            where: { serverName: process.env.SERVER_CONFIG_NAME },
-            update: channelUpdateInput as ServerConfigUpdateInput
-          })
+          await repository.removeServerSuspensions(process.env.SERVER_CONFIG_NAME, channelUpdateInput as ServerConfigUpdateInput)
         } else {
-          await Channel.update({
-            where: { uniqueName: channelUniqueName },
-            update: channelUpdateInput as ChannelUpdateInput
-          })
+          await repository.removeChannelSuspensions(channelUniqueName, channelUpdateInput as ChannelUpdateInput)
         }
       } catch (err) {
         throw new GraphQLError('Error unsuspending user')

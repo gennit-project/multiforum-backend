@@ -1,12 +1,6 @@
 import type { GraphQLResolveInfo } from 'graphql'
 
 import type {
-  PluginModel,
-  PluginVersionModel,
-  ServerConfigModel,
-  ServerSecretModel,
-} from '../../ogm_types.js'
-import type {
   MutationApplyPluginConfigurationArgs,
   PluginConfigurationDesiredStateInput,
 } from '../../src/generated/graphql.js'
@@ -26,12 +20,7 @@ import previewPluginConfigurationReconciliation, {
   mapPluginConfigurationDesiredStateInput,
 } from '../queries/previewPluginConfigurationReconciliation.js'
 
-type Input = {
-  Plugin: PluginModel
-  PluginVersion: PluginVersionModel
-  ServerConfig: ServerConfigModel
-  ServerSecret: ServerSecretModel
-}
+type Input = Record<string, never>
 
 type ApplyOperation = {
   kind: PluginConfigurationChange['kind']
@@ -69,13 +58,12 @@ const buildDefaultOperations = ({
   info: GraphQLResolveInfo
 }): PluginConfigurationApplyOperations => {
   const preview = previewPluginConfigurationReconciliation({
-    ServerConfig: input.ServerConfig,
-    ServerSecret: input.ServerSecret,
+    driver: context.driver,
   })
-  const install = installPluginVersion(input)
-  const setSecret = setServerPluginSecret({ ServerSecret: input.ServerSecret })
-  const configure = enableServerPlugin(input)
-  const updatePipelines = updatePluginPipelines({ ServerConfig: input.ServerConfig })
+  const install = installPluginVersion({ ...input, driver: context.driver })
+  const setSecret = setServerPluginSecret({ driver: context.driver })
+  const configure = enableServerPlugin({ driver: context.driver })
+  const updatePipelines = updatePluginPipelines({ driver: context.driver })
 
   return {
     preview: manifest => preview({}, { manifest }, context, info),

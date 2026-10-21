@@ -1,101 +1,24 @@
+import type { Driver } from "neo4j-driver";
+import { createPluginConfigurationReadRepository, type PluginConfigurationReadRepository, type InstalledPluginEdge } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
 import { logger } from "../../logger.js";
-import type {
-  ServerConfigModel
-} from '../../ogm_types.js'
 import { compareVersions, fetchMergedPluginRegistry, findLatestVersion } from '../../services/plugin/registryService.js'
 
 type Input = {
-  ServerConfig: ServerConfigModel
+  driver: Driver
+  pluginConfigurationReadRepository?: PluginConfigurationReadRepository
 }
 
-type PluginEdge = {
-  properties?: {
-    enabled?: boolean
-    settingsJson?: string | Record<string, unknown>
-  }
-  node?: {
-    version?: string
-    manifest?: string | Record<string, unknown> | null
-    settingsDefaults?: string | Record<string, unknown> | null
-    uiSchema?: string | Record<string, unknown> | null
-    documentationPath?: string | null
-    readmeMarkdown?: string | null
-    registryUrl?: string | null
-    releaseNotesUrl?: string | null
-    sourceRepoUrl?: string | null
-    sourceCommit?: string | null
-    minServerVersion?: string | null
-    apiVersion?: string | null
-    Plugin?: {
-      id?: string
-      name?: string
-      displayName?: string
-      description?: string
-      authorName?: string
-      authorUrl?: string
-      homepage?: string
-      license?: string
-      tags?: string[]
-      metadata?: unknown
-    }
-    [key: string]: unknown
-  }
-}
 
 const getResolver = (input: Input) => {
-  const { ServerConfig } = input
+  const repository = input.pluginConfigurationReadRepository ?? createPluginConfigurationReadRepository(input.driver)
 
   return async (_parent: unknown, _args: unknown, _context: GraphQLContext, _resolveInfo: GraphQLResolveInfo) => {
     try {
       // Get server config with installed plugins using Connection pattern
       // This gives us access to relationship properties (enabled, settingsJson)
-      const serverConfigs = await ServerConfig.find({
-        selectionSet: `{
-          serverName
-          pluginRegistries
-          InstalledVersionsConnection {
-            edges {
-              properties {
-                enabled
-                settingsJson
-              }
-              node {
-                id
-                version
-                repoUrl
-                tarballGsUri
-                integritySha256
-                registryUrl
-                releaseNotesUrl
-                sourceRepoUrl
-                sourceCommit
-                minServerVersion
-                apiVersion
-                entryPath
-                manifest
-                settingsDefaults
-                uiSchema
-                documentationPath
-                readmeMarkdown
-                Plugin {
-                  id
-                  name
-                  displayName
-                  description
-                  authorName
-                  authorUrl
-                  homepage
-                  license
-                  tags
-                  metadata
-                }
-              }
-            }
-          }
-        }`
-      })
+      const serverConfigs = await repository.listInstalledPluginConfigs()
 
       if (!serverConfigs.length) {
         return []
@@ -103,7 +26,7 @@ const getResolver = (input: Input) => {
 
       const serverConfig = serverConfigs[0] as {
         pluginRegistries?: string[]
-        InstalledVersionsConnection?: { edges?: PluginEdge[] }
+        InstalledVersionsConnection?: { edges?: InstalledPluginEdge[] }
       }
       const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
@@ -129,7 +52,7 @@ const getResolver = (input: Input) => {
         }
       }
 
-      const installedPlugins = edges.map((edgeData: PluginEdge) => {
+      const installedPlugins = edges.map((edgeData: InstalledPluginEdge) => {
         const edgeProps = edgeData.properties || {}
         const node = edgeData.node || {}
         const pluginData = node.Plugin || {}

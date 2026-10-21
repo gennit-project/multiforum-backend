@@ -1,3 +1,6 @@
+import {createDownloadExecutionRepository, type DownloadExecutionRepository} from "../persistence/downloadExecutionRepository.js";
+import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
+import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import { Storage } from '@google-cloud/storage'
 import type {
@@ -44,6 +47,7 @@ import { createDownloadReadUrl } from '../downloadStorage.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, DownloadableFileUpdateInput, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 import { notifyUploaderOfPipelineResult } from "./pipelineNotifications.js";
+import type { PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
 
 export const isSupportedEvent = (event: string) => DOWNLOAD_EVENTS.has(event)
 
@@ -51,7 +55,7 @@ export const triggerPluginRunsForDownloadableFile = async (
   {
     downloadableFileId,
     event,
-    models
+    driver,
   }: TriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
@@ -59,53 +63,27 @@ export const triggerPluginRunsForDownloadableFile = async (
     loadPlugin = loadPluginImplementation,
     storage = new Storage(),
     execution,
+    leaseRepository,
+    attemptRepository,
+    downloadRepository,
+    notificationRepository,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     storage?: Pick<Storage, 'bucket'>
     execution?: PipelineExecutionMetadata
+    leaseRepository?: PipelineLeaseRepository
+    attemptRepository?: PipelineAttemptRepository
+    downloadRepository?: DownloadExecutionRepository
+    notificationRepository?: PipelineNotificationRepository
   } = {}
 ) => {
   if (!DOWNLOAD_EVENTS.has(event)) {
     throw new Error(`Unsupported plugin event: ${event}`)
   }
 
-  const {
-    DownloadableFile,
-    PluginPipelineRun,
-    PluginRun,
-    ServerConfig,
-    ServerSecret,
-    User,
-  } = models
+  const repository = downloadRepository ?? createDownloadExecutionRepository(driver!)
 
-  const files = await DownloadableFile.find({
-    where: { id: downloadableFileId },
-    selectionSet: `{
-      id
-      fileName
-      url
-      kind
-      size
-      uploadedAt
-      createdAt
-      storageBucket
-      storageObjectName
-      Discussion {
-        id
-        title
-        body
-        DiscussionChannels {
-          channelUniqueName
-          Channel {
-            uniqueName
-            displayName
-            description
-            rules
-          }
-        }
-      }
-    }`
-  })
+  const files = await repository.findFile(downloadableFileId)
 
   if (!files.length) {
     throw new Error('Downloadable file not found')
@@ -124,37 +102,7 @@ export const triggerPluginRunsForDownloadableFile = async (
   const channelId = discussionChannel?.channelUniqueName || null
   const channelNode = discussionChannel?.Channel || null
 
-  const serverConfigs = await ServerConfig.find({
-    selectionSet: `{
-      serverName
-      pluginPipelines
-      InstalledVersionsConnection {
-        edges {
-          properties {
-            enabled
-            settingsJson
-          }
-          node {
-            id
-            version
-            repoUrl
-            tarballGsUri
-            entryPath
-            manifest
-            settingsDefaults
-            uiSchema
-            Plugin {
-              id
-              name
-              displayName
-              description
-              metadata
-            }
-          }
-        }
-      }
-    }`
-  })
+  const serverConfigs = await repository.findConfiguration()
 
   const serverConfig: ServerConfigType | undefined = serverConfigs[0]
   if (!serverConfig) {
@@ -180,7 +128,8 @@ export const triggerPluginRunsForDownloadableFile = async (
   }
 
   await createPipelineAttempt({
-    PluginPipelineRun,
+    driver,
+    repository: attemptRepository,
     context: {
       pipelineId,
       targetId: downloadableFile.id,
@@ -210,17 +159,14 @@ export const triggerPluginRunsForDownloadableFile = async (
   // file before starting the scanner so that old approval cannot make new
   // bytes publicly downloadable during the rescan window.
   if (securityScanExpected && event !== 'downloadableFile.downloaded') {
-    await DownloadableFile.update({
-      where: { id: downloadableFileId },
-      update: ({
+    await repository.writeScanState(downloadableFileId, ({
         scanStatus: 'PENDING',
         scanReason: null,
         scanCheckedAt: null,
         reviewRequestedAt: null,
         reviewRequestReason: null,
         reviewRequestedByUsername: null
-      } as DownloadableFileUpdateInput)
-    })
+      } as DownloadableFileUpdateInput))
   }
 
   const runs: unknown[] = []
@@ -246,8 +192,7 @@ export const triggerPluginRunsForDownloadableFile = async (
     const pluginVersionData = edgeData.node
 
     const timing = createQueuedPluginRunTiming()
-    const runCreateResult = await PluginRun.create({
-      input: [
+    const runCreateResult = await repository.createPendingRuns([
         ({
           pluginId,
           pluginName: pluginNode.displayName || pluginNode.name,
@@ -269,8 +214,7 @@ export const triggerPluginRunsForDownloadableFile = async (
           }),
           updatedAt: new Date().toISOString()
         } as unknown as PluginRunCreateInput)
-      ]
-    })
+      ])
 
     pendingRuns.push({
       id: runCreateResult.pluginRuns[0].id,
@@ -291,26 +235,16 @@ export const triggerPluginRunsForDownloadableFile = async (
 
     // Check if pipeline was stopped
     if (pipelineStopped) {
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await repository.markSkippedRun(pluginRunId, ({
           status: 'SKIPPED',
           skippedReason: 'Pipeline stopped due to previous failure',
           message: 'Skipped: pipeline stopped',
           finishedAt: new Date().toISOString(),
           timeoutAt: null,
-        } as PluginRunUpdateInput)
-      })
+        } as PluginRunUpdateInput))
       jobStatuses[order] = 'SKIPPED'
 
-      const skipped = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const skipped = await repository.findReturnedRun(pluginRunId)
       if (skipped[0]) runs.push(skipped[0])
       continue
     }
@@ -321,41 +255,31 @@ export const triggerPluginRunsForDownloadableFile = async (
         ? 'Condition not met: previous step did not succeed'
         : 'Condition not met: previous step did not fail'
 
-      await PluginRun.update({
-        where: { id: pluginRunId },
-        update: ({
+      await repository.markSkippedRun(pluginRunId, ({
           status: 'SKIPPED',
           skippedReason: reason,
           message: `Skipped: ${reason}`,
           finishedAt: new Date().toISOString(),
           timeoutAt: null,
-        } as PluginRunUpdateInput)
-      })
+        } as PluginRunUpdateInput))
       jobStatuses[order] = 'SKIPPED'
 
-      const skipped = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const skipped = await repository.findReturnedRun(pluginRunId)
       if (skipped[0]) runs.push(skipped[0])
       continue
     }
 
     const lease = await claimPluginRunLease({
-      PluginRun,
-      PluginPipelineRun,
+      driver,
+      repository: leaseRepository,
       pluginRunId,
       pipelineId,
     })
     if (!lease) continue
 
     const heartbeat = startPluginRunHeartbeat({
-      PluginRun,
-      PluginPipelineRun,
+      driver,
+      repository: leaseRepository,
       lease,
     })
     jobStatuses[order] = 'RUNNING'
@@ -369,13 +293,7 @@ export const triggerPluginRunsForDownloadableFile = async (
       const tarballUrl = pluginVersionData.tarballGsUri || pluginVersionData.repoUrl
       const PluginClass = await loadPlugin(tarballUrl, pluginVersionData.entryPath || 'dist/index.js')
 
-      const serverSecrets = await ServerSecret.find({
-        where: { pluginId },
-        selectionSet: `{
-          key
-          ciphertext
-        }`
-      })
+      const serverSecrets = await repository.findSecrets(pluginId)
 
       const decryptedSecrets: Record<string, string> = {}
       for (const secret of serverSecrets) {
@@ -505,7 +423,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'
 
       await completePluginRunLease({
-        PluginRun,
+      driver,
+      repository: leaseRepository,
         lease,
         update: {
           status: succeeded ? 'SUCCEEDED' : 'FAILED',
@@ -535,14 +454,7 @@ export const triggerPluginRunsForDownloadableFile = async (
         pipelineStopped = true
       }
 
-      const updated = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const updated = await repository.findReturnedRun(pluginRunId)
 
       if (updated[0]) {
         runs.push(updated[0])
@@ -559,7 +471,8 @@ export const triggerPluginRunsForDownloadableFile = async (
       previousStatus = 'FAILED'
 
       await completePluginRunLease({
-        PluginRun,
+      driver,
+      repository: leaseRepository,
         lease,
         update: {
           status: 'FAILED',
@@ -581,14 +494,7 @@ export const triggerPluginRunsForDownloadableFile = async (
         pipelineStopped = true
       }
 
-      const updated = await PluginRun.find({
-        where: { id: pluginRunId },
-        selectionSet: `{
-          id pluginId pluginName version scope channelId eventType status message
-          durationMs targetId targetType payload pipelineId executionOrder skippedReason
-          createdAt updatedAt
-        }`
-      })
+      const updated = await repository.findReturnedRun(pluginRunId)
 
       if (updated[0]) {
         runs.push(updated[0])
@@ -602,25 +508,22 @@ export const triggerPluginRunsForDownloadableFile = async (
     const outcome = securityScanOutcome || failedDownloadScanOutcome(
       'The security scan was skipped before it could complete.'
     )
-    await DownloadableFile.update({
-      where: { id: downloadableFileId },
-      update: ({
+    await repository.writeScanState(downloadableFileId, ({
         scanStatus: outcome.status,
         scanReason: outcome.reason,
         scanCheckedAt: new Date().toISOString()
-      } as DownloadableFileUpdateInput)
-    })
+      } as DownloadableFileUpdateInput))
   }
 
   await completePipelineAttempt({
-    PluginPipelineRun,
+    driver,
+    repository: attemptRepository,
     pipelineId,
     statuses: jobStatuses,
   })
   await notifyUploaderOfPipelineResult({
-    DownloadableFile,
-    PluginPipelineRun,
-    User,
+    driver,
+    repository: notificationRepository,
     pipelineId,
   })
 

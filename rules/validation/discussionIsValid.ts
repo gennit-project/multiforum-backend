@@ -1,3 +1,4 @@
+import { resolveContentValidationRepository } from "../../services/persistence/contentValidationRepository.js";
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
@@ -118,15 +119,7 @@ async function getDiscussionChannelNamesByWhere(where: any, ctx: GraphQLContext)
     return [];
   }
 
-  const Discussion = ctx.ogm.model("Discussion");
-  const discussions = await Discussion.find({
-    where,
-    selectionSet: `{
-      DiscussionChannels {
-        channelUniqueName
-      }
-    }`,
-  });
+  const discussions = await resolveContentValidationRepository(ctx).findDiscussionChannels(where);
 
   return (
     discussions?.flatMap(

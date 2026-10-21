@@ -9,11 +9,10 @@ import {
 } from "../cypher/buildDiscussionChannelPageQuery.js";
 import { timeFrameOptions } from "./utils.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { DiscussionChannelModel } from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 import { getHotRankingQueryParams } from "../../services/rankingSettingsStore.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { normalizePagination } from "../../services/pagination.js";
 import { buildFulltextQuery } from "../../services/channelFulltext.js";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
@@ -26,9 +25,8 @@ enum timeFrameOptionKeys {
 }
 
 type Input = {
-  DiscussionChannel: DiscussionChannelModel;
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
   serverName?: string;
 };
 
@@ -54,7 +52,7 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, ServerConfig, serverName } = input;
+  const { driver, agePolicyRepository, serverName } = input;
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const { channelUniqueName, options, selectedTags, searchInput, showArchived, showUnanswered, hasDownload, labelFilters } = args;
     const { sort, timeFrame } = options || {};
@@ -72,7 +70,7 @@ const getResolver = (input: Input) => {
     const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     const searchValue = searchInput ?? "";
     const fulltextQuery = buildFulltextQuery(searchValue);

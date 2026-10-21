@@ -1,7 +1,9 @@
-import type { IssueCreateInput, IssueModel } from "../../ogm_types.js";
+import type { IssueCreateInput } from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
 import { GraphQLError } from "graphql";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
+import { attachIssueIdentityRelationships } from "../../services/issueTargetIdentity.js";
+import { createIssueCreationRepository, type IssueCreationRepository } from "../../services/persistence/issueCreationRepository.js";
 import { logger } from "../../logger.js";
 
 type Args = {
@@ -9,12 +11,13 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
+  issueCreationRepository?: IssueCreationRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, driver } = input;
+  const { driver } = input;
+  const repository = input.issueCreationRepository ?? createIssueCreationRepository(driver);
   return async (_parent: unknown, args: Args) => {
     const { input: issueInput } = args;
     const channelUniqueName = issueInput.channelUniqueName;
@@ -30,17 +33,7 @@ const getResolver = (input: Input) => {
     } as IssueCreateInput & { issueNumber: number };
 
     try {
-      const issueData = await Issue.create({
-        input: [issueCreateInput],
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-          }
-        }`,
-      });
-      const issue = issueData.issues?.[0];
+      const issue = await repository.create(attachIssueIdentityRelationships(issueCreateInput));
       if (!issue?.id) {
         throw new GraphQLError("Error creating issue");
       }

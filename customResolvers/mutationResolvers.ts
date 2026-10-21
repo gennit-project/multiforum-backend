@@ -1,3 +1,7 @@
+import { createScratchpadRepository } from "../services/persistence/scratchpadRepository.js";
+import { createStickyCommentRepository } from "../services/persistence/stickyCommentRepository.js";
+import { createReactionWriter } from "../services/persistence/reactionWriter.js";
+import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Mutation resolvers. Extracted from customResolvers.ts; receives the shared
 // ResolverDeps and wires each custom mutation to its models/driver. The wiring
 // is byte-for-byte the original Mutation map, just destructured from `deps`.
@@ -135,38 +139,8 @@ import setChannelDiscussionFlairConfig from "./mutations/setChannelDiscussionFla
 
 export default function buildMutationResolvers(deps: ResolverDeps) {
   const {
+    instancePolicyRepository,
     driver,
-    Discussion,
-    DiscussionChannel,
-    Event,
-    EventChannel,
-    EventSeries,
-    Comment,
-    User,
-    Email,
-    Channel,
-    Tag,
-    Issue,
-    ChannelRole,
-    ModChannelRole,
-    ServerRole,
-    ModServerRole,
-    ServerConfig,
-    Plugin,
-    PluginVersion,
-    PluginPipelineRun,
-    PluginPipelineCampaign,
-    PluginRun,
-    DownloadableFile,
-    ServerSecret,
-    Image,
-    Collection,
-    WikiPage,
-    TextVersion,
-    FilterOption,
-    ModerationAction,
-    LabelChangeHistory,
-    ScratchpadEntry,
   } = deps;
 
   return {
@@ -175,245 +149,139 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
-        Discussion,
         driver,
-        // Plugin pipeline support
-        Channel,
-        DownloadableFile,
-        PluginPipelineRun,
-        PluginRun,
-        ServerConfig,
-        ServerSecret,
-        User,
       }),
-    createIssue: createIssue({
-      Issue,
-      driver
-    }),
+    createIssue: createIssue({ driver }),
     updateDiscussionWithChannelConnections:
       updateDiscussionWithChannelConnections({
-        Discussion,
-        DownloadableFile,
-        PluginPipelineRun,
-        PluginRun,
-        ServerConfig,
-        ServerSecret,
-        User,
         driver,
       }),
     createEventWithChannelConnections: createEventWithChannelConnections({
-      Event,
       driver,
     }),
     createEventSeriesWithChannelConnections: createEventSeriesWithChannelConnections({
-      EventSeries,
-      Event,
-      Tag,
       driver,
     }),
     updateEventWithChannelConnections: updateEventWithChannelConnections({
-      Event,
       driver,
     }),
     updateEventInSeries: updateEventInSeries({
-      Event,
-      EventSeries,
       driver,
     }),
     deleteEventInSeries: deleteEventInSeries({
-      Event,
-      EventSeries,
       driver,
     }),
     addEmojiToComment: addEmojiToComment({
-      Comment,
+      reactionWriter: createReactionWriter(driver),
     }),
     removeEmojiFromComment: removeEmojiFromComment({
-      Comment,
+      reactionWriter: createReactionWriter(driver),
     }),
     addEmojiToDiscussionChannel: addEmojiToDiscussionChannel({
-      DiscussionChannel,
+      reactionWriter: createReactionWriter(driver),
     }),
     removeEmojiFromDiscussionChannel: removeEmojiFromDiscussionChannel({
-      DiscussionChannel,
+      reactionWriter: createReactionWriter(driver),
     }),
     upvoteComment: upvoteComment({
-      Comment,
-      User,
       driver,
     }),
     undoUpvoteComment: undoUpvoteComment({
-      Comment,
-      User,
       driver,
     }),
     upvoteDiscussionChannel: upvoteDiscussionChannel({
-      DiscussionChannel,
-      User,
       driver,
     }),
     undoUpvoteDiscussionChannel: undoUpvoteDiscussionChannel({
-      DiscussionChannel,
-      User,
       driver,
     }),
     createSignedStorageURL: createSignedStorageURL(),
     setProfileImage: setProfileImage({
-      User,
       driver,
     }),
     setChannelIcon: setChannelIcon({
-      Channel,
       driver,
     }),
     createEmailAndUser: getCreateEmailAndUserResolver({
-      User,
-      Email,
-      ServerConfig,
+      accountRegistrationRepository: createAccountRegistrationRepository(driver),
+      agePolicyRepository: instancePolicyRepository,
     }),
-    setMyBirthday: setMyBirthday({ driver, ServerConfig }),
+    setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
     inviteForumOwner: inviteForumOwner({
-      Channel,
-      User
+      driver
     }),
-    cancelInviteForumOwner: cancelInviteOwner({
-      Channel
-    }),
-    removeForumOwner: removeForumOwner({
-      Channel
-    }),
-    acceptForumOwnerInvite: acceptForumOwnerInvite({
-      Channel,
-    }),
-    becomeForumAdmin: becomeForumAdmin({
-      Channel,
-    }),
+    cancelInviteForumOwner: cancelInviteOwner(),
+    removeForumOwner: removeForumOwner(),
+    acceptForumOwnerInvite: acceptForumOwnerInvite(),
+    becomeForumAdmin: becomeForumAdmin(),
     inviteForumMod: inviteForumMod({
-      Channel,
-      User
+      driver
     }),
-    cancelInviteForumMod: cancelInviteForumMod({
-      Channel
-    }),
-    removeForumMod: removeForumMod({
-      Channel,
-      User
-    }),
-    acceptForumModInvite: acceptForumModInvite({
-      Channel,
-      User
-    }),
+    cancelInviteForumMod: cancelInviteForumMod(),
+    removeForumMod: removeForumMod(),
+    acceptForumModInvite: acceptForumModInvite(),
     // Server admin/mod invite workflow
     inviteServerAdmin: inviteServerAdmin({
-      ServerConfig,
-      User
+      driver
     }),
-    cancelInviteServerAdmin: cancelInviteServerAdmin({
-      ServerConfig
-    }),
-    acceptServerAdminInvite: acceptServerAdminInvite({
-      ServerConfig
-    }),
+    cancelInviteServerAdmin: cancelInviteServerAdmin(),
+    acceptServerAdminInvite: acceptServerAdminInvite(),
     inviteServerMod: inviteServerMod({
-      ServerConfig,
-      User
+      driver
     }),
-    cancelInviteServerMod: cancelInviteServerMod({
-      ServerConfig
-    }),
-    acceptServerModInvite: acceptServerModInvite({
-      ServerConfig,
-      User
-    }),
+    cancelInviteServerMod: cancelInviteServerMod(),
+    acceptServerModInvite: acceptServerModInvite(),
     dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
     seedDataForCypressTests: seedDataForCypressTestsResolver({
       driver,
-      Channel,
-      Discussion,
-      Event,
-      Comment,
-      User,
-      Email,
-      Tag,
-      ChannelRole,
-      ModChannelRole,
-      ServerRole,
-      ModServerRole,
-      ServerConfig,
     }),
     reportComment: reportComment({
-      Issue,
-      Comment,
       driver
     }),
     reportDiscussion: reportDiscussion({
-      Issue,
-      Discussion,
       driver
     }),
     reportEvent: reportEvent({
-      Issue,
-      Event,
       driver
     }),
     reportWikiEdit: reportWikiEdit({
-      Issue,
-      WikiPage,
-      TextVersion,
       driver
     }),
     deleteCommentRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'comment',
     }),
     deleteDiscussionBodyRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'discussion body',
     }),
     deleteEventDescriptionRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'event description',
     }),
     deleteWikiRevision: redactTextVersionRevision({
-      TextVersion,
       driver,
       revisionType: 'wiki',
     }),
     reportChannel: reportChannel({
-      Issue,
-      Channel,
       driver
     }),
     reportImage: reportImage({
-      Issue,
-      Image,
       driver
     }),
     reportProfilePicture: reportProfilePicture({
-      Issue,
-      User,
       driver
     }),
     reportChannelImage: reportChannelImage({
-      Issue,
-      Channel,
       driver
     }),
     archiveImage: archiveImage({
-      Issue,
-      Image,
       driver
     }),
     unarchiveImage: unarchiveImage({
-      Issue,
-      Image
+      driver,
     }),
     permanentlyRemoveImage: permanentlyRemoveImage({
-      Issue,
-      Image,
       driver
     }),
     permanentlyDeleteImage: permanentlyDeleteImage({
@@ -432,227 +300,104 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     lockChannel: lockChannel({
-      Issue,
-      Channel,
       driver
     }),
     unlockChannel: unlockChannel({
-      Issue,
-      Channel,
       driver
     }),
     suspendUser: suspendUser({
-      Issue,
-      Channel,
-      ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User,
-      WikiPage,
-      TextVersion
+      includeWikiPage: true,
+      includeTextVersion: true
     }),
-    unsuspendUser: unsuspendUser({
-      Issue,
-      Channel,
-      ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User
-    }),
-    suspendMod: suspendMod({
-      Issue,
-      Channel,
-      ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User
-    }),
-    unsuspendMod: unsuspendMod({
-      Issue,
-      Channel,
-      ServerConfig,
-      Comment,
-      Event,
-      Discussion,
-      User
-    }),
-    lockIssue: lockIssue({
-      Issue
-    }),
-    unlockIssue: unlockIssue({
-      Issue
-    }),
+    unsuspendUser: unsuspendUser(),
+    suspendMod: suspendMod(),
+    unsuspendMod: unsuspendMod(),
+    lockIssue: lockIssue(),
+    unlockIssue: unlockIssue(),
     archiveComment: archiveComment({
-      Issue,
-      Comment,
       driver,
     }),
     stickyComment: stickyComment({
-      Comment,
+      stickyCommentRepository: createStickyCommentRepository(driver),
     }),
     unstickyComment: unstickyComment({
-      Comment,
+      stickyCommentRepository: createStickyCommentRepository(driver),
     }),
     archiveDiscussion: archiveDiscussion({
-      Issue,
-      Discussion,
-      DiscussionChannel,
       driver,
     }),
     archiveEvent: archiveEvent({
-      Issue,
-      Event,
-      EventChannel,
       driver,
     }),
     unarchiveComment: unarchiveComment({
-      Issue,
-      Comment,
+      driver,
     }),
     unarchiveDiscussion: unarchiveDiscussion({
-      Issue,
-      DiscussionChannel
+      driver,
     }),
     unarchiveEvent: unarchiveEvent({
-      Issue,
-      EventChannel
+      driver,
     }),
     subscribeToComment: subscribeToComment({
-      Comment,
       driver
     }),
     unsubscribeFromComment: unsubscribeFromComment({
-      Comment,
       driver
     }),
     subscribeToDiscussionChannel: subscribeToDiscussionChannel({
-      DiscussionChannel,
       driver
     }),
     unsubscribeFromDiscussionChannel: unsubscribeFromDiscussionChannel({
-      DiscussionChannel,
       driver
     }),
     subscribeToEvent: subscribeToEvent({
-      Event,
       driver
     }),
     unsubscribeFromEvent: unsubscribeFromEvent({
-      Event,
       driver
     }),
     subscribeToEventUpdates: subscribeToEventUpdates({
-      Event,
       driver
     }),
     unsubscribeFromEventUpdates: unsubscribeFromEventUpdates({
-      Event,
       driver
     }),
     subscribeToIssue: subscribeToIssue({
-      Issue,
       driver
     }),
     unsubscribeFromIssue: unsubscribeFromIssue({
-      Issue,
       driver
     }),
     sendBugReport: sendBugReport(),
     refreshPlugins: refreshPlugins({
-      Plugin,
-      PluginVersion,
-      ServerConfig
+      driver
     }),
     installPluginVersion: installPluginVersion({
-      Plugin,
-      PluginVersion,
-      ServerConfig,
-      ServerSecret
+      driver
     }),
-    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    retryDownloadableFileScan: retryDownloadableFileScan({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    startPluginPipeline: startPluginPipeline({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    rerunPluginPipeline: rerunPluginPipeline({
-      Channel,
-      Discussion,
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
-    }),
-    createPluginPipelineCampaign: createPluginPipelineCampaign({
-      PluginPipelineCampaign,
-      DownloadableFile,
-      ServerConfig,
-    }),
+    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
+    retryDownloadableFileScan: retryDownloadableFileScan({}),
+    startPluginPipeline: startPluginPipeline({}),
+    rerunPluginPipeline: rerunPluginPipeline({}),
+    createPluginPipelineCampaign: createPluginPipelineCampaign({}),
     pausePluginPipelineCampaign: pausePluginPipelineCampaign({
-      PluginPipelineCampaign,
-      DownloadableFile,
-      ServerConfig,
+      driver,
     }),
     resumePluginPipelineCampaign: resumePluginPipelineCampaign({
-      PluginPipelineCampaign,
-      DownloadableFile,
-      ServerConfig,
+      driver,
     }),
     clearDownloadableFileScan: clearDownloadableFileScan({
-      DownloadableFile,
       driver
     }),
     requestDownloadableFileReview: requestDownloadableFileReview({
-      DownloadableFile
+      driver
     }),
     trackDownload: trackDownload({
       driver,
-      ServerConfig
+      agePolicyRepository: instancePolicyRepository
     }),
     prepareDownload: prepareDownload({
-      DownloadableFile,
-      Plugin,
-      PluginVersion,
-      PluginPipelineRun,
-      PluginRun,
-      ServerConfig,
-      ServerSecret,
-      User,
+      agePolicyRepository: instancePolicyRepository,
       driver
     }),
     updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
@@ -662,31 +407,19 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     enableServerPlugin: enableServerPlugin({
-      Plugin,
-      PluginVersion,
-      ServerConfig,
-      ServerSecret
+      driver
     }),
     setServerPluginSecret: setServerPluginSecret({
-      ServerSecret
+      driver
     }),
     updatePluginPipelines: updatePluginPipelines({
-      ServerConfig
+      driver
     }),
-    applyPluginConfiguration: applyPluginConfiguration({
-      Plugin,
-      PluginVersion,
-      ServerConfig,
-      ServerSecret,
-    }),
+    applyPluginConfiguration: applyPluginConfiguration({}),
     updateChannelPluginPipelines: updateChannelPluginPipelines({
-      Channel,
-      ServerConfig,
-      User
+      driver,
     }),
     createImageWithUploader: createImageWithUploader({
-      Image,
-      User,
       driver
     }),
     addToCollection: addToCollection({
@@ -705,61 +438,41 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
-      Discussion,
-      Collection,
-      Channel,
       driver
     }),
     pinWikiPageToChannel: pinWikiPageToChannel({
       driver,
-      Channel,
-      WikiPage,
     }),
     unpinWikiPageFromChannel: unpinWikiPageFromChannel({
       driver,
-      Channel,
-      WikiPage,
     }),
     lockWikiPage: lockWikiPage({
-      Channel,
-      WikiPage,
+      driver,
     }),
     unlockWikiPage: unlockWikiPage({
-      Channel,
-      WikiPage,
+      driver,
     }),
     setFeaturedWikiPages: setFeaturedWikiPages({
-      ServerConfig,
-      WikiPage,
+      driver,
     }),
     setRankingSettings: setRankingSettings({
       driver,
     }),
     updateDownloadLabels: updateDownloadLabels({
-      Discussion,
-      DiscussionChannel,
-      FilterOption,
-      ModerationAction,
-      LabelChangeHistory,
+      driver,
     }),
     createScratchpadEntry: createScratchpadEntry({
-      ScratchpadEntry,
-      Comment,
-      DiscussionChannel,
-      User,
+      scratchpadRepository: createScratchpadRepository(driver),
       driver,
     }),
     undoSuperUpvote: undoSuperUpvote({
-      Comment,
-      DiscussionChannel,
-      ScratchpadEntry,
       driver,
     }),
     updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
-      ScratchpadEntry,
+      scratchpadRepository: createScratchpadRepository(driver),
     }),
     deleteScratchpadEntry: deleteScratchpadEntry({
-      ScratchpadEntry,
+      scratchpadRepository: createScratchpadRepository(driver),
     }),
   };
 }

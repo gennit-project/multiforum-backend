@@ -1,8 +1,6 @@
-import type {
-  ServerConfigUpdateInput,
-  ServerConfigModel,
-  UserModel,
-} from "../../ogm_types.js";
+import { createServerInvitationRepository, type ServerInvitationRepository } from "../../services/persistence/serverInvitationRepository.js";
+import type { Driver } from "neo4j-driver";
+import { createEmailNotificationRepository } from "../../services/persistence/emailNotificationRepository.js";
 import { sendEmailToUser, EmailContent } from "./shared/emailUtils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -13,12 +11,14 @@ type Args = {
 };
 
 type Input = {
-  ServerConfig: ServerConfigModel;
-  User: UserModel;
+  driver: Driver;
+  emailDelivery?: Parameters<typeof sendEmailToUser>[2];
+  serverInvitationRepository?: ServerInvitationRepository;
 };
 
 const getResolver = (input: Input) => {
-  const { ServerConfig, User } = input;
+  const { driver } = input;
+  const repository = input.serverInvitationRepository ?? createServerInvitationRepository(driver);
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { serverName, inviteeUsername } = args;
@@ -29,10 +29,7 @@ const getResolver = (input: Input) => {
       );
     }
 
-    const invitees = await User.find({
-      where: { username: inviteeUsername },
-      selectionSet: "{ username }",
-    });
+    const invitees = await repository.findInvitee(inviteeUsername);
     if (!invitees[0]) {
       throw new Error(`No user exists with username "${inviteeUsername}".`);
     }
@@ -57,38 +54,16 @@ ${process.env.FRONTEND_URL}/admin/accept-mod-invite
 `
     };
 
-    // Prepare the OGM update inputs
-    // Note: Using type assertion until OGM types are regenerated
-    const serverConfigUpdateInput = {
-      PendingModInvites: [
-        {
-          connect: [
-            {
-              where: {
-                node: {
-                  username: inviteeUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    } as ServerConfigUpdateInput;
 
     // Update the ServerConfig to add the user to the list of pending invites.
-    const serverConfigUpdateResult = await ServerConfig.update({
-      where: {
-        serverName: serverName,
-      },
-      update: serverConfigUpdateInput,
-    });
+    const serverConfigUpdateResult = await repository.connectModeratorInvite(serverName, inviteeUsername);
     if (!serverConfigUpdateResult.serverConfigs[0]) {
       throw new Error(`No server exists with name "${serverName}".`);
     }
 
     // Delivery is best-effort. The invitation itself succeeded once the
     // PendingModInvites relationship was created.
-    await sendEmailToUser(inviteeUsername, emailContent, User, {
+    await sendEmailToUser(inviteeUsername, emailContent, input.emailDelivery ?? {emailNotificationRepository: createEmailNotificationRepository(driver)}, {
       inAppText: notificationMessage,
       createInAppNotification: true,
     });

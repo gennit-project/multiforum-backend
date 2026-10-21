@@ -31,7 +31,6 @@ const context = (values: Record<string, unknown> = {}): GraphQLContext => ({
       close: async () => undefined,
     }),
   } as unknown as Driver,
-  ogm: {} as GraphQLContext["ogm"],
 });
 
 const createReply = (): CommentCreateInput => ({

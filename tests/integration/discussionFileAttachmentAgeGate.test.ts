@@ -1,3 +1,6 @@
+import {Neo4jGraphQL} from "@neo4j/graphql";
+import {initializeOgmFromExistingSchema} from "../../services/initializeOgmFromExistingSchema.js";
+import {registerGeneratedSchema} from "../../services/persistence/generatedSchemaOperations.js";
 import assert from "node:assert/strict";
 import test, { after, before, beforeEach } from "node:test";
 import type { GraphQLResolveInfo } from "graphql";
@@ -7,7 +10,7 @@ import {
   type StartedNeo4jContainer,
 } from "@testcontainers/neo4j";
 import typeDefinitions from "../../typeDefs.js";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import { getAgeGateStatements } from "../../services/ageGate/definitions.js";
 import { installAgeGateReconcile } from "../../services/ageGate/reconcile.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -35,7 +38,10 @@ before(async () => {
     getAgeGateStatements(typeDefinitions)
   );
   const custom = getCustomResolvers(driver);
-  await custom.ogm.init();
+  const neoSchema = new Neo4jGraphQL({typeDefs:typeDefinitions,driver,resolvers:custom.resolvers,features:{filters:{String:{MATCHES:true}}}});
+  const schema = await neoSchema.getSchema();
+  initializeOgmFromExistingSchema(custom.ogm,neoSchema,schema);
+  registerGeneratedSchema(driver,schema);
   resolvers = custom.resolvers;
 }, { timeout: 240000 });
 

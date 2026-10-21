@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { notifyIssueSubscribers } from "./issueNotifications.js";
 import type { Driver } from "neo4j-driver";
-import type { IssueModel } from "../ogm_types.js";
+
 
 const buildDriver = () => {
   const sessions: Array<{ runCalls: any[]; closeCalls: number }> = [];
@@ -69,7 +69,7 @@ test("notifyIssueSubscribers notifies subscribers and only emails opted-in users
   };
 
   await notifyIssueSubscribers({
-    IssueModel: IssueModel as unknown as IssueModel,
+    notificationSnapshotRepository: {findIssueSubscribers: () => IssueModel.find()} as any,
     driver: driver as unknown as Driver,
     issueId: "issue-1",
     actorUsername: "editor",
@@ -145,7 +145,7 @@ test("notifyIssueSubscribers links the issue label in notification text when a U
 
     // Comment reply notification links the issue label.
     await notifyIssueSubscribers({
-      IssueModel: IssueModel as unknown as IssueModel,
+      notificationSnapshotRepository: {findIssueSubscribers: () => IssueModel.find()} as any,
       driver: driver as unknown as Driver,
       issueId: "issue-6",
       actorUsername: "editor",
@@ -161,7 +161,7 @@ test("notifyIssueSubscribers links the issue label in notification text when a U
 
     // Non-comment update notification links the issue label too.
     await notifyIssueSubscribers({
-      IssueModel: IssueModel as unknown as IssueModel,
+      notificationSnapshotRepository: {findIssueSubscribers: () => IssueModel.find()} as any,
       driver: driver as unknown as Driver,
       issueId: "issue-6",
       actorUsername: "editor",
@@ -192,7 +192,7 @@ test("notifyIssueSubscribers skips report actions", async () => {
   };
 
   const result = await notifyIssueSubscribers({
-    IssueModel: IssueModel as unknown as IssueModel,
+    notificationSnapshotRepository: {findIssueSubscribers: () => IssueModel.find()} as any,
     driver: driver as unknown as Driver,
     issueId: "issue-1",
     actorUsername: "editor",
@@ -202,4 +202,32 @@ test("notifyIssueSubscribers skips report actions", async () => {
 
   assert.equal(result, false);
   assert.equal(sessions.length, 0);
+});
+
+test("email failure precedes and prevents in-app writes for issue updates", async () => {
+  const { driver, sessions } = buildDriver();
+  const events: string[] = [];
+  await assert.rejects(notifyIssueSubscribers({
+    driver: driver as unknown as Driver,
+    notificationSnapshotRepository: {findIssueSubscribers: async () => {
+      events.push("snapshot");
+      return [{id:"issue", SubscribedToNotifications:[{username:"reader", Email:{address:"reader@example.test"}}]}];
+    }} as any,
+    issueId:"issue", actionDescription:"updated", dependencies:{sendBatchEmails: async () => {
+      events.push("email");
+      throw new Error("mail failed");
+    }},
+  }), /mail failed/);
+  assert.deepEqual(events,["snapshot","email"]);
+  assert.equal(sessions.length,0);
+});
+
+test("snapshot failures propagate without email or in-app effects", async () => {
+  const { driver, sessions } = buildDriver();
+  await assert.rejects(notifyIssueSubscribers({
+    driver: driver as unknown as Driver,
+    notificationSnapshotRepository: {findIssueSubscribers: async () => {throw new Error("snapshot failed");}} as any,
+    issueId:"issue", actionDescription:"updated", dependencies:{sendBatchEmails: async () => {throw new Error("unexpected email");}},
+  }), /snapshot failed/);
+  assert.equal(sessions.length,0);
 });

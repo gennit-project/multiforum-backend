@@ -1,11 +1,9 @@
+import { createIssueActivityMiddlewareRepository, type IssueActivityMiddlewareRepository } from "../services/persistence/issueActivityMiddlewareRepository.js";
+import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../types/context.js';
 import { logger } from "../logger.js";
 import type {
-  CommentModel,
-  DiscussionModel,
-  EventModel,
-  IssueModel,
   EventUpdateInput,
 } from '../ogm_types.js';
 import {
@@ -58,24 +56,10 @@ const getDeleteAttribution = (input: {
 };
 
 const getCommentAuthorInfo = async (
-  CommentModel: CommentModel,
+  repository: IssueActivityMiddlewareRepository,
   commentId: string
 ): Promise<AuthorInfo> => {
-  const comments = await CommentModel.find({
-    where: { id: commentId },
-    selectionSet: `{
-      id
-      CommentAuthor {
-        ... on User {
-          username
-          displayName
-        }
-        ... on ModerationProfile {
-          displayName
-        }
-      }
-    }`,
-  });
+  const comments = await repository.findCommentAuthor(commentId);
 
   const comment = comments?.[0];
   const author = (comment?.CommentAuthor || null) as {
@@ -92,19 +76,10 @@ const getCommentAuthorInfo = async (
 };
 
 const getDiscussionAuthorInfo = async (
-  DiscussionModel: DiscussionModel,
+  repository: IssueActivityMiddlewareRepository,
   discussionId: string
 ): Promise<AuthorInfo> => {
-  const discussions = await DiscussionModel.find({
-    where: { id: discussionId },
-    selectionSet: `{
-      id
-      Author {
-        username
-        displayName
-      }
-    }`,
-  });
+  const discussions = await repository.findDiscussionAuthor(discussionId);
 
   const discussion = discussions?.[0];
   const author = discussion?.Author || null;
@@ -118,19 +93,10 @@ const getDiscussionAuthorInfo = async (
 };
 
 const getEventAuthorInfo = async (
-  EventModel: EventModel,
+  repository: IssueActivityMiddlewareRepository,
   eventId: string
 ): Promise<AuthorInfo> => {
-  const events = await EventModel.find({
-    where: { id: eventId },
-    selectionSet: `{
-      id
-      Poster {
-        username
-        displayName
-      }
-    }`,
-  });
+  const events = await repository.findEventAuthor(eventId);
 
   const event = events?.[0];
   const author = event?.Poster || null;
@@ -144,21 +110,11 @@ const getEventAuthorInfo = async (
 };
 
 const issueHasDeleteActivity = async (
-  IssueModel: IssueModel,
+  repository: IssueActivityMiddlewareRepository,
   issueId: string
 ): Promise<boolean> => {
   try {
-    const existing = await IssueModel.find({
-      where: {
-        id: issueId,
-        ActivityFeed_SOME: {
-          actionType: 'delete',
-        },
-      },
-      selectionSet: `{
-        id
-      }`,
-    });
+    const existing = await repository.findDeleteActivities(issueId);
     return existing.length > 0;
   } catch (error) {
     logger.error('Error checking issue delete activity:', error);
@@ -177,12 +133,11 @@ const recordDeleteClosure = async (input: {
   context: GraphQLContext;
 }) => {
   const { issueLookup, actionDescription, authorInfo, context } = input;
-  const IssueModel = context?.ogm?.model('Issue');
-  if (!IssueModel) {
+  if (!context?.issueActivityRepository && !context?.driver) {
     return;
   }
 
-  const issueIds = await getIssueIdsForRelated(IssueModel, issueLookup);
+  const issueIds = await getIssueIdsForRelated(context.issueActivityRepository ?? createIssueActivityRepository(context.driver), issueLookup);
   if (!issueIds.length) {
     return;
   }
@@ -194,23 +149,18 @@ const recordDeleteClosure = async (input: {
 
   for (const issueId of issueIds) {
     try {
-      await IssueModel.update({
-        where: { id: issueId },
-        update: {
-          isOpen: false,
-        },
-      });
+      await (context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver)).closeDeletedIssue(issueId);
     } catch (error) {
       logger.error('Error closing issue after deletion:', error);
     }
 
-    const hasDeleteActivity = await issueHasDeleteActivity(IssueModel, issueId);
+    const hasDeleteActivity = await issueHasDeleteActivity(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), issueId);
     if (hasDeleteActivity) {
       continue;
     }
 
     await createIssueActivityFeedItems({
-      IssueModel,
+      issueActivityRepository: context.issueActivityRepository ?? createIssueActivityRepository(context.driver),
       issueIds: [issueId],
       actionDescription:
         'the issue was closed because the reported content was deleted',
@@ -223,7 +173,7 @@ const recordDeleteClosure = async (input: {
       : actionDescription;
 
     await createIssueActivityFeedItems({
-      IssueModel,
+      issueActivityRepository: context.issueActivityRepository ?? createIssueActivityRepository(context.driver),
       driver: context?.driver,
       issueIds: [issueId],
       actionDescription: actionText,
@@ -244,19 +194,18 @@ const recordEditActivity = async (input: {
   context: GraphQLContext;
 }) => {
   const { issueLookup, actionDescription, context } = input;
-  const IssueModel = context?.ogm?.model('Issue');
-  if (!IssueModel) {
+  if (!context?.issueActivityRepository && !context?.driver) {
     return;
   }
 
-  const issueIds = await getIssueIdsForRelated(IssueModel, issueLookup);
+  const issueIds = await getIssueIdsForRelated(context.issueActivityRepository ?? createIssueActivityRepository(context.driver), issueLookup);
   if (!issueIds.length) {
     return;
   }
 
   const attribution = getAttributionFromContext(context);
   await createIssueActivityFeedItems({
-      IssueModel,
+      issueActivityRepository: context.issueActivityRepository ?? createIssueActivityRepository(context.driver),
       driver: context?.driver,
       issueIds,
       actionDescription,
@@ -276,9 +225,8 @@ const issueActivityFeedMiddleware = {
       info: GraphQLResolveInfo
     ) => {
       const commentId = args?.where?.id;
-      const CommentModel = context?.ogm?.model('Comment');
-      const authorInfo = commentId && CommentModel
-        ? await getCommentAuthorInfo(CommentModel, commentId)
+      const authorInfo = commentId && (context?.issueActivityMiddlewareRepository || context?.driver)
+        ? await getCommentAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), commentId)
         : null;
       const result = await resolve(parent, args, context, info);
       if (result?.nodesDeleted && commentId) {
@@ -299,9 +247,8 @@ const issueActivityFeedMiddleware = {
       info: GraphQLResolveInfo
     ) => {
       const discussionId = args?.where?.id;
-      const DiscussionModel = context?.ogm?.model('Discussion');
-      const authorInfo = discussionId && DiscussionModel
-        ? await getDiscussionAuthorInfo(DiscussionModel, discussionId)
+      const authorInfo = discussionId && (context?.issueActivityMiddlewareRepository || context?.driver)
+        ? await getDiscussionAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), discussionId)
         : null;
       const result = await resolve(parent, args, context, info);
       if (result?.nodesDeleted && discussionId) {
@@ -322,9 +269,8 @@ const issueActivityFeedMiddleware = {
       info: GraphQLResolveInfo
     ) => {
       const eventId = args?.where?.id;
-      const EventModel = context?.ogm?.model('Event');
-      const authorInfo = eventId && EventModel
-        ? await getEventAuthorInfo(EventModel, eventId)
+      const authorInfo = eventId && (context?.issueActivityMiddlewareRepository || context?.driver)
+        ? await getEventAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), eventId)
         : null;
       const result = await resolve(parent, args, context, info);
       if (result?.nodesDeleted && eventId) {

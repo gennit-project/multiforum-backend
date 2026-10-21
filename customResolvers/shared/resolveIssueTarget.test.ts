@@ -1,6 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveIssueTarget } from "./resolveIssueTarget.js";
+import { resolveIssueTarget as resolveWithRepository } from "./resolveIssueTarget.js";
+
+// Test-only adapters retain the original fixture data and call assertions.
+const resolveIssueTarget = ({ Issue, Discussion, Event, Comment, User, WikiPage, TextVersion, ...args }: any) => resolveWithRepository({
+  ...args,
+  includeWikiPage: Boolean(WikiPage),
+  includeTextVersion: Boolean(TextVersion),
+  repository: {
+    findIssue: (id: string) => Issue.find({ where: { id } }),
+    findProfileOwner: (displayName: string) => User.find({ where: { ModerationProfile: { displayName } } }),
+    findDirectUser: (username: string) => User.find({ where: { username } }),
+    findDiscussionAuthor: (id: string) => Discussion.find({ where: { id } }),
+    findEventPoster: (id: string) => Event.find({ where: { id } }),
+    findCommentAuthor: (id: string) => Comment.find({ where: { id } }),
+    findRevisionAuthor: (id: string) => TextVersion.find({ where: { id } }),
+    findWikiAuthors: (id: string) => WikiPage.find({ where: { id } }),
+  },
+});
 
 class ModelStub<T> {
   private result: T[];

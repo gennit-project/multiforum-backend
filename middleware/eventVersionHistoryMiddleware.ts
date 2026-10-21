@@ -1,3 +1,4 @@
+import { createEventRevisionRepository } from "../services/persistence/eventRevisionRepository.js";
 /**
  * Middleware for tracking event version history.
  * This middleware runs before event update operations to capture the previous
@@ -25,31 +26,6 @@ interface UpdateEventsArgs {
   [key: string]: unknown;
 }
 
-const eventSnapshotSelectionSet = `{
-  id
-  title
-  description
-  Poster {
-    username
-  }
-  DescriptionLastEditedBy {
-    username
-  }
-  EventChannels {
-    channelUniqueName
-  }
-  PastTitleVersions {
-    id
-    body
-    createdAt
-  }
-  PastDescriptionVersions {
-    id
-    body
-    createdAt
-  }
-}`;
-
 const eventVersionHistoryMiddleware = {
   Mutation: {
     // Apply to the auto-generated updateEvents mutation
@@ -69,11 +45,8 @@ const eventVersionHistoryMiddleware = {
 
       if (update.title !== undefined || update.description !== undefined) {
         if (eventId) {
-          const EventModel = context.ogm.model("Event");
-          const events = await EventModel.find({
-            where: { id: eventId },
-            selectionSet: eventSnapshotSelectionSet,
-          });
+          const repository = context.eventRevisionRepository ?? createEventRevisionRepository(context.driver);
+          const events = await repository.findSnapshot(eventId);
           eventSnapshot = (events[0] as unknown as EventSnapshot) ?? null;
         }
 

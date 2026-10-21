@@ -1,11 +1,8 @@
 import type { Driver } from 'neo4j-driver'
 import type {
   ChannelModel,
-  CommentModel,
   DiscussionModel,
   DownloadableFileModel,
-  EventModel,
-  IssueModel,
   PluginModel,
   PluginPipelineRunModel,
   PluginPipelineCampaignModel,
@@ -80,9 +77,9 @@ export type PluginEdgeData = {
 
 // Arguments for downloadable file trigger
 export type TriggerArgs = {
+  driver?: Driver
   downloadableFileId: string
   event: string
-  models: Models
 }
 
 export type PipelineExecutionMetadata = {
@@ -98,30 +95,22 @@ export type PipelineExecutionMetadata = {
 export type CommentTriggerArgs = {
   commentId: string
   event: string
-  models: {
-    Channel: ChannelModel
-    Comment: CommentModel
-    Discussion: DiscussionModel
-    Event: EventModel
-    Issue: IssueModel
-    PluginPipelineRun: PluginPipelineRunModel
-    PluginRun: PluginRunModel
-    ServerConfig: ServerConfigModel
-    ServerSecret: ServerSecretModel
-    User: UserModel
-  }
   driver: Driver
 }
 
 // Arguments for channel trigger
 export type ChannelTriggerArgs = {
+  driver?: Driver
   discussionId: string
   channelUniqueName: string
   event: string
-  models: Models & {
-    Channel: ChannelModel
-    Discussion: DiscussionModel
-  }
+}
+
+// Model shape retained purely as a type for the OGM-backed characterization
+// test fixtures and the campaign service type; no runtime path reads it.
+export type ChannelModels = Models & {
+  Channel: ChannelModel
+  Discussion: DiscussionModel
 }
 
 // Internal type for plugins to run in a pipeline

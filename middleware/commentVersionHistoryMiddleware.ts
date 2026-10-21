@@ -1,3 +1,4 @@
+import { createCommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
 /**
  * Middleware for tracking comment version history
  * This middleware runs before comment update operations to capture the previous
@@ -48,45 +49,8 @@ const commentVersionHistoryMiddleware = {
         const commentId = where?.id;
 
         if (commentId) {
-          const CommentModel = context.ogm.model("Comment");
-          const comments = await CommentModel.find({
-            where: { id: commentId },
-            selectionSet: `{
-              id
-              text
-              CommentAuthor {
-                ... on User {
-                  username
-                }
-                ... on ModerationProfile {
-                  displayName
-                  User {
-                    username
-                  }
-                }
-              }
-              DiscussionChannel {
-                discussionId
-                channelUniqueName
-                Discussion {
-                  id
-                  title
-                }
-              }
-              Event {
-                id
-                title
-                EventChannels {
-                  channelUniqueName
-                }
-              }
-              PastVersions {
-                id
-                body
-                createdAt
-              }
-            }`,
-          });
+          const repository = context.commentRevisionRepository ?? createCommentRevisionRepository(context.driver);
+          const comments = await repository.findSnapshot(commentId);
           commentSnapshot = (comments[0] as unknown as CommentSnapshot) ?? null;
         }
       }

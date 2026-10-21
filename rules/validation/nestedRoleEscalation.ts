@@ -1,3 +1,4 @@
+import { resolveRoleGuardRepository } from "../../services/persistence/roleGuardRepository.js";
 // No-privilege-escalation guard for NESTED role writes (PR-4b; extends PR-4 /
 // docs/isadmin-phaseout-design.md §5).
 //
@@ -154,19 +155,19 @@ function mergeWrites(target: ExtractedRoleWrites, source: ExtractedRoleWrites): 
 async function resolveConnectedRoleNodes(
   ctx: GraphQLContext,
   modelName: "ServerRole" | "ModServerRole",
-  wheres: WhereNode[],
-  capabilityFields: readonly string[]
+  wheres: WhereNode[]
 ): Promise<RoleNode[]> {
   if (wheres.length === 0) {
     return [];
   }
 
-  const Model = ctx.ogm.model(modelName);
-  const selectionSet = `{ ${capabilityFields.join("\n")} }`;
+  const repository = resolveRoleGuardRepository(ctx);
   const resolved: RoleNode[] = [];
 
   for (const where of wheres) {
-    const roles = (await Model.find({ where, selectionSet })) as RoleNode[];
+    const roles = modelName === "ServerRole"
+      ? await repository.findServerRoleCapabilities(where)
+      : await repository.findModServerRoleCapabilities(where);
     resolved.push(...roles);
   }
 
@@ -196,8 +197,7 @@ async function collectEscalations(
   const connectedNodes = await resolveConnectedRoleNodes(
     ctx,
     modelName,
-    connectWheres,
-    capabilityFields
+    connectWheres
   );
 
   return findEscalatedCapabilities({

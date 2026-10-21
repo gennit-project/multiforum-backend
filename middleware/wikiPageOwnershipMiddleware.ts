@@ -1,3 +1,4 @@
+import { resolveWikiGuardRepository } from "../services/persistence/wikiGuardRepository.js";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../types/context.js";
 
@@ -8,9 +9,6 @@ type Resolver = (
   info: GraphQLResolveInfo
 ) => Promise<unknown>;
 
-type WikiPageLookup = {
-  Channel?: { uniqueName?: string | null } | null;
-};
 
 const channelConnection = (channelUniqueName: string) => ({
   connect: {
@@ -44,10 +42,7 @@ const findSingleOwner = async (
   where: Record<string, unknown> | undefined,
   context: GraphQLContext
 ) => {
-  const pages = (await context.ogm.model("WikiPage").find({
-    where,
-    selectionSet: `{ Channel { uniqueName } }`,
-  })) as WikiPageLookup[];
+  const pages = await resolveWikiGuardRepository(context).findChildCreationOwners(where);
   const owners = new Set(
     pages.map((page) => page.Channel?.uniqueName).filter(Boolean) as string[]
   );

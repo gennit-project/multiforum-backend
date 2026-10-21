@@ -1,8 +1,9 @@
-import type { UserModel } from '../ogm_types.js';
+import type { Driver } from "neo4j-driver";
+import { resolveNotificationWriter, type NotificationWriter } from "../services/persistence/notificationWriter.js";
 import { logger } from "../logger.js";
 
-type CreateInAppNotificationInput = {
-  UserModel: UserModel;
+export type CreateInAppNotificationInput = {
+  context: {driver?: Driver; notificationWriter?: NotificationWriter};
   username: string;
   text: string;
   notificationType?: string; // "feedback", "mention", "reply", "moderation", "scratchpad", etc.
@@ -16,32 +17,13 @@ type CreateInAppNotificationInput = {
 const DEFAULT_NOTIFICATION_TYPE = "general";
 
 export const createInAppNotification = async ({
-  UserModel,
+  context,
   username,
   text,
   notificationType = DEFAULT_NOTIFICATION_TYPE,
 }: CreateInAppNotificationInput): Promise<boolean> => {
   try {
-    const userUpdateResult = await UserModel.update({
-      where: { username },
-      update: {
-        Notifications: [
-          {
-            create: [
-              {
-                node: {
-                  text,
-                  read: false,
-                  notificationType,
-                },
-              },
-            ],
-          },
-        ],
-      },
-    });
-
-    return Boolean(userUpdateResult?.users?.length);
+    return await resolveNotificationWriter(context).createForUser({username, text, notificationType});
   } catch (error) {
     logger.error('Error creating in-app notification:', error);
     return false;

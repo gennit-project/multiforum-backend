@@ -32,16 +32,6 @@ beforeEach(async () => {
   await resetDb();
 });
 
-const m = (name: string) => env.ogm.model(name);
-const models = () => ({
-  Channel: m("Channel"),
-  Comment: m("Comment"),
-  Discussion: m("Discussion"),
-  Event: m("Event"),
-  Issue: m("Issue"),
-  User: m("User"),
-});
-
 // --- botReportService.createBotReport ---
 
 test("createBotReport ensures a bot, opens an Issue, and records a report action", async () => {
@@ -53,7 +43,6 @@ test("createBotReport ensures a bot, opens an Issue, and records a report action
   );
 
   const result = await createBotReport({
-    models: models(),
     driver: env.driver,
     channelUniqueName: "test-channel",
     reportInput: {
@@ -89,7 +78,6 @@ test("createBotReport throws when no rule is selected", async () => {
   await run(`CREATE (:Channel { uniqueName: 'test-channel', createdAt: datetime() })`);
   await assert.rejects(
     createBotReport({
-      models: models(),
       driver: env.driver,
       channelUniqueName: "test-channel",
       reportInput: {
@@ -111,8 +99,7 @@ test("ensureBotUserForChannel creates a bot user with a moderation profile, conn
   await run(`CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })`);
 
   const user = await ensureBotUserForChannel({
-    User: m("User"),
-    Channel: m("Channel"),
+    driver: env.driver,
     channelUniqueName: "cats",
     botName: "helper",
   });
@@ -130,8 +117,7 @@ test("ensureBotUserForChannel creates a bot user with a moderation profile, conn
 test("ensureBotUserForChannel is idempotent (no duplicate bot on repeat)", async () => {
   await run(`CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })`);
   const input = {
-    User: m("User"),
-    Channel: m("Channel"),
+    driver: env.driver,
     channelUniqueName: "cats",
     botName: "helper",
   };
@@ -145,8 +131,7 @@ test("ensureBotUserForChannel is idempotent (no duplicate bot on repeat)", async
 test("ensureBotUserForChannel throws when the channel does not exist", async () => {
   await assert.rejects(
     ensureBotUserForChannel({
-      User: m("User"),
-      Channel: m("Channel"),
+      driver: env.driver,
       channelUniqueName: "ghost",
       botName: "helper",
     }),
@@ -160,9 +145,6 @@ test("createBotComment creates a comment authored by the bot, in the channel", a
   await run(`CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })`);
 
   const comment = await createBotComment({
-    Comment: m("Comment"),
-    User: m("User"),
-    Channel: m("Channel"),
     driver: env.driver,
     channelUniqueName: "cats",
     text: "Hello from the bot",
@@ -186,9 +168,6 @@ test("createBotComment validates and creates a reply to an existing comment", as
   `);
 
   const comment = await createBotComment({
-    Comment: m("Comment"),
-    User: m("User"),
-    Channel: m("Channel"),
     driver: env.driver,
     channelUniqueName: "cats",
     text: "Bot reply",
@@ -208,9 +187,6 @@ test("createBotComment rejects a missing reply parent before creating records", 
   await run(`CREATE (:Channel { uniqueName: 'cats', displayName: 'Cats', createdAt: datetime() })`);
 
   await assert.rejects(createBotComment({
-    Comment: m("Comment"),
-    User: m("User"),
-    Channel: m("Channel"),
     driver: env.driver,
     channelUniqueName: "cats",
     text: "Orphaned bot reply",
@@ -230,10 +206,7 @@ test("createBotComment throws when text is empty", async () => {
   await run(`CREATE (:Channel { uniqueName: 'cats', createdAt: datetime() })`);
   await assert.rejects(
     createBotComment({
-      Comment: m("Comment"),
-      User: m("User"),
-      Channel: m("Channel"),
-      driver: env.driver,
+        driver: env.driver,
       channelUniqueName: "cats",
       text: "",
       botName: "helper",

@@ -1,15 +1,19 @@
+import {
+  createContributionTargetRepository,
+  type ContributionTargetRepository,
+} from "../../services/persistence/contributionTargetRepository.js";
 import { getUserContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
-import type { ServerConfigModel, UserModel } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
 import { logger } from "../../logger.js";
 
 interface Input {
-  User: UserModel;
+  contributionTargetRepository?: ContributionTargetRepository;
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 }
 
 interface Args {
@@ -20,25 +24,23 @@ interface Args {
 }
 
 const getUserContributionsResolver = (input: Input) => {
-  const { driver, User, ServerConfig } = input;
+  const { driver, agePolicyRepository } = input;
+  const targets = input.contributionTargetRepository ?? createContributionTargetRepository(driver);
 
   return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { username, year, startDate, endDate } = args;
     const mayAccessSensitiveContent = await resolveSensitiveContentAccess({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     const session = driver.session({ defaultAccessMode: 'READ' });
 
     try {
       // Verify user existence
-      const userExists = await User.find({
-        where: { username },
-        selectionSet: `{ username }`,
-      });
+      const userExists = await targets.userExists(username);
 
-      if (userExists.length === 0) {
+      if (!userExists) {
         throw new Error(`User ${username} not found.`);
       }
 

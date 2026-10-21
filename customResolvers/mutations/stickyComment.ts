@@ -1,6 +1,6 @@
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
-import type { CommentModel } from "../../ogm_types.js";
+import type { StickyCommentRepository, StickyCommentUpdate } from "../../services/persistence/stickyCommentRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 
@@ -8,48 +8,10 @@ type Args = {
   commentId: string;
 };
 
-type CommentLookup = {
-  id?: string | null;
-  isRootComment?: boolean | null;
-  isFeedbackComment?: boolean | null;
-  deleted?: boolean | null;
-  archived?: boolean | null;
-  isSticky?: boolean | null;
-};
+type Input = { stickyCommentRepository: StickyCommentRepository };
 
-type StickyCommentUpdate = {
-  isSticky?: boolean;
-  stickyAt?: string | null;
-  stickyByUsername?: string | null;
-};
-
-type Input = {
-  Comment: CommentModel;
-};
-
-const commentSelectionSet = `{
-  id
-  isRootComment
-  isFeedbackComment
-  deleted
-  archived
-  isSticky
-}`;
-
-const returnedCommentSelectionSet = `{
-  comments {
-    id
-    isSticky
-    stickyAt
-    stickyByUsername
-  }
-}`;
-
-const getComment = async (Comment: CommentModel, commentId: string) => {
-  const comments = (await Comment.find({
-    where: { id: commentId },
-    selectionSet: commentSelectionSet,
-  })) as CommentLookup[];
+const getComment = async (stickyCommentRepository: StickyCommentRepository, commentId: string) => {
+  const comments = await stickyCommentRepository.findState(commentId);
 
   const comment = comments[0];
 
@@ -73,21 +35,16 @@ const getComment = async (Comment: CommentModel, commentId: string) => {
 };
 
 const updateComment = async ({
-  Comment,
+  stickyCommentRepository,
   commentId,
   update,
 }: {
-  Comment: CommentModel;
+  stickyCommentRepository: StickyCommentRepository;
   commentId: string;
   update: StickyCommentUpdate;
 }) => {
-  const result = await Comment.update({
-    where: { id: commentId },
-    update: update as never,
-    selectionSet: returnedCommentSelectionSet,
-  });
-
-  const updatedComment = result.comments[0];
+  const comments = await stickyCommentRepository.updateMetadata(commentId, update);
+  const updatedComment = comments[0];
 
   if (!updatedComment) {
     throw new GraphQLError("Comment could not be updated.");
@@ -96,7 +53,7 @@ const updateComment = async ({
   return updatedComment;
 };
 
-export const stickyComment = ({ Comment }: Input) => {
+export const stickyComment = ({ stickyCommentRepository }: Input) => {
   return async (
     _parent: unknown,
     args: Args,
@@ -107,7 +64,7 @@ export const stickyComment = ({ Comment }: Input) => {
       throw new GraphQLError("Comment ID is required.");
     }
 
-    const comment = await getComment(Comment, args.commentId);
+    const comment = await getComment(stickyCommentRepository, args.commentId);
 
     if (comment.isSticky === true) {
       throw new GraphQLError("Comment is already stickied.");
@@ -121,7 +78,7 @@ export const stickyComment = ({ Comment }: Input) => {
     }
 
     return updateComment({
-      Comment,
+      stickyCommentRepository,
       commentId: args.commentId,
       update: {
         isSticky: true,
@@ -132,7 +89,7 @@ export const stickyComment = ({ Comment }: Input) => {
   };
 };
 
-export const unstickyComment = ({ Comment }: Input) => {
+export const unstickyComment = ({ stickyCommentRepository }: Input) => {
   return async (
     _parent: unknown,
     args: Args,
@@ -143,14 +100,14 @@ export const unstickyComment = ({ Comment }: Input) => {
       throw new GraphQLError("Comment ID is required.");
     }
 
-    const comment = await getComment(Comment, args.commentId);
+    const comment = await getComment(stickyCommentRepository, args.commentId);
 
     if (comment.isSticky !== true) {
       throw new GraphQLError("Comment is not stickied.");
     }
 
     return updateComment({
-      Comment,
+      stickyCommentRepository,
       commentId: args.commentId,
       update: {
         isSticky: false,

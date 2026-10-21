@@ -1,4 +1,4 @@
-import type { ChannelUpdateInput, UserModel, ChannelModel } from "../../ogm_types.js";
+import { resolveForumModeratorRepository } from "../../services/persistence/forumModeratorRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { logger } from "../../logger.js";
@@ -14,13 +14,7 @@ type Args = {
   username?: string | null;
 };
 
-type Input = {
-  Channel: ChannelModel;
-  User: UserModel;
-};
-
-const getResolver = (input: Input) => {
-  const { Channel, User } = input;
+const getResolver = () => {
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, modProfileName, username } = args;
 
@@ -34,45 +28,15 @@ const getResolver = (input: Input) => {
     let displayName = modProfileName || null;
     if (!displayName) {
       // Legacy path: resolve the username to its mod profile server-side.
-      const userData = await User.find({
-        where: {
-          username,
-        },
-        selectionSet: `{
-          ModerationProfile {
-            displayName
-          }
-        }`,
-      });
+      const userData = await resolveForumModeratorRepository(context).findModeratorProfile(username);
       displayName = userData[0]?.ModerationProfile?.displayName || null;
       if (!displayName) {
         throw new Error(`User ${username} is not a moderator`);
       }
     }
 
-    const channelUpdateInput: ChannelUpdateInput = {
-      Moderators: [
-        {
-          disconnect: [
-            {
-              where: {
-                node: {
-                  displayName,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
     try {
-      const result = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: channelUpdateInput,
-      });
+      const result = await resolveForumModeratorRepository(context).disconnectModerator(channelUniqueName, displayName);
       if (!result.channels[0]) {
         throw new Error("Channel not found");
       }

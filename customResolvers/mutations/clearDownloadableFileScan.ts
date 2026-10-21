@@ -1,28 +1,26 @@
+import { createDownloadReviewRepository, type DownloadReviewRepository } from "../../services/persistence/downloadReviewRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
-  DownloadableFileModel,
   DownloadableFileUpdateInput,
 } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 type Input = {
-  DownloadableFile: DownloadableFileModel;
+  downloadReviewRepository?: DownloadReviewRepository;
   driver: Driver;
 };
 
 export const createClearDownloadableFileScanResolver = ({
-  DownloadableFile,
+  downloadReviewRepository,
   driver,
 }: Input) => {
+  const repository = downloadReviewRepository ?? createDownloadReviewRepository(driver);
   return async (
     _parent: unknown,
     args: { downloadableFileId: string; reason?: string | null },
     context: GraphQLContext
   ) => {
-    const files = await DownloadableFile.find({
-      where: { id: args.downloadableFileId },
-      selectionSet: `{ id scanStatus }`,
-    });
+    const files = await repository.findReleaseStatus(args.downloadableFileId);
     if (!files.length) throw new Error("Downloadable file not found");
     if (files[0].scanStatus === "CLEAN") {
       throw new Error("The downloadable file is already clean");
@@ -40,17 +38,14 @@ export const createClearDownloadableFileScanResolver = ({
     const scanReason = `Cleared by ${reviewer}: ${explanation}`;
     const scanCheckedAt = new Date().toISOString();
 
-    await DownloadableFile.update({
-      where: { id: args.downloadableFileId },
-      update: ({
+    await repository.clearScan(args.downloadableFileId, ({
         scanStatus: "CLEAN",
         scanReason,
         scanCheckedAt,
         reviewRequestedAt: null,
         reviewRequestReason: null,
         reviewRequestedByUsername: null,
-      } as DownloadableFileUpdateInput),
-    });
+      } as DownloadableFileUpdateInput));
 
     const session = driver.session();
     try {
@@ -77,10 +72,7 @@ export const createClearDownloadableFileScanResolver = ({
       await session.close();
     }
 
-    const updated = await DownloadableFile.find({
-      where: { id: args.downloadableFileId },
-      selectionSet: `{ id fileName scanStatus scanReason scanCheckedAt }`,
-    });
+    const updated = await repository.findCleared(args.downloadableFileId);
     return updated[0];
   };
 };

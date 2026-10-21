@@ -1,7 +1,8 @@
+import { resolveContentValidationRepository, type ContentValidationRepository } from "../../services/persistence/contentValidationRepository.js";
 import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { GraphQLRequest, Ogm } from "../../types/context.js";
+import type { GraphQLRequest } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import {
   getAttemptedUploadAuditFields,
@@ -18,7 +19,7 @@ import {
 
 interface ValidationContext {
   driver: Driver;
-  ogm: Ogm;
+  contentValidationRepository?: ContentValidationRepository;
   contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
   req?: GraphQLRequest;
 }
@@ -172,18 +173,12 @@ export const updateDownloadableFileInputIsValid = rule({ cache: "contextual" })(
     }
 
     // For update operations, we need to find the existing file and its channel connections
-    const DownloadableFileModel = ctx.ogm.model("DownloadableFile");
+    const repository = resolveContentValidationRepository(ctx);
     
     try {
       // Get the existing file and its associated discussions/channels
       // Note: The exact relationship structure may need to be adjusted based on your schema
-      const existingFiles = await DownloadableFileModel.find({
-        where: args.where,
-        selectionSet: `{
-          id
-          fileName
-        }`
-      });
+      const existingFiles = await repository.findExistingDownloadableFiles(args.where);
 
       const existingFile = existingFiles?.[0];
       if (!existingFile) {

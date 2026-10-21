@@ -1,8 +1,6 @@
-import type {
-  ChannelUpdateInput,
-  ChannelModel,
-  UserModel,
-} from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import { createEmailNotificationRepository } from "../../services/persistence/emailNotificationRepository.js";
+import { createForumInvitationRepository, type ForumInvitationRepository } from "../../services/persistence/forumInvitationRepository.js";
 import { sendEmailToUser, EmailContent } from "./shared/emailUtils.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -14,12 +12,14 @@ type Args = {
 };
 
 type Input = {
-  Channel: ChannelModel;
-  User: UserModel;
+  driver: Driver;
+  emailDelivery?: Parameters<typeof sendEmailToUser>[2];
+  forumInvitationRepository?: ForumInvitationRepository;
 };
 
 const getResolver = (input: Input) => {
-  const { Channel, User } = input;
+  const { driver } = input;
+  const repository = input.forumInvitationRepository ?? createForumInvitationRepository(driver);
 
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, inviteeUsername } = args;
@@ -54,31 +54,10 @@ ${process.env.FRONTEND_URL}/forums/${channelUniqueName}/accept-invite
 `
     };
 
-    // Prepare the OGM update inputs
-    const channelUpdateInput: ChannelUpdateInput = {
-      PendingModInvites: [
-        {
-          connect: [
-            {
-              where: {
-                node: {
-                  username: inviteeUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
 
     try {
       // Update the Channel (add the pending mod invite)
-      const channelUpdateResult = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: channelUpdateInput,
-      });
+      const channelUpdateResult = await repository.connectModeratorInvite(channelUniqueName, inviteeUsername);
       if (!channelUpdateResult.channels[0]) {
         throw new Error("Could not invite user.");
       }
@@ -87,7 +66,7 @@ ${process.env.FRONTEND_URL}/forums/${channelUniqueName}/accept-invite
       const emailSent = await sendEmailToUser(
         inviteeUsername,
         emailContent,
-        User,
+        input.emailDelivery ?? {emailNotificationRepository: createEmailNotificationRepository(driver)},
         {
           inAppText: notificationMessage,
           createInAppNotification: true

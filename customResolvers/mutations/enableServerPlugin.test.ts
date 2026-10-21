@@ -3,12 +3,12 @@ import test from 'node:test'
 
 import type { GraphQLResolveInfo } from 'graphql'
 
-import type { ResolverDeps } from '../resolverDeps.js'
+import type { ModelMap } from '../../ogm_types.js'
 import type { GraphQLContext } from '../../types/context.js'
 import getResolver, { parsePluginSettings } from './enableServerPlugin.js'
 
 type Models = Pick<
-  ResolverDeps,
+  ModelMap,
   'Plugin' | 'PluginVersion' | 'ServerConfig' | 'ServerSecret'
 >
 
@@ -59,7 +59,10 @@ test('preserves installed settings when enablement omits settingsJson', async ()
     ServerSecret: { find: async () => [] },
   } as unknown as Models
 
-  const result = await getResolver(models)(
+  const result = await getResolver({repository:{
+    findPlugin:async()=>models.Plugin.find(),findInstallations:async()=>models.ServerConfig.find(),findSecrets:async()=>models.ServerSecret.find(),
+    setInstallation:async(serverName,id,enabled,settingsJson)=>{await models.ServerConfig.update({where:{serverName},update:{InstalledVersions:[{where:{node:{id}},update:{edge:{enabled,settingsJson}}}]}})}
+  }})(
     {},
     {
       pluginId: 'security-attachment-scan',

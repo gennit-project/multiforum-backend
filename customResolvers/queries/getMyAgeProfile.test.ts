@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import getMyAgeProfile from "./getMyAgeProfile.js";
 
 const policyModel = {
-  find: async () => [{ sensitiveContentAgeGateEnabled: true, minimumSensitiveContentAge: 18 }],
+  findAgePolicyConfigs: async () => [{ sensitiveContentAgeGateEnabled: true, minimumSensitiveContentAge: 18 }],
 } as any;
 
 test("returns only the authenticated caller's birthday and eligibility", async () => {
@@ -18,7 +18,7 @@ test("returns only the authenticated caller's birthday and eligibility", async (
       close: async () => { closed = true; },
     }),
   } as any;
-  const resolver = getMyAgeProfile({ driver, ServerConfig: policyModel });
+  const resolver = getMyAgeProfile({ driver, agePolicyRepository: policyModel });
   const context = {
     user: { username: "owner", email: "owner@example.com", email_verified: true, data: null },
   } as any;
@@ -34,7 +34,7 @@ test("returns only the authenticated caller's birthday and eligibility", async (
 test("returns null without an authenticated account", async () => {
   const resolver = getMyAgeProfile({
     driver: { session: () => { throw new Error("should not query"); } } as any,
-    ServerConfig: policyModel,
+    agePolicyRepository: policyModel,
   });
   assert.equal(await resolver(undefined, undefined, { ogm: {} } as any), null);
 });

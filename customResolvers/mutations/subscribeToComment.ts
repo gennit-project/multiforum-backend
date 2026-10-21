@@ -1,6 +1,6 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { CommentModel } from "../../ogm_types.js";
+import { createSubscriptionTargetRepository, type SubscriptionTargetRepository } from "../../services/persistence/subscriptionTargetRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
@@ -9,12 +9,13 @@ type Args = {
 };
 
 type Input = {
-  Comment: CommentModel;
+  subscriptionTargetRepository?: SubscriptionTargetRepository;
   driver: Driver;
 };
 
 const getResolver = (input: Input) => {
-  const { Comment, driver } = input;
+  const { driver } = input;
+  const subscriptionTargets = input.subscriptionTargetRepository ?? createSubscriptionTargetRepository(driver);
 
   return async (
     parent: unknown,
@@ -43,17 +44,7 @@ const getResolver = (input: Input) => {
       );
 
       // Return the updated Comment
-      const result = await Comment.find({
-        where: { id: commentId },
-        selectionSet: `{
-          id
-          text
-          createdAt
-          SubscribedToNotifications {
-            username
-          }
-        }`
-      });
+      const result = await subscriptionTargets.findComment(commentId);
 
       return result[0];
     } catch (error: unknown) {

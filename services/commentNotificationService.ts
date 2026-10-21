@@ -1,9 +1,9 @@
+import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 import { execute, parse, subscribe } from 'graphql';
 import { handleCommentCreatedNotification } from './commentNotificationHandler.js';
 import { logger } from "../logger.js";
 import type { GraphQLSchema } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { Ogm } from "../types/context.js";
 
 type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 
@@ -13,14 +13,12 @@ type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
  */
 export class CommentNotificationService {
   private schema: GraphQLSchema;
-  private ogm: Ogm;
   private driver?: Driver;
   private isRunning: boolean = false;
   private subscriptionIterator: AsyncIterableIterator<any> | null = null;
 
-  constructor(schema: GraphQLSchema, ogm: Ogm, driver?: Driver) {
+  constructor(schema: GraphQLSchema, driver?: Driver, private notificationSnapshotRepository?: NotificationSnapshotRepository) {
     this.schema = schema;
-    this.ogm = ogm;
     this.driver = driver;
     logger.info('Comment notification service initialized');
   }
@@ -64,7 +62,7 @@ export class CommentNotificationService {
       const result = await subscribe({
         schema: this.schema,
         document: parse(commentSubscription),
-        contextValue: { ogm: this.ogm }
+        contextValue: {}
       });
 
       // Check if result is an AsyncIterator (subscription succeeded)
@@ -106,7 +104,7 @@ export class CommentNotificationService {
 
         try {
           await handleCommentCreatedNotification(
-            { ogm: this.ogm, driver: this.driver },
+            { driver: this.driver, notificationSnapshotRepository: this.notificationSnapshotRepository },
             commentId
           );
         } catch (error) {

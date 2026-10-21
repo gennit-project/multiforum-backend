@@ -144,8 +144,13 @@ test("reportDiscussion creates an issue and reopens it with a report activity it
   ]);
 
   const resolver = reportDiscussionResolver({
-    Issue: Issue as any,
-    Discussion: Discussion as any,
+    discussionReportRepository: {
+      findExisting: (channelUniqueName, discussionId) => Issue.find({where:{relatedDiscussionId:discussionId,channelUniqueName}}),
+      findDiscussion: discussionId => Discussion.find({where:{id:discussionId}}),
+      findChannel: uniqueName => createChannelModel().find({where:{uniqueName}}),
+      createIssue: async input => await Issue.create({input:[input]}) as {issues:any[]},
+      appendReport: async (where,update) => await Issue.update({where,update}) as {issues:any[]},
+    },
     driver: createDriver(),
   });
 
@@ -197,8 +202,13 @@ test("reportDiscussion reuses existing issues and preserves server-rule flagging
   const Discussion = new ModelStub(() => []);
 
   const resolver = reportDiscussionResolver({
-    Issue: Issue as any,
-    Discussion: Discussion as any,
+    discussionReportRepository: {
+      findExisting: (channelUniqueName, discussionId) => Issue.find({where:{relatedDiscussionId:discussionId,channelUniqueName}}),
+      findDiscussion: discussionId => Discussion.find({where:{id:discussionId}}),
+      findChannel: uniqueName => createChannelModel().find({where:{uniqueName}}),
+      createIssue: async input => await Issue.create({input:[input]}) as {issues:any[]},
+      appendReport: async (where,update) => await Issue.update({where,update}) as {issues:any[]},
+    },
     driver: createDriver(),
   });
 
@@ -234,8 +244,13 @@ test("reportDiscussion omits the channel connection when the channel is missing"
   ]);
 
   const resolver = reportDiscussionResolver({
-    Issue: Issue as any,
-    Discussion: Discussion as any,
+    discussionReportRepository: {
+      findExisting: (channelUniqueName, discussionId) => Issue.find({where:{relatedDiscussionId:discussionId,channelUniqueName}}),
+      findDiscussion: discussionId => Discussion.find({where:{id:discussionId}}),
+      findChannel: uniqueName => createChannelModel().find({where:{uniqueName}}),
+      createIssue: async input => await Issue.create({input:[input]}) as {issues:any[]},
+      appendReport: async (where,update) => await Issue.update({where,update}) as {issues:any[]},
+    },
     driver: createDriver(),
   });
 
@@ -255,4 +270,21 @@ test("reportDiscussion omits the channel connection when the channel is missing"
   assert.equal(Issue.createCalls[0].input[0].Channel, undefined);
   assert.equal(Issue.createCalls[0].input[0].flaggedServerRuleViolation, true);
   assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+});
+
+const validArgs={discussionId:'discussion',channelUniqueName:'cats',selectedForumRules:['Kind'],selectedServerRules:[],reportText:'text'};
+test('discussion channel lookup runs before issue creation and its failure aborts',async()=>{
+ process.env.PLAYWRIGHT_MOCK_AUTH='true';
+ const order:string[]=[];const ctx=createContext();
+ const repository={findExisting:async()=>[],findDiscussion:async()=>[],findChannel:async()=>{order.push('channel');throw Error('channel failure');},createIssue:async()=>{order.push('create');return{issues:[{id:'i',issueNumber:1}]};},appendReport:async()=>{order.push('append');return{issues:[{id:'i',issueNumber:1}]};}};
+ const call=reportDiscussionResolver({driver:createDriver(),discussionReportRepository:repository})(null,validArgs,ctx,null as unknown as GraphQLResolveInfo);
+ await assert.rejects(call,/channel failure/);assert.deepEqual(order,['channel']);
+});
+test('discussion detailed create failure differs from generic append failure',async()=>{
+ process.env.PLAYWRIGHT_MOCK_AUTH='true';
+ for(const phase of ['create','append']){
+ const ctx=createContext();
+ const repository={findExisting:async()=>phase==='append'?[{id:'i',issueNumber:1}]:[],findDiscussion:async()=>[],findChannel:async()=>[],createIssue:async()=>{throw Error('specific creation');},appendReport:async()=>{throw Error('specific append');}};
+ await assert.rejects(reportDiscussionResolver({driver:createDriver(),discussionReportRepository:repository})(null,validArgs,ctx,null as unknown as GraphQLResolveInfo),new RegExp(phase==='create'?'Error creating issue: specific creation':'^Error updating issue$'));
+ }
 });

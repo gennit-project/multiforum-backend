@@ -1,3 +1,4 @@
+import { createIssueActivityRepository } from "../../services/persistence/issueActivityRepository.js";
 // Integration tests for the issue activity-feed helpers against a live Neo4j
 // container. createIssueActivityFeedItems writes a ModerationAction onto each
 // related Issue (via an OGM nested-create, attributing it to a User or
@@ -34,7 +35,7 @@ beforeEach(async () => {
   await resetDb();
 });
 
-const Issue = () => env.ogm.model("Issue");
+const Issue = () => createIssueActivityRepository(env.driver);
 
 const seedIssue = (id: string, issueNumber: number, extra = "") =>
   run(
@@ -74,7 +75,7 @@ test("createIssueActivityFeedItems records a User-attributed action linking the 
   );
 
   await createIssueActivityFeedItems({
-    IssueModel: Issue(),
+    issueActivityRepository: Issue(),
     driver: env.driver,
     issueIds: ["i1"],
     actionDescription: "edited the discussion body",
@@ -113,7 +114,7 @@ test("createIssueActivityFeedItems attributes the action to a moderation profile
   await run(`CREATE (:ModerationProfile { displayName: 'CoolMod' })`);
 
   await createIssueActivityFeedItems({
-    IssueModel: Issue(),
+    issueActivityRepository: Issue(),
     driver: env.driver,
     issueIds: ["i1"],
     actionDescription: "closed the issue",
@@ -140,7 +141,7 @@ test("createIssueActivityFeedItems records a report action but does not notify s
   );
 
   await createIssueActivityFeedItems({
-    IssueModel: Issue(),
+    issueActivityRepository: Issue(),
     driver: env.driver,
     issueIds: ["i1"],
     actionDescription: "reported the content",
@@ -165,7 +166,7 @@ test("createIssueActivityFeedItems does nothing when there is no attribution", a
   await seedIssue("i1", 1);
 
   await createIssueActivityFeedItems({
-    IssueModel: Issue(),
+    issueActivityRepository: Issue(),
     driver: env.driver,
     issueIds: ["i1"],
     actionDescription: "mystery action",

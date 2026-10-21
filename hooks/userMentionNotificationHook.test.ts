@@ -11,16 +11,8 @@ const buildContext = (users: any[]) => {
 
   return {
     context: {
-      ogm: {
-        model(modelName: string) {
-          assert.equal(modelName, "User");
-          return {
-            async find() {
-              return users;
-            },
-          };
-        },
-      },
+      notificationWriter: {createForUser: async () => true},
+      notificationSnapshotRepository: {findMentionRecipients: async () => users},
     } as unknown as GraphQLContext,
     createdNotifications,
   };
@@ -264,4 +256,26 @@ test("notifyDiscussionMentions ignores mentions already present before the edit"
 
   assert.equal(sendEmailCalls.length, 0);
   assert.equal(createdNotifications.length, 0);
+});
+
+test("mention in-app creation remains before email and email failure is swallowed", async () => {
+  const { context } = buildContext([{username:"reader",notifyWhenTagged:true,Email:{address:"reader@example.test"}}]);
+  const order: string[] = [];
+  await notifyCommentMentions({
+    context, comment: baseComment, nextText:"@reader", dependencies:{
+      createInAppNotification: async () => {order.push("in-app"); return true;},
+      sendEmail: async () => {order.push("email"); throw new Error("mail failed");},
+    },
+  });
+  assert.deepEqual(order,["in-app","email"]);
+});
+
+
+test("unavailable notification writer prevents mention email delivery", async () => {
+ const {context,createdNotifications}=buildContext([{username:"reader",notifyWhenTagged:true,Email:{address:"reader@example.test"}}]);
+ delete context.notificationWriter;
+ const emails: unknown[]=[];
+ await notifyDiscussionMentions({context,discussion:baseDiscussion,nextText:"@reader",dependencies:discussionDeps(createdNotifications,emails)});
+ assert.deepEqual(createdNotifications,[]);
+ assert.deepEqual(emails,[]);
 });

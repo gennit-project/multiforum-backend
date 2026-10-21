@@ -1,8 +1,8 @@
+import {createPipelineStartRepository, type PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
 import { GraphQLError } from "graphql";
 import type {
   Channel as ChannelType,
   DownloadableFile as DownloadableFileType,
-  ModelMap,
   ServerConfig as ServerConfigType,
 } from "../../ogm_types.js";
 import {
@@ -28,18 +28,7 @@ import type {
   PluginEdgeData,
 } from "../../services/plugin/types.js";
 
-export type StartPluginPipelineInput = Pick<
-  ModelMap,
-  | "Channel"
-  | "Discussion"
-  | "DownloadableFile"
-  | "Plugin"
-  | "PluginVersion"
-  | "PluginPipelineRun"
-  | "PluginRun"
-  | "ServerConfig"
-  | "ServerSecret"
-> & Partial<Pick<ModelMap, "User">>;
+export type StartPluginPipelineInput = { startRepository?: PipelineStartRepository };
 
 type StartPluginPipelineArgs = {
   targetId: string;
@@ -102,6 +91,8 @@ export const createStartPluginPipelineResolver = (
       });
     }
 
+    const repository = input.startRepository ?? createPipelineStartRepository(context.driver);
+
     let ownerUsername: string | null | undefined;
     let uploaderUsername: string | null | undefined;
     let uploadedAt: string | null | undefined;
@@ -111,22 +102,7 @@ export const createStartPluginPipelineResolver = (
     let pipelines: EventPipeline[] = [];
 
     if (targetType === "DownloadableFile") {
-      const files = (await input.DownloadableFile.find({
-        where: { id: targetId },
-        selectionSet: `{
-          id
-          uploadedAt
-          createdAt
-          uploadedByUsername
-          Discussion {
-            Author { username }
-            DiscussionChannels {
-              channelUniqueName
-              archived
-            }
-          }
-        }`,
-      })) as FileRecord[];
+      const files = (await repository.findFileTarget(targetId)) as FileRecord[];
       const file = files[0];
       if (!file) {
         throw new GraphQLError("Pipeline target not found", {
@@ -147,22 +123,7 @@ export const createStartPluginPipelineResolver = (
           "A channelId is required to start a channel pipeline"
         );
       }
-      const discussions = (await input.Discussion.find({
-        where: { id: targetId },
-        selectionSet: `{
-          id
-          Author { username }
-          DownloadableFile {
-            uploadedAt
-            createdAt
-            uploadedByUsername
-          }
-          DiscussionChannels {
-            channelUniqueName
-            archived
-          }
-        }`,
-      })) as DiscussionRecord[];
+      const discussions = (await repository.findDiscussionTarget(targetId)) as DiscussionRecord[];
       const discussion = discussions[0];
       const belongsToChannel = discussion?.DiscussionChannels?.some(
         item =>
@@ -174,10 +135,7 @@ export const createStartPluginPipelineResolver = (
           extensions: { code: "NOT_FOUND" },
         });
       }
-      const channels = await input.Channel.find({
-        where: { uniqueName: requestedChannelId },
-        selectionSet: `{ uniqueName pluginPipelines }`,
-      });
+      const channels = await repository.findChannelPlan(requestedChannelId);
       const channel = channels[0] as ChannelType | undefined;
       if (!channel) {
         throw new GraphQLError("Pipeline target not found", {
@@ -221,23 +179,7 @@ export const createStartPluginPipelineResolver = (
       }
     }
 
-    const configs = await input.ServerConfig.find({
-      selectionSet: `{
-        pluginPipelines
-        InstalledVersionsConnection {
-          edges {
-            properties { enabled settingsJson }
-            node {
-              id version repoUrl tarballGsUri entryPath manifest
-              settingsDefaults uiSchema
-              Plugin {
-                id name displayName description metadata
-              }
-            }
-          }
-        }
-      }`,
-    });
+    const configs = await repository.findServerPlan();
     const config = configs[0] as ServerConfigType | undefined;
     if (scope === "SERVER") {
       pipelines = parseStoredPipelines(config?.pluginPipelines);
@@ -269,8 +211,7 @@ export const createStartPluginPipelineResolver = (
       throw userInputError("The applicable pipeline has no executable jobs");
     }
 
-    const activeAttempts = await input.PluginPipelineRun.find({
-      where: {
+    const activeAttempts = await repository.findActiveAttempts({
         targetId,
         targetType,
         ...(uploadedAt ? { targetVersion: uploadedAt } : {}),
@@ -281,9 +222,7 @@ export const createStartPluginPipelineResolver = (
           PluginPipelineRunStatus.Queued,
           PluginPipelineRunStatus.Running,
         ],
-      },
-      selectionSet: `{ pipelineId }`,
-    });
+      });
     if (activeAttempts.length > 0) {
       throw userInputError("This pipeline already has an active attempt");
     }
@@ -299,33 +238,25 @@ export const createStartPluginPipelineResolver = (
     if (scope === "SERVER") {
       await triggerDownloadRuns(
         {
+          driver: context.driver,
           downloadableFileId: targetId,
           event: eventType,
-          models: input,
         },
         { execution }
       );
     } else {
       await triggerChannelRuns(
         {
+          driver: context.driver,
           discussionId: targetId,
           channelUniqueName: channelId as string,
           event: eventType,
-          models: input,
         },
         { execution }
       );
     }
 
-    const attempts = await input.PluginPipelineRun.find({
-      where: { pipelineId },
-      selectionSet: `{
-        pipelineId targetId targetType targetVersion eventType scope channelId status trigger
-        initiatedByUsername retryOfPipelineRunId attemptNumber
-        configurationSnapshot applicability policyEffectiveAt policyId campaignId
-        queuedAt startedAt heartbeatAt timeoutAt finishedAt createdAt updatedAt
-      }`,
-    });
+    const attempts = await repository.findStartedAttempt(pipelineId);
     if (!attempts[0]) {
       throw new Error("Pipeline runner did not create an attempt");
     }

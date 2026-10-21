@@ -1,6 +1,7 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import neo4j from "neo4j-driver";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -12,7 +13,7 @@ import {
 
 type Input = {
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 };
 
 type Args = {
@@ -35,7 +36,7 @@ const FILE_LIMIT = 12;
  * reads. This avoids the row multiplication produced when GraphQL's generated
  * Cypher joins every one-to-many relationship into one statement.
  */
-const getDiscussionDetail = ({ driver, ServerConfig }: Input) => {
+const getDiscussionDetail = ({ driver, agePolicyRepository }: Input) => {
   return async (
     _parent: unknown,
     args: Args,
@@ -48,7 +49,7 @@ const getDiscussionDetail = ({ driver, ServerConfig }: Input) => {
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     const session = driver.session({
       defaultAccessMode: neo4j.session.READ,

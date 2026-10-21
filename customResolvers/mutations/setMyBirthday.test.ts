@@ -5,7 +5,7 @@ import setMyBirthday from "./setMyBirthday.js";
 const context = {
   user: { username: "owner", email: "owner@example.com", email_verified: true, data: null },
 } as any;
-const ServerConfig = { find: async () => [] } as any;
+const agePolicyRepository = { findAgePolicyConfigs: async () => [] } as any;
 
 function driverReturning(storedBirthday: string) {
   let params: Record<string, unknown> | undefined;
@@ -27,7 +27,7 @@ function driverReturning(storedBirthday: string) {
 
 test("sets birthday for the authenticated caller", async () => {
   const stub = driverReturning("2000-01-01");
-  const resolver = setMyBirthday({ driver: stub.driver, ServerConfig });
+  const resolver = setMyBirthday({ driver: stub.driver, agePolicyRepository });
   const result = await resolver(undefined, { birthday: "2000-01-01" }, context);
 
   assert.deepEqual(stub.getParams(), { username: "owner", birthday: "2000-01-01" });
@@ -37,7 +37,7 @@ test("sets birthday for the authenticated caller", async () => {
 
 test("does not allow an existing birthday to be changed", async () => {
   const stub = driverReturning("1999-01-01");
-  const resolver = setMyBirthday({ driver: stub.driver, ServerConfig });
+  const resolver = setMyBirthday({ driver: stub.driver, agePolicyRepository });
 
   await assert.rejects(
     resolver(undefined, { birthday: "2000-01-01" }, context),
@@ -49,7 +49,7 @@ test("does not allow an existing birthday to be changed", async () => {
 test("rejects invalid birthdays before opening a database session", async () => {
   const resolver = setMyBirthday({
     driver: { session: () => { throw new Error("should not query"); } } as any,
-    ServerConfig,
+    agePolicyRepository,
   });
   await assert.rejects(
     resolver(undefined, { birthday: "not-a-date" }, context),

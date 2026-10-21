@@ -1,18 +1,16 @@
+import {createCampaignServiceRepository, type CampaignServiceRepository} from "../persistence/campaignServiceRepository.js";
+import type { Driver } from "neo4j-driver";
 import type {
   DownloadableFile,
-  DownloadableFileModel,
   PluginPipelineCampaign,
-  PluginPipelineCampaignModel,
   PluginPipelineRun,
-  PluginPipelineRunModel,
-  ServerConfigModel,
 } from "../../ogm_types.js";
 import {
   PluginPipelineCampaignStatus,
   PluginPipelineRunStatus,
   PluginPipelineRunTrigger,
 } from "../../ogm_types.js";
-import type { EventPipeline, Models } from "./types.js";
+import type { EventPipeline } from "./types.js";
 import { triggerPluginRunsForDownloadableFile } from "./downloadTrigger.js";
 import { parseStoredPipelines } from "./pipelineUtils.js";
 import { logger } from "../../logger.js";
@@ -29,11 +27,9 @@ type CampaignAttempt = Pick<
   "targetId" | "status" | "createdAt"
 >;
 
-export type CampaignModels = Models & {
-  DownloadableFile: DownloadableFileModel;
-  PluginPipelineCampaign: PluginPipelineCampaignModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  ServerConfig: ServerConfigModel;
+export type CampaignModels = {
+  driver?: Driver;
+  campaignRepository?: CampaignServiceRepository;
 };
 
 const isBefore = (file: CampaignFile, effectiveAt: string) => {
@@ -52,15 +48,16 @@ export const enforcementBehaviorFor = (
     : "New downloads are enforced immediately; existing downloads are checked gradually.";
 
 export const getCampaignPolicy = async ({
-  ServerConfig,
+  driver,
+  campaignRepository,
   policyId,
 }: {
-  ServerConfig: ServerConfigModel;
+  driver?: Driver;
+  campaignRepository?: CampaignServiceRepository;
   policyId: string;
 }) => {
-  const configs = await ServerConfig.find({
-    selectionSet: `{ pluginPipelines }`,
-  });
+  const repository = campaignRepository ?? createCampaignServiceRepository(driver!);
+  const configs = await repository.findPolicies();
   const pipelines = parseStoredPipelines(configs[0]?.pluginPipelines);
   const policy = pipelines.find(item => item.policyId === policyId);
   if (
@@ -75,16 +72,17 @@ export const getCampaignPolicy = async ({
 };
 
 export const previewPipelineCampaign = async ({
-  DownloadableFile,
-  ServerConfig,
+  driver,
+  campaignRepository,
   policyId,
-}: Pick<CampaignModels, "DownloadableFile" | "ServerConfig"> & {
+}: {
+  driver?: Driver;
+  campaignRepository?: CampaignServiceRepository;
   policyId: string;
 }) => {
-  const policy = await getCampaignPolicy({ ServerConfig, policyId });
-  const files = (await DownloadableFile.find({
-    selectionSet: `{ id url uploadedAt createdAt permanentlyRemoved }`,
-  })) as CampaignFile[];
+  const repository = campaignRepository ?? createCampaignServiceRepository(driver!);
+  const policy = await getCampaignPolicy({ driver, campaignRepository: repository, policyId });
+  const files = (await repository.findFiles()) as CampaignFile[];
   const affected = files.filter(file => isBefore(file, policy.effectiveAt!));
   const accessibleFileCount = affected.filter(isAccessible).length;
 
@@ -130,14 +128,13 @@ export const runPipelineCampaign = async ({
   now?: Date;
   trigger?: typeof triggerPluginRunsForDownloadableFile;
 }) => {
+  const repository = models.campaignRepository ?? createCampaignServiceRepository(models.driver!);
   const policy = await getCampaignPolicy({
-    ServerConfig: models.ServerConfig,
+    driver: models.driver,
+    campaignRepository: repository,
     policyId: campaign.policyId,
   });
-  const attempts = (await models.PluginPipelineRun.find({
-    where: { campaignId: campaign.id },
-    selectionSet: `{ targetId status createdAt }`,
-  })) as CampaignAttempt[];
+  const attempts = (await repository.findAttempts(campaign.id)) as CampaignAttempt[];
   const counts = campaignCounts(attempts);
   const recentAttempts = attempts.filter(
     item => Date.parse(String(item.createdAt)) >= now.getTime() - 60_000
@@ -148,9 +145,7 @@ export const runPipelineCampaign = async ({
     campaign.rateLimitPerMinute - recentAttempts
   );
   const attemptedIds = new Set(attempts.map(item => item.targetId));
-  const files = (await models.DownloadableFile.find({
-    selectionSet: `{ id url uploadedAt createdAt permanentlyRemoved }`,
-  })) as CampaignFile[];
+  const files = (await repository.findFiles()) as CampaignFile[];
   const candidates = files.filter(
     file =>
       isBefore(file, policy.effectiveAt!) &&
@@ -162,9 +157,9 @@ export const runPipelineCampaign = async ({
   for (const file of batch) {
     await trigger(
       {
+        driver: models.driver,
         downloadableFileId: file.id,
         event: policy.event,
-        models,
       },
       {
         execution: {
@@ -177,16 +172,11 @@ export const runPipelineCampaign = async ({
     );
   }
 
-  const refreshedAttempts = (await models.PluginPipelineRun.find({
-    where: { campaignId: campaign.id },
-    selectionSet: `{ targetId status createdAt }`,
-  })) as CampaignAttempt[];
+  const refreshedAttempts = (await repository.findAttempts(campaign.id)) as CampaignAttempt[];
   const refreshedCounts = campaignCounts(refreshedAttempts);
   const finished =
     candidates.length <= batch.length && refreshedCounts.runningCount === 0;
-  await models.PluginPipelineCampaign.update({
-    where: { id: campaign.id },
-    update: {
+  await repository.updateProgress(campaign.id, {
       ...refreshedCounts,
       ...(finished
         ? {
@@ -194,8 +184,7 @@ export const runPipelineCampaign = async ({
             finishedAt: now.toISOString(),
           }
         : {}),
-    },
-  });
+    });
 
   return { startedCount: batch.length, finished, ...refreshedCounts };
 };
@@ -204,16 +193,8 @@ export const processRunningPipelineCampaigns = async (
   models: CampaignModels,
   now = new Date()
 ) => {
-  const campaigns = await models.PluginPipelineCampaign.find({
-    where: { status: PluginPipelineCampaignStatus.Running },
-    selectionSet: `{
-      id policyId eventType scope channelId applicability enforcementBehavior
-      status concurrency rateLimitPerMinute affectedFileCount accessibleFileCount
-      unavailableFileCount estimatedProviderRuns completedCount runningCount
-      failedCount timedOutCount createdByUsername createdAt updatedAt startedAt
-      pausedAt finishedAt
-    }`,
-  });
+  const repository = models.campaignRepository ?? createCampaignServiceRepository(models.driver!);
+  const campaigns = await repository.findRunningCampaigns();
   for (const campaign of campaigns) {
     await runPipelineCampaign({ models, campaign, now });
   }

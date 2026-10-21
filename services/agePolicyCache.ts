@@ -1,9 +1,10 @@
+import type { AgePolicyReader } from "./persistence/instancePolicyRepository.js";
 /**
  * Short-lived, in-process cache of the server's age policy for the
  * per-request sensitive-content check.
  *
  * `mayAccessSensitiveContent` runs on every GraphQL operation, and loading the
- * policy is an OGM ServerConfig query: a database round trip plus Cypher
+ * policy requires a database query: a database round trip plus Cypher
  * planning, on every request, for settings that almost never change.
  *
  * Staleness is bounded two ways:
@@ -20,7 +21,6 @@
 import {
   loadAgePolicy,
   type AgePolicy,
-  type ServerConfigReader,
 } from "./agePolicy.js";
 
 export const AGE_POLICY_CACHE_TTL_MS = 30_000;
@@ -34,13 +34,13 @@ type CacheEntry = {
 let entry: CacheEntry | null = null;
 
 type LoadCachedAgePolicyParams = {
-  ServerConfig: ServerConfigReader;
+  agePolicyRepository: AgePolicyReader;
   serverName?: string;
   now?: number;
 };
 
 export async function loadCachedAgePolicy({
-  ServerConfig,
+  agePolicyRepository,
   serverName = process.env.SERVER_CONFIG_NAME,
   now = Date.now(),
 }: LoadCachedAgePolicyParams): Promise<AgePolicy> {
@@ -49,7 +49,7 @@ export async function loadCachedAgePolicy({
   }
 
   // Cache the promise so concurrent requests share one load.
-  const policy = loadAgePolicy(ServerConfig, serverName);
+  const policy = loadAgePolicy(agePolicyRepository, serverName);
   const current: CacheEntry = {
     serverName,
     expiresAt: now + AGE_POLICY_CACHE_TTL_MS,

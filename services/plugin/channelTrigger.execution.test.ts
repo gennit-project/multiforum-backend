@@ -1,3 +1,6 @@
+import {channelExecutionRepositoryStub} from "../../tests/fixtures/channelExecutionRepositoryStub.js";
+import {pipelineAttemptRepositoryStub} from "../../tests/fixtures/pipelineAttemptRepositoryStub.js";
+import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 // Execution-path tests for the channel trigger's per-plugin run lifecycle.
 // The real plugin loader is replaced via the injectable `loadPlugin` dependency
 // with a fake in-memory plugin; models are stubbed and PluginRun create/update
@@ -11,13 +14,13 @@ import type {
   PluginConstructor,
   PluginRunResult,
 } from "./pluginLoader.js";
-import { triggerChannelPluginPipeline } from "./channelTrigger.js";
+import { triggerChannelPluginPipeline as actualTrigger } from "./channelTrigger.js";
 
 type TriggerArgs = Parameters<typeof triggerChannelPluginPipeline>[0];
 type TriggerOptions = NonNullable<
   Parameters<typeof triggerChannelPluginPipeline>[1]
 >;
-type Models = TriggerArgs["models"];
+type Models = import("./types.js").ChannelModels;
 type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
 type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
@@ -270,3 +273,5 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
   assert.ok(statuses.includes("FAILED"));
   assert.ok(statuses.includes("SKIPPED"));
 });
+
+const triggerChannelPluginPipeline = (args: Parameters<typeof actualTrigger>[0] & { models: Models }, options?: Parameters<typeof actualTrigger>[1]) => {const {models, ...rest} = args; return actualTrigger(rest,{...options,channelRepository:channelExecutionRepositoryStub(models),leaseRepository:pipelineLeaseRepositoryStub(models),attemptRepository:pipelineAttemptRepositoryStub(models.PluginPipelineRun)});};

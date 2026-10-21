@@ -1,4 +1,4 @@
-import type { UserModel } from "../../../ogm_types.js";
+import type { EmailNotificationRepository } from "../../../services/persistence/emailNotificationRepository.js";
 import { sendEmail } from "../../../services/mail/index.js";
 import { renderEmailMarkdownToHtml } from "../../../services/renderEmailMarkdown.js";
 import { logger } from "../../../logger.js";
@@ -20,31 +20,19 @@ export interface NotificationOptions {
  * Sends an email and optionally creates an in-app notification
  * @param recipient Username of the recipient
  * @param emailContent Email content (subject, plainText, html)
- * @param User OGM User model for database operations
+ * @param dependencies Recipient/notification persistence and optional mail sender
  * @param notificationOptions Optional settings for in-app notifications
  * @returns Promise<boolean> Whether the email was sent successfully
  */
 export const sendEmailToUser = async (
   recipient: string,
   emailContent: EmailContent,
-  User: UserModel,
+  dependencies: { emailNotificationRepository: EmailNotificationRepository; sendMail?: typeof sendEmail },
   notificationOptions?: NotificationOptions
 ): Promise<boolean> => {
   try {
     // Fetch the user's email address
-    const users = await User.find({
-      where: {
-        username: recipient,
-      },
-      selectionSet: `
-      {
-        username
-        Email {
-          address
-        }
-      }
-      `,
-    });
+    const users = await dependencies.emailNotificationRepository.findRecipient(recipient);
 
     if (!users.length) {
       throw new Error(`User with username "${recipient}" not found`);
@@ -57,7 +45,7 @@ export const sendEmailToUser = async (
       );
     }
 
-    const emailSent = await sendEmail({
+    const emailSent = await (dependencies.sendMail ?? sendEmail)({
       to: user.Email.address,
       subject: emailContent.subject,
       text: emailContent.plainText,
@@ -71,29 +59,10 @@ export const sendEmailToUser = async (
 
     // Create in-app notification if requested
     if (notificationOptions?.createInAppNotification) {
-      const userUpdateNotificationInput = {
-        Notifications: [
-          {
-            create: [
-              {
-                node: {
-                  text: notificationOptions.inAppText,
-                  read: false,
-                },
-              },
-            ],
-          },
-        ],
-      };
-
-      const userUpdateResult = await User.update({
-        where: {
-          username: recipient,
-        },
-        update: userUpdateNotificationInput,
-      });
-
-      if (!userUpdateResult.users[0]) {
+      const notificationCreated = await dependencies.emailNotificationRepository.createAfterEmailNotification(
+        recipient, notificationOptions.inAppText
+      );
+      if (!notificationCreated) {
         throw new Error("Could not create in-app notification for the user.");
       }
     }

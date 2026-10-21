@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { after, before, beforeEach } from "node:test";
 import type { Driver, Session } from "neo4j-driver";
-import type { ServerConfigModel } from "../../ogm_types.js";
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { issueLocalDevToken } from "../../services/localDevAuth.js";
 import { invalidateAgePolicyCache } from "../../services/agePolicyCache.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
@@ -72,13 +72,13 @@ beforeEach(async () => {
 });
 
 const policyModel = {
-  find: async () => [{
+  findAgePolicyConfigs: async () => [{
     accountAgeGateEnabled: false,
     minimumAccountAge: 13,
     sensitiveContentAgeGateEnabled: true,
     minimumSensitiveContentAge: 18,
   }],
-} as unknown as ServerConfigModel;
+} as unknown as AgePolicyReader;
 
 test("resolves authenticated identity, moderation profile, and age access in one DB call", async () => {
   const token = issueLocalDevToken(
@@ -96,7 +96,7 @@ test("resolves authenticated identity, moderation profile, and age access in one
   const access = await mayAccessSensitiveContent({
     context,
     driver,
-    ServerConfig: policyModel,
+    agePolicyRepository: policyModel,
     now: new Date("2026-10-10T12:00:00.000Z"),
     serverName: "integration-test",
   });

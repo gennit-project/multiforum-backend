@@ -63,8 +63,11 @@ const runUpvoteComment = async ({
       : [{ username: "author", commentKarma: COMMENT_AUTHOR_KARMA }]
   );
   const resolver = upvoteCommentResolver({
-    Comment: Comment as any,
-    User: User as any,
+    repository: {
+      findComment: async (id) => Comment.find({where: {id}}) as any,
+      findVoter: async (username) => User.find({where: {username}}) as any,
+      setAuthorKarma: async (username, commentKarma) => { await User.update({where: {username}, update: {commentKarma}}); },
+    },
     driver: driver as unknown as Driver,
   });
 
@@ -101,8 +104,11 @@ const runUndoUpvoteComment = async ({
       : [{ username: "author", commentKarma: COMMENT_AUTHOR_KARMA }]
   );
   const resolver = undoUpvoteCommentResolver({
-    Comment: Comment as any,
-    User: User as any,
+    repository: {
+      findComment: async (id) => Comment.find({where: {id}}) as any,
+      findVoter: async (username) => User.find({where: {username}}) as any,
+      setAuthorKarma: async (username, commentKarma) => { await User.update({where: {username}, update: {commentKarma}}); },
+    },
     driver: driver as unknown as Driver,
   });
 
@@ -139,8 +145,11 @@ const runUpvoteDiscussionChannel = async ({
       : [{ username: "author", discussionKarma: DISCUSSION_AUTHOR_KARMA }]
   );
   const resolver = upvoteDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
-    User: User as any,
+    repository: {
+      findDiscussionChannel: async (id) => DiscussionChannel.find({where: {id}}) as any,
+      findVoter: async (username) => User.find({where: {username}}) as any,
+      setAuthorKarma: async (username, discussionKarma) => { await User.update({where: {username}, update: {discussionKarma}}); },
+    },
     driver: driver as unknown as Driver,
   });
 
@@ -177,8 +186,11 @@ const runUndoUpvoteDiscussionChannel = async ({
       : [{ username: "author", discussionKarma: DISCUSSION_AUTHOR_KARMA }]
   );
   const resolver = undoUpvoteDiscussionChannelResolver({
-    DiscussionChannel: DiscussionChannel as any,
-    User: User as any,
+    repository: {
+      findDiscussionChannel: async (id) => DiscussionChannel.find({where: {id}}) as any,
+      findVoter: async (username) => User.find({where: {username}}) as any,
+      setAuthorKarma: async (username, discussionKarma) => { await User.update({where: {username}, update: {discussionKarma}}); },
+    },
     driver: driver as unknown as Driver,
   });
 

@@ -1,6 +1,5 @@
+import { createChannelReportRepository, type ChannelReportRepository } from "../../services/persistence/channelReportRepository.js";
 import type {
-  IssueModel,
-  ChannelModel,
   IssueCreateInput,
   ModerationActionCreateInput,
   IssueWhere,
@@ -21,8 +20,7 @@ type Args = {
 };
 
 type Input = {
-  Issue: IssueModel;
-  Channel: ChannelModel;
+  channelReportRepository?: ChannelReportRepository;
   driver: Driver;
 };
 
@@ -101,7 +99,8 @@ const getModerationActionCreateInput = (input: {
 };
 
 const getResolver = (input: Input) => {
-  const { Issue, Channel, driver } = input;
+  const { driver } = input;
+  const repository = input.channelReportRepository ?? createChannelReportRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName, reportText, selectedServerRules } = args;
 
@@ -130,15 +129,7 @@ const getResolver = (input: Input) => {
     }
 
     // Verify the channel exists
-    const channelData = await Channel.find({
-      where: {
-        uniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-        uniqueName
-        displayName
-      }`,
-    });
+    const channelData = await repository.findChannel(channelUniqueName);
 
     if (channelData.length === 0) {
       throw new GraphQLError("Channel not found");
@@ -151,17 +142,7 @@ const getResolver = (input: Input) => {
     let existingIssueFlaggedServerRuleViolation = false;
 
     // Check if an issue already exists for this channel (server-scoped, relatedChannelUniqueName matches)
-    const issueData = await Issue.find({
-      where: {
-        channelUniqueName: null,
-        relatedChannelUniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-        id
-        issueNumber
-        flaggedServerRuleViolation
-      }`,
-    });
+    const issueData = await repository.findExisting(channelUniqueName);
 
     if (issueData.length > 0) {
       existingIssueId = issueData[0]?.id || "";
@@ -201,16 +182,7 @@ const getResolver = (input: Input) => {
       };
 
       try {
-        const createResult = await Issue.create({
-          input: [issueCreateInput],
-          selectionSet: `{
-            issues {
-              id
-              issueNumber
-              flaggedServerRuleViolation
-            }
-          }`,
-        });
+        const createResult = await repository.createIssue(issueCreateInput);
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -251,18 +223,7 @@ const getResolver = (input: Input) => {
     };
 
     try {
-      const updateResult = await Issue.update({
-        where: issueUpdateWhere,
-        update: issueUpdateInput,
-        selectionSet: `{
-          issues {
-            id
-            issueNumber
-            flaggedServerRuleViolation
-            relatedChannelUniqueName
-          }
-        }`,
-      });
+      const updateResult = await repository.appendReport(issueUpdateWhere, issueUpdateInput);
       const issueId = updateResult.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

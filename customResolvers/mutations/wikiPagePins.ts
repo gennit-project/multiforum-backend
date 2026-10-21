@@ -1,6 +1,6 @@
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { ChannelModel, WikiPageModel } from "../../ogm_types.js";
+import { createWikiPinRepository, type WikiPinRepository } from "../../services/persistence/wikiActionRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { checkChannelPermissions } from "../../rules/permission/hasChannelPermission.js";
 
@@ -13,19 +13,8 @@ type PermissionCheck = typeof checkChannelPermissions;
 
 type Deps = {
   driver: Driver;
-  Channel: ChannelModel;
-  WikiPage: WikiPageModel;
+  repository?: WikiPinRepository;
   checkPermissions?: PermissionCheck;
-};
-
-type ChannelLookup = {
-  uniqueName?: string | null;
-  wikiEnabled?: boolean | null;
-};
-
-type WikiPageLookup = {
-  id?: string | null;
-  Channel?: { uniqueName?: string | null } | null;
 };
 
 const validateArgs = (args: PinWikiPageArgs) => {
@@ -39,29 +28,15 @@ const validateArgs = (args: PinWikiPageArgs) => {
 };
 
 const getChannelAndWikiPage = async ({
-  Channel,
-  WikiPage,
+  repository,
   args,
 }: {
-  Channel: ChannelModel;
-  WikiPage: WikiPageModel;
+  repository: WikiPinRepository;
   args: PinWikiPageArgs;
 }) => {
   const [channels, wikiPages] = await Promise.all([
-    Channel.find({
-      where: { uniqueName: args.channelUniqueName },
-      selectionSet: `{
-        uniqueName
-        wikiEnabled
-      }`,
-    }) as Promise<ChannelLookup[]>,
-    WikiPage.find({
-      where: { id: args.wikiPageId },
-      selectionSet: `{
-        id
-        Channel { uniqueName }
-      }`,
-    }) as Promise<WikiPageLookup[]>,
+    repository.findChannel(args.channelUniqueName),
+    repository.findPage(args.wikiPageId),
   ]);
 
   const channel = channels[0];
@@ -106,13 +81,13 @@ const assertCanPinWikiPage = async ({
 
 export const pinWikiPageToChannel = ({
   driver,
-  Channel,
-  WikiPage,
+  repository: injectedRepository,
   checkPermissions = checkChannelPermissions,
 }: Deps) => {
+  const repository = injectedRepository ?? createWikiPinRepository(driver);
   return async (_parent: unknown, args: PinWikiPageArgs, context: GraphQLContext) => {
     validateArgs(args);
-    await getChannelAndWikiPage({ Channel, WikiPage, args });
+    await getChannelAndWikiPage({ repository, args });
     await assertCanPinWikiPage({ args, context, checkPermissions });
 
     const session = driver.session({ defaultAccessMode: "WRITE" });
@@ -135,13 +110,13 @@ export const pinWikiPageToChannel = ({
 
 export const unpinWikiPageFromChannel = ({
   driver,
-  Channel,
-  WikiPage,
+  repository: injectedRepository,
   checkPermissions = checkChannelPermissions,
 }: Deps) => {
+  const repository = injectedRepository ?? createWikiPinRepository(driver);
   return async (_parent: unknown, args: PinWikiPageArgs, context: GraphQLContext) => {
     validateArgs(args);
-    await getChannelAndWikiPage({ Channel, WikiPage, args });
+    await getChannelAndWikiPage({ repository, args });
     await assertCanPinWikiPage({ args, context, checkPermissions });
 
     const session = driver.session({ defaultAccessMode: "WRITE" });

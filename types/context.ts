@@ -1,8 +1,26 @@
+import type { ChannelBotRepository } from "../services/persistence/channelBotRepository.js";
+import type { BotIdentityRepository } from "../services/persistence/botIdentityRepository.js";
+import type { SuspensionWriteRepository } from "../services/persistence/suspensionWriteRepository.js";
+import type { WikiRevisionRepository } from "../services/persistence/wikiRevisionRepository.js";
+import type { EventRevisionRepository } from "../services/persistence/eventRevisionRepository.js";
+import type { DiscussionRevisionRepository } from "../services/persistence/discussionRevisionRepository.js";
+import type { CommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
+import type { IssueActivityMiddlewareRepository } from "../services/persistence/issueActivityMiddlewareRepository.js";
+import type { IssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
+import type { IssueTargetRepository } from "../services/persistence/issueTargetRepository.js";
+import type { ServerModeratorRepository } from "../services/persistence/serverModeratorRepository.js";
+import type { ServerAdminRepository } from "../services/persistence/serverAdminRepository.js";
+import type { ForumModeratorRepository } from "../services/persistence/forumModeratorRepository.js";
+import type { ForumOwnerRepository } from "../services/persistence/forumOwnerRepository.js";
+import type { ContentValidationRepository } from "../services/persistence/contentValidationRepository.js";
+import type { NotificationSnapshotRepository } from "../services/persistence/notificationSnapshotRepository.js";
+import type { WikiGuardRepository } from "../services/persistence/wikiGuardRepository.js";
+import type { NotificationWriter } from "../services/persistence/notificationWriter.js";
+import type { RoleGuardRepository } from "../services/persistence/roleGuardRepository.js";
+import type { InstancePolicyRepository } from "../services/persistence/instancePolicyRepository.js";
 import type { ChannelCreatorModeratorService } from "../services/channelCreatorModerator.js";
 import type { Driver } from "neo4j-driver";
 import type { Request } from "express";
-import type { OGM } from "@neo4j/graphql-ogm";
-import type { ModelMap } from "../ogm_types.js";
 import type { PermissionServerConfigRepository } from "../services/persistence/permissionServerConfigRepository.js";
 import type { SuspensionEffectsRepository } from "../services/persistence/suspensionEffectsRepository.js";
 import type { ContentChannelPermissionRepository } from "../services/persistence/contentChannelPermissionRepository.js";
@@ -12,12 +30,6 @@ import type { CommentCreationAuthorizationRepository } from "../services/persist
 import type { ContentFeaturePolicyRepository } from "../services/persistence/contentFeaturePolicyRepository.js";
 import type { RequestIdentityRepository } from "../services/persistence/requestIdentityRepository.js";
 import type { DownloadableFileRepository } from "../services/persistence/downloadableFileRepository.js";
-
-/**
- * Compatibility surface for code not yet migrated to repositories. New domain
- * interfaces must use the application-owned repository contract instead.
- */
-export type Ogm = OGM<ModelMap>;
 
 /** A moderation-profile reference carried on the request user. */
 export type ContextModerationProfile = {
@@ -74,13 +86,31 @@ export type GraphQLRequest = Request & {
  *
  * `req` is optional: HTTP-driven resolvers always have it, but background
  * services (notifications, version history) invoke the same hooks with only
- * `ogm`/`driver` and no request. The auth layer already treats `req` as
+ * `driver` and no request. The auth layer already treats `req` as
  * possibly-absent (`req?.headers`, `if (context.req)`).
  */
 export type GraphQLContext = {
+  channelBotRepository?: ChannelBotRepository;
+  botIdentityRepository?: BotIdentityRepository;
+  suspensionWriteRepository?: SuspensionWriteRepository;
+  wikiRevisionRepository?: WikiRevisionRepository;
+  eventRevisionRepository?: EventRevisionRepository;
+  discussionRevisionRepository?: DiscussionRevisionRepository;
+  commentRevisionRepository?: CommentRevisionRepository;
+  issueActivityMiddlewareRepository?: IssueActivityMiddlewareRepository;
+  issueActivityRepository?: IssueActivityRepository;
+  issueTargetRepository?: IssueTargetRepository;
+  wikiGuardRepository?: WikiGuardRepository;
+  serverModeratorRepository?: ServerModeratorRepository;
+  serverAdminRepository?: ServerAdminRepository;
+  forumModeratorRepository?: ForumModeratorRepository;
+  forumOwnerRepository?: ForumOwnerRepository;
+  notificationWriter?: NotificationWriter;
+  roleGuardRepository?: RoleGuardRepository;
+  notificationSnapshotRepository?: NotificationSnapshotRepository;
+  instancePolicyRepository?: InstancePolicyRepository;
   driver: Driver;
   channelCreatorModeratorService?: ChannelCreatorModeratorService;
-  ogm: Ogm;
   /** Optional application-owned override used by permission rules and tests. */
   permissionServerConfigRepository?: PermissionServerConfigRepository;
   /** Optional persistence seam for suspension cleanup and notifications. */
@@ -94,6 +124,7 @@ export type GraphQLContext = {
   /** Optional persistence seam for comment-creation target authorization reads. */
   commentCreationAuthorizationRepository?: CommentCreationAuthorizationRepository;
   /** Optional persistence seam for channel and server content feature policies. */
+  contentValidationRepository?: ContentValidationRepository;
   contentFeaturePolicyRepository?: ContentFeaturePolicyRepository;
   /** Optional persistence seam for authenticated identity and ownership reads. */
   requestIdentityRepository?: RequestIdentityRepository;

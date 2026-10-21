@@ -10,10 +10,10 @@ import {
   type StartedNeo4jContainer,
 } from "@testcontainers/neo4j";
 import typeDefinitions from "../../typeDefs.js";
-import getCustomResolvers from "../../customResolvers.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
+import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import ownershipCreateMiddleware from "../../middleware/ownershipCreateMiddleware.js";
-import type { Ogm } from "../../types/context.js";
 
 // Reproduces the production wiring in index.ts: the OGM reuses the executable
 // schema that carries the custom resolvers, and middleware wraps only the
@@ -24,7 +24,7 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 let container: StartedNeo4jContainer;
 let driver: Driver;
-let ogm: Ogm;
+let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 let httpSchema: GraphQLSchema;
 
 before(async () => {
@@ -38,7 +38,7 @@ before(async () => {
   );
 
   const custom = getCustomResolvers(driver);
-  ogm = custom.ogm as Ogm;
+  ogm = custom.ogm;
   const neoSchema = new Neo4jGraphQL({
     typeDefs: typeDefinitions,
     driver,
@@ -46,6 +46,7 @@ before(async () => {
   });
   const schema = await neoSchema.getSchema();
   initializeOgmFromExistingSchema(ogm, neoSchema, schema);
+  registerGeneratedSchema(driver, schema);
   httpSchema = applyMiddleware(schema, ownershipCreateMiddleware);
 }, { timeout: 240000 });
 

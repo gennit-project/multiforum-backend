@@ -1,3 +1,4 @@
+import {createDiscussionUpdateRepository, type DiscussionUpdateRepository} from "../../services/persistence/discussionUpdateRepository.js";
 import type { Driver } from "neo4j-driver";
 import { updateDiscussionChannelQuery, severConnectionBetweenDiscussionAndChannelQuery } from "../cypher/cypherQueries.js";
 import { DiscussionWhere, DiscussionUpdateInput } from "../../src/generated/graphql.js";
@@ -6,15 +7,6 @@ import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type {
-  DiscussionModel,
-  DownloadableFileModel,
-  PluginPipelineRunModel,
-  PluginRunModel,
-  ServerConfigModel,
-  ServerSecretModel,
-  UserModel,
-} from "../../ogm_types.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import { logger } from "../../logger.js";
@@ -25,13 +17,7 @@ import {
 } from "../../services/discussionFlairSubmission.js";
 
 type Input = {
-  Discussion: DiscussionModel;
-  DownloadableFile: DownloadableFileModel;
-  PluginPipelineRun: PluginPipelineRunModel;
-  PluginRun: PluginRunModel;
-  ServerConfig: ServerConfigModel;
-  ServerSecret: ServerSecretModel;
-  User: UserModel;
+  discussionUpdateRepository?: DiscussionUpdateRepository;
   driver: Driver;
 };
 
@@ -78,16 +64,8 @@ const getResolver = (
   triggerDownloadRuns: typeof triggerPluginRunsForDownloadableFile =
     triggerPluginRunsForDownloadableFile
 ) => {
-  const {
-    Discussion,
-    DownloadableFile,
-    PluginPipelineRun,
-    PluginRun,
-    ServerConfig,
-    ServerSecret,
-    User,
-    driver,
-  } = input;
+  const { driver } = input;
+  const repository = input.discussionUpdateRepository ?? createDiscussionUpdateRepository(driver);
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const {
       where,
@@ -179,19 +157,7 @@ const getResolver = (
         sanitizedUpdateInput.title !== undefined ||
         sanitizedUpdateInput.body !== undefined;
       const discussionSnapshot = shouldTrackVersion
-        ? (await Discussion.find({
-            where,
-            selectionSet: `{
-              id
-              title
-              body
-              Author { username }
-              BodyLastEditedBy { username }
-              DiscussionChannels { channelUniqueName }
-              PastTitleVersions { id body createdAt }
-              PastBodyVersions { id body createdAt }
-            }`,
-          }))[0]
+        ? (await repository.findRevisionSnapshot(where))[0]
         : null;
       
       const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
@@ -204,12 +170,7 @@ const getResolver = (
       // connect, which @neo4j/graphql doesn't stamp, so stamp the attached files
       // here: the reconcile step then flags them in this same transaction.
       await executeManagedWrite(driver, async (tx) => {
-        await Discussion.update({
-          where: where,
-          update: sanitizedUpdateInput,
-          // The OGM runs its query in this transaction.
-          context: { executionContext: tx },
-        });
+        await repository.updateWithinTransaction(where, sanitizedUpdateInput, tx);
         if (connectedDownloadableFileIds.length > 0) {
           await tx.run(stampAttachedDownloadableFilesQuery, {
             ids: connectedDownloadableFileIds,
@@ -261,16 +222,9 @@ const getResolver = (
       for (const downloadableFileId of connectedDownloadableFileIds) {
         try {
           await triggerDownloadRuns({
+            driver,
             downloadableFileId,
             event: "downloadableFile.updated",
-            models: {
-              DownloadableFile,
-              PluginPipelineRun,
-              PluginRun,
-              ServerConfig,
-              ServerSecret,
-              User,
-            },
           });
         } catch (triggerError: unknown) {
           const message = triggerError instanceof Error
@@ -285,63 +239,9 @@ const getResolver = (
 
       // Refetch the newly created discussion with the channel connections
       // and disconnections so that we can return it.
-      const selectionSet = `
-        {
-          id
-          title
-          body
-          Author {
-            username
-          }
-          DiscussionChannels {
-            id
-            channelUniqueName
-            discussionId
-            Flairs {
-              id
-              channelUniqueName
-              displayName
-              color
-              order
-              archived
-            }
-            Channel {
-              uniqueName
-            }
-            Discussion {
-              id
-            }
-          }
-          createdAt
-          updatedAt
-          Tags {
-            text
-          }
-          PastTitleVersions {
-            id
-            body
-            createdAt
-            Author {
-              username
-            }
-          }
-          PastBodyVersions {
-            id
-            body
-            createdAt
-            Author {
-              username
-            }
-          }
-        }
-      `;
 
-      const result = await Discussion.find({
-        where: {
-          id: updatedDiscussionId,
-        },
-        selectionSet,
-      });
+
+      const result = await repository.findUpdatedDiscussion(updatedDiscussionId);
       return result[0];
     } catch (error: unknown) {
       logger.error("Error updating discussion:", error);

@@ -1,4 +1,7 @@
-import type { Channel, ChannelModel, ServerConfigModel, UserModel } from '../../ogm_types.js'
+import type { BotIdentityRepository } from "../../services/persistence/botIdentityRepository.js";
+import type { Driver } from "neo4j-driver"
+import { createChannelPipelineRepository, type ChannelPipelineRepository } from "../../services/persistence/channelPipelineRepository.js"
+import type { Channel } from '../../ogm_types.js'
 import {
   buildBotUsername,
   getBotNameFromSettings,
@@ -10,9 +13,9 @@ import { validatePipelines, type EventPipelineInput } from './updatePluginPipeli
 import { logger } from "../../logger.js";
 
 type Input = {
-  Channel: ChannelModel
-  ServerConfig: ServerConfigModel
-  User: UserModel
+  botIdentityRepository?: BotIdentityRepository
+  driver: Driver
+  channelPipelineRepository?: ChannelPipelineRepository
   syncBotsForChannel?: typeof syncBotUsersForChannelProfiles
   getProfiles?: typeof getProfilesFromSettings
   getBotName?: typeof getBotNameFromSettings
@@ -54,7 +57,7 @@ const parseSettingsJson = (settingsJson: unknown) => {
 }
 
 const getResolver = (input: Input) => {
-  const { Channel, ServerConfig, User } = input
+  const { channelPipelineRepository = createChannelPipelineRepository(input.driver) } = input
   const syncBotsForChannel = input.syncBotsForChannel || syncBotUsersForChannelProfiles
   const getProfiles = input.getProfiles || getProfilesFromSettings
   const getBotName = input.getBotName || getBotNameFromSettings
@@ -83,31 +86,7 @@ const getResolver = (input: Input) => {
     }
 
     // Get the channel with its bots and enabled plugins
-    const existingChannels = await Channel.find({
-      where: { uniqueName: channelUniqueName },
-      selectionSet: `{
-        uniqueName
-        pluginPipelines
-        Bots {
-          username
-        }
-        EnabledPluginsConnection {
-          edges {
-            properties {
-              enabled
-              settingsJson
-            }
-            node {
-              settingsDefaults
-              Plugin {
-                name
-                tags
-              }
-            }
-          }
-        }
-      }`
-    })
+    const existingChannels = await channelPipelineRepository.findSettings(channelUniqueName)
 
     if (existingChannels.length === 0) {
       throw new Error(`Channel "${channelUniqueName}" not found`)
@@ -116,36 +95,11 @@ const getResolver = (input: Input) => {
     const channel: Channel = existingChannels[0]
 
     // Update the pluginPipelines JSON field (serialized as string for Neo4j)
-    await Channel.update({
-      where: { uniqueName: channelUniqueName },
-      update: {
-        pluginPipelines: JSON.stringify(pipelines)
-      }
-    })
+    await channelPipelineRepository.savePipelines(channelUniqueName, JSON.stringify(pipelines))
 
     try {
       // Fetch server-level plugin settings
-      const serverConfigs = await ServerConfig.find({
-        selectionSet: `{
-          serverName
-          InstalledVersionsConnection {
-            edges {
-              properties {
-                enabled
-                settingsJson
-              }
-              node {
-                version
-                settingsDefaults
-                Plugin {
-                  name
-                  tags
-                }
-              }
-            }
-          }
-        }`
-      })
+      const serverConfigs = await channelPipelineRepository.listServerSettings()
 
       const serverConfig = serverConfigs[0]
       const serverEdges = serverConfig?.InstalledVersionsConnection?.edges || []
@@ -207,8 +161,8 @@ const getResolver = (input: Input) => {
 
         // Ensure bot users exist and are connected
         await syncBotsForChannel({
-          User,
-          Channel,
+          driver: input.driver,
+          repository: input.botIdentityRepository,
           channelUniqueName,
           botName,
           profiles
@@ -230,24 +184,11 @@ const getResolver = (input: Input) => {
 
         // Mark the bots as deprecated before disconnecting
         for (const username of botsToDisconnect) {
-          await User.update({
-            where: { username },
-            update: {
-              isDeprecated: true,
-              deprecatedReason: `Bot profile removed from channel "${channelUniqueName}"`
-            }
-          })
+          await channelPipelineRepository.deprecateBot(username, `Bot profile removed from channel "${channelUniqueName}"`)
         }
 
         // Disconnect the deprecated bots from the channel
-        await Channel.update({
-          where: { uniqueName: channelUniqueName },
-          disconnect: {
-            Bots: botsToDisconnect.map((username: string) => ({
-              where: { node: { username } }
-            }))
-          }
-        })
+        await channelPipelineRepository.disconnectBots(channelUniqueName, botsToDisconnect)
       }
     } catch (error: unknown) {
       logger.warn(

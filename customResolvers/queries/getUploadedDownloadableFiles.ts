@@ -1,13 +1,14 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 
 type GetUploadedDownloadableFilesInput = {
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
 };
 
 type Args = {
@@ -27,7 +28,7 @@ type UploadedDownloadableFileRecord = {
 
 const getUploadedDownloadableFiles = ({
   driver,
-  ServerConfig,
+  agePolicyRepository,
 }: GetUploadedDownloadableFilesInput) => {
   return async (
     parent: unknown,
@@ -49,7 +50,7 @@ const getUploadedDownloadableFiles = ({
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
 
     const session = driver.session({ defaultAccessMode: "READ" });

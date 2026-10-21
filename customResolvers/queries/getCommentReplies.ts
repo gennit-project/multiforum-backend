@@ -1,9 +1,10 @@
+import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver, Integer } from "neo4j-driver";
 import { getCommentRepliesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { ServerConfigModel } from "../../ogm_types.js";
+
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { isSensitiveContentTarget } from "../../services/sensitiveContentTarget.js";
 import { logger } from "../../logger.js";
@@ -12,7 +13,7 @@ import { normalizePagination } from "../../services/pagination.js";
 
 type Input = {
   driver: Driver;
-  ServerConfig?: ServerConfigModel;
+  agePolicyRepository?: AgePolicyReader;
   serverName?: string;
 };
 
@@ -25,7 +26,7 @@ type Args = {
 };
 
 const getResolver = (input: Input) => {
-  const { driver, ServerConfig, serverName } = input;
+  const { driver, agePolicyRepository, serverName } = input;
   return async (
     _parent: unknown,
     args: Args,
@@ -42,7 +43,7 @@ const getResolver = (input: Input) => {
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,
       driver,
-      ServerConfig,
+      agePolicyRepository,
     });
     if (
       !canViewSensitiveContent &&

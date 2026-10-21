@@ -1,3 +1,4 @@
+import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap } from "../../ogm_types.js";
@@ -6,10 +7,10 @@ import {
 } from "../../ogm_types.js";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
 import {
-  claimPluginRunLease,
-  completePluginRunLease,
+  claimPluginRunLease as actualclaimPluginRunLease,
+  completePluginRunLease as actualcompletePluginRunLease,
   createQueuedPluginRunTiming,
-  renewPluginRunLease,
+  renewPluginRunLease as actualrenewPluginRunLease,
 } from "./executionLease.js";
 
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
@@ -206,4 +207,45 @@ test("terminal writes require the current running lease", async () => {
       timeoutAt: null,
     },
   });
+});
+
+type LeaseModels = {
+  PluginRun?: ModelMap['PluginRun']
+  PluginPipelineRun?: ModelMap['PluginPipelineRun']
+}
+
+const claimPluginRunLease = (
+  args: Parameters<typeof actualclaimPluginRunLease>[0] & LeaseModels
+) => {
+  const { PluginRun, PluginPipelineRun, ...rest } = args
+  return actualclaimPluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
+}
+
+const completePluginRunLease = (
+  args: Parameters<typeof actualcompletePluginRunLease>[0] & LeaseModels
+) => {
+  const { PluginRun, PluginPipelineRun, ...rest } = args
+  return actualcompletePluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
+}
+
+const renewPluginRunLease = (
+  args: Parameters<typeof actualrenewPluginRunLease>[0] & LeaseModels
+) => {
+  const { PluginRun, PluginPipelineRun, ...rest } = args
+  return actualrenewPluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
+}
+
+test('heartbeat retains non-overlap, ordered renewal and stop boundary', async t => {
+  const {startPluginRunHeartbeat} = await import('./executionLease.js');
+  const calls:string[]=[];let tick:()=>void=()=>{};let release!:()=>void;
+  const timer={unref:()=>{calls.push('unref');}};
+  t.mock.method(globalThis,'setInterval',((callback:()=>void,interval:number)=>{assert.equal(interval,10);tick=callback;return timer;}) as any);
+  t.mock.method(globalThis,'clearInterval',((value:unknown)=>{assert.equal(value,timer);calls.push('stop');}) as any);
+  const repository={
+    renewOwnedJob:async()=>{calls.push('renew');await new Promise<void>(resolve=>{release=resolve;});return {pluginRuns:[{id:'job'}]};},
+    extendPendingJobs:async()=>{calls.push('siblings');return {pluginRuns:[]};},
+    extendAttempt:async()=>{calls.push('attempt');return {pluginPipelineRuns:[]};},
+  } as unknown as import('../persistence/pipelineLeaseRepository.js').PipelineLeaseRepository;
+  const heartbeat=startPluginRunHeartbeat({repository,lease:{pluginRunId:'job',pipelineId:'pipeline',leaseId:'lease'},intervalMs:10});
+  tick();tick();assert.deepEqual(calls,['unref','renew']);release();await new Promise<void>(resolve=>setImmediate(resolve));assert.deepEqual(calls,['unref','renew','siblings','attempt']);heartbeat.stop();tick();assert.deepEqual(calls,['unref','renew','siblings','attempt','stop']);
 });

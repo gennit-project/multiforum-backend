@@ -1,15 +1,14 @@
 import { User } from "../../src/generated/graphql.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import type { CommentModel, UserModel } from "../../ogm_types.js";
+import { createCommentVoteRepository, type CommentVoteRepository } from "../../services/persistence/commentVoteRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { commentIsUpvotedByUserQuery } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
 import { logger } from "../../logger.js";
 
 type Input = {
-  Comment: CommentModel;
-  User: UserModel;
+  repository?: CommentVoteRepository;
   driver: Driver;
 };
 
@@ -19,7 +18,8 @@ type Args = {
 };
 
 const undoUpvoteCommentResolver = (input: Input) => {
-  const { Comment, User, driver } = input;
+  const { driver } = input;
+  const repository = input.repository ?? createCommentVoteRepository(driver);
 
   return async (
     parent: unknown,
@@ -57,36 +57,7 @@ const undoUpvoteCommentResolver = (input: Input) => {
         );
       }
       
-      const commentSelectionSet = `
-        {
-          id
-          CommentAuthor {
-              ... on User {
-                  username
-                  commentKarma
-                  createdAt
-              }
-              ... on ModerationProfile {
-                displayName
-                createdAt
-              }
-          }
-          weightedVotesCount
-          UpvotedByUsers {
-              username
-          }
-          UpvotedByUsersAggregate {
-              count
-          }
-        }
-      `;
-
-      const commentResult = await Comment.find({
-        where: {
-          id: commentId,
-        },
-        selectionSet: commentSelectionSet,
-      });
+      const commentResult = await repository.findComment(commentId);
 
       if (commentResult.length === 0) {
         throw new Error("Comment not found");
@@ -103,18 +74,7 @@ const undoUpvoteCommentResolver = (input: Input) => {
         commentAuthor && "commentKarma" in commentAuthor
           ? commentAuthor.commentKarma || 0
           : 0;
-      const userSelectionSet = `
-      {
-          username
-          commentKarma
-      }
-     `;
-      const voterUserResult = await User.find({
-        where: {
-          username,
-        },
-        selectionSet: userSelectionSet,
-      });
+      const voterUserResult = await repository.findVoter(username);
 
       if (voterUserResult.length === 0) {
         throw new Error(
@@ -140,10 +100,7 @@ const undoUpvoteCommentResolver = (input: Input) => {
       });
 
       if (postAuthorUsername) {
-        await User.update({
-          where: { username: postAuthorUsername },
-          update: { commentKarma: postAuthorKarma - 1 },
-        });
+        await repository.setAuthorKarma(postAuthorUsername, postAuthorKarma - 1);
       }
 
       await tx.commit();

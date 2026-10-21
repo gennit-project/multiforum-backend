@@ -1,26 +1,16 @@
 import { GraphQLError } from "graphql";
-import type { ServerConfigModel, WikiPageModel } from "../../ogm_types.js";
+import type { Driver } from "neo4j-driver";
+import { createFeaturedWikiRepository, type FeaturedWikiRepository } from "../../services/persistence/wikiActionRepository.js";
 
 type Deps = {
-  ServerConfig: ServerConfigModel;
-  WikiPage: WikiPageModel;
+  driver: Driver;
+  repository?: FeaturedWikiRepository;
 };
 
 type Args = {
   serverName: string;
   wikiPageIds: string[];
 };
-
-type WikiPageLookup = {
-  id?: string | null;
-};
-
-const returnedServerConfigSelectionSet = `{
-  serverConfigs {
-    serverName
-    featuredWikiPageIds
-  }
-}`;
 
 const validateArgs = ({ serverName, wikiPageIds }: Args) => {
   if (!serverName) {
@@ -33,28 +23,19 @@ const validateArgs = ({ serverName, wikiPageIds }: Args) => {
   }
 };
 
-export const setFeaturedWikiPages = ({ ServerConfig, WikiPage }: Deps) => {
+export const setFeaturedWikiPages = ({ driver, repository: injectedRepository }: Deps) => {
+  const repository = injectedRepository ?? createFeaturedWikiRepository(driver);
   return async (_parent: unknown, args: Args) => {
     validateArgs(args);
 
-    const serverConfigs = await ServerConfig.find({
-      where: { serverName: args.serverName },
-      selectionSet: `{
-        serverName
-      }`,
-    });
+    const serverConfigs = await repository.findServer(args.serverName);
 
     if (!serverConfigs.length) {
       throw new GraphQLError("Server configuration not found.");
     }
 
     if (args.wikiPageIds.length > 0) {
-      const wikiPages = (await WikiPage.find({
-        where: { id_IN: args.wikiPageIds },
-        selectionSet: `{
-          id
-        }`,
-      })) as WikiPageLookup[];
+      const wikiPages = await repository.findPages(args.wikiPageIds);
       const foundIds = new Set(wikiPages.map((page) => page.id).filter(Boolean));
       const missingIds = args.wikiPageIds.filter((id) => !foundIds.has(id));
 
@@ -65,13 +46,7 @@ export const setFeaturedWikiPages = ({ ServerConfig, WikiPage }: Deps) => {
       }
     }
 
-    const result = await ServerConfig.update({
-      where: { serverName: args.serverName },
-      update: {
-        featuredWikiPageIds: args.wikiPageIds,
-      } as never,
-      selectionSet: returnedServerConfigSelectionSet,
-    });
+    const result = await repository.setFeaturedPages(args.serverName, args.wikiPageIds);
 
     const serverConfig = result.serverConfigs[0];
     if (!serverConfig) {

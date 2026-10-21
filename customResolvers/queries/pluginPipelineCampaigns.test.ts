@@ -1,10 +1,12 @@
+import {campaignQueryRepositoryStub} from "../../tests/fixtures/campaignQueryRepositoryStub.js";
+import {campaignServiceRepositoryStub} from "../../tests/fixtures/campaignServiceRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ModelMap } from "../../ogm_types.js";
 import {
-  getPluginPipelineCampaignFailures,
-  getPluginPipelineCampaigns,
-  previewPluginPipelineCampaign,
+  getPluginPipelineCampaignFailures as actualgetPluginPipelineCampaignFailures,
+  getPluginPipelineCampaigns as actualgetPluginPipelineCampaigns,
+  previewPluginPipelineCampaign as actualFactory,
 } from "./pluginPipelineCampaigns.js";
 
 test("campaign queries expose previews and campaign history", async () => {
@@ -99,4 +101,21 @@ test("failure query returns stable public destinations and skips orphaned files"
     status: "FAILED",
     attemptNumber: 2,
   }]);
+});
+
+const previewPluginPipelineCampaign = (models: Parameters<typeof campaignServiceRepositoryStub>[0])=>actualFactory({...models,campaignRepository:campaignServiceRepositoryStub(models)});
+
+const getPluginPipelineCampaigns = (models: Parameters<typeof campaignQueryRepositoryStub>[0])=>actualgetPluginPipelineCampaigns({...models,queryRepository:campaignQueryRepositoryStub(models)});
+
+const getPluginPipelineCampaignFailures = (models: Parameters<typeof campaignQueryRepositoryStub>[0])=>actualgetPluginPipelineCampaignFailures({...models,queryRepository:campaignQueryRepositoryStub(models)});
+
+test('campaign failure destinations remain sequential and stop at a lookup rejection', async()=>{
+ const calls:string[]=[];
+ const queryRepository={findCampaigns:async()=>[],findFailures:async()=>[{pipelineId:'one',targetId:'first',status:'FAILED',attemptNumber:1},{pipelineId:'two',targetId:'second',status:'FAILED',attemptNumber:1},{pipelineId:'three',targetId:'third',status:'FAILED',attemptNumber:1}],findDestination:async(id:string)=>{calls.push(id);if(id==='second')throw Error('destination unavailable');return [];}};
+ await assert.rejects(actualgetPluginPipelineCampaignFailures({queryRepository} as any)({}, {campaignId:'campaign'}),/destination unavailable/);
+ assert.deepEqual(calls,['first','second']);
+});
+test('campaign history propagates repository failure without replacing it',async()=>{
+ const error=new Error('history unavailable');
+ await assert.rejects(actualgetPluginPipelineCampaigns({queryRepository:{findCampaigns:async()=>{throw error;}}} as any)(),value=>value===error);
 });

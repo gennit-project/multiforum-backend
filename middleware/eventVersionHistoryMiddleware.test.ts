@@ -1,7 +1,7 @@
 // Unit tests for the event version-history middleware. It mirrors the discussion
 // version-history middleware: wraps updateEvents, captures a pre-update snapshot
 // when the title/description changes, and delegates the version + edit-notification
-// writes to hooks (which here run against a permissive in-memory OGM). These tests
+// writes to hooks (which here run against a finite revision repository). These tests
 // drive its own branching — passthrough vs. snapshot-fetch vs. hook dispatch —
 // with a stubbed resolver and no DB.
 import assert from "node:assert/strict";
@@ -11,24 +11,18 @@ import middleware from "./eventVersionHistoryMiddleware.js";
 const M: any = (middleware as any).Mutation;
 const RESULT = { events: [{ id: "e-1" }] };
 
-// A permissive OGM: every model resolves to safe no-ops, with per-model overrides.
-// `calls` records which models were looked up so we can assert whether the
-// middleware fetched a snapshot.
+// Finite snapshot seam records whether middleware reads before resolving.
 function makeCtx(models: Record<string, any> = {}) {
   const calls: string[] = [];
-  const ogm = {
-    model(name: string) {
-      calls.push(name);
-      const o = models[name] || {};
-      return {
-        find: o.find ?? (async () => []),
-        create: o.create ?? (async () => ({})),
-        update: o.update ?? (async () => ({})),
-        delete: o.delete ?? (async () => ({})),
-      };
-    },
+  const eventRevisionRepository = {
+    findSnapshot: async () => {calls.push("Event");return models.Event?.find?.() ?? [];},
+    findVersionAuthor: async () => [],
+    createPreviousText: async () => ({textVersions: []}),
+    connectTitleVersion: async () => {},
+    connectDescriptionVersion: async () => {},
+    replaceDescriptionEditor: async () => {},
   };
-  return { ctx: { ogm, driver: {}, user: { username: "alice" } } as any, calls };
+  return {ctx: {eventRevisionRepository, driver: {}, user: {username: "alice"}} as any, calls};
 }
 
 function countingResolve() {

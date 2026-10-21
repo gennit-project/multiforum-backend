@@ -1,8 +1,4 @@
-import type {
-  ChannelUpdateInput,
-  ChannelModel,
-  UserModel,
-} from "../../ogm_types.js";
+import { resolveForumModeratorRepository } from "../../services/persistence/forumModeratorRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -12,13 +8,7 @@ type Args = {
   channelUniqueName: string;
 };
 
-type Input = {
-  Channel: ChannelModel;
-  User: UserModel;
-};
-
-const getResolver = (input: Input) => {
-  const { Channel, User } = input;
+const getResolver = () => {
   return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
     const { channelUniqueName } = args;
     if (!channelUniqueName) {
@@ -36,85 +26,26 @@ const getResolver = (input: Input) => {
       throw new Error("User must be logged in");
     }
     // get mod name from username
-    const userData = await User.find({
-      where: {
-        username: loggedInUsername,
-      },
-      selectionSet: `{
-        ModerationProfile {
-          displayName
-        }
-      }`,
-    });
+    const userData = await resolveForumModeratorRepository(context).findModeratorProfile(loggedInUsername);
     const displayName = userData[0]?.ModerationProfile?.displayName || null;
     if (!displayName) {
       throw new Error(`User ${loggedInUsername} is not a moderator`);
     }
 
     // Check if there's a pending invite first
-    const channelWithPendingInvite = await Channel.find({
-      where: {
-        uniqueName: channelUniqueName,
-      },
-      selectionSet: `{
-        PendingModInvites {
-          username
-        }
-      }`,
-    });
+    const channelWithPendingInvite = await resolveForumModeratorRepository(context).findPendingInvites(channelUniqueName);
 
     if (!channelWithPendingInvite[0]?.PendingModInvites?.some(invite => invite.username === loggedInUsername)) {
       throw new Error(`No pending moderator invite found for user ${loggedInUsername} in channel ${channelUniqueName}`);
     }
 
-    const addChannelModInput: ChannelUpdateInput = {
-      Moderators: [
-        {
-          connect: [
-            {
-              where: {
-                node: {
-                  displayName,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
-    const removePendingInviteInput: ChannelUpdateInput = {
-      PendingModInvites: [
-        {
-          disconnect: [
-            {
-              where: {
-                node: {
-                  username: loggedInUsername,
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
 
     try {
-      const acceptInviteResult = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: addChannelModInput,
-      });
+      const acceptInviteResult = await resolveForumModeratorRepository(context).connectModerator(channelUniqueName, displayName);
       if (!acceptInviteResult.channels[0]) {
         throw new Error("Channel not found. Could not accept invite.");
       }
-      const removePendingInviteResult = await Channel.update({
-        where: {
-          uniqueName: channelUniqueName,
-        },
-        update: removePendingInviteInput,
-      });
+      const removePendingInviteResult = await resolveForumModeratorRepository(context).disconnectInvite(channelUniqueName, loggedInUsername);
       if (!removePendingInviteResult.channels[0]) {
         throw new Error("Channel not found. Could not remove pending invite");
       }

@@ -4,23 +4,21 @@ import removeForumMod from "./removeForumMod.js";
 
 function createModels(profileName: string | null = "ModAlice") {
   const calls = { userFind: 0, update: undefined as unknown };
-  const Channel = {
-    update: async (input: unknown) => {
-      calls.update = input;
-      return { channels: [{ uniqueName: "cats" }] };
+  const repository = {
+    disconnectModerator: async (name: string, displayName: string) => {
+      calls.update = {channelUniqueName:name,displayName};
+      return {channels:[{}]};
     },
-  } as any;
-  const User = {
-    find: async () => {
+    findModeratorProfile: async () => {
       calls.userFind += 1;
-      return profileName ? [{ ModerationProfile: { displayName: profileName } }] : [];
+      return profileName ? [{ModerationProfile:{displayName:profileName}}] : [];
     },
-  } as any;
-  return { resolver: removeForumMod({ Channel, User }), calls };
+  };
+  return { resolver: (parent: unknown, args: any, _context: any, info: any) => removeForumMod()(parent,args,{forumModeratorRepository:repository} as any,info), calls };
 }
 
 const disconnectedProfile = (update: unknown) =>
-  (update as any).update.Moderators[0].disconnect[0].where.node.displayName;
+  (update as any).displayName;
 
 test("removes a moderator by mod-profile name", async () => {
   const { resolver, calls } = createModels();
