@@ -1,0 +1,194 @@
+# Measured per-file runtime of the integration suite, in whole seconds.
+#
+# Format: <seconds> <test-file>   (comment lines start with #)
+#
+# integration-shard.sh uses these timings to balance the CI matrix with a
+# longest-processing-time (LPT) bin-packing pass: files are placed heaviest
+# first onto whichever shard is currently least loaded. This keeps every shard
+# within a few seconds of the others, so the matrix critical path is ~= the
+# total suite time divided by the shard count instead of being dragged out by
+# whichever shard round-robin happened to overload.
+#
+# Files NOT listed here still run — they fall back to the mean measured time so
+# newly added tests are distributed evenly until the manifest is refreshed.
+#
+# To refresh after the suite's timing drifts: run the integration matrix in CI,
+# then regenerate from the shard logs (see docs/architecture.md, "Integration
+# shard balancing"). The numbers only need to be approximately right; LPT is
+# robust to modest error because the largest single file is far smaller than a
+# shard's total load.
+#
+# Source: CI run 39807730398 (main, 8 shards), measured 2026-10-22.
+38 ./tests/integration/accountRegistrationRepository.test.ts
+73 ./tests/integration/ageGateReconcile.test.ts
+67 ./tests/integration/ageGateSweep.test.ts
+82 ./tests/integration/ageGatingReads.test.ts
+84 ./tests/integration/archiveImage.test.ts
+90 ./tests/integration/authenticatedRoles.test.ts
+41 ./tests/integration/authenticatedSensitiveContentLookup.test.ts
+124 ./tests/integration/authorIsChannelModerator.test.ts
+43 ./tests/integration/bootstrapAdminRepository.test.ts
+52 ./tests/integration/botCommentRepository.test.ts
+60 ./tests/integration/botIdentityRepository.test.ts
+52 ./tests/integration/botReportRepository.test.ts
+59 ./tests/integration/botServices.test.ts
+38 ./tests/integration/botThreadRepository.test.ts
+48 ./tests/integration/campaignControlRepository.test.ts
+59 ./tests/integration/campaignQueryRepository.test.ts
+149 ./tests/integration/campaignServiceRepository.test.ts
+16 ./tests/integration/channelBotRepository.test.ts
+57 ./tests/integration/channelCreatorModeratorRepository.test.ts
+85 ./tests/integration/channelExecutionRepository.test.ts
+61 ./tests/integration/channelImageReportRepository.test.ts
+14 ./tests/integration/channelLockEdgeCases.test.ts
+9 ./tests/integration/channelLockEnforcement.test.ts
+20 ./tests/integration/channelModeration.test.ts
+89 ./tests/integration/channelModerationRepository.test.ts
+2 ./tests/integration/channelPermissionRepository.test.ts
+55 ./tests/integration/channelPipelineRepository.test.ts
+61 ./tests/integration/channelPreferenceEnforcement.test.ts
+107 ./tests/integration/channelReportRepository.test.ts
+38 ./tests/integration/channelRoleOwnershipMigration.test.ts
+35 ./tests/integration/collectionReadRepository.test.ts
+41 ./tests/integration/commentCreationAuthorizationRepository.test.ts
+45 ./tests/integration/commentExecutionRepository.test.ts
+1 ./tests/integration/commentIsUpvotedByUser.test.ts
+40 ./tests/integration/commentModerationRepository.test.ts
+46 ./tests/integration/commentNotifications.test.ts
+56 ./tests/integration/commentQueries.test.ts
+72 ./tests/integration/commentReportRepository.test.ts
+47 ./tests/integration/commentRevisionRepository.test.ts
+18 ./tests/integration/commentVoteRepository.test.ts
+40 ./tests/integration/contentAuthorizationRepository.test.ts
+37 ./tests/integration/contentChannelPermissionRepository.test.ts
+41 ./tests/integration/contentFeaturePolicyRepository.test.ts
+13 ./tests/integration/contentUnarchive.test.ts
+57 ./tests/integration/contentValidationRepository.test.ts
+35 ./tests/integration/contributionTargetRepository.test.ts
+10 ./tests/integration/contributionsQueries.test.ts
+17 ./tests/integration/coreSchemaConstraints.test.ts
+54 ./tests/integration/createDownloadableFiles.test.ts
+49 ./tests/integration/createEventSeries.test.ts
+55 ./tests/integration/createEventWithChannelConnections.test.ts
+68 ./tests/integration/criticalPropertyConstraints.test.ts
+58 ./tests/integration/discussionCreationRepository.test.ts
+35 ./tests/integration/discussionFileAttachmentAgeGate.test.ts
+23 ./tests/integration/discussionFlairConfig.test.ts
+43 ./tests/integration/discussionFlairOwnershipMigration.test.ts
+55 ./tests/integration/discussionFlairSubmission.test.ts
+54 ./tests/integration/discussionModerationRepository.test.ts
+106 ./tests/integration/discussionReportRepository.test.ts
+49 ./tests/integration/discussionRevisionMiddleware.test.ts
+60 ./tests/integration/discussionRevisionRepository.test.ts
+37 ./tests/integration/discussionUpdateRepository.test.ts
+32 ./tests/integration/discussionVoteRepository.test.ts
+108 ./tests/integration/downloadExecutionRepository.test.ts
+56 ./tests/integration/downloadLabelRepository.test.ts
+51 ./tests/integration/downloadReviewRepository.test.ts
+52 ./tests/integration/downloadScanReviewQueue.test.ts
+55 ./tests/integration/downloadableFileRepository.test.ts
+56 ./tests/integration/emailNotificationRepository.test.ts
+34 ./tests/integration/enableServerPlugin.test.ts
+35 ./tests/integration/eventModerationRepository.test.ts
+106 ./tests/integration/eventReportRepository.test.ts
+75 ./tests/integration/eventRevisionRepository.test.ts
+52 ./tests/integration/eventSeries.test.ts
+56 ./tests/integration/eventSeriesCreationRepository.test.ts
+46 ./tests/integration/eventSeriesDeletionRepository.test.ts
+63 ./tests/integration/eventSeriesUpdateRepository.test.ts
+38 ./tests/integration/eventWriteRepository.test.ts
+33 ./tests/integration/forumInvitationRepository.test.ts
+60 ./tests/integration/forumModeratorRepository.test.ts
+58 ./tests/integration/forumOwnerRepository.test.ts
+49 ./tests/integration/generatedSchemaOperations.test.ts
+52 ./tests/integration/getCommentReplies.test.ts
+45 ./tests/integration/getDiscussionDetail.test.ts
+59 ./tests/integration/getDiscussionsInChannel.test.ts
+34 ./tests/integration/getEventComments.test.ts
+30 ./tests/integration/getSortedChannels.test.ts
+20 ./tests/integration/imageModerationCoverage.test.ts
+84 ./tests/integration/imageModerationRepository.test.ts
+67 ./tests/integration/imagePermanentRemovalRepository.test.ts
+60 ./tests/integration/imagePermissions.test.ts
+50 ./tests/integration/imageReportRepository.test.ts
+58 ./tests/integration/imageWriteRepository.test.ts
+35 ./tests/integration/installPluginVersion.test.ts
+9 ./tests/integration/instancePolicyRepository.test.ts
+48 ./tests/integration/intermediateNodeCleanup.test.ts
+15 ./tests/integration/issueActivityFeed.test.ts
+52 ./tests/integration/issueActivityMiddlewareRepository.test.ts
+56 ./tests/integration/issueActivityRepository.test.ts
+62 ./tests/integration/issueCreationRepository.test.ts
+32 ./tests/integration/issueLockRepository.test.ts
+10 ./tests/integration/issueLocking.test.ts
+36 ./tests/integration/issueTargetMigration.test.ts
+64 ./tests/integration/issueTargetRepository.test.ts
+65 ./tests/integration/legacyPipelineMigrationRepository.test.ts
+54 ./tests/integration/listQueries.test.ts
+55 ./tests/integration/lockChannel.test.ts
+12 ./tests/integration/modSuspensionEnforcement.test.ts
+104 ./tests/integration/moderationProfileIdentityLink.test.ts
+33 ./tests/integration/notificationAuthorization.test.ts
+30 ./tests/integration/notificationHooks.test.ts
+60 ./tests/integration/notificationSnapshotRepository.test.ts
+56 ./tests/integration/notificationWriter.test.ts
+50 ./tests/integration/ownershipCreateMiddleware.test.ts
+55 ./tests/integration/permanentlyRemoveImage.test.ts
+34 ./tests/integration/permissionServerConfigRepository.test.ts
+132 ./tests/integration/pipelineAttemptRepository.test.ts
+35 ./tests/integration/pipelineDetailRepository.test.ts
+31 ./tests/integration/pipelineHistoryRepository.test.ts
+130 ./tests/integration/pipelineLeaseRepository.test.ts
+81 ./tests/integration/pipelineNotificationRepository.test.ts
+50 ./tests/integration/pipelineRerunRepository.test.ts
+55 ./tests/integration/pipelineRetryRepository.test.ts
+14 ./tests/integration/pipelineStartRepository.test.ts
+57 ./tests/integration/pipelineTargetRepository.test.ts
+70 ./tests/integration/pipelineWatchdogRepository.test.ts
+10 ./tests/integration/pluginConfigurationReadRepository.test.ts
+59 ./tests/integration/pluginInstallRepository.test.ts
+57 ./tests/integration/pluginRegistryRepository.test.ts
+49 ./tests/integration/pluginStatusRepository.test.ts
+18 ./tests/integration/profilePictureReportRepository.test.ts
+2 ./tests/integration/provisionServerDefaults.test.ts
+57 ./tests/integration/reactionWriter.test.ts
+34 ./tests/integration/refreshPlugins.test.ts
+34 ./tests/integration/replyAncestry.test.ts
+55 ./tests/integration/reportImage.test.ts
+55 ./tests/integration/reportProfilePictureAndChannelImage.test.ts
+48 ./tests/integration/reportWikiEdit.test.ts
+39 ./tests/integration/requestIdentityRepository.test.ts
+33 ./tests/integration/requestScopedBookmarks.test.ts
+61 ./tests/integration/revisionRedaction.test.ts
+39 ./tests/integration/revisionRedactionRepository.test.ts
+31 ./tests/integration/roleGuardRepository.test.ts
+57 ./tests/integration/scratchpadRepository.test.ts
+82 ./tests/integration/seedDataRepository.test.ts
+48 ./tests/integration/serverAdminInvite.test.ts
+57 ./tests/integration/serverAdminRepository.test.ts
+56 ./tests/integration/serverHealthDashboard.test.ts
+59 ./tests/integration/serverInvitationRepository.test.ts
+35 ./tests/integration/serverModInvite.test.ts
+32 ./tests/integration/serverModeratorRepository.test.ts
+56 ./tests/integration/serverPipelineRepository.test.ts
+16 ./tests/integration/serverPluginEnablementRepository.test.ts
+14 ./tests/integration/serverSecretRepository.test.ts
+60 ./tests/integration/serverSuspension.test.ts
+47 ./tests/integration/stickyCommentRepository.test.ts
+59 ./tests/integration/subscriptionTargetRepository.test.ts
+35 ./tests/integration/superUpvote.test.ts
+31 ./tests/integration/superVoteUndoRepository.test.ts
+56 ./tests/integration/suspension.test.ts
+42 ./tests/integration/suspensionEffectsRepository.test.ts
+97 ./tests/integration/suspensionEnforcement.test.ts
+56 ./tests/integration/suspensionNotificationLinks.test.ts
+59 ./tests/integration/suspensionWriteRepository.test.ts
+54 ./tests/integration/trackDownload.test.ts
+11 ./tests/integration/updateDownloadLabels.test.ts
+11 ./tests/integration/versionHistoryHooks.test.ts
+13 ./tests/integration/versionHistoryServices.test.ts
+14 ./tests/integration/voteResolvers.test.ts
+15 ./tests/integration/wikiActionRepository.test.ts
+18 ./tests/integration/wikiEditReportRepository.test.ts
+13 ./tests/integration/wikiGuardRepository.test.ts
+18 ./tests/integration/wikiRevisionRepository.test.ts

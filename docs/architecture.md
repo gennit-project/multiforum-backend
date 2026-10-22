@@ -187,6 +187,43 @@ domain maps onto the storage model instead of fighting it.
   may not), and it applies system-wide, including Neo4jGraphQL's auto-generated
   read resolvers — not a default to flip on per query.
 
+### Integration shard balancing
+
+The integration suite is the CI critical path: ~140 minutes of work that must
+run serially within each shard (one real Neo4j per shard, `--test-concurrency=1`).
+CI fans it out across a matrix of shards ([`tests-ci.yml`](../.github/workflows/tests-ci.yml)),
+and [`build_scripts/integration-shard.sh`](../build_scripts/integration-shard.sh)
+decides which files land on each shard.
+
+Assignment is **longest-processing-time (LPT) bin-packing** over measured
+per-file runtimes, not round-robin: files are sorted heaviest-first and each is
+placed on whichever shard is currently least loaded. Because the heaviest single
+file (~150 s) is far smaller than a shard's total load, this keeps every shard
+within a few seconds of the others — so the matrix critical path is
+`total suite time / shard count` instead of being set by whichever shard
+round-robin happened to overload. Every shard job runs the same deterministic
+computation over the same inputs and keeps only its own index's files, so no
+coordinator is needed.
+
+Runtimes live in
+[`build_scripts/integration-shard-timings.txt`](../build_scripts/integration-shard-timings.txt)
+(`<seconds> <file>`). Files absent from the manifest fall back to the mean
+measured time, so newly added tests are distributed evenly until it is
+refreshed. The numbers only need to be approximately right.
+
+**To refresh the manifest** after timings drift (or the shard count changes),
+read the per-file durations back out of a completed integration matrix run. Each
+shard runs its files serially in sorted order and prints one
+`--experimental-loader` warning per file as the file's test process starts, so
+the span between consecutive warning timestamps in a shard's log is that file's
+wall-clock. Pull the logs with
+`gh run view <run-id> --log --job <job-id>` for each `integration-tests (N)`
+job, segment by those timestamps against the file list the shard prints in its
+header, and rewrite the manifest with the measured seconds. Bumping the shard
+count is just editing the `shard` matrix list and the matching `SHARD_TOTAL`
+in [`tests-ci.yml`](../.github/workflows/tests-ci.yml) — the script rebalances
+to whatever `SHARD_TOTAL` it is given.
+
 ## Repository map
 
 | Path | Contents |

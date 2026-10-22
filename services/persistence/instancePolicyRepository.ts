@@ -24,10 +24,15 @@ export const FIND_AGE_POLICY_CONFIGS = `
   RETURN config { .accountAgeGateEnabled, .minimumAccountAge,
     .sensitiveContentAgeGateEnabled, .minimumSensitiveContentAge } AS config
 `;
+// Scoped by serverName in practice (a server reads its own config). The
+// ORDER BY only matters for the unscoped fallback: without it, Neo4j returns
+// multiple configs in an unspecified order and the caller's serverConfigs[0]
+// would pick an arbitrary row. A stable sort keeps that fallback deterministic.
 export const FIND_SETUP_CONFIGS = `
   MATCH (config:ServerConfig)
   WHERE $serverName IS NULL OR config.serverName = $serverName
   RETURN config { .serverName, .enableDownloads, .enableEvents } AS config
+  ORDER BY config.serverName
 `;
 
 const boolean = (value: unknown): boolean | null =>

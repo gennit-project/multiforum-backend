@@ -46,7 +46,11 @@ export const CAMPAIGN_DEFAULT_SELECTION = `{
 }`;
 export function createCampaignServiceRepository(driver:Driver):CampaignServiceRepository {return {
  async findPolicies(){const r=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,`query CampaignPolicies {serverConfigs${POLICY_SELECTION}}`,{});return r.serverConfigs;},
- async findFiles(){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query CampaignFiles {downloadableFiles${FILE_SELECTION}}`,{});return r.downloadableFiles;},
+ // Sort explicitly: the batch processes these files in result order (and the
+ // @limit default selects a subset), so an unordered read would make both the
+ // processing order and the selected subset depend on Neo4j's unspecified row
+ // order. Oldest-first with an id tiebreak keeps it deterministic.
+ async findFiles(){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query CampaignFiles {downloadableFiles(options: {sort: [{createdAt: ASC}, {id: ASC}]})${FILE_SELECTION}}`,{});return r.downloadableFiles;},
  async findAttempts(campaignId){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query CampaignAttemptStates($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${ATTEMPT_SELECTION}}`,{where:{campaignId}});return r.pluginPipelineRuns;},
  async updateProgress(id,update){await executeGeneratedOperation(driver,`mutation UpdateCampaignProgress($where:PluginPipelineCampaignWhere,$update:PluginPipelineCampaignUpdateInput){updatePluginPipelineCampaigns(where:$where,update:$update){pluginPipelineCampaigns${CAMPAIGN_DEFAULT_SELECTION}}}`,{where:{id},update});},
  async findRunningCampaigns(){const r=await executeGeneratedOperation<{pluginPipelineCampaigns:PluginPipelineCampaign[]}>(driver,`query RunningPipelineCampaigns($where:PluginPipelineCampaignWhere){pluginPipelineCampaigns(where:$where)${RUNNING_SELECTION}}`,{where:{status:'RUNNING'}});return r.pluginPipelineCampaigns;},
