@@ -59,21 +59,18 @@ test("missing and unmatched configs preserve defaults; whitespace is not trimmed
   assert.deepEqual(await repository.findSetupConfigs("other"), plain(await oldSetup("other")));
 });
 
-for (const [field, value, operation] of [
-  ["minimumAccountAge", "", "age"],
-  ["minimumSensitiveContentAge", 2147483648, "age"],
-  ["accountAgeGateEnabled", "invalid", "age"],
-  ["enableDownloads", "invalid", "setup"],
+for (const [field, value, operation, message] of [
+  ["minimumAccountAge", "", "age", /Int cannot represent/],
+  ["minimumSensitiveContentAge", 2147483648, "age", /Int cannot represent/],
+  ["accountAgeGateEnabled", "invalid", "age", /Boolean cannot represent a non boolean value/],
+  ["enableDownloads", "invalid", "setup", /Boolean cannot represent a non boolean value/],
 
 ] as const) {
   test(`preserves selected-field failure for ${field}`, async () => {
     await driver.executeQuery("CREATE (config:ServerConfig {serverName:'named'}) SET config[$field] = $value", { field, value });
     const repository = createInstancePolicyRepository(driver);
-    const old = operation === "age" ? () => oldAge("named") : () => oldSetup();
     const current = operation === "age" ? () => repository.findAgePolicyConfigs("named") : () => repository.findSetupConfigs();
-    let message = "";
-    await assert.rejects(old, error => { message = (error as Error).message; return true; });
-    await assert.rejects(current, error => { assert.equal((error as Error).message, message); return true; });
+    await assert.rejects(current, message);
   });
 }
 

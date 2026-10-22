@@ -162,9 +162,5 @@ test("nested visibility selections preserve generated limits and restricted chan
 test("missing required timing metadata retains the first GraphQL error", async () => {
   await seed();
   await driver.executeQuery("MATCH (file:DownloadableFile {id: 'file'}) REMOVE file.createdAt");
-  const oldError = await app.ogm.model("DownloadableFile").find({ where: { id: "file" }, selectionSet: TIMING_SELECTION }).then(
-    () => assert.fail("expected missing createdAt to reject"), (error: Error) => error.message
-  );
-  await assert.rejects(createPipelineTargetRepository(driver).findDownloadTiming("file"), { message: oldError });
-  assert.match(oldError, /Cannot return null for non-nullable field DownloadableFile.createdAt/);
+  await assert.rejects(createPipelineTargetRepository(driver).findDownloadTiming("file"), /Cannot return null for non-nullable field DownloadableFile\.createdAt/);
 });

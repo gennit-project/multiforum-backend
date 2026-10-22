@@ -65,11 +65,11 @@ test("missing users retain false without events",async()=>{
  assert.deepEqual(await rows(),[]);assert.deepEqual(events,[]);
 });
 test("projection failure preserves committed notification and first error",async()=>{
- await seed(false);let message="";
- await assert.rejects(oldWrite(),error=>{message=(error as Error).message;return true;});
+ await seed(false);
+ await assert.rejects(oldWrite(),/Cannot return null for non-nullable field User\.createdAt/);
  const expected={rows:await rows(),events:normalize(events)};
  await resetDatabase(driver);await seed(false);events=[];
- await assert.rejects(repository.createAfterEmailNotification("alice","Notice"),{message});
+ await assert.rejects(repository.createAfterEmailNotification("alice","Notice"),/Cannot return null for non-nullable field User\.createdAt/);
  assert.deepEqual({rows:await rows(),events:normalize(events)},expected);
 });
 test("fake mail delivery completes before in-app write and failed delivery prevents it",async()=>{

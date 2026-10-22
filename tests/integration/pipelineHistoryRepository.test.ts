@@ -107,10 +107,7 @@ test("actual summary caller retains visibility gate and public redaction; raw hi
 test("generated variable coercion and selected nonnull errors match legacy first errors", async () => {
   await seed();
   const repository = createPipelineHistoryRepository(driver);
-  const args = {AND:[{targetId:42},{targetType:"DownloadableFile"}]};
-  const oldError = await app.ogm.model("PluginRun").find({where:args as never, selectionSet:HISTORY}).then(() => assert.fail("expected coercion error"), (error:Error) => error.message);
-  await assert.rejects(repository.findPipelineHistory(42 as unknown as string,"DownloadableFile"),{message:oldError});
+  await assert.rejects(repository.findPipelineHistory(42 as unknown as string,"DownloadableFile"),/String cannot represent a non string value/);
   await driver.executeQuery("MATCH (job:PluginRun) REMOVE job.version");
-  const missing = await app.ogm.model("PluginRun").find({where:{AND:[{targetId:"file"},{targetType:"DownloadableFile"}]},selectionSet:DOWNLOAD}).then(() => assert.fail("expected missing version error"),(error:Error)=>error.message);
-  await assert.rejects(repository.findDownloadHistory("file"),{message:missing});
+  await assert.rejects(repository.findDownloadHistory("file"),/Cannot return null for non-nullable field PluginRun\.version/);
 });

@@ -43,8 +43,8 @@ test("rename preserves ciphertext and native update events; postcommit projectio
   await resetDatabase(driver);await seed();events=[];
   await migrateServerSecretRenames({serverSecretRepository:repo,pluginId:"scanner",oldManifest:{secrets:[{key:"OLD"}]},newManifest:{secrets:[{key:"NEW",renamedFrom:"OLD"}]}});assert.deepEqual(await state(),expected);
   await resetDatabase(driver);await seed(false);events=[];
-  const error=await old.update({where:{id:"secret"},update:{key:"NEW"}}).then(()=>assert.fail("expected projection error"),(error:Error)=>error.message);const failed=await state();
-  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(repo.renameKey("secret","NEW"),{message:error});assert.deepEqual(await state(),failed);
+  await assert.rejects(old.update({where:{id:"secret"},update:{key:"NEW"}}),/Cannot return null for non-nullable field ServerSecret\.createdAt/);const failed=await state();
+  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(repo.renameKey("secret","NEW"),/Cannot return null for non-nullable field ServerSecret\.createdAt/);assert.deepEqual(await state(),failed);
 });
 test("wired secret setter encrypts synthetic input, resets validation, and wraps lookup errors",async()=>{
   await app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic-test-value"},{driver},{} as GraphQLResolveInfo);

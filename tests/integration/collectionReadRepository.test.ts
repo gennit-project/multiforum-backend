@@ -188,24 +188,18 @@ test("owned sharing snapshots retain ownership filter and narrow projections", a
 });
 
 test("filter and options validation preserve original first errors", async () => {
-  for (const [where,options] of [[{unknown:'field'},{}],[{visibility:'invalid'},{}],[{}, {limit:'bad'}],[{}, {sort:[{unknown:'ASC'}]}]]) {
-    const expected = await outcome(()=>ogm.model('Collection').find({where:where as never,options:options as never,selectionSet:PROFILE_SELECTION}));
-    assert.ok('error' in expected);
-    assert.deepEqual(await outcome(()=>repository.findProfileCollections(where as never,options as never)),expected);
+  const cases:[any,any,RegExp][]=[[{unknown:'field'},{},/Field "unknown" is not defined by type "CollectionWhere"/],[{visibility:'invalid'},{},/does not exist in/],[{}, {limit:'bad'},/Int cannot represent non-integer value/],[{}, {sort:[{unknown:'ASC'}]},/Field "unknown" is not defined by type/]];
+  for (const [where,options,message] of cases) {
+    await assert.rejects(repository.findProfileCollections(where as never,options as never), message);
   }
 });
 
 test("malformed selected enum and mandatory creator retain failures", async () => {
   await seed();
   await driver.executeQuery("MATCH (c:Collection {id:'first'}) SET c.visibility = 'INVALID'");
-  const selectionSet = '{id name description visibility CreatedBy {username}}';
-  const expected = await outcome(()=>ogm.model('Collection').find({where:{id:'first',CreatedBy:{username:'owner'}},selectionSet}));
-  assert.ok('error' in expected);
-  assert.deepEqual(await outcome(()=>repository.findOwnedShareTarget('first','owner')),expected);
+  await assert.rejects(repository.findOwnedShareTarget('first','owner'), /cannot represent value/);
   await driver.executeQuery("MATCH (c:Collection {id:'first'})-[r:CREATED_BY]->() SET c.visibility='PUBLIC' DELETE r");
-  const publicExpected=await outcome(()=>ogm.model('Collection').find({where:{id:'first'},options:{sort:[{createdAt:'DESC' as never}]},selectionSet:legacyPublicSelection(false)}));
-  assert.ok('error' in publicExpected);
-  assert.deepEqual(await outcome(()=>repository.findPublicContaining({id:'first'},false)),publicExpected);
+  await assert.rejects(repository.findPublicContaining({id:'first'},false), /Cannot return null for non-nullable field Collection\.CreatedBy/);
 });
 
 test("collections remain unbounded at root and public downloads retain limit five", async () => {

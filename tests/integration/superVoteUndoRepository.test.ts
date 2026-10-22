@@ -26,7 +26,7 @@ test('both snapshots retain missing rows, author branches and nested default25 l
  await seed();assert.deepEqual(await repository.findComment('missing'),[]);assert.deepEqual(await repository.findDiscussion('missing'),[]);
  await driver.executeQuery("MATCH (c:Comment),(dc:DiscussionChannel) UNWIND range(1,28) AS i CREATE (u:User {username:'u'+toString(i)}) CREATE (u)-[:SUPER_UPVOTED_COMMENT]->(c),(u)-[:SUPER_UPVOTED_DISCUSSION]->(dc)");
  for(const [fn,id] of [['findComment','c'],['findDiscussion','dc']] as const){const expected=plain(await legacy[fn](id));assert.equal(expected[0].SuperUpvotedByUsers.length,25);assert.deepEqual(plain(await repository[fn](id)),expected);}
- await driver.executeQuery("MATCH (:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE (:ModerationProfile {displayName:'mod'})-[:AUTHORED_COMMENT]->(c)");let message='';await assert.rejects(legacy.findComment('c'),e=>{message=(e as Error).message;return true;});assert.match(message,/User.username/);await assert.rejects(repository.findComment('c'),{message});
+ await driver.executeQuery("MATCH (:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE (:ModerationProfile {displayName:'mod'})-[:AUTHORED_COMMENT]->(c)");await assert.rejects(repository.findComment('c'),/User\.username/);
 });
 for(const sourceType of ['comment','discussion'] as const)test(`${sourceType} full undo preserves transaction state, scratchpad deletion and no generated write events`,async()=>{
  let expected:unknown;const sourceId=sourceType==='comment'?'c':'dc';

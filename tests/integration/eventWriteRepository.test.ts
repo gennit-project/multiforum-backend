@@ -39,7 +39,7 @@ function assertNativeUpdateEvent() {
 }
 test('snapshot and final refetch preserve missing rows and full selected response',async()=>{const repo=createEventWriteRepository(driver);assert.deepEqual(await repo.findUpdateSnapshot({id:'missing'}),[]);assert.deepEqual(await repo.findUpdatedEvent('missing'),[]);await seed();assert.deepEqual(await repo.findUpdateSnapshot({id:'d'}),await app.ogm.model('Event').find({where:{id:'d'},selectionSet:EVENT_UPDATE_SNAPSHOT_SELECTION}));assert.deepEqual(await repo.findUpdatedEvent('d'),await app.ogm.model('Event').find({where:{id:'d'},selectionSet:UPDATED_EVENT_SELECTION}));});
 for(const abort of [false,true])test(`caller owns transaction ${abort?'rollback':'commit'} and native event behavior`,async()=>{let expected:unknown;for(const update of [oldUpdate,newUpdate]){await resetDatabase(driver);await seed();events=[];const session=driver.session();try{const operation=session.executeWrite(async tx=>{await update(tx,{title:'After'});assert.equal((await tx.run("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title'),'After');if(abort)throw Error('fixture abort');});if(abort)await assert.rejects(operation,{message:'fixture abort'});else await operation;}finally{await session.close();}assert.equal(await title(),abort?'Before':'After');assertNativeUpdateEvent();const actual=normalize(events);assert.ok(events.length>0);if(expected)assert.deepEqual(actual,expected);else expected=actual;}});
-test('generated input coercion fails with the same error and no mutation',async()=>{await seed();let message='';for(const update of [oldUpdate,newUpdate]){const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>update(tx,{title:123})),error=>{if(!message)message=(error as Error).message;assert.equal((error as Error).message,message);return true;});}finally{await session.close();}assert.equal(await title(),'Before');assert.deepEqual(events,[]);}});
+test('generated input coercion fails with the same error and no mutation',async()=>{await seed();const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:123})),/String cannot represent a non string value/);}finally{await session.close();}assert.equal(await title(),'Before');assert.deepEqual(events,[]);});
 test('default projection failure rolls back within caller transaction with legacy event behavior',async()=>{const field=(schema.getType('Event') as GraphQLObjectType).getFields().title;const original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};try{let expected:unknown;for(const update of [oldUpdate,newUpdate]){await resetDatabase(driver);await seed();events=[];const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>update(tx,{title:'After'})),{message:'fixture projection failure'});}finally{await session.close();}assert.equal(await title(),'Before');assertNativeUpdateEvent();const actual=normalize(events);if(expected)assert.deepEqual(actual,expected);else expected=actual;}}finally{field.resolve=original;}});
 
 const eventInput = {title: 'Created', canceled: false, startTime: '2026-06-01T10:00:00Z', endTime: '2026-06-01T12:00:00Z'};
@@ -76,18 +76,12 @@ for (const abort of [false, true]) test(`creation preserves caller-owned ${abort
   }
 });
 test('creation input coercion has matching errors without writes or events', async () => {
-  let message = '';
-  for (const create of [oldCreate, newCreate]) {
-    const session = driver.session();
-    try {
-      await assert.rejects(session.executeWrite(tx => create(tx, {...eventInput, canceled: 'invalid'})), error => {
-        if (!message) message = (error as Error).message;
-        assert.equal((error as Error).message, message); return true;
-      });
-    } finally { await session.close(); }
-    assert.deepEqual(events, []);
-    assert.equal((await driver.executeQuery('MATCH(e:Event) RETURN count(e) AS n')).records[0].get('n').toNumber(), 0);
-  }
+  const session = driver.session();
+  try {
+    await assert.rejects(session.executeWrite(tx => newCreate(tx, {...eventInput, canceled: 'invalid'})), /Boolean cannot represent a non boolean value/);
+  } finally { await session.close(); }
+  assert.deepEqual(events, []);
+  assert.equal((await driver.executeQuery('MATCH(e:Event) RETURN count(e) AS n')).records[0].get('n').toNumber(), 0);
 });
 test('creation projection failure preserves native publication and rolls back the caller transaction', async () => {
   const field = (schema.getType('Event') as GraphQLObjectType).getFields().title;

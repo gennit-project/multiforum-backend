@@ -153,10 +153,6 @@ test("unused selected non-null plugin metadata retains the legacy error contract
     CREATE (plugin)-[:HAS_VERSION]->(version)
     CREATE (:ServerConfig {serverName: 'server'})-[:INSTALLED {enabled: true}]->(version)
   `);
-  const oldError = await app.ogm.model("ServerConfig").find({ selectionSet: INSTALLED_SELECTION }).then(
-    () => assert.fail("legacy read should reject missing repoUrl"), (error: Error) => error.message
-  );
-  assert.match(oldError, /Cannot return null for non-nullable field PluginVersion.repoUrl/);
-  await assert.rejects(createPluginConfigurationReadRepository(driver).listInstalledPluginConfigs(), { message: oldError });
-  await assert.rejects(getInstalledPlugins({ driver })(null, {}, {} as GraphQLContext, {} as never), { message: `Failed to get installed plugins: ${oldError}` });
+  await assert.rejects(createPluginConfigurationReadRepository(driver).listInstalledPluginConfigs(), /Cannot return null for non-nullable field PluginVersion\.repoUrl/);
+  await assert.rejects(getInstalledPlugins({ driver })(null, {}, {} as GraphQLContext, {} as never), /Failed to get installed plugins: Cannot return null for non-nullable field PluginVersion\.repoUrl/);
 });

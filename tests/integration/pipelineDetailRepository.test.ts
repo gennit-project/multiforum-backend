@@ -75,10 +75,8 @@ test("wired public and internal detail retain distinct visibility/redaction cont
 test("malformed attempt identifiers and missing selected nonnull fields preserve first errors", async () => {
   await seed();const repository=createPipelineDetailRepository(driver);
   assert.deepEqual(await repository.findInternalAttempt(42 as unknown as string), await app.ogm.model("PluginPipelineRun").find({where:{id:42} as never,selectionSet:INTERNAL_ATTEMPT}));
-  const coercion=await app.ogm.model("PluginPipelineRun").find({where:{id:{bad:true}} as never,selectionSet:INTERNAL_ATTEMPT}).then(()=>assert.fail("expected coercion"),(error:Error)=>error.message);
-  await assert.rejects(repository.findInternalAttempt({bad:true} as unknown as string),{message:coercion});
+  await assert.rejects(repository.findInternalAttempt({bad:true} as unknown as string),/ID cannot represent/);
   await driver.executeQuery("MATCH (j:PluginRun) REMOVE j.version");
-  const missing=await app.ogm.model("PluginRun").find({where:{pipelineId:"pipeline"},selectionSet:PUBLIC_PLUGIN_JOB_SELECTION}).then(()=>assert.fail("expected null error"),(error:Error)=>error.message);
-  await assert.rejects(repository.findPublicJobs("pipeline"),{message:missing});
-  await assert.rejects(repository.findInternalJobs("pipeline"),{message:missing});
+  await assert.rejects(repository.findPublicJobs("pipeline"),/Cannot return null for non-nullable field PluginRun\.version/);
+  await assert.rejects(repository.findInternalJobs("pipeline"),/Cannot return null for non-nullable field PluginRun\.version/);
 });

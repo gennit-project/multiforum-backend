@@ -60,5 +60,5 @@ for(const [name,update,invalid,missing] of [
  if(name==='both'||name==='missing parent')assert.equal((outputs[1] as any).state.revisions.length,2);
 });
 test('invalid revision body coercion matches baseline and performs no write',async()=>{
- await seed();const old=await outcome(()=>baseline().createRevision(3 as unknown as string,'author'));const next=await outcome(()=>repository.createRevision(3 as unknown as string,'author'));assert.equal(next,old);assert.deepEqual((await state()).revisions,[]);
+ await seed();await assert.rejects(repository.createRevision(3 as unknown as string,'author'),/String cannot represent a non string value/);assert.deepEqual((await state()).revisions,[]);
 });

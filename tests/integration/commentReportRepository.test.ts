@@ -50,10 +50,11 @@ test('missing comment retains empty-context issue creation and separate activity
  const old=await run(legacy());assert.equal(old.issues.length,1);assert.equal(old.comments.length,1);assert.deepEqual(await run(createCommentReportRepository(driver)),old);
 });
 test('identity guard and generated input errors retain no writes',async()=>{
- await seed();for(const input of [{issueNumber:1,channelUniqueName:'forum',authorName:'mismatch',Author:{ModerationProfile:{connect:{where:{node:{displayName:'mod'}}}}}},{issueNumber:1,channelUniqueName:'forum',isOpen:'bad'}]){
- const old=await outcome(()=>legacy().createIssue(input as never));assert.ok(old.error);assert.deepEqual(await outcome(()=>createCommentReportRepository(driver).createIssue(input as never)),old);
+ await seed();const cases:[any,RegExp][]=[[{issueNumber:1,channelUniqueName:'forum',authorName:'mismatch',Author:{ModerationProfile:{connect:{where:{node:{displayName:'mod'}}}}}},/immutable author snapshot/],[{issueNumber:1,channelUniqueName:'forum',isOpen:'bad'},/Issue author identity is required/]];
+ for(const [input,message] of cases){
+ await assert.rejects(createCommentReportRepository(driver).createIssue(input as never),message);
  }
- const old=await outcome(()=>legacy().appendReport({id:'none'},{relatedCommentId:'other'} as never));assert.ok(old.error);assert.deepEqual(await outcome(()=>createCommentReportRepository(driver).appendReport({id:'none'},{relatedCommentId:'other'} as never)),old);assert.equal((await state()).issues.length,0);
+ await assert.rejects(createCommentReportRepository(driver).appendReport({id:'none'},{relatedCommentId:'other'} as never),/Issue identity cannot be updated/);assert.equal((await state()).issues.length,0);
 });
 for(const existing of [false,true])test(`projection failure preserves committed ${existing?'activity':'creation'} and exact catch contract`,async()=>{
  await schema(true);

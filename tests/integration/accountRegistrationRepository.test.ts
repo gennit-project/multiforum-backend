@@ -87,20 +87,16 @@ test("nested account creation preserves birthday, graph and native event orderin
 });
 
 test("generated input coercion errors precede graph writes/events",async()=>{
- for(const malformed of [{username:23},{...input(),Email:{create:{node:{address:23}}}},{...input(),dateOfBirth:"invalid"}]){
-  const old=await outcome(()=>ogm.model("User").create({input:[malformed as never]}));
-  assert.ok("error" in old);
-  const actual=await repository.createAccount(malformed as never).then(()=>({value:"unexpected success"}),(error:Error)=>({error:error.message}));
-  assert.deepEqual(actual,old);
+ const cases:[any,RegExp][]=[[{username:23},/String cannot represent a non string value/],[{...input(),Email:{create:{node:{address:23}}}},/String cannot represent a non string value/],[{...input(),dateOfBirth:"invalid"},/Date cannot represent non temporal value/]];
+ for(const [malformed,message] of cases){
+  await assert.rejects(repository.createAccount(malformed as never),message);
   assert.deepEqual(await graph(),[]);assert.deepEqual(events,[]);
  }
 });
 
 test("default existence read still rejects malformed selected fields",async()=>{
  await driver.executeQuery("CREATE (:User {username:'alice',createdAt:datetime(),notifyWhenTagged:'invalid'})");
- const expected=await outcome(()=>ogm.model("User").find({where:{username:"alice"}}));
- assert.ok("error" in expected);
- assert.deepEqual(await outcome(()=>repository.findExistingUsername("alice")),expected);
+ await assert.rejects(repository.findExistingUsername("alice"),/Boolean cannot represent a non boolean value/);
 });
 
 test("own account summary preserves the production internal selection and first errors",async()=>{

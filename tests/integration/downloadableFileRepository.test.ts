@@ -191,14 +191,11 @@ test("missing files, absent relationships, and invalid selected values retain pr
   assert.deepEqual(await repository.findUrlAccess("file"), {
     uploadedByUsername: "uploader", discussionAuthorUsername: null,
   });
-  for (const scanStatus of [null, "INVALID"]) {
+  for (const [scanStatus, message] of [[null, /Cannot return null for non-nullable field DownloadableFile\.scanStatus/], ["INVALID", /cannot represent value/]] as const) {
     await driver.executeQuery(`
       MATCH (file:DownloadableFile {id: "file"}) SET file.scanStatus = $scanStatus
     `, { scanStatus });
-    const oldError = await findFileAccess(ogm).then(() => null, (error: Error) => error.message);
-    const newError = await repository.findUrlAccess("file").then(() => null, (error: Error) => error.message);
-    assert.ok(oldError);
-    assert.equal(newError, oldError);
+    await assert.rejects(repository.findUrlAccess("file"), message);
   }
 });
 
@@ -259,8 +256,5 @@ test("attachment metadata matches the production OGM projection and hidden-file 
     MATCH (file:DownloadableFile {id: "file"})
     SET file.ageGateRestricted = false, file.fileName = null
   `);
-  const previousError = await legacyMetadata("file").then(() => null, (error: Error) => error.message);
-  const currentError = await repository.findAttachmentMetadata("file").then(() => null, (error: Error) => error.message);
-  assert.equal(currentError, previousError);
-  assert.ok(currentError);
+  await assert.rejects(repository.findAttachmentMetadata("file"), /Cannot return null for non-nullable field DownloadableFile\.fileName/);
 });

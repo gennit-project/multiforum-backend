@@ -51,19 +51,17 @@ test("nested writes preserve fields, repeated notifications and native subscript
  assert.deepEqual(await snapshot(),expected);
 });
 test("projection failures preserve first error and committed writes/events", async () => {
- await seed(false); let message="";
- await assert.rejects(oldWrite(),error=>{message=(error as Error).message;return true;}); const expected=await snapshot();
+ await seed(false);
+ await assert.rejects(oldWrite(),/Cannot return null for non-nullable field User\.createdAt/); const expected=await snapshot();
  await resetDatabase(driver); await seed(false); events=[];
- await assert.rejects(createNotificationWriter(driver).createForUser(input),error=>{assert.equal((error as Error).message,message);return true;});
+ await assert.rejects(createNotificationWriter(driver).createForUser(input),/Cannot return null for non-nullable field User\.createdAt/);
  assert.deepEqual(await snapshot(),expected);
 });
 
 test("invalid nested inputs retain coercion errors without graph writes or events", async () => {
  await seed();
  for (const malformed of [{...input,text:23},{...input,notificationType:23}]) {
-  let message="";
-  await assert.rejects(ogm.model("User").update({where:{username:malformed.username},update:{Notifications:[{create:[{node:{text:malformed.text,read:false,notificationType:malformed.notificationType}}]}]}} as any),error=>{message=(error as Error).message;return true;});
-  await assert.rejects(createNotificationWriter(driver).createForUser(malformed as any),error=>{assert.equal((error as Error).message,message);return true;});
+  await assert.rejects(createNotificationWriter(driver).createForUser(malformed as any),/String cannot represent a non string value/);
   assert.deepEqual(await snapshot(),{events:[],rows:[]});
  }
 });

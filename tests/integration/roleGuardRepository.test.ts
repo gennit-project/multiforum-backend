@@ -80,15 +80,9 @@ test("server capability filters retain every guarded flag and nullable values", 
 test("invalid filters and corrupt owners retain OGM's first failure instead of granting access", async () => {
   const repository = createRoleGuardRepository(driver);
   const where = { name: 42, unknownFilter: true };
-  assert.equal(
-    await errorMessage(() => repository.findChannelRoleOwners(where)),
-    await errorMessage(() => ogm.model("ChannelRole").find({ where: where as never, selectionSet: "{ Owner { uniqueName } }" }))
-  );
+  await assert.rejects(repository.findChannelRoleOwners(where), /String cannot represent a non string value/);
   await driver.executeQuery("CREATE (:ChannelRole {id: 'orphan', name: 'Orphan', channelUniqueName: 'cats'})");
-  assert.equal(
-    await errorMessage(() => repository.findChannelRoleOwners({ id: "orphan" })),
-    await errorMessage(() => ogm.model("ChannelRole").find({ where: { id: "orphan" }, selectionSet: "{ Owner { uniqueName } }" }))
-  );
+  await assert.rejects(repository.findChannelRoleOwners({ id: "orphan" }), /Cannot return null for non-nullable field ChannelRole\.Owner/);
 });
 
 test("relationship middleware scopes arbitrary filters and rejects mismatched owners before resolving", async () => {

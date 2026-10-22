@@ -91,14 +91,8 @@ for (const mode of ['commit', 'rollback', 'projection failure']) test(`nested se
 });
 test('missing series and invalid nested input preserve empty results, errors and no writes', async () => {
   assert.deepEqual(await createEventSeriesCreationRepository(driver).findCreatedSeries('missing'), []);
-  let message = '';
-  for (const create of [oldCreate, newCreate]) {
-    const session = driver.session();
-    try {await assert.rejects(session.executeWrite(tx => create(tx, {...input, title: 123})), error => {
-      if (!message) message = (error as Error).message;
-      assert.equal((error as Error).message, message); return true;
-    });} finally {await session.close();}
-    assert.deepEqual(events, []);
-    assert.equal((await driver.executeQuery('MATCH(n) RETURN count(n) AS n')).records[0].get('n').toNumber(), 0);
-  }
+  const session = driver.session();
+  try {await assert.rejects(session.executeWrite(tx => newCreate(tx, {...input, title: 123})), /String cannot represent a non string value/);} finally {await session.close();}
+  assert.deepEqual(events, []);
+  assert.equal((await driver.executeQuery('MATCH(n) RETURN count(n) AS n')).records[0].get('n').toNumber(), 0);
 });

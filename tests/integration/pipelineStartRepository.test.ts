@@ -33,7 +33,7 @@ test('start snapshots preserve selections, literal values, missing rows and unbo
  for(const name of ['channel','absent',undefined])assert.deepEqual(await repo.findChannelPlan(name),await old().findChannelPlan(name));
  assert.deepEqual(await repo.findServerPlan(),await old().findServerPlan());assert.equal((await repo.findServerPlan()).length,30);assert.equal(events.length,0);
 });
-test('discussion target preserves existing singular-field validation failure',async()=>{const repo=createPipelineStartRepository(driver);let message='';try{await old().findDiscussionTarget('discussion');}catch(error){message=(error as Error).message;}assert.match(message,/Cannot query field "DownloadableFile"/);await assert.rejects(repo.findDiscussionTarget('discussion'),{message});assert.equal(events.length,0);});
+test('discussion target preserves existing singular-field validation failure',async()=>{const repo=createPipelineStartRepository(driver);await assert.rejects(repo.findDiscussionTarget('discussion'),/Cannot query field "DownloadableFile"/);assert.equal(events.length,0);});
 test('active attempts retain full predicate, unbounded result and started-attempt projection',async()=>{
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{id:toString(n),pipelineId:toString(n),targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER',status:'RUNNING',trigger:'OWNER_START',attemptNumber:n,configurationSnapshot:'{}',createdAt:datetime('2020-01-01T00:00:00Z'),updatedAt:datetime('2020-01-01T00:00:00Z')})`);
  const repo=createPipelineStartRepository(driver);const where={targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER'};

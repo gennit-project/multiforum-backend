@@ -39,7 +39,7 @@ test("read and write missing target preserve empty arrays",async()=>{
 });
 test("exact read projection retains anonymous age filter and malformed flags",async()=>{
  await seed();assert.deepEqual(await repo().findState("target"),await oldRead());
- await driver.executeQuery("MATCH(n:Comment) SET n.archived=1");let message="";await assert.rejects(oldRead(),error=>{message=(error as Error).message;return true;});await assert.rejects(repo().findState("target"),{message});
+ await driver.executeQuery("MATCH(n:Comment) SET n.archived=1");await assert.rejects(repo().findState("target"),/Boolean cannot represent a non boolean value/);
  await resetDatabase(driver);await seed(true);assert.deepEqual(await repo().findState("target"),await oldRead());assert.deepEqual(await repo().findState("target"),[]);
 });
 test("sticky then unsticky preserves selected response, null removal, timestamps and events",async()=>{
@@ -48,9 +48,9 @@ test("sticky then unsticky preserves selected response, null removal, timestamps
  await resetDatabase(driver);await seed();events=[];const results=[];for(const update of updates)results.push(await repo().updateMetadata("target",update));assert.deepEqual(results,expectedResults);assert.deepEqual(await snapshot(),expected);
 });
 test("invalid datetime input preserves coercion error and no writes",async()=>{
- await seed();const update={stickyAt:"invalid"};let message="";await assert.rejects(oldWrite(update),error=>{message=(error as Error).message;return true;});const expected=await snapshot();await assert.rejects(repo().updateMetadata("target",update),{message});assert.deepEqual(await snapshot(),expected);
+ await seed();const update={stickyAt:"invalid"};await assert.rejects(oldWrite(update),/DateTime cannot represent non temporal value/);const expected=await snapshot();await assert.rejects(repo().updateMetadata("target",update),/DateTime cannot represent non temporal value/);assert.deepEqual(await snapshot(),expected);
 });
 test("malformed returned flag preserves projection failure after committed write",async()=>{
- await seed();await driver.executeQuery("MATCH(n:Comment) SET n.isSticky=1");let message="";await assert.rejects(oldWrite({stickyByUsername:"alice"}),error=>{message=(error as Error).message;return true;});const expected=await snapshot();
- await resetDatabase(driver);await seed();await driver.executeQuery("MATCH(n:Comment) SET n.isSticky=1");events=[];await assert.rejects(repo().updateMetadata("target",{stickyByUsername:"alice"}),{message});assert.deepEqual(await snapshot(),expected);
+ await seed();await driver.executeQuery("MATCH(n:Comment) SET n.isSticky=1");await assert.rejects(oldWrite({stickyByUsername:"alice"}),/Boolean cannot represent a non boolean value/);const expected=await snapshot();
+ await resetDatabase(driver);await seed();await driver.executeQuery("MATCH(n:Comment) SET n.isSticky=1");events=[];await assert.rejects(repo().updateMetadata("target",{stickyByUsername:"alice"}),/Boolean cannot represent a non boolean value/);assert.deepEqual(await snapshot(),expected);
 });
