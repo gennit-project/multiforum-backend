@@ -14,16 +14,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 echo "▶ unit suite (fresh coverage)…"
-TS_NODE_TRANSPILE_ONLY=true pnpm exec c8 --temp-directory=coverage/tmp --clean=true --reporter=lcov \
+pnpm exec c8 --temp-directory=coverage/tmp --clean=true --reporter=lcov \
   --exclude-after-remap --exclude='rules/permission/userDataHelperFunctions.ts' \
-  node --loader ts-node/esm --test \
+  node --import tsx --test \
   $(find . -path './node_modules' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)
 
 echo "▶ integration suite (accumulating onto unit coverage)…"
-TS_NODE_TRANSPILE_ONLY=true TESTCONTAINERS_REUSE_ENABLE=true pnpm exec c8 --temp-directory=coverage/tmp --clean=false \
+TESTCONTAINERS_REUSE_ENABLE=true pnpm exec c8 --temp-directory=coverage/tmp --clean=false \
   --exclude-after-remap --exclude='rules/permission/userDataHelperFunctions.ts' \
   --reporter=lcov --reporter=text-summary \
-  node --loader ts-node/esm --test --test-concurrency=1 \
+  node --import tsx --test --test-concurrency=1 \
   $(find ./tests/integration -name '*test.ts' -print | sort)
 
 echo "✔ merged coverage written to coverage/lcov.info"

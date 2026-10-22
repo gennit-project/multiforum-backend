@@ -107,17 +107,5 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": ["**/*.ts", "**/*.d.ts"],
-  "exclude": ["node_modules", "ts_emitted"],
-  "ts-node": {
-    // Under TypeScript 6, ts-node's isolated per-file compilation stopped
-    // auto-including @types/node, so `node:`-prefixed builtin module imports
-    // (node:test, node:assert/strict, ...) fail to resolve at runtime with
-    // TS2591 even though the full `tsc` program resolves them fine. Explicitly
-    // listing the node types here restores resolution while keeping runtime
-    // type-checking on. Scoped to ts-node so the main `tsc` program is
-    // unaffected.
-    "compilerOptions": {
-      "types": ["node"]
-    }
-  }
+  "exclude": ["node_modules", "ts_emitted"]
 }
