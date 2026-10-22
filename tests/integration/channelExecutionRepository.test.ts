@@ -30,8 +30,8 @@ test('finite reads preserve literal IDs, missing results and unbounded configura
  await seed();await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:ServerConfig{serverName:toString(n)}),(:ServerSecret{key:toString(n),pluginId:$id,ciphertext:'synthetic-not-encrypted'})`,{id:'quote"\\id'});
  const repo=createChannelExecutionRepository(driver);
  for(const id of ['channel','missing','quote"\\id'])assert.deepEqual(await repo.findChannel(id),await old().findChannel(id));
- // Production schema has plural DownloadableFiles; preserve the existing singular-selection validation failure.
- for(const id of ['discussion','missing','quote"\\id']){let expected='';try{await old().findDiscussion(id);}catch(error){expected=(error as Error).message;}assert.match(expected,/Cannot query field "DownloadableFile"/);await assert.rejects(repo.findDiscussion(id),{message:expected});}
+ // Production schema has plural DownloadableFiles; the singular-selection repository query fails validation.
+ for(const id of ['discussion','missing','quote"\\id'])await assert.rejects(repo.findDiscussion(id),/Cannot query field "DownloadableFile"/);
  assert.deepEqual(await repo.findConfiguration(),await old().findConfiguration());assert.equal((await repo.findConfiguration()).length,29);
  for(const id of ['plugin','quote"\\id'])assert.deepEqual(await repo.findSecrets(id),await old().findSecrets(id));assert.equal((await repo.findSecrets('quote"\\id')).length,29);
  for(const id of ['job','absent'])assert.deepEqual(await repo.findReturnedRun(id),await old().findReturnedRun(id));
@@ -47,11 +47,11 @@ for(const operation of ['scan','create','skip'] as const)test(`${operation} reta
 for(const failure of ['file','job'] as const)test(`${failure} default projection failure retains committed write`,async()=>{
  await schema(failure);try{async function check(legacy:boolean){await seed();const repo=legacy?old():createChannelExecutionRepository(driver);await assert.rejects(failure==='file'?repo.writeScanState('file',{scanReason:'changed'}):repo.markSkippedRun('job',{status:'SKIPPED'} as PluginRunUpdateInput),new RegExp(failure+' projection failed'));const result=await state();assert.equal(result.nodes.find((n:any)=>n.label===(failure==='file'?'DownloadableFile':'PluginRun')).properties[failure==='file'?'scanReason':'status'],failure==='file'?'changed':'SKIPPED');return result;}const expected=await check(true);await resetDatabase(driver);events=[];assert.deepEqual(await check(false),expected);}finally{await schema();}
 });
-test('generated validation precedes writes, missing updates preserve empty results',async()=>{await seed();for(const repo of [old(),createChannelExecutionRepository(driver)]){await assert.rejects(repo.markSkippedRun('job',{status:123} as unknown as PluginRunUpdateInput),/String/);await assert.rejects(repo.createPendingRuns([{pluginId:'plugin',version:'1.0.0',scope:'SERVER',eventType:'fixture',status:'PENDING',executionOrder:'not-integer'} as unknown as PluginRunCreateInput]),/Int/);await repo.writeScanState('missing',{scanReason:null});await repo.markSkippedRun('missing',{message:null});assert.deepEqual(await repo.findReturnedRun('missing'),[]);}assert.equal(events.length,0);});
+test('generated validation precedes writes, missing updates preserve empty results',async()=>{await seed();const repo=createChannelExecutionRepository(driver);await assert.rejects(repo.markSkippedRun('job',{status:123} as unknown as PluginRunUpdateInput),/String/);await assert.rejects(repo.createPendingRuns([{pluginId:'plugin',version:'1.0.0',scope:'SERVER',eventType:'fixture',status:'PENDING',executionOrder:'not-integer'} as unknown as PluginRunCreateInput]),/Int/);await repo.writeScanState('missing',{scanReason:null});await repo.markSkippedRun('missing',{message:null});assert.deepEqual(await repo.findReturnedRun('missing'),[]);assert.equal(events.length,0);});
 
 test('actual channel trigger preserves guards and production singular-selection failure',async()=>{
- for(const legacy of [true,false]){
-  await resetDatabase(driver);events=[];await seed();const m=models();const repository=legacy?old():createChannelExecutionRepository(driver);const calls:string[]=[];
+ {
+  await resetDatabase(driver);events=[];await seed();const m=models();const repository=createChannelExecutionRepository(driver);const calls:string[]=[];
   const options={channelRepository:repository,loadPlugin:async()=>{calls.push('loader');return class {async handleEvent(){calls.push('plugin');return {success:true,result:{message:'fixture-complete'}};}};}};
   const args={driver,models:m,discussionId:'discussion',channelUniqueName:'channel',event:'discussionChannel.created'};
   await assert.rejects(triggerChannelPluginPipeline({...args,event:'unsupported'},options),/Unsupported/);

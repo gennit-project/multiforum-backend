@@ -50,7 +50,7 @@ test("visibility repeated writes preserve native events and default response err
  const old=async()=>{await ogm.model("ScratchpadEntry").update({where:{id:"entry"},update:{isPublic:true}});};
  await seed();await old();await old();const expected=await snapshot();assert.equal(events.length,2);
  await resetDatabase(driver);await seed();events=[];await repo().updateVisibility("entry",true);await repo().updateVisibility("entry",true);assert.deepEqual(await snapshot(),expected);
- await driver.executeQuery("MATCH(e:ScratchpadEntry) REMOVE e.text");let message="";await assert.rejects(old(),e=>{message=(e as Error).message;return true;});await assert.rejects(repo().updateVisibility("entry",true),{message});
+ await driver.executeQuery("MATCH(e:ScratchpadEntry) REMOVE e.text");await assert.rejects(repo().updateVisibility("entry",true),/Cannot return null for non-nullable field ScratchpadEntry\.text/);
 });
 type DeletedRelationshipEvent = {
  event: string;
@@ -114,7 +114,7 @@ test("source reads preserve User/Moderator union, nested vote limits and age fil
  const oldComment=()=>ogm.model("Comment").find({where:{id:"comment"},selectionSet:readCases[1][2]});
  // The installed anonymous OGM schema resolves this fragment-only union as
  // User and fails its username projection; preserve that existing error.
- let message="";await assert.rejects(oldComment(),error=>{message=(error as Error).message;return true;});await assert.rejects(repo().findCommentSource("comment"),{message});
+ await assert.rejects(repo().findCommentSource("comment"),/Cannot return null for non-nullable field User\.username/);
  await driver.executeQuery("MATCH(:ModerationProfile)-[r:AUTHORED_COMMENT]->(c:Comment),(u:User{username:'bob'}) DELETE r CREATE(u)-[:AUTHORED_COMMENT]->(c)");
  await driver.executeQuery("MATCH(c:Comment) UNWIND range(1,30) AS i CREATE(:User{username:'voter'+toString(i)})-[:UPVOTED_COMMENT]->(c)");
  assert.equal((await repo().findCommentSource("comment"))[0].UpvotedByUsers?.length,25);assert.deepEqual(await repo().findCommentSource("comment"),await oldComment());

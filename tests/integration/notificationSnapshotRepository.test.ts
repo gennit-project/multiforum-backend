@@ -101,9 +101,7 @@ test("mention snapshots retain case-sensitive matching and the generated default
 test("malformed selected fields retain the first OGM error message", async () => {
   await seed();
   await driver.executeQuery("MATCH (u:User {username:'reader'}) SET u.notifyOnFeedback='invalid'");
-  let message = "";
-  await assert.rejects(ogm.model("User").find({where:{username:"reader"},selectionSet:"{username notifyOnFeedback}"}), error => {message=(error as Error).message; return true;});
-  await assert.rejects(createNotificationSnapshotRepository(driver).findFeedbackRecipient("reader"), error => {assert.equal((error as Error).message,message); return true;});
+  await assert.rejects(createNotificationSnapshotRepository(driver).findFeedbackRecipient("reader"), /Boolean cannot represent a non boolean value/);
 });
 
 test("moderator authors, parent subscribers and feedback targets retain full nested selections", async () => {

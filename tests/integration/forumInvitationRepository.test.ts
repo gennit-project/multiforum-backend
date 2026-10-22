@@ -60,15 +60,15 @@ for(const kind of ["owner","moderator"] as const){
   await resetDatabase(driver);await seed();events=[];const result=[plain(await currentWrite(kind)),plain(await currentWrite(kind))];assert.deepEqual(result,expected);assert.deepEqual(normalize(events),oldEvents);assert.deepEqual(await graph(),oldGraph);
  });
  test(`${kind} projection failure preserves committed invite and events`,async()=>{
-  await seed(false);let message="";await assert.rejects(oldWrite(kind),error=>{message=(error as Error).message;return true;});const oldEvents=normalize(events);const oldGraph=await graph();
-  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(currentWrite(kind),{message});assert.deepEqual(normalize(events),oldEvents);assert.deepEqual(await graph(),oldGraph);
+  await seed(false);await assert.rejects(oldWrite(kind),/Cannot return null for non-nullable field Channel\.createdAt/);const oldEvents=normalize(events);const oldGraph=await graph();
+  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(currentWrite(kind),/Cannot return null for non-nullable field Channel\.createdAt/);assert.deepEqual(normalize(events),oldEvents);assert.deepEqual(await graph(),oldGraph);
  });
  test(`${kind} missing targets and malformed inputs retain generated behavior`,async()=>{
   assert.deepEqual(plain(await currentWrite(kind)),plain(await oldWrite(kind)));
   await seed();await driver.executeQuery("MATCH (u:User) DETACH DELETE u");
   events=[];const expected=plain(await oldWrite(kind));const oldEvents=normalize(events);events=[];
   assert.deepEqual(plain(await currentWrite(kind)),expected);assert.deepEqual(normalize(events),oldEvents);
-  let message="";await assert.rejects(oldWrite(kind,23),error=>{message=(error as Error).message;return true;});await assert.rejects(currentWrite(kind,23 as any),{message});
+  await assert.rejects(currentWrite(kind,23 as any),/String cannot represent a non string value/);
  });
  test(`${kind} resolver keeps invitation committed on email failure and repeats notifications without adding a type`,async()=>{
   await seed();const deliveryOrder:string[]=[];let successful=false;

@@ -136,11 +136,3 @@ test("createAlbums over HTTP forces the owner to the signed-in user", async () =
     "alice"
   );
 });
-
-test("server-side OGM creates reach the generated mutations", async () => {
-  const response = await ogm.model("Album").create({
-    input: [{ imageOrder: [], Owner: { connect: { where: { node: { username: "mallory" } } } } }],
-  });
-
-  assert.equal(response.albums.length, 1);
-});

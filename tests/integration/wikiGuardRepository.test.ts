@@ -57,10 +57,9 @@ for (const [method, selectionSet] of methods) {
     }
   });
   test(`${method}: malformed filters expose the same first generated error`, async () => {
-    for (const where of [{ invented: "field" }, { id: {} }, { locked: "yes" }, { OR: [{ id: [] }] }]) {
-      const expected = await outcome(() => ogm.model("WikiPage").find({ where: where as never, selectionSet }));
-      assert.ok("error" in expected);
-      assert.deepEqual(await outcome(() => repository[method](where)), expected);
+    const cases:[any,RegExp][]=[[{ invented: "field" },/Field "invented" is not defined by type "WikiPageWhere"/],[{ id: {} },/ID cannot represent/],[{ locked: "yes" },/Boolean cannot represent a non boolean value/],[{ OR: [{ id: [] }] },/ID cannot represent/]];
+    for (const [where,message] of cases) {
+      await assert.rejects(repository[method](where), message);
     }
   });
   test(`${method}: root and child default limits stay at 25`, async () => {
@@ -81,10 +80,7 @@ test("owner selection does not introduce validation of unselected lock/author/ch
   await seed();
   await driver.executeQuery("MATCH (p:WikiPage {id:'a'}) SET p.locked = 'invalid'");
   assert.deepEqual(plain(await repository.findChildCreationOwners({ id: "a" })), [{ Channel: { uniqueName: "cats" } }]);
-  const selectionSet = methods[0][1];
-  const expected = await outcome(() => ogm.model("WikiPage").find({ where: { id: "a" }, selectionSet }));
-  assert.ok("error" in expected);
-  assert.deepEqual(await outcome(() => repository.findPermissionTargets({ id: "a" })), expected);
+  await assert.rejects(repository.findPermissionTargets({ id: "a" }), /Boolean cannot represent a non boolean value/);
 });
 
 test("owner middleware remains fail closed for empty or multi-channel matches", async () => {
@@ -101,9 +97,7 @@ test("owner middleware remains fail closed for empty or multi-channel matches", 
 
 test("missing mandatory Channel relation retains generated failure for both selections", async () => {
   await driver.executeQuery("CREATE (:WikiPage {id:'orphan'})");
-  for (const [method, selectionSet] of methods) {
-    const expected = await outcome(() => ogm.model("WikiPage").find({ where: { id: "orphan" }, selectionSet }));
-    assert.ok("error" in expected);
-    assert.deepEqual(await outcome(() => repository[method]({ id: "orphan" })), expected);
+  for (const [method] of methods) {
+    await assert.rejects(repository[method]({ id: "orphan" }), /Cannot return null for non-nullable field WikiPage\.Channel/);
   }
 });

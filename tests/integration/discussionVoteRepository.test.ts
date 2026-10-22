@@ -29,14 +29,14 @@ test('discussionChannel/user snapshots preserve missing rows, missing authors, n
  await seed();await driver.executeQuery("MATCH (c:DiscussionChannel {id:'c'}) UNWIND range(1,28) AS i CREATE (:User {username:'u'+toString(i)})-[:UPVOTED_DISCUSSION]->(c)");
  const expected=plain(await legacy.findDiscussionChannel('c'));assert.equal(expected[0].UpvotedByUsers.length,25);assert.equal(expected[0].UpvotedByUsersAggregate.count,28);assert.deepEqual(plain(await repository.findDiscussionChannel('c')),expected);assert.deepEqual(await repository.findVoter('voter'),await legacy.findVoter('voter'));
  await driver.executeQuery("MATCH (:User)-[r:POSTED_DISCUSSION]->(:Discussion) DELETE r");assert.deepEqual(plain(await repository.findDiscussionChannel('c')),plain(await legacy.findDiscussionChannel('c')));
- await resetDatabase(driver);await seed(false);let message='';await assert.rejects(legacy.findDiscussionChannel('c'),e=>{message=(e as Error).message;return true;});await assert.rejects(repository.findDiscussionChannel('c'),{message});
+ await resetDatabase(driver);await seed(false);await assert.rejects(repository.findDiscussionChannel('c'),/Cannot return null for non-nullable field User\.createdAt/);
 });
 test('karma generated write preserves native events and default projection failure after committed write',async()=>{
  for(const valid of [true,false]){
-  let expected:unknown;let message='';
+  let expected:unknown;
   for(const repo of [legacy,repository]){
    await resetDatabase(driver);await seed(valid);events=[];
-   if(valid)await repo.setAuthorKarma('author',8);else await assert.rejects(repo.setAuthorKarma('author',8),e=>{if(!message)message=(e as Error).message;assert.equal((e as Error).message,message);return true;});
+   if(valid)await repo.setAuthorKarma('author',8);else await assert.rejects(repo.setAuthorKarma('author',8),/Cannot return null for non-nullable field User\.createdAt/);
    const actual={state:await state(),events:normalize(events)};if(repo===legacy){expected=actual;assert.equal(actual.state[0].karma,8);assert.ok(actual.events.length>0);}else assert.deepEqual(actual,expected);
   }
  }

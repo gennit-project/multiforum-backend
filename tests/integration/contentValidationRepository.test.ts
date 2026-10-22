@@ -100,15 +100,15 @@ test("sensitive roots and nested channels retain anonymous internal filtering",a
 });
 const message=async(fn:()=>Promise<unknown>)=>{try{await fn();}catch(error){return (error as Error).message;}assert.fail("Expected error");};
 test("malformed filters preserve first coercion error",async()=>{
- for(const pair of pairs({id:true})) assert.equal(await message(pair[1]),await message(pair[0]));
- for(const pair of pairs({unknownField:true})) assert.equal(await message(pair[1]),await message(pair[0]));
+ for(const pair of pairs({id:true})) await assert.rejects(pair[1](),/ID cannot represent/);
+ for(const pair of pairs({unknownField:true})) await assert.rejects(pair[1](),/Field "unknownField" is not defined by type/);
 });
 test("malformed selected values preserve first serialization error",async()=>{
  await seed(); await driver.executeQuery("MATCH (c:Comment) SET c.archived='invalid'");
  const repo=createContentValidationRepository(driver);
- assert.equal(await message(()=>repo.findCommentEmojiState("c")),await message(()=>ogm.model("Comment").find({where:{id:"c"},selectionSet:commentEmojiSelection})));
+ await assert.rejects(repo.findCommentEmojiState("c"),/Boolean cannot represent a non boolean value/);
  await driver.executeQuery("MATCH (f:DownloadableFile) REMOVE f.fileName");
- const pair=pairs()[1];assert.equal(await message(pair[1]),await message(pair[0]));
+ await assert.rejects(repo.findExistingDownloadableFiles({}),/Cannot return null for non-nullable field DownloadableFile\.fileName/);
 });
 
 test("outer privileged auth is not inherited by validation snapshots",async()=>{

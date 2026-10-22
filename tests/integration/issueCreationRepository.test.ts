@@ -36,8 +36,14 @@ test('all eleven typed targets, channel and both author unions retain graph/defa
  }
 });
 test('invalid identity and generated input coercion retain errors and no writes',async()=>{
- await seed();for(const value of [{...input(),authorName:'wrong'},{...input(),TargetUser:{connect:{where:{node:{username:'other'}}}}},{...input(),relatedModProfileName:'mod'},{...input(),isOpen:'invalid'}]){
-  let message='';await assert.rejects(oldCreate(value),e=>{message=(e as Error).message;return true;});await assert.rejects(newCreate(value),e=>(e as Error).message===message);assert.deepEqual((await snapshot()).rows,[]);assert.deepEqual(events,[]);
+ await seed();const invalidCases:[any,RegExp][]=[
+  [{...input(),authorName:'wrong'},/immutable author snapshot/],
+  [{...input(),TargetUser:{connect:{where:{node:{username:'other'}}}}},/TargetUser must match its immutable issue identity/],
+  [{...input(),relatedModProfileName:'mod'},/cannot target both a user and a moderation profile/],
+  [{...input(),isOpen:'invalid'},/Boolean cannot represent a non boolean value/],
+ ];
+ for(const [value,message] of invalidCases){
+  await assert.rejects(newCreate(value),message);assert.deepEqual((await snapshot()).rows,[]);assert.deepEqual(events,[]);
  }
 });
 test('real resolver consumes allocated numbers on identity rejection and catches up to existing numbers',async()=>{

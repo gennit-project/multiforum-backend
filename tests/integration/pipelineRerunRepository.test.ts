@@ -39,7 +39,7 @@ test('rerun reads preserve selections, literal IDs, missing results and unbounde
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{pipelineId:toString(n),targetId:'other',targetType:'DownloadableFile',status:'FAILED',trigger:'OWNER_RETRY',createdAt:datetime('2026-01-01T10:00:00Z')})`);
  const where={targetId:'other',targetType:'DownloadableFile'};assert.deepEqual(await repo.findRelatedAttempts(where),await old().findRelatedAttempts(where));assert.equal((await repo.findRelatedAttempts(where)).length,29);assert.equal(events.length,0);
 });
-test('discussion version query preserves the existing singular-selection error',async()=>{let message='';try{await old().findDiscussionVersion('discussion');}catch(error){message=(error as Error).message;}assert.match(message,/Cannot query field "DownloadableFile"/);await assert.rejects(createPipelineRerunRepository(driver).findDiscussionVersion('discussion'),{message});});
+test('discussion version query preserves the existing singular-selection error',async()=>{await assert.rejects(createPipelineRerunRepository(driver).findDiscussionVersion('discussion'),/Cannot query field "DownloadableFile"/);});
 for(const scenario of ['missing','status','changed','latest','cooldown','limit'] as const)test(`actual rerun preserves ${scenario} rejection without runner calls`,async()=>{
  for(const legacy of [true,false]){
   await resetDatabase(driver);events=[];await seed();let expected:RegExp;

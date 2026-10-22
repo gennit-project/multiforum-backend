@@ -40,15 +40,14 @@ for(const [model,selection,method] of [["Comment",REACTION_COMMENT_SELECTION,"up
   await resetDatabase(driver);await seed();events=[];await newWrite('{"reaction":1}');await newWrite('{"reaction":1}');assert.deepEqual(await snapshot(),expected);
  });
  test(`${model} default scalar projection failure retains committed update and error`,async()=>{
-  await seed(false);let message="";await assert.rejects(oldWrite('{}'),error=>{message=(error as Error).message;return true;});const expected=await snapshot();
-  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(newWrite('{}'),{message});assert.deepEqual(await snapshot(),expected);
+  await seed(false);await assert.rejects(oldWrite('{}'),/Cannot return null for non-nullable field \w+\.createdAt/);const expected=await snapshot();
+  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(newWrite('{}'),/Cannot return null for non-nullable field \w+\.createdAt/);assert.deepEqual(await snapshot(),expected);
  });
  test(`${model} malformed generated input preserves coercion errors and graph effects`,async()=>{
-  const capture=async(run:()=>Promise<void>)=>{try{await run();return "ok";}catch(error){return (error as Error).message;}};
   await seed();const invalid={nested:"value"} as unknown as string;
-  const expectedResult=await capture(()=>oldWrite(invalid));const expected=await snapshot();
+  await assert.rejects(oldWrite(invalid),/Property values can only be of primitive types/);const expected=await snapshot();
   await resetDatabase(driver);await seed();events=[];
-  assert.equal(await capture(()=>newWrite(invalid)),expectedResult);assert.deepEqual(await snapshot(),expected);
+  await assert.rejects(newWrite(invalid),/Property values can only be of primitive types/);assert.deepEqual(await snapshot(),expected);
  });
  test(`${model} internal anonymous authorization behavior matches OGM`,async()=>{
   await seed(true,true);await oldWrite('{}');const expected=await snapshot();await resetDatabase(driver);await seed(true,true);events=[];await newWrite('{}');assert.deepEqual(await snapshot(),expected);

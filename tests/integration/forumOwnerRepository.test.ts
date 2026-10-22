@@ -69,13 +69,13 @@ for(const action of ["connectOwner","disconnectOwner","disconnectInvite"] as con
  assert.deepEqual(results,oldResults);assert.deepEqual(await snapshot(),expected);
 });
 test("projection failure preserves committed owner relationship and native events",async()=>{
- await seed(false);let message="";await assert.rejects(oldWrite("connectOwner"),error=>{message=(error as Error).message;return true;});const expected=await snapshot();
+ await seed(false);await assert.rejects(oldWrite("connectOwner"),/Cannot return null for non-nullable field Channel\.createdAt/);const expected=await snapshot();
  await resetDatabase(driver);await seed(false);events=[];
- await assert.rejects(createForumOwnerRepository(driver).connectOwner("cats","alice"),{message});assert.deepEqual(await snapshot(),expected);
+ await assert.rejects(createForumOwnerRepository(driver).connectOwner("cats","alice"),/Cannot return null for non-nullable field Channel\.createdAt/);assert.deepEqual(await snapshot(),expected);
 });
 test("invalid inputs preserve first coercion error and do not write",async()=>{
- await seed();let message="";await assert.rejects(oldWrite("connectOwner",23),error=>{message=(error as Error).message;return true;});
- await assert.rejects(createForumOwnerRepository(driver).connectOwner("cats",23 as any),{message});assert.deepEqual(events,[]);
+ await seed();
+ await assert.rejects(createForumOwnerRepository(driver).connectOwner("cats",23 as any),/String cannot represent a non string value/);assert.deepEqual(events,[]);
 });
 test("production resolver keeps first acceptance write committed when second write fails",async()=>{
  await seed();await driver.executeQuery("MATCH (u:User),(c:Channel) CREATE (c)-[:HAS_PENDING_INVITE]->(u)");

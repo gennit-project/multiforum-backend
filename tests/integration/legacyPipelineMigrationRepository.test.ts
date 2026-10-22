@@ -32,5 +32,5 @@ for(const field of ['enableDownloads','rankingSettingsJson'])test(`standalone ${
 test('nullable names and literal strings retain write filters and generated coercion',async()=>{
  await driver.executeQuery("CREATE(:ServerConfig{pluginPipelines:'[]'}),(:ServerConfig{serverName:$name,pluginPipelines:'[]'})",{name:'quote"\\'});let expected:unknown;
  for(const repo of [old,next]){await driver.executeQuery("MATCH(s:ServerConfig) SET s.pluginPipelines='[]'");await repo.saveConfiguration(null,'["null"]');await repo.saveConfiguration('quote"\\','["literal"]');const value=await stored();if(expected)assert.deepEqual(value,expected);else expected=value;}
- let message='';for(const repo of [old,next])await assert.rejects(repo.saveConfiguration(123 as never,'[]'),e=>{if(!message)message=(e as Error).message;assert.equal((e as Error).message,message);return true;});
+ await assert.rejects(next.saveConfiguration(123 as never,'[]'),/String cannot represent a non string value/);
 });

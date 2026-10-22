@@ -46,8 +46,8 @@ test("wired pipeline mutation normalizes policy defaults and persists exactly re
 test("unused default projection failures remain postcommit errors",async()=>{
   const repo=createServerPipelineRepository(driver);const old=app.ogm.model("ServerConfig");
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'test',enableDownloads:'invalid-boolean',pluginPipelines:'[]'})");
-  const error=await old.update({where:{serverName:"test"},update:{pluginPipelines:'["changed"]'}}).then(()=>assert.fail("expected projection error"),(error:Error)=>error.message);
+  await assert.rejects(old.update({where:{serverName:"test"},update:{pluginPipelines:'["changed"]'}}),/Boolean cannot represent a non boolean value/);
   const expected=normalize(events);await driver.executeQuery("MATCH (s:ServerConfig) SET s.pluginPipelines='[]'");events=[];
-  await assert.rejects(repo.save("test",'["changed"]'),{message:error});assert.deepEqual(normalize(events),expected);
+  await assert.rejects(repo.save("test",'["changed"]'),/Boolean cannot represent a non boolean value/);assert.deepEqual(normalize(events),expected);
   assert.equal((await repo.listCurrent())[0].pluginPipelines,'["changed"]');
 });
