@@ -160,11 +160,15 @@ const pluginThrowing = (message: string): PluginConstructor =>
   };
 const loaderFor = (cls: PluginConstructor): LoadPlugin => async () => cls;
 
-const execRun = (models: Models, loadPlugin: LoadPlugin) =>
+const execRun = (
+  models: Models,
+  loadPlugin: LoadPlugin,
+  event = EVENT
+) =>
   triggerPluginRunsForComment(
     {
       commentId: "comment-1",
-      event: EVENT,
+      event,
       driver: {} as Driver,
     },
     models,
@@ -185,6 +189,36 @@ test("runs a matching plugin to SUCCEEDED", async () => {
   assert.ok(statuses.includes("SUCCEEDED"), "ends SUCCEEDED");
   assert.ok(!statuses.includes("FAILED"));
   assert.equal(runs.length, 1);
+});
+
+test("runs comment edits with the updated content and edit invocation type", async () => {
+  const { models, creates } = makeExecModels([
+    installedEdge("mybot", ["comment.edited"]),
+  ]);
+  let receivedEnvelope: unknown;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      receivedEnvelope = envelope;
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin), "comment.edited");
+
+  assert.equal(creates.length, 1);
+  assert.equal(creates[0].input[0].eventType, "comment.edited");
+  assert.partialDeepStrictEqual(receivedEnvelope, {
+    type: "comment.edited",
+    payload: {
+      commentId: "comment-1",
+      commentText: "hello bot",
+      context: {
+        invocationType: "comment-edited",
+        comment: { id: "comment-1", text: "hello bot" },
+      },
+    },
+  });
 });
 
 test("passes canonical server rules to the plugin invocation context", async () => {
