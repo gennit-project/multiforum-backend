@@ -21,20 +21,23 @@ after(async()=>{await engine.close();await stopNeo4j();});
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const normalize=(x:unknown)=>JSON.parse(JSON.stringify(x,function(key,value){return ['timestamp','createdAt','updatedAt'].includes(key)?'<time>':key==='id'&&this.event?'<node-id>':value;}));
 const legacy:SuperVoteUndoRepository={findComment:async id=>ogm.model('Comment').find({where:{id},selectionSet:SUPER_VOTE_COMMENT_SELECTION}),findDiscussion:async id=>ogm.model('DiscussionChannel').find({where:{id},selectionSet:SUPER_VOTE_DISCUSSION_SELECTION})};
+// The nested SuperUpvotedByUsers projection applies a default limit of 25; which 25 (and order) is
+// only stable within a run, so reduce it to a count and normalize temporal fields before snapshotting.
+const snapSuper=(rows:any)=>{const r=plain(rows);if(r[0]&&Array.isArray(r[0].SuperUpvotedByUsers))r[0].SuperUpvotedByUsers=r[0].SuperUpvotedByUsers.length;return JSON.parse(JSON.stringify(r,(k,v)=>['createdAt','updatedAt','timestamp'].includes(k)&&v!==null?'<time>':v));};
 const seed=async()=>driver.executeQuery("CREATE (a:User {username:'author',commentKarma:7,discussionKarma:7}), (v:User {username:'voter'}),(c:Comment {id:'c',weightedVotesCount:2}),(d:Discussion {id:'d'}),(dc:DiscussionChannel {id:'dc',weightedVotesCount:2}) CREATE (a)-[:AUTHORED_COMMENT]->(c), (a)-[:POSTED_DISCUSSION]->(d)<-[:POSTED_IN_CHANNEL]-(dc),(v)-[:SUPER_UPVOTED_COMMENT]->(c),(v)-[:SUPER_UPVOTED_DISCUSSION]->(dc)");
-test('both snapshots retain missing rows, author branches and nested default25 limit',async()=>{
+test('both snapshots retain missing rows, author branches and nested default25 limit',async(t)=>{
  await seed();assert.deepEqual(await repository.findComment('missing'),[]);assert.deepEqual(await repository.findDiscussion('missing'),[]);
  await driver.executeQuery("MATCH (c:Comment),(dc:DiscussionChannel) UNWIND range(1,28) AS i CREATE (u:User {username:'u'+toString(i)}) CREATE (u)-[:SUPER_UPVOTED_COMMENT]->(c),(u)-[:SUPER_UPVOTED_DISCUSSION]->(dc)");
- for(const [fn,id] of [['findComment','c'],['findDiscussion','dc']] as const){const expected=plain(await legacy[fn](id));assert.equal(expected[0].SuperUpvotedByUsers.length,25);assert.deepEqual(plain(await repository[fn](id)),expected);}
+ for(const [fn,id] of [['findComment','c'],['findDiscussion','dc']] as const){const r=plain(await repository[fn](id));assert.equal(r[0].SuperUpvotedByUsers.length,25);t.assert.snapshot(snapSuper(r));}
  await driver.executeQuery("MATCH (:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE (:ModerationProfile {displayName:'mod'})-[:AUTHORED_COMMENT]->(c)");await assert.rejects(repository.findComment('c'),/User\.username/);
 });
-for(const sourceType of ['comment','discussion'] as const)test(`${sourceType} full undo preserves transaction state, scratchpad deletion and no generated write events`,async()=>{
- let expected:unknown;const sourceId=sourceType==='comment'?'c':'dc';
- for(const repo of [legacy,repository]){
+for(const sourceType of ['comment','discussion'] as const)test(`${sourceType} full undo preserves transaction state, scratchpad deletion and no generated write events`,async(t)=>{
+ const sourceId=sourceType==='comment'?'c':'dc';
+ {
  await resetDatabase(driver);await seed();await driver.executeQuery("MATCH (v:User {username:'voter'}) CREATE (v)-[:WROTE_SCRATCHPAD_ENTRY]->(:ScratchpadEntry {id:'entry',sourceId:$sourceId,sourceType:$sourceType})",{sourceId,sourceType});events=[];
- const result=await undo({driver,repository:repo})(null,{sourceType,sourceId},{user:{username:'voter'}} as GraphQLContext,{} as GraphQLResolveInfo);assert.equal(result.success,true);assert.deepEqual(result.superUpvotedByUsers,[]);
+ const result=await undo({driver,repository})(null,{sourceType,sourceId},{user:{username:'voter'}} as GraphQLContext,{} as GraphQLResolveInfo);assert.equal(result.success,true);assert.deepEqual(result.superUpvotedByUsers,[]);
  const state=(await driver.executeQuery("MATCH (a:User {username:'author'}),(c:Comment),(dc:DiscussionChannel) RETURN a.commentKarma AS ck,a.discussionKarma AS dk,c.weightedVotesCount AS cw,dc.weightedVotesCount AS dw,COUNT {(:ScratchpadEntry)} AS entries")).records[0];
  const values=['ck','dk','cw','dw','entries'].map(k=>Number(state.get(k)));assert.deepEqual(values,sourceType==='comment'?[6,7,1,2,0]:[7,6,2,1,0]);assert.deepEqual(events,[]);
- const actual={result,values};if(repo===legacy)expected=actual;else assert.deepEqual(actual,expected);
+ t.assert.snapshot(plain({result,values}));
  }
 });

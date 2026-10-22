@@ -18,6 +18,7 @@ import {
   type ImageModEnv,
 } from "./imageModerationHarness.js";
 import { seedServerSuspensionScenario } from "./serverSuspensionScenario.js";
+import { executeGeneratedOperation } from "../../services/persistence/generatedSchemaOperations.js";
 
 let env: ImageModEnv;
 
@@ -79,11 +80,14 @@ const seedServerUserIssue = () => seedServerSuspensionScenario("user");
 
 const seedServerModIssue = () => seedServerSuspensionScenario("mod");
 
+// Re-expressed off the live OGM oracle onto the generated schema (same projection); the
+// literal objects the tests assert against remain the oracle.
 const findServerConfig = (selectionSet: string) =>
-  env.ogm.model("ServerConfig").find({
-    where: { serverName: SERVER_NAME },
-    selectionSet,
-  });
+  executeGeneratedOperation<{ serverConfigs: Array<Record<string, any>> }>(
+    env.driver,
+    `query ServerConfigSuspensions($where: ServerConfigWhere) { serverConfigs(where: $where) ${selectionSet} }`,
+    { where: { serverName: SERVER_NAME } }
+  ).then((data) => data.serverConfigs);
 
 // --- server-scoped user suspension ---
 

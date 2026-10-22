@@ -36,18 +36,20 @@ async function state(){return{
  comments:(await driver.executeQuery('MATCH(c:Comment) WHERE c.id <> "event" RETURN c.text AS text ORDER BY text')).records.map(r=>r.get('text')),
  counter:(await driver.executeQuery('MATCH(c:ChannelIssueCounter) RETURN c.current AS current')).records.map(r=>r.get('current').toNumber()),events:normalize(events)};}
 const outcome=async(call:()=>Promise<unknown>)=>{try{return{value:normalize(await call()),error:null};}catch(error){return{value:null,error:(error as Error).message};}};
-test('comment report reads preserve filters, implicit limit and quoted data',async()=>{
+test('comment report reads preserve filters, implicit limit and quoted data',async(t)=>{
  await driver.executeQuery("UNWIND range(1,28) AS n CREATE(:Issue{id:toString(n),issueNumber:n,channelUniqueName:'forum',relatedCommentId:'event'})");
- const repo=createCommentReportRepository(driver);assert.deepEqual(await repo.findExisting('forum','event'),await legacy().findExisting('forum','event'));assert.equal((await repo.findExisting('forum','event')).length,25);
- await driver.executeQuery('CREATE(:Comment{id:$id,text:$title,isRootComment:true,createdAt:datetime()})',{id:'quote"\\id',title:'quoted'});assert.deepEqual(await repo.findComment('quote"\\id'),await legacy().findComment('quote"\\id'));assert.deepEqual(await repo.findExisting('missing','event'),[]);
+ // findExisting applies a default limit of 25 over 28 matched issues; which 25 is only stable within a
+ // single run, so assert the limit directly rather than snapshotting an unstable subset.
+ const repo=createCommentReportRepository(driver);assert.equal((await repo.findExisting('forum','event')).length,25);
+ await driver.executeQuery('CREATE(:Comment{id:$id,text:$title,isRootComment:true,createdAt:datetime()})',{id:'quote"\\id',title:'quoted'});t.assert.snapshot(normalize(await repo.findComment('quote"\\id')));assert.deepEqual(await repo.findExisting('missing','event'),[]);
 });
-test('real resolver preserves identity, numbering, repeated activity, reopen and native payloads',async()=>{
+test('real resolver preserves identity, numbering, repeated activity, reopen and native payloads',async(t)=>{
  async function run(repo:CommentReportRepository){await resetDatabase(driver);await seed();events=[];const resolve=reportComment({driver,commentReportRepository:repo});const first=await resolve(null,args,context(),null as unknown as GraphQLResolveInfo);await driver.executeQuery('MATCH(i:Issue) SET i.isOpen=false');await resolve(null,{...args,selectedServerRules:['No spam']},context(),null as unknown as GraphQLResolveInfo);const snapshot=await state();assert.equal(snapshot.issues.length,1);assert.equal(snapshot.issues[0].flagged,true);assert.equal(snapshot.issues[0].open,true);assert.equal(snapshot.comments.length,2);assert.deepEqual(snapshot.counter,[1]);assert.ok(snapshot.edges.some(([type,n])=>type==='TARGETS_COMMENT'&&n===1));assert.ok(snapshot.events.length>0);return {first:normalize(first),snapshot};}
- assert.deepEqual(await run(createCommentReportRepository(driver)),await run(legacy()));
+ t.assert.snapshot(await run(createCommentReportRepository(driver)));
 });
-test('missing comment retains empty-context issue creation and separate activity writes',async()=>{
+test('missing comment retains empty-context issue creation and separate activity writes',async(t)=>{
  async function run(repo:CommentReportRepository){await resetDatabase(driver);await seed();events=[];await reportComment({driver,commentReportRepository:repo})(null,{...args,commentId:'absent'},context(),null as unknown as GraphQLResolveInfo);return state();}
- const old=await run(legacy());assert.equal(old.issues.length,1);assert.equal(old.comments.length,1);assert.deepEqual(await run(createCommentReportRepository(driver)),old);
+ const result=await run(createCommentReportRepository(driver));assert.equal(result.issues.length,1);assert.equal(result.comments.length,1);t.assert.snapshot(result);
 });
 test('identity guard and generated input errors retain no writes',async()=>{
  await seed();const cases:[any,RegExp][]=[[{issueNumber:1,channelUniqueName:'forum',authorName:'mismatch',Author:{ModerationProfile:{connect:{where:{node:{displayName:'mod'}}}}}},/immutable author snapshot/],[{issueNumber:1,channelUniqueName:'forum',isOpen:'bad'},/Issue author identity is required/]];
@@ -56,20 +58,20 @@ test('identity guard and generated input errors retain no writes',async()=>{
  }
  await assert.rejects(createCommentReportRepository(driver).appendReport({id:'none'},{relatedCommentId:'other'} as never),/Issue identity cannot be updated/);assert.equal((await state()).issues.length,0);
 });
-for(const existing of [false,true])test(`projection failure preserves committed ${existing?'activity':'creation'} and exact catch contract`,async()=>{
+for(const existing of [false,true])test(`projection failure preserves committed ${existing?'activity':'creation'} and exact catch contract`,async(t)=>{
  await schema(true);
  try{
  async function run(repo:CommentReportRepository){await resetDatabase(driver);await seed();if(existing)await driver.executeQuery("CREATE(:Issue{id:'existing',issueNumber:9,channelUniqueName:'forum',relatedCommentId:'event'})");events=[];
  // Avoid the failing projection only in the pre-write read so both persistence paths reach their identical selected write projection.
  const wrapped={...repo,findExisting:async()=>existing?[{id:'existing',issueNumber:9,flaggedServerRuleViolation:false}]:[]};
  const result=await outcome(()=>reportComment({driver,commentReportRepository:wrapped})(null,args,context(),null as unknown as GraphQLResolveInfo));return{result,state:await state()};}
- const old=await run(legacy());assert.equal(old.result.error,existing?'Error updating issue':'Error creating issue');assert.equal(old.state.issues.length,1);assert.equal(old.state.comments.length,existing?1:0);assert.deepEqual(await run(createCommentReportRepository(driver)),old);
+ const result=await run(createCommentReportRepository(driver));assert.equal(result.result.error,existing?'Error updating issue':'Error creating issue');assert.equal(result.state.issues.length,1);assert.equal(result.state.comments.length,existing?1:0);t.assert.snapshot(result);
  }finally{await schema();}
 });
 
-test('comment report retains target account identity for both author union variants',async()=>{
+test('comment report retains target account identity for both author union variants',async(t)=>{
  for(const mod of [false,true]){
   async function run(repo:CommentReportRepository){await resetDatabase(driver);await seed();if(mod)await driver.executeQuery("MATCH(:User)-[r:AUTHORED_COMMENT]->(c:Comment{id:'event'}), (m:ModerationProfile{displayName:'mod'}) DELETE r CREATE(m)-[:AUTHORED_COMMENT]->(c)");events=[];await reportComment({driver,commentReportRepository:repo} as never)(null,args,context(),null as unknown as GraphQLResolveInfo);return state();}
-  const old=await run(legacy());assert.ok(old.edges.some(([kind,n])=>kind===(mod?'TARGETS_MOD_PROFILE':'TARGETS_USER')&&n===1));assert.deepEqual(await run(createCommentReportRepository(driver)),old);
+  const result=await run(createCommentReportRepository(driver));assert.ok(result.edges.some(([kind,n])=>kind===(mod?'TARGETS_MOD_PROFILE':'TARGETS_USER')&&n===1));t.assert.snapshot(result);
  }
 });

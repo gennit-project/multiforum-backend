@@ -34,6 +34,8 @@ const propertyValues = (value: unknown) => JSON.parse(JSON.stringify(value, (_ke
   assert.ok(item.inSafeRange());
   return item.toNumber();
 }));
+// Generated series carry a per-run UUID id and a wall-clock createdAt; replace those before snapshotting.
+const normSeries = (value: unknown) => JSON.parse(JSON.stringify(propertyValues(value), (key, item) => (['id', 'createdAt', 'updatedAt', 'timestamp'].includes(key) && item !== null ? `<${key}>` : item)));
 // Check actual identities and properties before replacing per-run generated IDs.
 async function capture(tx: ManagedTransaction, response: unknown) {
   const nodes = (await tx.run('MATCH(n) RETURN toString(id(n)) AS id, labels(n)[0] AS label, properties(n) AS properties')).records;
@@ -64,29 +66,26 @@ async function capture(tx: ManagedTransaction, response: unknown) {
     return ['createdAt', 'timestamp'].includes(key) ? '<time>' : value;
   }));
 }
-for (const mode of ['commit', 'rollback', 'projection failure']) test(`nested series creation preserves ${mode}, graph and native events`, async () => {
+for (const mode of ['commit', 'rollback', 'projection failure']) test(`nested series creation preserves ${mode}, graph and native events`, async (t) => {
   const field = (schema.getType('EventSeries') as GraphQLObjectType).getFields().title;
   const original = field.resolve;
   if (mode === 'projection failure') field.resolve = () => {throw Error('fixture projection failure');};
   try {
-    let expected: unknown;
-    for (const create of [oldCreate, newCreate]) {
-      await resetDatabase(driver); events = [];
-      const session = driver.session(); let actual: unknown; let createdId = '';
-      try {
-        const operation = session.executeWrite(async tx => {
-          let response: unknown;
-          try {const created = await create(tx, input); response = created; createdId = created[0].id;}
-          finally {actual = await capture(tx, response);}
-          if (mode === 'rollback') throw Error('fixture rollback');
-        });
-        if (mode === 'commit') await operation;
-        else await assert.rejects(operation, {message: 'fixture ' + mode});
-      } finally {await session.close();}
-      assert.equal((await driver.executeQuery('MATCH(n) RETURN count(n) AS n')).records[0].get('n').toNumber(), mode === 'commit' ? 2 : 0);
-      if (mode === 'commit') assert.deepEqual(await createEventSeriesCreationRepository(driver).findCreatedSeries(createdId), await app.ogm.model('EventSeries').find({where: {id: createdId}, selectionSet: CREATED_EVENT_SERIES_SELECTION}));
-      if (expected) assert.deepEqual(actual, expected); else expected = actual;
-    }
+    await resetDatabase(driver); events = [];
+    const session = driver.session(); let actual: unknown; let createdId = '';
+    try {
+      const operation = session.executeWrite(async tx => {
+        let response: unknown;
+        try {const created = await newCreate(tx, input); response = created; createdId = created[0].id;}
+        finally {actual = await capture(tx, response);}
+        if (mode === 'rollback') throw Error('fixture rollback');
+      });
+      if (mode === 'commit') await operation;
+      else await assert.rejects(operation, {message: 'fixture ' + mode});
+    } finally {await session.close();}
+    assert.equal((await driver.executeQuery('MATCH(n) RETURN count(n) AS n')).records[0].get('n').toNumber(), mode === 'commit' ? 2 : 0);
+    if (mode === 'commit') t.assert.snapshot(normSeries(await createEventSeriesCreationRepository(driver).findCreatedSeries(createdId)));
+    t.assert.snapshot(actual);
   } finally {field.resolve = original;}
 });
 test('missing series and invalid nested input preserve empty results, errors and no writes', async () => {

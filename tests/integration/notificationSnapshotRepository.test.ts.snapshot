@@ -1,0 +1,798 @@
+exports[`all eight snapshots match production schema and leave graph unchanged 1`] = `
+[
+  {
+    "username": "reader"
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 10`] = `
+[
+  {
+    "id": "issue",
+    "issueNumber": 1,
+    "title": "Issue",
+    "channelUniqueName": "channel",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "notifyOnSubscribedIssueUpdates": false,
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 2`] = `
+[
+  {
+    "username": "reader",
+    "notifyOnFeedback": true
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 3`] = `
+[
+  {
+    "username": "author",
+    "notifyWhenTagged": null,
+    "Email": null
+  },
+  {
+    "username": "reader",
+    "notifyWhenTagged": true,
+    "Email": {
+      "address": "reader@example.test"
+    }
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 4`] = `
+[
+  {
+    "id": "comment",
+    "text": "Hi @reader",
+    "CommentAuthor": {
+      "username": "author",
+      "displayName": "Author"
+    },
+    "DiscussionChannel": {
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "Discussion": {
+        "id": "discussion",
+        "title": "Title"
+      }
+    },
+    "Event": {
+      "id": "event",
+      "title": "Event",
+      "EventChannels": [
+        {
+          "channelUniqueName": "channel"
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 5`] = `
+[
+  {
+    "id": "discussion",
+    "title": "Title",
+    "body": "Hello @reader",
+    "Author": {
+      "username": "author",
+      "displayName": "Author"
+    },
+    "DiscussionChannels": [
+      {
+        "channelUniqueName": "channel"
+      }
+    ]
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 6`] = `
+[
+  {
+    "id": "comment",
+    "text": "Hi @reader",
+    "isRootComment": true,
+    "isFeedbackComment": false,
+    "Channel": {
+      "uniqueName": "channel"
+    },
+    "CommentAuthor": {
+      "__typename": "User",
+      "username": "author",
+      "displayName": "Author"
+    },
+    "DiscussionChannel": {
+      "id": "dc",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "Channel": {
+        "uniqueName": "channel",
+        "displayName": null
+      },
+      "Discussion": {
+        "id": "discussion",
+        "title": "Title",
+        "Author": {
+          "username": "author"
+        }
+      },
+      "SubscribedToNotifications": [
+        {
+          "username": "reader"
+        }
+      ]
+    },
+    "Event": {
+      "id": "event",
+      "title": "Event",
+      "Poster": {
+        "username": "author"
+      },
+      "EventChannels": [
+        {
+          "channelUniqueName": "channel",
+          "Channel": {
+            "uniqueName": "channel"
+          }
+        }
+      ],
+      "SubscribedToNotifications": [
+        {
+          "username": "reader"
+        }
+      ]
+    },
+    "GivesFeedbackOnComment": null,
+    "GivesFeedbackOnDiscussion": null,
+    "GivesFeedbackOnEvent": null,
+    "ParentComment": null
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 7`] = `
+[
+  {
+    "id": "comment",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 8`] = `
+[
+  {
+    "id": "dc",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`all eight snapshots match production schema and leave graph unchanged 9`] = `
+[
+  {
+    "id": "event",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`all eight snapshots preserve missing results 1`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 10`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 2`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 3`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 4`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 5`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 6`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 7`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 8`] = `
+[]
+`;
+
+exports[`all eight snapshots preserve missing results 9`] = `
+[]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 1`] = `
+[
+  {
+    "username": "reader"
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 10`] = `
+[
+  {
+    "id": "issue",
+    "issueNumber": 1,
+    "title": "Issue",
+    "channelUniqueName": "channel",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "notifyOnSubscribedIssueUpdates": false,
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 11`] = `
+[
+  {
+    "username": "reader"
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 12`] = `
+[
+  {
+    "username": "reader",
+    "notifyOnFeedback": true
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 13`] = `
+[
+  {
+    "username": "author",
+    "notifyWhenTagged": null,
+    "Email": null
+  },
+  {
+    "username": "reader",
+    "notifyWhenTagged": true,
+    "Email": {
+      "address": "reader@example.test"
+    }
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 14`] = `
+[]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 15`] = `
+[]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 16`] = `
+[]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 17`] = `
+[]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 18`] = `
+[
+  {
+    "id": "dc",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 19`] = `
+[
+  {
+    "id": "event",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 2`] = `
+[
+  {
+    "username": "reader",
+    "notifyOnFeedback": true
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 20`] = `
+[
+  {
+    "id": "issue",
+    "issueNumber": 1,
+    "title": "Issue",
+    "channelUniqueName": "channel",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "notifyOnSubscribedIssueUpdates": false,
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 3`] = `
+[
+  {
+    "username": "author",
+    "notifyWhenTagged": null,
+    "Email": null
+  },
+  {
+    "username": "reader",
+    "notifyWhenTagged": true,
+    "Email": {
+      "address": "reader@example.test"
+    }
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 4`] = `
+[
+  {
+    "id": "comment",
+    "text": "Hi @reader",
+    "CommentAuthor": {
+      "username": "author",
+      "displayName": "Author"
+    },
+    "DiscussionChannel": {
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "Discussion": null
+    },
+    "Event": {
+      "id": "event",
+      "title": "Event",
+      "EventChannels": [
+        {
+          "channelUniqueName": "channel"
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 5`] = `
+[]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 6`] = `
+[
+  {
+    "id": "comment",
+    "text": "Hi @reader",
+    "isRootComment": true,
+    "isFeedbackComment": false,
+    "Channel": {
+      "uniqueName": "channel"
+    },
+    "CommentAuthor": {
+      "__typename": "User",
+      "username": "author",
+      "displayName": "Author"
+    },
+    "DiscussionChannel": {
+      "id": "dc",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "Channel": {
+        "uniqueName": "channel",
+        "displayName": null
+      },
+      "Discussion": null,
+      "SubscribedToNotifications": [
+        {
+          "username": "reader"
+        }
+      ]
+    },
+    "Event": {
+      "id": "event",
+      "title": "Event",
+      "Poster": {
+        "username": "author"
+      },
+      "EventChannels": [
+        {
+          "channelUniqueName": "channel",
+          "Channel": {
+            "uniqueName": "channel"
+          }
+        }
+      ],
+      "SubscribedToNotifications": [
+        {
+          "username": "reader"
+        }
+      ]
+    },
+    "GivesFeedbackOnComment": null,
+    "GivesFeedbackOnDiscussion": null,
+    "GivesFeedbackOnEvent": null,
+    "ParentComment": null
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 7`] = `
+[
+  {
+    "id": "comment",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 8`] = `
+[
+  {
+    "id": "dc",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`anonymous snapshot filters apply to restricted roots and nested discussions 9`] = `
+[
+  {
+    "id": "event",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 1`] = `
+[
+  {
+    "username": "reader"
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 10`] = `
+[
+  {
+    "id": "issue",
+    "issueNumber": 1,
+    "title": "Issue",
+    "channelUniqueName": "channel",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "notifyOnSubscribedIssueUpdates": false,
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 2`] = `
+[
+  {
+    "username": "reader",
+    "notifyOnFeedback": true
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 3`] = `
+[
+  {
+    "username": "author",
+    "notifyWhenTagged": null,
+    "Email": null
+  },
+  {
+    "username": "reader",
+    "notifyWhenTagged": true,
+    "Email": {
+      "address": "reader@example.test"
+    }
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 4`] = `
+[
+  {
+    "id": "comment",
+    "text": "Hi @reader",
+    "CommentAuthor": {
+      "displayName": "Moderator",
+      "User": {
+        "username": "author"
+      }
+    },
+    "DiscussionChannel": {
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "Discussion": {
+        "id": "discussion",
+        "title": "Title"
+      }
+    },
+    "Event": {
+      "id": "event",
+      "title": "Event",
+      "EventChannels": [
+        {
+          "channelUniqueName": "channel"
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 5`] = `
+[
+  {
+    "id": "discussion",
+    "title": "Title",
+    "body": "Hello @reader",
+    "Author": {
+      "username": "author",
+      "displayName": "Author"
+    },
+    "DiscussionChannels": [
+      {
+        "channelUniqueName": "channel"
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 6`] = `
+[
+  {
+    "id": "comment",
+    "text": "Hi @reader",
+    "isRootComment": true,
+    "isFeedbackComment": false,
+    "Channel": {
+      "uniqueName": "channel"
+    },
+    "CommentAuthor": {
+      "__typename": "ModerationProfile",
+      "displayName": "Moderator",
+      "User": {
+        "username": "author"
+      }
+    },
+    "DiscussionChannel": {
+      "id": "dc",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "Channel": {
+        "uniqueName": "channel",
+        "displayName": null
+      },
+      "Discussion": {
+        "id": "discussion",
+        "title": "Title",
+        "Author": {
+          "username": "author"
+        }
+      },
+      "SubscribedToNotifications": [
+        {
+          "username": "reader"
+        }
+      ]
+    },
+    "Event": {
+      "id": "event",
+      "title": "Event",
+      "Poster": {
+        "username": "author"
+      },
+      "EventChannels": [
+        {
+          "channelUniqueName": "channel",
+          "Channel": {
+            "uniqueName": "channel"
+          }
+        }
+      ],
+      "SubscribedToNotifications": [
+        {
+          "username": "reader"
+        }
+      ]
+    },
+    "GivesFeedbackOnComment": {
+      "id": "parent",
+      "CommentAuthor": {
+        "username": "reader"
+      }
+    },
+    "GivesFeedbackOnDiscussion": {
+      "id": "discussion",
+      "Author": {
+        "username": "author"
+      }
+    },
+    "GivesFeedbackOnEvent": {
+      "id": "event",
+      "Poster": {
+        "username": "author"
+      }
+    },
+    "ParentComment": {
+      "id": "parent",
+      "text": "Parent",
+      "CommentAuthor": {
+        "__typename": "User",
+        "username": "reader",
+        "notifyOnReplyToCommentByDefault": null,
+        "Email": {
+          "address": "reader@example.test"
+        }
+      },
+      "SubscribedToNotifications": [
+        {
+          "username": "author",
+          "Email": null
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 7`] = `
+[
+  {
+    "id": "comment",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 8`] = `
+[
+  {
+    "id": "dc",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator authors, parent subscribers and feedback targets retain full nested selections 9`] = `
+[
+  {
+    "id": "event",
+    "SubscribedToNotifications": [
+      {
+        "username": "reader",
+        "Email": {
+          "address": "reader@example.test"
+        }
+      }
+    ]
+  }
+]
+`;

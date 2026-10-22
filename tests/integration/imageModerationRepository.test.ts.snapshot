@@ -1,0 +1,1635 @@
+exports[`archive/rearchive/unarchive preserve graph, effects and events scope=server 1`] = `
+{
+  "archived": {
+    "id": "id0",
+    "issueNumber": 1,
+    "flaggedServerRuleViolation": true
+  },
+  "again": {
+    "id": "id0",
+    "issueNumber": 1,
+    "flaggedServerRuleViolation": true
+  },
+  "unarchived": {
+    "id": "id0",
+    "issueNumber": 1,
+    "flaggedServerRuleViolation": true
+  },
+  "state": {
+    "rows": [
+      {
+        "archived": false,
+        "number": {
+          "low": 1,
+          "high": 0
+        },
+        "open": false,
+        "flagged": true,
+        "userTarget": true,
+        "modTarget": false,
+        "cited": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "archive",
+        "description": "Archived the image"
+      },
+      {
+        "type": "archive",
+        "description": "Archived the image"
+      },
+      {
+        "type": "close",
+        "description": "Closed the issue"
+      },
+      {
+        "type": "close",
+        "description": "Closed the issue"
+      },
+      {
+        "type": "close-issue",
+        "description": "Closed the issue"
+      },
+      {
+        "type": "un-archive",
+        "description": "Un-archived the image"
+      }
+    ],
+    "events": [
+      {
+        "id": "id1",
+        "id_from": "id2",
+        "id_to": "id3",
+        "relationshipName": "TARGETS_IMAGE",
+        "fromTypename": "Issue",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "url": "https://example.invalid/image",
+            "scanStatus": "PENDING",
+            "createdAt": "<time>",
+            "id": "id5"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id6",
+        "id_from": "id2",
+        "id_to": "id7",
+        "relationshipName": "TARGETS_USER",
+        "fromTypename": "Issue",
+        "toTypename": "User",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "username": "author"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id8",
+        "id_from": "id2",
+        "id_to": "id9",
+        "relationshipName": "AUTHORED_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationProfile",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "displayName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id10",
+        "id_from": "id11",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id13",
+        "id_from": "id9",
+        "id_to": "id11",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id14",
+        "id_from": "id9",
+        "id_to": "id15",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id11",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id17",
+        "id_from": "id15",
+        "id_to": "id11",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id15",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          }
+        }
+      },
+      {
+        "id": "id18",
+        "id_from": "id2",
+        "id_to": "id15",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id19",
+        "id_from": "id20",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id22",
+        "id_from": "id9",
+        "id_to": "id20",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id23",
+        "id_from": "id9",
+        "id_to": "id24",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id20",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id26",
+        "id_from": "id24",
+        "id_to": "id20",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id24",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          }
+        }
+      },
+      {
+        "id": "id27",
+        "id_from": "id2",
+        "id_to": "id24",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id28",
+        "id_from": "id2",
+        "id_to": "id3",
+        "relationshipName": "CITED_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "url": "https://example.invalid/image",
+            "archived": true,
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id3",
+        "typename": "Image",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "url": "https://example.invalid/image",
+            "scanStatus": "PENDING",
+            "createdAt": "<time>",
+            "id": "id5"
+          },
+          "new": {
+            "url": "https://example.invalid/image",
+            "archived": true,
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>"
+          }
+        }
+      },
+      {
+        "id": "id29",
+        "id_from": "id30",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id31",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id32",
+        "id_from": "id9",
+        "id_to": "id30",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id31",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id33",
+        "id_from": "id9",
+        "id_to": "id34",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id35",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id30",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id31",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id36",
+        "id_from": "id34",
+        "id_to": "id30",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id35",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id31",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id34",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id35",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          }
+        }
+      },
+      {
+        "id": "id37",
+        "id_from": "id2",
+        "id_to": "id34",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id35",
+            "actionType": "archive",
+            "actionDescription": "Archived the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id38",
+        "id_from": "id39",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id40",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id41",
+        "id_from": "id9",
+        "id_to": "id39",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id40",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id42",
+        "id_from": "id9",
+        "id_to": "id43",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id44",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id39",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id40",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id45",
+        "id_from": "id43",
+        "id_to": "id39",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id44",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "\\nForum rule violations: rule\\n\\nServer rule violations: server-rule\\n\\nreason\\n\\n",
+            "id": "id40",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id43",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id44",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          }
+        }
+      },
+      {
+        "id": "id46",
+        "id_from": "id2",
+        "id_to": "id43",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id44",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id28",
+        "id_from": "id2",
+        "id_to": "id3",
+        "relationshipName": "CITED_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "url": "https://example.invalid/image",
+            "archived": true,
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id3",
+        "typename": "Image",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "url": "https://example.invalid/image",
+            "archived": true,
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>"
+          },
+          "new": {
+            "url": "https://example.invalid/image",
+            "archived": true,
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>"
+          }
+        }
+      },
+      {
+        "id": "id47",
+        "id_from": "id48",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id49",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id50",
+        "id_from": "id9",
+        "id_to": "id48",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id49",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id51",
+        "id_from": "id9",
+        "id_to": "id52",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id53",
+            "actionType": "un-archive",
+            "actionDescription": "Un-archived the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id48",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id49",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id54",
+        "id_from": "id52",
+        "id_to": "id48",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id53",
+            "actionType": "un-archive",
+            "actionDescription": "Un-archived the image"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id49",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id52",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id53",
+            "actionType": "un-archive",
+            "actionDescription": "Un-archived the image"
+          }
+        }
+      },
+      {
+        "id": "id55",
+        "id_from": "id2",
+        "id_to": "id52",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id53",
+            "actionType": "un-archive",
+            "actionDescription": "Un-archived the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id56",
+        "id_from": "id57",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id58",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id59",
+        "id_from": "id9",
+        "id_to": "id57",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id58",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id60",
+        "id_from": "id9",
+        "id_to": "id61",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id62",
+            "actionType": "close-issue",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id57",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id58",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id63",
+        "id_from": "id61",
+        "id_to": "id57",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id62",
+            "actionType": "close-issue",
+            "actionDescription": "Closed the issue"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "restored",
+            "id": "id58",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id61",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id62",
+            "actionType": "close-issue",
+            "actionDescription": "Closed the issue"
+          }
+        }
+      },
+      {
+        "id": "id64",
+        "id_from": "id2",
+        "id_to": "id61",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id62",
+            "actionType": "close-issue",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Archived image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id3",
+        "typename": "Image",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "url": "https://example.invalid/image",
+            "archived": true,
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>"
+          },
+          "new": {
+            "url": "https://example.invalid/image",
+            "archived": false,
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>"
+          }
+        }
+      }
+    ]
+  },
+  "notifications": [
+    {
+      "username": "author",
+      "text": "Your [image](/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/server/issues/1). If you need additional help, contact support@example.com.",
+      "notificationType": "moderation"
+    },
+    {
+      "username": "author",
+      "text": "Your [image](/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/server/issues/1). If you need additional help, contact support@example.com.",
+      "notificationType": "moderation"
+    }
+  ]
+}
+`;
+
+exports[`default image projection failure retains committed archive and native events 1`] = `
+{
+  "rows": [
+    {
+      "archived": true,
+      "number": null,
+      "open": null,
+      "flagged": null,
+      "userTarget": false,
+      "modTarget": false,
+      "cited": false
+    }
+  ],
+  "actions": [],
+  "events": [
+    {
+      "id": "id0",
+      "typename": "Image",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/image",
+          "scanStatus": "PENDING",
+          "createdAt": "<time>",
+          "id": "id1"
+        },
+        "new": {
+          "url": "https://example.invalid/image",
+          "archived": true,
+          "scanStatus": "PENDING",
+          "id": "id1",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`default image response exactly matches production reused-schema OGM projection 1`] = `
+"{idurlwidthheightlist80Urllist160Urllist320Urldetail640Urldetail960Urldetail1280UrlstorageBucketstorageObjectNamestorageUrluploadedByUsernameuploadedByIpaltcaptionlongDescriptioncopyrighthasSensitiveContenthasSpoilerarchivedpermanentlyRemovedpermanentlyRemovedByUsernamepermanentlyRemovedByModNamevariantUrlsscanStatusuploadedAtcreatedAtscanCheckedAtpermanentlyRemovedAt}"
+`;
+
+exports[`target projections and age-sensitive read filtering remain identical 1`] = `
+[
+  {
+    "id": "c",
+    "url": "https://example.invalid/image",
+    "archived": null,
+    "Uploader": {
+      "username": "author"
+    }
+  }
+]
+`;
+
+exports[`target projections and age-sensitive read filtering remain identical 2`] = `
+[
+  {
+    "id": "c",
+    "archived": null
+  }
+]
+`;

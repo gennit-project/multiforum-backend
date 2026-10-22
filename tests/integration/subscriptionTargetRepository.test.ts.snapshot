@@ -1,0 +1,807 @@
+exports[`discussion ID projection retains generated numeric ID conversion 1`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "discussionId": "1.75",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "archived": false,
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`discussion ID projection retains generated numeric ID conversion 2`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "discussionId": "4",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "archived": false,
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`discussion ID projection retains generated numeric ID conversion 3`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "discussionId": "id",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "archived": false,
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`discussion ID projection retains generated numeric ID conversion 4`] = `
+{
+  "error": "ID cannot represent value: true"
+}
+`;
+
+exports[`discussion ID projection retains generated numeric ID conversion 5`] = `
+{
+  "error": "ID cannot represent value: [\\"1\\", \\"2\\"]"
+}
+`;
+
+exports[`discussion archived Boolean coercion matches generated response 1`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"bad\\""
+}
+`;
+
+exports[`discussion archived Boolean coercion matches generated response 2`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "archived": true,
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`discussion archived Boolean coercion matches generated response 3`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "archived": false,
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`discussion archived Boolean coercion matches generated response 4`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "archived": true,
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`discussion archived Boolean coercion matches generated response 5`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "archived": false,
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`duplicate roots and subscriber relationships retain multiplicity and validate all roots 1`] = `
+[
+  {
+    "id": "target",
+    "text": "text",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": [
+      {
+        "username": "subscriber"
+      },
+      {
+        "username": "subscriber"
+      }
+    ]
+  },
+  {
+    "id": "target",
+    "text": "text",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": [
+      {
+        "username": "subscriber"
+      },
+      {
+        "username": "subscriber"
+      }
+    ]
+  }
+]
+`;
+
+exports[`findComment: missing, populated and empty subscribers match production OGM 1`] = `
+[]
+`;
+
+exports[`findComment: missing, populated and empty subscribers match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "text": "text",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findComment: missing, populated and empty subscribers match production OGM 3`] = `
+[
+  {
+    "id": "target",
+    "text": "text",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": 25
+  }
+]
+`;
+
+exports[`findComment: repeated subscribe/unsubscribe preserves writes and selected response 1`] = `
+{
+  "id": "target",
+  "text": "text",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findComment: repeated subscribe/unsubscribe preserves writes and selected response 2`] = `
+{
+  "id": "target",
+  "text": "text",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findComment: repeated subscribe/unsubscribe preserves writes and selected response 3`] = `
+{
+  "id": "target",
+  "text": "text",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findComment: repeated subscribe/unsubscribe preserves writes and selected response 4`] = `
+{
+  "id": "target",
+  "text": "text",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findComment: sensitive visibility and nullable fields match production OGM 1`] = `
+[]
+`;
+
+exports[`findComment: sensitive visibility and nullable fields match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "text": null,
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findDiscussionChannel: missing, populated and empty subscribers match production OGM 1`] = `
+[]
+`;
+
+exports[`findDiscussionChannel: missing, populated and empty subscribers match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "discussionId": "discussion",
+    "channelUniqueName": "channel",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "archived": false,
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findDiscussionChannel: missing, populated and empty subscribers match production OGM 3`] = `
+[
+  {
+    "id": "target",
+    "discussionId": "discussion",
+    "channelUniqueName": "channel",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "archived": false,
+    "SubscribedToNotifications": 25
+  }
+]
+`;
+
+exports[`findDiscussionChannel: repeated subscribe/unsubscribe preserves writes and selected response 1`] = `
+{
+  "id": "target",
+  "discussionId": "discussion",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "archived": false,
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findDiscussionChannel: repeated subscribe/unsubscribe preserves writes and selected response 2`] = `
+{
+  "id": "target",
+  "discussionId": "discussion",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "archived": false,
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findDiscussionChannel: repeated subscribe/unsubscribe preserves writes and selected response 3`] = `
+{
+  "id": "target",
+  "discussionId": "discussion",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "archived": false,
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findDiscussionChannel: repeated subscribe/unsubscribe preserves writes and selected response 4`] = `
+{
+  "id": "target",
+  "discussionId": "discussion",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "archived": false,
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findDiscussionChannel: sensitive visibility and nullable fields match production OGM 1`] = `
+[]
+`;
+
+exports[`findDiscussionChannel: sensitive visibility and nullable fields match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "discussionId": "discussion",
+    "channelUniqueName": "channel",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "archived": null,
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findEvent: missing, populated and empty subscribers match production OGM 1`] = `
+[]
+`;
+
+exports[`findEvent: missing, populated and empty subscribers match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "description": "description",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findEvent: missing, populated and empty subscribers match production OGM 3`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "description": "description",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": 25
+  }
+]
+`;
+
+exports[`findEvent: repeated subscribe/unsubscribe preserves writes and selected response 1`] = `
+{
+  "id": "target",
+  "title": "title",
+  "description": "description",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findEvent: repeated subscribe/unsubscribe preserves writes and selected response 2`] = `
+{
+  "id": "target",
+  "title": "title",
+  "description": "description",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findEvent: repeated subscribe/unsubscribe preserves writes and selected response 3`] = `
+{
+  "id": "target",
+  "title": "title",
+  "description": "description",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findEvent: repeated subscribe/unsubscribe preserves writes and selected response 4`] = `
+{
+  "id": "target",
+  "title": "title",
+  "description": "description",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findEvent: sensitive visibility and nullable fields match production OGM 1`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "description": "description",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findEvent: sensitive visibility and nullable fields match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "description": null,
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findEventUpdates: missing, populated and empty subscribers match production OGM 1`] = `
+[]
+`;
+
+exports[`findEventUpdates: missing, populated and empty subscribers match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToEventUpdates": []
+  }
+]
+`;
+
+exports[`findEventUpdates: missing, populated and empty subscribers match production OGM 3`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToEventUpdates": 25
+  }
+]
+`;
+
+exports[`findEventUpdates: repeated subscribe/unsubscribe preserves writes and selected response 1`] = `
+{
+  "id": "target",
+  "title": "title",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToEventUpdates": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findEventUpdates: repeated subscribe/unsubscribe preserves writes and selected response 2`] = `
+{
+  "id": "target",
+  "title": "title",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToEventUpdates": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findEventUpdates: repeated subscribe/unsubscribe preserves writes and selected response 3`] = `
+{
+  "id": "target",
+  "title": "title",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToEventUpdates": []
+}
+`;
+
+exports[`findEventUpdates: repeated subscribe/unsubscribe preserves writes and selected response 4`] = `
+{
+  "id": "target",
+  "title": "title",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToEventUpdates": []
+}
+`;
+
+exports[`findEventUpdates: sensitive visibility and nullable fields match production OGM 1`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToEventUpdates": []
+  }
+]
+`;
+
+exports[`findEventUpdates: sensitive visibility and nullable fields match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "title": "title",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToEventUpdates": []
+  }
+]
+`;
+
+exports[`findIssue: missing, populated and empty subscribers match production OGM 1`] = `
+[]
+`;
+
+exports[`findIssue: missing, populated and empty subscribers match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "issueNumber": 4,
+    "title": "title",
+    "channelUniqueName": "channel",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`findIssue: missing, populated and empty subscribers match production OGM 3`] = `
+[
+  {
+    "id": "target",
+    "issueNumber": 4,
+    "title": "title",
+    "channelUniqueName": "channel",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": 25
+  }
+]
+`;
+
+exports[`findIssue: repeated subscribe/unsubscribe preserves writes and selected response 1`] = `
+{
+  "id": "target",
+  "issueNumber": 4,
+  "title": "title",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findIssue: repeated subscribe/unsubscribe preserves writes and selected response 2`] = `
+{
+  "id": "target",
+  "issueNumber": 4,
+  "title": "title",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": [
+    {
+      "username": "actor"
+    }
+  ]
+}
+`;
+
+exports[`findIssue: repeated subscribe/unsubscribe preserves writes and selected response 3`] = `
+{
+  "id": "target",
+  "issueNumber": 4,
+  "title": "title",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findIssue: repeated subscribe/unsubscribe preserves writes and selected response 4`] = `
+{
+  "id": "target",
+  "issueNumber": 4,
+  "title": "title",
+  "channelUniqueName": "channel",
+  "createdAt": "2026-10-19T23:02:03.123Z",
+  "SubscribedToNotifications": []
+}
+`;
+
+exports[`findIssue: sensitive visibility and nullable fields match production OGM 1`] = `
+[]
+`;
+
+exports[`findIssue: sensitive visibility and nullable fields match production OGM 2`] = `
+[
+  {
+    "id": "target",
+    "issueNumber": 4,
+    "title": "title",
+    "channelUniqueName": "channel",
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": []
+  }
+]
+`;
+
+exports[`issue malformed createdAt serialization matches the generated field resolver 1`] = `
+{
+  "error": "Failed to invoke function \`apoc.date.convertFormat\`: Caused by: java.time.format.DateTimeParseException: Text 'invalid' could not be parsed at index 0"
+}
+`;
+
+exports[`issue malformed createdAt serialization matches the generated field resolver 2`] = `
+{
+  "error": "Failed to invoke function \`apoc.date.convertFormat\`: Caused by: java.time.format.DateTimeParseException: Text '42.0' could not be parsed at index 0"
+}
+`;
+
+exports[`issue malformed createdAt serialization matches the generated field resolver 3`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 4,
+      "title": "title",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 1`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 0,
+      "title": "title",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 2`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 42,
+      "title": "title",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 3`] = `
+{
+  "error": "Int cannot represent non-integer value: 1.75"
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 4`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 1,
+      "title": "title",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 5`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 0,
+      "title": "title",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 6`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 0,
+      "title": "title",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 7`] = `
+{
+  "error": "Int cannot represent non-integer value: \\"\\""
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 8`] = `
+{
+  "error": "Int cannot represent non-integer value: [1, 2]"
+}
+`;
+
+exports[`issue malformed issueNumber serialization matches the generated field resolver 9`] = `
+{
+  "error": "Int cannot represent non-integer value: [0]"
+}
+`;
+
+exports[`issue malformed title serialization matches the generated field resolver 1`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 4,
+      "title": "17",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed title serialization matches the generated field resolver 2`] = `
+{
+  "value": [
+    {
+      "id": "target",
+      "issueNumber": 4,
+      "title": "true",
+      "channelUniqueName": "channel",
+      "createdAt": "2026-10-19T23:02:03.123Z",
+      "SubscribedToNotifications": []
+    }
+  ]
+}
+`;
+
+exports[`issue malformed title serialization matches the generated field resolver 3`] = `
+{
+  "error": "String cannot represent value: [\\"bad\\"]"
+}
+`;
+
+exports[`nullable Issue channel name and malformed subscriber preserve results/errors 1`] = `
+[
+  {
+    "id": "target",
+    "issueNumber": 4,
+    "title": "title",
+    "channelUniqueName": null,
+    "createdAt": "2026-10-19T23:02:03.123Z",
+    "SubscribedToNotifications": [
+      {
+        "username": "subscriber"
+      }
+    ]
+  }
+]
+`;

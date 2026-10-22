@@ -1,0 +1,52 @@
+exports[`cycle and maximum-depth parent walks preserve ordering and truncation 1`] = `
+[
+  {
+    "id": "0",
+    "text": "0",
+    "authorUsername": null,
+    "authorLabel": "Someone"
+  },
+  {
+    "id": "1",
+    "text": "1",
+    "authorUsername": null,
+    "authorLabel": "Someone"
+  }
+]
+`;
+
+exports[`parent snapshot exact projection, missing, special IDs and author union match production OGM 1`] = `
+[
+  {
+    "id": "quote\\"\\\\",
+    "text": "text",
+    "ParentComment": {
+      "id": "parent"
+    },
+    "CommentAuthor": {
+      "username": "alice",
+      "displayName": "Alice"
+    }
+  }
+]
+`;
+
+exports[`parent snapshot exact projection, missing, special IDs and author union match production OGM 2`] = `
+[
+  {
+    "id": "parent",
+    "text": "older",
+    "ParentComment": null,
+    "CommentAuthor": {
+      "displayName": "Moderator",
+      "User": {
+        "username": "alice"
+      }
+    }
+  }
+]
+`;
+
+exports[`parent snapshot exact projection, missing, special IDs and author union match production OGM 3`] = `
+[]
+`;

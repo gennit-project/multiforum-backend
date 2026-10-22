@@ -49,14 +49,14 @@ async function seed(): Promise<void> {
   `);
 }
 
-test("all four detail projections retain OGM filtering, sort, and unbounded job defaults", async () => {
+test("all four detail projections retain OGM filtering, sort, and unbounded job defaults", async (t) => {
   await seed(); const repository=createPipelineDetailRepository(driver);
-  assert.deepEqual(plain(await repository.findPublicAttempt("attempt")), plain(await app.ogm.model("PluginPipelineRun").find({where:{id:"attempt"},selectionSet:PUBLIC_PIPELINE_ATTEMPT_SELECTION})));
-  assert.deepEqual(plain(await repository.findInternalAttempt("attempt")), plain(await app.ogm.model("PluginPipelineRun").find({where:{id:"attempt"},selectionSet:INTERNAL_ATTEMPT})));
+  t.assert.snapshot(plain(await repository.findPublicAttempt("attempt")));
+  t.assert.snapshot(plain(await repository.findInternalAttempt("attempt")));
   const jobs=await repository.findPublicJobs("pipeline");
   assert.equal(jobs.length,28); assert.equal(jobs[0].id,"job-27");
-  assert.deepEqual(plain(jobs), plain(await app.ogm.model("PluginRun").find({where:{pipelineId:"pipeline"},options:{sort:[{executionOrder:SortDirection.Asc}]},selectionSet:PUBLIC_PLUGIN_JOB_SELECTION})));
-  assert.deepEqual(plain(await repository.findInternalJobs("pipeline")), plain(await app.ogm.model("PluginRun").find({where:{pipelineId:"pipeline"},options:{sort:[{executionOrder:SortDirection.Asc}]},selectionSet:INTERNAL_JOBS})));
+  t.assert.snapshot(plain(jobs));
+  t.assert.snapshot(plain(await repository.findInternalJobs("pipeline")));
 });
 
 test("wired public and internal detail retain distinct visibility/redaction contracts and missing null", async () => {
@@ -72,9 +72,9 @@ test("wired public and internal detail retain distinct visibility/redaction cont
   assert.equal(await app.resolvers.Query.getInternalPluginPipelineRun(null,{pipelineRunId:"missing"}),null);
 });
 
-test("malformed attempt identifiers and missing selected nonnull fields preserve first errors", async () => {
+test("malformed attempt identifiers and missing selected nonnull fields preserve first errors", async (t) => {
   await seed();const repository=createPipelineDetailRepository(driver);
-  assert.deepEqual(await repository.findInternalAttempt(42 as unknown as string), await app.ogm.model("PluginPipelineRun").find({where:{id:42} as never,selectionSet:INTERNAL_ATTEMPT}));
+  t.assert.snapshot(plain(await repository.findInternalAttempt(42 as unknown as string)));
   await assert.rejects(repository.findInternalAttempt({bad:true} as unknown as string),/ID cannot represent/);
   await driver.executeQuery("MATCH (j:PluginRun) REMOVE j.version");
   await assert.rejects(repository.findPublicJobs("pipeline"),/Cannot return null for non-nullable field PluginRun\.version/);

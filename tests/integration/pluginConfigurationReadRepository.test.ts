@@ -28,6 +28,13 @@ before(async () => {
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
+// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
+const sortDeep = (value: unknown): unknown =>
+  Array.isArray(value)
+    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
+    : value && typeof value === "object"
+      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
+      : value;
 
 // Exact legacy projections captured before migration. They intentionally retain
 // selected metadata even when the final resolver does not use those fields.
@@ -91,7 +98,7 @@ const RECONCILIATION_SELECTION = `{
       }`;
 const RECONCILIATION_SECRET_SELECTION = `{ pluginId key isValid lastValidatedAt }`;
 
-test("secret-status projections match OGM without exposing ciphertext", async () => {
+test("secret-status projections match OGM without exposing ciphertext", async (t) => {
   await driver.executeQuery(`
     CREATE (:ServerSecret {pluginId: 'scanner', key: 'untested', ciphertext: 'synthetic-secret'})
     CREATE (:ServerSecret {pluginId: 'scanner', key: 'valid', ciphertext: 'synthetic-secret', isValid: true, lastValidatedAt: datetime('2026-01-02T03:04:05Z')})
@@ -100,15 +107,14 @@ test("secret-status projections match OGM without exposing ciphertext", async ()
   `);
   const repository = createPluginConfigurationReadRepository(driver);
   const actual = await repository.listPluginSecretStatuses("scanner");
-  const old = await app.ogm.model("ServerSecret").find({ where: { pluginId: "scanner" }, selectionSet: SECRET_SELECTION });
-  assert.deepEqual(plain(actual), plain(old));
+  t.assert.snapshot(sortDeep(plain(actual)));
   assert.equal(actual.length, 3);
   assert.doesNotMatch(JSON.stringify(actual), /ciphertext|synthetic-secret/);
   const response = await getServerPluginSecrets({ driver })(null, { pluginId: "scanner" }, {} as GraphQLContext, {} as never);
   assert.deepEqual(response.map(({ status }) => status).sort(), ["INVALID", "SET_UNTESTED", "VALID"]);
 });
 
-test("installed plugin projections preserve relationship data, metadata and unscoped config order", async () => {
+test("installed plugin projections preserve relationship data, metadata and unscoped config order", async (t) => {
   await driver.executeQuery(`
     CREATE (plugin:Plugin {id: 'plugin-id', name: 'scanner', displayName: 'Scanner', tags: ['scan'], metadata: '{"kind":"scanner"}'})
     CREATE (version:PluginVersion {id: 'version-id', version: '1.0.0', repoUrl: 'https://example.test/repo', entryPath: 'index.js', manifest: '{"name":"scanner"}', settingsDefaults: '{"enabled":true}', uiSchema: '{}', documentationPath: 'docs/index.md', readmeMarkdown: 'Read me'})
@@ -117,7 +123,7 @@ test("installed plugin projections preserve relationship data, metadata and unsc
     CREATE (:ServerConfig {serverName: 'second'})
   `);
   const repository = createPluginConfigurationReadRepository(driver);
-  assert.deepEqual(plain(await repository.listInstalledPluginConfigs()), plain(await app.ogm.model("ServerConfig").find({ selectionSet: INSTALLED_SELECTION })));
+  t.assert.snapshot(sortDeep(plain(await repository.listInstalledPluginConfigs())));
   const result = await getInstalledPlugins({ driver })(null, {}, {} as GraphQLContext, {} as never);
   assert.equal(result.length, 1);
   assert.equal(result[0].enabled, true);
@@ -126,15 +132,15 @@ test("installed plugin projections preserve relationship data, metadata and unsc
   assert.deepEqual(result[0].availableVersions, []);
 });
 
-test("reconciliation snapshots preserve global secret status and default apply preview wiring", async () => {
+test("reconciliation snapshots preserve global secret status and default apply preview wiring", async (t) => {
   await driver.executeQuery(`
     CREATE (:ServerConfig {serverName: 'server', pluginPipelines: '[]'})
     CREATE (:ServerSecret {pluginId: 'scanner', key: 'key', isValid: false, ciphertext: 'synthetic-secret'})
   `);
   const repository = createPluginConfigurationReadRepository(driver);
-  assert.deepEqual(plain(await repository.listReconciliationConfigs()), plain(await app.ogm.model("ServerConfig").find({ selectionSet: RECONCILIATION_SELECTION })));
+  t.assert.snapshot(sortDeep(plain(await repository.listReconciliationConfigs())));
   const secrets = await repository.listReconciliationSecretStatuses();
-  assert.deepEqual(plain(secrets), plain(await app.ogm.model("ServerSecret").find({ selectionSet: RECONCILIATION_SECRET_SELECTION })));
+  t.assert.snapshot(sortDeep(plain(secrets)));
   assert.doesNotMatch(JSON.stringify(secrets), /ciphertext|synthetic-secret/);
   // Exercise the actual default operation factory, not its injected test seam.
   // An already synchronized empty desired state must perform no mutation or IO.

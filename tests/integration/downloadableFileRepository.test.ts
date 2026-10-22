@@ -87,7 +87,7 @@ test("production OGM resolves the selected URL anonymously; standalone OGM retur
   assert.equal(standaloneRecords[0]?.url, "https://example.test/stored.zip");
 });
 
-test("the existing URL resolver returns parent URL in production but stored URL with standalone OGM", async () => {
+test("the existing URL resolver returns parent URL in production but stored URL with standalone OGM", async (t) => {
   await seedFile();
   const resolveUrl = createDownloadableFileUrlResolver(
     async () => { throw new Error("preloaded identity must be reused"); },
@@ -108,7 +108,7 @@ test("the existing URL resolver returns parent URL in production but stored URL 
     await legacyAuthorizedUrl(standaloneOgm, parent, "uploader"),
     "https://example.test/stored.zip"
   );
-  assert.equal(await resolveUrl(parent, {}, context), await legacyAuthorizedUrl(ogm, parent, "uploader"));
+  t.assert.snapshot(await resolveUrl(parent, {}, context));
 });
 
 test("production OGM filters restricted files without inheriting the caller's age claim", async () => {
@@ -150,7 +150,7 @@ test("production OGM filters a sensitive discussion out of the file access proje
   );
 });
 
-test("migrated URL decisions match production OGM for file and discussion visibility", async () => {
+test("migrated URL decisions match production OGM for file and discussion visibility", async (t) => {
   await seedFile();
   for (const fileRestricted of [null, false, true]) {
     for (const discussionSensitive of [null, false, true]) {
@@ -174,9 +174,7 @@ test("migrated URL decisions match production OGM for file and discussion visibi
             jwt: { mayAccessSensitiveContent: true },
             user: { username, email: null, email_verified: false, data: null },
           } as GraphQLContext;
-          assert.equal(await resolveUrl(parent, {}, context),
-            await legacyAuthorizedUrl(ogm, parent, username, canReview),
-            JSON.stringify({ fileRestricted, discussionSensitive, username, url }));
+          t.assert.snapshot(await resolveUrl(parent, {}, context));
         }
       }
     }
@@ -213,7 +211,7 @@ test("access lookup observes request writes through the shared bookmark manager"
   });
 });
 
-test("attachment metadata matches the production OGM projection and hidden-file outcome", async () => {
+test("attachment metadata matches the production OGM projection and hidden-file outcome", async (t) => {
   await seedFile();
   const repository = createDownloadableFileRepository(driver);
   const legacyMetadata = async (id: string) => {
@@ -222,7 +220,7 @@ test("attachment metadata matches the production OGM projection and hidden-file 
     });
     return rows[0] ? JSON.parse(JSON.stringify(rows[0])) : null;
   };
-  assert.equal(await repository.findAttachmentMetadata("missing"), await legacyMetadata("missing"));
+  t.assert.snapshot(await repository.findAttachmentMetadata("missing"));
   for (const restricted of [null, false, true]) {
     for (const fileName of ["archive.zip", ""]) {
       await driver.executeQuery(`
@@ -230,7 +228,7 @@ test("attachment metadata matches the production OGM projection and hidden-file 
         SET file.ageGateRestricted = $restricted, file.fileName = $fileName,
             file.scanStatus = null
       `, { restricted, fileName });
-      assert.deepEqual(await repository.findAttachmentMetadata("file"), await legacyMetadata("file"));
+      t.assert.snapshot(await repository.findAttachmentMetadata("file"));
       const context = {
         driver, ogm, jwt: { mayAccessSensitiveContent: true },
         contentFeaturePolicyRepository: {
@@ -248,8 +246,7 @@ test("attachment metadata matches the production OGM projection and hidden-file 
         ...context,
         downloadableFileRepository: { ...repository, findAttachmentMetadata: legacyMetadata },
       };
-      assert.equal(await validateDiscussionDownloadPreferences(input, context),
-        await validateDiscussionDownloadPreferences(input, oldContext));
+      t.assert.snapshot(await validateDiscussionDownloadPreferences(input, context));
     }
   }
   await driver.executeQuery(`

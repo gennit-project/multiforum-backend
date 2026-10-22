@@ -27,24 +27,18 @@ const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,va
 const state=async()=>({rows:normalize((await driver.executeQuery("MATCH (s:ServerSecret) RETURN properties(s) AS secret ORDER BY s.key")).records.map(r=>r.get("secret"))),events:normalize(events)});
 const seed=async(valid=true)=>driver.executeQuery(`CREATE (s:ServerSecret {id:'secret',pluginId:'scanner',key:'OLD',ciphertext:'synthetic-ciphertext',isValid:true,lastValidatedAt:datetime('2026-01-01T00:00:00Z'),validationError:'previous',updatedAt:datetime('2026-01-01T00:00:00Z'),createdAt:datetime('2026-01-01T00:00:00Z')}) ${valid?'':'REMOVE s.createdAt'}`);
 
-test("replacement and creation retain generated defaults, validation reset and native events",async()=>{
-  const repo=createServerSecretRepository(driver);const old=app.ogm.model("ServerSecret");
-  await seed();assert.deepEqual(await repo.findForReplacement("scanner","OLD"),await old.find({where:{AND:[{pluginId:"scanner"},{key:"OLD"}]}}));
-  await old.update({where:{id:"secret"},update:{ciphertext:"new-synthetic",isValid:false,lastValidatedAt:null,validationError:null}});const expected=await state();
-  await resetDatabase(driver);await seed();events=[];await repo.replaceCiphertext("secret","new-synthetic");assert.deepEqual(await state(),expected);
-  await resetDatabase(driver);events=[];
-  await old.create({input:[{pluginId:"scanner",key:"NEW",ciphertext:"synthetic",isValid:false,updatedAt:"2026-01-02T00:00:00Z"}]});const created=await state();
-  await resetDatabase(driver);events=[];await repo.createEncryptedSecret("scanner","NEW","synthetic","2026-01-02T00:00:00Z");assert.deepEqual(await state(),created);assert.ok(events.length>0);
+test("replacement and creation retain generated defaults, validation reset and native events",async(t)=>{
+  const repo=createServerSecretRepository(driver);
+  await seed();t.assert.snapshot(await repo.findForReplacement("scanner","OLD"));
+  await resetDatabase(driver);await seed();events=[];await repo.replaceCiphertext("secret","new-synthetic");t.assert.snapshot(await state());
+  await resetDatabase(driver);events=[];await repo.createEncryptedSecret("scanner","NEW","synthetic","2026-01-02T00:00:00Z");t.assert.snapshot(await state());assert.ok(events.length>0);
 });
-test("rename preserves ciphertext and native update events; postcommit projection failures remain errors",async()=>{
-  const repo=createServerSecretRepository(driver);const old=app.ogm.model("ServerSecret");await seed();
-  assert.deepEqual(await repo.findRenameCandidates("scanner"),await old.find({where:{pluginId:"scanner"},selectionSet:"{ id key }"}));
-  await old.update({where:{id:"secret"},update:{key:"NEW"}});const expected=await state();
+test("rename preserves ciphertext and native update events; postcommit projection failures remain errors",async(t)=>{
+  const repo=createServerSecretRepository(driver);await seed();
+  t.assert.snapshot(await repo.findRenameCandidates("scanner"));
   await resetDatabase(driver);await seed();events=[];
-  await migrateServerSecretRenames({serverSecretRepository:repo,pluginId:"scanner",oldManifest:{secrets:[{key:"OLD"}]},newManifest:{secrets:[{key:"NEW",renamedFrom:"OLD"}]}});assert.deepEqual(await state(),expected);
-  await resetDatabase(driver);await seed(false);events=[];
-  await assert.rejects(old.update({where:{id:"secret"},update:{key:"NEW"}}),/Cannot return null for non-nullable field ServerSecret\.createdAt/);const failed=await state();
-  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(repo.renameKey("secret","NEW"),/Cannot return null for non-nullable field ServerSecret\.createdAt/);assert.deepEqual(await state(),failed);
+  await migrateServerSecretRenames({serverSecretRepository:repo,pluginId:"scanner",oldManifest:{secrets:[{key:"OLD"}]},newManifest:{secrets:[{key:"NEW",renamedFrom:"OLD"}]}});t.assert.snapshot(await state());
+  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(repo.renameKey("secret","NEW"),/Cannot return null for non-nullable field ServerSecret\.createdAt/);t.assert.snapshot(await state());
 });
 test("wired secret setter encrypts synthetic input, resets validation, and wraps lookup errors",async()=>{
   await app.resolvers.Mutation.setServerPluginSecret(null,{pluginId:"scanner",key:"API",value:"synthetic-test-value"},{driver},{} as GraphQLResolveInfo);

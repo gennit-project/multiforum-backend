@@ -1,0 +1,1445 @@
+exports[`actual clear success, legacy notification edge=false 1`] = `
+{
+  "response": {
+    "id": "f",
+    "fileName": "fixture.zip",
+    "scanStatus": "CLEAN",
+    "scanReason": "Cleared by alice: Reviewed",
+    "scanCheckedAt": "<time>"
+  },
+  "properties": {
+    "ageGateTouchedAt": "<time>",
+    "createdAt": {
+      "year": {
+        "low": 2020,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "fileName": "fixture.zip",
+    "uploadedByUsername": "alice",
+    "kind": "ZIP",
+    "scanStatus": "CLEAN",
+    "priceModel": "FREE",
+    "id": "f",
+    "scanCheckedAt": "<time>",
+    "url": "https://example.invalid/fixture.zip",
+    "scanReason": "Cleared by alice: Reviewed"
+  },
+  "events": [
+    {
+      "id": "file-node",
+      "typename": "DownloadableFile",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        },
+        "new": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "CLEAN",
+          "fileName": "fixture.zip",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "scanCheckedAt": "<time>",
+          "kind": "ZIP",
+          "scanReason": "Cleared by alice: Reviewed",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        }
+      }
+    }
+  ],
+  "notifications": []
+}
+`;
+
+exports[`actual clear success, legacy notification edge=true 1`] = `
+{
+  "response": {
+    "id": "f",
+    "fileName": "fixture.zip",
+    "scanStatus": "CLEAN",
+    "scanReason": "Cleared by alice: Reviewed",
+    "scanCheckedAt": "<time>"
+  },
+  "properties": {
+    "ageGateTouchedAt": "<time>",
+    "createdAt": {
+      "year": {
+        "low": 2020,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "fileName": "fixture.zip",
+    "uploadedByUsername": "alice",
+    "kind": "ZIP",
+    "scanStatus": "CLEAN",
+    "priceModel": "FREE",
+    "id": "f",
+    "scanCheckedAt": "<time>",
+    "url": "https://example.invalid/fixture.zip",
+    "scanReason": "Cleared by alice: Reviewed"
+  },
+  "events": [
+    {
+      "id": "file-node",
+      "typename": "DownloadableFile",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        },
+        "new": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "CLEAN",
+          "fileName": "fixture.zip",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "scanCheckedAt": "<time>",
+          "kind": "ZIP",
+          "scanReason": "Cleared by alice: Reviewed",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        }
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "author": "alice",
+      "text": "Your downloadable file passed human security review and is now available. Cleared by alice: Reviewed",
+      "type": "moderation",
+      "read": false
+    }
+  ]
+}
+`;
+
+exports[`actual request success, legacy notification edge=false 1`] = `
+{
+  "response": {
+    "id": "f",
+    "fileName": "fixture.zip",
+    "scanStatus": "SUSPICIOUS",
+    "scanReason": null,
+    "scanCheckedAt": null,
+    "reviewRequestedAt": "<time>",
+    "reviewRequestReason": "Reviewed",
+    "reviewRequestedByUsername": "alice"
+  },
+  "properties": {
+    "ageGateTouchedAt": "<time>",
+    "createdAt": {
+      "year": {
+        "low": 2020,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "fileName": "fixture.zip",
+    "uploadedByUsername": "alice",
+    "reviewRequestedAt": "<time>",
+    "reviewRequestReason": "Reviewed",
+    "kind": "ZIP",
+    "scanStatus": "SUSPICIOUS",
+    "priceModel": "FREE",
+    "reviewRequestedByUsername": "alice",
+    "id": "f",
+    "url": "https://example.invalid/fixture.zip"
+  },
+  "events": [
+    {
+      "id": "file-node",
+      "typename": "DownloadableFile",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        },
+        "new": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "reviewRequestReason": "Reviewed",
+          "kind": "ZIP",
+          "reviewRequestedByUsername": "alice",
+          "reviewRequestedAt": "<time>",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        }
+      }
+    }
+  ],
+  "notifications": []
+}
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 1`] = `
+[
+  {
+    "id": "f",
+    "url": "",
+    "storageBucket": null,
+    "storageObjectName": null,
+    "scanStatus": "SUSPICIOUS",
+    "scanReason": null,
+    "scanCheckedAt": null,
+    "uploadedByUsername": "alice",
+    "Discussion": {
+      "id": "d",
+      "hasSensitiveContent": false,
+      "Author": {
+        "username": "alice"
+      }
+    }
+  }
+]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 10`] = `
+[]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 2`] = `
+[]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 3`] = `
+[
+  {
+    "id": "f",
+    "scanStatus": "SUSPICIOUS"
+  }
+]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 4`] = `
+[]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 5`] = `
+[
+  {
+    "id": "f",
+    "fileName": "fixture.zip",
+    "scanStatus": "SUSPICIOUS",
+    "scanReason": null,
+    "scanCheckedAt": null
+  }
+]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 6`] = `
+[]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 7`] = `
+[
+  {
+    "scanStatus": "SUSPICIOUS",
+    "uploadedByUsername": "alice",
+    "Discussion": {
+      "Author": {
+        "username": "alice"
+      }
+    }
+  }
+]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 8`] = `
+[]
+`;
+
+exports[`all five snapshots preserve fields, missing rows, literal IDs and generated read authorization 9`] = `
+[
+  {
+    "id": "f",
+    "fileName": "fixture.zip",
+    "scanStatus": "SUSPICIOUS",
+    "scanReason": null,
+    "scanCheckedAt": null,
+    "reviewRequestedAt": null,
+    "reviewRequestReason": null,
+    "reviewRequestedByUsername": null
+  }
+]
+`;
+
+exports[`clearScan preserves committed update and native event when projection failure=false 1`] = `
+{
+  "events": [
+    {
+      "id": "file-node",
+      "typename": "DownloadableFile",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        },
+        "new": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "CLEAN",
+          "fileName": "fixture.zip",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "scanCheckedAt": {
+            "year": {
+              "low": 2026,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "scanReason": "Cleared fixture",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "ageGateTouchedAt": "<time>",
+    "createdAt": {
+      "year": {
+        "low": 2020,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "fileName": "fixture.zip",
+    "uploadedByUsername": "alice",
+    "kind": "ZIP",
+    "scanStatus": "CLEAN",
+    "priceModel": "FREE",
+    "id": "f",
+    "scanCheckedAt": {
+      "year": {
+        "low": 2026,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "url": "https://example.invalid/fixture.zip",
+    "scanReason": "Cleared fixture"
+  }
+}
+`;
+
+exports[`clearScan preserves committed update and native event when projection failure=true 1`] = `
+{
+  "events": [
+    {
+      "id": "file-node",
+      "typename": "DownloadableFile",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        },
+        "new": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "CLEAN",
+          "fileName": "fixture.zip",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "scanCheckedAt": {
+            "year": {
+              "low": 2026,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "scanReason": "Cleared fixture",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "ageGateTouchedAt": "<time>",
+    "createdAt": {
+      "year": {
+        "low": 2020,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "fileName": "fixture.zip",
+    "uploadedByUsername": "alice",
+    "kind": "ZIP",
+    "scanStatus": "CLEAN",
+    "priceModel": "FREE",
+    "id": "f",
+    "scanCheckedAt": {
+      "year": {
+        "low": 2026,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "url": "https://example.invalid/fixture.zip",
+    "scanReason": "Cleared fixture"
+  }
+}
+`;
+
+exports[`requestReview preserves committed update and native event when projection failure=false 1`] = `
+{
+  "events": [
+    {
+      "id": "file-node",
+      "typename": "DownloadableFile",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        },
+        "new": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "reviewRequestReason": "Review fixture",
+          "kind": "ZIP",
+          "reviewRequestedByUsername": "alice",
+          "reviewRequestedAt": {
+            "year": {
+              "low": 2026,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "ageGateTouchedAt": "<time>",
+    "createdAt": {
+      "year": {
+        "low": 2020,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "fileName": "fixture.zip",
+    "uploadedByUsername": "alice",
+    "reviewRequestedAt": {
+      "year": {
+        "low": 2026,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "reviewRequestReason": "Review fixture",
+    "kind": "ZIP",
+    "scanStatus": "SUSPICIOUS",
+    "priceModel": "FREE",
+    "reviewRequestedByUsername": "alice",
+    "id": "f",
+    "url": "https://example.invalid/fixture.zip"
+  }
+}
+`;
+
+exports[`requestReview preserves committed update and native event when projection failure=true 1`] = `
+{
+  "events": [
+    {
+      "id": "file-node",
+      "typename": "DownloadableFile",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "kind": "ZIP",
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        },
+        "new": {
+          "url": "https://example.invalid/fixture.zip",
+          "scanStatus": "SUSPICIOUS",
+          "fileName": "fixture.zip",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": {
+            "year": {
+              "low": 2020,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "reviewRequestReason": "Review fixture",
+          "kind": "ZIP",
+          "reviewRequestedByUsername": "alice",
+          "reviewRequestedAt": {
+            "year": {
+              "low": 2026,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "priceModel": "FREE",
+          "uploadedByUsername": "alice",
+          "id": "f"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "ageGateTouchedAt": "<time>",
+    "createdAt": {
+      "year": {
+        "low": 2020,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "fileName": "fixture.zip",
+    "uploadedByUsername": "alice",
+    "reviewRequestedAt": {
+      "year": {
+        "low": 2026,
+        "high": 0
+      },
+      "month": {
+        "low": 1,
+        "high": 0
+      },
+      "day": {
+        "low": 1,
+        "high": 0
+      },
+      "hour": {
+        "low": 0,
+        "high": 0
+      },
+      "minute": {
+        "low": 0,
+        "high": 0
+      },
+      "second": {
+        "low": 0,
+        "high": 0
+      },
+      "nanosecond": {
+        "low": 0,
+        "high": 0
+      },
+      "timeZoneOffsetSeconds": {
+        "low": 0,
+        "high": 0
+      }
+    },
+    "reviewRequestReason": "Review fixture",
+    "kind": "ZIP",
+    "scanStatus": "SUSPICIOUS",
+    "priceModel": "FREE",
+    "reviewRequestedByUsername": "alice",
+    "id": "f",
+    "url": "https://example.invalid/fixture.zip"
+  }
+}
+`;

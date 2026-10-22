@@ -22,19 +22,16 @@ before(async()=>{
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});
 const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>key==="timestamp"?"<timestamp>":value));
-test("current projection and generated update retain native events and nullable serverName behavior",async()=>{
-  const repo=createServerPipelineRepository(driver);const old=app.ogm.model("ServerConfig");
+test("current projection and generated update retain native events and nullable serverName behavior",async(t)=>{
+  const repo=createServerPipelineRepository(driver);
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'test',pluginPipelines:'[]'})");
-  assert.deepEqual(await repo.listCurrent(),await old.find({selectionSet:"{ serverName pluginPipelines }"}));
-  await old.update({where:{serverName:"test"},update:{pluginPipelines:'[{"event":"comment.created"}]'}});const expected=normalize(events);
-  events=[];await driver.executeQuery("MATCH (s:ServerConfig) SET s.pluginPipelines='[]'");
-  await repo.save("test",'[{"event":"comment.created"}]');assert.deepEqual(normalize(events),expected);
+  t.assert.snapshot(await repo.listCurrent());
+  events=[];
+  await repo.save("test",'[{"event":"comment.created"}]');t.assert.snapshot(normalize(events));
   await resetDatabase(driver);await driver.executeQuery("CREATE (:ServerConfig {pluginPipelines:'[]'})");
-  assert.deepEqual(await repo.listCurrent(),await old.find({selectionSet:"{ serverName pluginPipelines }"}));
-  events=[];await old.update({where:{serverName:null},update:{pluginPipelines:'["null-key"]'}});
-  const nullEvents=normalize(events);const nullRows=await repo.listCurrent();
-  await driver.executeQuery("MATCH (s:ServerConfig) SET s.pluginPipelines='[]'");events=[];
-  await repo.save(null,'["null-key"]');assert.deepEqual(await repo.listCurrent(),nullRows);assert.deepEqual(normalize(events),nullEvents);
+  t.assert.snapshot(await repo.listCurrent());
+  events=[];
+  await repo.save(null,'["null-key"]');t.assert.snapshot(await repo.listCurrent());t.assert.snapshot(normalize(events));
 });
 test("wired pipeline mutation normalizes policy defaults and persists exactly returned data",async()=>{
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'test'})");
@@ -43,11 +40,10 @@ test("wired pipeline mutation normalizes policy defaults and persists exactly re
   const persisted=await createServerPipelineRepository(driver).listCurrent();assert.deepEqual(JSON.parse(String(persisted[0].pluginPipelines)),result);
 });
 
-test("unused default projection failures remain postcommit errors",async()=>{
-  const repo=createServerPipelineRepository(driver);const old=app.ogm.model("ServerConfig");
+test("unused default projection failures remain postcommit errors",async(t)=>{
+  const repo=createServerPipelineRepository(driver);
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'test',enableDownloads:'invalid-boolean',pluginPipelines:'[]'})");
-  await assert.rejects(old.update({where:{serverName:"test"},update:{pluginPipelines:'["changed"]'}}),/Boolean cannot represent a non boolean value/);
-  const expected=normalize(events);await driver.executeQuery("MATCH (s:ServerConfig) SET s.pluginPipelines='[]'");events=[];
-  await assert.rejects(repo.save("test",'["changed"]'),/Boolean cannot represent a non boolean value/);assert.deepEqual(normalize(events),expected);
+  events=[];
+  await assert.rejects(repo.save("test",'["changed"]'),/Boolean cannot represent a non boolean value/);t.assert.snapshot(normalize(events));
   assert.equal((await repo.listCurrent())[0].pluginPipelines,'["changed"]');
 });

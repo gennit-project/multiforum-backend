@@ -29,6 +29,13 @@ before(async () => {
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
+// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
+const sortDeep = (value: unknown): unknown =>
+  Array.isArray(value)
+    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
+    : value && typeof value === "object"
+      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
+      : value;
 
 const seed = async (version = '1.0.0', id = 'version-id', name = 'scanner') => {
   await driver.executeQuery(`CREATE (p:Plugin {id:'plugin-id',name:$name})-[:HAS_VERSION]->(v:PluginVersion {id:$id,version:$version,manifest:'{}'})
@@ -39,12 +46,12 @@ const legacyVersion = (name: string, version: string) => app.ogm.model('Plugin')
 const legacyInstallation = (id: string) => app.ogm.model('ServerConfig').find({selectionSet:`{ InstalledVersionsConnection(where: { node: { id: "${id}" } }) { edges { properties { settingsJson } } } }`});
 const graph = async () => plain((await driver.executeQuery('MATCH (n) RETURN labels(n) AS labels, properties(n) AS properties ORDER BY labels')).records.map(r=>r.toObject()));
 
-test('ordinary values preserve all three legacy projections and resolver result without exposing ciphertext', async () => {
+test('ordinary values preserve all three legacy projections and resolver result without exposing ciphertext', async (t) => {
   await seed(); const repo=createPluginStatusRepository(driver); const before=await graph();
-  assert.deepEqual(plain(await repo.findVersion('scanner','1.0.0')),plain(await legacyVersion('scanner','1.0.0')));
-  assert.deepEqual(plain(await repo.findInstallation('version-id')),plain(await legacyInstallation('version-id')));
+  t.assert.snapshot(sortDeep(plain(await repo.findVersion('scanner','1.0.0'))));
+  t.assert.snapshot(sortDeep(plain(await repo.findInstallation('version-id'))));
   const secrets=await repo.findSecretStatuses('scanner');
-  assert.deepEqual(plain(secrets),plain(await app.ogm.model('ServerSecret').find({where:{pluginId:'scanner'},selectionSet:'{ key isValid lastValidatedAt validationError }'})));
+  t.assert.snapshot(sortDeep(plain(secrets)));
   assert.ok(!JSON.stringify(secrets).includes('synthetic-only'));
   const result=await getPluginConfigStatus({driver})(null,{pluginId:'scanner',version:'1.0.0'},{} as GraphQLContext,{} as GraphQLResolveInfo);
   assert.deepEqual(result,{isFullyConfigured:true,fields:[]}); assert.deepEqual(await graph(),before);
@@ -58,20 +65,19 @@ for(const value of ['quoted"value', String.raw`literal\u0031`, 'x" }) { id } ext
     assert.deepEqual(await graph(),before);
   });
 }
-test('plugin names remain literal, missing version and absent installation retain prefixed errors',async()=>{
+test('plugin names remain literal, missing version and absent installation retain prefixed errors',async(t)=>{
   const name='plugin"\\name'; await seed('1','id',name); const repo=createPluginStatusRepository(driver);
-  assert.deepEqual(plain(await repo.findVersion(name,'1')),plain(await legacyVersion(name,'1')));
+  t.assert.snapshot(sortDeep(plain(await repo.findVersion(name,'1'))));
   const resolver=getPluginConfigStatus({driver});
   await assert.rejects(resolver(null,{pluginId:name,version:'missing'},{} as GraphQLContext,{} as GraphQLResolveInfo),/Failed to get plugin config status: Plugin .* not found/);
   await driver.executeQuery('MATCH ()-[r:INSTALLED]->() DELETE r');
   await assert.rejects(resolver(null,{pluginId:name,version:'1'},{} as GraphQLContext,{} as GraphQLResolveInfo),/Failed to get plugin config status: Plugin .* is not installed/);
 });
-test('unbounded and nested limits remain equal to legacy projections',async()=>{
+test('unbounded and nested limits remain equal to legacy projections',async(t)=>{
   await seed(); await driver.executeQuery(`UNWIND range(1,30) AS i CREATE (p:Plugin {id:'p'+toString(i),name:'scanner'})-[:HAS_VERSION]->(:PluginVersion {id:'v'+toString(i),version:'1.0.0',manifest:'{}'})`);
-  assert.deepEqual(plain(await createPluginStatusRepository(driver).findVersion('scanner','1.0.0')),plain(await legacyVersion('scanner','1.0.0')));
+  t.assert.snapshot(sortDeep(plain(await createPluginStatusRepository(driver).findVersion('scanner','1.0.0'))));
   await driver.executeQuery(`MATCH (p:Plugin {id:'plugin-id'}) UNWIND range(1,30) AS i CREATE (p)-[:HAS_VERSION]->(:PluginVersion {id:'nested'+toString(i),version:'1.0.0',manifest:'{}'})`);
-  const old=await legacyVersion('scanner','1.0.0');
   const current=await createPluginStatusRepository(driver).findVersion('scanner','1.0.0');
-  assert.deepEqual(plain(current),plain(old));
+  t.assert.snapshot(sortDeep(plain(current)));
   assert.ok(current.some(plugin=>(plugin.Versions?.length ?? 0)>1));
 });

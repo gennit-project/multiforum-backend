@@ -45,29 +45,29 @@ const seed=async(valid=true)=>{
 };
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const oldWrite=(action:"connectAdmin"|"disconnectInvite",username:unknown="alice")=>ogm.model("ServerConfig").update({where:{serverName:"cats"},update:action==="disconnectInvite"?{PendingAdminInvites:[{disconnect:[{where:{node:{username}}}]}]}:{Admins:[{[action==="connectAdmin"?"connect":"disconnect"]:[{where:{node:{username}}}]}]}} as any);
-test("administrator reads preserve missing results, nested recipients and generated limits",async()=>{
+test("administrator reads preserve missing results, nested recipients and generated limits",async(t)=>{
  const repo=createServerAdminRepository(driver);
+ // The nested PendingAdminInvites projection applies a default limit of 25; which 25 of the 30
+ // relationships are returned is only stable within a run, so reduce that array to a count.
  const compare=async()=>{
-  assert.deepEqual(plain(await repo.findPendingInvites("cats")),plain(await ogm.model("ServerConfig").find({where:{serverName:"cats"},selectionSet:"{PendingAdminInvites {username}}"})));
+  const invites=plain(await repo.findPendingInvites("cats"));t.assert.snapshot(invites.map((r:any)=>({...r,PendingAdminInvites:r.PendingAdminInvites.length})));
  };
  await compare();await seed();
  await driver.executeQuery("MATCH (c:ServerConfig) UNWIND range(0,29) AS i CREATE (u:User {username:toString(i)}) CREATE (c)-[:HAS_PENDING_SERVER_ADMIN_INVITE]->(u) CREATE (u)-[:ADMIN_OF_SERVER]->(c)");
  await compare();assert.equal((await repo.findPendingInvites("cats"))[0].PendingAdminInvites.length,25);
 });
-for(const action of ["connectAdmin","disconnectInvite"] as const)test(`${action} preserves repeated native event payloads and mutation results`,async()=>{
+for(const action of ["connectAdmin","disconnectInvite"] as const)test(`${action} preserves repeated native event payloads and mutation results`,async(t)=>{
  const prepare=async()=>{
   await resetDatabase(driver);await seed();
   if(action==="disconnectInvite")await driver.executeQuery("MATCH (u:User),(c:ServerConfig) CREATE (c)-[:HAS_PENDING_SERVER_ADMIN_INVITE]->(u)");
   events=[];
  };
- await prepare();const oldResults=[plain(await oldWrite(action)),plain(await oldWrite(action))];const expected=await snapshot();
  await prepare();const repo=createServerAdminRepository(driver);const results=[plain(await repo[action]("cats","alice")),plain(await repo[action]("cats","alice"))];
- assert.deepEqual(results,oldResults);assert.deepEqual(await snapshot(),expected);
+ t.assert.snapshot(normalize(results));t.assert.snapshot(await snapshot());
 });
-test("projection failure preserves committed administrator relationship and native events",async()=>{
- await seed(false);await assert.rejects(oldWrite("connectAdmin"),/Boolean cannot represent a non boolean value/);const expected=await snapshot();
- await resetDatabase(driver);await seed(false);events=[];
- await assert.rejects(createServerAdminRepository(driver).connectAdmin("cats","alice"),/Boolean cannot represent a non boolean value/);assert.deepEqual(await snapshot(),expected);
+test("projection failure preserves committed administrator relationship and native events",async(t)=>{
+ await seed(false);events=[];
+ await assert.rejects(createServerAdminRepository(driver).connectAdmin("cats","alice"),/Boolean cannot represent a non boolean value/);t.assert.snapshot(await snapshot());
 });
 test("invalid inputs preserve first coercion error and do not write",async()=>{
  await seed();
@@ -89,10 +89,9 @@ test("production resolver accepts once and rejects repeat after invite removal",
  await assert.rejects(acceptAdminInvite()(null,{serverName:"cats"},context,{} as GraphQLResolveInfo),{message:"No pending admin invite found for user alice"});assert.equal(events.length,eventCount);
 });
 
-for(const absent of ["server","user"] as const)test(`administrator writes preserve missing ${absent} results and events`,async()=>{
+for(const absent of ["server","user"] as const)test(`administrator writes preserve missing ${absent} results and events`,async(t)=>{
  for(const action of ["connectAdmin","disconnectInvite"] as const){
   const prepare=async()=>{await resetDatabase(driver);await seed();await driver.executeQuery(absent==="server"?"MATCH (c:ServerConfig) DETACH DELETE c":"MATCH (u:User) DETACH DELETE u");events=[];};
-  await prepare();const expected=plain(await oldWrite(action));const oldSnapshot=await snapshot();
-  await prepare();assert.deepEqual(plain(await createServerAdminRepository(driver)[action]("cats","alice")),expected);assert.deepEqual(await snapshot(),oldSnapshot);
+  await prepare();t.assert.snapshot(normalize(plain(await createServerAdminRepository(driver)[action]("cats","alice"))));t.assert.snapshot(await snapshot());
  }
 });

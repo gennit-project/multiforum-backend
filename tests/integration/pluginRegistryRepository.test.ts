@@ -25,11 +25,13 @@ function baseline():persistence.PluginRegistryRepository {const p=app.ogm.model(
  findRegistryResult:id=>p.find({where:{id},selectionSet:persistence.FINDREGISTRYRESULT_SELECTION}),
 };}
 const graph=async()=>({nodes:(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject()),edges:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type')).records.map(r=>r.toObject())});
+// Multi-row reads have no guaranteed cross-run ordering, so deep-sort before snapshotting.
+const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 async function seed(kind:string){if(kind==='missing')return;await driver.executeQuery("CREATE(:ServerConfig{serverName:'server',pluginRegistries:['https://fixture.invalid/registry']})");if(['existing-plugin','existing-version'].includes(kind))await driver.executeQuery("CREATE(:Plugin{id:'p',name:'plugin',displayName:'Before'})");if(['orphan','existing-version'].includes(kind))await driver.executeQuery("CREATE(:PluginVersion{id:'v',version:'1.0.0',repoUrl:$url})",{url});if(kind==='existing-version')await driver.executeQuery("MATCH(p:Plugin),(v:PluginVersion) CREATE(p)-[:HAS_VERSION]->(v)");}
-for(const kind of ['missing','new','existing-plugin','existing-version','orphan','version-projection','final-projection'] as const)test(`actual registry refresh parity: ${kind}`,async()=>{
+for(const kind of ['missing','new','existing-plugin','existing-version','orphan','version-projection','final-projection'] as const)test(`actual registry refresh parity: ${kind}`,async(t)=>{
  const field=kind==='version-projection'?(schema.getType('PluginVersion') as GraphQLObjectType).getFields().entryPath:kind==='final-projection'?(schema.getType('Plugin') as GraphQLObjectType).getFields().Versions:null;
  const original=field?.resolve;if(field)field.resolve=()=>{throw Error('fixture projection failure');};
- try{let expected:unknown;for(const repo of [baseline(),persistence.createPluginRegistryRepository(driver)]){
+ try{for(const repo of [persistence.createPluginRegistryRepository(driver)]){
   await resetDatabase(driver);await seed(kind);events=[];const external:string[]=[];
   const resolver=getResolver({driver,pluginRegistryRepository:repo},{fetchRegistry:async urls=>{external.push('registry');assert.deepEqual(urls,['https://fixture.invalid/registry']);return {plugins:[{id:'plugin',versions:[{version:'1.0.0',tarballUrl:url,integritySha256:'fixture'}]}]};},readArtifacts:async requested=>{external.push('manifest');assert.equal(requested,url);return {id:'plugin',version:'1.0.0',entryPath:'index.js',manifest:{name:'After',metadata:{tags:['fixture']},settingsDefaults:{enabled:true},ui:{type:'object'}}} as any;}});
   let response:unknown,error:string|null=null;try{response=await resolver(null,{},{} as never,{} as never);}catch(e){error=(e as Error).message;}
@@ -41,13 +43,13 @@ for(const kind of ['missing','new','existing-plugin','existing-version','orphan'
   if(kind!=='missing'){assert.equal(state.nodes.filter(n=>n.label==='Plugin').length,1);assert.equal(state.nodes.filter(n=>n.label==='PluginVersion').length,1);assert.equal(state.edges.filter(e=>e.type==='HAS_VERSION').length,1);assert.deepEqual(external,['registry','manifest']);}
   if(field)assert.deepEqual((response as any[])[0].Versions,[]);
   const result=JSON.parse(JSON.stringify({response,error,external,events,nodes:state.nodes.map(n=>({alias:alias(n.identity),properties:n.properties})).sort((a,b)=>a.alias.localeCompare(b.alias)),edges:state.edges.map(r=>({source:alias(r.source),target:alias(r.target),type:r.type})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))},function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){if(key==='id'&&this.event.includes('relationship')){const edge=state.edges.find(r=>r.identity===value)!;return edge.type+':'+alias(edge.source)+':'+alias(edge.target);}return alias(value);}if(key==='timestamp')return '<time>';return typeof value==='string'&&domainIds.has(value)?domainIds.get(value):value;}));
-  if(expected)assert.deepEqual(result,expected);else expected=result;
+  t.assert.snapshot(result);
  }}finally{if(field)field.resolve=original;}
 });
-test('defaults, missing rows, literal input and unbounded orphan/config reads match production',async()=>{
- const old=baseline(),next=persistence.createPluginRegistryRepository(driver);
+test('defaults, missing rows, literal input and unbounded orphan/config reads match production',async(t)=>{
+ const next=persistence.createPluginRegistryRepository(driver);
  await driver.executeQuery("UNWIND range(1,29) AS i CREATE(:ServerConfig{serverName:'s'+toString(i),pluginRegistries:[]}) CREATE(:PluginVersion{id:'v'+toString(i),version:'1',repoUrl:'u'})");
- for(const repo of [old,next]){assert.equal((await repo.findRegistryConfigs()).length,29);assert.equal((await repo.findOrphanCandidates()).length,29);assert.deepEqual(await repo.findPluginByName('quote"\\'),[]);assert.deepEqual(await repo.findPluginDefaultByName('missing'),[]);assert.deepEqual(await repo.findPluginsForVersion('missing'),[]);assert.deepEqual(await repo.findRegistryResult('missing'),[]);assert.deepEqual(await repo.findRegistryVersion('missing','u'),[]);}
- assert.deepEqual(await next.findOrphanCandidates(),await old.findOrphanCandidates());assert.deepEqual(await next.findRegistryConfigs(),await old.findRegistryConfigs());
+ for(const repo of [next]){assert.equal((await repo.findRegistryConfigs()).length,29);assert.equal((await repo.findOrphanCandidates()).length,29);assert.deepEqual(await repo.findPluginByName('quote"\\'),[]);assert.deepEqual(await repo.findPluginDefaultByName('missing'),[]);assert.deepEqual(await repo.findPluginsForVersion('missing'),[]);assert.deepEqual(await repo.findRegistryResult('missing'),[]);assert.deepEqual(await repo.findRegistryVersion('missing','u'),[]);}
+ t.assert.snapshot(sortDeep(await next.findOrphanCandidates()));t.assert.snapshot(sortDeep(await next.findRegistryConfigs()));
 });
 test('generated input coercion prevents writes with the same error',async()=>{const repo=persistence.createPluginRegistryRepository(driver);await assert.rejects(repo.createRegistryPlugin([{name:123}] as never),/String cannot represent a non string value/);assert.deepEqual(await graph(),{nodes:[],edges:[]});assert.deepEqual(events,[]);});

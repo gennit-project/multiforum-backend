@@ -1,6 +1,6 @@
 import { assertCommentEmojiEnabled } from "../../customResolvers/mutations/channelPreferenceGuards.js";
 import assert from "node:assert/strict";
-import { after, before, beforeEach, test } from "node:test";
+import { after, before, beforeEach, test, type TestContext } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
@@ -65,7 +65,7 @@ const pairs = (where: any = {}) => {
   [()=>ogm.model("DownloadableFile").find({where,selectionSet:"{id fileName}"}),()=>repo.findExistingDownloadableFiles(where)],
  ] as const;
 };
-const compare=async(old:()=>Promise<unknown>,current:()=>Promise<unknown>)=>assert.deepEqual(plain(await current()),plain(await old()));
+const compare=async(t:TestContext,current:()=>Promise<unknown>)=>t.assert.snapshot(plain(await current()));
 const seed=async()=>driver.executeQuery(`
  CREATE (channel:Channel {uniqueName:'cats',emojiEnabled:false})
  CREATE (discussion:Discussion {id:'d',title:'topic'})
@@ -77,24 +77,24 @@ const seed=async()=>driver.executeQuery(`
  CREATE (channel)-[:HAS_COMMENT]->(comment)
  CREATE (:DownloadableFile {id:'f',fileName:'old.zip'})
 `);
-const compareEmoji=async()=>{
+const compareEmoji=async(t:TestContext)=>{
  const repo=createContentValidationRepository(driver);
- await compare(()=>ogm.model("DiscussionChannel").find({where:{id:"dc"},selectionSet:discussionEmojiSelection}),()=>repo.findDiscussionChannelEmojiState("dc"));
- await compare(()=>ogm.model("Comment").find({where:{id:"c"},selectionSet:commentEmojiSelection}),()=>repo.findCommentEmojiState("c"));
+ await compare(t,()=>repo.findDiscussionChannelEmojiState("dc"));
+ await compare(t,()=>repo.findCommentEmojiState("c"));
 };
-test("all four validation snapshots preserve missing and populated results",async()=>{
- for (const pair of pairs()) await compare(pair[0],pair[1]); await compareEmoji();
- await seed(); for(const pair of pairs()) await compare(pair[0],pair[1]); await compareEmoji();
+test("all four validation snapshots preserve missing and populated results",async(t)=>{
+ for (const pair of pairs()) await compare(t,pair[1]); await compareEmoji(t);
+ await seed(); for(const pair of pairs()) await compare(t,pair[1]); await compareEmoji(t);
  const rows=await createContentValidationRepository(driver).findCommentEmojiState("c"); assert.equal(rows[0].Channel?.emojiEnabled,false);
 });
-test("arbitrary compound filters and default25 limits match generated operations",async()=>{
+test("arbitrary compound filters and default25 limits match generated operations",async(t)=>{
  await driver.executeQuery("UNWIND range(0,29) AS i CREATE (:Discussion {id:toString(i),title:'topic'}) CREATE (:DownloadableFile {id:toString(i),fileName:'old.zip'})");
- for(const pair of pairs({OR:[{id_STARTS_WITH:"1"},{id_STARTS_WITH:"2"}]})) await compare(pair[0],pair[1]);
- for(const pair of pairs()) {await compare(pair[0],pair[1]);assert.equal((await pair[1]()).length,25);}
+ for(const pair of pairs({OR:[{id_STARTS_WITH:"1"},{id_STARTS_WITH:"2"}]})) await compare(t,pair[1]);
+ for(const pair of pairs()) {await compare(t,pair[1]);assert.equal((await pair[1]()).length,25);}
 });
-test("sensitive roots and nested channels retain anonymous internal filtering",async()=>{
+test("sensitive roots and nested channels retain anonymous internal filtering",async(t)=>{
  await seed(); await driver.executeQuery("MATCH (n) WHERE n:Discussion OR n:Comment OR n:DiscussionChannel OR n:DownloadableFile SET n.ageGateRestricted=true SET n.hasSensitiveContent=true");
- for(const pair of pairs()) await compare(pair[0],pair[1]); await compareEmoji();
+ for(const pair of pairs()) await compare(t,pair[1]); await compareEmoji(t);
  assert.deepEqual(await createContentValidationRepository(driver).findExistingDownloadableFiles({}),[]);
  assert.deepEqual(await createContentValidationRepository(driver).findCommentEmojiState("c"),[]);
 });
@@ -115,9 +115,9 @@ test("outer privileged auth is not inherited by validation snapshots",async()=>{
  await seed(); await driver.executeQuery("MATCH (c:Comment) SET c.ageGateRestricted=true");
  await assert.rejects(assertCommentEmojiEnabled({driver,ogm,jwt:{mayAccessSensitiveContent:true}} as unknown as GraphQLContext,"c"),{message:"Comment not found"});
 });
-test("nested discussion channels preserve filtering when the root remains visible",async()=>{
+test("nested discussion channels preserve filtering when the root remains visible",async(t)=>{
  await seed();await driver.executeQuery("MATCH (dc:DiscussionChannel) SET dc.ageGateRestricted=true");
- await compare(pairs()[0][0],pairs()[0][1]);await compareEmoji();
+ await compare(t,pairs()[0][1]);await compareEmoji(t);
  const [discussion]=await createContentValidationRepository(driver).findDiscussionChannels({id:"d"});
  assert.deepEqual(discussion.DiscussionChannels,[]);
  const [comment]=await createContentValidationRepository(driver).findCommentEmojiState("c");

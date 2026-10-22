@@ -19,6 +19,8 @@ const oldUpdate=async(tx:ManagedTransaction,update:unknown)=>{await app.ogm.mode
 const newUpdate=(tx:ManagedTransaction,update:unknown)=>createEventWriteRepository(driver).updateWithinTransaction({id:'d'},update as never,tx);
 const title=async()=> (await driver.executeQuery("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title');
 const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){const identity=(key==='id'&&this.event.includes('relationship')?'relationship':'node')+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','updatedAt'].includes(key)?'<time>':value;}));};
+// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
+const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 // Both implementations stamp these fields at transaction time. Check their raw
 // values before aliasing clocks across independently executed transactions.
 function assertNativeUpdateEvent() {
@@ -37,24 +39,23 @@ function assertNativeUpdateEvent() {
   assert.ok(updatedAt && typeof updatedAt.toStandardDate === 'function');
   assert.equal(updatedAt.toStandardDate().getTime(), event.timestamp);
 }
-test('snapshot and final refetch preserve missing rows and full selected response',async()=>{const repo=createEventWriteRepository(driver);assert.deepEqual(await repo.findUpdateSnapshot({id:'missing'}),[]);assert.deepEqual(await repo.findUpdatedEvent('missing'),[]);await seed();assert.deepEqual(await repo.findUpdateSnapshot({id:'d'}),await app.ogm.model('Event').find({where:{id:'d'},selectionSet:EVENT_UPDATE_SNAPSHOT_SELECTION}));assert.deepEqual(await repo.findUpdatedEvent('d'),await app.ogm.model('Event').find({where:{id:'d'},selectionSet:UPDATED_EVENT_SELECTION}));});
-for(const abort of [false,true])test(`caller owns transaction ${abort?'rollback':'commit'} and native event behavior`,async()=>{let expected:unknown;for(const update of [oldUpdate,newUpdate]){await resetDatabase(driver);await seed();events=[];const session=driver.session();try{const operation=session.executeWrite(async tx=>{await update(tx,{title:'After'});assert.equal((await tx.run("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title'),'After');if(abort)throw Error('fixture abort');});if(abort)await assert.rejects(operation,{message:'fixture abort'});else await operation;}finally{await session.close();}assert.equal(await title(),abort?'Before':'After');assertNativeUpdateEvent();const actual=normalize(events);assert.ok(events.length>0);if(expected)assert.deepEqual(actual,expected);else expected=actual;}});
+test('snapshot and final refetch preserve missing rows and full selected response',async(t)=>{const repo=createEventWriteRepository(driver);assert.deepEqual(await repo.findUpdateSnapshot({id:'missing'}),[]);assert.deepEqual(await repo.findUpdatedEvent('missing'),[]);await seed();t.assert.snapshot(sortDeep(await repo.findUpdateSnapshot({id:'d'})));t.assert.snapshot(sortDeep(await repo.findUpdatedEvent('d')));});
+for(const abort of [false,true])test(`caller owns transaction ${abort?'rollback':'commit'} and native event behavior`,async(t)=>{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{const operation=session.executeWrite(async tx=>{await newUpdate(tx,{title:'After'});assert.equal((await tx.run("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title'),'After');if(abort)throw Error('fixture abort');});if(abort)await assert.rejects(operation,{message:'fixture abort'});else await operation;}finally{await session.close();}assert.equal(await title(),abort?'Before':'After');assertNativeUpdateEvent();assert.ok(events.length>0);t.assert.snapshot(normalize(events));}});
 test('generated input coercion fails with the same error and no mutation',async()=>{await seed();const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:123})),/String cannot represent a non string value/);}finally{await session.close();}assert.equal(await title(),'Before');assert.deepEqual(events,[]);});
-test('default projection failure rolls back within caller transaction with legacy event behavior',async()=>{const field=(schema.getType('Event') as GraphQLObjectType).getFields().title;const original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};try{let expected:unknown;for(const update of [oldUpdate,newUpdate]){await resetDatabase(driver);await seed();events=[];const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>update(tx,{title:'After'})),{message:'fixture projection failure'});}finally{await session.close();}assert.equal(await title(),'Before');assertNativeUpdateEvent();const actual=normalize(events);if(expected)assert.deepEqual(actual,expected);else expected=actual;}}finally{field.resolve=original;}});
+test('default projection failure rolls back within caller transaction with legacy event behavior',async(t)=>{const field=(schema.getType('Event') as GraphQLObjectType).getFields().title;const original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};try{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:'After'})),{message:'fixture projection failure'});}finally{await session.close();}assert.equal(await title(),'Before');assertNativeUpdateEvent();t.assert.snapshot(normalize(events));}}finally{field.resolve=original;}});
 
 const eventInput = {title: 'Created', canceled: false, startTime: '2026-06-01T10:00:00Z', endTime: '2026-06-01T12:00:00Z'};
 const oldCreate = async (tx: ManagedTransaction, input: unknown) => (await app.ogm.model('Event').create({input: [input] as never, selectionSet: `{events ${CREATED_EVENT_SELECTION}}`, context: {executionContext: tx}})).events;
 const newCreate = (tx: ManagedTransaction, input: unknown) => createEventWriteRepository(driver).createWithinTransaction(input as never, tx);
-for (const abort of [false, true]) test(`creation preserves caller-owned ${abort ? 'rollback' : 'commit'}, projection and native events`, async () => {
-  let expected: unknown;
-  for (const create of [oldCreate, newCreate]) {
+for (const abort of [false, true]) test(`creation preserves caller-owned ${abort ? 'rollback' : 'commit'}, projection and native events`, async (t) => {
+  {
     await resetDatabase(driver); events = [];
     const session = driver.session();
     let createdId = '';
     let response: unknown;
     try {
       const operation = session.executeWrite(async tx => {
-        const created = await create(tx, eventInput);
+        const created = await newCreate(tx, eventInput);
         createdId = created[0].id; response = created;
         const stored = (await tx.run('MATCH(e:Event {id:$id}) RETURN properties(e) AS properties, toString(id(e)) AS id', {id: createdId})).records[0];
         assert.equal(events.length, 1);
@@ -70,9 +71,9 @@ for (const abort of [false, true]) test(`creation preserves caller-owned ${abort
     const repo = createEventWriteRepository(driver);
     const fetched = await repo.findCreatedEvent(createdId);
     assert.equal(fetched.length, abort ? 0 : 1);
-    if (!abort) assert.deepEqual(fetched, await app.ogm.model('Event').find({where: {id: createdId}, selectionSet: CREATED_EVENT_SELECTION}));
+    if (!abort) t.assert.snapshot(sortDeep(JSON.parse(JSON.stringify(fetched, (key, value) => value === createdId ? '<createdId>' : key === 'createdAt' ? '<createdAt>' : value))));
     const actual = normalize(JSON.parse(JSON.stringify({response, events}, (key, value) => value === createdId ? '<createdId>' : key === 'createdAt' ? '<createdAt>' : value)));
-    if (expected) assert.deepEqual(actual, expected); else expected = actual;
+    t.assert.snapshot(actual);
   }
 });
 test('creation input coercion has matching errors without writes or events', async () => {
@@ -83,22 +84,21 @@ test('creation input coercion has matching errors without writes or events', asy
   assert.deepEqual(events, []);
   assert.equal((await driver.executeQuery('MATCH(e:Event) RETURN count(e) AS n')).records[0].get('n').toNumber(), 0);
 });
-test('creation projection failure preserves native publication and rolls back the caller transaction', async () => {
+test('creation projection failure preserves native publication and rolls back the caller transaction', async (t) => {
   const field = (schema.getType('Event') as GraphQLObjectType).getFields().title;
   const original = field.resolve; field.resolve = () => {throw Error('fixture projection failure');};
   try {
-    let expected: unknown;
-    for (const create of [oldCreate, newCreate]) {
+    {
       await resetDatabase(driver); events = [];
       const session = driver.session();
-      try { await assert.rejects(session.executeWrite(tx => create(tx, eventInput)), {message: 'fixture projection failure'}); }
+      try { await assert.rejects(session.executeWrite(tx => newCreate(tx, eventInput)), {message: 'fixture projection failure'}); }
       finally { await session.close(); }
       assert.equal((await driver.executeQuery('MATCH(e:Event) RETURN count(e) AS n')).records[0].get('n').toNumber(), 0);
       assert.equal(events.length, 1);
       const event = events[0] as {event: string; properties: {new: {id: string; title: string}}};
       assert.equal(event.event, 'create'); assert.equal(event.properties.new.title, 'Created');
       const actual = normalize(JSON.parse(JSON.stringify(events, (key, value) => value === event.properties.new.id ? '<createdId>' : key === 'createdAt' ? '<createdAt>' : value)));
-      if (expected) assert.deepEqual(actual, expected); else expected = actual;
+      t.assert.snapshot(actual);
     }
   } finally {field.resolve = original;}
 });

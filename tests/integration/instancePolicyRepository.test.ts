@@ -40,23 +40,23 @@ for (const properties of [
   { serverName: "named", accountAgeGateEnabled: false, minimumAccountAge: 0, sensitiveContentAgeGateEnabled: true, minimumSensitiveContentAge: 21, enableDownloads: true, enableEvents: false },
   { serverName: "named", accountAgeGateEnabled: 1, minimumAccountAge: 13, sensitiveContentAgeGateEnabled: 0, minimumSensitiveContentAge: 18, enableDownloads: 0, enableEvents: 1 },
 ]) {
-  test(`matches production OGM selected scalar behavior: ${JSON.stringify(properties)}`, async () => {
+  test(`matches production OGM selected scalar behavior: ${JSON.stringify(properties)}`, async (t) => {
     await driver.executeQuery("CREATE (config:ServerConfig) SET config = $properties", { properties });
     const repository = createInstancePolicyRepository(driver);
-    assert.deepEqual(await repository.findAgePolicyConfigs("named"), plain(await oldAge("named")));
-    assert.deepEqual(await repository.findSetupConfigs("named"), plain(await oldSetup("named")));
-    assert.deepEqual(await repository.findSetupConfigs(), plain(await oldSetup()));
+    t.assert.snapshot(await repository.findAgePolicyConfigs("named"));
+    t.assert.snapshot(await repository.findSetupConfigs("named"));
+    t.assert.snapshot(await repository.findSetupConfigs());
   });
 }
 
-test("missing and unmatched configs preserve defaults; whitespace is not trimmed by age lookup", async () => {
+test("missing and unmatched configs preserve defaults; whitespace is not trimmed by age lookup", async (t) => {
   const repository = createInstancePolicyRepository(driver);
   assert.deepEqual(await repository.findAgePolicyConfigs("missing"), []);
   assert.deepEqual(await repository.findSetupConfigs(), []);
   assert.deepEqual(await loadAgePolicy(repository, "missing"), DEFAULT_AGE_POLICY);
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'named', accountAgeGateEnabled:true})");
-  assert.deepEqual(await repository.findAgePolicyConfigs(" named "), plain(await oldAge(" named ")));
-  assert.deepEqual(await repository.findSetupConfigs("other"), plain(await oldSetup("other")));
+  t.assert.snapshot(await repository.findAgePolicyConfigs(" named "));
+  t.assert.snapshot(await repository.findSetupConfigs("other"));
 });
 
 for (const [field, value, operation, message] of [
@@ -80,7 +80,7 @@ test("validates every selected record rather than limiting to the first config",
   await assert.rejects(() => createInstancePolicyRepository(driver).findSetupConfigs(), /Boolean cannot represent/);
 });
 
-test("nullable server names remain accepted by unfiltered setup reads", async () => {
+test("nullable server names remain accepted by unfiltered setup reads", async (t) => {
   await driver.executeQuery("CREATE (:ServerConfig {enableEvents:true})");
-  assert.deepEqual(await createInstancePolicyRepository(driver).findSetupConfigs(), plain(await oldSetup()));
+  t.assert.snapshot(await createInstancePolicyRepository(driver).findSetupConfigs());
 });

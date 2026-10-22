@@ -1,0 +1,332 @@
+exports[`icon write preserves missing rows, exact projection and repeated update events 1`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`icon write preserves missing rows, exact projection and repeated update events 2`] = `
+{
+  "response": {
+    "channels": [
+      {
+        "uniqueName": "forum",
+        "channelIconURL": "https://example.test/icon",
+        "variantUrls": {
+          "avatar32": "https://example.test/32"
+        },
+        "icon32Url": "https://example.test/32",
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "node-0",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "forum",
+          "createdAt": "<generated-datetime>"
+        },
+        "new": {
+          "icon32Url": "https://example.test/32",
+          "channelIconURL": "https://example.test/icon",
+          "uniqueName": "forum",
+          "createdAt": "<generated-datetime>"
+        }
+      }
+    },
+    {
+      "id": "node-0",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "channelIconURL": "https://example.test/icon",
+          "icon32Url": "https://example.test/32",
+          "uniqueName": "forum",
+          "createdAt": "<generated-datetime>"
+        },
+        "new": {
+          "channelIconURL": "https://example.test/icon",
+          "icon32Url": "https://example.test/32",
+          "uniqueName": "forum",
+          "createdAt": "<generated-datetime>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`image create preserves selected response, generated defaults, relations and native events 1`] = `
+{
+  "response": {
+    "images": [
+      {
+        "id": "domain-0",
+        "url": "https://example.test/image",
+        "storageBucket": null,
+        "storageObjectName": null,
+        "storageUrl": null,
+        "uploadedAt": "<time>",
+        "uploadedByUsername": null,
+        "uploadedByIp": null,
+        "alt": "alt",
+        "caption": null,
+        "longDescription": null,
+        "copyright": null,
+        "createdAt": "<time>",
+        "hasSensitiveContent": false,
+        "hasSpoiler": null,
+        "scanStatus": "PENDING",
+        "Uploader": {
+          "username": "alice"
+        },
+        "Albums": [
+          {
+            "id": "domain-1"
+          }
+        ]
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "relationship-2",
+      "id_from": "node-3",
+      "id_to": "node-4",
+      "relationshipName": "UPLOADED_IMAGE",
+      "fromTypename": "User",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "alice",
+          "createdAt": "<generated-datetime>"
+        },
+        "to": {
+          "url": "https://example.test/image",
+          "archived": false,
+          "scanStatus": "PENDING",
+          "id": "domain-0",
+          "alt": "alt",
+          "ageGateTouchedAt": "<generated-datetime>",
+          "permanentlyRemoved": false,
+          "hasSensitiveContent": false,
+          "createdAt": "<generated-datetime>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "relationship-5",
+      "id_from": "node-6",
+      "id_to": "node-4",
+      "relationshipName": "HAS_IMAGE",
+      "fromTypename": "Album",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "id": "domain-1"
+        },
+        "to": {
+          "url": "https://example.test/image",
+          "archived": false,
+          "scanStatus": "PENDING",
+          "id": "domain-0",
+          "alt": "alt",
+          "ageGateTouchedAt": "<generated-datetime>",
+          "permanentlyRemoved": false,
+          "hasSensitiveContent": false,
+          "createdAt": "<generated-datetime>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "node-4",
+      "typename": "Image",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "url": "https://example.test/image",
+          "archived": false,
+          "scanStatus": "PENDING",
+          "id": "domain-0",
+          "alt": "alt",
+          "ageGateTouchedAt": "<generated-datetime>",
+          "permanentlyRemoved": false,
+          "hasSensitiveContent": false,
+          "createdAt": "<generated-datetime>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`image projection failure leaves the same committed graph and events 1`] = `
+{
+  "count": 1,
+  "events": [
+    {
+      "id": "relationship-0",
+      "id_from": "node-1",
+      "id_to": "node-2",
+      "relationshipName": "UPLOADED_IMAGE",
+      "fromTypename": "User",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "alice",
+          "createdAt": "<generated-datetime>"
+        },
+        "to": {
+          "url": "https://example.test/image",
+          "archived": false,
+          "scanStatus": "PENDING",
+          "id": "domain-3",
+          "alt": "alt",
+          "ageGateTouchedAt": "<generated-datetime>",
+          "permanentlyRemoved": false,
+          "hasSensitiveContent": false,
+          "createdAt": "<generated-datetime>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "relationship-4",
+      "id_from": "node-5",
+      "id_to": "node-2",
+      "relationshipName": "HAS_IMAGE",
+      "fromTypename": "Album",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "id": "domain-6"
+        },
+        "to": {
+          "url": "https://example.test/image",
+          "archived": false,
+          "scanStatus": "PENDING",
+          "id": "domain-3",
+          "alt": "alt",
+          "ageGateTouchedAt": "<generated-datetime>",
+          "permanentlyRemoved": false,
+          "hasSensitiveContent": false,
+          "createdAt": "<generated-datetime>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "node-2",
+      "typename": "Image",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "url": "https://example.test/image",
+          "archived": false,
+          "scanStatus": "PENDING",
+          "id": "domain-3",
+          "alt": "alt",
+          "ageGateTouchedAt": "<generated-datetime>",
+          "permanentlyRemoved": false,
+          "hasSensitiveContent": false,
+          "createdAt": "<generated-datetime>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`profile write preserves missing rows, exact projection and repeated update events 1`] = `
+{
+  "users": []
+}
+`;
+
+exports[`profile write preserves missing rows, exact projection and repeated update events 2`] = `
+{
+  "response": {
+    "users": [
+      {
+        "username": "alice",
+        "profilePicURL": "https://example.test/profile",
+        "variantUrls": {
+          "avatar32": "https://example.test/32"
+        },
+        "avatar32Url": "https://example.test/32",
+        "avatar48Url": null,
+        "avatar64Url": null,
+        "avatar96Url": null
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "node-0",
+      "typename": "User",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "username": "alice",
+          "createdAt": "<generated-datetime>"
+        },
+        "new": {
+          "avatar32Url": "https://example.test/32",
+          "profilePicURL": "https://example.test/profile",
+          "username": "alice",
+          "createdAt": "<generated-datetime>"
+        }
+      }
+    },
+    {
+      "id": "node-0",
+      "typename": "User",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "profilePicURL": "https://example.test/profile",
+          "avatar32Url": "https://example.test/32",
+          "username": "alice",
+          "createdAt": "<generated-datetime>"
+        },
+        "new": {
+          "profilePicURL": "https://example.test/profile",
+          "avatar32Url": "https://example.test/32",
+          "username": "alice",
+          "createdAt": "<generated-datetime>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`uploader lookup preserves exact projection and missing rows 1`] = `
+[
+  {
+    "username": "alice"
+  }
+]
+`;

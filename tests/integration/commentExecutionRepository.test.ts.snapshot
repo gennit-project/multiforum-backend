@@ -1,0 +1,885 @@
+exports[`actual comment trigger preserves guards and fake-plugin execution 1`] = `
+[
+  {
+    "id": "id0",
+    "text": "fixture",
+    "botMentions": null,
+    "isFeedbackComment": null,
+    "createdAt": "<time>",
+    "CommentAuthor": null,
+    "DiscussionChannel": {
+      "id": "id1",
+      "discussionId": "discussion",
+      "channelUniqueName": "channel",
+      "Discussion": {
+        "id": "id2",
+        "title": "fixture",
+        "body": "body"
+      }
+    },
+    "Channel": {
+      "uniqueName": "channel",
+      "displayName": null,
+      "description": null,
+      "rules": null
+    },
+    "Event": null,
+    "Issue": null,
+    "ParentComment": null
+  }
+]
+`;
+
+exports[`comment union-author and age-gate read contracts remain schema-owned 1`] = `
+[
+  {
+    "id": "id0",
+    "text": "fixture",
+    "botMentions": null,
+    "isFeedbackComment": null,
+    "createdAt": "<time>",
+    "CommentAuthor": {
+      "username": "author",
+      "displayName": "Author",
+      "isBot": null
+    },
+    "DiscussionChannel": null,
+    "Channel": null,
+    "Event": null,
+    "Issue": null,
+    "ParentComment": null
+  }
+]
+`;
+
+exports[`comment union-author and age-gate read contracts remain schema-owned 2`] = `
+[]
+`;
+
+exports[`comment union-author and age-gate read contracts remain schema-owned 3`] = `
+[
+  {
+    "id": "id0",
+    "text": "fixture",
+    "botMentions": null,
+    "isFeedbackComment": null,
+    "createdAt": "<time>",
+    "CommentAuthor": {
+      "displayName": "Moderator",
+      "User": {
+        "username": "author"
+      }
+    },
+    "DiscussionChannel": null,
+    "Channel": null,
+    "Event": null,
+    "Issue": null,
+    "ParentComment": null
+  }
+]
+`;
+
+exports[`create retains default projection and ordered native events 1`] = `
+{
+  "nodes": [
+    {
+      "label": "Channel",
+      "properties": {
+        "uniqueName": "channel"
+      }
+    },
+    {
+      "label": "Comment",
+      "properties": {
+        "createdAt": "<time>",
+        "isRootComment": true,
+        "id": "id0",
+        "text": "fixture"
+      }
+    },
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "createdAt": "<time>",
+        "fileName": "fixture.zip",
+        "size": {
+          "low": 12,
+          "high": 0
+        },
+        "kind": "ZIP",
+        "scanStatus": "CLEAN",
+        "priceModel": "FREE",
+        "id": "id1",
+        "url": "https://fixture.invalid/file"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "targetId": "file",
+        "pluginId": "plugin",
+        "targetType": "DownloadableFile",
+        "eventType": "fixture",
+        "version": "1.0.0",
+        "executionOrder": {
+          "low": 0,
+          "high": 0
+        },
+        "pipelineId": "pipeline",
+        "queuedAt": {
+          "year": {
+            "low": 2026,
+            "high": 0
+          },
+          "month": {
+            "low": 1,
+            "high": 0
+          },
+          "day": {
+            "low": 1,
+            "high": 0
+          },
+          "hour": {
+            "low": 0,
+            "high": 0
+          },
+          "minute": {
+            "low": 0,
+            "high": 0
+          },
+          "second": {
+            "low": 0,
+            "high": 0
+          },
+          "nanosecond": {
+            "low": 0,
+            "high": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "low": 0,
+            "high": 0
+          }
+        },
+        "createdAt": "<time>",
+        "scope": "SERVER",
+        "id": "id2",
+        "updatedAt": "<time>",
+        "status": "PENDING"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "pluginId": "plugin",
+        "scope": "SERVER",
+        "id": "id3",
+        "eventType": "fixture",
+        "version": "1.0.0",
+        "updatedAt": "<time>",
+        "status": "PENDING"
+      }
+    }
+  ],
+  "edgeTypes": [],
+  "events": [
+    {
+      "id": "id4",
+      "typename": "PluginRun",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "scope": "SERVER",
+          "pluginId": "plugin",
+          "targetId": "file",
+          "version": "1.0.0",
+          "id": "id2",
+          "createdAt": "<time>",
+          "targetType": "DownloadableFile",
+          "executionOrder": 0,
+          "pipelineId": "pipeline",
+          "eventType": "fixture",
+          "updatedAt": "<time>",
+          "status": "PENDING",
+          "queuedAt": {
+            "year": {
+              "low": 2026,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 1`] = `
+[
+  {
+    "id": "id0",
+    "text": "fixture",
+    "botMentions": null,
+    "isFeedbackComment": null,
+    "createdAt": "<time>",
+    "CommentAuthor": null,
+    "DiscussionChannel": null,
+    "Channel": null,
+    "Event": null,
+    "Issue": null,
+    "ParentComment": null
+  }
+]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 10`] = `
+[]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 2`] = `
+[]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 3`] = `
+[]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 4`] = `
+[
+  {
+    "uniqueName": "channel",
+    "displayName": null,
+    "description": null,
+    "rules": null,
+    "pluginPipelines": null,
+    "EnabledPluginsConnection": {
+      "edges": []
+    }
+  }
+]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 5`] = `
+[]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 6`] = `
+[
+  {
+    "serverName": "1",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "10",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "11",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "12",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "13",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "14",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "15",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "16",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "17",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "18",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "19",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "2",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "20",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "21",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "22",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "23",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "24",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "25",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "26",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "27",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "28",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "29",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "3",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "4",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "5",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "6",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "7",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "8",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "9",
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  }
+]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 7`] = `
+[]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 8`] = `
+[
+  {
+    "key": "1",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "10",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "11",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "12",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "13",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "14",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "15",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "16",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "17",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "18",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "19",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "2",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "20",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "21",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "22",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "23",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "24",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "25",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "26",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "27",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "28",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "29",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "3",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "4",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "5",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "6",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "7",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "8",
+    "ciphertext": "synthetic-not-encrypted"
+  },
+  {
+    "key": "9",
+    "ciphertext": "synthetic-not-encrypted"
+  }
+]
+`;
+
+exports[`finite reads preserve literal IDs, missing results and unbounded configurations/secrets 9`] = `
+[
+  {
+    "id": "id0",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "PENDING",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": null,
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "<time>",
+    "updatedAt": "<time>"
+  }
+]
+`;
+
+exports[`job default projection failure retains committed write 1`] = `
+{
+  "nodes": [
+    {
+      "label": "Channel",
+      "properties": {
+        "uniqueName": "channel"
+      }
+    },
+    {
+      "label": "Comment",
+      "properties": {
+        "createdAt": "<time>",
+        "isRootComment": true,
+        "id": "id0",
+        "text": "fixture"
+      }
+    },
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "createdAt": "<time>",
+        "fileName": "fixture.zip",
+        "size": {
+          "low": 12,
+          "high": 0
+        },
+        "kind": "ZIP",
+        "scanStatus": "CLEAN",
+        "priceModel": "FREE",
+        "id": "id1",
+        "url": "https://fixture.invalid/file"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "pluginId": "plugin",
+        "scope": "SERVER",
+        "id": "id2",
+        "eventType": "fixture",
+        "version": "1.0.0",
+        "updatedAt": "<time>",
+        "status": "SKIPPED"
+      }
+    }
+  ],
+  "edgeTypes": [],
+  "events": [
+    {
+      "id": "id3",
+      "typename": "PluginRun",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "scope": "SERVER",
+          "pluginId": "plugin",
+          "version": "1.0.0",
+          "id": "id2",
+          "status": "PENDING",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "updatedAt": "<time>"
+        },
+        "new": {
+          "scope": "SERVER",
+          "pluginId": "plugin",
+          "version": "1.0.0",
+          "id": "id2",
+          "status": "SKIPPED",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "updatedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`skip retains default projection and ordered native events 1`] = `
+{
+  "nodes": [
+    {
+      "label": "Channel",
+      "properties": {
+        "uniqueName": "channel"
+      }
+    },
+    {
+      "label": "Comment",
+      "properties": {
+        "createdAt": "<time>",
+        "isRootComment": true,
+        "id": "id0",
+        "text": "fixture"
+      }
+    },
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "createdAt": "<time>",
+        "fileName": "fixture.zip",
+        "size": {
+          "low": 12,
+          "high": 0
+        },
+        "kind": "ZIP",
+        "scanStatus": "CLEAN",
+        "priceModel": "FREE",
+        "id": "id1",
+        "url": "https://fixture.invalid/file"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "pluginId": "plugin",
+        "scope": "SERVER",
+        "id": "id2",
+        "eventType": "fixture",
+        "version": "1.0.0",
+        "finishedAt": {
+          "year": {
+            "low": 2026,
+            "high": 0
+          },
+          "month": {
+            "low": 1,
+            "high": 0
+          },
+          "day": {
+            "low": 1,
+            "high": 0
+          },
+          "hour": {
+            "low": 0,
+            "high": 0
+          },
+          "minute": {
+            "low": 0,
+            "high": 0
+          },
+          "second": {
+            "low": 0,
+            "high": 0
+          },
+          "nanosecond": {
+            "low": 0,
+            "high": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "low": 0,
+            "high": 0
+          }
+        },
+        "skippedReason": "fixture",
+        "updatedAt": "<time>",
+        "status": "SKIPPED"
+      }
+    }
+  ],
+  "edgeTypes": [],
+  "events": [
+    {
+      "id": "id3",
+      "typename": "PluginRun",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "scope": "SERVER",
+          "pluginId": "plugin",
+          "version": "1.0.0",
+          "id": "id2",
+          "status": "PENDING",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "updatedAt": "<time>"
+        },
+        "new": {
+          "pluginId": "plugin",
+          "version": "1.0.0",
+          "id": "id2",
+          "status": "SKIPPED",
+          "createdAt": "<time>",
+          "finishedAt": {
+            "year": {
+              "low": 2026,
+              "high": 0
+            },
+            "month": {
+              "low": 1,
+              "high": 0
+            },
+            "day": {
+              "low": 1,
+              "high": 0
+            },
+            "hour": {
+              "low": 0,
+              "high": 0
+            },
+            "minute": {
+              "low": 0,
+              "high": 0
+            },
+            "second": {
+              "low": 0,
+              "high": 0
+            },
+            "nanosecond": {
+              "low": 0,
+              "high": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "low": 0,
+              "high": 0
+            }
+          },
+          "eventType": "fixture",
+          "updatedAt": "<time>",
+          "skippedReason": "fixture",
+          "scope": "SERVER"
+        }
+      }
+    }
+  ]
+}
+`;

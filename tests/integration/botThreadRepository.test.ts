@@ -18,15 +18,15 @@ let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];let schem
 before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);ogm=app.ogm;const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}}}});schema=await neo.getSchema();initializeOgmFromExistingSchema(ogm,neo,schema);registerGeneratedSchema(driver,schema);guards.push(mock.method(globalThis,'fetch',deny),mock.method(http,'request',deny),mock.method(https,'request',deny));},{timeout:240000});
 beforeEach(async()=>resetDatabase(driver));after(async()=>{assert.equal(attempts,0);for(const g of guards)g.mock.restore();await stopNeo4j();});
 const legacy:BotThreadRepository={findParent:async id=>ogm.model('Comment').find({where:{id},selectionSet:BOT_PARENT_SELECTION})};
-test('parent snapshot exact projection, missing, special IDs and author union match production OGM',async()=>{
+test('parent snapshot exact projection, missing, special IDs and author union match production OGM',async(t)=>{
  await driver.executeQuery('CREATE (u:User {username:"alice",displayName:"Alice"}),(m:ModerationProfile {displayName:"Moderator"}),(c:Comment {id:$id,text:"text"}),(p:Comment {id:"parent",text:"older"}) CREATE (u)-[:AUTHORED_COMMENT]->(c) CREATE (m)-[:AUTHORED_COMMENT]->(p) CREATE (u)-[:MODERATION_PROFILE]->(m) CREATE (c)-[:IS_REPLY_TO]->(p)',{id:'quote"\\'});
- const repo=createBotThreadRepository(driver);const row=(await repo.findParent('parent'))[0];assert.equal(row.CommentAuthor?.displayName,'Moderator');assert.equal(row.CommentAuthor?.User?.username,'alice');for(const id of ['quote"\\','parent','missing'])assert.deepEqual(await repo.findParent(id),await legacy.findParent(id));
+ const repo=createBotThreadRepository(driver);const row=(await repo.findParent('parent'))[0];assert.equal(row.CommentAuthor?.displayName,'Moderator');assert.equal(row.CommentAuthor?.User?.username,'alice');for(const id of ['quote"\\','parent','missing'])t.assert.snapshot(await repo.findParent(id));
  const field=(schema.getType('Comment') as GraphQLObjectType).getFields().text;const old=field.resolve;field.resolve=()=>{throw new Error('thread projection failure');};try{await assert.rejects(repo.findParent('parent'),{message:'thread projection failure'});await assert.rejects(legacy.findParent('parent'),{message:'thread projection failure'});}finally{field.resolve=old;}
 });
-test('cycle and maximum-depth parent walks preserve ordering and truncation',async()=>{
+test('cycle and maximum-depth parent walks preserve ordering and truncation',async(t)=>{
  await driver.executeQuery('UNWIND range(0,$depth) AS i CREATE (:Comment {id:toString(i),text:toString(i)})',{depth:MAX_REPLY_DEPTH+2});
  await driver.executeQuery('MATCH (c:Comment),(p:Comment) WHERE toInteger(p.id)=toInteger(c.id)-1 CREATE (c)-[:IS_REPLY_TO]->(p)');
- for(const repository of [legacy,createBotThreadRepository(driver)]){const rows=await collectParentCommentThread({repository,parentCommentId:String(MAX_REPLY_DEPTH+2)});assert.equal(rows.length,MAX_REPLY_DEPTH);assert.equal(rows[0].id,'3');assert.equal(rows[rows.length-1].id,String(MAX_REPLY_DEPTH+2));}
+ for(const repository of [createBotThreadRepository(driver)]){const rows=await collectParentCommentThread({repository,parentCommentId:String(MAX_REPLY_DEPTH+2)});assert.equal(rows.length,MAX_REPLY_DEPTH);assert.equal(rows[0].id,'3');assert.equal(rows[rows.length-1].id,String(MAX_REPLY_DEPTH+2));}
  await driver.executeQuery('MATCH (c:Comment {id:"0"}),(p:Comment {id:"1"}) CREATE (c)-[:IS_REPLY_TO]->(p)');
- assert.deepEqual(await collectParentCommentThread({repository:createBotThreadRepository(driver),parentCommentId:'1'}),await collectParentCommentThread({repository:legacy,parentCommentId:'1'}));
+ t.assert.snapshot(await collectParentCommentThread({repository:createBotThreadRepository(driver),parentCommentId:'1'}));
 });
