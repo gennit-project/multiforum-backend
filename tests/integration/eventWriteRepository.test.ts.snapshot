@@ -1,0 +1,1085 @@
+exports[`caller owns transaction commit and native event behavior 1`] = `
+[
+  {
+    "event": "update",
+    "id": "id0",
+    "properties": {
+      "new": {
+        "canceled": false,
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "description": "old",
+        "endTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "d",
+        "startTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 10
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "title": "After",
+        "updatedAt": "<time>"
+      },
+      "old": {
+        "canceled": false,
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "description": "old",
+        "endTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "d",
+        "startTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 10
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "title": "Before"
+      }
+    },
+    "timestamp": "<time>",
+    "typename": "Event"
+  }
+]
+`;
+
+exports[`caller owns transaction rollback and native event behavior 1`] = `
+[
+  {
+    "event": "update",
+    "id": "id0",
+    "properties": {
+      "new": {
+        "canceled": false,
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "description": "old",
+        "endTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "d",
+        "startTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 10
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "title": "After",
+        "updatedAt": "<time>"
+      },
+      "old": {
+        "canceled": false,
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "description": "old",
+        "endTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "d",
+        "startTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 10
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "title": "Before"
+      }
+    },
+    "timestamp": "<time>",
+    "typename": "Event"
+  }
+]
+`;
+
+exports[`creation preserves caller-owned commit, projection and native events 1`] = `
+[
+  {
+    "EventChannels": [],
+    "Poster": null,
+    "SubscribedToEventUpdates": [],
+    "SubscribedToNotifications": [],
+    "Tags": [],
+    "address": null,
+    "canceled": false,
+    "cost": null,
+    "coverImageURL": null,
+    "createdAt": "<createdAt>",
+    "description": null,
+    "endTime": "2026-06-01T12:00:00.000Z",
+    "id": "<createdId>",
+    "isAllDay": null,
+    "isHostedByOP": null,
+    "locationName": null,
+    "startTime": "2026-06-01T10:00:00.000Z",
+    "startTimeDayOfWeek": null,
+    "startTimeHourOfDay": null,
+    "title": "Created",
+    "updatedAt": null,
+    "virtualEventUrl": null
+  }
+]
+`;
+
+exports[`creation preserves caller-owned commit, projection and native events 2`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "canceled": false,
+          "createdAt": "<createdAt>",
+          "endTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "<createdId>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "title": "Created"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Event"
+    }
+  ],
+  "response": [
+    {
+      "EventChannels": [],
+      "Poster": null,
+      "SubscribedToEventUpdates": [],
+      "SubscribedToNotifications": [],
+      "Tags": [],
+      "address": null,
+      "canceled": false,
+      "cost": null,
+      "coverImageURL": null,
+      "createdAt": "<createdAt>",
+      "description": null,
+      "endTime": "2026-06-01T12:00:00.000Z",
+      "id": "<createdId>",
+      "isAllDay": null,
+      "isHostedByOP": null,
+      "locationName": null,
+      "startTime": "2026-06-01T10:00:00.000Z",
+      "startTimeDayOfWeek": null,
+      "startTimeHourOfDay": null,
+      "title": "Created",
+      "updatedAt": "<time>",
+      "virtualEventUrl": null
+    }
+  ]
+}
+`;
+
+exports[`creation preserves caller-owned rollback, projection and native events 1`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "canceled": false,
+          "createdAt": "<createdAt>",
+          "endTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "<createdId>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "title": "Created"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Event"
+    }
+  ],
+  "response": [
+    {
+      "EventChannels": [],
+      "Poster": null,
+      "SubscribedToEventUpdates": [],
+      "SubscribedToNotifications": [],
+      "Tags": [],
+      "address": null,
+      "canceled": false,
+      "cost": null,
+      "coverImageURL": null,
+      "createdAt": "<createdAt>",
+      "description": null,
+      "endTime": "2026-06-01T12:00:00.000Z",
+      "id": "<createdId>",
+      "isAllDay": null,
+      "isHostedByOP": null,
+      "locationName": null,
+      "startTime": "2026-06-01T10:00:00.000Z",
+      "startTimeDayOfWeek": null,
+      "startTimeHourOfDay": null,
+      "title": "Created",
+      "updatedAt": "<time>",
+      "virtualEventUrl": null
+    }
+  ]
+}
+`;
+
+exports[`creation projection failure preserves native publication and rolls back the caller transaction 1`] = `
+[
+  {
+    "event": "create",
+    "id": "id0",
+    "properties": {
+      "new": {
+        "canceled": false,
+        "createdAt": "<createdAt>",
+        "endTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "<createdId>",
+        "startTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 10
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "title": "Created"
+      }
+    },
+    "timestamp": "<time>",
+    "typename": "Event"
+  }
+]
+`;
+
+exports[`default projection failure rolls back within caller transaction with legacy event behavior 1`] = `
+[
+  {
+    "event": "update",
+    "id": "id0",
+    "properties": {
+      "new": {
+        "canceled": false,
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "description": "old",
+        "endTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "d",
+        "startTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 10
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "title": "After",
+        "updatedAt": "<time>"
+      },
+      "old": {
+        "canceled": false,
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "description": "old",
+        "endTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "d",
+        "startTime": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 10
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 6
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "title": "Before"
+      }
+    },
+    "timestamp": "<time>",
+    "typename": "Event"
+  }
+]
+`;
+
+exports[`snapshot and final refetch preserve missing rows and full selected response 1`] = `
+[
+  {
+    "DescriptionLastEditedBy": null,
+    "EventChannels": [],
+    "PastDescriptionVersions": [],
+    "PastTitleVersions": [],
+    "Poster": null,
+    "address": null,
+    "canceled": false,
+    "description": "old",
+    "endTime": "2026-06-01T12:00:00.000Z",
+    "id": "d",
+    "locationName": null,
+    "startTime": "2026-06-01T10:00:00.000Z",
+    "title": "Before",
+    "virtualEventUrl": null
+  }
+]
+`;
+
+exports[`snapshot and final refetch preserve missing rows and full selected response 2`] = `
+[
+  {
+    "EventChannels": [],
+    "Poster": null,
+    "SubscribedToEventUpdates": [],
+    "SubscribedToNotifications": [],
+    "Tags": [],
+    "address": null,
+    "canceled": false,
+    "cost": null,
+    "coverImageURL": null,
+    "createdAt": "2020-01-01T00:00:00.000Z",
+    "description": "old",
+    "endTime": "2026-06-01T12:00:00.000Z",
+    "id": "d",
+    "isAllDay": null,
+    "isHostedByOP": null,
+    "locationName": null,
+    "startTime": "2026-06-01T10:00:00.000Z",
+    "startTimeDayOfWeek": null,
+    "startTimeHourOfDay": null,
+    "title": "Before",
+    "updatedAt": null,
+    "virtualEventUrl": null
+  }
+]
+`;

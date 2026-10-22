@@ -1,0 +1,96 @@
+exports[`all author snapshots preserve generated selections, union authors and missing rows 1`] = `
+[
+  {
+    "CommentAuthor": {
+      "displayName": "User",
+      "username": "u"
+    },
+    "id": "c"
+  }
+]
+`;
+
+exports[`all author snapshots preserve generated selections, union authors and missing rows 2`] = `
+[]
+`;
+
+exports[`all author snapshots preserve generated selections, union authors and missing rows 3`] = `
+[
+  {
+    "Author": {
+      "displayName": "User",
+      "username": "u"
+    },
+    "id": "d"
+  }
+]
+`;
+
+exports[`all author snapshots preserve generated selections, union authors and missing rows 4`] = `
+[
+  {
+    "Poster": {
+      "displayName": "User",
+      "username": "u"
+    },
+    "id": "e"
+  }
+]
+`;
+
+exports[`all author snapshots preserve generated selections, union authors and missing rows 5`] = `
+[
+  {
+    "CommentAuthor": {
+      "displayName": "Mod"
+    },
+    "id": "c"
+  }
+]
+`;
+
+exports[`closure mutation preserves default projection, persistence and events (valid=false) 1`] = `
+{
+  "events": [
+    {
+      "kind": "update",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ],
+      "typename": "Issue"
+    }
+  ],
+  "result": "Cannot return null for non-nullable field Issue.issueNumber."
+}
+`;
+
+exports[`closure mutation preserves default projection, persistence and events (valid=true) 1`] = `
+{
+  "events": [
+    {
+      "kind": "update",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ],
+      "typename": "Issue"
+    }
+  ],
+  "result": null
+}
+`;
+
+exports[`duplicate delete query matches legacy filter and missing issue 1`] = `
+[]
+`;
+
+exports[`duplicate delete query matches legacy filter and missing issue 2`] = `
+[]
+`;

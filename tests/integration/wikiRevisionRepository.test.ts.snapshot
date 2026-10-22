@@ -1,0 +1,236 @@
+exports[`actual child middleware preserves result-shape contract and system author (nested=false) 1`] = `
+{
+  "events": [],
+  "graph": []
+}
+`;
+
+exports[`actual child middleware preserves result-shape contract and system author (nested=true) 1`] = `
+{
+  "events": [
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "system",
+      "body": "Child body",
+      "parent": null,
+      "reason": "new"
+    },
+    {
+      "author": "system",
+      "body": "Child title",
+      "parent": null,
+      "reason": "new"
+    }
+  ]
+}
+`;
+
+exports[`actual wiki revision hook graph and event parity: body 1`] = `
+{
+  "events": [
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Body",
+      "parent": null,
+      "reason": "old reason"
+    }
+  ]
+}
+`;
+
+exports[`actual wiki revision hook graph and event parity: both 1`] = `
+{
+  "events": [
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Body",
+      "parent": null,
+      "reason": "old reason"
+    },
+    {
+      "author": "previous",
+      "body": "Title",
+      "parent": null,
+      "reason": "old reason"
+    }
+  ]
+}
+`;
+
+exports[`actual wiki revision hook graph and event parity: invalid default 1`] = `
+{
+  "events": [
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Body",
+      "parent": null,
+      "reason": "old reason"
+    },
+    {
+      "author": "previous",
+      "body": "Title",
+      "parent": null,
+      "reason": "old reason"
+    }
+  ]
+}
+`;
+
+exports[`actual wiki revision hook graph and event parity: title 1`] = `
+{
+  "events": [
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Title",
+      "parent": null,
+      "reason": "old reason"
+    }
+  ]
+}
+`;
+
+exports[`actual wiki revision hook graph and event parity: unchanged 1`] = `
+{
+  "events": [],
+  "graph": []
+}
+`;
+
+exports[`orphan revision persists when parent disappears after snapshot 1`] = `
+[
+  {
+    "author": "previous",
+    "body": "Title",
+    "parent": null,
+    "reason": "old reason"
+  }
+]
+`;
+
+exports[`wiki snapshots and author lookup retain exact projections and missing behavior 1`] = `
+[
+  {
+    "PastVersions": [],
+    "VersionAuthor": {
+      "username": "previous"
+    },
+    "body": "Body",
+    "editReason": "old reason",
+    "id": "w",
+    "title": "Title"
+  }
+]
+`;
+
+exports[`wiki snapshots and author lookup retain exact projections and missing behavior 2`] = `
+[
+  {
+    "id": "w"
+  }
+]
+`;
+
+exports[`wiki snapshots and author lookup retain exact projections and missing behavior 3`] = `
+[]
+`;
+
+exports[`wiki snapshots and author lookup retain exact projections and missing behavior 4`] = `
+[]
+`;
+
+exports[`wiki snapshots and author lookup retain exact projections and missing behavior 5`] = `
+[
+  {
+    "username": "previous"
+  }
+]
+`;

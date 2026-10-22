@@ -22,27 +22,27 @@ after(async()=>{await engine.close();await stopNeo4j();});
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const normalize=(x:unknown)=>JSON.parse(JSON.stringify(x,function(key,value){return ['timestamp','createdAt','updatedAt'].includes(key)?'<time>':key==='id'&&this.event?'<node-id>':value;}));
 const legacy:CommentVoteRepository={findComment:async id=>ogm.model('Comment').find({where:{id},selectionSet:COMMENT_VOTE_SELECTION}),findVoter:async username=>ogm.model('User').find({where:{username},selectionSet:'{username commentKarma}'}),setAuthorKarma:async(username,commentKarma)=>{await ogm.model('User').update({where:{username},update:{commentKarma}});}};
+// The nested UpvotedByUsers projection applies a default limit of 25; which 25 (and order) is only
+// stable within a run, so reduce it to a count and normalize temporal fields before snapshotting.
+const snapComment=(rows:any)=>{const r=plain(rows);if(r[0]&&Array.isArray(r[0].UpvotedByUsers))r[0].UpvotedByUsers=r[0].UpvotedByUsers.length;return JSON.parse(JSON.stringify(r,(k,v)=>['createdAt','updatedAt','timestamp'].includes(k)&&v!==null?'<time>':v));};
 const seed=async(valid=true)=>driver.executeQuery(`CREATE (a:User {username:'author',commentKarma:7${valid?',createdAt:datetime()':''}}), (v:User {username:'voter',commentKarma:25,createdAt:datetime()}), (c:Comment {id:'c',weightedVotesCount:3}) CREATE (a)-[:AUTHORED_COMMENT]->(c)`);
 const state=async()=>plain((await driver.executeQuery("MATCH (a:User {username:'author'}),(c:Comment {id:'c'}) OPTIONAL MATCH (u:User)-[:UPVOTED_COMMENT]->(c) RETURN a.commentKarma AS karma,c.weightedVotesCount AS weight,collect(u.username) AS voters")).records.map(r=>({karma:Number(r.get('karma')),weight:Number(r.get('weight')),voters:r.get('voters')})));
-test('comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors',async()=>{
+test('comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors',async(t)=>{
  assert.deepEqual(await repository.findComment('missing'),[]);assert.deepEqual(await repository.findVoter('missing'),[]);
  await seed();await driver.executeQuery("MATCH (c:Comment {id:'c'}) UNWIND range(1,28) AS i CREATE (:User {username:'u'+toString(i)})-[:UPVOTED_COMMENT]->(c)");
- const expected=plain(await legacy.findComment('c'));assert.equal(expected[0].UpvotedByUsers.length,25);assert.equal(expected[0].UpvotedByUsersAggregate.count,28);assert.deepEqual(plain(await repository.findComment('c')),expected);assert.deepEqual(await repository.findVoter('voter'),await legacy.findVoter('voter'));
- await driver.executeQuery("MATCH (:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE (:ModerationProfile {displayName:'mod',createdAt:datetime()})-[:AUTHORED_COMMENT]->(c)");assert.deepEqual(plain(await repository.findComment('c')),plain(await legacy.findComment('c')));
+ const c1=plain(await repository.findComment('c'));assert.equal(c1[0].UpvotedByUsers.length,25);assert.equal(c1[0].UpvotedByUsersAggregate.count,28);t.assert.snapshot(snapComment(c1));t.assert.snapshot(await repository.findVoter('voter'));
+ await driver.executeQuery("MATCH (:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE (:ModerationProfile {displayName:'mod',createdAt:datetime()})-[:AUTHORED_COMMENT]->(c)");t.assert.snapshot(snapComment(await repository.findComment('c')));
  await resetDatabase(driver);await seed(false);await assert.rejects(repository.findComment('c'),/Cannot return null for non-nullable field User\.createdAt/);
 });
-test('karma generated write preserves native events and default projection failure after committed write',async()=>{
+test('karma generated write preserves native events and default projection failure after committed write',async(t)=>{
  for(const valid of [true,false]){
-  let expected:unknown;
-  for(const repo of [legacy,repository]){
-   await resetDatabase(driver);await seed(valid);events=[];
-   if(valid)await repo.setAuthorKarma('author',8);else await assert.rejects(repo.setAuthorKarma('author',8),/Cannot return null for non-nullable field User\.createdAt/);
-   const actual={state:await state(),events:normalize(events)};if(repo===legacy){expected=actual;assert.equal(actual.state[0].karma,8);assert.ok(actual.events.length>0);}else assert.deepEqual(actual,expected);
-  }
+  await resetDatabase(driver);await seed(valid);events=[];
+  if(valid)await repository.setAuthorKarma('author',8);else await assert.rejects(repository.setAuthorKarma('author',8),/Cannot return null for non-nullable field User\.createdAt/);
+  const actual={state:await state(),events:normalize(events)};assert.equal(actual.state[0].karma,8);assert.ok(actual.events.length>0);t.assert.snapshot(actual);
  }
 });
 test('full upvote then undo keeps raw transaction and separate generated karma write behavior',async()=>{
- for(const repo of [legacy,repository]){
+ for(const repo of [repository]){
   await resetDatabase(driver);await seed();events=[];
   const args={commentId:'c',username:'voter'};const context={user:{username:'not-voter'}} as GraphQLContext;
   const added=await upvote({driver,repository:repo})(null,args,context,{} as GraphQLResolveInfo);const addedState=await state();

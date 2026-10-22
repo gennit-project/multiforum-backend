@@ -1,0 +1,357 @@
+exports[`campaign read selections and schema-imposed limits match actual OGM 1`] = `
+[
+  {
+    "pluginPipelines": "[{\\"policyId\\":\\"policy\\",\\"event\\":\\"downloadableFile.created\\",\\"effectiveAt\\":\\"2026-01-01T00:00:00Z\\",\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"steps\\":[{\\"pluginId\\":\\"one\\"},{\\"pluginId\\":\\"two\\"}]}]"
+  }
+]
+`;
+
+exports[`campaign read selections and schema-imposed limits match actual OGM 2`] = `
+[
+  {
+    "accessibleFileCount": 2,
+    "affectedFileCount": 2,
+    "applicability": "ALL_FILES_GRADUAL",
+    "channelId": null,
+    "completedCount": 0,
+    "concurrency": 2,
+    "createdAt": "<time>",
+    "createdByUsername": "admin",
+    "enforcementBehavior": "fixture",
+    "estimatedProviderRuns": 4,
+    "eventType": "downloadableFile.created",
+    "failedCount": 0,
+    "finishedAt": null,
+    "id": "id0",
+    "pausedAt": null,
+    "policyId": "policy",
+    "rateLimitPerMinute": 5,
+    "runningCount": 0,
+    "scope": "SERVER",
+    "startedAt": null,
+    "status": "RUNNING",
+    "timedOutCount": 0,
+    "unavailableFileCount": 0,
+    "updatedAt": "<time>"
+  }
+]
+`;
+
+exports[`campaign read selections and schema-imposed limits match actual OGM 3`] = `
+[]
+`;
+
+exports[`trusted-URL fixture: campaign batch retains sequential effects, refreshed counts and completed status 1`] = `
+{
+  "calls": [
+    "first",
+    "second"
+  ],
+  "result": {
+    "completedCount": 2,
+    "failedCount": 0,
+    "finished": true,
+    "runningCount": 0,
+    "startedCount": 2,
+    "timedOutCount": 0
+  }
+}
+`;
+
+exports[`trusted-URL fixture: campaign batch retains sequential effects, refreshed counts and completed status 2`] = `
+{
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "update",
+      "id": "id3",
+      "properties": {
+        "new": {
+          "accessibleFileCount": 2,
+          "affectedFileCount": 2,
+          "applicability": "ALL_FILES_GRADUAL",
+          "completedCount": 2,
+          "concurrency": 2,
+          "createdAt": "<time>",
+          "createdByUsername": "admin",
+          "enforcementBehavior": "fixture",
+          "estimatedProviderRuns": 4,
+          "eventType": "downloadableFile.created",
+          "failedCount": 0,
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 2
+            },
+            "hour": {
+              "high": 0,
+              "low": 0
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "policyId": "policy",
+          "rateLimitPerMinute": 5,
+          "runningCount": 0,
+          "scope": "SERVER",
+          "status": "COMPLETED",
+          "timedOutCount": 0,
+          "unavailableFileCount": 0,
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "accessibleFileCount": 2,
+          "affectedFileCount": 2,
+          "applicability": "ALL_FILES_GRADUAL",
+          "completedCount": 0,
+          "concurrency": 2,
+          "createdAt": "<time>",
+          "createdByUsername": "admin",
+          "enforcementBehavior": "fixture",
+          "estimatedProviderRuns": 4,
+          "eventType": "downloadableFile.created",
+          "failedCount": 0,
+          "id": "id2",
+          "policyId": "policy",
+          "rateLimitPerMinute": 5,
+          "runningCount": 0,
+          "scope": "SERVER",
+          "status": "RUNNING",
+          "timedOutCount": 0,
+          "unavailableFileCount": 0,
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineCampaign"
+    }
+  ],
+  "nodes": [
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "id0",
+        "permanentlyRemoved": false,
+        "uploadedAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2025
+          }
+        },
+        "url": "https://fixture.invalid/file"
+      }
+    },
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "id1",
+        "permanentlyRemoved": false,
+        "uploadedAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2025
+          }
+        },
+        "url": "https://fixture.invalid/file"
+      }
+    },
+    {
+      "label": "PluginPipelineCampaign",
+      "properties": {
+        "accessibleFileCount": {
+          "high": 0,
+          "low": 2
+        },
+        "affectedFileCount": {
+          "high": 0,
+          "low": 2
+        },
+        "applicability": "ALL_FILES_GRADUAL",
+        "completedCount": {
+          "high": 0,
+          "low": 2
+        },
+        "concurrency": {
+          "high": 0,
+          "low": 2
+        },
+        "createdAt": "<time>",
+        "createdByUsername": "admin",
+        "enforcementBehavior": "fixture",
+        "estimatedProviderRuns": {
+          "high": 0,
+          "low": 4
+        },
+        "eventType": "downloadableFile.created",
+        "failedCount": {
+          "high": 0,
+          "low": 0
+        },
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 2
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id2",
+        "policyId": "policy",
+        "rateLimitPerMinute": {
+          "high": 0,
+          "low": 5
+        },
+        "runningCount": {
+          "high": 0,
+          "low": 0
+        },
+        "scope": "SERVER",
+        "status": "COMPLETED",
+        "timedOutCount": {
+          "high": 0,
+          "low": 0
+        },
+        "unavailableFileCount": {
+          "high": 0,
+          "low": 0
+        },
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "campaignId": "campaign",
+        "createdAt": "<time>",
+        "id": "id0",
+        "status": "SUCCEEDED",
+        "targetId": "first"
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "campaignId": "campaign",
+        "createdAt": "<time>",
+        "id": "id1",
+        "status": "SUCCEEDED",
+        "targetId": "second"
+      }
+    },
+    {
+      "label": "ServerConfig",
+      "properties": {
+        "pluginPipelines": "[{\\"policyId\\":\\"policy\\",\\"event\\":\\"downloadableFile.created\\",\\"effectiveAt\\":\\"2026-01-01T00:00:00Z\\",\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"steps\\":[{\\"pluginId\\":\\"one\\"},{\\"pluginId\\":\\"two\\"}]}]",
+        "serverName": "fixture"
+      }
+    }
+  ]
+}
+`;

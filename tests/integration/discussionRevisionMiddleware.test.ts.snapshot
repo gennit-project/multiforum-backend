@@ -1,0 +1,294 @@
+exports[`actual discussion middleware preserves history/notification/event behavior: body 1`] = `
+{
+  "events": [
+    {
+      "from": "Discussion",
+      "kind": "create_relationship",
+      "relationship": "BODY_LAST_EDITED_BY",
+      "to": "User"
+    },
+    {
+      "from": "Discussion",
+      "kind": "create_relationship",
+      "relationship": "HAS_BODY_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ],
+  "notifications": [
+    {
+      "notificationType": "general",
+      "text": "editor edited your discussion [Old](undefined/forums/cats/discussions/d)",
+      "username": "author"
+    }
+  ],
+  "state": {
+    "links": [
+      {
+        "bodies": [
+          "Body"
+        ],
+        "editors": [
+          "editor"
+        ],
+        "titles": []
+      }
+    ],
+    "revisions": [
+      {
+        "author": "prior",
+        "body": "Body"
+      }
+    ],
+    "touched": true
+  }
+}
+`;
+
+exports[`actual discussion middleware preserves history/notification/event behavior: both 1`] = `
+{
+  "events": [
+    {
+      "from": "Discussion",
+      "kind": "create_relationship",
+      "relationship": "BODY_LAST_EDITED_BY",
+      "to": "User"
+    },
+    {
+      "from": "Discussion",
+      "kind": "create_relationship",
+      "relationship": "HAS_BODY_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "Discussion",
+      "kind": "create_relationship",
+      "relationship": "HAS_TITLE_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ],
+  "notifications": [
+    {
+      "notificationType": "general",
+      "text": "editor edited your discussion [Old](undefined/forums/cats/discussions/d)",
+      "username": "author"
+    }
+  ],
+  "state": {
+    "links": [
+      {
+        "bodies": [
+          "Body"
+        ],
+        "editors": [
+          "editor"
+        ],
+        "titles": [
+          "Old"
+        ]
+      }
+    ],
+    "revisions": [
+      {
+        "author": "editor",
+        "body": "Old"
+      },
+      {
+        "author": "prior",
+        "body": "Body"
+      }
+    ],
+    "touched": true
+  }
+}
+`;
+
+exports[`actual discussion middleware preserves history/notification/event behavior: custom 1`] = `
+{
+  "events": [
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ],
+  "notifications": [],
+  "state": {
+    "links": [
+      {
+        "bodies": [],
+        "editors": [
+          "prior"
+        ],
+        "titles": []
+      }
+    ],
+    "revisions": [],
+    "touched": true
+  }
+}
+`;
+
+exports[`actual discussion middleware preserves history/notification/event behavior: equal 1`] = `
+{
+  "events": [
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ],
+  "notifications": [
+    {
+      "notificationType": "general",
+      "text": "editor edited your discussion [Old](undefined/forums/cats/discussions/d)",
+      "username": "author"
+    }
+  ],
+  "state": {
+    "links": [
+      {
+        "bodies": [],
+        "editors": [
+          "prior"
+        ],
+        "titles": []
+      }
+    ],
+    "revisions": [],
+    "touched": true
+  }
+}
+`;
+
+exports[`actual discussion middleware preserves history/notification/event behavior: title 1`] = `
+{
+  "events": [
+    {
+      "from": "Discussion",
+      "kind": "create_relationship",
+      "relationship": "HAS_TITLE_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ],
+  "notifications": [
+    {
+      "notificationType": "general",
+      "text": "editor edited your discussion [Old](undefined/forums/cats/discussions/d)",
+      "username": "author"
+    }
+  ],
+  "state": {
+    "links": [
+      {
+        "bodies": [],
+        "editors": [
+          "prior"
+        ],
+        "titles": [
+          "Old"
+        ]
+      }
+    ],
+    "revisions": [
+      {
+        "author": "editor",
+        "body": "Old"
+      }
+    ],
+    "touched": true
+  }
+}
+`;
+
+exports[`custom mention snapshot preserves distinct selection and missing rows 1`] = `
+[
+  {
+    "Author": {
+      "displayName": null,
+      "username": "author"
+    },
+    "DiscussionChannels": [],
+    "body": "Body",
+    "id": "d",
+    "title": "Old"
+  }
+]
+`;
+
+exports[`custom mention snapshot preserves distinct selection and missing rows 2`] = `
+[]
+`;

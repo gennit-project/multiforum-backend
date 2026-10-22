@@ -37,23 +37,23 @@ function baseline(){const w=ogm.model('WikiPage'),v=ogm.model('TextVersion'),u=o
 async function seed(invalid=false){await driver.executeQuery(`CREATE (u:User {username:'previous',createdAt:datetime()}) CREATE (:User {username:'system',createdAt:datetime()}) CREATE (w:WikiPage {id:'w',title:'Title',body:'Body',editReason:'old reason',${invalid?'':"slug:'page',channelUniqueName:'cats',"}createdAt:datetime()}) CREATE (u)-[:AUTHORED_VERSION]->(w)`);}
 async function state(){const r=await driver.executeQuery(`MATCH (v:TextVersion) OPTIONAL MATCH (v)<-[:AUTHORED_VERSION]-(u:User) OPTIONAL MATCH (w:WikiPage)-[:HAS_VERSION]->(v) RETURN v.body AS body,v.editReason AS reason,u.username AS author,w.id AS parent ORDER BY body`);return r.records.map(x=>({body:x.get('body'),reason:x.get('reason'),author:x.get('author'),parent:x.get('parent')}));}
 function eventShape(){return events.map(({kind,event})=>({kind,typename:event.typename,from:event.fromTypename,to:event.toTypename,relationship:event.relationshipName}));}
-test('wiki snapshots and author lookup retain exact projections and missing behavior',async()=>{
- await seed();for(const id of ['w','absent']){assert.deepEqual(plain(await repository.findSnapshot(id)),plain(await baseline().findSnapshot(id)));assert.deepEqual(plain(await repository.findPageId(id)),plain(await baseline().findPageId(id)));}
- assert.deepEqual(plain(await repository.findAuthor('previous')),plain(await baseline().findAuthor('previous')));
+test('wiki snapshots and author lookup retain exact projections and missing behavior',async(t)=>{
+ await seed();for(const id of ['w','absent']){t.assert.snapshot(plain(await repository.findSnapshot(id)));t.assert.snapshot(plain(await repository.findPageId(id)));}
+ t.assert.snapshot(plain(await repository.findAuthor('previous')));
 });
-for(const [name,update,invalid] of [['title',{title:'New'},false],['body',{body:'New'},false],['both',{title:'New',body:'New'},false],['unchanged',{title:'Title',body:'Body'},false],['invalid default',{title:'New',body:'New'},true]] as const)test(`actual wiki revision hook graph and event parity: ${name}`,async()=>{
- const outputs:unknown[]=[];
- for(const repo of [baseline(),repository]){await resetDatabase(driver);await seed(invalid);events=[];await wikiPageVersionHistoryHandler({context:{driver,wikiRevisionRepository:repo} as any,params:{where:{id:'w'},update}});outputs.push({graph:await state(),events:eventShape()});}
- assert.deepEqual(outputs[1],outputs[0]);assert.equal((outputs[1] as any).graph.length,name==='unchanged'?0:name==='both'||invalid?2:1);
+for(const [name,update,invalid] of [['title',{title:'New'},false],['body',{body:'New'},false],['both',{title:'New',body:'New'},false],['unchanged',{title:'Title',body:'Body'},false],['invalid default',{title:'New',body:'New'},true]] as const)test(`actual wiki revision hook graph and event parity: ${name}`,async(t)=>{
+ await resetDatabase(driver);await seed(invalid);events=[];await wikiPageVersionHistoryHandler({context:{driver,wikiRevisionRepository:repository} as any,params:{where:{id:'w'},update}});const captured={graph:await state(),events:eventShape()};
+ assert.equal(captured.graph.length,name==='unchanged'?0:name==='both'||invalid?2:1);
+ t.assert.snapshot(captured);
 });
-test('orphan revision persists when parent disappears after snapshot',async()=>{
- const results:unknown[]=[];
- for(const inner of [baseline(),repository]){await resetDatabase(driver);await seed();const repo={...inner,findSnapshot:async(id:string)=>{const rows=await inner.findSnapshot(id);await driver.executeQuery("MATCH (w:WikiPage) DETACH DELETE w");return rows;}};await wikiPageVersionHistoryHandler({context:{driver,wikiRevisionRepository:repo} as any,params:{where:{id:'w'},update:{title:'New'}}});results.push(await state());}
- assert.deepEqual(results[1],results[0]);assert.equal((results[1] as any[])[0].parent,null);
+test('orphan revision persists when parent disappears after snapshot',async(t)=>{
+ await resetDatabase(driver);await seed();const repo={...repository,findSnapshot:async(id:string)=>{const rows=await repository.findSnapshot(id);await driver.executeQuery("MATCH (w:WikiPage) DETACH DELETE w");return rows;}};await wikiPageVersionHistoryHandler({context:{driver,wikiRevisionRepository:repo} as any,params:{where:{id:'w'},update:{title:'New'}}});const result=await state();
+ assert.equal((result as any[])[0].parent,null);
+ t.assert.snapshot(result);
 });
-for(const nested of [true,false])test(`actual child middleware preserves result-shape contract and system author (nested=${nested})`,async()=>{
- const outputs:unknown[]=[];
- for(const repo of [baseline(),repository]){await resetDatabase(driver);await seed();events=[];const result={wikiPages:[{ChildPages:[{id:'w',title:'Child title',body:'Child body',editReason:'new'}]}]};const output=nested?{updateWikiPages:result}:result;
- const returned=await (middleware.Mutation.updateWikiPages as any)(async()=>output,null,{update:{ChildPages:{create:[]},title:'ignored'}},{driver,wikiRevisionRepository:repo,user:{username:'not-system'}},{});assert.equal(returned,output);outputs.push({graph:await state(),events:eventShape()});}
- assert.deepEqual(outputs[1],outputs[0]);const graph=(outputs[1] as any).graph;assert.equal(graph.length,nested?2:0);for(const row of graph)assert.equal(row.author,'system');
+for(const nested of [true,false])test(`actual child middleware preserves result-shape contract and system author (nested=${nested})`,async(t)=>{
+ await resetDatabase(driver);await seed();events=[];const result={wikiPages:[{ChildPages:[{id:'w',title:'Child title',body:'Child body',editReason:'new'}]}]};const output=nested?{updateWikiPages:result}:result;
+ const returned=await (middleware.Mutation.updateWikiPages as any)(async()=>output,null,{update:{ChildPages:{create:[]},title:'ignored'}},{driver,wikiRevisionRepository:repository,user:{username:'not-system'}},{});assert.equal(returned,output);const captured={graph:await state(),events:eventShape()};
+ assert.equal(captured.graph.length,nested?2:0);for(const row of captured.graph)assert.equal(row.author,'system');
+ t.assert.snapshot(captured);
 });

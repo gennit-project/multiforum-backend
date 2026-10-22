@@ -1,0 +1,228 @@
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 1`] = `
+[
+  {
+    "Owner": {
+      "uniqueName": "cats"
+    }
+  },
+  {
+    "Owner": {
+      "uniqueName": "dogs"
+    }
+  }
+]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 10`] = `
+[
+  {
+    "Admins": [
+      {
+        "username": "bob"
+      }
+    ]
+  }
+]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 11`] = `
+[]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 2`] = `
+[
+  {
+    "Owner": {
+      "uniqueName": "cats"
+    }
+  },
+  {
+    "Owner": {
+      "uniqueName": "dogs"
+    }
+  }
+]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 3`] = `
+[
+  {
+    "Owner": {
+      "uniqueName": "cats"
+    }
+  },
+  {
+    "Owner": {
+      "uniqueName": "dogs"
+    }
+  }
+]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 4`] = `
+[
+  {
+    "Owner": {
+      "uniqueName": "cats"
+    }
+  }
+]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 5`] = `
+[]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 6`] = `
+[
+  {
+    "Owner": {
+      "uniqueName": "cats"
+    }
+  },
+  {
+    "Owner": {
+      "uniqueName": "dogs"
+    }
+  }
+]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 7`] = `
+[
+  {
+    "Owner": {
+      "uniqueName": "cats"
+    }
+  },
+  {
+    "Owner": {
+      "uniqueName": "dogs"
+    }
+  }
+]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 8`] = `
+[]
+`;
+
+exports[`role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots 9`] = `
+[
+  {
+    "Admins": [
+      {
+        "username": "alice"
+      }
+    ]
+  }
+]
+`;
+
+exports[`server capability filters retain every guarded flag and nullable values 1`] = `
+[
+  {
+    "canCreateChannel": null,
+    "canCreateComment": false,
+    "canCreateDiscussion": null,
+    "canCreateEvent": null,
+    "canGiveFeedback": null,
+    "canManageAdmins": true,
+    "canManageMods": null,
+    "canManagePlugins": null,
+    "canManageRoles": null,
+    "canManageServerSettings": null,
+    "canManageSuperAdmins": null,
+    "canUploadFile": null,
+    "canUpvoteComment": null,
+    "canUpvoteDiscussion": null
+  },
+  {
+    "canCreateChannel": null,
+    "canCreateComment": true,
+    "canCreateDiscussion": null,
+    "canCreateEvent": null,
+    "canGiveFeedback": null,
+    "canManageAdmins": null,
+    "canManageMods": null,
+    "canManagePlugins": null,
+    "canManageRoles": null,
+    "canManageServerSettings": null,
+    "canManageSuperAdmins": null,
+    "canUploadFile": null,
+    "canUpvoteComment": null,
+    "canUpvoteDiscussion": null
+  }
+]
+`;
+
+exports[`server capability filters retain every guarded flag and nullable values 2`] = `
+[]
+`;
+
+exports[`server capability filters retain every guarded flag and nullable values 3`] = `
+[
+  {
+    "canArchiveImage": null,
+    "canCloseSupportTickets": null,
+    "canDeleteWiki": null,
+    "canEditComments": null,
+    "canEditDiscussions": null,
+    "canEditEvents": null,
+    "canGiveFeedback": null,
+    "canHideComment": null,
+    "canHideDiscussion": null,
+    "canHideEvent": null,
+    "canLockChannel": null,
+    "canOpenSupportTickets": null,
+    "canPermanentlyRemoveImage": null,
+    "canRemoveDiscussionChannel": null,
+    "canRemoveEventChannel": null,
+    "canReport": false,
+    "canSuspendUser": null
+  },
+  {
+    "canArchiveImage": null,
+    "canCloseSupportTickets": null,
+    "canDeleteWiki": null,
+    "canEditComments": null,
+    "canEditDiscussions": null,
+    "canEditEvents": null,
+    "canGiveFeedback": null,
+    "canHideComment": null,
+    "canHideDiscussion": null,
+    "canHideEvent": null,
+    "canLockChannel": null,
+    "canOpenSupportTickets": null,
+    "canPermanentlyRemoveImage": null,
+    "canRemoveDiscussionChannel": true,
+    "canRemoveEventChannel": null,
+    "canReport": true,
+    "canSuspendUser": null
+  }
+]
+`;
+
+exports[`server capability filters retain every guarded flag and nullable values 4`] = `
+[
+  {
+    "canArchiveImage": null,
+    "canCloseSupportTickets": null,
+    "canDeleteWiki": null,
+    "canEditComments": null,
+    "canEditDiscussions": null,
+    "canEditEvents": null,
+    "canGiveFeedback": null,
+    "canHideComment": null,
+    "canHideDiscussion": null,
+    "canHideEvent": null,
+    "canLockChannel": null,
+    "canOpenSupportTickets": null,
+    "canPermanentlyRemoveImage": null,
+    "canRemoveDiscussionChannel": true,
+    "canRemoveEventChannel": null,
+    "canReport": true,
+    "canSuspendUser": null
+  }
+]
+`;

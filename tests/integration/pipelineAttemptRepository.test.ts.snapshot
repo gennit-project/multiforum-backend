@@ -1,0 +1,4505 @@
+exports[`complete projection failure retains exact committed write prefix 1`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "SUCCEEDED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "finishedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "SUCCEEDED",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`completion CANCELLED preserves status/deadline/default projection 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "CANCELLED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "finishedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "CANCELLED",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`completion FAILED preserves status/deadline/default projection 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "FAILED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "finishedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "FAILED",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`completion PENDING,FAILED preserves status/deadline/default projection 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "QUEUED",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "timeoutAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 5
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`completion RUNNING,FAILED preserves status/deadline/default projection 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "RUNNING",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "timeoutAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 5
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`completion SKIPPED preserves status/deadline/default projection 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "SUCCEEDED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "finishedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "SUCCEEDED",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`completion TIMED_OUT,FAILED preserves status/deadline/default projection 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "finishedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "TIMED_OUT",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`completion empty preserves status/deadline/default projection 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "SUCCEEDED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "finishedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "SUCCEEDED",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`create projection failure retains exact committed write prefix 1`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "status": "QUEUED",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "timeoutAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 5
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`running projection failure retains exact committed write prefix 1`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 1,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 1
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "RUNNING",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "timeoutAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 5
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;
+
+exports[`unbounded prior numbers, queued response, running graph and ordered native events match 1`] = `
+[
+  {
+    "attemptNumber": 10
+  },
+  {
+    "attemptNumber": 11
+  },
+  {
+    "attemptNumber": 12
+  },
+  {
+    "attemptNumber": 13
+  },
+  {
+    "attemptNumber": 14
+  },
+  {
+    "attemptNumber": 15
+  },
+  {
+    "attemptNumber": 16
+  },
+  {
+    "attemptNumber": 17
+  },
+  {
+    "attemptNumber": 18
+  },
+  {
+    "attemptNumber": 19
+  },
+  {
+    "attemptNumber": 1
+  },
+  {
+    "attemptNumber": 20
+  },
+  {
+    "attemptNumber": 21
+  },
+  {
+    "attemptNumber": 22
+  },
+  {
+    "attemptNumber": 23
+  },
+  {
+    "attemptNumber": 24
+  },
+  {
+    "attemptNumber": 25
+  },
+  {
+    "attemptNumber": 26
+  },
+  {
+    "attemptNumber": 27
+  },
+  {
+    "attemptNumber": 28
+  },
+  {
+    "attemptNumber": 29
+  },
+  {
+    "attemptNumber": 2
+  },
+  {
+    "attemptNumber": 3
+  },
+  {
+    "attemptNumber": 4
+  },
+  {
+    "attemptNumber": 5
+  },
+  {
+    "attemptNumber": 6
+  },
+  {
+    "attemptNumber": 7
+  },
+  {
+    "attemptNumber": 8
+  },
+  {
+    "attemptNumber": 9
+  }
+]
+`;
+
+exports[`unbounded prior numbers, queued response, running graph and ordered native events match 2`] = `
+{
+  "applicability": "ALL_FILES_GRADUAL",
+  "attemptNumber": 30,
+  "campaignId": null,
+  "channelId": null,
+  "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+  "createdAt": "<time>",
+  "eventType": "fixture",
+  "finishedAt": null,
+  "heartbeatAt": null,
+  "id": "id0",
+  "initiatedByUsername": null,
+  "notifiedAt": null,
+  "pipelineId": "pipeline / \\"",
+  "policyEffectiveAt": null,
+  "policyId": "policy",
+  "queuedAt": "2026-07-30T12:00:00.000Z",
+  "retryOfPipelineRunId": null,
+  "scope": "SERVER",
+  "startedAt": null,
+  "status": "QUEUED",
+  "targetId": "file",
+  "targetType": "DownloadableFile",
+  "targetVersion": "version / \\"",
+  "timeoutAt": "2026-07-30T12:05:00.000Z",
+  "trigger": "EVENT",
+  "updatedAt": "<time>"
+}
+`;
+
+exports[`unbounded prior numbers, queued response, running graph and ordered native events match 3`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 30,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 30,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "startedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "applicability": "ALL_FILES_GRADUAL",
+          "attemptNumber": 30,
+          "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id0",
+          "pipelineId": "pipeline / \\"",
+          "policyId": "policy",
+          "queuedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "scope": "SERVER",
+          "status": "QUEUED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "targetVersion": "version / \\"",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 5
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "rows": [
+    {
+      "applicability": "ALL_FILES_GRADUAL",
+      "attemptNumber": {
+        "high": 0,
+        "low": 30
+      },
+      "configurationSnapshot": "{\\"event\\":\\"fixture\\",\\"stopOnFirstFailure\\":false,\\"applicability\\":\\"ALL_FILES_GRADUAL\\",\\"effectiveAt\\":null,\\"steps\\":[]}",
+      "createdAt": "<time>",
+      "eventType": "fixture",
+      "id": "id0",
+      "pipelineId": "pipeline / \\"",
+      "policyId": "policy",
+      "queuedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "scope": "SERVER",
+      "startedAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 0
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "status": "RUNNING",
+      "targetId": "file",
+      "targetType": "DownloadableFile",
+      "targetVersion": "version / \\"",
+      "timeoutAt": {
+        "day": {
+          "high": 0,
+          "low": 30
+        },
+        "hour": {
+          "high": 0,
+          "low": 12
+        },
+        "minute": {
+          "high": 0,
+          "low": 5
+        },
+        "month": {
+          "high": 0,
+          "low": 7
+        },
+        "nanosecond": {
+          "high": 0,
+          "low": 0
+        },
+        "second": {
+          "high": 0,
+          "low": 0
+        },
+        "timeZoneOffsetSeconds": {
+          "high": 0,
+          "low": 0
+        },
+        "year": {
+          "high": 0,
+          "low": 2026
+        }
+      },
+      "trigger": "EVENT",
+      "updatedAt": "<time>"
+    }
+  ]
+}
+`;

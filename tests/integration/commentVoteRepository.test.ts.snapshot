@@ -1,0 +1,105 @@
+exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 1`] = `
+[
+  {
+    "CommentAuthor": {
+      "commentKarma": 7,
+      "createdAt": "<time>",
+      "username": "author"
+    },
+    "UpvotedByUsers": 25,
+    "UpvotedByUsersAggregate": {
+      "count": 28
+    },
+    "id": "c",
+    "weightedVotesCount": 3
+  }
+]
+`;
+
+exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 2`] = `
+[
+  {
+    "commentKarma": 25,
+    "username": "voter"
+  }
+]
+`;
+
+exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 3`] = `
+[
+  {
+    "CommentAuthor": {
+      "createdAt": "<time>",
+      "displayName": "mod"
+    },
+    "UpvotedByUsers": 25,
+    "UpvotedByUsersAggregate": {
+      "count": 28
+    },
+    "id": "c",
+    "weightedVotesCount": 3
+  }
+]
+`;
+
+exports[`karma generated write preserves native events and default projection failure after committed write 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<node-id>",
+      "properties": {
+        "new": {
+          "commentKarma": 8,
+          "createdAt": "<time>",
+          "username": "author"
+        },
+        "old": {
+          "commentKarma": 7,
+          "createdAt": "<time>",
+          "username": "author"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "state": [
+    {
+      "karma": 8,
+      "voters": [],
+      "weight": 3
+    }
+  ]
+}
+`;
+
+exports[`karma generated write preserves native events and default projection failure after committed write 2`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<node-id>",
+      "properties": {
+        "new": {
+          "commentKarma": 8,
+          "username": "author"
+        },
+        "old": {
+          "commentKarma": 7,
+          "username": "author"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "state": [
+    {
+      "karma": 8,
+      "voters": [],
+      "weight": 3
+    }
+  ]
+}
+`;

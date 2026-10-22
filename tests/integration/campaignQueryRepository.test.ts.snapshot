@@ -1,0 +1,327 @@
+exports[`campaign IDs are literal values and generated coercion errors remain equivalent 1`] = `
+[]
+`;
+
+exports[`campaign IDs are literal values and generated coercion errors remain equivalent 2`] = `
+[]
+`;
+
+exports[`campaign history preserves full selected response and no native events 1`] = `
+[
+  {
+    "accessibleFileCount": 2,
+    "affectedFileCount": 2,
+    "applicability": "ALL_FILES_GRADUAL",
+    "channelId": null,
+    "completedCount": 0,
+    "concurrency": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "createdByUsername": "admin",
+    "enforcementBehavior": "fixture",
+    "estimatedProviderRuns": 4,
+    "eventType": "downloadableFile.created",
+    "failedCount": 0,
+    "finishedAt": null,
+    "id": "campaign",
+    "pausedAt": null,
+    "policyId": "policy",
+    "rateLimitPerMinute": 5,
+    "runningCount": 0,
+    "scope": "SERVER",
+    "startedAt": null,
+    "status": "RUNNING",
+    "timedOutCount": 0,
+    "unavailableFileCount": 0,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+]
+`;
+
+exports[`campaign history preserves full selected response and no native events 2`] = `
+[
+  {
+    "accessibleFileCount": 2,
+    "affectedFileCount": 2,
+    "applicability": "ALL_FILES_GRADUAL",
+    "channelId": null,
+    "completedCount": 0,
+    "concurrency": 2,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "createdByUsername": "admin",
+    "enforcementBehavior": "fixture",
+    "estimatedProviderRuns": 4,
+    "eventType": "downloadableFile.created",
+    "failedCount": 0,
+    "finishedAt": null,
+    "id": "campaign",
+    "pausedAt": null,
+    "policyId": "policy",
+    "rateLimitPerMinute": 5,
+    "runningCount": 0,
+    "scope": "SERVER",
+    "startedAt": null,
+    "status": "RUNNING",
+    "timedOutCount": 0,
+    "unavailableFileCount": 0,
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+]
+`;
+
+exports[`failure and destination reads preserve status filter and real relationship projection 1`] = `
+[
+  {
+    "attemptNumber": 1,
+    "pipelineId": "CANCELLED",
+    "status": "CANCELLED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "FAILED",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "TIMED_OUT",
+    "status": "TIMED_OUT",
+    "targetId": "file"
+  }
+]
+`;
+
+exports[`failure and destination reads preserve status filter and real relationship projection 2`] = `
+[
+  {
+    "Discussion": {
+      "DiscussionChannels": [
+        {
+          "archived": false,
+          "channelUniqueName": "public"
+        },
+        {
+          "archived": true,
+          "channelUniqueName": "archive"
+        }
+      ],
+      "id": "discussion"
+    },
+    "id": "file"
+  }
+]
+`;
+
+exports[`failure list remains unbounded by the repository 1`] = `
+[
+  {
+    "attemptNumber": 1,
+    "pipelineId": "1",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "10",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "11",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "12",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "13",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "14",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "15",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "16",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "17",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "18",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "19",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "2",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "20",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "21",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "22",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "23",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "24",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "25",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "26",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "27",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "28",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "29",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "3",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "30",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "4",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "5",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "6",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "7",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "8",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "pipelineId": "9",
+    "status": "FAILED",
+    "targetId": "file"
+  }
+]
+`;
+
+exports[`query resolves public destinations sequentially and skips orphaned files 1`] = `
+[
+  {
+    "attemptNumber": 1,
+    "channelId": "public",
+    "discussionId": "discussion",
+    "pipelineId": "CANCELLED",
+    "status": "CANCELLED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "channelId": "public",
+    "discussionId": "discussion",
+    "pipelineId": "FAILED",
+    "status": "FAILED",
+    "targetId": "file"
+  },
+  {
+    "attemptNumber": 1,
+    "channelId": "public",
+    "discussionId": "discussion",
+    "pipelineId": "TIMED_OUT",
+    "status": "TIMED_OUT",
+    "targetId": "file"
+  }
+]
+`;

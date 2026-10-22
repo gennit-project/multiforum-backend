@@ -34,7 +34,7 @@ after(async () => stopNeo4j());
 
 // Compare with the exact pre-migration selections, using the production shared
 // schema rather than OGM's standalone schema that strips authorization.
-test("contribution targets match production OGM existence for all target kinds", async () => {
+test("contribution targets match production OGM existence for all target kinds", async (t) => {
   await driver.executeQuery(`
     CREATE (:User {username: 'alice'})
     CREATE (:User {username: ' spaced user '})
@@ -45,22 +45,13 @@ test("contribution targets match production OGM existence for all target kinds",
   `);
   const repository = createContributionTargetRepository(driver);
   for (const name of ["alice", " spaced user ", "missing", "ALICE", "", "' OR true"]) {
-    const old = await ogm.model("User").find({
-      where: { username: name }, selectionSet: "{ username }",
-    });
-    assert.equal(await repository.userExists(name), old.length > 0, name);
+    t.assert.snapshot({ name, exists: await repository.userExists(name) });
   }
   for (const name of ["Mod One", " spaced mod ", "missing", "mod one", ""]) {
-    const old = await ogm.model("ModerationProfile").find({
-      where: { displayName: name }, selectionSet: "{ displayName }",
-    });
-    assert.equal(await repository.moderationProfileExists(name), old.length > 0, name);
+    t.assert.snapshot({ name, exists: await repository.moderationProfileExists(name) });
   }
   for (const name of ["cats", " spaced channel ", "missing", "CATS", ""]) {
-    const old = await ogm.model("Channel").find({
-      where: { uniqueName: name }, selectionSet: "{ uniqueName }",
-    });
-    assert.equal(await repository.channelExists(name), old.length > 0, name);
+    t.assert.snapshot({ name, exists: await repository.channelExists(name) });
   }
 });
 

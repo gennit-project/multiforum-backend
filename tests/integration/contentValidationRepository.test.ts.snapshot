@@ -1,0 +1,282 @@
+exports[`all four validation snapshots preserve missing and populated results 1`] = `
+[]
+`;
+
+exports[`all four validation snapshots preserve missing and populated results 2`] = `
+[]
+`;
+
+exports[`all four validation snapshots preserve missing and populated results 3`] = `
+[]
+`;
+
+exports[`all four validation snapshots preserve missing and populated results 4`] = `
+[]
+`;
+
+exports[`all four validation snapshots preserve missing and populated results 5`] = `
+[
+  {
+    "DiscussionChannels": [
+      {
+        "channelUniqueName": "cats"
+      }
+    ]
+  }
+]
+`;
+
+exports[`all four validation snapshots preserve missing and populated results 6`] = `
+[
+  {
+    "fileName": "old.zip",
+    "id": "f"
+  }
+]
+`;
+
+exports[`all four validation snapshots preserve missing and populated results 7`] = `
+[
+  {
+    "Channel": {
+      "emojiEnabled": false,
+      "uniqueName": "cats"
+    },
+    "archived": false,
+    "channelUniqueName": "cats",
+    "emoji": "{}",
+    "id": "dc",
+    "locked": false
+  }
+]
+`;
+
+exports[`all four validation snapshots preserve missing and populated results 8`] = `
+[
+  {
+    "Channel": {
+      "emojiEnabled": false,
+      "uniqueName": "cats"
+    },
+    "DiscussionChannel": {
+      "Channel": {
+        "emojiEnabled": false,
+        "uniqueName": "cats"
+      },
+      "archived": false,
+      "channelUniqueName": "cats",
+      "locked": false
+    },
+    "archived": false,
+    "emoji": "{}",
+    "id": "c"
+  }
+]
+`;
+
+exports[`arbitrary compound filters and default25 limits match generated operations 1`] = `
+[
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  },
+  {
+    "DiscussionChannels": []
+  }
+]
+`;
+
+exports[`arbitrary compound filters and default25 limits match generated operations 2`] = `
+[
+  {
+    "fileName": "old.zip",
+    "id": "1"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "10"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "11"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "12"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "13"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "14"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "15"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "16"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "17"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "18"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "19"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "2"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "20"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "21"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "22"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "23"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "24"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "25"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "26"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "27"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "28"
+  },
+  {
+    "fileName": "old.zip",
+    "id": "29"
+  }
+]
+`;
+
+exports[`nested discussion channels preserve filtering when the root remains visible 1`] = `
+[
+  {
+    "DiscussionChannels": []
+  }
+]
+`;
+
+exports[`nested discussion channels preserve filtering when the root remains visible 2`] = `
+[]
+`;
+
+exports[`nested discussion channels preserve filtering when the root remains visible 3`] = `
+[
+  {
+    "Channel": {
+      "emojiEnabled": false,
+      "uniqueName": "cats"
+    },
+    "DiscussionChannel": null,
+    "archived": false,
+    "emoji": "{}",
+    "id": "c"
+  }
+]
+`;
+
+exports[`sensitive roots and nested channels retain anonymous internal filtering 1`] = `
+[]
+`;
+
+exports[`sensitive roots and nested channels retain anonymous internal filtering 2`] = `
+[]
+`;
+
+exports[`sensitive roots and nested channels retain anonymous internal filtering 3`] = `
+[]
+`;
+
+exports[`sensitive roots and nested channels retain anonymous internal filtering 4`] = `
+[]
+`;

@@ -1,0 +1,35 @@
+exports[`active lookup matches all active states and preserves literal IDs 1`] = `
+[
+  {
+    "id": "id0"
+  }
+]
+`;
+
+exports[`active lookup matches all active states and preserves literal IDs 2`] = `
+[
+  {
+    "id": "id0"
+  }
+]
+`;
+
+exports[`active lookup matches all active states and preserves literal IDs 3`] = `
+[
+  {
+    "id": "id0"
+  }
+]
+`;
+
+exports[`active lookup matches all active states and preserves literal IDs 4`] = `
+[]
+`;
+
+exports[`active lookup matches all active states and preserves literal IDs 5`] = `
+[]
+`;
+
+exports[`active lookup matches all active states and preserves literal IDs 6`] = `
+[]
+`;

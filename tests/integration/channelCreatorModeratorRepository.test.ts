@@ -5,7 +5,7 @@ import { createChannelCreatorModeratorRepository } from "../../services/persiste
 import { createChannelCreatorModeratorService } from "../../services/channelCreatorModerator.js";
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import { Neo4jError, type Driver } from "neo4j-driver";
-import { subscribe, parse, type GraphQLSchema } from "graphql";
+import { subscribe, parse, graphql, type GraphQLSchema } from "graphql";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
@@ -44,15 +44,22 @@ beforeEach(async () => {
 });
 after(async () => stopNeo4j());
 
-const connectCreator = (channel = "cats", profile = "Mod Alice") =>
-  ogm.model("Channel").update({
-    where: { uniqueName: channel },
-    update: {
-      Moderators: [{
-        connect: [{ where: { node: { displayName: profile } } }],
-      }],
-    },
+// The generated-schema mutation that emits the MODERATOR_OF_CHANNEL relationship event, used as
+// the native-event source/baseline (re-expressed off the live OGM onto the installed schema).
+const connectCreator = async (channel = "cats", profile = "Mod Alice") => {
+  const result = await graphql({
+    schema,
+    source: `mutation Connect($channel: String!, $profile: String!) {
+      updateChannels(where: { uniqueName: $channel }, update: { Moderators: [{ connect: [{ where: { node: { displayName: $profile } } }] }] }) {
+        channels { uniqueName }
+      }
+    }`,
+    variableValues: { channel, profile },
+    contextValue: {},
   });
+  if (result.errors?.length) throw new Error(result.errors[0].message);
+  return result.data;
+};
 
 test("production publishes moderator relationship events for both first and repeated connects", async () => {
   await connectCreator();

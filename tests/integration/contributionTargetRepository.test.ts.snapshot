@@ -1,0 +1,111 @@
+exports[`contribution targets match production OGM existence for all target kinds 1`] = `
+{
+  "exists": true,
+  "name": "alice"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 10`] = `
+{
+  "exists": false,
+  "name": "mod one"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 11`] = `
+{
+  "exists": false,
+  "name": ""
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 12`] = `
+{
+  "exists": true,
+  "name": "cats"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 13`] = `
+{
+  "exists": true,
+  "name": " spaced channel "
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 14`] = `
+{
+  "exists": false,
+  "name": "missing"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 15`] = `
+{
+  "exists": false,
+  "name": "CATS"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 16`] = `
+{
+  "exists": false,
+  "name": ""
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 2`] = `
+{
+  "exists": true,
+  "name": " spaced user "
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 3`] = `
+{
+  "exists": false,
+  "name": "missing"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 4`] = `
+{
+  "exists": false,
+  "name": "ALICE"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 5`] = `
+{
+  "exists": false,
+  "name": ""
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 6`] = `
+{
+  "exists": false,
+  "name": "' OR true"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 7`] = `
+{
+  "exists": true,
+  "name": "Mod One"
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 8`] = `
+{
+  "exists": true,
+  "name": " spaced mod "
+}
+`;
+
+exports[`contribution targets match production OGM existence for all target kinds 9`] = `
+{
+  "exists": false,
+  "name": "missing"
+}
+`;

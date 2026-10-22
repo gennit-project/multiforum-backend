@@ -38,23 +38,21 @@ const seed=async()=>driver.executeQuery("CREATE (:User {username:'alice',created
 const input={url:'https://example.test/image',alt:'alt',hasSensitiveContent:false,Uploader:{connect:{where:{node:{username:'alice'}}}},Albums:{connect:[{where:{node:{id:'album'}}}]}};
 const oldCreate=()=>ogm.model('Image').create({input:[input],selectionSet:`{ images ${CREATED_IMAGE_SELECTION} }`});
 const newCreate=()=>createImageCreationRepository(driver).createImage(input);
-test('uploader lookup preserves exact projection and missing rows',async()=>{assert.deepEqual(await createImageCreationRepository(driver).findUploader('missing'),[]);await seed();assert.deepEqual(await createImageCreationRepository(driver).findUploader('alice'),await ogm.model('User').find({where:{username:'alice'},selectionSet:'{username}'}));});
-test('image create preserves selected response, generated defaults, relations and native events',async()=>{
- let expected:unknown;
- for(const create of [oldCreate,newCreate]){await resetDatabase(driver);await seed();events=[];const response=await create();assert.equal(response.images[0].url,input.url);assert.equal(response.images[0].Uploader?.username,'alice');assert.equal(response.images[0].Albums.length,1);assert.equal(response.images[0].Albums[0].id,'album');assert.ok(events.length>0);
- const rows=(await driver.executeQuery("MATCH (u:User)-[:UPLOADED_IMAGE]->(i:Image) RETURN u.username AS username,i.url AS url")).records.map(r=>r.toObject());assert.deepEqual(rows,[{username:'alice',url:input.url}]);const actual=normalize({response,events});if(create===oldCreate)expected=actual;else assert.deepEqual(actual,expected);}
+test('uploader lookup preserves exact projection and missing rows',async(t)=>{assert.deepEqual(await createImageCreationRepository(driver).findUploader('missing'),[]);await seed();t.assert.snapshot(await createImageCreationRepository(driver).findUploader('alice'));});
+test('image create preserves selected response, generated defaults, relations and native events',async(t)=>{
+ {await resetDatabase(driver);await seed();events=[];const response=await newCreate();assert.equal(response.images[0].url,input.url);assert.equal(response.images[0].Uploader?.username,'alice');assert.equal(response.images[0].Albums.length,1);assert.equal(response.images[0].Albums[0].id,'album');assert.ok(events.length>0);
+ const rows=(await driver.executeQuery("MATCH (u:User)-[:UPLOADED_IMAGE]->(i:Image) RETURN u.username AS username,i.url AS url")).records.map(r=>r.toObject());assert.deepEqual(rows,[{username:'alice',url:input.url}]);t.assert.snapshot(normalize({response,events}));}
 });
-for(const kind of ['profile','icon'] as const)test(`${kind} write preserves missing rows, exact projection and repeated update events`,async()=>{
+for(const kind of ['profile','icon'] as const)test(`${kind} write preserves missing rows, exact projection and repeated update events`,async(t)=>{
  const update=kind==='profile'?{profilePicURL:'https://example.test/profile',avatar32Url:'https://example.test/32'}:{channelIconURL:'https://example.test/icon',icon32Url:'https://example.test/32'};
- const oldWrite=()=>kind==='profile'?ogm.model('User').update({where:{username:'alice'},update,selectionSet:`{ users ${PROFILE_IMAGE_SELECTION} }`}):ogm.model('Channel').update({where:{uniqueName:'forum'},update,selectionSet:`{ channels ${CHANNEL_ICON_SELECTION} }`});
  const newWrite=()=>kind==='profile'?createProfileImageRepository(driver).setProfileImage('alice',update):createChannelIconRepository(driver).setChannelIcon('forum',update);
- assert.deepEqual(await newWrite(),await oldWrite());let expected:unknown;
- for(const write of [oldWrite,newWrite]){await resetDatabase(driver);await seed();events=[];const response=await write();await write();assert.equal(events.length,2);const actual=normalize({response,events});if(write===oldWrite)expected=actual;else assert.deepEqual(actual,expected);}
+ t.assert.snapshot(normalize(await newWrite()));
+ {await resetDatabase(driver);await seed();events=[];const response=await newWrite();await newWrite();assert.equal(events.length,2);t.assert.snapshot(normalize({response,events}));}
 });
 test('generated image input validation rejects before writes with the legacy first error',async()=>{await seed();const bad={...input,hasSensitiveContent:'invalid'};await assert.rejects(createImageCreationRepository(driver).createImage(bad as any),/Boolean cannot represent a non boolean value/);assert.equal(Number((await driver.executeQuery('MATCH (i:Image) RETURN count(i) AS count')).records[0].get('count')),0);assert.deepEqual(events,[]);});
-test('image projection failure leaves the same committed graph and events',async()=>{
+test('image projection failure leaves the same committed graph and events',async(t)=>{
  const field=(schema.getType('Image') as GraphQLObjectType).getFields().url;const original=field.resolve;field.resolve=()=>{throw new Error('fixture projection failure');};
- try{let expected:unknown;for(const create of [oldCreate,newCreate]){await resetDatabase(driver);await seed();events=[];await assert.rejects(create(),{message:'fixture projection failure'});const count=Number((await driver.executeQuery('MATCH (i:Image) RETURN count(i) AS count')).records[0].get('count'));assert.equal(count,1);const actual=normalize({count,events});if(create===oldCreate)expected=actual;else assert.deepEqual(actual,expected);}}finally{field.resolve=original;}
+ try{{await resetDatabase(driver);await seed();events=[];await assert.rejects(newCreate(),{message:'fixture projection failure'});const count=Number((await driver.executeQuery('MATCH (i:Image) RETURN count(i) AS count')).records[0].get('count'));assert.equal(count,1);t.assert.snapshot(normalize({count,events}));}}finally{field.resolve=original;}
 });
 
 test('object-valued variant JSON retains the existing database error without partial updates',async()=>{

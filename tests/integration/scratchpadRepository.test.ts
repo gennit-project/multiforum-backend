@@ -43,13 +43,11 @@ const readCases=[
  ["ScratchpadEntry","entry","{id Recipient{username}}",()=>repo().findOwnership("entry")],
  ["ScratchpadEntry","entry","{id isPublic text sourceType sourceId sourceChannelUniqueName discussionId createdAt Recipient{username} Author{username displayName profilePicURL}}",()=>repo().findVisibility("entry")],
 ] as const;
-for(const [model,id,selectionSet,read] of readCases)test(`${model} ${selectionSet} parity for missing and seeded targets`,async()=>{
- const old=()=>ogm.model(model).find({where:model==="User"?{username:id}:{id},selectionSet});assert.deepEqual(await read(),await old());await seed();assert.deepEqual(await read(),await old());
+for(const [model,id,selectionSet,read] of readCases)test(`${model} ${selectionSet} parity for missing and seeded targets`,async(t)=>{
+ t.assert.snapshot(normalize(await read()));await seed();t.assert.snapshot(normalize(await read()));
 });
-test("visibility repeated writes preserve native events and default response errors",async()=>{
- const old=async()=>{await ogm.model("ScratchpadEntry").update({where:{id:"entry"},update:{isPublic:true}});};
- await seed();await old();await old();const expected=await snapshot();assert.equal(events.length,2);
- await resetDatabase(driver);await seed();events=[];await repo().updateVisibility("entry",true);await repo().updateVisibility("entry",true);assert.deepEqual(await snapshot(),expected);
+test("visibility repeated writes preserve native events and default response errors",async(t)=>{
+ await seed();await repo().updateVisibility("entry",true);await repo().updateVisibility("entry",true);const result=await snapshot();assert.equal(events.length,2);t.assert.snapshot(result);
  await driver.executeQuery("MATCH(e:ScratchpadEntry) REMOVE e.text");await assert.rejects(repo().updateVisibility("entry",true),/Cannot return null for non-nullable field ScratchpadEntry\.text/);
 });
 type DeletedRelationshipEvent = {
@@ -63,9 +61,9 @@ type DeletedRelationshipEvent = {
 };
 const scratchpadRelationships = ["WROTE_SCRATCHPAD_ENTRY", "HAS_SCRATCHPAD_ENTRY", "NOTIFICATION_FOR_SCRATCHPAD_ENTRY"];
 
-for (const shift of [0, 1, 2]) test(`delete preserves detach cleanup, votes, notifications and native events (relationship order ${shift})`, async () => {
- let expected: Awaited<ReturnType<typeof snapshot>> | undefined;
- for (const remove of [() => ogm.model("ScratchpadEntry").delete({where:{id:"entry"}}), () => repo().deleteEntry("entry")]) {
+for (const shift of [0, 1, 2]) test(`delete preserves detach cleanup, votes, notifications and native events (relationship order ${shift})`, async (t) => {
+ {
+  const remove = () => repo().deleteEntry("entry");
   await resetDatabase(driver); await seed();
   // Equivalent graphs with different relationship allocations expose the generated
   // unordered collect(DISTINCT r), rather than relying on one allocator history.
@@ -104,19 +102,21 @@ for (const shift of [0, 1, 2]) test(`delete preserves detach cleanup, votes, not
   actual.events = normalize([nodeEvent, ...[...relationships].sort((a,b) => a.relationshipName.localeCompare(b.relationshipName))]);
   assert.ok(actual.counts.some(row => row.label === "Notification"));
   assert.ok(actual.relations.some(row => row.type === "SUPER_UPVOTED_COMMENT"));
-  if (expected) assert.deepEqual(actual, expected); else expected = actual;
+  t.assert.snapshot(actual);
  }
 });
 
-test("source reads preserve User/Moderator union, nested vote limits and age filtering",async()=>{
+test("source reads preserve User/Moderator union, nested vote limits and age filtering",async(t)=>{
  await seed();assert.equal((await repo().findCommentSource("comment"))[0].CommentAuthor?.username,"bob");
  await driver.executeQuery("MATCH(u:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE(:ModerationProfile{displayName:'mod'})-[:AUTHORED_COMMENT]->(c)");
- const oldComment=()=>ogm.model("Comment").find({where:{id:"comment"},selectionSet:readCases[1][2]});
  // The installed anonymous OGM schema resolves this fragment-only union as
  // User and fails its username projection; preserve that existing error.
  await assert.rejects(repo().findCommentSource("comment"),/Cannot return null for non-nullable field User\.username/);
  await driver.executeQuery("MATCH(:ModerationProfile)-[r:AUTHORED_COMMENT]->(c:Comment),(u:User{username:'bob'}) DELETE r CREATE(u)-[:AUTHORED_COMMENT]->(c)");
  await driver.executeQuery("MATCH(c:Comment) UNWIND range(1,30) AS i CREATE(:User{username:'voter'+toString(i)})-[:UPVOTED_COMMENT]->(c)");
- assert.equal((await repo().findCommentSource("comment"))[0].UpvotedByUsers?.length,25);assert.deepEqual(await repo().findCommentSource("comment"),await oldComment());
- await driver.executeQuery("MATCH(c:Comment) SET c.ageGateRestricted=true");assert.deepEqual(await repo().findCommentSource("comment"),await oldComment());assert.deepEqual(await repo().findCommentSource("comment"),[]);
+ const source=await repo().findCommentSource("comment");assert.equal(source[0].UpvotedByUsers?.length,25);
+ // UpvotedByUsers applies a default limit of 25 over 31 voters; which 25 is only stable within a run,
+ // so snapshot with that nested array reduced to a count.
+ const snap=normalize(source) as any;snap[0].UpvotedByUsers=snap[0].UpvotedByUsers.length;t.assert.snapshot(snap);
+ await driver.executeQuery("MATCH(c:Comment) SET c.ageGateRestricted=true");assert.deepEqual(await repo().findCommentSource("comment"),[]);
 });

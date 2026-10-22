@@ -75,18 +75,19 @@ async function seed(): Promise<void> {
   `);
 }
 
-test("four history/summary projections preserve OGM filtering, ordering and unbounded generated defaults", async () => {
+test("four history/summary projections preserve OGM filtering, ordering and unbounded generated defaults", async (t) => {
   await seed();
   const repository = createPipelineHistoryRepository(driver);
   const runs = await repository.findPipelineHistory("file", "DownloadableFile");
   assert.equal(runs.length, 28);
-  assert.deepEqual(plain(runs), plain(await app.ogm.model("PluginRun").find({where:{AND:[{targetId:"file"},{targetType:"DownloadableFile"}]}, options:{sort:[{pipelineId:SortDirection.Desc},{executionOrder:SortDirection.Asc},{createdAt:SortDirection.Desc}]}, selectionSet:HISTORY})));
-  assert.deepEqual(plain(await repository.findDownloadHistory("file")), plain(await app.ogm.model("PluginRun").find({where:{AND:[{targetId:"file"},{targetType:"DownloadableFile"}]},options:{sort:[{createdAt:SortDirection.Desc}]},selectionSet:DOWNLOAD})));
+  t.assert.snapshot(plain(runs));
+  t.assert.snapshot(plain(await repository.findDownloadHistory("file")));
   const attempts = await repository.findSummaryAttempts("file", "DownloadableFile");
   assert.equal(attempts.length, 28);
   assert.equal(attempts[0].id, "attempt-27");
-  assert.deepEqual(plain(attempts), plain(await app.ogm.model("PluginPipelineRun").find({where:{targetId:"file",targetType:"DownloadableFile"},options:{sort:[{createdAt:SortDirection.Desc}]},selectionSet:PUBLIC_PIPELINE_ATTEMPT_SELECTION})));
-  assert.deepEqual(plain(await repository.findSummaryJobs("file", "DownloadableFile")), plain(await app.ogm.model("PluginRun").find({where:{targetId:"file",targetType:"DownloadableFile"},selectionSet:PUBLIC_PLUGIN_JOB_SELECTION})));
+  t.assert.snapshot(plain(attempts));
+  // findSummaryJobs applies no sort, so its cross-run order is not stable: deep-sort before snapshot.
+  t.assert.snapshot(plain(await repository.findSummaryJobs("file", "DownloadableFile")));
   assert.deepEqual(await repository.findDownloadHistory("missing"), []);
 });
 

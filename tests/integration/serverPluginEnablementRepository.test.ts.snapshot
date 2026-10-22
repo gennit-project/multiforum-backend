@@ -1,0 +1,469 @@
+exports[`default projection failure retains committed edge change and native events 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
+    }
+  ],
+  "graph": [
+    {
+      "properties": {
+        "enabled": true,
+        "settingsJson": "{\\"saved\\":true}"
+      },
+      "server": "server",
+      "version": "v"
+    }
+  ]
+}
+`;
+
+exports[`ordinary reads, enable/disable settings and repeated native events match legacy 1`] = `
+[
+  {
+    "Versions": [
+      {
+        "apiVersion": null,
+        "documentationPath": null,
+        "id": "v",
+        "manifest": "{\\"settings\\":[]}",
+        "minServerVersion": null,
+        "readmeMarkdown": null,
+        "registryUrl": null,
+        "releaseNotesUrl": null,
+        "settingsDefaults": null,
+        "sourceCommit": null,
+        "sourceRepoUrl": null,
+        "uiSchema": null,
+        "version": "1.0"
+      }
+    ],
+    "authorName": null,
+    "authorUrl": null,
+    "description": null,
+    "displayName": null,
+    "homepage": null,
+    "id": "p",
+    "license": null,
+    "metadata": null,
+    "name": "plugin",
+    "tags": null
+  }
+]
+`;
+
+exports[`ordinary reads, enable/disable settings and repeated native events match legacy 2`] = `
+[
+  {
+    "InstalledVersions": [
+      {
+        "id": "v",
+        "version": "1.0"
+      }
+    ],
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "settingsJson": "{\\"saved\\":true}"
+          }
+        }
+      ]
+    },
+    "serverName": "server"
+  }
+]
+`;
+
+exports[`ordinary reads, enable/disable settings and repeated native events match legacy 3`] = `
+[
+  {
+    "isValid": true,
+    "key": "token",
+    "lastValidatedAt": null,
+    "validationError": null
+  }
+]
+`;
+
+exports[`ordinary reads, enable/disable settings and repeated native events match legacy 4`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
+    },
+    {
+      "event": "update",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
+    },
+    {
+      "event": "update",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
+    }
+  ],
+  "graph": [
+    {
+      "properties": {
+        "enabled": true,
+        "settingsJson": "{\\"x\\":1}"
+      },
+      "server": "server",
+      "version": "v"
+    }
+  ],
+  "results": [
+    {
+      "apiVersion": null,
+      "documentationPath": null,
+      "enabled": false,
+      "manifest": "{\\"settings\\":[]}",
+      "minServerVersion": null,
+      "plugin": {
+        "authorName": null,
+        "authorUrl": null,
+        "description": null,
+        "displayName": null,
+        "homepage": null,
+        "id": "p",
+        "license": null,
+        "metadata": null,
+        "name": "plugin",
+        "tags": []
+      },
+      "readmeMarkdown": null,
+      "registryUrl": null,
+      "releaseNotesUrl": null,
+      "scope": "SERVER",
+      "settingsDefaults": null,
+      "settingsJson": {},
+      "sourceCommit": null,
+      "sourceRepoUrl": null,
+      "uiSchema": null,
+      "version": "1.0"
+    },
+    {
+      "apiVersion": null,
+      "documentationPath": null,
+      "enabled": true,
+      "manifest": "{\\"settings\\":[]}",
+      "minServerVersion": null,
+      "plugin": {
+        "authorName": null,
+        "authorUrl": null,
+        "description": null,
+        "displayName": null,
+        "homepage": null,
+        "id": "p",
+        "license": null,
+        "metadata": null,
+        "name": "plugin",
+        "tags": []
+      },
+      "readmeMarkdown": null,
+      "registryUrl": null,
+      "releaseNotesUrl": null,
+      "scope": "SERVER",
+      "settingsDefaults": null,
+      "settingsJson": {
+        "saved": true
+      },
+      "sourceCommit": null,
+      "sourceRepoUrl": null,
+      "uiSchema": null,
+      "version": "1.0"
+    },
+    {
+      "apiVersion": null,
+      "documentationPath": null,
+      "enabled": true,
+      "manifest": "{\\"settings\\":[]}",
+      "minServerVersion": null,
+      "plugin": {
+        "authorName": null,
+        "authorUrl": null,
+        "description": null,
+        "displayName": null,
+        "homepage": null,
+        "id": "p",
+        "license": null,
+        "metadata": null,
+        "name": "plugin",
+        "tags": []
+      },
+      "readmeMarkdown": null,
+      "registryUrl": null,
+      "releaseNotesUrl": null,
+      "scope": "SERVER",
+      "settingsDefaults": null,
+      "settingsJson": {
+        "x": 1
+      },
+      "sourceCommit": null,
+      "sourceRepoUrl": null,
+      "uiSchema": null,
+      "version": "1.0"
+    }
+  ]
+}
+`;
+
+exports[`server scan stays unbounded and missing targets retain errors 1`] = `
+[
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other1"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other10"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other11"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other12"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other13"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other14"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other15"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other16"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other17"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other18"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other19"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other2"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other20"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other21"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other22"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other23"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other24"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other25"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other26"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other27"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other28"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other3"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other4"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other5"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other6"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other7"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other8"
+  },
+  {
+    "InstalledVersions": [],
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "other9"
+  },
+  {
+    "InstalledVersions": [
+      {
+        "id": "v",
+        "version": "1.0"
+      }
+    ],
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "settingsJson": "{\\"saved\\":true}"
+          }
+        }
+      ]
+    },
+    "serverName": "server"
+  }
+]
+`;

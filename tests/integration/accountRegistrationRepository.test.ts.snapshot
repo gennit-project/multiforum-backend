@@ -1,0 +1,491 @@
+exports[`creation projection failure preserves committed graph and native events 1`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "address": "Alice@Example.test"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Email"
+    },
+    {
+      "event": "create",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "dateOfBirth": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "year": {
+              "high": 0,
+              "low": 2000
+            }
+          },
+          "isBot": false,
+          "isDeprecated": false,
+          "notificationBundleEnabled": true,
+          "notifyOnFeedback": true,
+          "notifyOnReplyToCommentByDefault": true,
+          "notifyOnReplyToDiscussionByDefault": true,
+          "notifyOnReplyToEventByDefault": true,
+          "notifyOnSubscribedIssueUpdates": true,
+          "notifyOnSuspensionBlocks": true,
+          "notifyWhenTagged": true,
+          "username": "alice"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "User"
+    },
+    {
+      "event": "create",
+      "id": "<id-3>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "displayName": "alice_mod"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ModerationProfile"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Email",
+      "id": "<id-1>",
+      "id_from": "<id-0>",
+      "id_to": "<id-2>",
+      "properties": {
+        "from": {
+          "address": "Alice@Example.test"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "dateOfBirth": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "year": {
+              "high": 0,
+              "low": 2000
+            }
+          },
+          "isBot": false,
+          "isDeprecated": false,
+          "notificationBundleEnabled": true,
+          "notifyOnFeedback": true,
+          "notifyOnReplyToCommentByDefault": true,
+          "notifyOnReplyToDiscussionByDefault": true,
+          "notifyOnReplyToEventByDefault": true,
+          "notifyOnSubscribedIssueUpdates": true,
+          "notifyOnSuspensionBlocks": true,
+          "notifyWhenTagged": true,
+          "username": "alice"
+        }
+      },
+      "relationshipName": "HAS_EMAIL",
+      "timestamp": "<generated-time>",
+      "toTypename": "User"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "<id-4>",
+      "id_from": "<id-2>",
+      "id_to": "<id-3>",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "dateOfBirth": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "year": {
+              "high": 0,
+              "low": 2000
+            }
+          },
+          "isBot": false,
+          "isDeprecated": false,
+          "notificationBundleEnabled": true,
+          "notifyOnFeedback": true,
+          "notifyOnReplyToCommentByDefault": true,
+          "notifyOnReplyToDiscussionByDefault": true,
+          "notifyOnReplyToEventByDefault": true,
+          "notifyOnSubscribedIssueUpdates": true,
+          "notifyOnSuspensionBlocks": true,
+          "notifyWhenTagged": true,
+          "username": "alice"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "displayName": "alice_mod"
+        }
+      },
+      "relationshipName": "MODERATION_PROFILE",
+      "timestamp": "<generated-time>",
+      "toTypename": "ModerationProfile"
+    }
+  ],
+  "graph": [
+    {
+      "birthday": "2000-01-01",
+      "email": "Alice@Example.test",
+      "moderator": "alice_mod",
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`existence reads preserve missing/case-sensitive matches, projection and session routing 1`] = `
+{
+  "session": {
+    "bookmarkManager": {
+      "_bookmarks": {}
+    },
+    "defaultAccessMode": "READ"
+  },
+  "users": []
+}
+`;
+
+exports[`existence reads preserve missing/case-sensitive matches, projection and session routing 2`] = `
+{
+  "session": {
+    "bookmarkManager": {
+      "_bookmarks": {}
+    },
+    "defaultAccessMode": "READ"
+  },
+  "users": [
+    {
+      "avatar32Url": null,
+      "avatar48Url": null,
+      "avatar64Url": null,
+      "avatar96Url": null,
+      "bio": null,
+      "botProfileId": null,
+      "commentKarma": null,
+      "createdAt": "<generated-time>",
+      "defaultEmojiSkinTone": null,
+      "deleted": null,
+      "deprecatedReason": null,
+      "discussionKarma": null,
+      "displayName": null,
+      "enableSensitiveContentByDefault": null,
+      "isBot": false,
+      "isDeprecated": false,
+      "location": null,
+      "notificationBundleContent": null,
+      "notificationBundleEnabled": true,
+      "notificationBundleInterval": null,
+      "notifyOnFeedback": true,
+      "notifyOnReplyToCommentByDefault": true,
+      "notifyOnReplyToDiscussionByDefault": true,
+      "notifyOnReplyToEventByDefault": true,
+      "notifyOnSubscribedIssueUpdates": true,
+      "notifyOnSuspensionBlocks": true,
+      "notifyWhenTagged": true,
+      "preferredTimeZone": null,
+      "profilePicURL": null,
+      "pronouns": null,
+      "stripeAccountId": null,
+      "username": "alice",
+      "variantUrls": null
+    }
+  ]
+}
+`;
+
+exports[`existence reads preserve missing/case-sensitive matches, projection and session routing 3`] = `
+{
+  "emails": [
+    {
+      "address": "Alice@Example.test"
+    }
+  ],
+  "session": {
+    "bookmarkManager": {
+      "_bookmarks": {}
+    },
+    "defaultAccessMode": "READ"
+  }
+}
+`;
+
+exports[`existence reads preserve missing/case-sensitive matches, projection and session routing 4`] = `
+{
+  "emails": [],
+  "session": {
+    "bookmarkManager": {
+      "_bookmarks": {}
+    },
+    "defaultAccessMode": "READ"
+  }
+}
+`;
+
+exports[`existence reads preserve missing/case-sensitive matches, projection and session routing 5`] = `
+{
+  "emails": [],
+  "session": {
+    "bookmarkManager": {
+      "_bookmarks": {}
+    },
+    "defaultAccessMode": "READ"
+  }
+}
+`;
+
+exports[`nested account creation preserves birthday, graph and native event ordering 1`] = `
+{
+  "events": [
+    {
+      "event": "create",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "address": "Alice@Example.test"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Email"
+    },
+    {
+      "event": "create",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "dateOfBirth": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "year": {
+              "high": 0,
+              "low": 2000
+            }
+          },
+          "isBot": false,
+          "isDeprecated": false,
+          "notificationBundleEnabled": true,
+          "notifyOnFeedback": true,
+          "notifyOnReplyToCommentByDefault": true,
+          "notifyOnReplyToDiscussionByDefault": true,
+          "notifyOnReplyToEventByDefault": true,
+          "notifyOnSubscribedIssueUpdates": true,
+          "notifyOnSuspensionBlocks": true,
+          "notifyWhenTagged": true,
+          "username": "alice"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "User"
+    },
+    {
+      "event": "create",
+      "id": "<id-3>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "displayName": "alice_mod"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ModerationProfile"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Email",
+      "id": "<id-1>",
+      "id_from": "<id-0>",
+      "id_to": "<id-2>",
+      "properties": {
+        "from": {
+          "address": "Alice@Example.test"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "dateOfBirth": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "year": {
+              "high": 0,
+              "low": 2000
+            }
+          },
+          "isBot": false,
+          "isDeprecated": false,
+          "notificationBundleEnabled": true,
+          "notifyOnFeedback": true,
+          "notifyOnReplyToCommentByDefault": true,
+          "notifyOnReplyToDiscussionByDefault": true,
+          "notifyOnReplyToEventByDefault": true,
+          "notifyOnSubscribedIssueUpdates": true,
+          "notifyOnSuspensionBlocks": true,
+          "notifyWhenTagged": true,
+          "username": "alice"
+        }
+      },
+      "relationshipName": "HAS_EMAIL",
+      "timestamp": "<generated-time>",
+      "toTypename": "User"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "<id-4>",
+      "id_from": "<id-2>",
+      "id_to": "<id-3>",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "dateOfBirth": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "year": {
+              "high": 0,
+              "low": 2000
+            }
+          },
+          "isBot": false,
+          "isDeprecated": false,
+          "notificationBundleEnabled": true,
+          "notifyOnFeedback": true,
+          "notifyOnReplyToCommentByDefault": true,
+          "notifyOnReplyToDiscussionByDefault": true,
+          "notifyOnReplyToEventByDefault": true,
+          "notifyOnSubscribedIssueUpdates": true,
+          "notifyOnSuspensionBlocks": true,
+          "notifyWhenTagged": true,
+          "username": "alice"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "displayName": "alice_mod"
+        }
+      },
+      "relationshipName": "MODERATION_PROFILE",
+      "timestamp": "<generated-time>",
+      "toTypename": "ModerationProfile"
+    }
+  ],
+  "graph": [
+    {
+      "birthday": "2000-01-01",
+      "email": "Alice@Example.test",
+      "moderator": "alice_mod",
+      "username": "alice"
+    }
+  ],
+  "session": {
+    "bookmarkManager": {
+      "_bookmarks": {}
+    },
+    "defaultAccessMode": "WRITE"
+  }
+}
+`;
+
+exports[`nested account creation preserves birthday, graph and native event ordering 2`] = `
+[
+  {
+    "Email": {
+      "address": "Alice@Example.test"
+    },
+    "ModerationProfile": {
+      "displayName": "alice_mod"
+    },
+    "username": "alice"
+  }
+]
+`;
+
+exports[`own account summary preserves the production internal selection and first errors 1`] = `
+{
+  "value": []
+}
+`;
+
+exports[`own account summary preserves the production internal selection and first errors 2`] = `
+{
+  "value": [
+    {
+      "User": {
+        "ModerationProfile": {
+          "displayName": "alice_mod"
+        },
+        "NotificationsAggregate": {
+          "count": 0
+        },
+        "profilePicURL": null,
+        "username": "alice"
+      },
+      "address": "Alice@Example.test"
+    }
+  ]
+}
+`;
+
+exports[`own account summary preserves the production internal selection and first errors 3`] = `
+{
+  "value": [
+    {
+      "User": {
+        "ModerationProfile": {
+          "displayName": "alice_mod"
+        },
+        "NotificationsAggregate": {
+          "count": 0
+        },
+        "profilePicURL": null,
+        "username": "alice"
+      },
+      "address": "Alice@Example.test"
+    }
+  ]
+}
+`;

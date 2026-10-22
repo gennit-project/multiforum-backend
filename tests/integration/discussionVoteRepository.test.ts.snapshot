@@ -1,0 +1,185 @@
+exports[`discussionChannel/user snapshots preserve missing rows, missing authors, nested default limit and invalid scalar errors 1`] = `
+[
+  {
+    "Discussion": {
+      "Author": {
+        "createdAt": "<time>",
+        "discussionKarma": 7,
+        "username": "author"
+      }
+    },
+    "UpvotedByUsers": 25,
+    "UpvotedByUsersAggregate": {
+      "count": 28
+    },
+    "id": "c",
+    "weightedVotesCount": 3
+  }
+]
+`;
+
+exports[`discussionChannel/user snapshots preserve missing rows, missing authors, nested default limit and invalid scalar errors 2`] = `
+[
+  {
+    "discussionKarma": 25,
+    "username": "voter"
+  }
+]
+`;
+
+exports[`discussionChannel/user snapshots preserve missing rows, missing authors, nested default limit and invalid scalar errors 3`] = `
+[
+  {
+    "Discussion": {
+      "Author": null
+    },
+    "UpvotedByUsers": 25,
+    "UpvotedByUsersAggregate": {
+      "count": 28
+    },
+    "id": "c",
+    "weightedVotesCount": 3
+  }
+]
+`;
+
+exports[`full upvote then undo keeps raw transaction and separate generated karma write behavior 1`] = `
+{
+  "added": {
+    "UpvotedByUsers": [
+      {
+        "username": "voter"
+      }
+    ],
+    "UpvotedByUsersAggregate": {
+      "count": 1
+    },
+    "id": "c",
+    "weightedVotesCount": 4
+  },
+  "addedState": [
+    {
+      "karma": 8,
+      "voters": [
+        "voter"
+      ],
+      "weight": 4
+    }
+  ],
+  "events": [
+    {
+      "event": "update",
+      "id": "<node-id>",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "discussionKarma": 7,
+          "username": "author"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "discussionKarma": 8,
+          "username": "author"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    },
+    {
+      "event": "update",
+      "id": "<node-id>",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "discussionKarma": 8,
+          "username": "author"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "discussionKarma": 7,
+          "username": "author"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "removed": {
+    "UpvotedByUsers": [],
+    "UpvotedByUsersAggregate": {
+      "count": 0
+    },
+    "id": "c",
+    "weightedVotesCount": 3
+  },
+  "state": [
+    {
+      "karma": 7,
+      "voters": [],
+      "weight": 3
+    }
+  ]
+}
+`;
+
+exports[`karma generated write preserves native events and default projection failure after committed write 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<node-id>",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "discussionKarma": 8,
+          "username": "author"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "discussionKarma": 7,
+          "username": "author"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "state": [
+    {
+      "karma": 8,
+      "voters": [],
+      "weight": 3
+    }
+  ]
+}
+`;
+
+exports[`karma generated write preserves native events and default projection failure after committed write 2`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<node-id>",
+      "properties": {
+        "new": {
+          "discussionKarma": 8,
+          "username": "author"
+        },
+        "old": {
+          "discussionKarma": 7,
+          "username": "author"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "state": [
+    {
+      "karma": 8,
+      "voters": [],
+      "weight": 3
+    }
+  ]
+}
+`;

@@ -26,26 +26,26 @@ async function seed(){await driver.executeQuery(`CREATE (:Channel{uniqueName:'ch
 function normalize(value:unknown){const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(['id','id_from','id_to'].includes(key)){const identity=(key==='id'&&this.event?.includes('relationship')?'relationship:':'node:')+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','createdAt','updatedAt','ageGateTouchedAt'].includes(key)&&value!==null?'<time>':value;}));}
 async function state(){const nodes=(await driver.executeQuery('MATCH(n) RETURN labels(n)[0] AS label,properties(n) AS properties,toString(id(n)) AS nativeId ORDER BY labels(n)[0],coalesce(n.id,n.username)')).records.map(r=>r.toObject());const edges=(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN type(r) AS type,toString(id(r)) AS id,toString(id(a)) AS fromId,toString(id(b)) AS toId')).records.map(r=>r.toObject());for(const event of events){assert.ok(Number.isFinite(event.timestamp));if(event.event==='create_relationship'){const edge=edges.find(r=>r.id===event.id);assert.ok(edge);assert.equal(edge.fromId,event.id_from);assert.equal(edge.toId,event.id_to);}else{const properties=event.properties.new;const node=nodes.find(n=>n.label===event.typename&&((properties.id&&n.properties.id===properties.id)||(properties.username&&n.properties.username===properties.username)));assert.ok(node);assert.equal(node.nativeId,event.id);}for(const properties of Object.values(event.properties) as any[]){if(!properties)continue;for(const field of ['createdAt','updatedAt','ageGateTouchedAt'])if(properties[field]!=null)assert.ok(Number.isFinite(Date.parse(String(properties[field]))));}}return normalize({nodes:nodes.map(({nativeId:_nativeId,...row})=>row),edgeTypes:edges.map(e=>e.type),events});}
 
-test('finite reads preserve literal IDs, missing results and unbounded configurations/secrets',async()=>{
+test('finite reads preserve literal IDs, missing results and unbounded configurations/secrets',async(t)=>{
  await seed();await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:ServerConfig{serverName:toString(n)}),(:ServerSecret{key:toString(n),pluginId:$id,ciphertext:'synthetic-not-encrypted'})`,{id:'quote"\\id'});
  const repo=createChannelExecutionRepository(driver);
- for(const id of ['channel','missing','quote"\\id'])assert.deepEqual(await repo.findChannel(id),await old().findChannel(id));
+ for(const id of ['channel','missing','quote"\\id'])t.assert.snapshot(normalize(await repo.findChannel(id)));
  // Production schema has plural DownloadableFiles; the singular-selection repository query fails validation.
  for(const id of ['discussion','missing','quote"\\id'])await assert.rejects(repo.findDiscussion(id),/Cannot query field "DownloadableFile"/);
- assert.deepEqual(await repo.findConfiguration(),await old().findConfiguration());assert.equal((await repo.findConfiguration()).length,29);
- for(const id of ['plugin','quote"\\id'])assert.deepEqual(await repo.findSecrets(id),await old().findSecrets(id));assert.equal((await repo.findSecrets('quote"\\id')).length,29);
- for(const id of ['job','absent'])assert.deepEqual(await repo.findReturnedRun(id),await old().findReturnedRun(id));
+ t.assert.snapshot(normalize(await repo.findConfiguration()));assert.equal((await repo.findConfiguration()).length,29);
+ for(const id of ['plugin','quote"\\id'])t.assert.snapshot(normalize(await repo.findSecrets(id)));assert.equal((await repo.findSecrets('quote"\\id')).length,29);
+ for(const id of ['job','absent'])t.assert.snapshot(normalize(await repo.findReturnedRun(id)));
 });
-for(const operation of ['scan','create','skip'] as const)test(`${operation} retains default projection and ordered native events`,async()=>{
- async function check(legacy:boolean){await seed();const repo=legacy?old():createChannelExecutionRepository(driver);
+for(const operation of ['scan','create','skip'] as const)test(`${operation} retains default projection and ordered native events`,async(t)=>{
+ async function check(){await seed();const repo=createChannelExecutionRepository(driver);
  if(operation==='scan')await repo.writeScanState('file',{scanStatus:'PENDING',scanReason:null,reviewRequestedAt:null} as DownloadableFileUpdateInput);
  if(operation==='create'){const result=await repo.createPendingRuns([{pluginId:'plugin',version:'1.0.0',status:'PENDING',scope:'SERVER',eventType:'fixture',targetId:'file',targetType:'DownloadableFile',pipelineId:'pipeline',executionOrder:0,queuedAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-01T00:00:00Z'} as PluginRunCreateInput]);assert.equal(result.pluginRuns.length,1);assert.ok(result.pluginRuns[0].id);assert.equal(result.pluginRuns[0].status,'PENDING');}
  if(operation==='skip')await repo.markSkippedRun('job',{status:'SKIPPED',skippedReason:'fixture',finishedAt:'2026-01-01T00:00:00Z',timeoutAt:null} as PluginRunUpdateInput);
  return state();}
- const expected=await check(true);await resetDatabase(driver);events=[];assert.deepEqual(await check(false),expected);
+ t.assert.snapshot(await check());
 });
-for(const failure of ['file','job'] as const)test(`${failure} default projection failure retains committed write`,async()=>{
- await schema(failure);try{async function check(legacy:boolean){await seed();const repo=legacy?old():createChannelExecutionRepository(driver);await assert.rejects(failure==='file'?repo.writeScanState('file',{scanReason:'changed'}):repo.markSkippedRun('job',{status:'SKIPPED'} as PluginRunUpdateInput),new RegExp(failure+' projection failed'));const result=await state();assert.equal(result.nodes.find((n:any)=>n.label===(failure==='file'?'DownloadableFile':'PluginRun')).properties[failure==='file'?'scanReason':'status'],failure==='file'?'changed':'SKIPPED');return result;}const expected=await check(true);await resetDatabase(driver);events=[];assert.deepEqual(await check(false),expected);}finally{await schema();}
+for(const failure of ['file','job'] as const)test(`${failure} default projection failure retains committed write`,async(t)=>{
+ await schema(failure);try{async function check(){await seed();const repo=createChannelExecutionRepository(driver);await assert.rejects(failure==='file'?repo.writeScanState('file',{scanReason:'changed'}):repo.markSkippedRun('job',{status:'SKIPPED'} as PluginRunUpdateInput),new RegExp(failure+' projection failed'));const result=await state();assert.equal(result.nodes.find((n:any)=>n.label===(failure==='file'?'DownloadableFile':'PluginRun')).properties[failure==='file'?'scanReason':'status'],failure==='file'?'changed':'SKIPPED');return result;}t.assert.snapshot(await check());}finally{await schema();}
 });
 test('generated validation precedes writes, missing updates preserve empty results',async()=>{await seed();const repo=createChannelExecutionRepository(driver);await assert.rejects(repo.markSkippedRun('job',{status:123} as unknown as PluginRunUpdateInput),/String/);await assert.rejects(repo.createPendingRuns([{pluginId:'plugin',version:'1.0.0',scope:'SERVER',eventType:'fixture',status:'PENDING',executionOrder:'not-integer'} as unknown as PluginRunCreateInput]),/Int/);await repo.writeScanState('missing',{scanReason:null});await repo.markSkippedRun('missing',{message:null});assert.deepEqual(await repo.findReturnedRun('missing'),[]);assert.equal(events.length,0);});
 

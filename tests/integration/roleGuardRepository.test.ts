@@ -52,28 +52,28 @@ async function seedRoles(): Promise<void> {
   `);
 }
 
-test("role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots", async () => {
+test("role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots", async (t) => {
   await seedRoles();
   const repository = createRoleGuardRepository(driver);
   for (const where of [undefined, {}, { OR: [{ name_CONTAINS: "Read" }, { name: "Writer" }] }, { Owner: { uniqueName: "cats" }, NOT: { name: "missing" } }, { name: "absent" }]) {
-    assert.deepEqual(plain(await repository.findChannelRoleOwners(where)), plain(await ogm.model("ChannelRole").find({ where, selectionSet: "{ Owner { uniqueName } }" })));
+    t.assert.snapshot(plain(await repository.findChannelRoleOwners(where)));
   }
   for (const where of [undefined, { OR: [{ channelUniqueName: "cats" }, { Owner: { uniqueName: "dogs" } }] }, { name: "absent" }]) {
-    assert.deepEqual(plain(await repository.findModChannelRoleOwners(where)), plain(await ogm.model("ModChannelRole").find({ where, selectionSet: "{ Owner { uniqueName } }" })));
+    t.assert.snapshot(plain(await repository.findModChannelRoleOwners(where)));
   }
   for (const uniqueName of ["cats", "dogs", "missing"]) {
-    assert.deepEqual(plain(await repository.findChannelAdmins(uniqueName)), plain(await ogm.model("Channel").find({ where: { uniqueName }, selectionSet: "{ Admins { username } }" })));
+    t.assert.snapshot(plain(await repository.findChannelAdmins(uniqueName)));
   }
 });
 
-test("server capability filters retain every guarded flag and nullable values", async () => {
+test("server capability filters retain every guarded flag and nullable values", async (t) => {
   await seedRoles();
   const repository = createRoleGuardRepository(driver);
   for (const where of [{ OR: [{ name: "low" }, { canManageAdmins: true }] }, { name: "missing" }]) {
-    assert.deepEqual(plain(await repository.findServerRoleCapabilities(where)), plain(await ogm.model("ServerRole").find({ where, selectionSet: `{ ${SERVER_ROLE_CAPABILITY_FIELDS.join(" ")} }` })));
+    t.assert.snapshot(plain(await repository.findServerRoleCapabilities(where)));
   }
   for (const where of [{ NOT: { name: "missing" } }, { canRemoveDiscussionChannel: true }]) {
-    assert.deepEqual(plain(await repository.findModServerRoleCapabilities(where)), plain(await ogm.model("ModServerRole").find({ where, selectionSet: `{ ${MOD_SERVER_ROLE_CAPABILITY_FIELDS.join(" ")} }` })));
+    t.assert.snapshot(plain(await repository.findModServerRoleCapabilities(where)));
   }
 });
 

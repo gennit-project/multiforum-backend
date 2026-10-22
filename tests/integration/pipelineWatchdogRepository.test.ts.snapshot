@@ -1,0 +1,2823 @@
+exports[`attempt projection failure preserves earlier committed recovery effects 1`] = `
+{
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "update",
+      "id": "id3",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "heartbeatAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "message": "Plugin execution lease expired",
+          "pipelineId": "pipeline",
+          "status": "TIMED_OUT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "status": "RUNNING",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 11
+            },
+            "minute": {
+              "high": 0,
+              "low": 59
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          }
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginRun"
+    },
+    {
+      "event": "update",
+      "id": "id4",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id1",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id1",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "nodes": [
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "id": "id0",
+        "uploadedByUsername": "owner"
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "attemptNumber": {
+          "high": 0,
+          "low": 1
+        },
+        "configurationSnapshot": "{}",
+        "createdAt": "<time>",
+        "eventType": "fixture",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id1",
+        "pipelineId": "pipeline",
+        "scope": "SERVER",
+        "status": "TIMED_OUT",
+        "targetId": "file",
+        "targetType": "DownloadableFile",
+        "trigger": "EVENT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "heartbeatAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id2",
+        "message": "Plugin execution lease expired",
+        "pipelineId": "pipeline",
+        "status": "TIMED_OUT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "User",
+      "properties": {
+        "createdAt": "<time>",
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`expired job recovers attempt and emits one uploader notification legacy=false 1`] = `
+[
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "job",
+    "pipelineId": "pipeline",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "RUNNING",
+    "timeoutAt": "2026-07-30T11:59:00.000Z"
+  }
+]
+`;
+
+exports[`expired job recovers attempt and emits one uploader notification legacy=false 2`] = `
+{
+  "edgeTypes": [
+    "HAS_NOTIFICATION"
+  ],
+  "events": [
+    {
+      "event": "create",
+      "id": "id6",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id1",
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “your download” timed out."
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id6",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<time>",
+          "id": "id1",
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “your download” timed out."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
+    },
+    {
+      "event": "update",
+      "id": "id4",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "heartbeatAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id3",
+          "message": "Plugin execution lease expired",
+          "pipelineId": "pipeline",
+          "status": "TIMED_OUT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "id": "id3",
+          "pipelineId": "pipeline",
+          "status": "RUNNING",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 11
+            },
+            "minute": {
+              "high": 0,
+              "low": 59
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          }
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id8",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "nodes": [
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "id": "id0",
+        "uploadedByUsername": "owner"
+      }
+    },
+    {
+      "label": "Notification",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "id1",
+        "notificationType": "plugin_pipeline",
+        "read": false,
+        "text": "Checks for “your download” timed out."
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "attemptNumber": {
+          "high": 0,
+          "low": 1
+        },
+        "configurationSnapshot": "{}",
+        "createdAt": "<time>",
+        "eventType": "fixture",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id2",
+        "notifiedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "pipelineId": "pipeline",
+        "scope": "SERVER",
+        "status": "TIMED_OUT",
+        "targetId": "file",
+        "targetType": "DownloadableFile",
+        "trigger": "EVENT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "heartbeatAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id3",
+        "message": "Plugin execution lease expired",
+        "pipelineId": "pipeline",
+        "status": "TIMED_OUT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "User",
+      "properties": {
+        "createdAt": "<time>",
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`expired job recovers attempt and emits one uploader notification legacy=true 1`] = `
+[
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "job",
+    "pipelineId": "pipeline",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "RUNNING",
+    "timeoutAt": null
+  }
+]
+`;
+
+exports[`expired job recovers attempt and emits one uploader notification legacy=true 2`] = `
+{
+  "edgeTypes": [
+    "HAS_NOTIFICATION"
+  ],
+  "events": [
+    {
+      "event": "create",
+      "id": "id6",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id1",
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “your download” timed out."
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id6",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<time>",
+          "id": "id1",
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “your download” timed out."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
+    },
+    {
+      "event": "update",
+      "id": "id4",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "heartbeatAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id3",
+          "message": "Plugin execution lease expired",
+          "pipelineId": "pipeline",
+          "status": "TIMED_OUT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "id": "id3",
+          "pipelineId": "pipeline",
+          "status": "RUNNING"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id8",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "nodes": [
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "id": "id0",
+        "uploadedByUsername": "owner"
+      }
+    },
+    {
+      "label": "Notification",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "id1",
+        "notificationType": "plugin_pipeline",
+        "read": false,
+        "text": "Checks for “your download” timed out."
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "attemptNumber": {
+          "high": 0,
+          "low": 1
+        },
+        "configurationSnapshot": "{}",
+        "createdAt": "<time>",
+        "eventType": "fixture",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id2",
+        "notifiedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "pipelineId": "pipeline",
+        "scope": "SERVER",
+        "status": "TIMED_OUT",
+        "targetId": "file",
+        "targetType": "DownloadableFile",
+        "trigger": "EVENT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "heartbeatAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id3",
+        "message": "Plugin execution lease expired",
+        "pipelineId": "pipeline",
+        "status": "TIMED_OUT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "User",
+      "properties": {
+        "createdAt": "<time>",
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`fresh lease and renewed-during-read lease cannot be timed out 1`] = `
+{
+  "edgeTypes": [],
+  "events": [],
+  "nodes": [
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "id": "id0",
+        "uploadedByUsername": "owner"
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "attemptNumber": {
+          "high": 0,
+          "low": 1
+        },
+        "configurationSnapshot": "{}",
+        "createdAt": "<time>",
+        "eventType": "fixture",
+        "id": "id1",
+        "pipelineId": "pipeline",
+        "scope": "SERVER",
+        "status": "RUNNING",
+        "targetId": "file",
+        "targetType": "DownloadableFile",
+        "trigger": "EVENT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "id2",
+        "pipelineId": "pipeline",
+        "status": "RUNNING",
+        "timeoutAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 5
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        }
+      }
+    },
+    {
+      "label": "User",
+      "properties": {
+        "createdAt": "<time>",
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`notification projection failure preserves earlier committed recovery effects 1`] = `
+{
+  "edgeTypes": [
+    "HAS_NOTIFICATION"
+  ],
+  "events": [
+    {
+      "event": "create",
+      "id": "id6",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id1",
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “your download” timed out."
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id6",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<time>",
+          "id": "id1",
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “your download” timed out."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
+    },
+    {
+      "event": "update",
+      "id": "id4",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "heartbeatAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id3",
+          "message": "Plugin execution lease expired",
+          "pipelineId": "pipeline",
+          "status": "TIMED_OUT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "id": "id3",
+          "pipelineId": "pipeline",
+          "status": "RUNNING",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 11
+            },
+            "minute": {
+              "high": 0,
+              "low": 59
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          }
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id8",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "nodes": [
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "id": "id0",
+        "uploadedByUsername": "owner"
+      }
+    },
+    {
+      "label": "Notification",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "id1",
+        "notificationType": "plugin_pipeline",
+        "read": false,
+        "text": "Checks for “your download” timed out."
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "attemptNumber": {
+          "high": 0,
+          "low": 1
+        },
+        "configurationSnapshot": "{}",
+        "createdAt": "<time>",
+        "eventType": "fixture",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id2",
+        "notifiedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "pipelineId": "pipeline",
+        "scope": "SERVER",
+        "status": "TIMED_OUT",
+        "targetId": "file",
+        "targetType": "DownloadableFile",
+        "trigger": "EVENT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "heartbeatAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id3",
+        "message": "Plugin execution lease expired",
+        "pipelineId": "pipeline",
+        "status": "TIMED_OUT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "User",
+      "properties": {
+        "createdAt": "<time>",
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`still-running sibling keeps attempt active and suppresses notification 1`] = `
+{
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "update",
+      "id": "id4",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "finishedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "heartbeatAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "id": "id2",
+          "message": "Plugin execution lease expired",
+          "pipelineId": "pipeline",
+          "status": "TIMED_OUT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "id": "id2",
+          "pipelineId": "pipeline",
+          "status": "RUNNING",
+          "timeoutAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 11
+            },
+            "minute": {
+              "high": 0,
+              "low": 59
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          }
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id1",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "attemptNumber": 1,
+          "configurationSnapshot": "{}",
+          "createdAt": "<time>",
+          "eventType": "fixture",
+          "id": "id1",
+          "pipelineId": "pipeline",
+          "scope": "SERVER",
+          "status": "RUNNING",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "trigger": "EVENT",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    }
+  ],
+  "nodes": [
+    {
+      "label": "DownloadableFile",
+      "properties": {
+        "id": "id0",
+        "uploadedByUsername": "owner"
+      }
+    },
+    {
+      "label": "PluginPipelineRun",
+      "properties": {
+        "attemptNumber": {
+          "high": 0,
+          "low": 1
+        },
+        "configurationSnapshot": "{}",
+        "createdAt": "<time>",
+        "eventType": "fixture",
+        "id": "id1",
+        "pipelineId": "pipeline",
+        "scope": "SERVER",
+        "status": "RUNNING",
+        "targetId": "file",
+        "targetType": "DownloadableFile",
+        "trigger": "EVENT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "finishedAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "heartbeatAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "id": "id2",
+        "message": "Plugin execution lease expired",
+        "pipelineId": "pipeline",
+        "status": "TIMED_OUT",
+        "updatedAt": "<time>"
+      }
+    },
+    {
+      "label": "PluginRun",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "id3",
+        "pipelineId": "pipeline",
+        "status": "RUNNING",
+        "timeoutAt": {
+          "day": {
+            "high": 0,
+            "low": 30
+          },
+          "hour": {
+            "high": 0,
+            "low": 12
+          },
+          "minute": {
+            "high": 0,
+            "low": 5
+          },
+          "month": {
+            "high": 0,
+            "low": 7
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        }
+      }
+    },
+    {
+      "label": "User",
+      "properties": {
+        "createdAt": "<time>",
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`unbounded active read retains29jobs and missing-parent handling 1`] = `
+[
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "1",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "10",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "11",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "12",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "13",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "14",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "15",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "16",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "17",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "18",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "19",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "2",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "20",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "21",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "22",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "23",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "24",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "25",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "26",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "27",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "28",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "29",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "3",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "4",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "5",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "6",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "7",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "8",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  },
+  {
+    "createdAt": "2026-07-30T11:00:00.000Z",
+    "heartbeatAt": null,
+    "id": "9",
+    "pipelineId": "missing",
+    "queuedAt": null,
+    "startedAt": null,
+    "status": "PENDING",
+    "timeoutAt": null
+  }
+]
+`;

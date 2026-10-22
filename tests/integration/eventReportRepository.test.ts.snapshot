@@ -1,0 +1,1682 @@
+exports[`event report reads preserve filters, implicit limit and quoted data 1`] = `
+[
+  {
+    "id": "id0",
+    "title": "quoted"
+  }
+]
+`;
+
+exports[`missing event retains empty-context issue creation and separate activity writes 1`] = `
+{
+  "comments": [
+    "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+  ],
+  "counter": [
+    1
+  ],
+  "edges": [
+    [
+      "ACTIVITY_ON_ISSUE",
+      2
+    ],
+    [
+      "AUTHORED_COMMENT",
+      1
+    ],
+    [
+      "AUTHORED_ISSUE",
+      1
+    ],
+    [
+      "HAS_COMMENT",
+      1
+    ],
+    [
+      "HAS_ISSUE",
+      1
+    ],
+    [
+      "MODERATED_COMMENT",
+      1
+    ],
+    [
+      "PERFORMED_MODERATION_ACTION",
+      1
+    ]
+  ],
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "id1",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedEventId": "absent",
+            "title": "[Reported event] \\"\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "id12",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the Event",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "id13"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "id7",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "id4",
+        "id_from": "id5",
+        "id_to": "id1",
+        "properties": {
+          "from": {
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedEventId": "absent",
+            "title": "[Reported event] \\"\\""
+          }
+        },
+        "relationshipName": "HAS_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "id9",
+        "id_from": "id5",
+        "id_to": "id7",
+        "properties": {
+          "from": {
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "id6",
+        "id_from": "id7",
+        "id_to": "id1",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedEventId": "absent",
+            "title": "[Reported event] \\"\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedEventId": "absent",
+            "title": "[Reported event] \\"\\""
+          },
+          "relationship": {},
+          "to": {
+            "displayName": "mod"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "id15",
+        "id_from": "id1",
+        "id_to": "id12",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedEventId": "absent",
+            "title": "[Reported event] \\"\\"",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the Event",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "id13"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "id14",
+        "id_from": "id12",
+        "id_to": "id7",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the Event",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "id13"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id10",
+        "id_from": "id2",
+        "id_to": "id7",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id11",
+        "id_from": "id2",
+        "id_to": "id12",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the Event",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "id13"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id1",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedEventId": "absent",
+            "title": "[Reported event] \\"\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedEventId": "absent",
+            "title": "[Reported event] \\"\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "issues": [
+    {
+      "channel": "forum",
+      "event": "absent",
+      "flagged": false,
+      "number": 1,
+      "open": true,
+      "title": "[Reported event] \\"\\""
+    }
+  ],
+  "nodes": [
+    [
+      "Channel",
+      1
+    ],
+    [
+      "ChannelIssueCounter",
+      1
+    ],
+    [
+      "Comment",
+      1
+    ],
+    [
+      "Event",
+      1
+    ],
+    [
+      "Issue",
+      1
+    ],
+    [
+      "ModerationAction",
+      1
+    ],
+    [
+      "ModerationProfile",
+      1
+    ],
+    [
+      "User",
+      1
+    ]
+  ]
+}
+`;
+
+exports[`projection failure preserves committed activity and exact catch contract 1`] = `
+{
+  "result": {
+    "error": "Error updating issue",
+    "value": null
+  },
+  "state": {
+    "comments": [
+      "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+    ],
+    "counter": [],
+    "edges": [
+      [
+        "ACTIVITY_ON_ISSUE",
+        2
+      ],
+      [
+        "AUTHORED_COMMENT",
+        1
+      ],
+      [
+        "HAS_COMMENT",
+        1
+      ],
+      [
+        "MODERATED_COMMENT",
+        1
+      ],
+      [
+        "PERFORMED_MODERATION_ACTION",
+        1
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id10",
+          "properties": {
+            "new": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id11"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id5",
+          "id_from": "id6",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": false,
+              "id": "id4",
+              "isOpen": true,
+              "issueNumber": 9,
+              "relatedEventId": "event",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id13",
+          "id_from": "id2",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": false,
+              "id": "id4",
+              "isOpen": true,
+              "issueNumber": 9,
+              "relatedEventId": "event",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id11"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id12",
+          "id_from": "id10",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id11"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id7",
+          "id_from": "id8",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id9",
+          "id_from": "id8",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id11"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id2",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": false,
+              "id": "id4",
+              "isOpen": true,
+              "issueNumber": 9,
+              "relatedEventId": "event",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "channelUniqueName": "forum",
+              "id": "id4",
+              "issueNumber": 9,
+              "relatedEventId": "event"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      }
+    ],
+    "issues": [
+      {
+        "channel": "forum",
+        "event": "event",
+        "flagged": false,
+        "number": 9,
+        "open": true,
+        "title": null
+      }
+    ],
+    "nodes": [
+      [
+        "Channel",
+        1
+      ],
+      [
+        "Comment",
+        1
+      ],
+      [
+        "Event",
+        1
+      ],
+      [
+        "Issue",
+        1
+      ],
+      [
+        "ModerationAction",
+        1
+      ],
+      [
+        "ModerationProfile",
+        1
+      ],
+      [
+        "User",
+        1
+      ]
+    ]
+  }
+}
+`;
+
+exports[`projection failure preserves committed creation and exact catch contract 1`] = `
+{
+  "result": {
+    "error": "Error creating issue",
+    "value": null
+  },
+  "state": {
+    "comments": [],
+    "counter": [
+      1
+    ],
+    "edges": [
+      [
+        "AUTHORED_ISSUE",
+        1
+      ],
+      [
+        "HAS_ISSUE",
+        1
+      ],
+      [
+        "TARGETS_EVENT",
+        1
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id7",
+          "id_from": "id8",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            }
+          },
+          "relationshipName": "HAS_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "id": "id4",
+              "title": "A title longer than fifty characters to characterize truncation"
+            }
+          },
+          "relationshipName": "TARGETS_EVENT",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id5",
+          "id_from": "id1",
+          "id_to": "id6",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
+            }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      }
+    ],
+    "issues": [
+      {
+        "channel": "forum",
+        "event": "event",
+        "flagged": false,
+        "number": 1,
+        "open": true,
+        "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+      }
+    ],
+    "nodes": [
+      [
+        "Channel",
+        1
+      ],
+      [
+        "ChannelIssueCounter",
+        1
+      ],
+      [
+        "Event",
+        1
+      ],
+      [
+        "Issue",
+        1
+      ],
+      [
+        "ModerationProfile",
+        1
+      ],
+      [
+        "User",
+        1
+      ]
+    ]
+  }
+}
+`;
+
+exports[`real resolver preserves identity, numbering, repeated activity, reopen and native payloads 1`] = `
+{
+  "first": {
+    "flaggedServerRuleViolation": false,
+    "id": "id0",
+    "issueNumber": 1
+  },
+  "snapshot": {
+    "comments": [
+      "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n",
+      "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+    ],
+    "counter": [
+      1
+    ],
+    "edges": [
+      [
+        "ACTIVITY_ON_ISSUE",
+        4
+      ],
+      [
+        "AUTHORED_COMMENT",
+        2
+      ],
+      [
+        "AUTHORED_ISSUE",
+        1
+      ],
+      [
+        "HAS_COMMENT",
+        2
+      ],
+      [
+        "HAS_ISSUE",
+        1
+      ],
+      [
+        "MODERATED_COMMENT",
+        2
+      ],
+      [
+        "PERFORMED_MODERATION_ACTION",
+        2
+      ],
+      [
+        "TARGETS_EVENT",
+        1
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id10",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id15",
+          "properties": {
+            "new": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id20",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id21",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id25",
+          "properties": {
+            "new": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id26"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id12",
+          "id_from": "id8",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id22",
+          "id_from": "id8",
+          "id_to": "id20",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id21",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id7",
+          "id_from": "id8",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            }
+          },
+          "relationshipName": "HAS_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id19",
+          "id_from": "id20",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id21",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id9",
+          "id_from": "id10",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "id": "id4",
+              "title": "A title longer than fifty characters to characterize truncation"
+            }
+          },
+          "relationshipName": "TARGETS_EVENT",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id18",
+          "id_from": "id1",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id28",
+          "id_from": "id1",
+          "id_to": "id25",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id26"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id5",
+          "id_from": "id1",
+          "id_to": "id6",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
+            }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id17",
+          "id_from": "id15",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id16"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id27",
+          "id_from": "id25",
+          "id_to": "id20",
+          "properties": {
+            "from": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id26"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id21",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id13",
+          "id_from": "id6",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id14",
+          "id_from": "id6",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id23",
+          "id_from": "id6",
+          "id_to": "id20",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id21",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id24",
+          "id_from": "id6",
+          "id_to": "id25",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the Event",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id26"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\"",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\"",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "event",
+              "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      }
+    ],
+    "issues": [
+      {
+        "channel": "forum",
+        "event": "event",
+        "flagged": true,
+        "number": 1,
+        "open": true,
+        "title": "[Reported event] \\"A title longer than fifty characters to characteri...\\""
+      }
+    ],
+    "nodes": [
+      [
+        "Channel",
+        1
+      ],
+      [
+        "ChannelIssueCounter",
+        1
+      ],
+      [
+        "Comment",
+        2
+      ],
+      [
+        "Event",
+        1
+      ],
+      [
+        "Issue",
+        1
+      ],
+      [
+        "ModerationAction",
+        2
+      ],
+      [
+        "ModerationProfile",
+        1
+      ],
+      [
+        "User",
+        1
+      ]
+    ]
+  }
+}
+`;

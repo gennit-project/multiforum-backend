@@ -1,0 +1,56 @@
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 1`] = `
+[
+  {
+    "Channel": {
+      "uniqueName": "forum"
+    },
+    "id": "wiki",
+    "locked": false
+  }
+]
+`;
+
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 2`] = `
+[
+  {
+    "uniqueName": "forum",
+    "wikiEnabled": true
+  }
+]
+`;
+
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 3`] = `
+[]
+`;
+
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 4`] = `
+[]
+`;
+
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 5`] = `
+[
+  {
+    "Channel": {
+      "uniqueName": "forum"
+    },
+    "id": "wiki"
+  }
+]
+`;
+
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 6`] = `
+[
+  {
+    "uniqueName": "forum",
+    "wikiEnabled": true
+  }
+]
+`;
+
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 7`] = `
+[]
+`;
+
+exports[`lock/pin snapshots preserve missing, relation scope and exact selections 8`] = `
+[]
+`;

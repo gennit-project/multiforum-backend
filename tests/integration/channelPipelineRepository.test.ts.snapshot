@@ -1,0 +1,63 @@
+exports[`channel and server snapshots plus pipeline writes preserve exact projections and native events 1`] = `
+[
+  {
+    "Bots": [
+      {
+        "username": "bot-old"
+      },
+      {
+        "username": "human"
+      }
+    ],
+    "EnabledPluginsConnection": {
+      "edges": [
+        {
+          "node": {
+            "Plugin": {
+              "name": "scanner",
+              "tags": [
+                "bots"
+              ]
+            },
+            "settingsDefaults": "{\\"server\\":{\\"botName\\":\\"Default\\"}}"
+          },
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{\\"botName\\":\\"Channel\\"}"
+          }
+        }
+      ]
+    },
+    "pluginPipelines": "[]",
+    "uniqueName": "cats"
+  }
+]
+`;
+
+exports[`channel and server snapshots plus pipeline writes preserve exact projections and native events 2`] = `
+[
+  {
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "node": {
+            "Plugin": {
+              "name": "scanner",
+              "tags": [
+                "bots"
+              ]
+            },
+            "settingsDefaults": "{\\"server\\":{\\"botName\\":\\"Default\\"}}",
+            "version": "1.0"
+          },
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{\\"botName\\":\\"Server\\"}"
+          }
+        }
+      ]
+    },
+    "serverName": "server"
+  }
+]
+`;

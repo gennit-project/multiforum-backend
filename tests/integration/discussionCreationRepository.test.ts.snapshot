@@ -1,0 +1,204 @@
+exports[`all channel requirements validate before first discussion creation 1`] = `
+{
+  "edges": [],
+  "error": "Failed to create discussions: At least one channel must be selected",
+  "events": [],
+  "graph": [],
+  "value": null
+}
+`;
+
+exports[`attached-file selection and missing discussion match OGM 1`] = `
+[
+  {
+    "DownloadableFiles": [
+      {
+        "id": "file"
+      }
+    ],
+    "id": "d"
+  }
+]
+`;
+
+exports[`create/refetch retains generated inputs, raw channel links and native event order 1`] = `
+{
+  "edges": [
+    [
+      "POSTED_DISCUSSION",
+      1
+    ],
+    [
+      "POSTED_IN_CHANNEL",
+      2
+    ],
+    [
+      "UPVOTED_DISCUSSION",
+      1
+    ]
+  ],
+  "error": null,
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "body",
+            "createdAt": "<time>",
+            "id": "id3",
+            "title": "Title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Discussion"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "username": "author"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "body",
+            "createdAt": "<time>",
+            "id": "id3",
+            "title": "Title"
+          }
+        },
+        "relationshipName": "POSTED_DISCUSSION",
+        "timestamp": "<time>",
+        "toTypename": "Discussion"
+      },
+      "kind": "create_relationship"
+    }
+  ],
+  "graph": [
+    {
+      "channel": "forum",
+      "title": "Title"
+    }
+  ],
+  "value": [
+    {
+      "Author": {
+        "username": "author"
+      },
+      "DiscussionChannels": [
+        {
+          "Channel": {
+            "uniqueName": "forum"
+          },
+          "Discussion": {
+            "id": "id0"
+          },
+          "Flairs": [],
+          "UpvotedByUsers": [
+            {
+              "username": "author"
+            }
+          ],
+          "UpvotedByUsersAggregate": {
+            "count": 1
+          },
+          "archived": false,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "discussionId": "id0",
+          "id": "id1"
+        }
+      ],
+      "Tags": [],
+      "body": "body",
+      "createdAt": "<time>",
+      "id": "id0",
+      "title": "Title",
+      "updatedAt": null
+    }
+  ]
+}
+`;
+
+exports[`later invalid input preserves first discussion and channel commit 1`] = `
+{
+  "edges": [
+    [
+      "POSTED_DISCUSSION",
+      1
+    ],
+    [
+      "POSTED_IN_CHANNEL",
+      2
+    ],
+    [
+      "UPVOTED_DISCUSSION",
+      1
+    ]
+  ],
+  "error": "Failed to create discussions: Variable \\"$input\\" got invalid value null at \\"input[0].title\\"; Expected non-nullable type \\"String!\\" not to be null.",
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "body",
+            "createdAt": "<time>",
+            "id": "id3",
+            "title": "Title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Discussion"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "username": "author"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "body",
+            "createdAt": "<time>",
+            "id": "id3",
+            "title": "Title"
+          }
+        },
+        "relationshipName": "POSTED_DISCUSSION",
+        "timestamp": "<time>",
+        "toTypename": "Discussion"
+      },
+      "kind": "create_relationship"
+    }
+  ],
+  "graph": [
+    {
+      "channel": "forum",
+      "title": "Title"
+    }
+  ],
+  "value": null
+}
+`;

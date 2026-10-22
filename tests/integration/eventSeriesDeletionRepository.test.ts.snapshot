@@ -1,0 +1,4537 @@
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":false,\"eventId\":\"e1\"} 1`] = `
+[
+  {
+    "EventSeries": null,
+    "id": "e1",
+    "occurrenceIndex": 1,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":false,\"eventId\":\"e1\"} 2`] = `
+{
+  "error": null,
+  "groups": [
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e1",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        }
+      ],
+      "id": "e1"
+    }
+  ],
+  "response": {
+    "deletedCount": 1,
+    "message": "Successfully deleted 1 event(s)",
+    "success": true
+  },
+  "state": {
+    "nodes": [
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e0",
+          "occurrenceIndex": 0,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e2",
+          "occurrenceIndex": 2,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "EventSeries"
+        ],
+        "properties": {
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "id": "s",
+          "title": "Series"
+        }
+      }
+    ],
+    "rels": []
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":true,\"eventId\":\"e1\",\"projection\":true} 1`] = `
+[
+  {
+    "EventSeries": {
+      "Occurrences": [
+        {
+          "id": "e0",
+          "occurrenceIndex": 0
+        },
+        {
+          "id": "e1",
+          "occurrenceIndex": 1
+        },
+        {
+          "id": "e2",
+          "occurrenceIndex": 2
+        }
+      ],
+      "id": "s",
+      "title": "Series"
+    },
+    "id": "e1",
+    "occurrenceIndex": 1,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":true,\"eventId\":\"e1\",\"projection\":true} 2`] = `
+{
+  "error": "Failed to delete event in series. fixture second delete projection failure",
+  "groups": [
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e0",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e0",
+              "occurrenceIndex": 0,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e0",
+          "id_from": "s",
+          "id_to": "e0",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e0",
+              "occurrenceIndex": 0,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e0"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e2",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e2",
+          "id_from": "s",
+          "id_to": "e2",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e2"
+    }
+  ],
+  "state": {
+    "nodes": [
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e1",
+          "occurrenceIndex": 1,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "EventSeries"
+        ],
+        "properties": {
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "id": "s",
+          "title": "Series"
+        }
+      }
+    ],
+    "rels": [
+      {
+        "source": "s",
+        "target": "e1",
+        "type": "HAS_OCCURRENCE"
+      }
+    ]
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":true,\"eventId\":\"e1\"} 1`] = `
+[
+  {
+    "EventSeries": {
+      "Occurrences": [
+        {
+          "id": "e0",
+          "occurrenceIndex": 0
+        },
+        {
+          "id": "e1",
+          "occurrenceIndex": 1
+        },
+        {
+          "id": "e2",
+          "occurrenceIndex": 2
+        }
+      ],
+      "id": "s",
+      "title": "Series"
+    },
+    "id": "e1",
+    "occurrenceIndex": 1,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":true,\"eventId\":\"e1\"} 2`] = `
+{
+  "error": null,
+  "groups": [
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e0",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e0",
+              "occurrenceIndex": 0,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e0",
+          "id_from": "s",
+          "id_to": "e0",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e0",
+              "occurrenceIndex": 0,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e0"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e1",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e1",
+          "id_from": "s",
+          "id_to": "e1",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e1"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e2",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e2",
+          "id_from": "s",
+          "id_to": "e2",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e2"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "s",
+          "properties": {
+            "old": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "EventSeries"
+        }
+      ],
+      "id": "s"
+    }
+  ],
+  "response": {
+    "deletedCount": 3,
+    "message": "Successfully deleted 3 event(s)",
+    "success": true
+  },
+  "state": {
+    "nodes": [],
+    "rels": []
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":true,\"eventId\":\"missing\"} 1`] = `
+[]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"ALL_IN_SERIES\",\"linked\":true,\"eventId\":\"missing\"} 2`] = `
+{
+  "error": "Failed to delete event in series. Event not found",
+  "groups": [],
+  "state": {
+    "nodes": [
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e0",
+          "occurrenceIndex": 0,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e1",
+          "occurrenceIndex": 1,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e2",
+          "occurrenceIndex": 2,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "EventSeries"
+        ],
+        "properties": {
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "id": "s",
+          "title": "Series"
+        }
+      }
+    ],
+    "rels": [
+      {
+        "source": "s",
+        "target": "e0",
+        "type": "HAS_OCCURRENCE"
+      },
+      {
+        "source": "s",
+        "target": "e1",
+        "type": "HAS_OCCURRENCE"
+      },
+      {
+        "source": "s",
+        "target": "e2",
+        "type": "HAS_OCCURRENCE"
+      }
+    ]
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"INVALID\",\"linked\":true,\"eventId\":\"e1\"} 1`] = `
+[
+  {
+    "EventSeries": {
+      "Occurrences": [
+        {
+          "id": "e0",
+          "occurrenceIndex": 0
+        },
+        {
+          "id": "e1",
+          "occurrenceIndex": 1
+        },
+        {
+          "id": "e2",
+          "occurrenceIndex": 2
+        }
+      ],
+      "id": "s",
+      "title": "Series"
+    },
+    "id": "e1",
+    "occurrenceIndex": 1,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"INVALID\",\"linked\":true,\"eventId\":\"e1\"} 2`] = `
+{
+  "error": "Failed to delete event in series. Invalid scope: INVALID",
+  "groups": [],
+  "state": {
+    "nodes": [
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e0",
+          "occurrenceIndex": 0,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e1",
+          "occurrenceIndex": 1,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e2",
+          "occurrenceIndex": 2,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "EventSeries"
+        ],
+        "properties": {
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "id": "s",
+          "title": "Series"
+        }
+      }
+    ],
+    "rels": [
+      {
+        "source": "s",
+        "target": "e0",
+        "type": "HAS_OCCURRENCE"
+      },
+      {
+        "source": "s",
+        "target": "e1",
+        "type": "HAS_OCCURRENCE"
+      },
+      {
+        "source": "s",
+        "target": "e2",
+        "type": "HAS_OCCURRENCE"
+      }
+    ]
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_AND_FUTURE\",\"linked\":false,\"eventId\":\"e1\"} 1`] = `
+[
+  {
+    "EventSeries": null,
+    "id": "e1",
+    "occurrenceIndex": 1,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_AND_FUTURE\",\"linked\":false,\"eventId\":\"e1\"} 2`] = `
+{
+  "error": null,
+  "groups": [
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e1",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        }
+      ],
+      "id": "e1"
+    }
+  ],
+  "response": {
+    "deletedCount": 1,
+    "message": "Successfully deleted 1 event(s)",
+    "success": true
+  },
+  "state": {
+    "nodes": [
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e0",
+          "occurrenceIndex": 0,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e2",
+          "occurrenceIndex": 2,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "EventSeries"
+        ],
+        "properties": {
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "id": "s",
+          "title": "Series"
+        }
+      }
+    ],
+    "rels": []
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_AND_FUTURE\",\"linked\":true,\"eventId\":\"e0\"} 1`] = `
+[
+  {
+    "EventSeries": {
+      "Occurrences": [
+        {
+          "id": "e0",
+          "occurrenceIndex": 0
+        },
+        {
+          "id": "e1",
+          "occurrenceIndex": 1
+        },
+        {
+          "id": "e2",
+          "occurrenceIndex": 2
+        }
+      ],
+      "id": "s",
+      "title": "Series"
+    },
+    "id": "e0",
+    "occurrenceIndex": 0,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_AND_FUTURE\",\"linked\":true,\"eventId\":\"e0\"} 2`] = `
+{
+  "error": null,
+  "groups": [
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e0",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e0",
+              "occurrenceIndex": 0,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e0",
+          "id_from": "s",
+          "id_to": "e0",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e0",
+              "occurrenceIndex": 0,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e0"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e1",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e1",
+          "id_from": "s",
+          "id_to": "e1",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e1"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e2",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e2",
+          "id_from": "s",
+          "id_to": "e2",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e2"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "s",
+          "properties": {
+            "old": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "EventSeries"
+        }
+      ],
+      "id": "s"
+    }
+  ],
+  "response": {
+    "deletedCount": 3,
+    "message": "Successfully deleted 3 event(s)",
+    "success": true
+  },
+  "state": {
+    "nodes": [],
+    "rels": []
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_AND_FUTURE\",\"linked\":true,\"eventId\":\"e1\"} 1`] = `
+[
+  {
+    "EventSeries": {
+      "Occurrences": [
+        {
+          "id": "e0",
+          "occurrenceIndex": 0
+        },
+        {
+          "id": "e1",
+          "occurrenceIndex": 1
+        },
+        {
+          "id": "e2",
+          "occurrenceIndex": 2
+        }
+      ],
+      "id": "s",
+      "title": "Series"
+    },
+    "id": "e1",
+    "occurrenceIndex": 1,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_AND_FUTURE\",\"linked\":true,\"eventId\":\"e1\"} 2`] = `
+{
+  "error": null,
+  "groups": [
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e1",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e1",
+          "id_from": "s",
+          "id_to": "e1",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e1"
+    },
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e2",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e2",
+          "id_from": "s",
+          "id_to": "e2",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e2",
+              "occurrenceIndex": 2,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e2"
+    }
+  ],
+  "response": {
+    "deletedCount": 2,
+    "message": "Successfully deleted 2 event(s)",
+    "success": true
+  },
+  "state": {
+    "nodes": [
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e0",
+          "occurrenceIndex": 0,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "EventSeries"
+        ],
+        "properties": {
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "id": "s",
+          "title": "Series"
+        }
+      }
+    ],
+    "rels": [
+      {
+        "source": "s",
+        "target": "e0",
+        "type": "HAS_OCCURRENCE"
+      }
+    ]
+  }
+}
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_ONLY\",\"linked\":true,\"eventId\":\"e1\"} 1`] = `
+[
+  {
+    "EventSeries": {
+      "Occurrences": [
+        {
+          "id": "e0",
+          "occurrenceIndex": 0
+        },
+        {
+          "id": "e1",
+          "occurrenceIndex": 1
+        },
+        {
+          "id": "e2",
+          "occurrenceIndex": 2
+        }
+      ],
+      "id": "s",
+      "title": "Series"
+    },
+    "id": "e1",
+    "occurrenceIndex": 1,
+    "title": "Occurrence"
+  }
+]
+`;
+
+exports[`actual deletion parity: {\"scope\":\"THIS_ONLY\",\"linked\":true,\"eventId\":\"e1\"} 2`] = `
+{
+  "error": null,
+  "groups": [
+    {
+      "events": [
+        {
+          "event": "delete",
+          "id": "e1",
+          "properties": {
+            "old": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Event"
+        },
+        {
+          "event": "delete_relationship",
+          "fromTypename": "EventSeries",
+          "id": "HAS_OCCURRENCE:e1",
+          "id_from": "s",
+          "id_to": "e1",
+          "properties": {
+            "from": {
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "id": "s",
+              "title": "Series"
+            },
+            "relationship": {},
+            "to": {
+              "canceled": false,
+              "createdAt": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 0
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 1
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2020
+                }
+              },
+              "endTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 12
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "id": "e1",
+              "occurrenceIndex": 1,
+              "startTime": {
+                "day": {
+                  "high": 0,
+                  "low": 1
+                },
+                "hour": {
+                  "high": 0,
+                  "low": 10
+                },
+                "minute": {
+                  "high": 0,
+                  "low": 0
+                },
+                "month": {
+                  "high": 0,
+                  "low": 6
+                },
+                "nanosecond": {
+                  "high": 0,
+                  "low": 0
+                },
+                "second": {
+                  "high": 0,
+                  "low": 0
+                },
+                "timeZoneOffsetSeconds": {
+                  "high": 0,
+                  "low": 0
+                },
+                "year": {
+                  "high": 0,
+                  "low": 2026
+                }
+              },
+              "title": "Occurrence"
+            }
+          },
+          "relationshipName": "HAS_OCCURRENCE",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        }
+      ],
+      "id": "e1"
+    }
+  ],
+  "response": {
+    "deletedCount": 1,
+    "message": "Successfully deleted 1 event(s)",
+    "success": true
+  },
+  "state": {
+    "nodes": [
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e0",
+          "occurrenceIndex": 0,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "Event"
+        ],
+        "properties": {
+          "canceled": false,
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "endTime": {
+            "day": 1,
+            "hour": 12,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "id": "e2",
+          "occurrenceIndex": 2,
+          "startTime": {
+            "day": 1,
+            "hour": 10,
+            "minute": 0,
+            "month": 6,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2026
+          },
+          "title": "Occurrence"
+        }
+      },
+      {
+        "labels": [
+          "EventSeries"
+        ],
+        "properties": {
+          "createdAt": {
+            "day": 1,
+            "hour": 0,
+            "minute": 0,
+            "month": 1,
+            "nanosecond": 0,
+            "second": 0,
+            "timeZoneOffsetSeconds": 0,
+            "year": 2020
+          },
+          "id": "s",
+          "title": "Series"
+        }
+      }
+    ],
+    "rels": [
+      {
+        "source": "s",
+        "target": "e0",
+        "type": "HAS_OCCURRENCE"
+      },
+      {
+        "source": "s",
+        "target": "e2",
+        "type": "HAS_OCCURRENCE"
+      }
+    ]
+  }
+}
+`;
+
+exports[`snapshot keeps the generated nested default limit 1`] = `
+[
+  {
+    "EventSeries": {
+      "Occurrences": 25,
+      "id": "s",
+      "title": "Series"
+    },
+    "id": "e0",
+    "occurrenceIndex": 0,
+    "title": "Occurrence"
+  }
+]
+`;

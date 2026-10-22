@@ -1,0 +1,2147 @@
+exports[`archive persistence, effects and failure parity {\"bad\":true} 1`] = `
+{
+  "effects": [
+    "subscribers"
+  ],
+  "error": "Failed to update event channel: Boolean cannot represent a non boolean value: \\"invalid\\"",
+  "state": {
+    "actions": [
+      {
+        "kind": "archive",
+        "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      }
+    ],
+    "channels": [
+      {
+        "archived": true
+      }
+    ],
+    "edges": [
+      [
+        "ACTIVITY_ON_ISSUE",
+        2
+      ],
+      [
+        "AUTHORED_COMMENT",
+        1
+      ],
+      [
+        "AUTHORED_ISSUE",
+        1
+      ],
+      [
+        "CITED_ISSUE",
+        1
+      ],
+      [
+        "HAS_COMMENT",
+        1
+      ],
+      [
+        "HAS_ISSUE",
+        1
+      ],
+      [
+        "MODERATED_COMMENT",
+        1
+      ],
+      [
+        "PERFORMED_MODERATION_ACTION",
+        1
+      ],
+      [
+        "POSTED_BY",
+        1
+      ],
+      [
+        "POSTED_IN_CHANNEL",
+        2
+      ],
+      [
+        "TARGETS_EVENT",
+        1
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id10",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id15",
+          "properties": {
+            "new": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id12",
+          "id_from": "id8",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id7",
+          "id_from": "id8",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "relationshipName": "HAS_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id9",
+          "id_from": "id10",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            },
+            "relationship": {},
+            "to": {
+              "createdAt": "<time>",
+              "id": "id4",
+              "title": "Title"
+            }
+          },
+          "relationshipName": "TARGETS_EVENT",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id18",
+          "id_from": "id1",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id19",
+          "id_from": "id1",
+          "id_to": "id20",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "archived": true,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21",
+              "locked": "invalid"
+            }
+          },
+          "relationshipName": "CITED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "EventChannel"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id5",
+          "id_from": "id1",
+          "id_to": "id6",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
+            }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id17",
+          "id_from": "id15",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id13",
+          "id_from": "id6",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id14",
+          "id_from": "id6",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id20",
+          "properties": {
+            "new": {
+              "archived": true,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21",
+              "locked": "invalid"
+            },
+            "old": {
+              "archived": false,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21",
+              "locked": "invalid"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "EventChannel"
+        },
+        "kind": "update"
+      }
+    ],
+    "issues": [
+      {
+        "flagged": false,
+        "n": 1,
+        "open": false,
+        "target": "d"
+      }
+    ]
+  }
+}
+`;
+
+exports[`archive persistence, effects and failure parity {\"existing\":true} 1`] = `
+{
+  "effects": [
+    "subscribers",
+    {
+      "notificationType": "moderation",
+      "text": "Your [event](/forums/forum/events/d) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #4](/forums/forum/issues/4). If you need additional help, contact support@example.com.",
+      "username": "author"
+    }
+  ],
+  "error": null,
+  "state": {
+    "actions": [
+      {
+        "kind": "archive",
+        "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      }
+    ],
+    "channels": [
+      {
+        "archived": true
+      }
+    ],
+    "edges": [
+      [
+        "ACTIVITY_ON_ISSUE",
+        2
+      ],
+      [
+        "AUTHORED_COMMENT",
+        1
+      ],
+      [
+        "CITED_ISSUE",
+        1
+      ],
+      [
+        "HAS_COMMENT",
+        1
+      ],
+      [
+        "MODERATED_COMMENT",
+        1
+      ],
+      [
+        "PERFORMED_MODERATION_ACTION",
+        1
+      ],
+      [
+        "POSTED_BY",
+        1
+      ],
+      [
+        "POSTED_IN_CHANNEL",
+        2
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id10",
+          "properties": {
+            "new": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id11"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id5",
+          "id_from": "id6",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": true,
+              "id": "id4",
+              "isOpen": false,
+              "issueNumber": 4,
+              "relatedEventId": "d",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id13",
+          "id_from": "id2",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": true,
+              "id": "id4",
+              "isOpen": false,
+              "issueNumber": 4,
+              "relatedEventId": "d",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id11"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id14",
+          "id_from": "id2",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": true,
+              "id": "id4",
+              "isOpen": false,
+              "issueNumber": 4,
+              "relatedEventId": "d",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "archived": true,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "CITED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "EventChannel"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id12",
+          "id_from": "id10",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id11"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id7",
+          "id_from": "id8",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id9",
+          "id_from": "id8",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id11"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id15",
+          "properties": {
+            "new": {
+              "archived": true,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id16"
+            },
+            "old": {
+              "archived": false,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id16"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "EventChannel"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id2",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": true,
+              "id": "id4",
+              "isOpen": false,
+              "issueNumber": 4,
+              "relatedEventId": "d",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "channelUniqueName": "forum",
+              "flaggedServerRuleViolation": true,
+              "id": "id4",
+              "isOpen": false,
+              "issueNumber": 4,
+              "relatedEventId": "d"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      }
+    ],
+    "issues": [
+      {
+        "flagged": true,
+        "n": 4,
+        "open": false,
+        "target": "d"
+      }
+    ]
+  }
+}
+`;
+
+exports[`archive persistence, effects and failure parity {\"missingChannel\":true} 1`] = `
+{
+  "effects": [
+    "subscribers"
+  ],
+  "error": "Failed to update event channel: Error finding eventChannel",
+  "state": {
+    "actions": [
+      {
+        "kind": "archive",
+        "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      }
+    ],
+    "channels": [],
+    "edges": [
+      [
+        "ACTIVITY_ON_ISSUE",
+        2
+      ],
+      [
+        "AUTHORED_COMMENT",
+        1
+      ],
+      [
+        "AUTHORED_ISSUE",
+        1
+      ],
+      [
+        "HAS_COMMENT",
+        1
+      ],
+      [
+        "HAS_ISSUE",
+        1
+      ],
+      [
+        "MODERATED_COMMENT",
+        1
+      ],
+      [
+        "PERFORMED_MODERATION_ACTION",
+        1
+      ],
+      [
+        "POSTED_BY",
+        1
+      ],
+      [
+        "TARGETS_EVENT",
+        1
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id10",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id15",
+          "properties": {
+            "new": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id12",
+          "id_from": "id8",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id7",
+          "id_from": "id8",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "relationshipName": "HAS_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id9",
+          "id_from": "id10",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            },
+            "relationship": {},
+            "to": {
+              "createdAt": "<time>",
+              "id": "id4",
+              "title": "Title"
+            }
+          },
+          "relationshipName": "TARGETS_EVENT",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id18",
+          "id_from": "id1",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id5",
+          "id_from": "id1",
+          "id_to": "id6",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
+            }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id17",
+          "id_from": "id15",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id13",
+          "id_from": "id6",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id14",
+          "id_from": "id6",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      }
+    ],
+    "issues": [
+      {
+        "flagged": false,
+        "n": 1,
+        "open": false,
+        "target": "d"
+      }
+    ]
+  }
+}
+`;
+
+exports[`archive persistence, effects and failure parity {\"undo\":true} 1`] = `
+{
+  "effects": [
+    "subscribers",
+    "subscribers",
+    {
+      "notificationType": "moderation",
+      "text": "Your [event](/forums/forum/events/d) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/forum/issues/1). If you need additional help, contact support@example.com.",
+      "username": "author"
+    }
+  ],
+  "error": null,
+  "state": {
+    "actions": [
+      {
+        "kind": "archive",
+        "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      },
+      {
+        "kind": "un-archive",
+        "text": "\\nrestored\\n\\n"
+      }
+    ],
+    "channels": [
+      {
+        "archived": false
+      }
+    ],
+    "edges": [
+      [
+        "ACTIVITY_ON_ISSUE",
+        4
+      ],
+      [
+        "AUTHORED_COMMENT",
+        2
+      ],
+      [
+        "AUTHORED_ISSUE",
+        1
+      ],
+      [
+        "CITED_ISSUE",
+        1
+      ],
+      [
+        "HAS_COMMENT",
+        2
+      ],
+      [
+        "HAS_ISSUE",
+        1
+      ],
+      [
+        "MODERATED_COMMENT",
+        2
+      ],
+      [
+        "PERFORMED_MODERATION_ACTION",
+        2
+      ],
+      [
+        "POSTED_BY",
+        1
+      ],
+      [
+        "POSTED_IN_CHANNEL",
+        2
+      ],
+      [
+        "TARGETS_EVENT",
+        1
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id10",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id15",
+          "properties": {
+            "new": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id23",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id24",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nrestored\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id28",
+          "properties": {
+            "new": {
+              "actionDescription": "Un-archived the event",
+              "actionType": "un-archive",
+              "createdAt": "<time>",
+              "id": "id29"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id12",
+          "id_from": "id8",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id25",
+          "id_from": "id8",
+          "id_to": "id23",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id24",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nrestored\\n\\n"
+            }
+          },
+          "relationshipName": "HAS_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Channel",
+          "id": "id7",
+          "id_from": "id8",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "relationshipName": "HAS_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id22",
+          "id_from": "id23",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id24",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nrestored\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id9",
+          "id_from": "id10",
+          "id_to": "id1",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            },
+            "relationship": {},
+            "to": {
+              "createdAt": "<time>",
+              "id": "id4",
+              "title": "Title"
+            }
+          },
+          "relationshipName": "TARGETS_EVENT",
+          "timestamp": "<time>",
+          "toTypename": "Event"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id18",
+          "id_from": "id1",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id19",
+          "id_from": "id1",
+          "id_to": "id20",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "archived": true,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21"
+            }
+          },
+          "relationshipName": "CITED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "EventChannel"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id31",
+          "id_from": "id1",
+          "id_to": "id28",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Un-archived the event",
+              "actionType": "un-archive",
+              "createdAt": "<time>",
+              "id": "id29"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id5",
+          "id_from": "id1",
+          "id_to": "id6",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
+            }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id17",
+          "id_from": "id15",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id30",
+          "id_from": "id28",
+          "id_to": "id23",
+          "properties": {
+            "from": {
+              "actionDescription": "Un-archived the event",
+              "actionType": "un-archive",
+              "createdAt": "<time>",
+              "id": "id29"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id24",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nrestored\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id13",
+          "id_from": "id6",
+          "id_to": "id10",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id11",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id14",
+          "id_from": "id6",
+          "id_to": "id15",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Archived the event and closed the issue",
+              "actionType": "archive",
+              "createdAt": "<time>",
+              "id": "id16"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id26",
+          "id_from": "id6",
+          "id_to": "id23",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id24",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nrestored\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id27",
+          "id_from": "id6",
+          "id_to": "id28",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Un-archived the event",
+              "actionType": "un-archive",
+              "createdAt": "<time>",
+              "id": "id29"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\"",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedEventId": "d",
+              "title": "[Reported event] \\"Title\\""
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id20",
+          "properties": {
+            "new": {
+              "archived": false,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21"
+            },
+            "old": {
+              "archived": true,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "EventChannel"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id20",
+          "properties": {
+            "new": {
+              "archived": true,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21"
+            },
+            "old": {
+              "archived": false,
+              "channelUniqueName": "forum",
+              "createdAt": "<time>",
+              "eventId": "d",
+              "id": "id21"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "EventChannel"
+        },
+        "kind": "update"
+      }
+    ],
+    "issues": [
+      {
+        "flagged": false,
+        "n": 1,
+        "open": false,
+        "target": "d"
+      }
+    ]
+  }
+}
+`;

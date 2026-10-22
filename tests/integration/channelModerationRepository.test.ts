@@ -38,28 +38,38 @@ async function state(){return{
  notifications:(await driver.executeQuery('MATCH(u:User)-[:HAS_NOTIFICATION]->(n:Notification) RETURN u.username AS user,n.text AS text,n.read AS read,n.notificationType AS type ORDER BY user,text')).records.map(r=>r.toObject()),
  edges:(await driver.executeQuery('MATCH()-[r]->() RETURN type(r) AS type,count(*) AS n ORDER BY type')).records.map(r=>[r.get('type'),r.get('n').toNumber()]),events:normalize(events)};}
 const outcome=async(call:()=>Promise<unknown>)=>{try{return{value:normalize(await call()),error:null};}catch(error){return{value:null,error:(error as Error).message};}};
-test('full Issue action projection and channel-admin default cap match production OGM',async()=>{
- await seed(28);const repo=createChannelModerationRepository(driver);assert.deepEqual(await repo.findChannel('forum'),await legacy().findChannel('forum'));assert.equal((await repo.findChannel('forum'))[0].Admins?.length,25);
- await driver.executeQuery("UNWIND range(1,28) AS n CREATE(:Issue{id:toString(n),issueNumber:n,isOpen:n%2=0,relatedChannelUniqueName:'forum'})");assert.deepEqual(await repo.findOpenIssues('forum'),await legacy().findOpenIssues('forum'));assert.deepEqual(await repo.findRelatedIssues('forum'),await legacy().findRelatedIssues('forum'));assert.equal((await repo.findRelatedIssues('forum')).length,25);
+test('full Issue action projection and channel-admin default cap match production OGM',async(t)=>{
+ await seed(28);const repo=createChannelModerationRepository(driver);
+ // Admins applies a default limit of 25 over 28; which 25 is only stable within a run, so snapshot
+ // the channel with Admins reduced to a count and assert the cap separately.
+ assert.equal((await repo.findChannel('forum'))[0].Admins?.length,25);const channelRows=normalize(await repo.findChannel('forum')) as any;channelRows[0].Admins=channelRows[0].Admins.length;t.assert.snapshot(channelRows);
+ await driver.executeQuery("UNWIND range(1,28) AS n CREATE(:Issue{id:toString(n),issueNumber:n,isOpen:n%2=0,relatedChannelUniqueName:'forum'})");
+ // findOpenIssues has no ORDER BY, so sort by the stable issueNumber before the
+ // id-aliasing normalize — otherwise the alias assigned to each row depends on
+ // Neo4j's row order and the snapshot is not reproducible across environments.
+ t.assert.snapshot(normalize((await repo.findOpenIssues('forum')).sort((a,b)=>a.issueNumber-b.issueNumber)));
+ // findRelatedIssues applies a default limit of 25 over 28; which 25 is only stable within a run,
+ // so assert the limit directly rather than snapshotting an unstable subset.
+ assert.equal((await repo.findRelatedIssues('forum')).length,25);
 });
-test('lock/unlock cycle preserves nested graph, raw notifications, native payloads and repeat guards',async()=>{
+test('lock/unlock cycle preserves nested graph, raw notifications, native payloads and repeat guards',async(t)=>{
  async function run(repo:ChannelModerationRepository){await resetDatabase(driver);await seed(2);events=[];const lock=lockChannel({driver,channelModerationRepository:repo});const unlock=unlockChannel({driver,channelModerationRepository:repo});await lock(null,args,context(),info);await assert.rejects(lock(null,args,context(),info),/already locked/);await unlock(null,{...args,reason:'Resolved'},context(),info);await assert.rejects(unlock(null,args,context(),info),/not locked/);const result=await state();assert.equal(result.actions.length,2);assert.equal(result.notifications.length,4);assert.equal(result.issues[0].open,false);assert.equal(result.issues[0].scope,null);assert.equal(result.channel[0].locked,false);assert.ok(result.notifications.every(n=>n.read===false&&n.type==='moderation'));return result;}
- assert.deepEqual(await run(createChannelModerationRepository(driver)),await run(legacy()));
+ t.assert.snapshot(await run(createChannelModerationRepository(driver)));
 });
-test('supplied missing issue is not validated or replaced before locking',async()=>{
+test('supplied missing issue is not validated or replaced before locking',async(t)=>{
  async function run(repo:ChannelModerationRepository){await resetDatabase(driver);await seed();events=[];await lockChannel({driver,channelModerationRepository:repo})(null,{...args,issueId:'absent'},context(),info);return state();}
- const old=await run(legacy());assert.equal(old.issues.length,0);assert.equal(old.actions.length,0);assert.equal(old.channel[0].locked,true);assert.equal(old.notifications.length,2);assert.deepEqual(await run(createChannelModerationRepository(driver)),old);
+ const result=await run(createChannelModerationRepository(driver));assert.equal(result.issues.length,0);assert.equal(result.actions.length,0);assert.equal(result.channel[0].locked,true);assert.equal(result.notifications.length,2);t.assert.snapshot(result);
 });
-test('full default Issue projection failure is swallowed after action commits and channel changes',async()=>{
+test('full default Issue projection failure is swallowed after action commits and channel changes',async(t)=>{
  async function run(repo:ChannelModerationRepository){await resetDatabase(driver);await seed();await driver.executeQuery("CREATE(:Issue{id:'issue',issueNumber:1,isOpen:true,relatedChannelUniqueName:'forum',locked:'invalid'})");events=[];await lockChannel({driver,channelModerationRepository:repo})(null,args,context(),info);return state();}
- const old=await run(legacy());assert.equal(old.actions.length,1);assert.equal(old.channel[0].locked,true);assert.equal(old.notifications.length,2);assert.deepEqual(await run(createChannelModerationRepository(driver)),old);
+ const result=await run(createChannelModerationRepository(driver));assert.equal(result.actions.length,1);assert.equal(result.channel[0].locked,true);assert.equal(result.notifications.length,2);t.assert.snapshot(result);
 });
-test('channel response failure occurs after activity and lock commit but before notification',async()=>{
+test('channel response failure occurs after activity and lock commit but before notification',async(t)=>{
  await schema(true);try{async function run(repo:ChannelModerationRepository){await resetDatabase(driver);await seed();events=[];const result=await outcome(()=>lockChannel({driver,channelModerationRepository:repo})(null,args,context(),info));return{result,state:await state()};}
- const old=await run(legacy());assert.equal(old.result.error,'Error locking channel');assert.equal(old.state.actions.length,1);assert.equal(old.state.channel[0].locked,true);assert.equal(old.state.notifications.length,0);assert.deepEqual(await run(createChannelModerationRepository(driver)),old);
+ const result=await run(createChannelModerationRepository(driver));assert.equal(result.result.error,'Error locking channel');assert.equal(result.state.actions.length,1);assert.equal(result.state.channel[0].locked,true);assert.equal(result.state.notifications.length,0);t.assert.snapshot(result);
  }finally{await schema();}
 });
-test('unlock closes a related already-closed issue and still adds the existing action',async()=>{
+test('unlock closes a related already-closed issue and still adds the existing action',async(t)=>{
  async function run(repo:ChannelModerationRepository){await resetDatabase(driver);await seed();await driver.executeQuery("MATCH(c:Channel) SET c.locked=true CREATE(:Issue{id:'closed',issueNumber:1,isOpen:false,relatedChannelUniqueName:'forum'})");events=[];await unlockChannel({driver,channelModerationRepository:repo})(null,{channelUniqueName:'forum'},context(),info);return state();}
- const old=await run(legacy());assert.equal(old.actions.length,1);assert.equal(old.actions[0].text,'Channel unlocked');assert.equal(old.notifications.length,2);assert.deepEqual(await run(createChannelModerationRepository(driver)),old);
+ const result=await run(createChannelModerationRepository(driver));assert.equal(result.actions.length,1);assert.equal(result.actions[0].text,'Channel unlocked');assert.equal(result.notifications.length,2);t.assert.snapshot(result);
 });

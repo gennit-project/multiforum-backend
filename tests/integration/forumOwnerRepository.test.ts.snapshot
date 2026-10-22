@@ -1,0 +1,830 @@
+exports[`connectOwner preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`connectOwner preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "username": "alice"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "username": "alice"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    }
+  ],
+  "graph": [
+    {
+      "admins": {
+        "high": 0,
+        "low": 1
+      },
+      "invites": {
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`disconnectInvite preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`disconnectInvite preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "event": "delete_relationship",
+      "fromTypename": "Channel",
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "username": "alice"
+        }
+      },
+      "relationshipName": "HAS_PENDING_INVITE",
+      "timestamp": "<generated-time>",
+      "toTypename": "User"
+    },
+    {
+      "event": "update",
+      "id": "<id-1>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    },
+    {
+      "event": "update",
+      "id": "<id-1>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    }
+  ],
+  "graph": [
+    {
+      "admins": {
+        "high": 0,
+        "low": 0
+      },
+      "invites": {
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`disconnectOwner preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`disconnectOwner preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "event": "delete_relationship",
+      "fromTypename": "User",
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "username": "alice"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    }
+  ],
+  "graph": [
+    {
+      "admins": {
+        "high": 0,
+        "low": 0
+      },
+      "invites": {
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`owner reads preserve missing results, nested recipients and generated limits 1`] = `
+[]
+`;
+
+exports[`owner reads preserve missing results, nested recipients and generated limits 2`] = `
+[]
+`;
+
+exports[`owner reads preserve missing results, nested recipients and generated limits 3`] = `
+[
+  {
+    "PendingOwnerInvites": 25
+  }
+]
+`;
+
+exports[`owner reads preserve missing results, nested recipients and generated limits 4`] = `
+[
+  {
+    "Admins": 25
+  }
+]
+`;
+
+exports[`owner writes preserve missing channel results and events 1`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`owner writes preserve missing channel results and events 2`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "admins": {
+        "high": 0,
+        "low": 0
+      },
+      "invites": {
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`owner writes preserve missing channel results and events 3`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`owner writes preserve missing channel results and events 4`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "admins": {
+        "high": 0,
+        "low": 0
+      },
+      "invites": {
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`owner writes preserve missing channel results and events 5`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`owner writes preserve missing channel results and events 6`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "admins": {
+        "high": 0,
+        "low": 0
+      },
+      "invites": {
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`owner writes preserve missing user results and events 1`] = `
+{
+  "channels": [
+    {
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
+      "channelIconURL": null,
+      "createdAt": "<generated-time>",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "imageUploadsEnabled": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
+      "markAsAnsweredEnabled": null,
+      "markdownImagesEnabled": null,
+      "payoutPercent": null,
+      "pluginPipelines": null,
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
+    }
+  ]
+}
+`;
+
+exports[`owner writes preserve missing user results and events 2`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    }
+  ],
+  "graph": []
+}
+`;
+
+exports[`owner writes preserve missing user results and events 3`] = `
+{
+  "channels": [
+    {
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
+      "channelIconURL": null,
+      "createdAt": "<generated-time>",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "imageUploadsEnabled": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
+      "markAsAnsweredEnabled": null,
+      "markdownImagesEnabled": null,
+      "payoutPercent": null,
+      "pluginPipelines": null,
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
+    }
+  ]
+}
+`;
+
+exports[`owner writes preserve missing user results and events 4`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    }
+  ],
+  "graph": []
+}
+`;
+
+exports[`owner writes preserve missing user results and events 5`] = `
+{
+  "channels": [
+    {
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
+      "channelIconURL": null,
+      "createdAt": "<generated-time>",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "imageUploadsEnabled": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
+      "markAsAnsweredEnabled": null,
+      "markdownImagesEnabled": null,
+      "payoutPercent": null,
+      "pluginPipelines": null,
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
+    }
+  ]
+}
+`;
+
+exports[`owner writes preserve missing user results and events 6`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    }
+  ],
+  "graph": []
+}
+`;
+
+exports[`projection failure preserves committed owner relationship and native events 1`] = `
+{
+  "events": [
+    {
+      "event": "create_relationship",
+      "fromTypename": "User",
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "username": "alice"
+        },
+        "relationship": {},
+        "to": {
+          "uniqueName": "cats"
+        }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "uniqueName": "cats"
+        },
+        "old": {
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    }
+  ],
+  "graph": [
+    {
+      "admins": {
+        "high": 0,
+        "low": 1
+      },
+      "invites": {
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
+    }
+  ]
+}
+`;

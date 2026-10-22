@@ -1,0 +1,678 @@
+exports[`ordinary values preserve all three legacy projections and resolver result without exposing ciphertext 1`] = `
+[
+  {
+    "Versions": [
+      {
+        "id": "version-id",
+        "manifest": "{}"
+      }
+    ]
+  }
+]
+`;
+
+exports[`ordinary values preserve all three legacy projections and resolver result without exposing ciphertext 2`] = `
+[
+  {
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "settingsJson": "{}"
+          }
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`ordinary values preserve all three legacy projections and resolver result without exposing ciphertext 3`] = `
+[
+  {
+    "isValid": true,
+    "key": "token",
+    "lastValidatedAt": "2026-01-01T00:00:00.000Z",
+    "validationError": null
+  }
+]
+`;
+
+exports[`plugin names remain literal, missing version and absent installation retain prefixed errors 1`] = `
+[
+  {
+    "Versions": [
+      {
+        "id": "id",
+        "manifest": "{}"
+      }
+    ]
+  }
+]
+`;
+
+exports[`unbounded and nested limits remain equal to legacy projections 1`] = `
+[
+  {
+    "Versions": [
+      {
+        "id": "v1",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v10",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v11",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v12",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v13",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v14",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v15",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v16",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v17",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v18",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v19",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v2",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v20",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v21",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v22",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v23",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v24",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v25",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v26",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v27",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v28",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v29",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v3",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v30",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v4",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v5",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v6",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v7",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v8",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v9",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "version-id",
+        "manifest": "{}"
+      }
+    ]
+  }
+]
+`;
+
+exports[`unbounded and nested limits remain equal to legacy projections 2`] = `
+[
+  {
+    "Versions": [
+      {
+        "id": "nested1",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested10",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested11",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested12",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested13",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested14",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested15",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested16",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested17",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested18",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested19",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested2",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested20",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested21",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested22",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested23",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested24",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested25",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested26",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested27",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested28",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested29",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested3",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested30",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested4",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested5",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested6",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested7",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested8",
+        "manifest": "{}"
+      },
+      {
+        "id": "nested9",
+        "manifest": "{}"
+      },
+      {
+        "id": "version-id",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v1",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v10",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v11",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v12",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v13",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v14",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v15",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v16",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v17",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v18",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v19",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v2",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v20",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v21",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v22",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v23",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v24",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v25",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v26",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v27",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v28",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v29",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v3",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v30",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v4",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v5",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v6",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v7",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v8",
+        "manifest": "{}"
+      }
+    ]
+  },
+  {
+    "Versions": [
+      {
+        "id": "v9",
+        "manifest": "{}"
+      }
+    ]
+  }
+]
+`;

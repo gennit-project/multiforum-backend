@@ -1,0 +1,258 @@
+exports[`channel/server plugin snapshots retain exact selections, data and defaults 1`] = `
+[
+  {
+    "Bots": [
+      {
+        "username": "bot-old"
+      },
+      {
+        "username": "human"
+      }
+    ],
+    "EnabledPluginsConnection": {
+      "edges": [
+        {
+          "node": {
+            "Plugin": {
+              "name": "helper",
+              "tags": [
+                "bot"
+              ]
+            },
+            "settingsDefaults": "{\\"botName\\":\\"helper\\",\\"profiles\\":[{\\"id\\":\\"root\\"}]}"
+          },
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          }
+        }
+      ]
+    },
+    "uniqueName": "cats"
+  }
+]
+`;
+
+exports[`channel/server plugin snapshots retain exact selections, data and defaults 2`] = `
+[
+  {
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "node": {
+            "Plugin": {
+              "name": "helper",
+              "tags": [
+                "bot"
+              ]
+            },
+            "settingsDefaults": "{\\"botName\\":\\"helper\\",\\"profiles\\":[{\\"id\\":\\"root\\"}]}",
+            "version": "1"
+          },
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{\\"profiles\\":[{\\"id\\":\\"p1\\",\\"label\\":\\"One\\"}]}"
+          }
+        }
+      ]
+    },
+    "serverName": "server"
+  }
+]
+`;
+
+exports[`channel/server plugin snapshots retain exact selections, data and defaults 3`] = `
+[
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "1"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "10"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "11"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "12"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "13"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "14"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "15"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "16"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "17"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "18"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "19"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "2"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "20"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "21"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "22"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "23"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "24"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "25"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "26"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "27"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "28"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "3"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "4"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "5"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "6"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "7"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "8"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "serverName": "9"
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "node": {
+            "Plugin": {
+              "name": "helper",
+              "tags": [
+                "bot"
+              ]
+            },
+            "settingsDefaults": "{\\"botName\\":\\"helper\\",\\"profiles\\":[{\\"id\\":\\"root\\"}]}",
+            "version": "1"
+          },
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{\\"profiles\\":[{\\"id\\":\\"p1\\",\\"label\\":\\"One\\"}]}"
+          }
+        }
+      ]
+    },
+    "serverName": "server"
+  }
+]
+`;

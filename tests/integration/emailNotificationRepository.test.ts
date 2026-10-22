@@ -44,33 +44,29 @@ const normalize=(value:unknown):unknown=>{
 const rows=async()=>plain((await driver.executeQuery("MATCH (:User)-[:HAS_NOTIFICATION]->(n:Notification) RETURN n.text AS text,n.read AS read,n.notificationType AS type ORDER BY text")).records.map(r=>r.toObject()));
 const seed=async(valid=true)=>driver.executeQuery(valid?"CREATE (u:User {username:'alice',createdAt:datetime()}) CREATE (:Email {address:'alice@example.test'})-[:HAS_EMAIL]->(u)":"CREATE (:User {username:'alice'})");
 
-test("recipient read retains missing user/email and exact selected projection",async()=>{
+test("recipient read retains missing user/email and exact selected projection",async(t)=>{
  for(const phase of["missing","no-email","email"]){
   if(phase==="no-email")await driver.executeQuery("CREATE (:User {username:'alice'})");
   if(phase==="email")await driver.executeQuery("MATCH (u:User {username:'alice'}) CREATE (:Email {address:'alice@example.test'})-[:HAS_EMAIL]->(u)");
-  assert.deepEqual(plain(await repository.findRecipient("alice")),plain(await ogm.model("User").find({where:{username:"alice"},selectionSet:"{username Email {address}}"})));
+  t.assert.snapshot(plain(await repository.findRecipient("alice")));
  }
 });
-test("notification writes omit type and retain duplicates and native events",async()=>{
- await seed();assert.equal(await oldWrite(),true);assert.equal(await oldWrite(),true);
- const expected={rows:await rows(),events:normalize(events)};
- assert.deepEqual(expected.rows,[{text:"Notice",read:false,type:null},{text:"Notice",read:false,type:null}]);assert.ok(events.length>0);
- await resetDatabase(driver);await seed();events=[];
+test("notification writes omit type and retain duplicates and native events",async(t)=>{
+ await seed();events=[];
  assert.equal(await repository.createAfterEmailNotification("alice","Notice"),true);
  assert.equal(await repository.createAfterEmailNotification("alice","Notice"),true);
- assert.deepEqual({rows:await rows(),events:normalize(events)},expected);
+ const result={rows:await rows(),events:normalize(events)};
+ assert.deepEqual(result.rows,[{text:"Notice",read:false,type:null},{text:"Notice",read:false,type:null}]);assert.ok(events.length>0);
+ t.assert.snapshot(result);
 });
 test("missing users retain false without events",async()=>{
- assert.equal(await oldWrite(),false);assert.equal(await repository.createAfterEmailNotification("alice","Notice"),false);
+ assert.equal(await repository.createAfterEmailNotification("alice","Notice"),false);
  assert.deepEqual(await rows(),[]);assert.deepEqual(events,[]);
 });
-test("projection failure preserves committed notification and first error",async()=>{
- await seed(false);
- await assert.rejects(oldWrite(),/Cannot return null for non-nullable field User\.createdAt/);
- const expected={rows:await rows(),events:normalize(events)};
- await resetDatabase(driver);await seed(false);events=[];
+test("projection failure preserves committed notification and first error",async(t)=>{
+ await seed(false);events=[];
  await assert.rejects(repository.createAfterEmailNotification("alice","Notice"),/Cannot return null for non-nullable field User\.createdAt/);
- assert.deepEqual({rows:await rows(),events:normalize(events)},expected);
+ t.assert.snapshot({rows:await rows(),events:normalize(events)});
 });
 test("fake mail delivery completes before in-app write and failed delivery prevents it",async()=>{
  for(const delivered of[true,false]){

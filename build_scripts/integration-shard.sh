@@ -82,4 +82,4 @@ export TESTCONTAINERS_REUSE_ENABLE=true
 c8 --all=false --exclude-after-remap \
   --exclude='rules/permission/userDataHelperFunctions.ts' \
   --reporter=lcov --reporter=text-summary \
-  node --import tsx --test --test-concurrency=1 $(list_files)
+  node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test --test-concurrency=1 $(list_files)

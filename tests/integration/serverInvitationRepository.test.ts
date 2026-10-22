@@ -55,19 +55,16 @@ const oldWrite=(kind:"admin"|"moderator",username:unknown="alice")=>ogm.model("S
 const currentWrite=(kind:"admin"|"moderator",username="alice")=>createServerInvitationRepository(driver)[kind==="admin"?"connectAdminInvite":"connectModeratorInvite"]("cats",username);
 const graph=async()=>plain((await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (:ServerConfig)-[i:HAS_PENDING_SERVER_ADMIN_INVITE|HAS_PENDING_SERVER_MOD_INVITE]->(u) OPTIONAL MATCH (u)-[:HAS_NOTIFICATION]->(n:Notification) RETURN u.username AS username,count(DISTINCT i) AS invites,collect(DISTINCT {text:n.text,read:n.read,type:n.notificationType}) AS notifications ORDER BY username")).records.map(r=>r.toObject()));
 for(const kind of ["admin","moderator"] as const){
- test(`${kind} repeated invitation writes preserve result and native events`,async()=>{
-  await seed();const expected=[plain(await oldWrite(kind)),plain(await oldWrite(kind))];const oldEvents=normalize(events);const oldGraph=await graph();
-  await resetDatabase(driver);await seed();events=[];const result=[plain(await currentWrite(kind)),plain(await currentWrite(kind))];assert.deepEqual(result,expected);assert.deepEqual(normalize(events),oldEvents);assert.deepEqual(await graph(),oldGraph);
+ test(`${kind} repeated invitation writes preserve result and native events`,async(t)=>{
+  await seed();events=[];const result=[plain(await currentWrite(kind)),plain(await currentWrite(kind))];t.assert.snapshot(normalize(result));t.assert.snapshot(normalize(events));t.assert.snapshot(await graph());
  });
- test(`${kind} projection failure preserves committed invite and events`,async()=>{
-  await seed(false);await assert.rejects(oldWrite(kind),/Boolean cannot represent a non boolean value/);const oldEvents=normalize(events);const oldGraph=await graph();
-  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(currentWrite(kind),/Boolean cannot represent a non boolean value/);assert.deepEqual(normalize(events),oldEvents);assert.deepEqual(await graph(),oldGraph);
+ test(`${kind} projection failure preserves committed invite and events`,async(t)=>{
+  await seed(false);events=[];await assert.rejects(currentWrite(kind),/Boolean cannot represent a non boolean value/);t.assert.snapshot(normalize(events));t.assert.snapshot(await graph());
  });
- test(`${kind} missing targets and malformed inputs retain generated behavior`,async()=>{
-  assert.deepEqual(plain(await currentWrite(kind)),plain(await oldWrite(kind)));
+ test(`${kind} missing targets and malformed inputs retain generated behavior`,async(t)=>{
+  t.assert.snapshot(normalize(await currentWrite(kind)));
   await seed();await driver.executeQuery("MATCH (u:User) DETACH DELETE u");
-  events=[];const expected=plain(await oldWrite(kind));const oldEvents=normalize(events);events=[];
-  assert.deepEqual(plain(await currentWrite(kind)),expected);assert.deepEqual(normalize(events),oldEvents);
+  events=[];t.assert.snapshot(normalize(await currentWrite(kind)));t.assert.snapshot(normalize(events));
   await assert.rejects(currentWrite(kind,23 as any),/String cannot represent a non string value/);
  });
  test(`${kind} resolver keeps invitation committed on email failure and repeats notifications without adding a type`,async()=>{
@@ -88,9 +85,8 @@ for(const kind of ["admin","moderator"] as const){
 
 }
 
-test("invitee existence snapshots preserve missing recipients and coercion errors",async()=>{
+test("invitee existence snapshots preserve missing recipients and coercion errors",async(t)=>{
  const repo=createServerInvitationRepository(driver);
- const old=()=>ogm.model("User").find({where:{username:"alice"},selectionSet:"{username}"});
- assert.deepEqual(await repo.findInvitee("alice"),await old());await seed();assert.deepEqual(plain(await repo.findInvitee("alice")),plain(await old()));
+ t.assert.snapshot(plain(await repo.findInvitee("alice")));await seed();t.assert.snapshot(plain(await repo.findInvitee("alice")));
  await assert.rejects(repo.findInvitee(23 as any),/String cannot represent a non string value/);
 });

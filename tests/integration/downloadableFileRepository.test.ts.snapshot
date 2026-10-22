@@ -1,0 +1,355 @@
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 1`] = `
+null
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 10`] = `
+null
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 11`] = `
+"Downloadable file 'file' not found"
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 12`] = `
+null
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 13`] = `
+"Downloadable file 'file' not found"
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 2`] = `
+{
+  "fileName": "archive.zip",
+  "id": "file"
+}
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 3`] = `
+true
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 4`] = `
+{
+  "fileName": "",
+  "id": "file"
+}
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 5`] = `
+true
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 6`] = `
+{
+  "fileName": "archive.zip",
+  "id": "file"
+}
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 7`] = `
+true
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 8`] = `
+{
+  "fileName": "",
+  "id": "file"
+}
+`;
+
+exports[`attachment metadata matches the production OGM projection and hidden-file outcome 9`] = `
+true
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 1`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 10`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 11`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 12`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 13`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 14`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 15`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 16`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 17`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 18`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 19`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 2`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 20`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 21`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 22`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 23`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 24`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 25`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 26`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 27`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 28`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 29`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 3`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 30`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 31`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 32`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 33`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 34`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 35`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 36`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 37`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 38`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 39`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 4`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 40`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 41`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 42`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 43`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 44`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 45`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 46`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 47`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 48`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 49`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 5`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 50`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 51`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 52`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 53`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 54`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 55`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 56`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 57`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 58`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 59`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 6`] = `
+"https://example.test/parent.zip"
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 60`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 61`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 62`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 63`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 64`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 65`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 66`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 67`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 68`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 69`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 7`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 70`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 71`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 72`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 8`] = `
+""
+`;
+
+exports[`migrated URL decisions match production OGM for file and discussion visibility 9`] = `
+""
+`;
+
+exports[`the existing URL resolver returns parent URL in production but stored URL with standalone OGM 1`] = `
+"https://example.test/parent.zip"
+`;

@@ -1,0 +1,82 @@
+exports[`actual redaction resolver parity: comment, authorized no-op still checks permissions 1`] = `
+{
+  "body": "[deleted]",
+  "events": [
+    {
+      "kind": "update",
+      "typename": "TextVersion"
+    }
+  ],
+  "touched": true
+}
+`;
+
+exports[`actual redaction resolver parity: discussion body, authorized no-op still checks permissions 1`] = `
+{
+  "body": "[deleted]",
+  "events": [
+    {
+      "kind": "update",
+      "typename": "TextVersion"
+    }
+  ],
+  "touched": true
+}
+`;
+
+exports[`actual redaction resolver parity: event description, authorized no-op still checks permissions 1`] = `
+{
+  "body": "[deleted]",
+  "events": [
+    {
+      "kind": "update",
+      "typename": "TextVersion"
+    }
+  ],
+  "touched": true
+}
+`;
+
+exports[`actual redaction resolver parity: wiki, authorized no-op still checks permissions 1`] = `
+{
+  "body": "[deleted]",
+  "events": [
+    {
+      "kind": "update",
+      "typename": "TextVersion"
+    }
+  ],
+  "touched": true
+}
+`;
+
+exports[`post-read invalid temporal value preserves baseline transaction failure boundary 1`] = `
+{
+  "body": "Original",
+  "error": "Failed to invoke function \`apoc.date.convertFormat\`: Caused by: java.time.format.DateTimeParseException: Text 'invalid' could not be parsed at index 0",
+  "events": []
+}
+`;
+
+exports[`revision snapshot matches exact selected fields, hidden/missing rows and ID coercion 1`] = `
+[
+  {
+    "Author": {
+      "username": "owner"
+    },
+    "body": "Original",
+    "createdAt": "<time>",
+    "editReason": "Reason",
+    "id": "v",
+    "updatedAt": null
+  }
+]
+`;
+
+exports[`revision snapshot matches exact selected fields, hidden/missing rows and ID coercion 2`] = `
+[]
+`;
+
+exports[`revision snapshot matches exact selected fields, hidden/missing rows and ID coercion 3`] = `
+"Variable \\"$where\\" got invalid value {} at \\"where.id\\"; ID cannot represent value: {}"
+`;

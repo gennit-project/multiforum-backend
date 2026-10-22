@@ -55,34 +55,22 @@ test("registration default selections match OGM exactly including hidden-field e
  assert.doesNotMatch(REGISTRATION_USER_SELECTION,/dateOfBirth/);
 });
 
-test("existence reads preserve missing/case-sensitive matches, projection and session routing",async()=>{
+test("existence reads preserve missing/case-sensitive matches, projection and session routing",async(t)=>{
  for(const username of ["missing","alice"]){
   if(username==="alice") await ogm.model("User").create({input:[input()]});
-  const expected=plain(await ogm.model("User").find({where:{username}}));
-  const oldConfig=sessions[sessions.length-1];
-  assert.deepEqual(plain(await repository.findExistingUsername(username)),expected);
-  assert.deepEqual(sessions[sessions.length-1],oldConfig);
+  t.assert.snapshot({users:normalize(await repository.findExistingUsername(username)),session:sessions[sessions.length-1]});
  }
  for(const address of ["Alice@Example.test","alice@example.test","missing"]){
-  const expected=plain(await ogm.model("Email").find({where:{address}}));
-  const oldConfig=sessions[sessions.length-1];
-  assert.deepEqual(plain(await repository.findExistingEmail(address)),expected);
-  assert.deepEqual(sessions[sessions.length-1],oldConfig);
+  t.assert.snapshot({emails:normalize(await repository.findExistingEmail(address)),session:sessions[sessions.length-1]});
  }
 });
 
-test("nested account creation preserves birthday, graph and native event ordering",async()=>{
- await ogm.model("User").create({input:[input()]});
- const oldConfig=sessions[sessions.length-1];
- const expected={graph:await graph(),events:normalize(events)};
- assert.ok(events.length>0);
- await resetDatabase(driver);events=[];
+test("nested account creation preserves birthday, graph and native event ordering",async(t)=>{
  await repository.createAccount(input());
- assert.deepEqual(sessions[sessions.length-1],oldConfig);
- assert.deepEqual({graph:await graph(),events:normalize(events)},expected);
+ t.assert.snapshot({graph:await graph(),events:normalize(events),session:sessions[sessions.length-1]});
+ assert.ok(events.length>0);
  assert.deepEqual((await graph())[0],{username:"alice",birthday:"2000-01-01",email:"Alice@Example.test",moderator:"alice_mod"});
- const old=await ogm.model("User").find({where:{username:"alice"},selectionSet:"{username Email {address} ModerationProfile {displayName}}"});
- assert.deepEqual(plain(await repository.findCreatedAccount("alice")),plain(old));
+ t.assert.snapshot(plain(await repository.findCreatedAccount("alice")));
  assert.deepEqual(await repository.findCreatedAccount("missing"),[]);
 });
 
@@ -99,31 +87,27 @@ test("default existence read still rejects malformed selected fields",async()=>{
  await assert.rejects(repository.findExistingUsername("alice"),/Boolean cannot represent a non boolean value/);
 });
 
-test("own account summary preserves the production internal selection and first errors",async()=>{
- const selectionSet="{address User {username profilePicURL ModerationProfile {displayName} NotificationsAggregate(where:{read:false}) {count}}}";
+test("own account summary preserves the production internal selection and first errors",async(t)=>{
  for(const stage of ["missing","created","notifications"]){
   if(stage==="created") await repository.createAccount(input());
   if(stage==="notifications") await driver.executeQuery(`MATCH (u:User {username:'alice'})
    CREATE (u)-[:HAS_NOTIFICATION]->(:Notification {id:'unread',read:false,createdAt:datetime()})
    CREATE (u)-[:HAS_NOTIFICATION]->(:Notification {id:'read',read:true,createdAt:datetime()})`);
-  const expected=await outcome(()=>ogm.model("Email").find({where:{address:"Alice@Example.test"},selectionSet}));
-  assert.deepEqual(await outcome(()=>repository.findOwnAccountSummary("Alice@Example.test")),expected);
+  t.assert.snapshot(await outcome(()=>repository.findOwnAccountSummary("Alice@Example.test")));
  }
 });
 
 
-test("creation projection failure preserves committed graph and native events",async()=>{
+test("creation projection failure preserves committed graph and native events",async(t)=>{
  const userType=schema.getType("User");
  assert.ok(userType instanceof GraphQLObjectType);
  const field=userType.getFields().variantUrls;
  const original=field.resolve;
  field.resolve=()=>{throw new Error("injected projection failure");};
  try {
-  await assert.rejects(ogm.model("User").create({input:[input()]}),{message:"injected projection failure"});
-  const expected={graph:await graph(),events:normalize(events)};
-  assert.equal(expected.graph.length,1);assert.ok(events.length>0);
-  await resetDatabase(driver);events=[];
   await assert.rejects(repository.createAccount(input()),{message:"injected projection failure"});
-  assert.deepEqual({graph:await graph(),events:normalize(events)},expected);
+  const result={graph:await graph(),events:normalize(events)};
+  assert.equal(result.graph.length,1);assert.ok(events.length>0);
+  t.assert.snapshot(result);
  } finally {field.resolve=original;}
 });

@@ -1,0 +1,132 @@
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"accountAgeGateEnabled\":1,\"minimumAccountAge\":13,\"sensitiveContentAgeGateEnabled\":0,\"minimumSensitiveContentAge\":18,\"enableDownloads\":0,\"enableEvents\":1} 1`] = `
+[
+  {
+    "accountAgeGateEnabled": true,
+    "minimumAccountAge": 13,
+    "minimumSensitiveContentAge": 18,
+    "sensitiveContentAgeGateEnabled": false
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"accountAgeGateEnabled\":1,\"minimumAccountAge\":13,\"sensitiveContentAgeGateEnabled\":0,\"minimumSensitiveContentAge\":18,\"enableDownloads\":0,\"enableEvents\":1} 2`] = `
+[
+  {
+    "enableDownloads": false,
+    "enableEvents": true
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"accountAgeGateEnabled\":1,\"minimumAccountAge\":13,\"sensitiveContentAgeGateEnabled\":0,\"minimumSensitiveContentAge\":18,\"enableDownloads\":0,\"enableEvents\":1} 3`] = `
+[
+  {
+    "enableDownloads": false,
+    "enableEvents": true
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"accountAgeGateEnabled\":false,\"minimumAccountAge\":0,\"sensitiveContentAgeGateEnabled\":true,\"minimumSensitiveContentAge\":21,\"enableDownloads\":true,\"enableEvents\":false} 1`] = `
+[
+  {
+    "accountAgeGateEnabled": false,
+    "minimumAccountAge": 0,
+    "minimumSensitiveContentAge": 21,
+    "sensitiveContentAgeGateEnabled": true
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"accountAgeGateEnabled\":false,\"minimumAccountAge\":0,\"sensitiveContentAgeGateEnabled\":true,\"minimumSensitiveContentAge\":21,\"enableDownloads\":true,\"enableEvents\":false} 2`] = `
+[
+  {
+    "enableDownloads": true,
+    "enableEvents": false
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"accountAgeGateEnabled\":false,\"minimumAccountAge\":0,\"sensitiveContentAgeGateEnabled\":true,\"minimumSensitiveContentAge\":21,\"enableDownloads\":true,\"enableEvents\":false} 3`] = `
+[
+  {
+    "enableDownloads": true,
+    "enableEvents": false
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"minimumAccountAge\":\"invalid\",\"minimumSensitiveContentAge\":\"21\"} 1`] = `
+[
+  {
+    "accountAgeGateEnabled": null,
+    "minimumAccountAge": 0,
+    "minimumSensitiveContentAge": 21,
+    "sensitiveContentAgeGateEnabled": null
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"minimumAccountAge\":\"invalid\",\"minimumSensitiveContentAge\":\"21\"} 2`] = `
+[
+  {
+    "enableDownloads": null,
+    "enableEvents": null
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\",\"minimumAccountAge\":\"invalid\",\"minimumSensitiveContentAge\":\"21\"} 3`] = `
+[
+  {
+    "enableDownloads": null,
+    "enableEvents": null
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\"} 1`] = `
+[
+  {
+    "accountAgeGateEnabled": null,
+    "minimumAccountAge": null,
+    "minimumSensitiveContentAge": null,
+    "sensitiveContentAgeGateEnabled": null
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\"} 2`] = `
+[
+  {
+    "enableDownloads": null,
+    "enableEvents": null
+  }
+]
+`;
+
+exports[`matches production OGM selected scalar behavior: {\"serverName\":\"named\"} 3`] = `
+[
+  {
+    "enableDownloads": null,
+    "enableEvents": null
+  }
+]
+`;
+
+exports[`missing and unmatched configs preserve defaults; whitespace is not trimmed by age lookup 1`] = `
+[]
+`;
+
+exports[`missing and unmatched configs preserve defaults; whitespace is not trimmed by age lookup 2`] = `
+[]
+`;
+
+exports[`nullable server names remain accepted by unfiltered setup reads 1`] = `
+[
+  {
+    "enableDownloads": null,
+    "enableEvents": true
+  }
+]
+`;
