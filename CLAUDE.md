@@ -31,13 +31,15 @@ them; the upgrades must be rejected until Neo4j ships support.
   stays blocked regardless — see the graphql bullet above.
 
 ## Toolchain notes
-- **ts-node + TypeScript 6**: ts-node (10.9.2, no TS6-compatible release exists)
-  stopped auto-including `@types/node` in its isolated per-file compilation under
-  TS 6. This makes `node:`-prefixed builtin imports (`node:test`,
-  `node:assert/strict`) fail at runtime with TS2591, even though `pnpm run tsc`
-  passes. Worked around with `ts-node.compilerOptions.types: ["node"]` in
-  tsconfig.json (scoped to ts-node; the main `tsc` program is untouched). Do not
-  remove it or the unit tests crash on load.
+- **tsx (not ts-node)**: TypeScript scripts and tests run through `tsx`
+  (`node --import tsx`), not ts-node. tsx uses esbuild to strip types, so it does
+  NOT type-check at runtime — `pnpm run tsc` (and the pre-commit hook) is the type
+  gate, kept separate from execution. tsx also resolves the repo's `.js`
+  import specifiers back to their `.ts` sources, which native Node type-stripping
+  does not do; that `.js`→`.ts` remap is why ts-node/tsx is required and plain
+  `node --experimental-strip-types` is not an option. ts-node was removed because
+  it had no TS6-compatible release and needed a `ts-node.compilerOptions.types`
+  workaround in tsconfig.json.
 - **TypeScript module resolution**: `module` and `moduleResolution` use
   `nodenext` to match the package's ESM runtime. Relative imports must include
   the emitted `.js` extension, and CommonJS dependencies may require explicit
