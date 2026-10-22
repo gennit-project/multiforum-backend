@@ -11,7 +11,7 @@ Testcontainers. They live in `tests/integration/**` and are excluded from `pnpm 
 ## Run
 - Whole suite: `pnpm run test:integration` (serial — `--test-concurrency=1`,
   `TESTCONTAINERS_REUSE_ENABLE=true`). Needs a running **Docker daemon**.
-- One file: `node --loader ts-node/esm --test tests/integration/foo.test.ts`
+- One file: `node --import tsx --test tests/integration/foo.test.ts`
 - CI shards the suite 4 ways (`build_scripts/integration-shard.sh`, `SHARD`/`SHARD_TOTAL`);
   it's the CI bottleneck, so keep new tests focused.
 
