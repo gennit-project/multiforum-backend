@@ -311,6 +311,124 @@ test("falls back to plugin-name channel enablement for migrated edges", async ()
   assert.equal(pluginEnabled, true);
 });
 
+test("applies settings from the exact enabled plugin version", async () => {
+  const baseEdge = installedEdge("mybot");
+  const edge = {
+    ...baseEdge,
+    node: {
+      ...baseEdge.node,
+      settingsDefaults: JSON.stringify({
+        server: { mode: "default" },
+        channel: { confidenceThreshold: 0.9 },
+      }),
+    },
+  };
+  const { models } = makeExecModels([edge], {
+    channelPluginEdges: [
+      {
+        properties: {
+          enabled: true,
+          settingsJson: JSON.stringify({
+            confidenceThreshold: 0.2,
+            profileId: "strict",
+          }),
+        },
+        node: { id: "pv-mybot", Plugin: { name: "mybot" } },
+      },
+    ],
+  });
+  let receivedSettings: unknown;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(context: unknown) {
+      receivedSettings = (context as { settings?: unknown }).settings;
+    }
+    async handleEvent() {
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.deepEqual(receivedSettings, {
+    server: { mode: "default" },
+    channel: { confidenceThreshold: 0.2, profileId: "strict" },
+  });
+});
+
+test("prefers an enabled migrated edge when duplicate legacy edges disagree", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")], {
+    channelPluginEdges: [
+      {
+        properties: {
+          enabled: false,
+          settingsJson: JSON.stringify({ profileId: "disabled" }),
+        },
+        node: { Plugin: { name: "mybot" } },
+      },
+      {
+        properties: {
+          enabled: true,
+          settingsJson: JSON.stringify({ profileId: "enabled" }),
+        },
+        node: { Plugin: { name: "mybot" } },
+      },
+    ],
+  });
+  let receivedContext: unknown;
+  let receivedSettings: unknown;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(context: unknown) {
+      receivedSettings = (context as { settings?: unknown }).settings;
+    }
+    async handleEvent(envelope: unknown) {
+      receivedContext = (envelope as { payload?: { context?: unknown } }).payload?.context;
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.equal(
+    (receivedContext as { channel?: { pluginEnabled?: boolean } })?.channel?.pluginEnabled,
+    true
+  );
+  assert.deepEqual(receivedSettings, { channel: { profileId: "enabled" } });
+});
+
+test("retains an enabled migrated edge when a later duplicate is disabled", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")], {
+    channelPluginEdges: [
+      {
+        properties: {
+          enabled: true,
+          settingsJson: JSON.stringify({ profileId: "enabled" }),
+        },
+        node: { Plugin: { name: "mybot" } },
+      },
+      {
+        properties: {
+          enabled: false,
+          settingsJson: JSON.stringify({ profileId: "disabled" }),
+        },
+        node: { Plugin: { name: "mybot" } },
+      },
+    ],
+  });
+  let receivedSettings: unknown;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(context: unknown) {
+      receivedSettings = (context as { settings?: unknown }).settings;
+    }
+    async handleEvent() {
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.deepEqual(receivedSettings, { channel: { profileId: "enabled" } });
+});
+
 test("does not apply another plugin version's channel enablement", async () => {
   const { models } = makeExecModels([installedEdge("mybot")], {
     channelPluginEdges: [
