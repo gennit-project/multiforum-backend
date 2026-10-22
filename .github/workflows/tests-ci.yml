@@ -172,14 +172,16 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
-    # The integration suite is the CI bottleneck (serial, real Neo4j). Eight
+    # The integration suite is the CI bottleneck (serial, real Neo4j). Sixteen
     # parallel shards keep its critical path below the ten-minute CI budget.
-    # Each matrix job runs ~1/N of the files against its own Testcontainers
-    # Neo4j, so wall-clock is roughly the suite divided by N.
+    # build_scripts/integration-shard.sh balances the files across shards by
+    # measured runtime (LPT bin-packing), so each job runs ~1/N of the suite's
+    # wall-clock — not just ~1/N of the files — and the slowest shard no longer
+    # drags out the matrix. Keep `shard` and the `SHARD_TOTAL` env below in sync.
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -203,11 +205,11 @@ jobs:
       # Testcontainers manages the Neo4j container itself via the Docker daemon
       # available on GitHub-hosted Ubuntu runners. Run under c8 so the resolver
       # coverage these tests provide is reported too.
-      - name: Run integration shard ${{ matrix.shard }}/8 against live Neo4j (with coverage)
+      - name: Run integration shard ${{ matrix.shard }}/16 against live Neo4j (with coverage)
         run: pnpm run test:integration:shard
         env:
           SHARD: ${{ matrix.shard }}
-          SHARD_TOTAL: 8
+          SHARD_TOTAL: 16
 
       # Each shard reports only the files it executes. coverage-report unions
       # those hits into the unit suite's authoritative all:true report.
