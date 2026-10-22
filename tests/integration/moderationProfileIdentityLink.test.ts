@@ -31,7 +31,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: any;
 
 before(async () => {
   let builder = new Neo4jContainer("neo4j:5-community")
@@ -49,8 +48,7 @@ before(async () => {
   const { buildPermissionedSchema } = await import(
     "../helpers/buildPermissionedSchema.js"
   );
-  ({ schema, driver, ogm } = await buildPermissionedSchema());
-  await ogm.init();
+  ({ schema, driver } = await buildPermissionedSchema());
 
   // The container's "ready" signal can fire a moment before Bolt actually
   // accepts queries; poll a trivial query so the first real write doesn't race
@@ -104,7 +102,6 @@ const exec = async (source: string, authorization?: string) => {
     source,
     contextValue: {
       driver,
-      ogm,
       req: {
         headers: authorization ? { authorization } : {},
         body: {},

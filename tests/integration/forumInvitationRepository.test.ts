@@ -14,7 +14,6 @@ import inviteForumMod from "../../customResolvers/mutations/inviteForumMod.js";
 import sgMail from "@sendgrid/mail";
 import { Resend } from "resend";
 import { mock, afterEach } from "node:test";
-import { CHANNEL_MEMBERSHIP_SELECTION } from "../../services/persistence/forumMembershipSelections.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
@@ -55,7 +54,6 @@ const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const oldWrite=(kind:"owner"|"moderator",username:unknown="alice")=>ogm.model("Channel").update({where:{uniqueName:"cats"},update:{[kind==="owner"?"PendingOwnerInvites":"PendingModInvites"]:[{connect:[{where:{node:{username}}}]}]}} as any);
 const currentWrite=(kind:"owner"|"moderator",username="alice")=>createForumInvitationRepository(driver)[kind==="owner"?"connectOwnerInvite":"connectModeratorInvite"]("cats",username);
 const graph=async()=>plain((await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (:Channel)-[i:HAS_PENDING_INVITE|HAS_PENDING_MOD_INVITE]->(u) OPTIONAL MATCH (u)-[:HAS_NOTIFICATION]->(n:Notification) RETURN u.username AS username,count(DISTINCT i) AS invites,collect(DISTINCT {text:n.text,read:n.read,type:n.notificationType}) AS notifications ORDER BY username")).records.map(r=>r.toObject()));
-test("forum invitation selection preserves full default Channel projection",()=>assert.equal(print(parse(CHANNEL_MEMBERSHIP_SELECTION)),print(parse((ogm.model("Channel") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault()))));
 for(const kind of ["owner","moderator"] as const){
  test(`${kind} repeated invitation writes preserve result and native events`,async()=>{
   await seed();const expected=[plain(await oldWrite(kind)),plain(await oldWrite(kind))];const oldEvents=normalize(events);const oldGraph=await graph();

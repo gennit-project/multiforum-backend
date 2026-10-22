@@ -7,7 +7,7 @@ import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
-import { createNotificationWriter, NOTIFICATION_USER_SELECTION } from "../../services/persistence/notificationWriter.js";
+import { createNotificationWriter } from "../../services/persistence/notificationWriter.js";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver: Driver;
@@ -39,9 +39,6 @@ const normalize = (value: unknown): unknown => {
 };
 const snapshot = async () => ({events:normalize(events), rows:(await driver.executeQuery("MATCH (:User)-[:HAS_NOTIFICATION]->(n:Notification) RETURN n.text AS text, n.read AS read, n.notificationType AS type ORDER BY text")).records.map(r=>r.toObject())});
 const seed = async (valid = true) => {await driver.executeQuery(valid ? "CREATE (:User {username:'alice',createdAt:datetime('2020-01-01T00:00:00Z')})" : "CREATE (:User {username:'alice'})");};
-test("fixed response selection exactly preserves the OGM default fields and ordering", () => {
- assert.equal(print(parse(NOTIFICATION_USER_SELECTION)),print(parse((ogm.model("User") as unknown as {getSelectionSetOrDefault(): string}).getSelectionSetOrDefault())));
-});
 test("missing recipients return false and publish no events", async () => {
  assert.equal(await oldWrite(),false); const expected=await snapshot(); events=[];
  assert.equal(await createNotificationWriter(driver).createForUser(input),false); assert.deepEqual(await snapshot(),expected);

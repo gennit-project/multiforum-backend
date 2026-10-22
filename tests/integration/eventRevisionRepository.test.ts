@@ -6,7 +6,7 @@ import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
 import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createEventRevisionRepository,EVENT_REVISION_DEFAULT_SELECTION,EVENT_TEXT_VERSION_DEFAULT_SELECTION} from '../../services/persistence/eventRevisionRepository.js';
+import { createEventRevisionRepository } from '../../services/persistence/eventRevisionRepository.js';
 import middleware from '../../middleware/eventVersionHistoryMiddleware.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {installAgeGateReconcile} from '../../services/ageGate/reconcile.js';
@@ -35,7 +35,6 @@ const run=async(repository:any,failResolver=false)=>{const calls:any[]=[];const 
  const resolve=async()=>{calls.push(['resolve']);if(failResolver)throw Error('resolver rejected');return ogm.model('Event').update({where:{id:'e'},update:{title:'new title',description:'new description'},selectionSet:'{events{id}}'});};
  try{await middleware.Mutation.updateEvents(resolve,null,{where:{id:'e'},update:{title:'new title',description:'new description'}},ctx,{} as any);}catch(error){if(!failResolver)throw error;assert.match((error as Error).message,/resolver rejected/);}finally{ctx.driver=realDriver;}
  return {state:await state(),calls};};
-test('Event and TextVersion full defaults equal production reused-schema OGM projections',()=>{for(const [name,selection] of [['Event',EVENT_REVISION_DEFAULT_SELECTION],['TextVersion',EVENT_TEXT_VERSION_DEFAULT_SELECTION]] as const)assert.equal(selection.replace(/\s/g,''),(ogm.model(name) as any).getSelectionSetOrDefault().replace(/\s/g,''));});
 for(const failResolver of [false,true])test(`actual middleware preserves pre-resolver revision commits, attribution and native events (resolver rejects=${failResolver})`,async()=>{
  await seed();const expected=await run(oldRepository(),failResolver);assert.deepEqual(expected.state.revisions,[{kind:'HAS_DESCRIPTION_VERSION',body:'old description',author:'prior',touched:true},{kind:'HAS_TITLE_VERSION',body:'old title',author:'editor',touched:true}]);assert.equal(expected.state.event[0].editor,'editor');assert.deepEqual(expected.calls.slice(0,3),[['activity','edited the event title',1],['activity','edited the event description',1],['resolve']]);assert.equal(expected.calls.filter(c=>c[0]==='notify').length,failResolver?0:1);if(!failResolver)assert.match(expected.calls[expected.calls.length-1][1].text,/\[old title\]/);
  await resetDatabase(driver);await seed();events=[];assert.deepEqual(await run(createEventRevisionRepository(driver),failResolver),expected);

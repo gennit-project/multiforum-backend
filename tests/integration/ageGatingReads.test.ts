@@ -21,7 +21,6 @@ const UNDERAGE_ACCOUNT_BIRTHDAY = `${CURRENT_YEAR - 5}-01-01`;
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: any;
 
 before(async () => {
   let builder = new Neo4jContainer("neo4j:5-community").withApoc();
@@ -36,8 +35,7 @@ before(async () => {
   const { buildPermissionedSchema } = await import(
     "../helpers/buildPermissionedSchema.js"
   );
-  ({ schema, driver, ogm } = await buildPermissionedSchema());
-  await ogm.init();
+  ({ schema, driver } = await buildPermissionedSchema());
 }, { timeout: 240000 });
 
 after(async () => {
@@ -135,7 +133,6 @@ beforeEach(async () => {
 
 const contextFor = (username?: string) => ({
   driver,
-  ogm,
   req: {
     headers: username
       ? { authorization: `Bearer ${mockToken({ username, email: `${username}@e2e.test` })}` }
@@ -153,7 +150,6 @@ const executeAsVerifiedEmail = (source: string, email: string) =>
     source,
     contextValue: {
       driver,
-      ogm,
       req: {
         headers: { authorization: `Bearer ${mockToken({ email })}` },
         body: {},

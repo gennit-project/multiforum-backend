@@ -32,7 +32,6 @@ beforeEach(async () => {
 
 const anon = () => ({
   driver: env.driver,
-  ogm: env.ogm,
   req: { headers: {}, body: {} },
 });
 

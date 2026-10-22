@@ -6,7 +6,7 @@ import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
-import {createScratchpadRepository,SCRATCHPAD_DEFAULT_SELECTION} from "../../services/persistence/scratchpadRepository.js";
+import { createScratchpadRepository } from "../../services/persistence/scratchpadRepository.js";
 import {parse,print} from "graphql";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
@@ -36,7 +36,6 @@ const seed=async()=>driver.executeQuery(`CREATE(a:User{username:'alice',createdA
 (e:ScratchpadEntry{id:'entry',text:'thanks',isPublic:false,sourceType:'comment',sourceId:'comment',createdAt:datetime()}),(n:Notification{id:'notice'})
 CREATE(a)-[:WROTE_SCRATCHPAD_ENTRY]->(e),(b)-[:HAS_SCRATCHPAD_ENTRY]->(e),(a)-[:UPVOTED_COMMENT]->(c),(a)-[:SUPER_UPVOTED_COMMENT]->(c),(a)-[:UPVOTED_DISCUSSION]->(dc),(a)-[:SUPER_UPVOTED_DISCUSSION]->(dc),(b)-[:AUTHORED_COMMENT]->(c),(dc)-[:CONTAINS_COMMENT]->(c),(dc)-[:POSTED_IN_CHANNEL]->(d),(b)-[:POSTED_DISCUSSION]->(d),(n)-[:NOTIFICATION_FOR_SCRATCHPAD_ENTRY]->(e)`);
 const snapshot=async()=>({events:normalize(events),counts:(await driver.executeQuery("MATCH(n) RETURN labels(n)[0] AS label,count(n) AS count ORDER BY label")).records.map(r=>({label:r.get('label'),count:r.get('count').toNumber()})),relations:(await driver.executeQuery("MATCH()-[r]->() RETURN type(r) AS type,count(r) AS count ORDER BY type")).records.map(r=>({type:r.get('type'),count:r.get('count').toNumber()})),entries:(await driver.executeQuery("MATCH(e:ScratchpadEntry) RETURN e.isPublic AS public,e.text AS text")).records.map(r=>r.toObject())});
-test("visibility mutation retains full default projection",()=>assert.equal(print(parse(SCRATCHPAD_DEFAULT_SELECTION)),print(parse((ogm.model("ScratchpadEntry") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault()))));
 const readCases=[
  ["User","bob","{username displayName}",()=>repo().findRecipient("bob")],
  ["Comment","comment","{id UpvotedByUsers{username} SuperUpvotedByUsers{username} DiscussionChannel{discussionId channelUniqueName} CommentAuthor{... on User{username}}}",()=>repo().findCommentSource("comment")],

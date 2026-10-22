@@ -36,7 +36,6 @@ const seedInstalledPlugin = (enabled: boolean) =>
 const enableServerPlugin = (args: Record<string, unknown>) =>
   env.resolvers.Mutation.enableServerPlugin(null, args, {
     driver: env.driver,
-    ogm: env.ogm,
   });
 
 beforeEach(async () => {

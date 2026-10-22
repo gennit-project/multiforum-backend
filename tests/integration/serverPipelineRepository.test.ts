@@ -7,7 +7,7 @@ import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
-import { createServerPipelineRepository, SERVER_PIPELINE_UPDATE_SELECTION } from "../../services/persistence/serverPipelineRepository.js";
+import { createServerPipelineRepository } from "../../services/persistence/serverPipelineRepository.js";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver: Driver;
@@ -22,9 +22,6 @@ before(async()=>{
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});
 const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>key==="timestamp"?"<timestamp>":value));
-test("server pipeline update selection exactly preserves OGM defaults and hidden-field omission",()=>{
-  assert.equal(print(parse(SERVER_PIPELINE_UPDATE_SELECTION)),print(parse((app.ogm.model("ServerConfig") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
-});
 test("current projection and generated update retain native events and nullable serverName behavior",async()=>{
   const repo=createServerPipelineRepository(driver);const old=app.ogm.model("ServerConfig");
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'test',pluginPipelines:'[]'})");

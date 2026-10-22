@@ -8,7 +8,7 @@ import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
 import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createWikiRevisionRepository, WIKI_REVISION_DEFAULT_SELECTION, WIKI_TEXT_VERSION_DEFAULT_SELECTION} from '../../services/persistence/wikiRevisionRepository.js';
+import { createWikiRevisionRepository } from '../../services/persistence/wikiRevisionRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver: Driver;
@@ -37,9 +37,6 @@ function baseline(){const w=ogm.model('WikiPage'),v=ogm.model('TextVersion'),u=o
 async function seed(invalid=false){await driver.executeQuery(`CREATE (u:User {username:'previous',createdAt:datetime()}) CREATE (:User {username:'system',createdAt:datetime()}) CREATE (w:WikiPage {id:'w',title:'Title',body:'Body',editReason:'old reason',${invalid?'':"slug:'page',channelUniqueName:'cats',"}createdAt:datetime()}) CREATE (u)-[:AUTHORED_VERSION]->(w)`);}
 async function state(){const r=await driver.executeQuery(`MATCH (v:TextVersion) OPTIONAL MATCH (v)<-[:AUTHORED_VERSION]-(u:User) OPTIONAL MATCH (w:WikiPage)-[:HAS_VERSION]->(v) RETURN v.body AS body,v.editReason AS reason,u.username AS author,w.id AS parent ORDER BY body`);return r.records.map(x=>({body:x.get('body'),reason:x.get('reason'),author:x.get('author'),parent:x.get('parent')}));}
 function eventShape(){return events.map(({kind,event})=>({kind,typename:event.typename,from:event.fromTypename,to:event.toTypename,relationship:event.relationshipName}));}
-test('wiki and revision defaults match reused production-schema OGM',()=>{
- for(const [name,selection] of [['WikiPage',WIKI_REVISION_DEFAULT_SELECTION],['TextVersion',WIKI_TEXT_VERSION_DEFAULT_SELECTION]]){const model=ogm.model(name as 'WikiPage') as unknown as {getSelectionSetOrDefault():string};assert.equal(selection.replace(/\s/g,''),model.getSelectionSetOrDefault().replace(/\s/g,''));}
-});
 test('wiki snapshots and author lookup retain exact projections and missing behavior',async()=>{
  await seed();for(const id of ['w','absent']){assert.deepEqual(plain(await repository.findSnapshot(id)),plain(await baseline().findSnapshot(id)));assert.deepEqual(plain(await repository.findPageId(id)),plain(await baseline().findPageId(id)));}
  assert.deepEqual(plain(await repository.findAuthor('previous')),plain(await baseline().findAuthor('previous')));

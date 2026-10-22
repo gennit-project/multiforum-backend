@@ -42,11 +42,10 @@ beforeEach(async () => {
   await resetDb();
 });
 
-// context shaped like the mutation middleware builds: ogm + driver + the
+// context shaped like the mutation middleware builds: driver + the
 // authenticated editor on context.user.
 const editorCtx = (username: string) =>
   ({
-    ogm: env.ogm,
     driver: env.driver,
     user: { username },
   }) as unknown as GraphQLContext;

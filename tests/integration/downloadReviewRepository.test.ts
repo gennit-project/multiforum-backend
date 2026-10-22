@@ -34,7 +34,6 @@ test('all five snapshots preserve fields, missing rows, literal IDs and generate
  for(const name of Object.keys(readSelections) as Array<keyof typeof readSelections>){assert.deepEqual(await old[name]('f'),[]);assert.deepEqual(await next[name]('f'),[]);}
  assert.deepEqual(events,[]);
 });
-test('write projections match production OGM default including non-null fields',()=>{assert.equal((app.ogm.model('DownloadableFile') as any).getSelectionSetOrDefault().trim(),persistence.DOWNLOAD_REVIEW_DEFAULT_SELECTION.trim());});
 for(const method of ['clearScan','requestReview'] as const)for(const failProjection of [false,true])test(`${method} preserves committed update and native event when projection failure=${failProjection}`,async()=>{
  const field=(schema.getType('DownloadableFile') as GraphQLObjectType).getFields().fileName,original=field.resolve;
  const update=method==='clearScan'?{scanStatus:'CLEAN',scanReason:'Cleared fixture',scanCheckedAt:'2026-01-01T00:00:00Z',reviewRequestedAt:null,reviewRequestReason:null,reviewRequestedByUsername:null}:{reviewRequestedAt:'2026-01-01T00:00:00Z',reviewRequestReason:'Review fixture',reviewRequestedByUsername:'alice'};

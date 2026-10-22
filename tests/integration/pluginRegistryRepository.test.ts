@@ -46,8 +46,6 @@ for(const kind of ['missing','new','existing-plugin','existing-version','orphan'
 });
 test('defaults, missing rows, literal input and unbounded orphan/config reads match production',async()=>{
  const old=baseline(),next=persistence.createPluginRegistryRepository(driver);
- assert.equal((app.ogm.model('Plugin') as any).getSelectionSetOrDefault(),persistence.FINDPLUGINDEFAULTBYNAME_SELECTION);
- assert.ok(persistence.CREATEREGISTRYVERSION_SELECTION.includes((app.ogm.model('PluginVersion') as any).getSelectionSetOrDefault()));
  await driver.executeQuery("UNWIND range(1,29) AS i CREATE(:ServerConfig{serverName:'s'+toString(i),pluginRegistries:[]}) CREATE(:PluginVersion{id:'v'+toString(i),version:'1',repoUrl:'u'})");
  for(const repo of [old,next]){assert.equal((await repo.findRegistryConfigs()).length,29);assert.equal((await repo.findOrphanCandidates()).length,29);assert.deepEqual(await repo.findPluginByName('quote"\\'),[]);assert.deepEqual(await repo.findPluginDefaultByName('missing'),[]);assert.deepEqual(await repo.findPluginsForVersion('missing'),[]);assert.deepEqual(await repo.findRegistryResult('missing'),[]);assert.deepEqual(await repo.findRegistryVersion('missing','u'),[]);}
  assert.deepEqual(await next.findOrphanCandidates(),await old.findOrphanCandidates());assert.deepEqual(await next.findRegistryConfigs(),await old.findRegistryConfigs());

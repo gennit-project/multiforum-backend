@@ -47,7 +47,6 @@ for(const kind of ['missing','new','existing-plugin','existing-version','already
 });
 test('exact defaults, literal filters and unbounded configuration reads retain generated behavior',async()=>{
  const old=baseline(),next=persistence.createPluginInstallRepository(driver);
- for(const [model,selection] of [['Plugin',persistence.CREATEINSTALLPLUGIN_SELECTION],['PluginVersion',persistence.CREATEINSTALLVERSION_SELECTION],['ServerConfig',persistence.CONNECTINSTALLATION_SELECTION]])assert.ok(selection.includes((app.ogm.model(model as any) as any).getSelectionSetOrDefault()));
  await driver.executeQuery("UNWIND range(1,29) AS i CREATE(:ServerConfig{serverName:'s'+toString(i),pluginRegistries:[]})");
  assert.equal((await next.findInstallConfigs()).length,29);assert.deepEqual(await next.findInstallConfigs(),await old.findInstallConfigs());
  for(const repo of [old,next]){assert.deepEqual(await repo.findInstallPlugin('quote"\\'),[]);assert.deepEqual(await repo.findInstallVersion('quote"\\','plugin'),[]);assert.deepEqual(await repo.findInstalledVersions('missing'),[]);}

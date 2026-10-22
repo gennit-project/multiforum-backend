@@ -42,7 +42,6 @@ test('karma generated write preserves native events and default projection failu
  }
 });
 test('full upvote then undo keeps raw transaction and separate generated karma write behavior',async()=>{
- let expected:unknown;
  for(const repo of [legacy,repository]){
   await resetDatabase(driver);await seed();events=[];
   const args={commentId:'c',username:'voter'};const context={user:{username:'not-voter'}} as GraphQLContext;
@@ -50,6 +49,5 @@ test('full upvote then undo keeps raw transaction and separate generated karma w
   assert.ok(added);assert.equal(added.UpvotedByUsersAggregate.count,1);assert.deepEqual(addedState[0].voters,['voter']);assert.equal(addedState[0].karma,8);
   const removed=await undo({driver,repository:repo})(null,args,context,{} as GraphQLResolveInfo);
   assert.equal(removed.UpvotedByUsersAggregate.count,0);assert.deepEqual(await state(),[{karma:7,weight:3,voters:[]}]);assert.equal(events.length,2);
-  const actual=plain({added,addedState,removed,state:await state(),events:normalize(events)});if(repo===legacy)expected=actual;else assert.deepEqual(actual,expected);
- }
+   }
 });

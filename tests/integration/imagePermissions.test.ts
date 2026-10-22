@@ -19,7 +19,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: any;
 
 before(async () => {
   let builder = new Neo4jContainer("neo4j:5-community").withApoc();
@@ -34,8 +33,7 @@ before(async () => {
   const { buildPermissionedSchema } = await import(
     "../helpers/buildPermissionedSchema.js"
   );
-  ({ schema, driver, ogm } = await buildPermissionedSchema());
-  await ogm.init();
+  ({ schema, driver } = await buildPermissionedSchema());
 }, { timeout: 240000 });
 
 after(async () => {
@@ -60,7 +58,6 @@ beforeEach(async () => {
 
 const asUser = (username: string) => ({
   driver,
-  ogm,
   req: {
     headers: {
       authorization: `Bearer ${mockToken({ username, email: `${username}@e2e.test` })}`,

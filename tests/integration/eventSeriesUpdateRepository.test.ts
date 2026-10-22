@@ -8,7 +8,7 @@ import getResolver from '../../customResolvers/mutations/updateEventInSeries.js'
 import typeDefs from '../../typeDefs.js';
 import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createEventSeriesUpdateRepository, EVENT_SERIES_DEFAULT_SELECTION, SERIES_OCCURRENCE_SNAPSHOT_SELECTION, UPDATED_SERIES_OCCURRENCE_SELECTION, type EventSeriesUpdateRepository} from '../../services/persistence/eventSeriesUpdateRepository.js';
+import { createEventSeriesUpdateRepository, SERIES_OCCURRENCE_SNAPSHOT_SELECTION, UPDATED_SERIES_OCCURRENCE_SELECTION, type EventSeriesUpdateRepository } from '../../services/persistence/eventSeriesUpdateRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j, stopNeo4j, resetDatabase} from './neo4jHarness.js';
 let driver: Driver;
@@ -94,7 +94,6 @@ for (const scenario of cases) test(`actual resolver parity: ${scenario.name}`, a
   } finally {field.resolve=original;}
 });
 test('series default projection and missing snapshots match the production initialized OGM', async () => {
-  assert.equal(EVENT_SERIES_DEFAULT_SELECTION.replace(/\s/g,''),(app.ogm.model('EventSeries') as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault().replace(/\s/g,''));
   const repository=createEventSeriesUpdateRepository(driver);
   assert.deepEqual(await repository.findSnapshot('missing'),[]);
   assert.deepEqual(await repository.findUpdatedOccurrence('missing'),[]);

@@ -1,5 +1,4 @@
 import {Neo4jGraphQL} from "@neo4j/graphql";
-import {initializeOgmFromExistingSchema} from "../../services/initializeOgmFromExistingSchema.js";
 import {registerGeneratedSchema} from "../../services/persistence/generatedSchemaOperations.js";
 import assert from "node:assert/strict";
 import test, { after, before, beforeEach } from "node:test";
@@ -40,7 +39,6 @@ before(async () => {
   const custom = getCustomResolvers(driver);
   const neoSchema = new Neo4jGraphQL({typeDefs:typeDefinitions,driver,resolvers:custom.resolvers,features:{filters:{String:{MATCHES:true}}}});
   const schema = await neoSchema.getSchema();
-  initializeOgmFromExistingSchema(custom.ogm,neoSchema,schema);
   registerGeneratedSchema(driver,schema);
   resolvers = custom.resolvers;
 }, { timeout: 240000 });

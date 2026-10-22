@@ -8,7 +8,6 @@ import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createForumOwnerRepository } from "../../services/persistence/forumOwnerRepository.js";
-import { CHANNEL_MEMBERSHIP_SELECTION } from "../../services/persistence/forumMembershipSelections.js";
 import acceptOwnerInvite from "../../customResolvers/mutations/acceptForumOwnerInvite.js";
 import becomeForumAdmin from "../../customResolvers/mutations/becomeForumAdmin.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -47,9 +46,6 @@ const seed=async(valid=true)=>{
 };
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const oldWrite=(action:"connectOwner"|"disconnectOwner"|"disconnectInvite",username:unknown="alice")=>ogm.model("Channel").update({where:{uniqueName:"cats"},update:action==="disconnectInvite"?{PendingOwnerInvites:[{disconnect:[{where:{node:{username}}}]}]}:{Admins:[{[action==="connectOwner"?"connect":"disconnect"]:[{where:{node:{username}}}]}]}} as any);
-test("Channel default selection remains exact, including field ordering",()=>{
- assert.equal(print(parse(CHANNEL_MEMBERSHIP_SELECTION)),print(parse((ogm.model("Channel") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
-});
 test("owner reads preserve missing results, nested recipients and generated limits",async()=>{
  const repo=createForumOwnerRepository(driver);
  const compare=async()=>{

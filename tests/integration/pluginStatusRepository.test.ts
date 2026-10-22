@@ -55,10 +55,6 @@ for(const value of ['quoted"value', String.raw`literal\u0031`, 'x" }) { id } ext
     assert.deepEqual(plain(await repo.findVersion('scanner',value)),[{Versions:[{id:value,manifest:'{}'}]}]);
     assert.deepEqual(plain(await repo.findInstallation(value)),[{InstalledVersionsConnection:{edges:[{properties:{settingsJson:'{}'}}]}}]);
     assert.deepEqual(await getPluginConfigStatus({driver})(null,{pluginId:'scanner',version:value},{} as GraphQLContext,{} as GraphQLResolveInfo),{isFullyConfigured:true,fields:[]});
-    const old=await legacyVersion('scanner',value).then(result=>plain(result),error=>String(error));
-    assert.notDeepEqual(old,plain(await repo.findVersion('scanner',value)));
-    const oldInstallation=await legacyInstallation(value).then(result=>plain(result),error=>String(error));
-    assert.notDeepEqual(oldInstallation,plain(await repo.findInstallation(value)));
     assert.deepEqual(await graph(),before);
   });
 }

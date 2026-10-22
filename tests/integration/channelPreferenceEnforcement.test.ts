@@ -35,7 +35,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: any;
 
 before(async () => {
   // APOC is required: the permission rules' OGM queries (suspension lookups,
@@ -54,8 +53,7 @@ before(async () => {
   const { buildPermissionedSchema } = await import(
     "../helpers/buildPermissionedSchema.js"
   );
-  ({ schema, driver, ogm } = await buildPermissionedSchema());
-  await ogm.init();
+  ({ schema, driver } = await buildPermissionedSchema());
 
   await run("MATCH (n) DETACH DELETE n");
 
@@ -116,7 +114,6 @@ const exec = (source: string, variableValues: Record<string, unknown>) =>
     variableValues,
     contextValue: {
       driver,
-      ogm,
       req: {
         headers: { authorization: adminToken() },
         body: {},
