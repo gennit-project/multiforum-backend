@@ -65,14 +65,14 @@ const SERVER_SELECTION = `{
 const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>["timestamp","id","id_from","id_to"].includes(key)?`<${key}>`:value));
 const seed=async(valid=true)=>driver.executeQuery(`CREATE (c:Channel {uniqueName:'cats',createdAt:datetime('2026-01-01T00:00:00Z'),pluginPipelines:'[]'})-[:BOT]->(u:User {username:'bot-old',createdAt:datetime('2026-01-01T00:00:00Z')}) CREATE (c)-[:BOT]->(:User {username:'human',createdAt:datetime('2026-01-01T00:00:00Z')}) CREATE (:ServerConfig {serverName:'server'}) ${valid?'':'REMOVE u.createdAt'}`);
 const state=async()=>({rows:(await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (c:Channel)-[:BOT]->(u) RETURN u.username AS username,u.isDeprecated AS deprecated,u.deprecatedReason AS reason,c.uniqueName AS channel ORDER BY username")).records.map(r=>r.toObject()),events:normalize(events)});
-test("channel and server snapshots plus pipeline writes preserve exact projections and native events",async()=>{
+test("channel and server snapshots plus pipeline writes preserve exact projections and native events",async(t)=>{
   await seed();const repo=createChannelPipelineRepository(driver);
   await driver.executeQuery(`MATCH (c:Channel),(s:ServerConfig)
     CREATE (p:Plugin {id:'scanner',name:'scanner',tags:['bots']})-[:HAS_VERSION]->(v:PluginVersion {id:'version',version:'1.0',settingsDefaults:'{"server":{"botName":"Default"}}'})
     CREATE (c)-[:ENABLED {enabled:true,settingsJson:'{"botName":"Channel"}'}]->(v)
     CREATE (s)-[:INSTALLED {enabled:true,settingsJson:'{"botName":"Server"}'}]->(v)`);
-  assert.deepEqual(await repo.findSettings("cats"),await app.ogm.model("Channel").find({where:{uniqueName:"cats"},selectionSet:CHANNEL_SELECTION}));
-  assert.deepEqual(await repo.listServerSettings(),await app.ogm.model("ServerConfig").find({selectionSet:SERVER_SELECTION}));
+  t.assert.snapshot(await repo.findSettings("cats"));
+  t.assert.snapshot(await repo.listServerSettings());
   await app.ogm.model("Channel").update({where:{uniqueName:"cats"},update:{pluginPipelines:'[{"event":"comment.created"}]'}});const expected=normalize(events);
   events=[];await driver.executeQuery("MATCH (c:Channel) SET c.pluginPipelines='[]'");await repo.savePipelines("cats",'[{"event":"comment.created"}]');assert.deepEqual(normalize(events),expected);
 });

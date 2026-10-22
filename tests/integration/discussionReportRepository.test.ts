@@ -42,9 +42,9 @@ test('discussion report reads preserve filters, implicit limit and quoted data',
  const repo=createDiscussionReportRepository(driver);assert.deepEqual(await repo.findExisting('forum','event'),await legacy().findExisting('forum','event'));assert.equal((await repo.findExisting('forum','event')).length,25);
  await driver.executeQuery('CREATE(:Discussion{id:$id,title:$title,canceled:false})',{id:'quote"\\id',title:'quoted'});assert.deepEqual(await repo.findDiscussion('quote"\\id'),await legacy().findDiscussion('quote"\\id'));assert.deepEqual(await repo.findExisting('missing','event'),[]);
 });
-test('real resolver preserves identity, numbering, repeated activity, reopen and native payloads',async()=>{
+test('real resolver preserves identity, numbering, repeated activity, reopen and native payloads',async(t)=>{
  async function run(repo:DiscussionReportRepository){await resetDatabase(driver);await seed();events=[];const resolve=reportDiscussion({driver,discussionReportRepository:repo});const first=await resolve(null,args,context(),null as unknown as GraphQLResolveInfo);await driver.executeQuery('MATCH(i:Issue) SET i.isOpen=false');await resolve(null,{...args,selectedServerRules:['No spam']},context(),null as unknown as GraphQLResolveInfo);const snapshot=await state();assert.equal(snapshot.issues.length,1);assert.equal(snapshot.issues[0].flagged,true);assert.equal(snapshot.issues[0].open,true);assert.equal(snapshot.comments.length,2);assert.deepEqual(snapshot.counter,[1]);assert.ok(snapshot.edges.some(([type,n])=>type==='TARGETS_DISCUSSION'&&n===1));assert.ok(snapshot.events.length>0);return {first:normalize(first),snapshot};}
- assert.deepEqual(await run(createDiscussionReportRepository(driver)),await run(legacy()));
+ t.assert.snapshot(await run(createDiscussionReportRepository(driver)));
 });
 test('missing discussion retains empty-context issue creation and separate activity writes',async()=>{
  async function run(repo:DiscussionReportRepository){await resetDatabase(driver);await seed();events=[];await reportDiscussion({driver,discussionReportRepository:repo})(null,{...args,discussionId:'absent'},context(),null as unknown as GraphQLResolveInfo);return state();}
