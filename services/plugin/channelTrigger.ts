@@ -74,12 +74,16 @@ export const triggerChannelPluginPipeline = async (
     leaseRepository,
     attemptRepository,
     channelRepository,
+    getSuspension = getActiveSuspension,
+    reportAsBot = createBotReport,
   }: {
     loadPlugin?: typeof loadPluginImplementation
     execution?: PipelineExecutionMetadata
     leaseRepository?: PipelineLeaseRepository
     attemptRepository?: PipelineAttemptRepository
     channelRepository?: ChannelExecutionRepository
+    getSuspension?: typeof getActiveSuspension
+    reportAsBot?: typeof createBotReport
   } = {}
 ) => {
   if (!CHANNEL_EVENTS.has(event)) {
@@ -135,13 +139,14 @@ export const triggerChannelPluginPipeline = async (
     throw new Error(`Discussion "${discussionId}" not found`)
   }
 
-  // The runtime schema exposes a singular `DownloadableFile` on Discussion that
-  // the generated type (which only has the `DownloadableFiles` array) doesn't
-  // model yet, so extend the generated type with that queried field.
+  // Discussion creation permits one attached download. Read the first item from
+  // the schema's plural relationship while retaining the legacy singular fixture
+  // shape used by a few isolated unit tests.
   const discussion = discussions[0] as Discussion & {
     DownloadableFile?: DownloadableFile | null
   }
-  const downloadableFile = discussion.DownloadableFile
+  const downloadableFile =
+    discussion.DownloadableFiles?.[0] || discussion.DownloadableFile
 
   // Get server config for enabled plugins (channels can only use server-enabled plugins)
   const serverConfigs = await repository.findConfiguration()
@@ -525,7 +530,7 @@ export const triggerChannelPluginPipeline = async (
             input.botName,
             input.profileId
           )
-          const suspensionInfo = await getActiveSuspension({
+          const suspensionInfo = await getSuspension({
             repository: createChannelPermissionRepository(driver),
             channelUniqueName,
             username: botUsername,
@@ -535,7 +540,7 @@ export const triggerChannelPluginPipeline = async (
             return null
           }
 
-          return createBotReport({
+          return reportAsBot({
             driver,
             channelUniqueName,
             reportInput: input,

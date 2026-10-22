@@ -7,6 +7,7 @@ import {pipelineLeaseRepositoryStub} from "../../tests/fixtures/pipelineLeaseRep
 // calls captured to assert status transitions. No database or network.
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { Driver } from "neo4j-driver";
 import type { ModelMap } from "../../ogm_types.js";
 import { PluginPipelineRunTrigger } from "../../ogm_types.js";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
@@ -139,10 +140,20 @@ const loaderFor = (cls: PluginConstructor): LoadPlugin => async () => cls;
 const statusesOf = (updates: RunUpdateArgs[]) =>
   updates.map(update => update.update?.status);
 
-const execRun = (models: Models, loadPlugin: LoadPlugin) =>
+const execRun = (
+  models: Models,
+  loadPlugin: LoadPlugin,
+  options: Omit<TriggerOptions, "loadPlugin"> = {}
+) =>
   triggerChannelPluginPipeline(
-    { discussionId: "d-1", channelUniqueName: "cats", event: EVENT, models },
-    { loadPlugin }
+    {
+      driver: {} as Driver,
+      discussionId: "d-1",
+      channelUniqueName: "cats",
+      event: EVENT,
+      models,
+    },
+    { ...options, loadPlugin }
   );
 
 test("runs a pipeline plugin to SUCCEEDED", async () => {
@@ -216,6 +227,109 @@ test("deduplicates a plugin selected by both server and channel pipelines", asyn
   await execRun(models, loaderFor(pluginReturning({ success: true })));
 
   assert.equal(creates.length, 1);
+});
+
+test("reports a discussion with the channel-scoped bot identity", async () => {
+  const { models } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [installedEdge("mybot")]
+  );
+  const suspensionChecks: Array<Record<string, unknown>> = [];
+  const reports: Array<Record<string, any>> = [];
+  const Plugin: PluginConstructor = class {
+    private readonly context: Record<string, any>;
+    constructor(...args: unknown[]) {
+      this.context = args[0] as Record<string, any>;
+    }
+    async handleEvent() {
+      await this.context.reportContentAsBot({
+        contentType: "discussion",
+        contentId: "d-1",
+        reportText: "Rule violation",
+        selectedForumRules: ["Be kind"],
+        selectedServerRules: [],
+        botName: "moderator",
+        profileId: "primary",
+      });
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin), {
+    getSuspension: async input => {
+      suspensionChecks.push(input as unknown as Record<string, unknown>);
+      return {
+        activeSuspension: null,
+        isSuspended: false,
+        relatedIssueId: null,
+        relatedIssueNumber: null,
+        expiredUserSuspensions: [],
+        expiredModSuspensions: [],
+        suspendedEntity: null,
+      };
+    },
+    reportAsBot: async input => {
+      reports.push(input as unknown as Record<string, any>);
+      return { id: "issue-1" } as never;
+    },
+  });
+
+  assert.equal(suspensionChecks[0]?.channelUniqueName, "cats");
+  assert.equal(suspensionChecks[0]?.username, "bot-cats-moderator-primary");
+  assert.deepEqual(reports[0]?.channelUniqueName, "cats");
+  assert.deepEqual(reports[0]?.reportInput, {
+    contentType: "discussion",
+    contentId: "d-1",
+    reportText: "Rule violation",
+    selectedForumRules: ["Be kind"],
+    selectedServerRules: [],
+    botName: "moderator",
+    profileId: "primary",
+  });
+});
+
+test("blocks reports from a suspended channel bot", async () => {
+  const { models } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [installedEdge("mybot")]
+  );
+  let reportCalls = 0;
+  const Plugin: PluginConstructor = class {
+    private readonly context: Record<string, any>;
+    constructor(...args: unknown[]) {
+      this.context = args[0] as Record<string, any>;
+    }
+    async handleEvent() {
+      const report = await this.context.reportContentAsBot({
+        contentType: "discussion",
+        contentId: "d-1",
+        reportText: "Rule violation",
+        selectedForumRules: ["Be kind"],
+        selectedServerRules: [],
+        botName: "moderator",
+      });
+      assert.equal(report, null);
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin), {
+    getSuspension: async () => ({
+      activeSuspension: {} as never,
+      isSuspended: true,
+      relatedIssueId: "issue-1",
+      relatedIssueNumber: 1,
+      expiredUserSuspensions: [],
+      expiredModSuspensions: [],
+      suspendedEntity: "user",
+    }),
+    reportAsBot: async () => {
+      reportCalls += 1;
+      return {} as never;
+    },
+  });
+
+  assert.equal(reportCalls, 0);
 });
 
 test("marks the run FAILED when the plugin reports failure", async () => {

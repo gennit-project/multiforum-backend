@@ -59,7 +59,7 @@ export const DISCUSSION_SELECTION = `{
         username
         isBot
       }
-      DownloadableFile {
+      DownloadableFiles(options: { limit: 1 }) {
         id
         fileName
         url
