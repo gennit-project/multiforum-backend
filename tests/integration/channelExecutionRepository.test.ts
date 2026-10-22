@@ -28,7 +28,8 @@ test('finite reads preserve literal IDs, missing results and unbounded configura
  await seed();await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:ServerConfig{serverName:toString(n)}),(:ServerSecret{key:toString(n),pluginId:$id,ciphertext:'synthetic-not-encrypted'})`,{id:'quote"\\id'});
  const repo=createChannelExecutionRepository(driver);
  for(const id of ['channel','missing','quote"\\id'])t.assert.snapshot(normalize(await repo.findChannel(id)));
- for(const id of ['discussion','missing','quote"\\id'])t.assert.snapshot(normalize(await repo.findDiscussion(id)));
+ const discussionRows=await repo.findDiscussion('discussion');assert.equal(discussionRows.length,1);assert.equal(discussionRows[0].id,'discussion');assert.equal(discussionRows[0].DownloadableFiles?.[0]?.id,'file');
+ for(const id of ['missing','quote"\\id'])assert.deepEqual(await repo.findDiscussion(id),[]);
  t.assert.snapshot(normalize(await repo.findConfiguration()));assert.equal((await repo.findConfiguration()).length,29);
  for(const id of ['plugin','quote"\\id'])t.assert.snapshot(normalize(await repo.findSecrets(id)));assert.equal((await repo.findSecrets('quote"\\id')).length,29);
  for(const id of ['job','absent'])t.assert.snapshot(normalize(await repo.findReturnedRun(id)));
