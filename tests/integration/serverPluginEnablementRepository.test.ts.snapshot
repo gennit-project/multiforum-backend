@@ -1,29 +1,29 @@
 exports[`default projection failure retains committed edge change and native events 1`] = `
 {
-  "graph": [
-    {
-      "server": "server",
-      "version": "v",
-      "properties": {
-        "settingsJson": "{\\"saved\\":true}",
-        "enabled": true
-      }
-    }
-  ],
   "events": [
     {
-      "id": "id0",
-      "typename": "ServerConfig",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "id0",
       "properties": {
-        "old": {
-          "serverName": "server"
-        },
         "new": {
           "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
+    }
+  ],
+  "graph": [
+    {
+      "properties": {
+        "enabled": true,
+        "settingsJson": "{\\"saved\\":true}"
+      },
+      "server": "server",
+      "version": "v"
     }
   ]
 }
@@ -32,33 +32,33 @@ exports[`default projection failure retains committed edge change and native eve
 exports[`ordinary reads, enable/disable settings and repeated native events match legacy 1`] = `
 [
   {
-    "id": "p",
-    "name": "plugin",
-    "displayName": null,
-    "description": null,
-    "authorName": null,
-    "authorUrl": null,
-    "homepage": null,
-    "license": null,
-    "tags": null,
-    "metadata": null,
     "Versions": [
       {
-        "id": "v",
-        "version": "1.0",
-        "manifest": "{\\"settings\\":[]}",
-        "settingsDefaults": null,
-        "uiSchema": null,
+        "apiVersion": null,
         "documentationPath": null,
+        "id": "v",
+        "manifest": "{\\"settings\\":[]}",
+        "minServerVersion": null,
         "readmeMarkdown": null,
         "registryUrl": null,
         "releaseNotesUrl": null,
-        "sourceRepoUrl": null,
+        "settingsDefaults": null,
         "sourceCommit": null,
-        "minServerVersion": null,
-        "apiVersion": null
+        "sourceRepoUrl": null,
+        "uiSchema": null,
+        "version": "1.0"
       }
-    ]
+    ],
+    "authorName": null,
+    "authorUrl": null,
+    "description": null,
+    "displayName": null,
+    "homepage": null,
+    "id": "p",
+    "license": null,
+    "metadata": null,
+    "name": "plugin",
+    "tags": null
   }
 ]
 `;
@@ -66,7 +66,6 @@ exports[`ordinary reads, enable/disable settings and repeated native events matc
 exports[`ordinary reads, enable/disable settings and repeated native events match legacy 2`] = `
 [
   {
-    "serverName": "server",
     "InstalledVersions": [
       {
         "id": "v",
@@ -81,7 +80,8 @@ exports[`ordinary reads, enable/disable settings and repeated native events matc
           }
         }
       ]
-    }
+    },
+    "serverName": "server"
   }
 ]
 `;
@@ -89,161 +89,161 @@ exports[`ordinary reads, enable/disable settings and repeated native events matc
 exports[`ordinary reads, enable/disable settings and repeated native events match legacy 3`] = `
 [
   {
-    "key": "token",
     "isValid": true,
-    "validationError": null,
-    "lastValidatedAt": null
+    "key": "token",
+    "lastValidatedAt": null,
+    "validationError": null
   }
 ]
 `;
 
 exports[`ordinary reads, enable/disable settings and repeated native events match legacy 4`] = `
 {
-  "results": [
+  "events": [
     {
-      "plugin": {
-        "id": "p",
-        "name": "plugin",
-        "displayName": null,
-        "description": null,
-        "authorName": null,
-        "authorUrl": null,
-        "homepage": null,
-        "license": null,
-        "tags": [],
-        "metadata": null
+      "event": "update",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
+        }
       },
-      "version": "1.0",
-      "scope": "SERVER",
-      "enabled": true,
-      "settingsJson": {
-        "saved": true
-      },
-      "manifest": "{\\"settings\\":[]}",
-      "settingsDefaults": null,
-      "uiSchema": null,
-      "documentationPath": null,
-      "readmeMarkdown": null,
-      "registryUrl": null,
-      "releaseNotesUrl": null,
-      "sourceRepoUrl": null,
-      "sourceCommit": null,
-      "minServerVersion": null,
-      "apiVersion": null
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
     },
     {
-      "plugin": {
-        "id": "p",
-        "name": "plugin",
-        "displayName": null,
-        "description": null,
-        "authorName": null,
-        "authorUrl": null,
-        "homepage": null,
-        "license": null,
-        "tags": [],
-        "metadata": null
+      "event": "update",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
+        }
       },
-      "version": "1.0",
-      "scope": "SERVER",
-      "enabled": false,
-      "settingsJson": {},
-      "manifest": "{\\"settings\\":[]}",
-      "settingsDefaults": null,
-      "uiSchema": null,
-      "documentationPath": null,
-      "readmeMarkdown": null,
-      "registryUrl": null,
-      "releaseNotesUrl": null,
-      "sourceRepoUrl": null,
-      "sourceCommit": null,
-      "minServerVersion": null,
-      "apiVersion": null
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
     },
     {
-      "plugin": {
-        "id": "p",
-        "name": "plugin",
-        "displayName": null,
-        "description": null,
-        "authorName": null,
-        "authorUrl": null,
-        "homepage": null,
-        "license": null,
-        "tags": [],
-        "metadata": null
+      "event": "update",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "serverName": "server"
+        },
+        "old": {
+          "serverName": "server"
+        }
       },
-      "version": "1.0",
-      "scope": "SERVER",
-      "enabled": true,
-      "settingsJson": {
-        "x": 1
-      },
-      "manifest": "{\\"settings\\":[]}",
-      "settingsDefaults": null,
-      "uiSchema": null,
-      "documentationPath": null,
-      "readmeMarkdown": null,
-      "registryUrl": null,
-      "releaseNotesUrl": null,
-      "sourceRepoUrl": null,
-      "sourceCommit": null,
-      "minServerVersion": null,
-      "apiVersion": null
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
     }
   ],
   "graph": [
     {
-      "server": "server",
-      "version": "v",
       "properties": {
         "enabled": true,
         "settingsJson": "{\\"x\\":1}"
-      }
+      },
+      "server": "server",
+      "version": "v"
     }
   ],
-  "events": [
+  "results": [
     {
-      "id": "id0",
-      "typename": "ServerConfig",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "serverName": "server"
-        },
-        "new": {
-          "serverName": "server"
-        }
-      }
+      "apiVersion": null,
+      "documentationPath": null,
+      "enabled": false,
+      "manifest": "{\\"settings\\":[]}",
+      "minServerVersion": null,
+      "plugin": {
+        "authorName": null,
+        "authorUrl": null,
+        "description": null,
+        "displayName": null,
+        "homepage": null,
+        "id": "p",
+        "license": null,
+        "metadata": null,
+        "name": "plugin",
+        "tags": []
+      },
+      "readmeMarkdown": null,
+      "registryUrl": null,
+      "releaseNotesUrl": null,
+      "scope": "SERVER",
+      "settingsDefaults": null,
+      "settingsJson": {},
+      "sourceCommit": null,
+      "sourceRepoUrl": null,
+      "uiSchema": null,
+      "version": "1.0"
     },
     {
-      "id": "id0",
-      "typename": "ServerConfig",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "serverName": "server"
-        },
-        "new": {
-          "serverName": "server"
-        }
-      }
+      "apiVersion": null,
+      "documentationPath": null,
+      "enabled": true,
+      "manifest": "{\\"settings\\":[]}",
+      "minServerVersion": null,
+      "plugin": {
+        "authorName": null,
+        "authorUrl": null,
+        "description": null,
+        "displayName": null,
+        "homepage": null,
+        "id": "p",
+        "license": null,
+        "metadata": null,
+        "name": "plugin",
+        "tags": []
+      },
+      "readmeMarkdown": null,
+      "registryUrl": null,
+      "releaseNotesUrl": null,
+      "scope": "SERVER",
+      "settingsDefaults": null,
+      "settingsJson": {
+        "saved": true
+      },
+      "sourceCommit": null,
+      "sourceRepoUrl": null,
+      "uiSchema": null,
+      "version": "1.0"
     },
     {
-      "id": "id0",
-      "typename": "ServerConfig",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "serverName": "server"
-        },
-        "new": {
-          "serverName": "server"
-        }
-      }
+      "apiVersion": null,
+      "documentationPath": null,
+      "enabled": true,
+      "manifest": "{\\"settings\\":[]}",
+      "minServerVersion": null,
+      "plugin": {
+        "authorName": null,
+        "authorUrl": null,
+        "description": null,
+        "displayName": null,
+        "homepage": null,
+        "id": "p",
+        "license": null,
+        "metadata": null,
+        "name": "plugin",
+        "tags": []
+      },
+      "readmeMarkdown": null,
+      "registryUrl": null,
+      "releaseNotesUrl": null,
+      "scope": "SERVER",
+      "settingsDefaults": null,
+      "settingsJson": {
+        "x": 1
+      },
+      "sourceCommit": null,
+      "sourceRepoUrl": null,
+      "uiSchema": null,
+      "version": "1.0"
     }
   ]
 }
@@ -252,203 +252,202 @@ exports[`ordinary reads, enable/disable settings and repeated native events matc
 exports[`server scan stays unbounded and missing targets retain errors 1`] = `
 [
   {
-    "serverName": "other1",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other1"
   },
   {
-    "serverName": "other10",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other10"
   },
   {
-    "serverName": "other11",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other11"
   },
   {
-    "serverName": "other12",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other12"
   },
   {
-    "serverName": "other13",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other13"
   },
   {
-    "serverName": "other14",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other14"
   },
   {
-    "serverName": "other15",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other15"
   },
   {
-    "serverName": "other16",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other16"
   },
   {
-    "serverName": "other17",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other17"
   },
   {
-    "serverName": "other18",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other18"
   },
   {
-    "serverName": "other19",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other19"
   },
   {
-    "serverName": "other2",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other2"
   },
   {
-    "serverName": "other20",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other20"
   },
   {
-    "serverName": "other21",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other21"
   },
   {
-    "serverName": "other22",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other22"
   },
   {
-    "serverName": "other23",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other23"
   },
   {
-    "serverName": "other24",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other24"
   },
   {
-    "serverName": "other25",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other25"
   },
   {
-    "serverName": "other26",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other26"
   },
   {
-    "serverName": "other27",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other27"
   },
   {
-    "serverName": "other28",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other28"
   },
   {
-    "serverName": "other3",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other3"
   },
   {
-    "serverName": "other4",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other4"
   },
   {
-    "serverName": "other5",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other5"
   },
   {
-    "serverName": "other6",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other6"
   },
   {
-    "serverName": "other7",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other7"
   },
   {
-    "serverName": "other8",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other8"
   },
   {
-    "serverName": "other9",
     "InstalledVersions": [],
     "InstalledVersionsConnection": {
       "edges": []
-    }
+    },
+    "serverName": "other9"
   },
   {
-    "serverName": "server",
     "InstalledVersions": [
       {
         "id": "v",
@@ -463,7 +462,8 @@ exports[`server scan stays unbounded and missing targets retain errors 1`] = `
           }
         }
       ]
-    }
+    },
+    "serverName": "server"
   }
 ]
 `;

@@ -25,14 +25,12 @@ function baseline():persistence.DownloadReviewRepository {const file=app.ogm.mod
 const state=async()=> (await driver.executeQuery("MATCH(f:DownloadableFile{id:'f'}) RETURN toString(id(f)) AS identity,properties(f) AS properties")).records[0].toObject();
 function normalize(v:unknown){return JSON.parse(JSON.stringify(v,function(key,value){if(this.event&&key==='id')return 'file-node';return ['timestamp','ageGateTouchedAt'].includes(key)?'<time>':value;}));}
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 async function assertUpdateEvent(){const row=await state();assert.equal(events.length,1);const e=events[0];assert.equal(e.event,'update');assert.equal(e.typename,'DownloadableFile');assert.equal(e.id,row.identity);assert.equal(e.properties.old.scanStatus,'SUSPICIOUS');assert.equal(e.properties.old.id,'f');assert.equal(e.properties.new.id,'f');assert.deepEqual(e.properties.new.ageGateTouchedAt,row.properties.ageGateTouchedAt);assert.equal(e.properties.new.ageGateTouchedAt.toStandardDate().getTime(),e.timestamp);return normalize({events,properties:row.properties});}
 test('all five snapshots preserve fields, missing rows, literal IDs and generated read authorization',async(t)=>{
  await seed();const next=persistence.createDownloadReviewRepository(driver);
  assert.equal((await next.findPreparation('f'))[0].Discussion?.Author?.username,'alice');
  assert.equal((await next.findReviewAuthority('f'))[0].Discussion?.Author?.username,'alice');
- for(const name of Object.keys(readSelections) as Array<keyof typeof readSelections>){t.assert.snapshot(sortDeep(plain(await next[name]('f'))));t.assert.snapshot(sortDeep(plain(await next[name]('quote"\\id'))));assert.deepEqual(await next[name]('missing'),[]);}
+ for(const name of Object.keys(readSelections) as Array<keyof typeof readSelections>){t.assert.snapshot(plain(await next[name]('f')));t.assert.snapshot(plain(await next[name]('quote"\\id')));assert.deepEqual(await next[name]('missing'),[]);}
  await driver.executeQuery("MATCH(f:DownloadableFile{id:'f'}) SET f.ageGateRestricted=true");
  for(const name of Object.keys(readSelections) as Array<keyof typeof readSelections>){assert.deepEqual(await next[name]('f'),[]);}
  assert.deepEqual(events,[]);

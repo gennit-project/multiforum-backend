@@ -1,223 +1,267 @@
 exports[`actual bot report parity comment/existing/append 1`] = `
 {
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "HAS_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "target": "Issue:forum",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:forum",
+      "target": "ModerationAction:Reported the comment",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "ModerationAction:Reported the comment",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "MODERATED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "AUTHORED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "ModerationAction:Reported the comment",
+      "type": "PERFORMED_MODERATION_ACTION"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Comment:Reported text",
+      "type": "AUTHORED_COMMENT"
+    }
+  ],
   "error": "Error updating issue: fixture projection failure",
   "events": [
     {
-      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
-      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_to": "Issue:forum",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Comment",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "from": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+        "new": {
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "to": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "Comment:Reported text",
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "isOpen": true,
-          "relatedUsername": "alice",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
     },
     {
+      "event": "create",
+      "id": "ModerationAction:Reported the comment",
+      "properties": {
+        "new": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModerationAction"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_COMMENT:Channel:forum:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "id_from": "Channel:forum",
       "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "HAS_COMMENT",
-      "fromTypename": "Channel",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "AUTHORED_COMMENT",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "PERFORMED_MODERATION_ACTION",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "typename": "Comment",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
           "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         }
-      }
+      },
+      "relationshipName": "HAS_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
     },
     {
-      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationAction:Reported the comment",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "MODERATED_COMMENT",
-      "fromTypename": "ModerationAction",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
       "event": "create_relationship",
+      "fromTypename": "Comment",
+      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
+      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_to": "Issue:forum",
       "properties": {
         "from": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "ModerationAction:Reported the comment",
-      "typename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": true,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "updatedAt": "<time>"
         }
-      }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Issue",
       "id": "ACTIVITY_ON_ISSUE:Issue:forum:ModerationAction:Reported the comment",
       "id_from": "Issue:forum",
       "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "Comment:Reported text",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
-          "issueNumber": 7,
           "isOpen": true,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
           "relatedUsername": "alice",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "updatedAt": "<time>"
         },
+        "relationship": {},
         "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
+          "actionDescription": "Reported the comment",
           "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
     },
     {
-      "id": "Issue:forum",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create_relationship",
+      "fromTypename": "ModerationAction",
+      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationAction:Reported the comment",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "old": {
-          "relatedCommentId": "Comment:Reported text",
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "channelUniqueName": "forum",
-          "isOpen": false,
-          "relatedUsername": "alice"
+        "from": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
         },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "MODERATED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "AUTHORED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "ModerationAction:Reported the comment",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
+    },
+    {
+      "event": "update",
+      "id": "Issue:forum",
+      "properties": {
         "new": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "Comment:Reported text",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
-          "issueNumber": 7,
           "isOpen": true,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
           "relatedUsername": "alice",
+          "updatedAt": "<time>"
+        },
+        "old": {
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": false,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     }
   ],
   "nodes": [
@@ -228,48 +272,48 @@ exports[`actual bot report parity comment/existing/append 1`] = `
       }
     },
     {
+      "alias": "Comment:Reported text",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "Comment:Reported text",
+        "isRootComment": true,
+        "text": "Reported text"
+      }
+    },
+    {
       "alias": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
         "ageGateTouchedAt": "<time>",
         "createdAt": "<time>",
-        "isRootComment": true,
-        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-        "isSticky": false
-      }
-    },
-    {
-      "alias": "Comment:Reported text",
-      "properties": {
-        "createdAt": "<time>",
         "isRootComment": true,
-        "id": "Comment:Reported text",
-        "text": "Reported text"
+        "isSticky": false,
+        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
     {
       "alias": "Issue:forum",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "isOpen": true,
-        "relatedCommentId": "Comment:Reported text",
-        "issueNumber": {
-          "low": 7,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
         "flaggedServerRuleViolation": true,
         "id": "Issue:forum",
-        "channelUniqueName": "forum",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 7
+        },
+        "relatedCommentId": "Comment:Reported text",
+        "relatedUsername": "alice",
         "updatedAt": "<time>"
       }
     },
     {
       "alias": "ModerationAction:Reported the comment",
       "properties": {
+        "actionDescription": "Reported the comment",
         "actionType": "report",
         "createdAt": "<time>",
-        "actionDescription": "Reported the comment",
         "id": "ModerationAction:Reported the comment"
       }
     },
@@ -290,50 +334,6 @@ exports[`actual bot report parity comment/existing/append 1`] = `
       "properties": {
         "username": "alice"
       }
-    }
-  ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "HAS_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "target": "Issue:forum",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:forum",
-      "target": "ModerationAction:Reported the comment",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "ModerationAction:Reported the comment",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "MODERATED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "ModerationAction:Reported the comment",
-      "type": "PERFORMED_MODERATION_ACTION",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Comment:Reported text",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
     }
   ]
 }
@@ -341,228 +341,268 @@ exports[`actual bot report parity comment/existing/append 1`] = `
 
 exports[`actual bot report parity comment/existing/success 1`] = `
 {
-  "response": {
-    "issueId": "Issue:forum",
-    "issueNumber": 7
-  },
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "HAS_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "target": "Issue:forum",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:forum",
+      "target": "ModerationAction:Reported the comment",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "ModerationAction:Reported the comment",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "MODERATED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "AUTHORED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "ModerationAction:Reported the comment",
+      "type": "PERFORMED_MODERATION_ACTION"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Comment:Reported text",
+      "type": "AUTHORED_COMMENT"
+    }
+  ],
   "error": null,
   "events": [
     {
-      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
-      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_to": "Issue:forum",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Comment",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "from": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+        "new": {
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "to": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "Comment:Reported text",
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "isOpen": true,
-          "relatedUsername": "alice",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
     },
     {
+      "event": "create",
+      "id": "ModerationAction:Reported the comment",
+      "properties": {
+        "new": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModerationAction"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_COMMENT:Channel:forum:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "id_from": "Channel:forum",
       "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "HAS_COMMENT",
-      "fromTypename": "Channel",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "AUTHORED_COMMENT",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "PERFORMED_MODERATION_ACTION",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "typename": "Comment",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
           "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         }
-      }
+      },
+      "relationshipName": "HAS_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
     },
     {
-      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationAction:Reported the comment",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "MODERATED_COMMENT",
-      "fromTypename": "ModerationAction",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
       "event": "create_relationship",
+      "fromTypename": "Comment",
+      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
+      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_to": "Issue:forum",
       "properties": {
         "from": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "ModerationAction:Reported the comment",
-      "typename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": true,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "updatedAt": "<time>"
         }
-      }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Issue",
       "id": "ACTIVITY_ON_ISSUE:Issue:forum:ModerationAction:Reported the comment",
       "id_from": "Issue:forum",
       "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "Comment:Reported text",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
-          "issueNumber": 7,
           "isOpen": true,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
           "relatedUsername": "alice",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "updatedAt": "<time>"
         },
+        "relationship": {},
         "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
+          "actionDescription": "Reported the comment",
           "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
     },
     {
-      "id": "Issue:forum",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create_relationship",
+      "fromTypename": "ModerationAction",
+      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationAction:Reported the comment",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "old": {
-          "relatedCommentId": "Comment:Reported text",
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "channelUniqueName": "forum",
-          "isOpen": false,
-          "relatedUsername": "alice"
+        "from": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
         },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "MODERATED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "AUTHORED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "ModerationAction:Reported the comment",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
+    },
+    {
+      "event": "update",
+      "id": "Issue:forum",
+      "properties": {
         "new": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "Comment:Reported text",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
-          "issueNumber": 7,
           "isOpen": true,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
           "relatedUsername": "alice",
+          "updatedAt": "<time>"
+        },
+        "old": {
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": false,
+          "issueNumber": 7,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     }
   ],
   "nodes": [
@@ -573,48 +613,48 @@ exports[`actual bot report parity comment/existing/success 1`] = `
       }
     },
     {
+      "alias": "Comment:Reported text",
+      "properties": {
+        "createdAt": "<time>",
+        "id": "Comment:Reported text",
+        "isRootComment": true,
+        "text": "Reported text"
+      }
+    },
+    {
       "alias": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
         "ageGateTouchedAt": "<time>",
         "createdAt": "<time>",
-        "isRootComment": true,
-        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-        "isSticky": false
-      }
-    },
-    {
-      "alias": "Comment:Reported text",
-      "properties": {
-        "createdAt": "<time>",
         "isRootComment": true,
-        "id": "Comment:Reported text",
-        "text": "Reported text"
+        "isSticky": false,
+        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
     {
       "alias": "Issue:forum",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "isOpen": true,
-        "relatedCommentId": "Comment:Reported text",
-        "issueNumber": {
-          "low": 7,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
         "flaggedServerRuleViolation": true,
         "id": "Issue:forum",
-        "channelUniqueName": "forum",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 7
+        },
+        "relatedCommentId": "Comment:Reported text",
+        "relatedUsername": "alice",
         "updatedAt": "<time>"
       }
     },
     {
       "alias": "ModerationAction:Reported the comment",
       "properties": {
+        "actionDescription": "Reported the comment",
         "actionType": "report",
         "createdAt": "<time>",
-        "actionDescription": "Reported the comment",
         "id": "ModerationAction:Reported the comment"
       }
     },
@@ -637,138 +677,118 @@ exports[`actual bot report parity comment/existing/success 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "HAS_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "target": "Issue:forum",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:forum",
-      "target": "ModerationAction:Reported the comment",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "ModerationAction:Reported the comment",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "MODERATED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "ModerationAction:Reported the comment",
-      "type": "PERFORMED_MODERATION_ACTION",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Comment:Reported text",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    }
-  ]
+  "response": {
+    "issueId": "Issue:forum",
+    "issueNumber": 7
+  }
 }
 `;
 
 exports[`actual bot report parity comment/new/create 1`] = `
 {
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Issue:[Reported comment] \\"Reported text\\"",
+      "type": "HAS_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported comment] \\"Reported text\\"",
+      "target": "ModerationProfile:bot-forum-helper",
+      "type": "AUTHORED_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Comment:Reported text",
+      "type": "AUTHORED_COMMENT"
+    }
+  ],
   "error": "Error creating issue: fixture projection failure",
   "events": [
     {
-      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"Reported text\\":ModerationProfile:bot-forum-helper",
-      "id_from": "Issue:[Reported comment] \\"Reported text\\"",
-      "id_to": "ModerationProfile:bot-forum-helper",
-      "relationshipName": "AUTHORED_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationProfile",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Issue:[Reported comment] \\"Reported text\\"",
       "properties": {
-        "from": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
-          "relatedUsername": "alice",
+        "new": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
-          "displayName": "bot-forum-helper"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "title": "[Reported comment] \\"Reported text\\""
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_ISSUE:Channel:forum:Issue:[Reported comment] \\"Reported text\\"",
       "id_from": "Channel:forum",
       "id_to": "Issue:[Reported comment] \\"Reported text\\"",
-      "relationshipName": "HAS_ISSUE",
-      "fromTypename": "Channel",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
-          "relatedUsername": "alice",
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "title": "[Reported comment] \\"Reported text\\""
+        }
+      },
+      "relationshipName": "HAS_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
-      "id": "Issue:[Reported comment] \\"Reported text\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "create",
+      "event": "create_relationship",
+      "fromTypename": "Issue",
+      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"Reported text\\":ModerationProfile:bot-forum-helper",
+      "id_from": "Issue:[Reported comment] \\"Reported text\\"",
+      "id_to": "ModerationProfile:bot-forum-helper",
       "properties": {
-        "new": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
-          "relatedUsername": "alice",
+        "from": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "title": "[Reported comment] \\"Reported text\\""
+        },
+        "relationship": {},
+        "to": {
+          "displayName": "bot-forum-helper"
         }
-      }
+      },
+      "relationshipName": "AUTHORED_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationProfile"
     }
   ],
   "nodes": [
@@ -781,19 +801,19 @@ exports[`actual bot report parity comment/new/create 1`] = `
     {
       "alias": "ChannelIssueCounter:forum",
       "properties": {
+        "channelUniqueName": "forum",
         "current": {
-          "low": 1,
-          "high": 0
-        },
-        "channelUniqueName": "forum"
+          "high": 0,
+          "low": 1
+        }
       }
     },
     {
       "alias": "Comment:Reported text",
       "properties": {
         "createdAt": "<time>",
-        "isRootComment": true,
         "id": "Comment:Reported text",
+        "isRootComment": true,
         "text": "Reported text"
       }
     },
@@ -801,20 +821,20 @@ exports[`actual bot report parity comment/new/create 1`] = `
       "alias": "Issue:[Reported comment] \\"Reported text\\"",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "createdAt": "<time>",
-        "isOpen": true,
-        "relatedCommentId": "Comment:Reported text",
         "authorName": "bot-forum-helper",
-        "issueNumber": {
-          "low": 1,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
+        "createdAt": "<time>",
         "flaggedServerRuleViolation": false,
         "id": "Issue:[Reported comment] \\"Reported text\\"",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 1
+        },
         "locked": false,
-        "title": "[Reported comment] \\"Reported text\\"",
-        "channelUniqueName": "forum"
+        "relatedCommentId": "Comment:Reported text",
+        "relatedUsername": "alice",
+        "title": "[Reported comment] \\"Reported text\\""
       }
     },
     {
@@ -834,26 +854,6 @@ exports[`actual bot report parity comment/new/create 1`] = `
       "properties": {
         "username": "alice"
       }
-    }
-  ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Issue:[Reported comment] \\"Reported text\\"",
-      "type": "HAS_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported comment] \\"Reported text\\"",
-      "target": "ModerationProfile:bot-forum-helper",
-      "type": "AUTHORED_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Comment:Reported text",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
     }
   ]
 }
@@ -861,89 +861,109 @@ exports[`actual bot report parity comment/new/create 1`] = `
 
 exports[`actual bot report parity comment/new/success 1`] = `
 {
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Issue:[Reported comment] \\"Reported text\\"",
+      "type": "HAS_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported comment] \\"Reported text\\"",
+      "target": "ModerationProfile:bot-forum-helper",
+      "type": "AUTHORED_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Comment:Reported text",
+      "type": "AUTHORED_COMMENT"
+    }
+  ],
   "error": "Error updating issue: Variable \\"$update\\" got invalid value { ActivityFeed: [[Object]], isOpen: true, flaggedServerRuleViolation: false, relatedUsername: \\"alice\\" }; Field \\"relatedUsername\\" is not defined by type \\"IssueUpdateInput\\".",
   "events": [
     {
-      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"Reported text\\":ModerationProfile:bot-forum-helper",
-      "id_from": "Issue:[Reported comment] \\"Reported text\\"",
-      "id_to": "ModerationProfile:bot-forum-helper",
-      "relationshipName": "AUTHORED_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationProfile",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Issue:[Reported comment] \\"Reported text\\"",
       "properties": {
-        "from": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
-          "relatedUsername": "alice",
+        "new": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
-          "displayName": "bot-forum-helper"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "title": "[Reported comment] \\"Reported text\\""
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_ISSUE:Channel:forum:Issue:[Reported comment] \\"Reported text\\"",
       "id_from": "Channel:forum",
       "id_to": "Issue:[Reported comment] \\"Reported text\\"",
-      "relationshipName": "HAS_ISSUE",
-      "fromTypename": "Channel",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
-          "relatedUsername": "alice",
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "title": "[Reported comment] \\"Reported text\\""
+        }
+      },
+      "relationshipName": "HAS_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
-      "id": "Issue:[Reported comment] \\"Reported text\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "create",
+      "event": "create_relationship",
+      "fromTypename": "Issue",
+      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"Reported text\\":ModerationProfile:bot-forum-helper",
+      "id_from": "Issue:[Reported comment] \\"Reported text\\"",
+      "id_to": "ModerationProfile:bot-forum-helper",
       "properties": {
-        "new": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
-          "relatedUsername": "alice",
+        "from": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedUsername": "alice",
+          "title": "[Reported comment] \\"Reported text\\""
+        },
+        "relationship": {},
+        "to": {
+          "displayName": "bot-forum-helper"
         }
-      }
+      },
+      "relationshipName": "AUTHORED_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationProfile"
     }
   ],
   "nodes": [
@@ -956,19 +976,19 @@ exports[`actual bot report parity comment/new/success 1`] = `
     {
       "alias": "ChannelIssueCounter:forum",
       "properties": {
+        "channelUniqueName": "forum",
         "current": {
-          "low": 1,
-          "high": 0
-        },
-        "channelUniqueName": "forum"
+          "high": 0,
+          "low": 1
+        }
       }
     },
     {
       "alias": "Comment:Reported text",
       "properties": {
         "createdAt": "<time>",
-        "isRootComment": true,
         "id": "Comment:Reported text",
+        "isRootComment": true,
         "text": "Reported text"
       }
     },
@@ -976,20 +996,20 @@ exports[`actual bot report parity comment/new/success 1`] = `
       "alias": "Issue:[Reported comment] \\"Reported text\\"",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "createdAt": "<time>",
-        "isOpen": true,
-        "relatedCommentId": "Comment:Reported text",
         "authorName": "bot-forum-helper",
-        "issueNumber": {
-          "low": 1,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
+        "createdAt": "<time>",
         "flaggedServerRuleViolation": false,
         "id": "Issue:[Reported comment] \\"Reported text\\"",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 1
+        },
         "locked": false,
-        "title": "[Reported comment] \\"Reported text\\"",
-        "channelUniqueName": "forum"
+        "relatedCommentId": "Comment:Reported text",
+        "relatedUsername": "alice",
+        "title": "[Reported comment] \\"Reported text\\""
       }
     },
     {
@@ -1010,254 +1030,274 @@ exports[`actual bot report parity comment/new/success 1`] = `
         "username": "alice"
       }
     }
-  ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Issue:[Reported comment] \\"Reported text\\"",
-      "type": "HAS_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported comment] \\"Reported text\\"",
-      "target": "ModerationProfile:bot-forum-helper",
-      "type": "AUTHORED_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Comment:Reported text",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    }
   ]
 }
 `;
 
 exports[`actual bot report parity discussion/existing/success 1`] = `
 {
-  "response": {
-    "issueId": "Issue:forum",
-    "issueNumber": 7
-  },
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "HAS_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "target": "Issue:forum",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:forum",
+      "target": "ModerationAction:Reported the discussion",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "ModerationAction:Reported the discussion",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "MODERATED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "AUTHORED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "ModerationAction:Reported the discussion",
+      "type": "PERFORMED_MODERATION_ACTION"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Discussion:Reported title",
+      "type": "POSTED_DISCUSSION"
+    }
+  ],
   "error": null,
   "events": [
     {
-      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
-      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_to": "Issue:forum",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Comment",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "from": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+        "new": {
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "to": {
-          "updatedAt": "<time>",
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "relatedDiscussionId": "Discussion:Reported title",
-          "isOpen": true,
-          "relatedUsername": "alice",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
     },
     {
+      "event": "create",
+      "id": "ModerationAction:Reported the discussion",
+      "properties": {
+        "new": {
+          "actionDescription": "Reported the discussion",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the discussion"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModerationAction"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_COMMENT:Channel:forum:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "id_from": "Channel:forum",
       "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "HAS_COMMENT",
-      "fromTypename": "Channel",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "AUTHORED_COMMENT",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the discussion",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "ModerationAction:Reported the discussion",
-      "relationshipName": "PERFORMED_MODERATION_ACTION",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the discussion",
-          "actionType": "report",
-          "actionDescription": "Reported the discussion"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "typename": "Comment",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
           "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         }
-      }
+      },
+      "relationshipName": "HAS_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
     },
     {
-      "id": "MODERATED_COMMENT:ModerationAction:Reported the discussion:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationAction:Reported the discussion",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "MODERATED_COMMENT",
-      "fromTypename": "ModerationAction",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
       "event": "create_relationship",
+      "fromTypename": "Comment",
+      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
+      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_to": "Issue:forum",
       "properties": {
         "from": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the discussion",
-          "actionType": "report",
-          "actionDescription": "Reported the discussion"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "ModerationAction:Reported the discussion",
-      "typename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the discussion",
-          "actionType": "report",
-          "actionDescription": "Reported the discussion"
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": true,
+          "issueNumber": 7,
+          "relatedDiscussionId": "Discussion:Reported title",
+          "relatedUsername": "alice",
+          "updatedAt": "<time>"
         }
-      }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Issue",
       "id": "ACTIVITY_ON_ISSUE:Issue:forum:ModerationAction:Reported the discussion",
       "id_from": "Issue:forum",
       "id_to": "ModerationAction:Reported the discussion",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "updatedAt": "<time>",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
+          "isOpen": true,
           "issueNumber": 7,
           "relatedDiscussionId": "Discussion:Reported title",
-          "isOpen": true,
           "relatedUsername": "alice",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "updatedAt": "<time>"
         },
+        "relationship": {},
         "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the discussion",
+          "actionDescription": "Reported the discussion",
           "actionType": "report",
-          "actionDescription": "Reported the discussion"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the discussion"
+        }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
     },
     {
-      "id": "Issue:forum",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create_relationship",
+      "fromTypename": "ModerationAction",
+      "id": "MODERATED_COMMENT:ModerationAction:Reported the discussion:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationAction:Reported the discussion",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "old": {
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "channelUniqueName": "forum",
-          "relatedDiscussionId": "Discussion:Reported title",
-          "isOpen": false,
-          "relatedUsername": "alice"
+        "from": {
+          "actionDescription": "Reported the discussion",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the discussion"
         },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "MODERATED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "AUTHORED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the discussion",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "ModerationAction:Reported the discussion",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the discussion",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the discussion"
+        }
+      },
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
+    },
+    {
+      "event": "update",
+      "id": "Issue:forum",
+      "properties": {
         "new": {
-          "updatedAt": "<time>",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
+          "isOpen": true,
           "issueNumber": 7,
           "relatedDiscussionId": "Discussion:Reported title",
-          "isOpen": true,
           "relatedUsername": "alice",
+          "updatedAt": "<time>"
+        },
+        "old": {
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": false,
+          "issueNumber": 7,
+          "relatedDiscussionId": "Discussion:Reported title",
+          "relatedUsername": "alice"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     }
   ],
   "nodes": [
@@ -1272,10 +1312,10 @@ exports[`actual bot report parity discussion/existing/success 1`] = `
       "properties": {
         "ageGateTouchedAt": "<time>",
         "createdAt": "<time>",
-        "isRootComment": true,
-        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-        "isSticky": false
+        "isRootComment": true,
+        "isSticky": false,
+        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
     {
@@ -1289,25 +1329,25 @@ exports[`actual bot report parity discussion/existing/success 1`] = `
       "alias": "Issue:forum",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "isOpen": true,
-        "relatedDiscussionId": "Discussion:Reported title",
-        "issueNumber": {
-          "low": 7,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
         "flaggedServerRuleViolation": true,
         "id": "Issue:forum",
-        "channelUniqueName": "forum",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 7
+        },
+        "relatedDiscussionId": "Discussion:Reported title",
+        "relatedUsername": "alice",
         "updatedAt": "<time>"
       }
     },
     {
       "alias": "ModerationAction:Reported the discussion",
       "properties": {
+        "actionDescription": "Reported the discussion",
         "actionType": "report",
         "createdAt": "<time>",
-        "actionDescription": "Reported the discussion",
         "id": "ModerationAction:Reported the discussion"
       }
     },
@@ -1330,138 +1370,118 @@ exports[`actual bot report parity discussion/existing/success 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "HAS_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "target": "Issue:forum",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:forum",
-      "target": "ModerationAction:Reported the discussion",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "ModerationAction:Reported the discussion",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "MODERATED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "ModerationAction:Reported the discussion",
-      "type": "PERFORMED_MODERATION_ACTION",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Discussion:Reported title",
-      "type": "POSTED_DISCUSSION",
-      "properties": {}
-    }
-  ]
+  "response": {
+    "issueId": "Issue:forum",
+    "issueNumber": 7
+  }
 }
 `;
 
 exports[`actual bot report parity discussion/new/success 1`] = `
 {
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Issue:[Reported discussion] \\"Reported title\\"",
+      "type": "HAS_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported discussion] \\"Reported title\\"",
+      "target": "ModerationProfile:bot-forum-helper",
+      "type": "AUTHORED_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Discussion:Reported title",
+      "type": "POSTED_DISCUSSION"
+    }
+  ],
   "error": "Error updating issue: Variable \\"$update\\" got invalid value { ActivityFeed: [[Object]], isOpen: true, flaggedServerRuleViolation: false, relatedUsername: \\"alice\\" }; Field \\"relatedUsername\\" is not defined by type \\"IssueUpdateInput\\".",
   "events": [
     {
-      "id": "AUTHORED_ISSUE:Issue:[Reported discussion] \\"Reported title\\":ModerationProfile:bot-forum-helper",
-      "id_from": "Issue:[Reported discussion] \\"Reported title\\"",
-      "id_to": "ModerationProfile:bot-forum-helper",
-      "relationshipName": "AUTHORED_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationProfile",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Issue:[Reported discussion] \\"Reported title\\"",
       "properties": {
-        "from": {
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported discussion] \\"Reported title\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "relatedDiscussionId": "Discussion:Reported title",
-          "isOpen": true,
-          "title": "[Reported discussion] \\"Reported title\\"",
-          "relatedUsername": "alice",
+        "new": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
-          "displayName": "bot-forum-helper"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported discussion] \\"Reported title\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedDiscussionId": "Discussion:Reported title",
+          "relatedUsername": "alice",
+          "title": "[Reported discussion] \\"Reported title\\""
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_ISSUE:Channel:forum:Issue:[Reported discussion] \\"Reported title\\"",
       "id_from": "Channel:forum",
       "id_to": "Issue:[Reported discussion] \\"Reported title\\"",
-      "relationshipName": "HAS_ISSUE",
-      "fromTypename": "Channel",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported discussion] \\"Reported title\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "relatedDiscussionId": "Discussion:Reported title",
-          "isOpen": true,
-          "title": "[Reported discussion] \\"Reported title\\"",
-          "relatedUsername": "alice",
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported discussion] \\"Reported title\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedDiscussionId": "Discussion:Reported title",
+          "relatedUsername": "alice",
+          "title": "[Reported discussion] \\"Reported title\\""
+        }
+      },
+      "relationshipName": "HAS_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
-      "id": "Issue:[Reported discussion] \\"Reported title\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "create",
+      "event": "create_relationship",
+      "fromTypename": "Issue",
+      "id": "AUTHORED_ISSUE:Issue:[Reported discussion] \\"Reported title\\":ModerationProfile:bot-forum-helper",
+      "id_from": "Issue:[Reported discussion] \\"Reported title\\"",
+      "id_to": "ModerationProfile:bot-forum-helper",
       "properties": {
-        "new": {
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported discussion] \\"Reported title\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "relatedDiscussionId": "Discussion:Reported title",
-          "isOpen": true,
-          "title": "[Reported discussion] \\"Reported title\\"",
-          "relatedUsername": "alice",
+        "from": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported discussion] \\"Reported title\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedDiscussionId": "Discussion:Reported title",
+          "relatedUsername": "alice",
+          "title": "[Reported discussion] \\"Reported title\\""
+        },
+        "relationship": {},
+        "to": {
+          "displayName": "bot-forum-helper"
         }
-      }
+      },
+      "relationshipName": "AUTHORED_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationProfile"
     }
   ],
   "nodes": [
@@ -1474,11 +1494,11 @@ exports[`actual bot report parity discussion/new/success 1`] = `
     {
       "alias": "ChannelIssueCounter:forum",
       "properties": {
+        "channelUniqueName": "forum",
         "current": {
-          "low": 1,
-          "high": 0
-        },
-        "channelUniqueName": "forum"
+          "high": 0,
+          "low": 1
+        }
       }
     },
     {
@@ -1492,20 +1512,20 @@ exports[`actual bot report parity discussion/new/success 1`] = `
       "alias": "Issue:[Reported discussion] \\"Reported title\\"",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "createdAt": "<time>",
-        "isOpen": true,
-        "relatedDiscussionId": "Discussion:Reported title",
         "authorName": "bot-forum-helper",
-        "issueNumber": {
-          "low": 1,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
+        "createdAt": "<time>",
         "flaggedServerRuleViolation": false,
         "id": "Issue:[Reported discussion] \\"Reported title\\"",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 1
+        },
         "locked": false,
-        "title": "[Reported discussion] \\"Reported title\\"",
-        "channelUniqueName": "forum"
+        "relatedDiscussionId": "Discussion:Reported title",
+        "relatedUsername": "alice",
+        "title": "[Reported discussion] \\"Reported title\\""
       }
     },
     {
@@ -1526,254 +1546,274 @@ exports[`actual bot report parity discussion/new/success 1`] = `
         "username": "alice"
       }
     }
-  ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Issue:[Reported discussion] \\"Reported title\\"",
-      "type": "HAS_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported discussion] \\"Reported title\\"",
-      "target": "ModerationProfile:bot-forum-helper",
-      "type": "AUTHORED_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Discussion:Reported title",
-      "type": "POSTED_DISCUSSION",
-      "properties": {}
-    }
   ]
 }
 `;
 
 exports[`actual bot report parity event/existing/success 1`] = `
 {
-  "response": {
-    "issueId": "Issue:forum",
-    "issueNumber": 7
-  },
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "HAS_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "target": "Issue:forum",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:forum",
+      "target": "ModerationAction:Reported the event",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "ModerationAction:Reported the event",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "MODERATED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "AUTHORED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "ModerationAction:Reported the event",
+      "type": "PERFORMED_MODERATION_ACTION"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Event:Reported event",
+      "type": "POSTED_BY"
+    }
+  ],
   "error": null,
   "events": [
     {
-      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
-      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_to": "Issue:forum",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Comment",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "from": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+        "new": {
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "to": {
-          "updatedAt": "<time>",
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "isOpen": true,
-          "relatedUsername": "alice",
-          "relatedEventId": "Event:Reported event",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
     },
     {
+      "event": "create",
+      "id": "ModerationAction:Reported the event",
+      "properties": {
+        "new": {
+          "actionDescription": "Reported the event",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the event"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModerationAction"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_COMMENT:Channel:forum:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "id_from": "Channel:forum",
       "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "HAS_COMMENT",
-      "fromTypename": "Channel",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "AUTHORED_COMMENT",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the event",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "ModerationAction:Reported the event",
-      "relationshipName": "PERFORMED_MODERATION_ACTION",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the event",
-          "actionType": "report",
-          "actionDescription": "Reported the event"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "typename": "Comment",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
           "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         }
-      }
+      },
+      "relationshipName": "HAS_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
     },
     {
-      "id": "MODERATED_COMMENT:ModerationAction:Reported the event:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationAction:Reported the event",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "MODERATED_COMMENT",
-      "fromTypename": "ModerationAction",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
       "event": "create_relationship",
+      "fromTypename": "Comment",
+      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:forum",
+      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_to": "Issue:forum",
       "properties": {
         "from": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the event",
-          "actionType": "report",
-          "actionDescription": "Reported the event"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "ModerationAction:Reported the event",
-      "typename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the event",
-          "actionType": "report",
-          "actionDescription": "Reported the event"
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": true,
+          "issueNumber": 7,
+          "relatedEventId": "Event:Reported event",
+          "relatedUsername": "alice",
+          "updatedAt": "<time>"
         }
-      }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Issue",
       "id": "ACTIVITY_ON_ISSUE:Issue:forum:ModerationAction:Reported the event",
       "id_from": "Issue:forum",
       "id_to": "ModerationAction:Reported the event",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "updatedAt": "<time>",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
-          "issueNumber": 7,
           "isOpen": true,
-          "relatedUsername": "alice",
+          "issueNumber": 7,
           "relatedEventId": "Event:Reported event",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "relatedUsername": "alice",
+          "updatedAt": "<time>"
         },
+        "relationship": {},
         "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the event",
+          "actionDescription": "Reported the event",
           "actionType": "report",
-          "actionDescription": "Reported the event"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the event"
+        }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
     },
     {
-      "id": "Issue:forum",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create_relationship",
+      "fromTypename": "ModerationAction",
+      "id": "MODERATED_COMMENT:ModerationAction:Reported the event:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationAction:Reported the event",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
-        "old": {
-          "flaggedServerRuleViolation": true,
-          "id": "Issue:forum",
-          "issueNumber": 7,
-          "channelUniqueName": "forum",
-          "isOpen": false,
-          "relatedUsername": "alice",
-          "relatedEventId": "Event:Reported event"
+        "from": {
+          "actionDescription": "Reported the event",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the event"
         },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "MODERATED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "AUTHORED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the event",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "ModerationAction:Reported the event",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the event",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the event"
+        }
+      },
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
+    },
+    {
+      "event": "update",
+      "id": "Issue:forum",
+      "properties": {
         "new": {
-          "updatedAt": "<time>",
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "forum",
           "flaggedServerRuleViolation": true,
           "id": "Issue:forum",
-          "issueNumber": 7,
           "isOpen": true,
-          "relatedUsername": "alice",
+          "issueNumber": 7,
           "relatedEventId": "Event:Reported event",
+          "relatedUsername": "alice",
+          "updatedAt": "<time>"
+        },
+        "old": {
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "flaggedServerRuleViolation": true,
+          "id": "Issue:forum",
+          "isOpen": false,
+          "issueNumber": 7,
+          "relatedEventId": "Event:Reported event",
+          "relatedUsername": "alice"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     }
   ],
   "nodes": [
@@ -1788,10 +1828,10 @@ exports[`actual bot report parity event/existing/success 1`] = `
       "properties": {
         "ageGateTouchedAt": "<time>",
         "createdAt": "<time>",
-        "isRootComment": true,
-        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-        "isSticky": false
+        "isRootComment": true,
+        "isSticky": false,
+        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
     {
@@ -1805,25 +1845,25 @@ exports[`actual bot report parity event/existing/success 1`] = `
       "alias": "Issue:forum",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "relatedEventId": "Event:Reported event",
-        "isOpen": true,
-        "issueNumber": {
-          "low": 7,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
         "flaggedServerRuleViolation": true,
         "id": "Issue:forum",
-        "channelUniqueName": "forum",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 7
+        },
+        "relatedEventId": "Event:Reported event",
+        "relatedUsername": "alice",
         "updatedAt": "<time>"
       }
     },
     {
       "alias": "ModerationAction:Reported the event",
       "properties": {
+        "actionDescription": "Reported the event",
         "actionType": "report",
         "createdAt": "<time>",
-        "actionDescription": "Reported the event",
         "id": "ModerationAction:Reported the event"
       }
     },
@@ -1846,138 +1886,118 @@ exports[`actual bot report parity event/existing/success 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "HAS_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "target": "Issue:forum",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:forum",
-      "target": "ModerationAction:Reported the event",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "ModerationAction:Reported the event",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "MODERATED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "ModerationAction:Reported the event",
-      "type": "PERFORMED_MODERATION_ACTION",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Event:Reported event",
-      "type": "POSTED_BY",
-      "properties": {}
-    }
-  ]
+  "response": {
+    "issueId": "Issue:forum",
+    "issueNumber": 7
+  }
 }
 `;
 
 exports[`actual bot report parity event/new/success 1`] = `
 {
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Issue:[Reported event] \\"Reported event\\"",
+      "type": "HAS_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported event] \\"Reported event\\"",
+      "target": "ModerationProfile:bot-forum-helper",
+      "type": "AUTHORED_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "User:alice",
+      "target": "Event:Reported event",
+      "type": "POSTED_BY"
+    }
+  ],
   "error": "Error updating issue: Variable \\"$update\\" got invalid value { ActivityFeed: [[Object]], isOpen: true, flaggedServerRuleViolation: false, relatedUsername: \\"alice\\" }; Field \\"relatedUsername\\" is not defined by type \\"IssueUpdateInput\\".",
   "events": [
     {
-      "id": "AUTHORED_ISSUE:Issue:[Reported event] \\"Reported event\\":ModerationProfile:bot-forum-helper",
-      "id_from": "Issue:[Reported event] \\"Reported event\\"",
-      "id_to": "ModerationProfile:bot-forum-helper",
-      "relationshipName": "AUTHORED_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationProfile",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Issue:[Reported event] \\"Reported event\\"",
       "properties": {
-        "from": {
-          "locked": false,
+        "new": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
           "flaggedServerRuleViolation": false,
           "id": "Issue:[Reported event] \\"Reported event\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
           "isOpen": true,
-          "title": "[Reported event] \\"Reported event\\"",
-          "relatedUsername": "alice",
-          "authorName": "bot-forum-helper",
+          "issueNumber": 1,
+          "locked": false,
           "relatedEventId": "Event:Reported event",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
-          "displayName": "bot-forum-helper"
-        },
-        "relationship": {}
-      }
+          "relatedUsername": "alice",
+          "title": "[Reported event] \\"Reported event\\""
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_ISSUE:Channel:forum:Issue:[Reported event] \\"Reported event\\"",
       "id_from": "Channel:forum",
       "id_to": "Issue:[Reported event] \\"Reported event\\"",
-      "relationshipName": "HAS_ISSUE",
-      "fromTypename": "Channel",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "locked": false,
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
           "flaggedServerRuleViolation": false,
           "id": "Issue:[Reported event] \\"Reported event\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
           "isOpen": true,
-          "title": "[Reported event] \\"Reported event\\"",
-          "relatedUsername": "alice",
-          "authorName": "bot-forum-helper",
+          "issueNumber": 1,
+          "locked": false,
           "relatedEventId": "Event:Reported event",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "relatedUsername": "alice",
+          "title": "[Reported event] \\"Reported event\\""
+        }
+      },
+      "relationshipName": "HAS_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
-      "id": "Issue:[Reported event] \\"Reported event\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "create",
+      "event": "create_relationship",
+      "fromTypename": "Issue",
+      "id": "AUTHORED_ISSUE:Issue:[Reported event] \\"Reported event\\":ModerationProfile:bot-forum-helper",
+      "id_from": "Issue:[Reported event] \\"Reported event\\"",
+      "id_to": "ModerationProfile:bot-forum-helper",
       "properties": {
-        "new": {
-          "locked": false,
+        "from": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
           "flaggedServerRuleViolation": false,
           "id": "Issue:[Reported event] \\"Reported event\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
           "isOpen": true,
-          "title": "[Reported event] \\"Reported event\\"",
-          "relatedUsername": "alice",
-          "authorName": "bot-forum-helper",
+          "issueNumber": 1,
+          "locked": false,
           "relatedEventId": "Event:Reported event",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "relatedUsername": "alice",
+          "title": "[Reported event] \\"Reported event\\""
+        },
+        "relationship": {},
+        "to": {
+          "displayName": "bot-forum-helper"
         }
-      }
+      },
+      "relationshipName": "AUTHORED_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationProfile"
     }
   ],
   "nodes": [
@@ -1990,11 +2010,11 @@ exports[`actual bot report parity event/new/success 1`] = `
     {
       "alias": "ChannelIssueCounter:forum",
       "properties": {
+        "channelUniqueName": "forum",
         "current": {
-          "low": 1,
-          "high": 0
-        },
-        "channelUniqueName": "forum"
+          "high": 0,
+          "low": 1
+        }
       }
     },
     {
@@ -2008,20 +2028,20 @@ exports[`actual bot report parity event/new/success 1`] = `
       "alias": "Issue:[Reported event] \\"Reported event\\"",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "createdAt": "<time>",
-        "relatedEventId": "Event:Reported event",
-        "isOpen": true,
         "authorName": "bot-forum-helper",
-        "issueNumber": {
-          "low": 1,
-          "high": 0
-        },
-        "relatedUsername": "alice",
+        "channelUniqueName": "forum",
+        "createdAt": "<time>",
         "flaggedServerRuleViolation": false,
         "id": "Issue:[Reported event] \\"Reported event\\"",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 1
+        },
         "locked": false,
-        "title": "[Reported event] \\"Reported event\\"",
-        "channelUniqueName": "forum"
+        "relatedEventId": "Event:Reported event",
+        "relatedUsername": "alice",
+        "title": "[Reported event] \\"Reported event\\""
       }
     },
     {
@@ -2041,26 +2061,6 @@ exports[`actual bot report parity event/new/success 1`] = `
       "properties": {
         "username": "alice"
       }
-    }
-  ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Issue:[Reported event] \\"Reported event\\"",
-      "type": "HAS_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported event] \\"Reported event\\"",
-      "target": "ModerationProfile:bot-forum-helper",
-      "type": "AUTHORED_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "User:alice",
-      "target": "Event:Reported event",
-      "type": "POSTED_BY",
-      "properties": {}
     }
   ]
 }
@@ -2068,316 +2068,366 @@ exports[`actual bot report parity event/new/success 1`] = `
 
 exports[`actual bot report parity missing/new/append 1`] = `
 {
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "HAS_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Issue:[Reported comment] \\"\\"",
+      "type": "HAS_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "target": "Issue:[Reported comment] \\"\\"",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported comment] \\"\\"",
+      "target": "ModerationAction:Reported the comment",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported comment] \\"\\"",
+      "target": "ModerationProfile:bot-forum-helper",
+      "type": "AUTHORED_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "ModerationAction:Reported the comment",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "MODERATED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "AUTHORED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "ModerationAction:Reported the comment",
+      "type": "PERFORMED_MODERATION_ACTION"
+    }
+  ],
   "error": "Error updating issue: fixture projection failure",
   "events": [
     {
-      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"\\":ModerationProfile:bot-forum-helper",
-      "id_from": "Issue:[Reported comment] \\"\\"",
-      "id_to": "ModerationProfile:bot-forum-helper",
-      "relationshipName": "AUTHORED_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationProfile",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
-          "displayName": "bot-forum-helper"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "HAS_ISSUE:Channel:forum:Issue:[Reported comment] \\"\\"",
-      "id_from": "Channel:forum",
-      "id_to": "Issue:[Reported comment] \\"\\"",
-      "relationshipName": "HAS_ISSUE",
-      "fromTypename": "Channel",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "uniqueName": "forum"
-        },
-        "to": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Issue:[Reported comment] \\"\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
         "new": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        }
-      }
-    },
-    {
-      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:[Reported comment] \\"\\"",
-      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_to": "Issue:[Reported comment] \\"\\"",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Comment",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "to": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
     },
     {
+      "event": "create",
+      "id": "Issue:[Reported comment] \\"\\"",
+      "properties": {
+        "new": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
+    },
+    {
+      "event": "create",
+      "id": "ModerationAction:Reported the comment",
+      "properties": {
+        "new": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModerationAction"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_COMMENT:Channel:forum:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "id_from": "Channel:forum",
       "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "HAS_COMMENT",
-      "fromTypename": "Channel",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "AUTHORED_COMMENT",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "PERFORMED_MODERATION_ACTION",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "typename": "Comment",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
           "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         }
-      }
+      },
+      "relationshipName": "HAS_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
     },
     {
-      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationAction:Reported the comment",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "MODERATED_COMMENT",
-      "fromTypename": "ModerationAction",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
       "event": "create_relationship",
+      "fromTypename": "Channel",
+      "id": "HAS_ISSUE:Channel:forum:Issue:[Reported comment] \\"\\"",
+      "id_from": "Channel:forum",
+      "id_to": "Issue:[Reported comment] \\"\\"",
       "properties": {
         "from": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+          "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
+        }
+      },
+      "relationshipName": "HAS_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Comment",
+      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:[Reported comment] \\"\\"",
+      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_to": "Issue:[Reported comment] \\"\\"",
+      "properties": {
+        "from": {
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "ModerationAction:Reported the comment",
-      "typename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
           "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\"",
+          "updatedAt": "<time>"
         }
-      }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Issue",
       "id": "ACTIVITY_ON_ISSUE:Issue:[Reported comment] \\"\\":ModerationAction:Reported the comment",
       "id_from": "Issue:[Reported comment] \\"\\"",
       "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
           "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\"",
+          "updatedAt": "<time>"
         },
-        "relationship": {}
-      }
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
     },
     {
-      "id": "Issue:[Reported comment] \\"\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create_relationship",
+      "fromTypename": "Issue",
+      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"\\":ModerationProfile:bot-forum-helper",
+      "id_from": "Issue:[Reported comment] \\"\\"",
+      "id_to": "ModerationProfile:bot-forum-helper",
       "properties": {
-        "old": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
+        "from": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
         },
-        "new": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
+        "relationship": {},
+        "to": {
+          "displayName": "bot-forum-helper"
+        }
+      },
+      "relationshipName": "AUTHORED_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationProfile"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationAction",
+      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationAction:Reported the comment",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
           "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
+          "id": "ModerationAction:Reported the comment"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "MODERATED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "AUTHORED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "ModerationAction:Reported the comment",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
+    },
+    {
+      "event": "update",
+      "id": "Issue:[Reported comment] \\"\\"",
+      "properties": {
+        "new": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\"",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     }
   ],
   "nodes": [
@@ -2390,11 +2440,11 @@ exports[`actual bot report parity missing/new/append 1`] = `
     {
       "alias": "ChannelIssueCounter:forum",
       "properties": {
+        "channelUniqueName": "forum",
         "current": {
-          "low": 1,
-          "high": 0
-        },
-        "channelUniqueName": "forum"
+          "high": 0,
+          "low": 1
+        }
       }
     },
     {
@@ -2402,38 +2452,38 @@ exports[`actual bot report parity missing/new/append 1`] = `
       "properties": {
         "ageGateTouchedAt": "<time>",
         "createdAt": "<time>",
-        "isRootComment": true,
-        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-        "isSticky": false
+        "isRootComment": true,
+        "isSticky": false,
+        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
     {
       "alias": "Issue:[Reported comment] \\"\\"",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "createdAt": "<time>",
-        "isOpen": true,
-        "relatedCommentId": "content",
         "authorName": "bot-forum-helper",
-        "issueNumber": {
-          "low": 1,
-          "high": 0
-        },
+        "channelUniqueName": "forum",
+        "createdAt": "<time>",
         "flaggedServerRuleViolation": false,
         "id": "Issue:[Reported comment] \\"\\"",
-        "title": "[Reported comment] \\"\\"",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 1
+        },
         "locked": false,
-        "channelUniqueName": "forum",
+        "relatedCommentId": "content",
+        "title": "[Reported comment] \\"\\"",
         "updatedAt": "<time>"
       }
     },
     {
       "alias": "ModerationAction:Reported the comment",
       "properties": {
+        "actionDescription": "Reported the comment",
         "actionType": "report",
         "createdAt": "<time>",
-        "actionDescription": "Reported the comment",
         "id": "ModerationAction:Reported the comment"
       }
     },
@@ -2454,56 +2504,6 @@ exports[`actual bot report parity missing/new/append 1`] = `
       "properties": {
         "username": "alice"
       }
-    }
-  ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "HAS_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "Channel:forum",
-      "target": "Issue:[Reported comment] \\"\\"",
-      "type": "HAS_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "target": "Issue:[Reported comment] \\"\\"",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported comment] \\"\\"",
-      "target": "ModerationAction:Reported the comment",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported comment] \\"\\"",
-      "target": "ModerationProfile:bot-forum-helper",
-      "type": "AUTHORED_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "ModerationAction:Reported the comment",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "MODERATED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "ModerationAction:Reported the comment",
-      "type": "PERFORMED_MODERATION_ACTION",
-      "properties": {}
     }
   ]
 }
@@ -2511,320 +2511,366 @@ exports[`actual bot report parity missing/new/append 1`] = `
 
 exports[`actual bot report parity missing/new/success 1`] = `
 {
-  "response": {
-    "issueId": "Issue:[Reported comment] \\"\\"",
-    "issueNumber": 1
-  },
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "HAS_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Issue:[Reported comment] \\"\\"",
+      "type": "HAS_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "target": "Issue:[Reported comment] \\"\\"",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported comment] \\"\\"",
+      "target": "ModerationAction:Reported the comment",
+      "type": "ACTIVITY_ON_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported comment] \\"\\"",
+      "target": "ModerationProfile:bot-forum-helper",
+      "type": "AUTHORED_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "ModerationAction:Reported the comment",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "MODERATED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "type": "AUTHORED_COMMENT"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:bot-forum-helper",
+      "target": "ModerationAction:Reported the comment",
+      "type": "PERFORMED_MODERATION_ACTION"
+    }
+  ],
   "error": null,
   "events": [
     {
-      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"\\":ModerationProfile:bot-forum-helper",
-      "id_from": "Issue:[Reported comment] \\"\\"",
-      "id_to": "ModerationProfile:bot-forum-helper",
-      "relationshipName": "AUTHORED_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationProfile",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
-          "displayName": "bot-forum-helper"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "HAS_ISSUE:Channel:forum:Issue:[Reported comment] \\"\\"",
-      "id_from": "Channel:forum",
-      "id_to": "Issue:[Reported comment] \\"\\"",
-      "relationshipName": "HAS_ISSUE",
-      "fromTypename": "Channel",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "uniqueName": "forum"
-        },
-        "to": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Issue:[Reported comment] \\"\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "properties": {
         "new": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        }
-      }
-    },
-    {
-      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:[Reported comment] \\"\\"",
-      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_to": "Issue:[Reported comment] \\"\\"",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Comment",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "to": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
-          "authorName": "bot-forum-helper",
-          "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
     },
     {
+      "event": "create",
+      "id": "Issue:[Reported comment] \\"\\"",
+      "properties": {
+        "new": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
+    },
+    {
+      "event": "create",
+      "id": "ModerationAction:Reported the comment",
+      "properties": {
+        "new": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModerationAction"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_COMMENT:Channel:forum:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
       "id_from": "Channel:forum",
       "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "HAS_COMMENT",
-      "fromTypename": "Channel",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "AUTHORED_COMMENT",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
           "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
-      "id_from": "ModerationProfile:bot-forum-helper",
-      "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "PERFORMED_MODERATION_ACTION",
-      "fromTypename": "ModerationProfile",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "displayName": "bot-forum-helper"
-        },
-        "to": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "typename": "Comment",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
           "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         }
-      }
+      },
+      "relationshipName": "HAS_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
     },
     {
-      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "id_from": "ModerationAction:Reported the comment",
-      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "relationshipName": "MODERATED_COMMENT",
-      "fromTypename": "ModerationAction",
-      "toTypename": "Comment",
-      "timestamp": "<time>",
       "event": "create_relationship",
+      "fromTypename": "Channel",
+      "id": "HAS_ISSUE:Channel:forum:Issue:[Reported comment] \\"\\"",
+      "id_from": "Channel:forum",
+      "id_to": "Issue:[Reported comment] \\"\\"",
       "properties": {
         "from": {
-          "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+          "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "isRootComment": true,
-          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
+        }
+      },
+      "relationshipName": "HAS_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Comment",
+      "id": "ACTIVITY_ON_ISSUE:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n:Issue:[Reported comment] \\"\\"",
+      "id_from": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_to": "Issue:[Reported comment] \\"\\"",
+      "properties": {
+        "from": {
           "ageGateTouchedAt": "<time>",
           "createdAt": "<time>",
-          "isSticky": false
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
         },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "ModerationAction:Reported the comment",
-      "typename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
           "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\"",
+          "updatedAt": "<time>"
         }
-      }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Issue",
       "id": "ACTIVITY_ON_ISSUE:Issue:[Reported comment] \\"\\":ModerationAction:Reported the comment",
       "id_from": "Issue:[Reported comment] \\"\\"",
       "id_to": "ModerationAction:Reported the comment",
-      "relationshipName": "ACTIVITY_ON_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationAction",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
           "createdAt": "<time>",
-          "id": "ModerationAction:Reported the comment",
-          "actionType": "report",
-          "actionDescription": "Reported the comment"
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\"",
+          "updatedAt": "<time>"
         },
-        "relationship": {}
-      }
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
     },
     {
-      "id": "Issue:[Reported comment] \\"\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create_relationship",
+      "fromTypename": "Issue",
+      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"\\":ModerationProfile:bot-forum-helper",
+      "id_from": "Issue:[Reported comment] \\"\\"",
+      "id_to": "ModerationProfile:bot-forum-helper",
       "properties": {
-        "old": {
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
+        "from": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
         },
-        "new": {
-          "updatedAt": "<time>",
-          "relatedCommentId": "content",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"\\"",
-          "issueNumber": 1,
+        "relationship": {},
+        "to": {
+          "displayName": "bot-forum-helper"
+        }
+      },
+      "relationshipName": "AUTHORED_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationProfile"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationAction",
+      "id": "MODERATED_COMMENT:ModerationAction:Reported the comment:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationAction:Reported the comment",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
           "createdAt": "<time>",
-          "isOpen": true,
-          "title": "[Reported comment] \\"\\"",
+          "id": "ModerationAction:Reported the comment"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "MODERATED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "AUTHORED_COMMENT:ModerationProfile:bot-forum-helper:Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
+        }
+      },
+      "relationshipName": "AUTHORED_COMMENT",
+      "timestamp": "<time>",
+      "toTypename": "Comment"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "ModerationProfile",
+      "id": "PERFORMED_MODERATION_ACTION:ModerationProfile:bot-forum-helper:ModerationAction:Reported the comment",
+      "id_from": "ModerationProfile:bot-forum-helper",
+      "id_to": "ModerationAction:Reported the comment",
+      "properties": {
+        "from": {
+          "displayName": "bot-forum-helper"
+        },
+        "relationship": {},
+        "to": {
+          "actionDescription": "Reported the comment",
+          "actionType": "report",
+          "createdAt": "<time>",
+          "id": "ModerationAction:Reported the comment"
+        }
+      },
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "timestamp": "<time>",
+      "toTypename": "ModerationAction"
+    },
+    {
+      "event": "update",
+      "id": "Issue:[Reported comment] \\"\\"",
+      "properties": {
+        "new": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\"",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateTouchedAt": "<time>",
+          "authorName": "bot-forum-helper",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "content",
+          "title": "[Reported comment] \\"\\""
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     }
   ],
   "nodes": [
@@ -2837,11 +2883,11 @@ exports[`actual bot report parity missing/new/success 1`] = `
     {
       "alias": "ChannelIssueCounter:forum",
       "properties": {
+        "channelUniqueName": "forum",
         "current": {
-          "low": 1,
-          "high": 0
-        },
-        "channelUniqueName": "forum"
+          "high": 0,
+          "low": 1
+        }
       }
     },
     {
@@ -2849,38 +2895,38 @@ exports[`actual bot report parity missing/new/success 1`] = `
       "properties": {
         "ageGateTouchedAt": "<time>",
         "createdAt": "<time>",
-        "isRootComment": true,
-        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-        "isSticky": false
+        "isRootComment": true,
+        "isSticky": false,
+        "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
     {
       "alias": "Issue:[Reported comment] \\"\\"",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "createdAt": "<time>",
-        "isOpen": true,
-        "relatedCommentId": "content",
         "authorName": "bot-forum-helper",
-        "issueNumber": {
-          "low": 1,
-          "high": 0
-        },
+        "channelUniqueName": "forum",
+        "createdAt": "<time>",
         "flaggedServerRuleViolation": false,
         "id": "Issue:[Reported comment] \\"\\"",
-        "title": "[Reported comment] \\"\\"",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 1
+        },
         "locked": false,
-        "channelUniqueName": "forum",
+        "relatedCommentId": "content",
+        "title": "[Reported comment] \\"\\"",
         "updatedAt": "<time>"
       }
     },
     {
       "alias": "ModerationAction:Reported the comment",
       "properties": {
+        "actionDescription": "Reported the comment",
         "actionType": "report",
         "createdAt": "<time>",
-        "actionDescription": "Reported the comment",
         "id": "ModerationAction:Reported the comment"
       }
     },
@@ -2903,144 +2949,118 @@ exports[`actual bot report parity missing/new/success 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "HAS_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "Channel:forum",
-      "target": "Issue:[Reported comment] \\"\\"",
-      "type": "HAS_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "target": "Issue:[Reported comment] \\"\\"",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported comment] \\"\\"",
-      "target": "ModerationAction:Reported the comment",
-      "type": "ACTIVITY_ON_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported comment] \\"\\"",
-      "target": "ModerationProfile:bot-forum-helper",
-      "type": "AUTHORED_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "ModerationAction:Reported the comment",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "MODERATED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:bot-forum-helper",
-      "target": "ModerationAction:Reported the comment",
-      "type": "PERFORMED_MODERATION_ACTION",
-      "properties": {}
-    }
-  ]
+  "response": {
+    "issueId": "Issue:[Reported comment] \\"\\"",
+    "issueNumber": 1
+  }
 }
 `;
 
 exports[`actual bot report parity mod-comment/new/success 1`] = `
 {
+  "edges": [
+    {
+      "properties": {},
+      "source": "Channel:forum",
+      "target": "Issue:[Reported comment] \\"Reported text\\"",
+      "type": "HAS_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "Issue:[Reported comment] \\"Reported text\\"",
+      "target": "ModerationProfile:bot-forum-helper",
+      "type": "AUTHORED_ISSUE"
+    },
+    {
+      "properties": {},
+      "source": "ModerationProfile:human-mod",
+      "target": "Comment:Reported text",
+      "type": "AUTHORED_COMMENT"
+    }
+  ],
   "error": "Error updating issue: Variable \\"$update\\" got invalid value { ActivityFeed: [[Object]], isOpen: true, flaggedServerRuleViolation: false, relatedModProfileName: \\"human-mod\\" }; Field \\"relatedModProfileName\\" is not defined by type \\"IssueUpdateInput\\".",
   "events": [
     {
-      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"Reported text\\":ModerationProfile:bot-forum-helper",
-      "id_from": "Issue:[Reported comment] \\"Reported text\\"",
-      "id_to": "ModerationProfile:bot-forum-helper",
-      "relationshipName": "AUTHORED_ISSUE",
-      "fromTypename": "Issue",
-      "toTypename": "ModerationProfile",
-      "timestamp": "<time>",
-      "event": "create_relationship",
+      "event": "create",
+      "id": "Issue:[Reported comment] \\"Reported text\\"",
       "properties": {
-        "from": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "relatedModProfileName": "human-mod",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
+        "new": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "to": {
-          "displayName": "bot-forum-helper"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedModProfileName": "human-mod",
+          "title": "[Reported comment] \\"Reported text\\""
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Issue"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
       "id": "HAS_ISSUE:Channel:forum:Issue:[Reported comment] \\"Reported text\\"",
       "id_from": "Channel:forum",
       "id_to": "Issue:[Reported comment] \\"Reported text\\"",
-      "relationshipName": "HAS_ISSUE",
-      "fromTypename": "Channel",
-      "toTypename": "Issue",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "uniqueName": "forum"
         },
+        "relationship": {},
         "to": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "relatedModProfileName": "human-mod",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedModProfileName": "human-mod",
+          "title": "[Reported comment] \\"Reported text\\""
+        }
+      },
+      "relationshipName": "HAS_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "Issue"
     },
     {
-      "id": "Issue:[Reported comment] \\"Reported text\\"",
-      "typename": "Issue",
-      "timestamp": "<time>",
-      "event": "create",
+      "event": "create_relationship",
+      "fromTypename": "Issue",
+      "id": "AUTHORED_ISSUE:Issue:[Reported comment] \\"Reported text\\":ModerationProfile:bot-forum-helper",
+      "id_from": "Issue:[Reported comment] \\"Reported text\\"",
+      "id_to": "ModerationProfile:bot-forum-helper",
       "properties": {
-        "new": {
-          "relatedCommentId": "Comment:Reported text",
-          "locked": false,
-          "flaggedServerRuleViolation": false,
-          "id": "Issue:[Reported comment] \\"Reported text\\"",
-          "issueNumber": 1,
-          "createdAt": "<time>",
-          "relatedModProfileName": "human-mod",
-          "isOpen": true,
-          "title": "[Reported comment] \\"Reported text\\"",
+        "from": {
+          "ageGateTouchedAt": "<time>",
           "authorName": "bot-forum-helper",
           "channelUniqueName": "forum",
-          "ageGateTouchedAt": "<time>"
+          "createdAt": "<time>",
+          "flaggedServerRuleViolation": false,
+          "id": "Issue:[Reported comment] \\"Reported text\\"",
+          "isOpen": true,
+          "issueNumber": 1,
+          "locked": false,
+          "relatedCommentId": "Comment:Reported text",
+          "relatedModProfileName": "human-mod",
+          "title": "[Reported comment] \\"Reported text\\""
+        },
+        "relationship": {},
+        "to": {
+          "displayName": "bot-forum-helper"
         }
-      }
+      },
+      "relationshipName": "AUTHORED_ISSUE",
+      "timestamp": "<time>",
+      "toTypename": "ModerationProfile"
     }
   ],
   "nodes": [
@@ -3053,19 +3073,19 @@ exports[`actual bot report parity mod-comment/new/success 1`] = `
     {
       "alias": "ChannelIssueCounter:forum",
       "properties": {
+        "channelUniqueName": "forum",
         "current": {
-          "low": 1,
-          "high": 0
-        },
-        "channelUniqueName": "forum"
+          "high": 0,
+          "low": 1
+        }
       }
     },
     {
       "alias": "Comment:Reported text",
       "properties": {
         "createdAt": "<time>",
-        "isRootComment": true,
         "id": "Comment:Reported text",
+        "isRootComment": true,
         "text": "Reported text"
       }
     },
@@ -3073,20 +3093,20 @@ exports[`actual bot report parity mod-comment/new/success 1`] = `
       "alias": "Issue:[Reported comment] \\"Reported text\\"",
       "properties": {
         "ageGateTouchedAt": "<time>",
-        "createdAt": "<time>",
-        "isOpen": true,
-        "relatedCommentId": "Comment:Reported text",
         "authorName": "bot-forum-helper",
-        "issueNumber": {
-          "low": 1,
-          "high": 0
-        },
+        "channelUniqueName": "forum",
+        "createdAt": "<time>",
         "flaggedServerRuleViolation": false,
         "id": "Issue:[Reported comment] \\"Reported text\\"",
+        "isOpen": true,
+        "issueNumber": {
+          "high": 0,
+          "low": 1
+        },
         "locked": false,
-        "title": "[Reported comment] \\"Reported text\\"",
+        "relatedCommentId": "Comment:Reported text",
         "relatedModProfileName": "human-mod",
-        "channelUniqueName": "forum"
+        "title": "[Reported comment] \\"Reported text\\""
       }
     },
     {
@@ -3106,26 +3126,6 @@ exports[`actual bot report parity mod-comment/new/success 1`] = `
       "properties": {
         "username": "alice"
       }
-    }
-  ],
-  "edges": [
-    {
-      "source": "Channel:forum",
-      "target": "Issue:[Reported comment] \\"Reported text\\"",
-      "type": "HAS_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "Issue:[Reported comment] \\"Reported text\\"",
-      "target": "ModerationProfile:bot-forum-helper",
-      "type": "AUTHORED_ISSUE",
-      "properties": {}
-    },
-    {
-      "source": "ModerationProfile:human-mod",
-      "target": "Comment:Reported text",
-      "type": "AUTHORED_COMMENT",
-      "properties": {}
     }
   ]
 }

@@ -8,31 +8,31 @@ exports[`admin missing targets and malformed inputs retain generated behavior 2`
 {
   "serverConfigs": [
     {
-      "serverName": "cats",
-      "serverDescription": null,
-      "serverIconURL": null,
+      "accountAgeGateEnabled": null,
       "allowedFileTypes": null,
-      "featuredWikiPageIds": null,
+      "brandingCustomFooterLinks": null,
+      "brandingDocsURL": null,
+      "brandingFaviconURL": null,
+      "brandingIssuesURL": null,
+      "brandingLogoAlt": null,
+      "brandingLogoDarkURL": null,
+      "brandingPrimaryColor": null,
+      "brandingProductName": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingSourceURL": null,
+      "brandingSupportEmail": null,
       "enableDownloads": null,
       "enableEvents": null,
-      "accountAgeGateEnabled": null,
+      "featuredWikiPageIds": null,
       "minimumAccountAge": null,
-      "sensitiveContentAgeGateEnabled": null,
       "minimumSensitiveContentAge": null,
-      "brandingProductName": null,
-      "brandingDocsURL": null,
-      "brandingSourceURL": null,
-      "brandingIssuesURL": null,
-      "brandingSupportEmail": null,
-      "brandingShowUpstreamLinks": null,
-      "brandingLogoDarkURL": null,
-      "brandingLogoAlt": null,
-      "brandingFaviconURL": null,
-      "brandingPrimaryColor": null,
+      "pluginPipelines": null,
       "pluginRegistries": null,
       "rules": null,
-      "brandingCustomFooterLinks": null,
-      "pluginPipelines": null
+      "sensitiveContentAgeGateEnabled": null,
+      "serverDescription": null,
+      "serverIconURL": null,
+      "serverName": "cats"
     }
   ]
 }
@@ -41,20 +41,20 @@ exports[`admin missing targets and malformed inputs retain generated behavior 2`
 exports[`admin missing targets and malformed inputs retain generated behavior 3`] = `
 [
   {
-    "id": "<id-0>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
     "event": "update",
+    "id": "<id-0>",
     "properties": {
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
       "new": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
       }
-    }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -62,44 +62,44 @@ exports[`admin missing targets and malformed inputs retain generated behavior 3`
 exports[`admin projection failure preserves committed invite and events 1`] = `
 [
   {
+    "event": "create_relationship",
+    "fromTypename": "ServerConfig",
     "id": "<id-0>",
     "id_from": "<id-1>",
     "id_to": "<id-2>",
-    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
-    "fromTypename": "ServerConfig",
-    "toTypename": "User",
-    "timestamp": "<generated-time>",
-    "event": "create_relationship",
     "properties": {
       "from": {
-        "enableEvents": "invalid",
         "createdAt": "<generated-time>",
+        "enableEvents": "invalid",
         "serverName": "cats"
       },
+      "relationship": {},
       "to": {
-        "username": "alice",
-        "createdAt": "<generated-time>"
-      },
-      "relationship": {}
-    }
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
   },
   {
-    "id": "<id-1>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
     "event": "update",
+    "id": "<id-1>",
     "properties": {
-      "old": {
-        "enableEvents": "invalid",
+      "new": {
         "createdAt": "<generated-time>",
+        "enableEvents": "invalid",
         "serverName": "cats"
       },
-      "new": {
-        "enableEvents": "invalid",
+      "old": {
         "createdAt": "<generated-time>",
+        "enableEvents": "invalid",
         "serverName": "cats"
       }
-    }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -107,10 +107,9 @@ exports[`admin projection failure preserves committed invite and events 1`] = `
 exports[`admin projection failure preserves committed invite and events 2`] = `
 [
   {
-    "username": "alice",
     "invites": {
-      "low": 1,
-      "high": 0
+      "high": 0,
+      "low": 1
     },
     "notifications": [
       {
@@ -118,7 +117,8 @@ exports[`admin projection failure preserves committed invite and events 2`] = `
         "text": null,
         "type": null
       }
-    ]
+    ],
+    "username": "alice"
   }
 ]
 `;
@@ -128,62 +128,62 @@ exports[`admin repeated invitation writes preserve result and native events 1`] 
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   },
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   }
@@ -193,78 +193,78 @@ exports[`admin repeated invitation writes preserve result and native events 1`] 
 exports[`admin repeated invitation writes preserve result and native events 2`] = `
 [
   {
+    "event": "create_relationship",
+    "fromTypename": "ServerConfig",
     "id": "<id-0>",
     "id_from": "<id-1>",
     "id_to": "<id-2>",
-    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
-    "fromTypename": "ServerConfig",
-    "toTypename": "User",
-    "timestamp": "<generated-time>",
-    "event": "create_relationship",
     "properties": {
       "from": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
       },
+      "relationship": {},
       "to": {
-        "username": "alice",
-        "createdAt": "<generated-time>"
-      },
-      "relationship": {}
-    }
-  },
-  {
-    "id": "<id-1>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
-    "event": "update",
-    "properties": {
-      "old": {
         "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
+        "username": "alice"
       }
-    }
+    },
+    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
   },
   {
+    "event": "create_relationship",
+    "fromTypename": "ServerConfig",
     "id": "<id-0>",
     "id_from": "<id-1>",
     "id_to": "<id-2>",
-    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
-    "fromTypename": "ServerConfig",
-    "toTypename": "User",
-    "timestamp": "<generated-time>",
-    "event": "create_relationship",
     "properties": {
       "from": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
       },
+      "relationship": {},
       "to": {
-        "username": "alice",
-        "createdAt": "<generated-time>"
-      },
-      "relationship": {}
-    }
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
   },
   {
-    "id": "<id-1>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
     "event": "update",
+    "id": "<id-1>",
     "properties": {
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
       "new": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
       }
-    }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -272,10 +272,9 @@ exports[`admin repeated invitation writes preserve result and native events 2`] 
 exports[`admin repeated invitation writes preserve result and native events 3`] = `
 [
   {
-    "username": "alice",
     "invites": {
-      "low": 1,
-      "high": 0
+      "high": 0,
+      "low": 1
     },
     "notifications": [
       {
@@ -283,7 +282,8 @@ exports[`admin repeated invitation writes preserve result and native events 3`] 
         "text": null,
         "type": null
       }
-    ]
+    ],
+    "username": "alice"
   }
 ]
 `;
@@ -310,31 +310,31 @@ exports[`moderator missing targets and malformed inputs retain generated behavio
 {
   "serverConfigs": [
     {
-      "serverName": "cats",
-      "serverDescription": null,
-      "serverIconURL": null,
+      "accountAgeGateEnabled": null,
       "allowedFileTypes": null,
-      "featuredWikiPageIds": null,
+      "brandingCustomFooterLinks": null,
+      "brandingDocsURL": null,
+      "brandingFaviconURL": null,
+      "brandingIssuesURL": null,
+      "brandingLogoAlt": null,
+      "brandingLogoDarkURL": null,
+      "brandingPrimaryColor": null,
+      "brandingProductName": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingSourceURL": null,
+      "brandingSupportEmail": null,
       "enableDownloads": null,
       "enableEvents": null,
-      "accountAgeGateEnabled": null,
+      "featuredWikiPageIds": null,
       "minimumAccountAge": null,
-      "sensitiveContentAgeGateEnabled": null,
       "minimumSensitiveContentAge": null,
-      "brandingProductName": null,
-      "brandingDocsURL": null,
-      "brandingSourceURL": null,
-      "brandingIssuesURL": null,
-      "brandingSupportEmail": null,
-      "brandingShowUpstreamLinks": null,
-      "brandingLogoDarkURL": null,
-      "brandingLogoAlt": null,
-      "brandingFaviconURL": null,
-      "brandingPrimaryColor": null,
+      "pluginPipelines": null,
       "pluginRegistries": null,
       "rules": null,
-      "brandingCustomFooterLinks": null,
-      "pluginPipelines": null
+      "sensitiveContentAgeGateEnabled": null,
+      "serverDescription": null,
+      "serverIconURL": null,
+      "serverName": "cats"
     }
   ]
 }
@@ -343,20 +343,20 @@ exports[`moderator missing targets and malformed inputs retain generated behavio
 exports[`moderator missing targets and malformed inputs retain generated behavior 3`] = `
 [
   {
-    "id": "<id-0>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
     "event": "update",
+    "id": "<id-0>",
     "properties": {
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
       "new": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
       }
-    }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -364,44 +364,44 @@ exports[`moderator missing targets and malformed inputs retain generated behavio
 exports[`moderator projection failure preserves committed invite and events 1`] = `
 [
   {
+    "event": "create_relationship",
+    "fromTypename": "ServerConfig",
     "id": "<id-0>",
     "id_from": "<id-1>",
     "id_to": "<id-2>",
-    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
-    "fromTypename": "ServerConfig",
-    "toTypename": "User",
-    "timestamp": "<generated-time>",
-    "event": "create_relationship",
     "properties": {
       "from": {
-        "enableEvents": "invalid",
         "createdAt": "<generated-time>",
+        "enableEvents": "invalid",
         "serverName": "cats"
       },
+      "relationship": {},
       "to": {
-        "username": "alice",
-        "createdAt": "<generated-time>"
-      },
-      "relationship": {}
-    }
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
   },
   {
-    "id": "<id-1>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
     "event": "update",
+    "id": "<id-1>",
     "properties": {
-      "old": {
-        "enableEvents": "invalid",
+      "new": {
         "createdAt": "<generated-time>",
+        "enableEvents": "invalid",
         "serverName": "cats"
       },
-      "new": {
-        "enableEvents": "invalid",
+      "old": {
         "createdAt": "<generated-time>",
+        "enableEvents": "invalid",
         "serverName": "cats"
       }
-    }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -409,10 +409,9 @@ exports[`moderator projection failure preserves committed invite and events 1`] 
 exports[`moderator projection failure preserves committed invite and events 2`] = `
 [
   {
-    "username": "alice",
     "invites": {
-      "low": 1,
-      "high": 0
+      "high": 0,
+      "low": 1
     },
     "notifications": [
       {
@@ -420,7 +419,8 @@ exports[`moderator projection failure preserves committed invite and events 2`] 
         "text": null,
         "type": null
       }
-    ]
+    ],
+    "username": "alice"
   }
 ]
 `;
@@ -430,62 +430,62 @@ exports[`moderator repeated invitation writes preserve result and native events 
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   },
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   }
@@ -495,78 +495,78 @@ exports[`moderator repeated invitation writes preserve result and native events 
 exports[`moderator repeated invitation writes preserve result and native events 2`] = `
 [
   {
+    "event": "create_relationship",
+    "fromTypename": "ServerConfig",
     "id": "<id-0>",
     "id_from": "<id-1>",
     "id_to": "<id-2>",
-    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
-    "fromTypename": "ServerConfig",
-    "toTypename": "User",
-    "timestamp": "<generated-time>",
-    "event": "create_relationship",
     "properties": {
       "from": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
       },
+      "relationship": {},
       "to": {
-        "username": "alice",
-        "createdAt": "<generated-time>"
-      },
-      "relationship": {}
-    }
-  },
-  {
-    "id": "<id-1>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
-    "event": "update",
-    "properties": {
-      "old": {
         "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
+        "username": "alice"
       }
-    }
+    },
+    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
   },
   {
+    "event": "create_relationship",
+    "fromTypename": "ServerConfig",
     "id": "<id-0>",
     "id_from": "<id-1>",
     "id_to": "<id-2>",
-    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
-    "fromTypename": "ServerConfig",
-    "toTypename": "User",
-    "timestamp": "<generated-time>",
-    "event": "create_relationship",
     "properties": {
       "from": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
       },
+      "relationship": {},
       "to": {
-        "username": "alice",
-        "createdAt": "<generated-time>"
-      },
-      "relationship": {}
-    }
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
   },
   {
-    "id": "<id-1>",
-    "typename": "ServerConfig",
-    "timestamp": "<generated-time>",
     "event": "update",
+    "id": "<id-1>",
     "properties": {
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
       "new": {
         "createdAt": "<generated-time>",
         "serverName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
       }
-    }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -574,10 +574,9 @@ exports[`moderator repeated invitation writes preserve result and native events 
 exports[`moderator repeated invitation writes preserve result and native events 3`] = `
 [
   {
-    "username": "alice",
     "invites": {
-      "low": 1,
-      "high": 0
+      "high": 0,
+      "low": 1
     },
     "notifications": [
       {
@@ -585,7 +584,8 @@ exports[`moderator repeated invitation writes preserve result and native events 
         "text": null,
         "type": null
       }
-    ]
+    ],
+    "username": "alice"
   }
 ]
 `;

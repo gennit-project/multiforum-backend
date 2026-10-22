@@ -9,12 +9,12 @@
     "node": ">=26.0.0 <27"
   },
   "scripts": {
-    "test": "node --import tsx --test $(find . -path './node_modules' -prune -o -path './.claude' -prune -o -path './coverage' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
-    "test:integration": "TESTCONTAINERS_REUSE_ENABLE=true node --import tsx --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
-    "coverage": "c8 --exclude-after-remap --exclude='rules/permission/userDataHelperFunctions.ts' node --import tsx --test $(find . -path './node_modules' -prune -o -path './.claude' -prune -o -path './coverage' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
+    "test": "node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test $(find . -path './node_modules' -prune -o -path './.claude' -prune -o -path './coverage' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
+    "test:integration": "TESTCONTAINERS_REUSE_ENABLE=true node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
+    "coverage": "c8 --exclude-after-remap --exclude='rules/permission/userDataHelperFunctions.ts' node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test $(find . -path './node_modules' -prune -o -path './.claude' -prune -o -path './coverage' -prune -o -path './ts_emitted' -prune -o -path './tests/integration' -prune -o -name '*test.ts' -print | sort)",
     "coverage:startup-provisioning": "c8 --exclude-after-remap --include='services/startupProvisioning.ts' --reports-dir=coverage/startup-provisioning node --test ts_emitted/services/startupProvisioning.test.js",
     "coverage:request-user": "c8 --exclude-after-remap --include='rules/permission/userDataHelperFunctions.ts' --reports-dir=coverage/request-user node --test ts_emitted/rules/permission/userDataHelperFunctions.test.js",
-    "coverage:integration": "TESTCONTAINERS_REUSE_ENABLE=true c8 --exclude-after-remap --exclude='rules/permission/userDataHelperFunctions.ts' node --import tsx --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
+    "coverage:integration": "TESTCONTAINERS_REUSE_ENABLE=true c8 --exclude-after-remap --exclude='rules/permission/userDataHelperFunctions.ts' node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test --test-concurrency=1 $(find ./tests/integration -name '*test.ts' -print 2>/dev/null | sort)",
     "test:integration:shard": "bash build_scripts/integration-shard.sh",
     "coverage:merged": "bash build_scripts/coverage-merged.sh",
     "prepare": "husky",

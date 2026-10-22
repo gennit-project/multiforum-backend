@@ -1,46 +1,46 @@
 exports[`actual child middleware preserves result-shape contract and system author (nested=false) 1`] = `
 {
-  "graph": [],
-  "events": []
+  "events": [],
+  "graph": []
 }
 `;
 
 exports[`actual child middleware preserves result-shape contract and system author (nested=true) 1`] = `
 {
-  "graph": [
-    {
-      "body": "Child body",
-      "reason": "new",
-      "author": "system",
-      "parent": null
-    },
-    {
-      "body": "Child title",
-      "reason": "new",
-      "author": "system",
-      "parent": null
-    }
-  ],
   "events": [
     {
-      "kind": "create_relationship",
       "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
     },
     {
       "kind": "create",
       "typename": "TextVersion"
     },
     {
-      "kind": "create_relationship",
-      "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
-    },
-    {
       "kind": "create",
       "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "system",
+      "body": "Child body",
+      "parent": null,
+      "reason": "new"
+    },
+    {
+      "author": "system",
+      "body": "Child title",
+      "parent": null,
+      "reason": "new"
     }
   ]
 }
@@ -48,24 +48,24 @@ exports[`actual child middleware preserves result-shape contract and system auth
 
 exports[`actual wiki revision hook graph and event parity: body 1`] = `
 {
-  "graph": [
-    {
-      "body": "Body",
-      "reason": "old reason",
-      "author": "previous",
-      "parent": null
-    }
-  ],
   "events": [
     {
-      "kind": "create_relationship",
       "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
     },
     {
       "kind": "create",
       "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Body",
+      "parent": null,
+      "reason": "old reason"
     }
   ]
 }
@@ -73,40 +73,40 @@ exports[`actual wiki revision hook graph and event parity: body 1`] = `
 
 exports[`actual wiki revision hook graph and event parity: both 1`] = `
 {
-  "graph": [
-    {
-      "body": "Body",
-      "reason": "old reason",
-      "author": "previous",
-      "parent": null
-    },
-    {
-      "body": "Title",
-      "reason": "old reason",
-      "author": "previous",
-      "parent": null
-    }
-  ],
   "events": [
     {
-      "kind": "create_relationship",
       "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
     },
     {
       "kind": "create",
       "typename": "TextVersion"
     },
     {
-      "kind": "create_relationship",
-      "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
-    },
-    {
       "kind": "create",
       "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Body",
+      "parent": null,
+      "reason": "old reason"
+    },
+    {
+      "author": "previous",
+      "body": "Title",
+      "parent": null,
+      "reason": "old reason"
     }
   ]
 }
@@ -114,40 +114,40 @@ exports[`actual wiki revision hook graph and event parity: both 1`] = `
 
 exports[`actual wiki revision hook graph and event parity: invalid default 1`] = `
 {
-  "graph": [
-    {
-      "body": "Body",
-      "reason": "old reason",
-      "author": "previous",
-      "parent": null
-    },
-    {
-      "body": "Title",
-      "reason": "old reason",
-      "author": "previous",
-      "parent": null
-    }
-  ],
   "events": [
     {
-      "kind": "create_relationship",
       "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
+    },
+    {
+      "from": "User",
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
     },
     {
       "kind": "create",
       "typename": "TextVersion"
     },
     {
-      "kind": "create_relationship",
-      "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
-    },
-    {
       "kind": "create",
       "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Body",
+      "parent": null,
+      "reason": "old reason"
+    },
+    {
+      "author": "previous",
+      "body": "Title",
+      "parent": null,
+      "reason": "old reason"
     }
   ]
 }
@@ -155,24 +155,24 @@ exports[`actual wiki revision hook graph and event parity: invalid default 1`] =
 
 exports[`actual wiki revision hook graph and event parity: title 1`] = `
 {
-  "graph": [
-    {
-      "body": "Title",
-      "reason": "old reason",
-      "author": "previous",
-      "parent": null
-    }
-  ],
   "events": [
     {
-      "kind": "create_relationship",
       "from": "User",
-      "to": "TextVersion",
-      "relationship": "AUTHORED_VERSION"
+      "kind": "create_relationship",
+      "relationship": "AUTHORED_VERSION",
+      "to": "TextVersion"
     },
     {
       "kind": "create",
       "typename": "TextVersion"
+    }
+  ],
+  "graph": [
+    {
+      "author": "previous",
+      "body": "Title",
+      "parent": null,
+      "reason": "old reason"
     }
   ]
 }
@@ -180,18 +180,18 @@ exports[`actual wiki revision hook graph and event parity: title 1`] = `
 
 exports[`actual wiki revision hook graph and event parity: unchanged 1`] = `
 {
-  "graph": [],
-  "events": []
+  "events": [],
+  "graph": []
 }
 `;
 
 exports[`orphan revision persists when parent disappears after snapshot 1`] = `
 [
   {
-    "body": "Title",
-    "reason": "old reason",
     "author": "previous",
-    "parent": null
+    "body": "Title",
+    "parent": null,
+    "reason": "old reason"
   }
 ]
 `;
@@ -199,14 +199,14 @@ exports[`orphan revision persists when parent disappears after snapshot 1`] = `
 exports[`wiki snapshots and author lookup retain exact projections and missing behavior 1`] = `
 [
   {
-    "id": "w",
-    "title": "Title",
-    "body": "Body",
-    "editReason": "old reason",
+    "PastVersions": [],
     "VersionAuthor": {
       "username": "previous"
     },
-    "PastVersions": []
+    "body": "Body",
+    "editReason": "old reason",
+    "id": "w",
+    "title": "Title"
   }
 ]
 `;

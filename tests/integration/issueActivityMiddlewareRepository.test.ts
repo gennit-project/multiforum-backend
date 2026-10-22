@@ -33,19 +33,17 @@ function eventShape(){return events.map(({kind,event})=>({kind,typename:event.ty
 
 
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 test('all author snapshots preserve generated selections, union authors and missing rows',async(t)=>{
  await driver.executeQuery(`CREATE (u:User {username:'u',displayName:'User',createdAt:datetime()}) CREATE (m:ModerationProfile {displayName:'Mod'}) CREATE (c:Comment {id:'c',isRootComment:true,createdAt:datetime()}) CREATE (c)<-[:AUTHORED_COMMENT]-(u) CREATE (d:Discussion {id:'d',title:'Title',createdAt:datetime()}) CREATE (d)<-[:POSTED_DISCUSSION]-(u) CREATE (e:Event {id:'e',title:'Event',createdAt:datetime()}) CREATE (e)<-[:POSTED_BY]-(u)`);
  const repo=createIssueActivityMiddlewareRepository(driver);
  assert.equal((await repo.findCommentAuthor('c'))[0].CommentAuthor?.username,'u');
  assert.equal((await repo.findEventAuthor('e'))[0].Poster?.username,'u');
- for(const id of ['c','absent'])t.assert.snapshot(sortDeep(plain(await repo.findCommentAuthor(id))));
- t.assert.snapshot(sortDeep(plain(await repo.findDiscussionAuthor('d'))));
- t.assert.snapshot(sortDeep(plain(await repo.findEventAuthor('e'))));
+ for(const id of ['c','absent'])t.assert.snapshot(plain(await repo.findCommentAuthor(id)));
+ t.assert.snapshot(plain(await repo.findDiscussionAuthor('d')));
+ t.assert.snapshot(plain(await repo.findEventAuthor('e')));
  await driver.executeQuery(`MATCH (c:Comment {id:'c'})<-[r:AUTHORED_COMMENT]-(:User), (m:ModerationProfile {displayName:'Mod'}) DELETE r CREATE (c)<-[:AUTHORED_COMMENT]-(m)`);
  assert.equal((await repo.findCommentAuthor('c'))[0].CommentAuthor?.displayName,'Mod');
- t.assert.snapshot(sortDeep(plain(await repo.findCommentAuthor('c'))));
+ t.assert.snapshot(plain(await repo.findCommentAuthor('c')));
 });
 for(const valid of [true,false])test(`closure mutation preserves default projection, persistence and events (valid=${valid})`,async(t)=>{
  await seed(valid);events=[];const repo=createIssueActivityMiddlewareRepository(driver);
@@ -55,7 +53,7 @@ for(const valid of [true,false])test(`closure mutation preserves default project
 });
 test('duplicate delete query matches legacy filter and missing issue',async(t)=>{
  await seed();const repo=createIssueActivityMiddlewareRepository(driver);
- for(const id of ['i','absent'])t.assert.snapshot(sortDeep(plain(await repo.findDeleteActivities(id))));
+ for(const id of ['i','absent'])t.assert.snapshot(plain(await repo.findDeleteActivities(id)));
  await repository.appendActivity('i',{...node,actionType:'delete'});
  assert.deepEqual(plain(await repo.findDeleteActivities('i')),[{id:'i'}]);
 });

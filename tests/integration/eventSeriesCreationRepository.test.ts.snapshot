@@ -1,261 +1,261 @@
 exports[`nested series creation preserves commit, graph and native events 1`] = `
 [
   {
-    "id": "<id>",
-    "title": "Series",
-    "description": null,
-    "locationName": null,
-    "address": null,
-    "virtualEventUrl": null,
-    "cost": null,
-    "free": null,
-    "isHostedByOP": null,
-    "coverImageURL": null,
-    "canceled": null,
-    "createdAt": "<createdAt>",
-    "updatedAt": null,
-    "repeatPattern": null,
-    "Poster": null,
-    "Tags": [],
+    "EventChannels": [],
     "Occurrences": [
       {
-        "id": "<id>",
-        "title": "Occurrence",
-        "startTime": "2026-06-01T10:00:00.000Z",
-        "endTime": "2026-06-01T12:00:00.000Z",
+        "EventChannels": [],
         "canceled": false,
+        "endTime": "2026-06-01T12:00:00.000Z",
+        "id": "<id>",
         "occurrenceIndex": 0,
-        "EventChannels": []
+        "startTime": "2026-06-01T10:00:00.000Z",
+        "title": "Occurrence"
       }
     ],
-    "EventChannels": []
+    "Poster": null,
+    "Tags": [],
+    "address": null,
+    "canceled": null,
+    "cost": null,
+    "coverImageURL": null,
+    "createdAt": "<createdAt>",
+    "description": null,
+    "free": null,
+    "id": "<id>",
+    "isHostedByOP": null,
+    "locationName": null,
+    "repeatPattern": null,
+    "title": "Series",
+    "updatedAt": null,
+    "virtualEventUrl": null
   }
 ]
 `;
 
 exports[`nested series creation preserves commit, graph and native events 2`] = `
 {
-  "response": [
-    {
-      "id": "EventSeries-domain-id",
-      "title": "Series",
-      "description": null,
-      "locationName": null,
-      "address": null,
-      "virtualEventUrl": null,
-      "cost": null,
-      "free": null,
-      "isHostedByOP": null,
-      "coverImageURL": null,
-      "canceled": null,
-      "createdAt": "<time>",
-      "updatedAt": null,
-      "repeatPattern": null,
-      "Poster": null,
-      "Tags": [],
-      "Occurrences": [
-        {
-          "id": "Event-domain-id",
-          "title": "Occurrence",
-          "startTime": "2026-06-01T10:00:00.000Z",
-          "endTime": "2026-06-01T12:00:00.000Z",
-          "canceled": false,
-          "occurrenceIndex": 0,
-          "EventChannels": []
-        }
-      ],
-      "EventChannels": []
-    }
-  ],
   "events": [
     {
-      "id": "Event",
-      "typename": "Event",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Event",
       "properties": {
         "new": {
-          "startTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
-            "day": {
-              "low": 1,
-              "high": 0
-            },
-            "hour": {
-              "low": 10,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
+          "canceled": false,
+          "createdAt": "<time>",
           "endTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
             "day": {
-              "low": 1,
-              "high": 0
+              "high": 0,
+              "low": 1
             },
             "hour": {
-              "low": 12,
-              "high": 0
+              "high": 0,
+              "low": 12
             },
             "minute": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
             },
-            "second": {
-              "low": 0,
-              "high": 0
+            "month": {
+              "high": 0,
+              "low": 6
             },
             "nanosecond": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
             },
             "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
             }
           },
           "id": "Event-domain-id",
-          "canceled": false,
           "occurrenceIndex": 0,
-          "createdAt": "<time>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
           "title": "Occurrence"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Event"
     },
     {
+      "event": "create",
+      "id": "EventSeries",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "EventSeries-domain-id",
+          "title": "Series"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "EventSeries"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "EventSeries",
       "id": "occurrence-relationship",
       "id_from": "EventSeries",
       "id_to": "Event",
-      "relationshipName": "HAS_OCCURRENCE",
-      "fromTypename": "EventSeries",
-      "toTypename": "Event",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "createdAt": "<time>",
           "id": "EventSeries-domain-id",
           "title": "Series"
         },
+        "relationship": {},
         "to": {
-          "startTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
-            "day": {
-              "low": 1,
-              "high": 0
-            },
-            "hour": {
-              "low": 10,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
+          "canceled": false,
+          "createdAt": "<time>",
           "endTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
             "day": {
-              "low": 1,
-              "high": 0
+              "high": 0,
+              "low": 1
             },
             "hour": {
-              "low": 12,
-              "high": 0
+              "high": 0,
+              "low": 12
             },
             "minute": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
             },
-            "second": {
-              "low": 0,
-              "high": 0
+            "month": {
+              "high": 0,
+              "low": 6
             },
             "nanosecond": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
             },
             "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
             }
           },
           "id": "Event-domain-id",
-          "canceled": false,
           "occurrenceIndex": 0,
-          "createdAt": "<time>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
           "title": "Occurrence"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "EventSeries",
-      "typename": "EventSeries",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "id": "EventSeries-domain-id",
-          "title": "Series"
         }
-      }
+      },
+      "relationshipName": "HAS_OCCURRENCE",
+      "timestamp": "<time>",
+      "toTypename": "Event"
+    }
+  ],
+  "response": [
+    {
+      "EventChannels": [],
+      "Occurrences": [
+        {
+          "EventChannels": [],
+          "canceled": false,
+          "endTime": "2026-06-01T12:00:00.000Z",
+          "id": "Event-domain-id",
+          "occurrenceIndex": 0,
+          "startTime": "2026-06-01T10:00:00.000Z",
+          "title": "Occurrence"
+        }
+      ],
+      "Poster": null,
+      "Tags": [],
+      "address": null,
+      "canceled": null,
+      "cost": null,
+      "coverImageURL": null,
+      "createdAt": "<time>",
+      "description": null,
+      "free": null,
+      "id": "EventSeries-domain-id",
+      "isHostedByOP": null,
+      "locationName": null,
+      "repeatPattern": null,
+      "title": "Series",
+      "updatedAt": null,
+      "virtualEventUrl": null
     }
   ]
 }
@@ -265,193 +265,193 @@ exports[`nested series creation preserves projection failure, graph and native e
 {
   "events": [
     {
-      "id": "Event",
-      "typename": "Event",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Event",
       "properties": {
         "new": {
-          "startTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
-            "day": {
-              "low": 1,
-              "high": 0
-            },
-            "hour": {
-              "low": 10,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
+          "canceled": false,
+          "createdAt": "<time>",
           "endTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
             "day": {
-              "low": 1,
-              "high": 0
+              "high": 0,
+              "low": 1
             },
             "hour": {
-              "low": 12,
-              "high": 0
+              "high": 0,
+              "low": 12
             },
             "minute": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
             },
-            "second": {
-              "low": 0,
-              "high": 0
+            "month": {
+              "high": 0,
+              "low": 6
             },
             "nanosecond": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
             },
             "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
             }
           },
           "id": "Event-domain-id",
-          "canceled": false,
           "occurrenceIndex": 0,
-          "createdAt": "<time>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
           "title": "Occurrence"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Event"
     },
     {
+      "event": "create",
+      "id": "EventSeries",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "EventSeries-domain-id",
+          "title": "Series"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "EventSeries"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "EventSeries",
       "id": "occurrence-relationship",
       "id_from": "EventSeries",
       "id_to": "Event",
-      "relationshipName": "HAS_OCCURRENCE",
-      "fromTypename": "EventSeries",
-      "toTypename": "Event",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "createdAt": "<time>",
           "id": "EventSeries-domain-id",
           "title": "Series"
         },
+        "relationship": {},
         "to": {
-          "startTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
-            "day": {
-              "low": 1,
-              "high": 0
-            },
-            "hour": {
-              "low": 10,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
+          "canceled": false,
+          "createdAt": "<time>",
           "endTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
             "day": {
-              "low": 1,
-              "high": 0
+              "high": 0,
+              "low": 1
             },
             "hour": {
-              "low": 12,
-              "high": 0
+              "high": 0,
+              "low": 12
             },
             "minute": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
             },
-            "second": {
-              "low": 0,
-              "high": 0
+            "month": {
+              "high": 0,
+              "low": 6
             },
             "nanosecond": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
             },
             "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
             }
           },
           "id": "Event-domain-id",
-          "canceled": false,
           "occurrenceIndex": 0,
-          "createdAt": "<time>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
           "title": "Occurrence"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "EventSeries",
-      "typename": "EventSeries",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "id": "EventSeries-domain-id",
-          "title": "Series"
         }
-      }
+      },
+      "relationshipName": "HAS_OCCURRENCE",
+      "timestamp": "<time>",
+      "toTypename": "Event"
     }
   ]
 }
@@ -459,227 +459,227 @@ exports[`nested series creation preserves projection failure, graph and native e
 
 exports[`nested series creation preserves rollback, graph and native events 1`] = `
 {
-  "response": [
-    {
-      "id": "EventSeries-domain-id",
-      "title": "Series",
-      "description": null,
-      "locationName": null,
-      "address": null,
-      "virtualEventUrl": null,
-      "cost": null,
-      "free": null,
-      "isHostedByOP": null,
-      "coverImageURL": null,
-      "canceled": null,
-      "createdAt": "<time>",
-      "updatedAt": null,
-      "repeatPattern": null,
-      "Poster": null,
-      "Tags": [],
-      "Occurrences": [
-        {
-          "id": "Event-domain-id",
-          "title": "Occurrence",
-          "startTime": "2026-06-01T10:00:00.000Z",
-          "endTime": "2026-06-01T12:00:00.000Z",
-          "canceled": false,
-          "occurrenceIndex": 0,
-          "EventChannels": []
-        }
-      ],
-      "EventChannels": []
-    }
-  ],
   "events": [
     {
-      "id": "Event",
-      "typename": "Event",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Event",
       "properties": {
         "new": {
-          "startTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
-            "day": {
-              "low": 1,
-              "high": 0
-            },
-            "hour": {
-              "low": 10,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
+          "canceled": false,
+          "createdAt": "<time>",
           "endTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
             "day": {
-              "low": 1,
-              "high": 0
+              "high": 0,
+              "low": 1
             },
             "hour": {
-              "low": 12,
-              "high": 0
+              "high": 0,
+              "low": 12
             },
             "minute": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
             },
-            "second": {
-              "low": 0,
-              "high": 0
+            "month": {
+              "high": 0,
+              "low": 6
             },
             "nanosecond": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
             },
             "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
             }
           },
           "id": "Event-domain-id",
-          "canceled": false,
           "occurrenceIndex": 0,
-          "createdAt": "<time>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
           "title": "Occurrence"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Event"
     },
     {
+      "event": "create",
+      "id": "EventSeries",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "EventSeries-domain-id",
+          "title": "Series"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "EventSeries"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "EventSeries",
       "id": "occurrence-relationship",
       "id_from": "EventSeries",
       "id_to": "Event",
-      "relationshipName": "HAS_OCCURRENCE",
-      "fromTypename": "EventSeries",
-      "toTypename": "Event",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "createdAt": "<time>",
           "id": "EventSeries-domain-id",
           "title": "Series"
         },
+        "relationship": {},
         "to": {
-          "startTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
-            "day": {
-              "low": 1,
-              "high": 0
-            },
-            "hour": {
-              "low": 10,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
+          "canceled": false,
+          "createdAt": "<time>",
           "endTime": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 6,
-              "high": 0
-            },
             "day": {
-              "low": 1,
-              "high": 0
+              "high": 0,
+              "low": 1
             },
             "hour": {
-              "low": 12,
-              "high": 0
+              "high": 0,
+              "low": 12
             },
             "minute": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
             },
-            "second": {
-              "low": 0,
-              "high": 0
+            "month": {
+              "high": 0,
+              "low": 6
             },
             "nanosecond": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
             },
             "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
             }
           },
           "id": "Event-domain-id",
-          "canceled": false,
           "occurrenceIndex": 0,
-          "createdAt": "<time>",
+          "startTime": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 10
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 6
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
           "title": "Occurrence"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "EventSeries",
-      "typename": "EventSeries",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "id": "EventSeries-domain-id",
-          "title": "Series"
         }
-      }
+      },
+      "relationshipName": "HAS_OCCURRENCE",
+      "timestamp": "<time>",
+      "toTypename": "Event"
+    }
+  ],
+  "response": [
+    {
+      "EventChannels": [],
+      "Occurrences": [
+        {
+          "EventChannels": [],
+          "canceled": false,
+          "endTime": "2026-06-01T12:00:00.000Z",
+          "id": "Event-domain-id",
+          "occurrenceIndex": 0,
+          "startTime": "2026-06-01T10:00:00.000Z",
+          "title": "Occurrence"
+        }
+      ],
+      "Poster": null,
+      "Tags": [],
+      "address": null,
+      "canceled": null,
+      "cost": null,
+      "coverImageURL": null,
+      "createdAt": "<time>",
+      "description": null,
+      "free": null,
+      "id": "EventSeries-domain-id",
+      "isHostedByOP": null,
+      "locationName": null,
+      "repeatPattern": null,
+      "title": "Series",
+      "updatedAt": null,
+      "virtualEventUrl": null
     }
   ]
 }

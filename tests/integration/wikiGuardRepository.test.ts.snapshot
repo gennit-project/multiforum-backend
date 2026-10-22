@@ -141,28 +141,28 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     },
     {
-      "id": "b",
       "Channel": {
         "uniqueName": "dogs"
       },
-      "locked": false,
+      "ChildPages": [],
       "OriginalAuthor": null,
-      "ChildPages": []
+      "id": "b",
+      "locked": false
     }
   ]
 }
@@ -172,28 +172,28 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     },
     {
-      "id": "b",
       "Channel": {
         "uniqueName": "dogs"
       },
-      "locked": false,
+      "ChildPages": [],
       "OriginalAuthor": null,
-      "ChildPages": []
+      "id": "b",
+      "locked": false
     }
   ]
 }
@@ -203,28 +203,28 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     },
     {
-      "id": "b",
       "Channel": {
         "uniqueName": "dogs"
       },
-      "locked": false,
+      "ChildPages": [],
       "OriginalAuthor": null,
-      "ChildPages": []
+      "id": "b",
+      "locked": false
     }
   ]
 }
@@ -234,28 +234,28 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     },
     {
-      "id": "b",
       "Channel": {
         "uniqueName": "dogs"
       },
-      "locked": false,
+      "ChildPages": [],
       "OriginalAuthor": null,
-      "ChildPages": []
+      "id": "b",
+      "locked": false
     }
   ]
 }
@@ -271,28 +271,28 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     },
     {
-      "id": "b",
       "Channel": {
         "uniqueName": "dogs"
       },
-      "locked": false,
+      "ChildPages": [],
       "OriginalAuthor": null,
-      "ChildPages": []
+      "id": "b",
+      "locked": false
     }
   ]
 }
@@ -302,19 +302,19 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     }
   ]
 }
@@ -324,19 +324,19 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     }
   ]
 }
@@ -346,19 +346,19 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     }
   ]
 }
@@ -368,19 +368,19 @@ exports[`findPermissionTargets: arbitrary filters and default projection match p
 {
   "value": [
     {
-      "id": "a",
       "Channel": {
         "uniqueName": "cats"
-      },
-      "locked": true,
-      "OriginalAuthor": {
-        "username": "author"
       },
       "ChildPages": [
         {
           "id": "b"
         }
-      ]
+      ],
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "id": "a",
+      "locked": true
     }
   ]
 }

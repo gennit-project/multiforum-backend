@@ -25,8 +25,6 @@ function baseline():persistence.PluginRegistryRepository {const p=app.ogm.model(
  findRegistryResult:id=>p.find({where:{id},selectionSet:persistence.FINDREGISTRYRESULT_SELECTION}),
 };}
 const graph=async()=>({nodes:(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject()),edges:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type')).records.map(r=>r.toObject())});
-// Multi-row reads have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 async function seed(kind:string){if(kind==='missing')return;await driver.executeQuery("CREATE(:ServerConfig{serverName:'server',pluginRegistries:['https://fixture.invalid/registry']})");if(['existing-plugin','existing-version'].includes(kind))await driver.executeQuery("CREATE(:Plugin{id:'p',name:'plugin',displayName:'Before'})");if(['orphan','existing-version'].includes(kind))await driver.executeQuery("CREATE(:PluginVersion{id:'v',version:'1.0.0',repoUrl:$url})",{url});if(kind==='existing-version')await driver.executeQuery("MATCH(p:Plugin),(v:PluginVersion) CREATE(p)-[:HAS_VERSION]->(v)");}
 for(const kind of ['missing','new','existing-plugin','existing-version','orphan','version-projection','final-projection'] as const)test(`actual registry refresh parity: ${kind}`,async(t)=>{
  const field=kind==='version-projection'?(schema.getType('PluginVersion') as GraphQLObjectType).getFields().entryPath:kind==='final-projection'?(schema.getType('Plugin') as GraphQLObjectType).getFields().Versions:null;
@@ -50,6 +48,6 @@ test('defaults, missing rows, literal input and unbounded orphan/config reads ma
  const next=persistence.createPluginRegistryRepository(driver);
  await driver.executeQuery("UNWIND range(1,29) AS i CREATE(:ServerConfig{serverName:'s'+toString(i),pluginRegistries:[]}) CREATE(:PluginVersion{id:'v'+toString(i),version:'1',repoUrl:'u'})");
  for(const repo of [next]){assert.equal((await repo.findRegistryConfigs()).length,29);assert.equal((await repo.findOrphanCandidates()).length,29);assert.deepEqual(await repo.findPluginByName('quote"\\'),[]);assert.deepEqual(await repo.findPluginDefaultByName('missing'),[]);assert.deepEqual(await repo.findPluginsForVersion('missing'),[]);assert.deepEqual(await repo.findRegistryResult('missing'),[]);assert.deepEqual(await repo.findRegistryVersion('missing','u'),[]);}
- t.assert.snapshot(sortDeep(await next.findOrphanCandidates()));t.assert.snapshot(sortDeep(await next.findRegistryConfigs()));
+ t.assert.snapshot(await next.findOrphanCandidates());t.assert.snapshot(await next.findRegistryConfigs());
 });
 test('generated input coercion prevents writes with the same error',async()=>{const repo=persistence.createPluginRegistryRepository(driver);await assert.rejects(repo.createRegistryPlugin([{name:123}] as never),/String cannot represent a non string value/);assert.deepEqual(await graph(),{nodes:[],edges:[]});assert.deepEqual(events,[]);});

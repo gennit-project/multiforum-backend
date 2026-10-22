@@ -28,16 +28,14 @@ before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});be
 
 const models=()=>({Channel:ogm.model('Channel'),Discussion:ogm.model('Discussion'),DownloadableFile:ogm.model('DownloadableFile'),Plugin:ogm.model('Plugin'),PluginVersion:ogm.model('PluginVersion'),PluginPipelineRun:ogm.model('PluginPipelineRun'),PluginRun:ogm.model('PluginRun'),ServerConfig:ogm.model('ServerConfig'),ServerSecret:ogm.model('ServerSecret')});
 const old=()=>pipelineRetryRepositoryStub(models());
-// Nested relationship projections and multi-row reads have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 
 const context=(username?:string)=>({driver,user:username?{username}:undefined}) as GraphQLContext;
 async function seed(){await driver.executeQuery(`CREATE(f:DownloadableFile{id:'file',uploadedByUsername:'owner',scanStatus:'FAILED'}),(d:Discussion{id:'discussion'}),(u:User{username:'author'}),(u)-[:POSTED_DISCUSSION]->(d),(d)-[:HAS_DOWNLOADABLE_FILE]->(f),(a:DiscussionChannel{id:'active',channelUniqueName:'active',archived:false}),(a)-[:POSTED_IN_CHANNEL]->(d),(b:DiscussionChannel{id:'archived',channelUniqueName:'archived',archived:true}),(b)-[:POSTED_IN_CHANNEL]->(d)`);}
 test('retry reads preserve canonical owner/channel projections, literals and unbounded attempts/jobs',async(t)=>{
- await seed();const repo=createPipelineRetryRepository(driver);t.assert.snapshot(sortDeep(await repo.findScanTarget('file')));const file=(await repo.findScanTarget('file'))[0] as any;assert.equal(file.Discussion.Author.username,'author');assert.deepEqual(file.Discussion.DiscussionChannels.map((c:any)=>c.channelUniqueName).sort(),['active','archived']);
- for(const id of ['missing','quote"\\id'])t.assert.snapshot(sortDeep(await repo.findScanTarget(id)));
+ await seed();const repo=createPipelineRetryRepository(driver);t.assert.snapshot(await repo.findScanTarget('file'));const file=(await repo.findScanTarget('file'))[0] as any;assert.equal(file.Discussion.Author.username,'author');assert.deepEqual(file.Discussion.DiscussionChannels.map((c:any)=>c.channelUniqueName).sort(),['active','archived']);
+ for(const id of ['missing','quote"\\id'])t.assert.snapshot(await repo.findScanTarget(id));
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{pipelineId:toString(n),targetId:'file',status:'FAILED',createdAt:datetime('2026-01-01T00:00:00Z')}),(:PluginRun{id:toString(n),pipelineId:'new',pluginId:'plugin',version:'1.0.0',scope:'SERVER',eventType:'fixture',status:'FAILED',createdAt:datetime('2026-01-01T00:00:00Z'),updatedAt:datetime('2026-01-01T00:00:00Z')})`);
- t.assert.snapshot(sortDeep(await repo.findFailedAttempts({targetId:'file'})));assert.equal((await repo.findFailedAttempts({targetId:'file'})).length,29);t.assert.snapshot(sortDeep(await repo.findRetryJobs('new')));assert.equal((await repo.findRetryJobs('new')).length,29);assert.equal(events.length,0);
+ t.assert.snapshot(await repo.findFailedAttempts({targetId:'file'}));assert.equal((await repo.findFailedAttempts({targetId:'file'})).length,29);t.assert.snapshot(await repo.findRetryJobs('new'));assert.equal((await repo.findRetryJobs('new')).length,29);assert.equal(events.length,0);
 });
 test('actual retry retains missing/clean/unauthorized errors before runner calls',async()=>{
  {await resetDatabase(driver);events=[];await seed();let calls=0;const resolver=createRetryDownloadableFileScanResolver({...models(),retryRepository:createPipelineRetryRepository(driver)},async()=>false,async()=>{calls++;return [];});

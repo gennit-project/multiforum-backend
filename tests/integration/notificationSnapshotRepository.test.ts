@@ -25,14 +25,7 @@ before(async () => {
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown) => JSON.parse(JSON.stringify(value));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep = (value: unknown): unknown =>
-  Array.isArray(value)
-    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
-    : value && typeof value === "object"
-      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
-      : value;
-const equal = async (t: TestContext, current: Promise<unknown>) => t.assert.snapshot(sortDeep(plain(await current)));
+const equal = async (t: TestContext, current: Promise<unknown>) => t.assert.snapshot(plain(await current));
 
 const commentSelection = `{id text CommentAuthor {... on User {username displayName} ... on ModerationProfile {displayName User {username}}} DiscussionChannel {discussionId channelUniqueName Discussion {id title}} Event {id title EventChannels {channelUniqueName}}}`;
 const discussionSelection = `{id title body Author {username displayName} DiscussionChannels {channelUniqueName}}`;

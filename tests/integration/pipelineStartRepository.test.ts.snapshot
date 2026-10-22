@@ -93,29 +93,29 @@ exports[`active attempts retain full predicate, unbounded result and started-att
 exports[`active attempts retain full predicate, unbounded result and started-attempt projection 2`] = `
 [
   {
+    "applicability": null,
+    "attemptNumber": 1,
+    "campaignId": null,
+    "channelId": null,
+    "configurationSnapshot": "{}",
+    "createdAt": "2020-01-01T00:00:00.000Z",
+    "eventType": "downloadableFile.created",
+    "finishedAt": null,
+    "heartbeatAt": null,
+    "initiatedByUsername": null,
     "pipelineId": "1",
+    "policyEffectiveAt": null,
+    "policyId": null,
+    "queuedAt": null,
+    "retryOfPipelineRunId": null,
+    "scope": "SERVER",
+    "startedAt": null,
+    "status": "RUNNING",
     "targetId": "file",
     "targetType": "DownloadableFile",
     "targetVersion": null,
-    "eventType": "downloadableFile.created",
-    "scope": "SERVER",
-    "channelId": null,
-    "status": "RUNNING",
-    "trigger": "OWNER_START",
-    "initiatedByUsername": null,
-    "retryOfPipelineRunId": null,
-    "attemptNumber": 1,
-    "configurationSnapshot": "{}",
-    "applicability": null,
-    "policyEffectiveAt": null,
-    "policyId": null,
-    "campaignId": null,
-    "queuedAt": null,
-    "startedAt": null,
-    "heartbeatAt": null,
     "timeoutAt": null,
-    "finishedAt": null,
-    "createdAt": "2020-01-01T00:00:00.000Z",
+    "trigger": "OWNER_START",
     "updatedAt": "2020-01-01T00:00:00.000Z"
   }
 ]
@@ -128,11 +128,11 @@ exports[`active attempts retain full predicate, unbounded result and started-att
 exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 1`] = `
 [
   {
+    "Discussion": null,
+    "createdAt": "2020-01-01T00:00:00.000Z",
     "id": "file",
     "uploadedAt": "2020-01-01T00:00:00.000Z",
-    "createdAt": "2020-01-01T00:00:00.000Z",
-    "uploadedByUsername": "owner",
-    "Discussion": null
+    "uploadedByUsername": "owner"
   }
 ]
 `;
@@ -148,8 +148,8 @@ exports[`start snapshots preserve selections, literal values, missing rows and u
 exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 4`] = `
 [
   {
-    "uniqueName": "channel",
-    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]"
+    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]",
+    "uniqueName": "channel"
   }
 ]
 `;
@@ -161,8 +161,8 @@ exports[`start snapshots preserve selections, literal values, missing rows and u
 exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 6`] = `
 [
   {
-    "uniqueName": "channel",
-    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]"
+    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]",
+    "uniqueName": "channel"
   }
 ]
 `;
@@ -170,208 +170,208 @@ exports[`start snapshots preserve selections, literal values, missing rows and u
 exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 7`] = `
 [
   {
-    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
+    "InstalledVersionsConnection": {
+      "edges": []
+    },
+    "pluginPipelines": null
+  },
+  {
     "InstalledVersionsConnection": {
       "edges": [
         {
+          "node": {
+            "Plugin": {
+              "description": null,
+              "displayName": null,
+              "id": "plugin",
+              "metadata": null,
+              "name": "plugin"
+            },
+            "entryPath": "index.js",
+            "id": "version",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
+            "repoUrl": "fixture-only",
+            "settingsDefaults": null,
+            "tarballGsUri": null,
+            "uiSchema": null,
+            "version": "1.0.0"
+          },
           "properties": {
             "enabled": true,
             "settingsJson": null
-          },
-          "node": {
-            "id": "version",
-            "version": "1.0.0",
-            "repoUrl": "fixture-only",
-            "tarballGsUri": null,
-            "entryPath": "index.js",
-            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
-            "settingsDefaults": null,
-            "uiSchema": null,
-            "Plugin": {
-              "id": "plugin",
-              "name": "plugin",
-              "displayName": null,
-              "description": null,
-              "metadata": null
-            }
           }
         }
       ]
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
-  },
-  {
-    "pluginPipelines": null,
-    "InstalledVersionsConnection": {
-      "edges": []
-    }
+    },
+    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]"
   }
 ]
 `;

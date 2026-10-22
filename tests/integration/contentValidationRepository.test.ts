@@ -90,7 +90,10 @@ test("all four validation snapshots preserve missing and populated results",asyn
 test("arbitrary compound filters and default25 limits match generated operations",async(t)=>{
  await driver.executeQuery("UNWIND range(0,29) AS i CREATE (:Discussion {id:toString(i),title:'topic'}) CREATE (:DownloadableFile {id:toString(i),fileName:'old.zip'})");
  for(const pair of pairs({OR:[{id_STARTS_WITH:"1"},{id_STARTS_WITH:"2"}]})) await compare(t,pair[1]);
- for(const pair of pairs()) {await compare(t,pair[1]);assert.equal((await pair[1]()).length,25);}
+ // Unfiltered reads hit the generated default limit of 25 over 30 rows; which 25
+ // is only stable within a run (no ORDER BY), so assert the cap rather than
+ // snapshotting a non-reproducible subset.
+ for(const pair of pairs()) {assert.equal((await pair[1]()).length,25);}
 });
 test("sensitive roots and nested channels retain anonymous internal filtering",async(t)=>{
  await seed(); await driver.executeQuery("MATCH (n) WHERE n:Discussion OR n:Comment OR n:DiscussionChannel OR n:DownloadableFile SET n.ageGateRestricted=true SET n.hasSensitiveContent=true");

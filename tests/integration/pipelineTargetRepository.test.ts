@@ -26,13 +26,6 @@ before(async () => {
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep = (value: unknown): unknown =>
-  Array.isArray(value)
-    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
-    : value && typeof value === "object"
-      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
-      : value;
 
 // Exact pre-migration projections, retained independently of repository documents.
 const DISCUSSION_SELECTION = `{
@@ -99,11 +92,11 @@ async function seed(): Promise<void> {
 test("all five applicability/visibility projections match production OGM", async (t) => {
   await seed();
   const repository = createPipelineTargetRepository(driver);
-  t.assert.snapshot(sortDeep(plain(await repository.findDiscussionVisibility("discussion"))));
-  t.assert.snapshot(sortDeep(plain(await repository.findDownloadVisibility("file"))));
-  t.assert.snapshot(sortDeep(plain(await repository.findDownloadTiming("file"))));
-  t.assert.snapshot(sortDeep(plain(await repository.listServerApplicabilityConfigs())));
-  t.assert.snapshot(sortDeep(plain(await repository.findChannelApplicabilityConfig("cats"))));
+  t.assert.snapshot(plain(await repository.findDiscussionVisibility("discussion")));
+  t.assert.snapshot(plain(await repository.findDownloadVisibility("file")));
+  t.assert.snapshot(plain(await repository.findDownloadTiming("file")));
+  t.assert.snapshot(plain(await repository.listServerApplicabilityConfigs()));
+  t.assert.snapshot(plain(await repository.findChannelApplicabilityConfig("cats")));
   const resolver = createApplicability({ driver });
   const server = await resolver(null, { downloadableFileId: "file" });
   const channel = await resolver(null, { downloadableFileId: "file", scope: "CHANNEL", discussionId: "discussion", channelUniqueName: "cats", eventType: "discussionChannel.created" });
@@ -124,7 +117,7 @@ test("context-free generated age filters keep restricted targets out of public p
   }
   await driver.executeQuery("MATCH (file:DownloadableFile {id: 'file'}) SET file.ageGateRestricted = false WITH file MATCH (d:Discussion {id: 'discussion'}) SET d.hasSensitiveContent = true");
   assert.deepEqual(await repository.findDiscussionVisibility("discussion"), []);
-  t.assert.snapshot(sortDeep(plain(await repository.findDownloadVisibility("file"))));
+  t.assert.snapshot(plain(await repository.findDownloadVisibility("file")));
   await assert.rejects(createApplicability({ driver })(null, { downloadableFileId: "file" }), /Pipeline target not found/);
 });
 
@@ -165,7 +158,7 @@ test("nested visibility selections preserve generated limits and restricted chan
   t.assert.snapshot(discussionSnap);
   await driver.executeQuery("MATCH (post:DiscussionChannel) SET post.ageGateRestricted = true");
   const downloads = await repository.findDownloadVisibility("file");
-  t.assert.snapshot(sortDeep(plain(downloads)));
+  t.assert.snapshot(plain(downloads));
   assert.deepEqual(downloads[0].Discussion?.DiscussionChannels, []);
   await assert.rejects(assertPublicPipelineTargetVisible({ repository, targetId: "file", targetType: "DownloadableFile" }), /Pipeline target not found/);
 });

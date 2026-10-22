@@ -28,13 +28,6 @@ before(async () => {
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep = (value: unknown): unknown =>
-  Array.isArray(value)
-    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
-    : value && typeof value === "object"
-      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
-      : value;
 
 // Exact legacy projections captured before migration. They intentionally retain
 // selected metadata even when the final resolver does not use those fields.
@@ -107,7 +100,7 @@ test("secret-status projections match OGM without exposing ciphertext", async (t
   `);
   const repository = createPluginConfigurationReadRepository(driver);
   const actual = await repository.listPluginSecretStatuses("scanner");
-  t.assert.snapshot(sortDeep(plain(actual)));
+  t.assert.snapshot(plain(actual));
   assert.equal(actual.length, 3);
   assert.doesNotMatch(JSON.stringify(actual), /ciphertext|synthetic-secret/);
   const response = await getServerPluginSecrets({ driver })(null, { pluginId: "scanner" }, {} as GraphQLContext, {} as never);
@@ -123,7 +116,7 @@ test("installed plugin projections preserve relationship data, metadata and unsc
     CREATE (:ServerConfig {serverName: 'second'})
   `);
   const repository = createPluginConfigurationReadRepository(driver);
-  t.assert.snapshot(sortDeep(plain(await repository.listInstalledPluginConfigs())));
+  t.assert.snapshot(plain(await repository.listInstalledPluginConfigs()));
   const result = await getInstalledPlugins({ driver })(null, {}, {} as GraphQLContext, {} as never);
   assert.equal(result.length, 1);
   assert.equal(result[0].enabled, true);
@@ -138,9 +131,9 @@ test("reconciliation snapshots preserve global secret status and default apply p
     CREATE (:ServerSecret {pluginId: 'scanner', key: 'key', isValid: false, ciphertext: 'synthetic-secret'})
   `);
   const repository = createPluginConfigurationReadRepository(driver);
-  t.assert.snapshot(sortDeep(plain(await repository.listReconciliationConfigs())));
+  t.assert.snapshot(plain(await repository.listReconciliationConfigs()));
   const secrets = await repository.listReconciliationSecretStatuses();
-  t.assert.snapshot(sortDeep(plain(secrets)));
+  t.assert.snapshot(plain(secrets));
   assert.doesNotMatch(JSON.stringify(secrets), /ciphertext|synthetic-secret/);
   // Exercise the actual default operation factory, not its injected test seam.
   // An already synchronized empty desired state must perform no mutation or IO.

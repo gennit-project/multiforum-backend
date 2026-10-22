@@ -30,8 +30,6 @@ const normalize=(value:unknown)=>{
   return ["timestamp","createdAt","updatedAt","ageGateTouchedAt"].includes(key)?"<time>":value;
  }));
 };
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 const repo=()=>createScratchpadRepository(driver);
 const seed=async()=>driver.executeQuery(`CREATE(a:User{username:'alice',createdAt:datetime()}),(b:User{username:'bob',createdAt:datetime()}),
 (c:Comment{id:'comment',isRootComment:true,isFeedbackComment:false,createdAt:datetime()}),(dc:DiscussionChannel{id:'dc',discussionId:'d',channelUniqueName:'cats',createdAt:datetime()}),(d:Discussion{id:'d'}),
@@ -46,7 +44,7 @@ const readCases=[
  ["ScratchpadEntry","entry","{id isPublic text sourceType sourceId sourceChannelUniqueName discussionId createdAt Recipient{username} Author{username displayName profilePicURL}}",()=>repo().findVisibility("entry")],
 ] as const;
 for(const [model,id,selectionSet,read] of readCases)test(`${model} ${selectionSet} parity for missing and seeded targets`,async(t)=>{
- t.assert.snapshot(sortDeep(normalize(await read())));await seed();t.assert.snapshot(sortDeep(normalize(await read())));
+ t.assert.snapshot(normalize(await read()));await seed();t.assert.snapshot(normalize(await read()));
 });
 test("visibility repeated writes preserve native events and default response errors",async(t)=>{
  await seed();await repo().updateVisibility("entry",true);await repo().updateVisibility("entry",true);const result=await snapshot();assert.equal(events.length,2);t.assert.snapshot(result);
@@ -119,6 +117,6 @@ test("source reads preserve User/Moderator union, nested vote limits and age fil
  const source=await repo().findCommentSource("comment");assert.equal(source[0].UpvotedByUsers?.length,25);
  // UpvotedByUsers applies a default limit of 25 over 31 voters; which 25 is only stable within a run,
  // so snapshot with that nested array reduced to a count.
- const snap=sortDeep(normalize(source)) as any;snap[0].UpvotedByUsers=snap[0].UpvotedByUsers.length;t.assert.snapshot(snap);
+ const snap=normalize(source) as any;snap[0].UpvotedByUsers=snap[0].UpvotedByUsers.length;t.assert.snapshot(snap);
  await driver.executeQuery("MATCH(c:Comment) SET c.ageGateRestricted=true");assert.deepEqual(await repo().findCommentSource("comment"),[]);
 });

@@ -1,33 +1,24 @@
 exports[`channel response failure occurs after activity and lock commit but before notification 1`] = `
 {
   "result": {
-    "value": null,
-    "error": "Error locking channel"
+    "error": "Error locking channel",
+    "value": null
   },
   "state": {
-    "channel": [
-      {
-        "name": "forum",
-        "locked": true,
-        "reason": "Repeated spam",
-        "lockedAt": "<time>"
-      }
-    ],
-    "issues": [
-      {
-        "n": 1,
-        "open": true,
-        "scope": null,
-        "target": "forum"
-      }
-    ],
     "actions": [
       {
         "kind": "lock_channel",
         "text": "**Reason for locking:** Repeated spam"
       }
     ],
-    "notifications": [],
+    "channel": [
+      {
+        "locked": true,
+        "lockedAt": "<time>",
+        "name": "forum",
+        "reason": "Repeated spam"
+      }
+    ],
     "edges": [
       [
         "ACTIVITY_ON_ISSUE",
@@ -64,372 +55,381 @@ exports[`channel response failure occurs after activity and lock commit but befo
     ],
     "events": [
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id0",
-          "id_from": "id1",
-          "id_to": "id2",
-          "relationshipName": "TARGETS_CHANNEL",
-          "fromTypename": "Issue",
-          "toTypename": "Channel",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Locked channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "to": {
-              "createdAt": "<time>",
-              "uniqueName": "forum",
-              "displayName": "Forum",
-              "locked": false
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id4",
-          "id_from": "id1",
-          "id_to": "id5",
-          "relationshipName": "AUTHORED_ISSUE",
-          "fromTypename": "Issue",
-          "toTypename": "ModerationProfile",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Locked channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "to": {
-              "displayName": "mod"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id1",
-          "typename": "Issue",
-          "timestamp": "<time>",
           "event": "create",
+          "id": "id1",
           "properties": {
             "new": {
-              "locked": false,
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
               "isOpen": true,
-              "authorName": "mod",
-              "title": "[Locked channel] Forum",
-              "relatedChannelUniqueName": "forum"
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Locked channel] Forum"
             }
-          }
-        }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
       },
       {
-        "kind": "create_relationship",
         "event": {
+          "event": "create",
+          "id": "id11",
+          "properties": {
+            "new": {
+              "actionDescription": "Locked the channel",
+              "actionType": "lock_channel",
+              "createdAt": "<time>",
+              "id": "id12"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id7",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "**Reason for locking:** Repeated spam"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
           "id": "id6",
           "id_from": "id7",
           "id_to": "id1",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Comment",
-          "toTypename": "Issue",
-          "timestamp": "<time>",
-          "event": "create_relationship",
           "properties": {
             "from": {
-              "isRootComment": true,
-              "text": "**Reason for locking:** Repeated spam",
-              "id": "id8",
               "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
-              "isSticky": false
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "**Reason for locking:** Repeated spam"
             },
+            "relationship": {},
             "to": {
-              "updatedAt": "<time>",
-              "locked": false,
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
               "isOpen": true,
-              "authorName": "mod",
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
               "title": "[Locked channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id9",
-          "id_from": "id5",
-          "id_to": "id7",
-          "relationshipName": "AUTHORED_COMMENT",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "**Reason for locking:** Repeated spam",
-              "id": "id8",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id10",
-          "id_from": "id5",
-          "id_to": "id11",
-          "relationshipName": "PERFORMED_MODERATION_ACTION",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "createdAt": "<time>",
-              "id": "id12",
-              "actionType": "lock_channel",
-              "actionDescription": "Locked the channel"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id7",
-          "typename": "Comment",
-          "timestamp": "<time>",
-          "event": "create",
-          "properties": {
-            "new": {
-              "isRootComment": true,
-              "text": "**Reason for locking:** Repeated spam",
-              "id": "id8",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
+              "updatedAt": "<time>"
             }
-          }
-        }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id13",
-          "id_from": "id11",
-          "id_to": "id7",
-          "relationshipName": "MODERATED_COMMENT",
-          "fromTypename": "ModerationAction",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
           "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
           "properties": {
             "from": {
-              "createdAt": "<time>",
-              "id": "id12",
-              "actionType": "lock_channel",
-              "actionDescription": "Locked the channel"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "**Reason for locking:** Repeated spam",
-              "id": "id8",
               "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
               "createdAt": "<time>",
-              "isSticky": false
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Locked channel] Forum"
             },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id11",
-          "typename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create",
-          "properties": {
-            "new": {
+            "relationship": {},
+            "to": {
               "createdAt": "<time>",
-              "id": "id12",
-              "actionType": "lock_channel",
-              "actionDescription": "Locked the channel"
+              "displayName": "Forum",
+              "locked": false,
+              "uniqueName": "forum"
             }
-          }
-        }
+          },
+          "relationshipName": "TARGETS_CHANNEL",
+          "timestamp": "<time>",
+          "toTypename": "Channel"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "create_relationship",
         "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
           "id": "id14",
           "id_from": "id1",
           "id_to": "id11",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Issue",
-          "toTypename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create_relationship",
           "properties": {
             "from": {
-              "updatedAt": "<time>",
-              "locked": false,
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
               "isOpen": true,
-              "authorName": "mod",
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
               "title": "[Locked channel] Forum",
-              "relatedChannelUniqueName": "forum"
+              "updatedAt": "<time>"
             },
+            "relationship": {},
             "to": {
-              "createdAt": "<time>",
-              "id": "id12",
+              "actionDescription": "Locked the channel",
               "actionType": "lock_channel",
-              "actionDescription": "Locked the channel"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "update",
-        "event": {
-          "id": "id1",
-          "typename": "Issue",
-          "timestamp": "<time>",
-          "event": "update",
-          "properties": {
-            "old": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Locked channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "new": {
-              "updatedAt": "<time>",
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Locked channel] Forum",
-              "relatedChannelUniqueName": "forum"
+              "id": "id12"
             }
-          }
-        }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id15",
-          "id_from": "id5",
-          "id_to": "id2",
-          "relationshipName": "LOCKED_CHANNEL",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "Channel",
-          "timestamp": "<time>",
           "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id4",
+          "id_from": "id1",
+          "id_to": "id5",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Locked channel] Forum"
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
+            }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id13",
+          "id_from": "id11",
+          "id_to": "id7",
+          "properties": {
+            "from": {
+              "actionDescription": "Locked the channel",
+              "actionType": "lock_channel",
+              "createdAt": "<time>",
+              "id": "id12"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "**Reason for locking:** Repeated spam"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id10",
+          "id_from": "id5",
+          "id_to": "id11",
           "properties": {
             "from": {
               "displayName": "mod"
             },
+            "relationship": {},
             "to": {
-              "displayName": "Forum",
-              "lockReason": "Repeated spam",
-              "locked": true,
-              "lockedAt": "<time>",
+              "actionDescription": "Locked the channel",
+              "actionType": "lock_channel",
               "createdAt": "<time>",
-              "uniqueName": "forum"
-            },
-            "relationship": {}
-          }
-        }
+              "id": "id12"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "update",
         "event": {
-          "id": "id2",
-          "typename": "Channel",
-          "timestamp": "<time>",
-          "event": "update",
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id15",
+          "id_from": "id5",
+          "id_to": "id2",
           "properties": {
-            "old": {
-              "createdAt": "<time>",
-              "uniqueName": "forum",
-              "displayName": "Forum",
-              "locked": false
+            "from": {
+              "displayName": "mod"
             },
-            "new": {
+            "relationship": {},
+            "to": {
+              "createdAt": "<time>",
               "displayName": "Forum",
               "lockReason": "Repeated spam",
               "locked": true,
               "lockedAt": "<time>",
-              "createdAt": "<time>",
               "uniqueName": "forum"
             }
-          }
-        }
+          },
+          "relationshipName": "LOCKED_CHANNEL",
+          "timestamp": "<time>",
+          "toTypename": "Channel"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id9",
+          "id_from": "id5",
+          "id_to": "id7",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "**Reason for locking:** Repeated spam"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Locked channel] Forum",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Locked channel] Forum"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id2",
+          "properties": {
+            "new": {
+              "createdAt": "<time>",
+              "displayName": "Forum",
+              "lockReason": "Repeated spam",
+              "locked": true,
+              "lockedAt": "<time>",
+              "uniqueName": "forum"
+            },
+            "old": {
+              "createdAt": "<time>",
+              "displayName": "Forum",
+              "locked": false,
+              "uniqueName": "forum"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Channel"
+        },
+        "kind": "update"
       }
-    ]
+    ],
+    "issues": [
+      {
+        "n": 1,
+        "open": true,
+        "scope": null,
+        "target": "forum"
+      }
+    ],
+    "notifications": []
   }
 }
 `;
@@ -437,10 +437,10 @@ exports[`channel response failure occurs after activity and lock commit but befo
 exports[`full Issue action projection and channel-admin default cap match production OGM 1`] = `
 [
   {
-    "uniqueName": "forum",
+    "Admins": 25,
     "displayName": "Forum",
     "locked": false,
-    "Admins": 25
+    "uniqueName": "forum"
   }
 ]
 `;
@@ -508,40 +508,18 @@ exports[`full Issue action projection and channel-admin default cap match produc
 
 exports[`full default Issue projection failure is swallowed after action commits and channel changes 1`] = `
 {
-  "channel": [
-    {
-      "name": "forum",
-      "locked": true,
-      "reason": "Repeated spam",
-      "lockedAt": "<time>"
-    }
-  ],
-  "issues": [
-    {
-      "n": 1,
-      "open": true,
-      "scope": null,
-      "target": "forum"
-    }
-  ],
   "actions": [
     {
       "kind": "lock_channel",
       "text": "**Reason for locking:** Repeated spam"
     }
   ],
-  "notifications": [
+  "channel": [
     {
-      "user": "admin1",
-      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
-      "read": false,
-      "type": "moderation"
-    },
-    {
-      "user": "admin2",
-      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
-      "read": false,
-      "type": "moderation"
+      "locked": true,
+      "lockedAt": "<time>",
+      "name": "forum",
+      "reason": "Repeated spam"
     }
   ],
   "edges": [
@@ -576,265 +554,287 @@ exports[`full default Issue projection failure is swallowed after action commits
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
+        "id": "id1",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "id8",
+        "properties": {
+          "new": {
+            "actionDescription": "Locked the channel",
+            "actionType": "lock_channel",
+            "createdAt": "<time>",
+            "id": "id9"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
         "id": "id0",
         "id_from": "id1",
         "id_to": "id2",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id3",
             "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isSticky": false
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
           },
+          "relationship": {},
           "to": {
-            "updatedAt": "<time>",
-            "locked": "invalid",
+            "ageGateTouchedAt": "<time>",
             "id": "id4",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
             "isOpen": true,
-            "relatedChannelUniqueName": "forum"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id5",
-        "id_from": "id6",
-        "id_to": "id1",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id7",
-        "id_from": "id6",
-        "id_to": "id8",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id9",
-            "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id1",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
+            "issueNumber": 1,
+            "locked": "invalid",
+            "relatedChannelUniqueName": "forum",
+            "updatedAt": "<time>"
           }
-        }
-      }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "id10",
-        "id_from": "id8",
-        "id_to": "id1",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
         "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "id9",
-            "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id8",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "id9",
-            "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
+        "fromTypename": "Issue",
         "id": "id11",
         "id_from": "id2",
         "id_to": "id8",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "updatedAt": "<time>",
-            "locked": "invalid",
-            "id": "id4",
-            "issueNumber": 1,
             "ageGateTouchedAt": "<time>",
+            "id": "id4",
             "isOpen": true,
-            "relatedChannelUniqueName": "forum"
+            "issueNumber": 1,
+            "locked": "invalid",
+            "relatedChannelUniqueName": "forum",
+            "updatedAt": "<time>"
           },
+          "relationship": {},
           "to": {
-            "createdAt": "<time>",
-            "id": "id9",
+            "actionDescription": "Locked the channel",
             "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "id2",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "locked": "invalid",
-            "id": "id4",
-            "issueNumber": 1,
-            "isOpen": true,
-            "relatedChannelUniqueName": "forum"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "locked": "invalid",
-            "id": "id4",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "isOpen": true,
-            "relatedChannelUniqueName": "forum"
+            "createdAt": "<time>",
+            "id": "id9"
           }
-        }
-      }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "id10",
+        "id_from": "id8",
+        "id_to": "id1",
+        "properties": {
+          "from": {
+            "actionDescription": "Locked the channel",
+            "actionType": "lock_channel",
+            "createdAt": "<time>",
+            "id": "id9"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
         "id": "id12",
         "id_from": "id6",
         "id_to": "id13",
-        "relationshipName": "LOCKED_CHANNEL",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Channel",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
             "displayName": "mod"
           },
+          "relationship": {},
           "to": {
+            "createdAt": "<time>",
             "displayName": "Forum",
             "lockReason": "Repeated spam",
             "locked": true,
             "lockedAt": "<time>",
-            "createdAt": "<time>",
-            "uniqueName": "forum"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "id13",
-        "typename": "Channel",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "createdAt": "<time>",
-            "uniqueName": "forum",
-            "displayName": "Forum",
-            "locked": false
-          },
-          "new": {
-            "displayName": "Forum",
-            "lockReason": "Repeated spam",
-            "locked": true,
-            "lockedAt": "<time>",
-            "createdAt": "<time>",
             "uniqueName": "forum"
           }
-        }
-      }
+        },
+        "relationshipName": "LOCKED_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id5",
+        "id_from": "id6",
+        "id_to": "id1",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id7",
+        "id_from": "id6",
+        "id_to": "id8",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Locked the channel",
+            "actionType": "lock_channel",
+            "createdAt": "<time>",
+            "id": "id9"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id13",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "lockReason": "Repeated spam",
+            "locked": true,
+            "lockedAt": "<time>",
+            "uniqueName": "forum"
+          },
+          "old": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "locked": false,
+            "uniqueName": "forum"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Channel"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "id": "id4",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": "invalid",
+            "relatedChannelUniqueName": "forum",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "id": "id4",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": "invalid",
+            "relatedChannelUniqueName": "forum"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "open": true,
+      "scope": null,
+      "target": "forum"
+    }
+  ],
+  "notifications": [
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
+      "type": "moderation",
+      "user": "admin1"
+    },
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
+      "type": "moderation",
+      "user": "admin2"
     }
   ]
 }
@@ -842,22 +842,6 @@ exports[`full default Issue projection failure is swallowed after action commits
 
 exports[`lock/unlock cycle preserves nested graph, raw notifications, native payloads and repeat guards 1`] = `
 {
-  "channel": [
-    {
-      "name": "forum",
-      "locked": false,
-      "reason": null,
-      "lockedAt": null
-    }
-  ],
-  "issues": [
-    {
-      "n": 1,
-      "open": false,
-      "scope": null,
-      "target": "forum"
-    }
-  ],
   "actions": [
     {
       "kind": "lock_channel",
@@ -868,30 +852,12 @@ exports[`lock/unlock cycle preserves nested graph, raw notifications, native pay
       "text": "**Reason for unlocking:** Resolved"
     }
   ],
-  "notifications": [
+  "channel": [
     {
-      "user": "admin1",
-      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
-      "read": false,
-      "type": "moderation"
-    },
-    {
-      "user": "admin1",
-      "text": "Your forum \\"Forum\\" has been unlocked. Reason: Resolved",
-      "read": false,
-      "type": "moderation"
-    },
-    {
-      "user": "admin2",
-      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
-      "read": false,
-      "type": "moderation"
-    },
-    {
-      "user": "admin2",
-      "text": "Your forum \\"Forum\\" has been unlocked. Reason: Resolved",
-      "read": false,
-      "type": "moderation"
+      "locked": false,
+      "lockedAt": null,
+      "name": "forum",
+      "reason": null
     }
   ],
   "edges": [
@@ -930,647 +896,681 @@ exports[`lock/unlock cycle preserves nested graph, raw notifications, native pay
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "id0",
-        "id_from": "id1",
-        "id_to": "id2",
-        "relationshipName": "TARGETS_CHANNEL",
-        "fromTypename": "Issue",
-        "toTypename": "Channel",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "uniqueName": "forum",
-            "displayName": "Forum",
-            "locked": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id4",
-        "id_from": "id1",
-        "id_to": "id5",
-        "relationshipName": "AUTHORED_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationProfile",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          },
-          "to": {
-            "displayName": "mod"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
+        "event": "create",
         "id": "id1",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "create",
         "properties": {
           "new": {
-            "locked": false,
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
             "flaggedServerRuleViolation": true,
             "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
             "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum"
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "id6",
-        "id_from": "id7",
-        "id_to": "id1",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id8",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id9",
-        "id_from": "id5",
-        "id_to": "id7",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id8",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id10",
-        "id_from": "id5",
-        "id_to": "id11",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id12",
-            "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id7",
-        "typename": "Comment",
-        "timestamp": "<time>",
         "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id8",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id13",
-        "id_from": "id11",
-        "id_to": "id7",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "id12",
-            "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "**Reason for locking:** Repeated spam",
-            "id": "id8",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
         "id": "id11",
-        "typename": "ModerationAction",
+        "properties": {
+          "new": {
+            "actionDescription": "Locked the channel",
+            "actionType": "lock_channel",
+            "createdAt": "<time>",
+            "id": "id12"
+          }
+        },
         "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
         "event": "create",
+        "id": "id17",
         "properties": {
           "new": {
+            "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "id": "id12",
-            "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
+            "id": "id18",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for unlocking:** Resolved"
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "id14",
-        "id_from": "id1",
-        "id_to": "id11",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
+        "event": "create",
+        "id": "id21",
+        "properties": {
+          "new": {
+            "actionDescription": "Unlocked the channel",
+            "actionType": "unlock_channel",
+            "createdAt": "<time>",
+            "id": "id22"
+          }
+        },
         "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "id7",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
         "event": "create_relationship",
-        "properties": {
-          "from": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id12",
-            "actionType": "lock_channel",
-            "actionDescription": "Locked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "id1",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id15",
-        "id_from": "id5",
-        "id_to": "id2",
-        "relationshipName": "LOCKED_CHANNEL",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Channel",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "displayName": "Forum",
-            "lockReason": "Repeated spam",
-            "locked": true,
-            "lockedAt": "<time>",
-            "createdAt": "<time>",
-            "uniqueName": "forum"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "id2",
-        "typename": "Channel",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "createdAt": "<time>",
-            "uniqueName": "forum",
-            "displayName": "Forum",
-            "locked": false
-          },
-          "new": {
-            "displayName": "Forum",
-            "lockReason": "Repeated spam",
-            "locked": true,
-            "lockedAt": "<time>",
-            "createdAt": "<time>",
-            "uniqueName": "forum"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
+        "fromTypename": "Comment",
         "id": "id16",
         "id_from": "id17",
         "id_to": "id1",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "isRootComment": true,
-            "text": "**Reason for unlocking:** Resolved",
-            "id": "id18",
             "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isSticky": false
+            "id": "id18",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for unlocking:** Resolved"
           },
+          "relationship": {},
           "to": {
-            "updatedAt": "<time>",
-            "locked": false,
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
             "flaggedServerRuleViolation": true,
             "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
             "isOpen": false,
-            "authorName": "mod",
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
             "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id19",
-        "id_from": "id5",
-        "id_to": "id17",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "**Reason for unlocking:** Resolved",
-            "id": "id18",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id20",
-        "id_from": "id5",
-        "id_to": "id21",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id22",
-            "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id17",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "**Reason for unlocking:** Resolved",
-            "id": "id18",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
+            "updatedAt": "<time>"
           }
-        }
-      }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "id23",
-        "id_from": "id21",
-        "id_to": "id17",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
         "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "id6",
+        "id_from": "id7",
+        "id_to": "id1",
         "properties": {
           "from": {
-            "createdAt": "<time>",
-            "id": "id22",
-            "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "**Reason for unlocking:** Resolved",
-            "id": "id18",
             "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isSticky": false
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
           },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id21",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
             "createdAt": "<time>",
-            "id": "id22",
-            "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum",
+            "updatedAt": "<time>"
           }
-        }
-      }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "locked": false,
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "TARGETS_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "id14",
+        "id_from": "id1",
+        "id_to": "id11",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Locked the channel",
+            "actionType": "lock_channel",
+            "createdAt": "<time>",
+            "id": "id12"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
         "id": "id24",
         "id_from": "id1",
         "id_to": "id21",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "updatedAt": "<time>",
-            "locked": false,
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
             "flaggedServerRuleViolation": true,
             "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
             "isOpen": false,
-            "authorName": "mod",
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
             "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
+            "updatedAt": "<time>"
           },
+          "relationship": {},
           "to": {
-            "createdAt": "<time>",
-            "id": "id22",
+            "actionDescription": "Unlocked the channel",
             "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "id1",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isOpen": true,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "id3",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isOpen": false,
-            "authorName": "mod",
-            "title": "[Locked channel] Forum",
-            "relatedChannelUniqueName": "forum"
+            "id": "id22"
           }
-        }
-      }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "delete_relationship",
       "event": {
-        "id": "id15",
-        "id_from": "id5",
-        "id_to": "id2",
-        "relationshipName": "LOCKED_CHANNEL",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Channel",
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "id4",
+        "id_from": "id1",
+        "id_to": "id5",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum"
+          },
+          "relationship": {},
+          "to": {
+            "displayName": "mod"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
         "timestamp": "<time>",
-        "event": "delete_relationship",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "id13",
+        "id_from": "id11",
+        "id_to": "id7",
+        "properties": {
+          "from": {
+            "actionDescription": "Locked the channel",
+            "actionType": "lock_channel",
+            "createdAt": "<time>",
+            "id": "id12"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "id23",
+        "id_from": "id21",
+        "id_to": "id17",
+        "properties": {
+          "from": {
+            "actionDescription": "Unlocked the channel",
+            "actionType": "unlock_channel",
+            "createdAt": "<time>",
+            "id": "id22"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id18",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for unlocking:** Resolved"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id10",
+        "id_from": "id5",
+        "id_to": "id11",
         "properties": {
           "from": {
             "displayName": "mod"
           },
+          "relationship": {},
           "to": {
-            "locked": false,
+            "actionDescription": "Locked the channel",
+            "actionType": "lock_channel",
             "createdAt": "<time>",
-            "uniqueName": "forum",
-            "displayName": "Forum"
-          },
-          "relationship": {}
-        }
-      }
+            "id": "id12"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "update",
       "event": {
-        "id": "id2",
-        "typename": "Channel",
-        "timestamp": "<time>",
-        "event": "update",
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id15",
+        "id_from": "id5",
+        "id_to": "id2",
         "properties": {
-          "old": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
             "displayName": "Forum",
             "lockReason": "Repeated spam",
             "locked": true,
             "lockedAt": "<time>",
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "LOCKED_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id19",
+        "id_from": "id5",
+        "id_to": "id17",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
+            "id": "id18",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for unlocking:** Resolved"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id20",
+        "id_from": "id5",
+        "id_to": "id21",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Unlocked the channel",
+            "actionType": "unlock_channel",
+            "createdAt": "<time>",
+            "id": "id22"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id9",
+        "id_from": "id5",
+        "id_to": "id7",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id8",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "**Reason for locking:** Repeated spam"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "delete_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id15",
+        "id_from": "id5",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "locked": false,
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "LOCKED_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "delete_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id1",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": false,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum",
+            "updatedAt": "<time>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id1",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "mod",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "id3",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelUniqueName": "forum",
+            "title": "[Locked channel] Forum"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "lockReason": "Repeated spam",
+            "locked": true,
+            "lockedAt": "<time>",
             "uniqueName": "forum"
           },
-          "new": {
-            "locked": false,
+          "old": {
             "createdAt": "<time>",
-            "uniqueName": "forum",
-            "displayName": "Forum"
+            "displayName": "Forum",
+            "locked": false,
+            "uniqueName": "forum"
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Channel"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "locked": false,
+            "uniqueName": "forum"
+          },
+          "old": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "lockReason": "Repeated spam",
+            "locked": true,
+            "lockedAt": "<time>",
+            "uniqueName": "forum"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Channel"
+      },
+      "kind": "update"
+    }
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "open": false,
+      "scope": null,
+      "target": "forum"
+    }
+  ],
+  "notifications": [
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
+      "type": "moderation",
+      "user": "admin1"
+    },
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
+      "type": "moderation",
+      "user": "admin2"
+    },
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been unlocked. Reason: Resolved",
+      "type": "moderation",
+      "user": "admin1"
+    },
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been unlocked. Reason: Resolved",
+      "type": "moderation",
+      "user": "admin2"
     }
   ]
 }
@@ -1578,28 +1578,13 @@ exports[`lock/unlock cycle preserves nested graph, raw notifications, native pay
 
 exports[`supplied missing issue is not validated or replaced before locking 1`] = `
 {
+  "actions": [],
   "channel": [
     {
-      "name": "forum",
       "locked": true,
-      "reason": "Repeated spam",
-      "lockedAt": "<time>"
-    }
-  ],
-  "issues": [],
-  "actions": [],
-  "notifications": [
-    {
-      "user": "admin1",
-      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
-      "read": false,
-      "type": "moderation"
-    },
-    {
-      "user": "admin2",
-      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
-      "read": false,
-      "type": "moderation"
+      "lockedAt": "<time>",
+      "name": "forum",
+      "reason": "Repeated spam"
     }
   ],
   "edges": [
@@ -1618,56 +1603,71 @@ exports[`supplied missing issue is not validated or replaced before locking 1`] 
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
         "id": "id0",
         "id_from": "id1",
         "id_to": "id2",
-        "relationshipName": "LOCKED_CHANNEL",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Channel",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
             "displayName": "mod"
           },
+          "relationship": {},
           "to": {
+            "createdAt": "<time>",
             "displayName": "Forum",
             "lockReason": "Repeated spam",
             "locked": true,
             "lockedAt": "<time>",
-            "createdAt": "<time>",
-            "uniqueName": "forum"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "id2",
-        "typename": "Channel",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "createdAt": "<time>",
-            "uniqueName": "forum",
-            "displayName": "Forum",
-            "locked": false
-          },
-          "new": {
-            "displayName": "Forum",
-            "lockReason": "Repeated spam",
-            "locked": true,
-            "lockedAt": "<time>",
-            "createdAt": "<time>",
             "uniqueName": "forum"
           }
-        }
-      }
+        },
+        "relationshipName": "LOCKED_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "lockReason": "Repeated spam",
+            "locked": true,
+            "lockedAt": "<time>",
+            "uniqueName": "forum"
+          },
+          "old": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "locked": false,
+            "uniqueName": "forum"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Channel"
+      },
+      "kind": "update"
+    }
+  ],
+  "issues": [],
+  "notifications": [
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
+      "type": "moderation",
+      "user": "admin1"
+    },
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been locked. Reason: Repeated spam",
+      "type": "moderation",
+      "user": "admin2"
     }
   ]
 }
@@ -1675,40 +1675,18 @@ exports[`supplied missing issue is not validated or replaced before locking 1`] 
 
 exports[`unlock closes a related already-closed issue and still adds the existing action 1`] = `
 {
-  "channel": [
-    {
-      "name": "forum",
-      "locked": false,
-      "reason": null,
-      "lockedAt": null
-    }
-  ],
-  "issues": [
-    {
-      "n": 1,
-      "open": false,
-      "scope": null,
-      "target": "forum"
-    }
-  ],
   "actions": [
     {
       "kind": "unlock_channel",
       "text": "Channel unlocked"
     }
   ],
-  "notifications": [
+  "channel": [
     {
-      "user": "admin1",
-      "text": "Your forum \\"Forum\\" has been unlocked.",
-      "read": false,
-      "type": "moderation"
-    },
-    {
-      "user": "admin2",
-      "text": "Your forum \\"Forum\\" has been unlocked.",
-      "read": false,
-      "type": "moderation"
+      "locked": false,
+      "lockedAt": null,
+      "name": "forum",
+      "reason": null
     }
   ],
   "edges": [
@@ -1739,232 +1717,254 @@ exports[`unlock closes a related already-closed issue and still adds the existin
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
+        "id": "id1",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "Channel unlocked"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "id8",
+        "properties": {
+          "new": {
+            "actionDescription": "Unlocked the channel",
+            "actionType": "unlock_channel",
+            "createdAt": "<time>",
+            "id": "id9"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
         "id": "id0",
         "id_from": "id1",
         "id_to": "id2",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "isRootComment": true,
-            "text": "Channel unlocked",
-            "id": "id3",
             "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isSticky": false
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "Channel unlocked"
           },
+          "relationship": {},
           "to": {
-            "updatedAt": "<time>",
+            "ageGateTouchedAt": "<time>",
             "id": "id4",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
             "isOpen": false,
-            "relatedChannelUniqueName": "forum"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id5",
-        "id_from": "id6",
-        "id_to": "id1",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "Channel unlocked",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id7",
-        "id_from": "id6",
-        "id_to": "id8",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "displayName": "mod"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id9",
-            "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id1",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "Channel unlocked",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
+            "issueNumber": 1,
+            "relatedChannelUniqueName": "forum",
+            "updatedAt": "<time>"
           }
-        }
-      }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "id10",
-        "id_from": "id8",
-        "id_to": "id1",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
         "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "id9",
-            "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "Channel unlocked",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id8",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "id9",
-            "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
+        "fromTypename": "Issue",
         "id": "id11",
         "id_from": "id2",
         "id_to": "id8",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "updatedAt": "<time>",
-            "id": "id4",
-            "issueNumber": 1,
             "ageGateTouchedAt": "<time>",
+            "id": "id4",
             "isOpen": false,
-            "relatedChannelUniqueName": "forum"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id9",
-            "actionType": "unlock_channel",
-            "actionDescription": "Unlocked the channel"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "id2",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
             "issueNumber": 1,
             "relatedChannelUniqueName": "forum",
-            "id": "id4",
-            "isOpen": false
+            "updatedAt": "<time>"
           },
-          "new": {
-            "updatedAt": "<time>",
-            "id": "id4",
-            "issueNumber": 1,
-            "ageGateTouchedAt": "<time>",
-            "isOpen": false,
-            "relatedChannelUniqueName": "forum"
+          "relationship": {},
+          "to": {
+            "actionDescription": "Unlocked the channel",
+            "actionType": "unlock_channel",
+            "createdAt": "<time>",
+            "id": "id9"
           }
-        }
-      }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "update",
       "event": {
-        "id": "id12",
-        "typename": "Channel",
-        "timestamp": "<time>",
-        "event": "update",
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "id10",
+        "id_from": "id8",
+        "id_to": "id1",
         "properties": {
+          "from": {
+            "actionDescription": "Unlocked the channel",
+            "actionType": "unlock_channel",
+            "createdAt": "<time>",
+            "id": "id9"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "Channel unlocked"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id5",
+        "id_from": "id6",
+        "id_to": "id1",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "id3",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "Channel unlocked"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "id7",
+        "id_from": "id6",
+        "id_to": "id8",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Unlocked the channel",
+            "actionType": "unlock_channel",
+            "createdAt": "<time>",
+            "id": "id9"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id12",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "displayName": "Forum",
+            "locked": false,
+            "uniqueName": "forum"
+          },
           "old": {
             "createdAt": "<time>",
-            "uniqueName": "forum",
             "displayName": "Forum",
-            "locked": true
-          },
-          "new": {
-            "locked": false,
-            "createdAt": "<time>",
-            "uniqueName": "forum",
-            "displayName": "Forum"
+            "locked": true,
+            "uniqueName": "forum"
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Channel"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "id": "id4",
+            "isOpen": false,
+            "issueNumber": 1,
+            "relatedChannelUniqueName": "forum",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "id": "id4",
+            "isOpen": false,
+            "issueNumber": 1,
+            "relatedChannelUniqueName": "forum"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "open": false,
+      "scope": null,
+      "target": "forum"
+    }
+  ],
+  "notifications": [
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been unlocked.",
+      "type": "moderation",
+      "user": "admin1"
+    },
+    {
+      "read": false,
+      "text": "Your forum \\"Forum\\" has been unlocked.",
+      "type": "moderation",
+      "user": "admin2"
     }
   ]
 }

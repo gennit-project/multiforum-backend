@@ -1,11 +1,11 @@
 exports[`all author snapshots preserve generated selections, union authors and missing rows 1`] = `
 [
   {
-    "id": "c",
     "CommentAuthor": {
-      "username": "u",
-      "displayName": "User"
-    }
+      "displayName": "User",
+      "username": "u"
+    },
+    "id": "c"
   }
 ]
 `;
@@ -17,11 +17,11 @@ exports[`all author snapshots preserve generated selections, union authors and m
 exports[`all author snapshots preserve generated selections, union authors and missing rows 3`] = `
 [
   {
-    "id": "d",
     "Author": {
-      "username": "u",
-      "displayName": "User"
-    }
+      "displayName": "User",
+      "username": "u"
+    },
+    "id": "d"
   }
 ]
 `;
@@ -29,11 +29,11 @@ exports[`all author snapshots preserve generated selections, union authors and m
 exports[`all author snapshots preserve generated selections, union authors and missing rows 4`] = `
 [
   {
-    "id": "e",
     "Poster": {
-      "username": "u",
-      "displayName": "User"
-    }
+      "displayName": "User",
+      "username": "u"
+    },
+    "id": "e"
   }
 ]
 `;
@@ -41,49 +41,49 @@ exports[`all author snapshots preserve generated selections, union authors and m
 exports[`all author snapshots preserve generated selections, union authors and missing rows 5`] = `
 [
   {
-    "id": "c",
     "CommentAuthor": {
       "displayName": "Mod"
-    }
+    },
+    "id": "c"
   }
 ]
 `;
 
 exports[`closure mutation preserves default projection, persistence and events (valid=false) 1`] = `
 {
-  "result": "Cannot return null for non-nullable field Issue.issueNumber.",
   "events": [
     {
       "kind": "update",
-      "typename": "Issue",
       "properties": [
         "event",
         "id",
         "properties",
         "timestamp",
         "typename"
-      ]
+      ],
+      "typename": "Issue"
     }
-  ]
+  ],
+  "result": "Cannot return null for non-nullable field Issue.issueNumber."
 }
 `;
 
 exports[`closure mutation preserves default projection, persistence and events (valid=true) 1`] = `
 {
-  "result": null,
   "events": [
     {
       "kind": "update",
-      "typename": "Issue",
       "properties": [
         "event",
         "id",
         "properties",
         "timestamp",
         "typename"
-      ]
+      ],
+      "typename": "Issue"
     }
-  ]
+  ],
+  "result": null
 }
 `;
 

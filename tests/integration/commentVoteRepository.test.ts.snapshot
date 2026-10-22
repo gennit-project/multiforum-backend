@@ -1,17 +1,17 @@
 exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 1`] = `
 [
   {
-    "id": "c",
     "CommentAuthor": {
-      "username": "author",
       "commentKarma": 7,
-      "createdAt": "<time>"
+      "createdAt": "<time>",
+      "username": "author"
     },
-    "weightedVotesCount": 3,
     "UpvotedByUsers": 25,
     "UpvotedByUsersAggregate": {
       "count": 28
-    }
+    },
+    "id": "c",
+    "weightedVotesCount": 3
   }
 ]
 `;
@@ -19,8 +19,8 @@ exports[`comment/user snapshots preserve missing rows, author unions, nested def
 exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 2`] = `
 [
   {
-    "username": "voter",
-    "commentKarma": 25
+    "commentKarma": 25,
+    "username": "voter"
   }
 ]
 `;
@@ -28,47 +28,47 @@ exports[`comment/user snapshots preserve missing rows, author unions, nested def
 exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 3`] = `
 [
   {
-    "id": "c",
     "CommentAuthor": {
-      "displayName": "mod",
-      "createdAt": "<time>"
+      "createdAt": "<time>",
+      "displayName": "mod"
     },
-    "weightedVotesCount": 3,
     "UpvotedByUsers": 25,
     "UpvotedByUsersAggregate": {
       "count": 28
-    }
+    },
+    "id": "c",
+    "weightedVotesCount": 3
   }
 ]
 `;
 
 exports[`karma generated write preserves native events and default projection failure after committed write 1`] = `
 {
-  "state": [
-    {
-      "karma": 8,
-      "weight": 3,
-      "voters": []
-    }
-  ],
   "events": [
     {
-      "id": "<node-id>",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "<node-id>",
       "properties": {
-        "old": {
-          "createdAt": "<time>",
-          "username": "author",
-          "commentKarma": 7
-        },
         "new": {
           "commentKarma": 8,
           "createdAt": "<time>",
           "username": "author"
+        },
+        "old": {
+          "commentKarma": 7,
+          "createdAt": "<time>",
+          "username": "author"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "state": [
+    {
+      "karma": 8,
+      "voters": [],
+      "weight": 3
     }
   ]
 }
@@ -76,29 +76,29 @@ exports[`karma generated write preserves native events and default projection fa
 
 exports[`karma generated write preserves native events and default projection failure after committed write 2`] = `
 {
-  "state": [
-    {
-      "karma": 8,
-      "weight": 3,
-      "voters": []
-    }
-  ],
   "events": [
     {
-      "id": "<node-id>",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "<node-id>",
       "properties": {
-        "old": {
-          "username": "author",
-          "commentKarma": 7
-        },
         "new": {
           "commentKarma": 8,
           "username": "author"
+        },
+        "old": {
+          "commentKarma": 7,
+          "username": "author"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "state": [
+    {
+      "karma": 8,
+      "voters": [],
+      "weight": 3
     }
   ]
 }

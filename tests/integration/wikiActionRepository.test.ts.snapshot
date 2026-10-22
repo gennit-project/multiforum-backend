@@ -1,10 +1,10 @@
 exports[`lock/pin snapshots preserve missing, relation scope and exact selections 1`] = `
 [
   {
-    "id": "wiki",
     "Channel": {
       "uniqueName": "forum"
     },
+    "id": "wiki",
     "locked": false
   }
 ]
@@ -30,10 +30,10 @@ exports[`lock/pin snapshots preserve missing, relation scope and exact selection
 exports[`lock/pin snapshots preserve missing, relation scope and exact selections 5`] = `
 [
   {
-    "id": "wiki",
     "Channel": {
       "uniqueName": "forum"
-    }
+    },
+    "id": "wiki"
   }
 ]
 `;

@@ -1,33 +1,13 @@
 exports[`current wiki lookup omits revision filter and reuses an existing revision issue 1`] = `
 {
+  "flaggedServerRuleViolation": false,
   "id": "<id>",
-  "issueNumber": 1,
-  "flaggedServerRuleViolation": false
+  "issueNumber": 1
 }
 `;
 
 exports[`current wiki lookup omits revision filter and reuses an existing revision issue 2`] = `
 {
-  "rows": [
-    {
-      "number": 1,
-      "scope": "forum",
-      "title": "[Reported wiki edit] \\"Revision body\\"",
-      "open": true,
-      "flag": false,
-      "page": "page",
-      "revision": "revision",
-      "owner": "revision-author",
-      "actions": 2,
-      "comments": 2,
-      "texts": [
-        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
-      ],
-      "authors": [
-        "Moderator"
-      ]
-    }
-  ],
   "counters": [
     {
       "current": 1
@@ -35,747 +15,767 @@ exports[`current wiki lookup omits revision filter and reuses an existing revisi
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_USER",
-        "fromTypename": "Issue",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          }
+        },
+        "relationshipName": "HAS_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "uniqueName": "forum"
           },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
+          "to": {
+            "body": "Page body",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "id": "page",
+            "slug": "page",
+            "title": "Page title"
+          }
+        },
+        "relationshipName": "TARGETS_WIKI_PAGE",
+        "timestamp": "<time>",
+        "toTypename": "WikiPage"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
+          "to": {
+            "body": "Revision body",
+            "createdAt": "<time>",
+            "id": "revision"
+          }
+        },
+        "relationshipName": "TARGETS_WIKI_REVISION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
           "to": {
             "createdAt": "<time>",
             "username": "revision-author"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_WIKI_REVISION",
-        "fromTypename": "Issue",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "id": "revision",
-            "body": "Revision body",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_WIKI_PAGE",
-        "fromTypename": "Issue",
-        "toTypename": "WikiPage",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "body": "Page body",
-            "slug": "page",
-            "id": "page",
-            "channelUniqueName": "forum",
-            "createdAt": "<time>",
-            "title": "Page title"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationProfile",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_ISSUE",
-        "fromTypename": "Channel",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
           }
-        }
-      }
+        },
+        "relationshipName": "TARGETS_USER",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
         "event": "create_relationship",
-        "properties": {
-          "from": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_COMMENT",
-        "fromTypename": "Channel",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "MODERATED_COMMENT",
         "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
         "properties": {
           "from": {
-            "createdAt": "<time>",
-            "id": "<id>",
+            "actionDescription": "Reported the wiki edit",
             "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
+            "createdAt": "<time>",
+            "id": "<id>"
           },
+          "relationship": {},
           "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
             "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
             "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
           }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_COMMENT",
-        "fromTypename": "Channel",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
+        },
         "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
         "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
         "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
+        "fromTypename": "ModerationAction",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
+            "actionDescription": "Reported the wiki edit",
             "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
+            "createdAt": "<time>",
+            "id": "<id>"
           },
-          "relationship": {}
-        }
-      }
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "update",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
         "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
         "properties": {
-          "old": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
+          "from": {
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "displayName": "Moderator"
           },
-          "new": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
             "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 2,
+      "authors": [
+        "Moderator"
+      ],
+      "comments": 2,
+      "flag": false,
+      "number": 1,
+      "open": true,
+      "owner": "revision-author",
+      "page": "page",
+      "revision": "revision",
+      "scope": "forum",
+      "texts": [
+        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      ],
+      "title": "[Reported wiki edit] \\"Revision body\\""
     }
   ]
 }
@@ -787,26 +787,6 @@ exports[`wiki append projection error preserves original partial-write boundary 
 
 exports[`wiki append projection error preserves original partial-write boundary 2`] = `
 {
-  "rows": [
-    {
-      "number": 1,
-      "scope": "forum",
-      "title": "[Reported wiki edit] \\"Page title\\"",
-      "open": true,
-      "flag": false,
-      "page": "page",
-      "revision": null,
-      "owner": "current-author",
-      "actions": 1,
-      "comments": 1,
-      "texts": [
-        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
-      ],
-      "authors": [
-        "Moderator"
-      ]
-    }
-  ],
   "counters": [
     {
       "current": 1
@@ -814,433 +794,453 @@ exports[`wiki append projection error preserves original partial-write boundary 
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_USER",
-        "fromTypename": "Issue",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          }
+        },
+        "relationshipName": "HAS_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "uniqueName": "forum"
           },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          },
+          "relationship": {},
+          "to": {
+            "body": "Page body",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "id": "page",
+            "slug": "page",
+            "title": "Page title"
+          }
+        },
+        "relationshipName": "TARGETS_WIKI_PAGE",
+        "timestamp": "<time>",
+        "toTypename": "WikiPage"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          },
+          "relationship": {},
           "to": {
             "createdAt": "<time>",
             "username": "current-author"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_WIKI_PAGE",
-        "fromTypename": "Issue",
-        "toTypename": "WikiPage",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "body": "Page body",
-            "slug": "page",
-            "id": "page",
-            "channelUniqueName": "forum",
-            "createdAt": "<time>",
-            "title": "Page title"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationProfile",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_ISSUE",
-        "fromTypename": "Channel",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
           }
-        }
-      }
+        },
+        "relationshipName": "TARGETS_USER",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
         "event": "create_relationship",
-        "properties": {
-          "from": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_COMMENT",
-        "fromTypename": "Channel",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "MODERATED_COMMENT",
         "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
+            "actionDescription": "Reported the wiki edit",
             "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
+            "createdAt": "<time>",
+            "id": "<id>"
           },
-          "relationship": {}
-        }
-      }
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "update",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
         "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
         "properties": {
-          "old": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
+          "from": {
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "displayName": "Moderator"
           },
-          "new": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
             "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 1,
+      "authors": [
+        "Moderator"
+      ],
+      "comments": 1,
+      "flag": false,
+      "number": 1,
+      "open": true,
+      "owner": "current-author",
+      "page": "page",
+      "revision": null,
+      "scope": "forum",
+      "texts": [
+        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      ],
+      "title": "[Reported wiki edit] \\"Page title\\""
     }
   ]
 }
@@ -1252,22 +1252,6 @@ exports[`wiki create projection error preserves original partial-write boundary 
 
 exports[`wiki create projection error preserves original partial-write boundary 2`] = `
 {
-  "rows": [
-    {
-      "number": 1,
-      "scope": "forum",
-      "title": "[Reported wiki edit] \\"Page title\\"",
-      "open": true,
-      "flag": false,
-      "page": "page",
-      "revision": null,
-      "owner": "current-author",
-      "actions": 0,
-      "comments": 0,
-      "texts": [],
-      "authors": []
-    }
-  ],
   "counters": [
     {
       "current": 1
@@ -1275,169 +1259,185 @@ exports[`wiki create projection error preserves original partial-write boundary 
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
         "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_USER",
-        "fromTypename": "Issue",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
-          "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
+          "new": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
             "createdAt": "<time>",
-            "username": "current-author"
-          },
-          "relationship": {}
-        }
-      }
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
     },
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_WIKI_PAGE",
-        "fromTypename": "Issue",
-        "toTypename": "WikiPage",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          }
+        },
+        "relationshipName": "HAS_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
             "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
           },
+          "relationship": {},
           "to": {
             "body": "Page body",
-            "slug": "page",
-            "id": "page",
             "channelUniqueName": "forum",
             "createdAt": "<time>",
+            "id": "page",
+            "slug": "page",
             "title": "Page title"
-          },
-          "relationship": {}
-        }
-      }
+          }
+        },
+        "relationshipName": "TARGETS_WIKI_PAGE",
+        "timestamp": "<time>",
+        "toTypename": "WikiPage"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationProfile",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
           },
+          "relationship": {},
           "to": {
             "createdAt": "<time>",
             "displayName": "Moderator"
-          },
-          "relationship": {}
-        }
-      }
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "HAS_ISSUE",
-        "fromTypename": "Channel",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
           },
+          "relationship": {},
           "to": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "username": "current-author"
           }
-        }
-      }
+        },
+        "relationshipName": "TARGETS_USER",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      "kind": "create_relationship"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 0,
+      "authors": [],
+      "comments": 0,
+      "flag": false,
+      "number": 1,
+      "open": true,
+      "owner": "current-author",
+      "page": "page",
+      "revision": null,
+      "scope": "forum",
+      "texts": [],
+      "title": "[Reported wiki edit] \\"Page title\\""
     }
   ]
 }
@@ -1445,35 +1445,14 @@ exports[`wiki create projection error preserves original partial-write boundary 
 
 exports[`wiki report current preserves authors, targets and repeated nested reports 1`] = `
 {
+  "flaggedServerRuleViolation": true,
   "id": "<id>",
-  "issueNumber": 1,
-  "flaggedServerRuleViolation": true
+  "issueNumber": 1
 }
 `;
 
 exports[`wiki report current preserves authors, targets and repeated nested reports 2`] = `
 {
-  "rows": [
-    {
-      "number": 1,
-      "scope": "forum",
-      "title": "[Reported wiki edit] \\"Page title\\"",
-      "open": true,
-      "flag": true,
-      "page": "page",
-      "revision": null,
-      "owner": "current-author",
-      "actions": 2,
-      "comments": 2,
-      "texts": [
-        "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
-      ],
-      "authors": [
-        "Moderator"
-      ]
-    }
-  ],
   "counters": [
     {
       "current": 1
@@ -1481,698 +1460,719 @@ exports[`wiki report current preserves authors, targets and repeated nested repo
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_USER",
-        "fromTypename": "Issue",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          }
+        },
+        "relationshipName": "HAS_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "uniqueName": "forum"
           },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          },
+          "relationship": {},
+          "to": {
+            "body": "Page body",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "id": "page",
+            "slug": "page",
+            "title": "Page title"
+          }
+        },
+        "relationshipName": "TARGETS_WIKI_PAGE",
+        "timestamp": "<time>",
+        "toTypename": "WikiPage"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          },
+          "relationship": {},
           "to": {
             "createdAt": "<time>",
             "username": "current-author"
-          },
-          "relationship": {}
-        }
-      }
+          }
+        },
+        "relationshipName": "TARGETS_USER",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_WIKI_PAGE",
+        "event": "create_relationship",
         "fromTypename": "Issue",
-        "toTypename": "WikiPage",
-        "timestamp": "<time>",
-        "event": "create_relationship",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
         "properties": {
           "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "body": "Page body",
-            "slug": "page",
-            "id": "page",
-            "channelUniqueName": "forum",
             "createdAt": "<time>",
-            "title": "Page title"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationProfile",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_ISSUE",
-        "fromTypename": "Channel",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_COMMENT",
-        "fromTypename": "Channel",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "locked": false,
             "flaggedServerRuleViolation": true,
             "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
             "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
+            "issueNumber": 1,
+            "locked": false,
             "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
           },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_COMMENT",
-        "fromTypename": "Channel",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
+          "relationship": {},
           "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
+            "actionDescription": "Reported the wiki edit",
             "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isSticky": false
+            "id": "<id>"
           }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
+        },
         "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
         "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "update",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
         "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
         "properties": {
-          "old": {
-            "updatedAt": "<time>",
-            "locked": false,
+          "from": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
             "flaggedServerRuleViolation": false,
             "id": "<id>",
+            "isOpen": true,
             "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
             "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "current-author",
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
             "isOpen": false,
-            "title": "[Reported wiki edit] \\"Page title\\"",
-            "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "<id>",
             "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Page title\\"",
+            "locked": false,
             "relatedUsername": "current-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "relatedWikiPageId": "page",
+            "title": "[Reported wiki edit] \\"Page title\\"",
+            "updatedAt": "<time>"
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 2,
+      "authors": [
+        "Moderator"
+      ],
+      "comments": 2,
+      "flag": true,
+      "number": 1,
+      "open": true,
+      "owner": "current-author",
+      "page": "page",
+      "revision": null,
+      "scope": "forum",
+      "texts": [
+        "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
+        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      ],
+      "title": "[Reported wiki edit] \\"Page title\\""
     }
   ]
 }
@@ -2180,35 +2180,14 @@ exports[`wiki report current preserves authors, targets and repeated nested repo
 
 exports[`wiki report revision preserves authors, targets and repeated nested reports 1`] = `
 {
+  "flaggedServerRuleViolation": true,
   "id": "<id>",
-  "issueNumber": 1,
-  "flaggedServerRuleViolation": true
+  "issueNumber": 1
 }
 `;
 
 exports[`wiki report revision preserves authors, targets and repeated nested reports 2`] = `
 {
-  "rows": [
-    {
-      "number": 1,
-      "scope": "forum",
-      "title": "[Reported wiki edit] \\"Revision body\\"",
-      "open": true,
-      "flag": true,
-      "page": "page",
-      "revision": "revision",
-      "owner": "revision-author",
-      "actions": 2,
-      "comments": 2,
-      "texts": [
-        "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
-      ],
-      "authors": [
-        "Moderator"
-      ]
-    }
-  ],
   "counters": [
     {
       "current": 1
@@ -2216,747 +2195,768 @@ exports[`wiki report revision preserves authors, targets and repeated nested rep
   ],
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_USER",
-        "fromTypename": "Issue",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
             "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
             "authorName": "Moderator",
             "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          }
+        },
+        "relationshipName": "HAS_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "uniqueName": "forum"
           },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Channel",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "uniqueName": "forum"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "HAS_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
+          "to": {
+            "body": "Page body",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "id": "page",
+            "slug": "page",
+            "title": "Page title"
+          }
+        },
+        "relationshipName": "TARGETS_WIKI_PAGE",
+        "timestamp": "<time>",
+        "toTypename": "WikiPage"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
+          "to": {
+            "body": "Revision body",
+            "createdAt": "<time>",
+            "id": "revision"
+          }
+        },
+        "relationshipName": "TARGETS_WIKI_REVISION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          },
+          "relationship": {},
           "to": {
             "createdAt": "<time>",
             "username": "revision-author"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_WIKI_REVISION",
-        "fromTypename": "Issue",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "id": "revision",
-            "body": "Revision body",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "TARGETS_WIKI_PAGE",
-        "fromTypename": "Issue",
-        "toTypename": "WikiPage",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "body": "Page body",
-            "slug": "page",
-            "id": "page",
-            "channelUniqueName": "forum",
-            "createdAt": "<time>",
-            "title": "Page title"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationProfile",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_ISSUE",
-        "fromTypename": "Channel",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
           }
-        }
-      }
+        },
+        "relationshipName": "TARGETS_USER",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "create_relationship",
       "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
         "event": "create_relationship",
-        "properties": {
-          "from": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_COMMENT",
-        "fromTypename": "Channel",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
         "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "update",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": false,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
         "id": "<internal-id>",
         "id_from": "<internal-id>",
         "id_to": "<internal-id>",
-        "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Comment",
-        "toTypename": "Issue",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
             "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
             "createdAt": "<time>",
-            "isSticky": false
-          },
-          "to": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
             "flaggedServerRuleViolation": true,
             "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
             "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "issueNumber": 1,
+            "locked": false,
             "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
           },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "HAS_COMMENT",
-        "fromTypename": "Channel",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "uniqueName": "forum",
-            "createdAt": "<time>"
-          },
+          "relationship": {},
           "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "AUTHORED_COMMENT",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "PERFORMED_MODERATION_ACTION",
-        "fromTypename": "ModerationProfile",
-        "toTypename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "displayName": "Moderator"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
+            "actionDescription": "Reported the wiki edit",
             "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "Comment",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
-            "isSticky": false
+            "id": "<id>"
           }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
-        "relationshipName": "MODERATED_COMMENT",
-        "fromTypename": "ModerationAction",
-        "toTypename": "Comment",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "to": {
-            "isRootComment": true,
-            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
-            "id": "<id>",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "isSticky": false
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "<internal-id>",
-        "typename": "ModerationAction",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          }
-        }
-      }
-    },
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "<internal-id>",
-        "id_from": "<internal-id>",
-        "id_to": "<internal-id>",
+        },
         "relationshipName": "ACTIVITY_ON_ISSUE",
-        "fromTypename": "Issue",
-        "toTypename": "ModerationAction",
         "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "<id>",
-            "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "<id>",
-            "actionType": "report",
-            "actionDescription": "Reported the wiki edit"
-          },
-          "relationship": {}
-        }
-      }
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
     },
     {
-      "kind": "update",
       "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
         "id": "<internal-id>",
-        "typename": "Issue",
-        "timestamp": "<time>",
-        "event": "update",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
         "properties": {
-          "old": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
+          "from": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the wiki edit",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
             "flaggedServerRuleViolation": false,
             "id": "<id>",
+            "isOpen": true,
             "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
             "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\""
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedUsername": "revision-author",
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
             "isOpen": false,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
-            "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "relatedWikiRevisionId": "revision",
-            "locked": false,
-            "flaggedServerRuleViolation": true,
-            "id": "<id>",
             "issueNumber": 1,
-            "createdAt": "<time>",
-            "isOpen": true,
-            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "locked": false,
             "relatedUsername": "revision-author",
-            "authorName": "Moderator",
-            "channelUniqueName": "forum",
-            "ageGateTouchedAt": "<time>",
-            "relatedWikiPageId": "page"
+            "relatedWikiPageId": "page",
+            "relatedWikiRevisionId": "revision",
+            "title": "[Reported wiki edit] \\"Revision body\\"",
+            "updatedAt": "<time>"
           }
-        }
-      }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 2,
+      "authors": [
+        "Moderator"
+      ],
+      "comments": 2,
+      "flag": true,
+      "number": 1,
+      "open": true,
+      "owner": "revision-author",
+      "page": "page",
+      "revision": "revision",
+      "scope": "forum",
+      "texts": [
+        "\\n\\nForum rule violations: rule\\n\\nServer rule violations: server\\n\\nreason\\n\\n\\n\\n",
+        "\\n\\nForum rule violations: rule\\n\\n\\nreason\\n\\n\\n\\n"
+      ],
+      "title": "[Reported wiki edit] \\"Revision body\\""
     }
   ]
 }
@@ -2968,24 +2968,24 @@ exports[`wiki report validates channel before revision and counter effects 1`] =
 
 exports[`wiki report validates channel before revision and counter effects 2`] = `
 {
-  "rows": [],
   "counters": [],
-  "events": []
+  "events": [],
+  "rows": []
 }
 `;
 
 exports[`wiki/revision explicit selections and invalid generated filter coercion match 1`] = `
 [
   {
-    "id": "page",
-    "title": "Page title",
-    "body": "Page body",
     "Channel": {
       "uniqueName": "forum"
     },
     "VersionAuthor": {
       "username": "current-author"
-    }
+    },
+    "body": "Page body",
+    "id": "page",
+    "title": "Page title"
   }
 ]
 `;
@@ -2993,11 +2993,11 @@ exports[`wiki/revision explicit selections and invalid generated filter coercion
 exports[`wiki/revision explicit selections and invalid generated filter coercion match 2`] = `
 [
   {
-    "id": "revision",
-    "body": "Revision body",
     "Author": {
       "username": "revision-author"
-    }
+    },
+    "body": "Revision body",
+    "id": "revision"
   }
 ]
 `;

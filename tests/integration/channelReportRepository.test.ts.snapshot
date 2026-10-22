@@ -1,66 +1,30 @@
 exports[`channel report reads preserve filters, implicit limit and quoted data 1`] = `
 [
   {
-    "uniqueName": "quote\\"\\\\id",
-    "displayName": "quoted"
+    "displayName": "quoted",
+    "uniqueName": "quote\\"\\\\id"
   }
 ]
 `;
 
 exports[`missing channel fails before issue lookup, allocation or writes 1`] = `
 {
-  "value": null,
-  "error": "Channel not found"
+  "error": "Channel not found",
+  "value": null
 }
 `;
 
 exports[`projection failure preserves committed activity and exact catch contract 1`] = `
 {
   "result": {
-    "value": null,
-    "error": "Error updating issue"
+    "error": "Error updating issue",
+    "value": null
   },
   "state": {
-    "issues": [
-      {
-        "title": null,
-        "number": 9,
-        "open": true,
-        "flagged": true,
-        "event": "forum",
-        "channel": null
-      }
+    "comments": [
+      "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
     ],
-    "nodes": [
-      [
-        "Channel",
-        1
-      ],
-      [
-        "Comment",
-        1
-      ],
-      [
-        "Event",
-        1
-      ],
-      [
-        "Issue",
-        1
-      ],
-      [
-        "ModerationAction",
-        1
-      ],
-      [
-        "ModerationProfile",
-        1
-      ],
-      [
-        "User",
-        1
-      ]
-    ],
+    "counter": [],
     "edges": [
       [
         "ACTIVITY_ON_ISSUE",
@@ -79,389 +43,223 @@ exports[`projection failure preserves committed activity and exact catch contrac
         1
       ]
     ],
-    "comments": [
-      "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
-    ],
-    "counter": [],
     "events": [
       {
-        "kind": "create_relationship",
         "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id8",
+          "properties": {
+            "new": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id9"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Comment",
           "id": "id0",
           "id_from": "id1",
           "id_to": "id2",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Comment",
-          "toTypename": "Issue",
-          "timestamp": "<time>",
-          "event": "create_relationship",
           "properties": {
             "from": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id3",
               "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
-              "isSticky": false
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
             },
+            "relationship": {},
             "to": {
-              "updatedAt": "<time>",
+              "ageGateTouchedAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id4",
-              "issueNumber": 9,
-              "ageGateTouchedAt": "<time>",
               "isOpen": true,
-              "relatedChannelUniqueName": "forum"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id5",
-          "id_from": "id6",
-          "id_to": "id1",
-          "relationshipName": "AUTHORED_COMMENT",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id3",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id7",
-          "id_from": "id6",
-          "id_to": "id8",
-          "relationshipName": "PERFORMED_MODERATION_ACTION",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "createdAt": "<time>",
-              "id": "id9",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id1",
-          "typename": "Comment",
-          "timestamp": "<time>",
-          "event": "create",
-          "properties": {
-            "new": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id3",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
+              "issueNumber": 9,
+              "relatedChannelUniqueName": "forum",
+              "updatedAt": "<time>"
             }
-          }
-        }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id10",
-          "id_from": "id8",
-          "id_to": "id1",
-          "relationshipName": "MODERATED_COMMENT",
-          "fromTypename": "ModerationAction",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
           "event": "create_relationship",
-          "properties": {
-            "from": {
-              "createdAt": "<time>",
-              "id": "id9",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id3",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id8",
-          "typename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create",
-          "properties": {
-            "new": {
-              "createdAt": "<time>",
-              "id": "id9",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            }
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
+          "fromTypename": "Issue",
           "id": "id11",
           "id_from": "id2",
           "id_to": "id8",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Issue",
-          "toTypename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create_relationship",
           "properties": {
             "from": {
-              "updatedAt": "<time>",
+              "ageGateTouchedAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id4",
-              "issueNumber": 9,
-              "ageGateTouchedAt": "<time>",
               "isOpen": true,
-              "relatedChannelUniqueName": "forum"
-            },
-            "to": {
-              "createdAt": "<time>",
-              "id": "id9",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "update",
-        "event": {
-          "id": "id2",
-          "typename": "Issue",
-          "timestamp": "<time>",
-          "event": "update",
-          "properties": {
-            "old": {
+              "issueNumber": 9,
               "relatedChannelUniqueName": "forum",
-              "id": "id4",
-              "issueNumber": 9
+              "updatedAt": "<time>"
             },
-            "new": {
-              "updatedAt": "<time>",
-              "flaggedServerRuleViolation": true,
-              "id": "id4",
-              "issueNumber": 9,
-              "ageGateTouchedAt": "<time>",
-              "isOpen": true,
-              "relatedChannelUniqueName": "forum"
-            }
-          }
-        }
-      }
-    ]
-  }
-}
-`;
-
-exports[`projection failure preserves committed creation and exact catch contract 1`] = `
-{
-  "result": {
-    "value": null,
-    "error": "Error creating issue: report projection failed"
-  },
-  "state": {
-    "issues": [
-      {
-        "title": "[Reported channel] Forum",
-        "number": 1,
-        "open": true,
-        "flagged": true,
-        "event": "forum",
-        "channel": null
-      }
-    ],
-    "nodes": [
-      [
-        "Channel",
-        1
-      ],
-      [
-        "Event",
-        1
-      ],
-      [
-        "Issue",
-        1
-      ],
-      [
-        "ModerationProfile",
-        1
-      ],
-      [
-        "ServerIssueCounter",
-        1
-      ],
-      [
-        "User",
-        1
-      ]
-    ],
-    "edges": [
-      [
-        "AUTHORED_ISSUE",
-        1
-      ],
-      [
-        "TARGETS_CHANNEL",
-        1
-      ]
-    ],
-    "comments": [],
-    "counter": [
-      1
-    ],
-    "events": [
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id0",
-          "id_from": "id1",
-          "id_to": "id2",
-          "relationshipName": "TARGETS_CHANNEL",
-          "fromTypename": "Issue",
-          "toTypename": "Channel",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
+            "relationship": {},
             "to": {
-              "uniqueName": "forum",
-              "displayName": "Forum"
-            },
-            "relationship": {}
-          }
-        }
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id9"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id4",
-          "id_from": "id1",
-          "id_to": "id5",
-          "relationshipName": "AUTHORED_ISSUE",
-          "fromTypename": "Issue",
-          "toTypename": "ModerationProfile",
-          "timestamp": "<time>",
           "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id10",
+          "id_from": "id8",
+          "id_to": "id1",
           "properties": {
             "from": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id9"
+            },
+            "relationship": {},
+            "to": {
               "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "to": {
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id5",
+          "id_from": "id6",
+          "id_to": "id1",
+          "properties": {
+            "from": {
               "displayName": "mod"
             },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id1",
-          "typename": "Issue",
-          "timestamp": "<time>",
-          "event": "create",
-          "properties": {
-            "new": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
+            "relationship": {},
+            "to": {
               "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
+              "id": "id3",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id7",
+          "id_from": "id6",
+          "id_to": "id8",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id9"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id2",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id4",
               "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
+              "issueNumber": 9,
+              "relatedChannelUniqueName": "forum",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "id": "id4",
+              "issueNumber": 9,
               "relatedChannelUniqueName": "forum"
             }
-          }
-        }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
       }
-    ]
-  }
-}
-`;
-
-exports[`real resolver preserves identity, numbering, repeated activity, reopen and native payloads 1`] = `
-{
-  "first": {
-    "id": "id0",
-    "issueNumber": 1,
-    "flaggedServerRuleViolation": true,
-    "relatedChannelUniqueName": "forum"
-  },
-  "snapshot": {
+    ],
     "issues": [
       {
-        "title": "[Reported channel] Forum",
-        "number": 1,
-        "open": true,
-        "flagged": true,
+        "channel": null,
         "event": "forum",
-        "channel": null
+        "flagged": true,
+        "number": 9,
+        "open": true,
+        "title": null
       }
     ],
     "nodes": [
@@ -471,7 +269,7 @@ exports[`real resolver preserves identity, numbering, repeated activity, reopen 
       ],
       [
         "Comment",
-        2
+        1
       ],
       [
         "Event",
@@ -483,7 +281,152 @@ exports[`real resolver preserves identity, numbering, repeated activity, reopen 
       ],
       [
         "ModerationAction",
-        2
+        1
+      ],
+      [
+        "ModerationProfile",
+        1
+      ],
+      [
+        "User",
+        1
+      ]
+    ]
+  }
+}
+`;
+
+exports[`projection failure preserves committed creation and exact catch contract 1`] = `
+{
+  "result": {
+    "error": "Error creating issue: report projection failed",
+    "value": null
+  },
+  "state": {
+    "comments": [],
+    "counter": [
+      1
+    ],
+    "edges": [
+      [
+        "AUTHORED_ISSUE",
+        1
+      ],
+      [
+        "TARGETS_CHANNEL",
+        1
+      ]
+    ],
+    "events": [
+      {
+        "event": {
+          "event": "create",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum"
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "Forum",
+              "uniqueName": "forum"
+            }
+          },
+          "relationshipName": "TARGETS_CHANNEL",
+          "timestamp": "<time>",
+          "toTypename": "Channel"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id4",
+          "id_from": "id1",
+          "id_to": "id5",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum"
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
+            }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      }
+    ],
+    "issues": [
+      {
+        "channel": null,
+        "event": "forum",
+        "flagged": true,
+        "number": 1,
+        "open": true,
+        "title": "[Reported channel] Forum"
+      }
+    ],
+    "nodes": [
+      [
+        "Channel",
+        1
+      ],
+      [
+        "Event",
+        1
+      ],
+      [
+        "Issue",
+        1
       ],
       [
         "ModerationProfile",
@@ -497,6 +440,26 @@ exports[`real resolver preserves identity, numbering, repeated activity, reopen 
         "User",
         1
       ]
+    ]
+  }
+}
+`;
+
+exports[`real resolver preserves identity, numbering, repeated activity, reopen and native payloads 1`] = `
+{
+  "first": {
+    "flaggedServerRuleViolation": true,
+    "id": "id0",
+    "issueNumber": 1,
+    "relatedChannelUniqueName": "forum"
+  },
+  "snapshot": {
+    "comments": [
+      "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
+      "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+    ],
+    "counter": [
+      1
     ],
     "edges": [
       [
@@ -524,553 +487,590 @@ exports[`real resolver preserves identity, numbering, repeated activity, reopen 
         1
       ]
     ],
-    "comments": [
-      "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-      "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
-    ],
-    "counter": [
-      1
-    ],
     "events": [
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id0",
-          "id_from": "id1",
-          "id_to": "id2",
-          "relationshipName": "TARGETS_CHANNEL",
-          "fromTypename": "Issue",
-          "toTypename": "Channel",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "to": {
-              "uniqueName": "forum",
-              "displayName": "Forum"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id4",
-          "id_from": "id1",
-          "id_to": "id5",
-          "relationshipName": "AUTHORED_ISSUE",
-          "fromTypename": "Issue",
-          "toTypename": "ModerationProfile",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "to": {
-              "displayName": "mod"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
+          "event": "create",
           "id": "id1",
-          "typename": "Issue",
-          "timestamp": "<time>",
-          "event": "create",
           "properties": {
             "new": {
-              "locked": false,
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
               "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum"
             }
-          }
-        }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "create"
       },
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id6",
-          "id_from": "id7",
-          "id_to": "id1",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Comment",
-          "toTypename": "Issue",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id8",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            },
-            "to": {
-              "updatedAt": "<time>",
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id9",
-          "id_from": "id5",
-          "id_to": "id7",
-          "relationshipName": "AUTHORED_COMMENT",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id8",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id10",
-          "id_from": "id5",
-          "id_to": "id11",
-          "relationshipName": "PERFORMED_MODERATION_ACTION",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "createdAt": "<time>",
-              "id": "id12",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id7",
-          "typename": "Comment",
-          "timestamp": "<time>",
           "event": "create",
-          "properties": {
-            "new": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id8",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            }
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id13",
-          "id_from": "id11",
-          "id_to": "id7",
-          "relationshipName": "MODERATED_COMMENT",
-          "fromTypename": "ModerationAction",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "createdAt": "<time>",
-              "id": "id12",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id8",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
           "id": "id11",
-          "typename": "ModerationAction",
+          "properties": {
+            "new": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id12"
+            }
+          },
           "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
           "event": "create",
+          "id": "id16",
           "properties": {
             "new": {
+              "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
-              "id": "id12",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
+              "id": "id17",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
             }
-          }
-        }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
       },
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id14",
-          "id_from": "id1",
-          "id_to": "id11",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Issue",
-          "toTypename": "ModerationAction",
+          "event": "create",
+          "id": "id20",
+          "properties": {
+            "new": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id21"
+            }
+          },
           "timestamp": "<time>",
+          "typename": "ModerationAction"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
+          "event": "create",
+          "id": "id7",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Comment"
+        },
+        "kind": "create"
+      },
+      {
+        "event": {
           "event": "create_relationship",
-          "properties": {
-            "from": {
-              "updatedAt": "<time>",
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "to": {
-              "createdAt": "<time>",
-              "id": "id12",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "update",
-        "event": {
-          "id": "id1",
-          "typename": "Issue",
-          "timestamp": "<time>",
-          "event": "update",
-          "properties": {
-            "old": {
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "new": {
-              "updatedAt": "<time>",
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            }
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
+          "fromTypename": "Comment",
           "id": "id15",
           "id_from": "id16",
           "id_to": "id1",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Comment",
-          "toTypename": "Issue",
-          "timestamp": "<time>",
-          "event": "create_relationship",
           "properties": {
             "from": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id17",
               "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
-              "isSticky": false
+              "id": "id17",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
             },
+            "relationship": {},
             "to": {
-              "updatedAt": "<time>",
-              "locked": false,
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
               "isOpen": true,
-              "authorName": "mod",
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
               "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id18",
-          "id_from": "id5",
-          "id_to": "id16",
-          "relationshipName": "AUTHORED_COMMENT",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id17",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create_relationship",
-        "event": {
-          "id": "id19",
-          "id_from": "id5",
-          "id_to": "id20",
-          "relationshipName": "PERFORMED_MODERATION_ACTION",
-          "fromTypename": "ModerationProfile",
-          "toTypename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create_relationship",
-          "properties": {
-            "from": {
-              "displayName": "mod"
-            },
-            "to": {
-              "createdAt": "<time>",
-              "id": "id21",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id16",
-          "typename": "Comment",
-          "timestamp": "<time>",
-          "event": "create",
-          "properties": {
-            "new": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id17",
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isSticky": false
+              "updatedAt": "<time>"
             }
-          }
-        }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "create_relationship",
         "event": {
-          "id": "id22",
-          "id_from": "id20",
-          "id_to": "id16",
-          "relationshipName": "MODERATED_COMMENT",
-          "fromTypename": "ModerationAction",
-          "toTypename": "Comment",
-          "timestamp": "<time>",
           "event": "create_relationship",
+          "fromTypename": "Comment",
+          "id": "id6",
+          "id_from": "id7",
+          "id_to": "id1",
           "properties": {
             "from": {
-              "createdAt": "<time>",
-              "id": "id21",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "to": {
-              "isRootComment": true,
-              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n",
-              "id": "id17",
               "ageGateTouchedAt": "<time>",
               "createdAt": "<time>",
-              "isSticky": false
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
             },
-            "relationship": {}
-          }
-        }
-      },
-      {
-        "kind": "create",
-        "event": {
-          "id": "id20",
-          "typename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create",
-          "properties": {
-            "new": {
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
               "createdAt": "<time>",
-              "id": "id21",
-              "actionType": "report",
-              "actionDescription": "Reported the channel"
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum",
+              "updatedAt": "<time>"
             }
-          }
-        }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "Issue"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "create_relationship",
         "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum"
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "Forum",
+              "uniqueName": "forum"
+            }
+          },
+          "relationshipName": "TARGETS_CHANNEL",
+          "timestamp": "<time>",
+          "toTypename": "Channel"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id14",
+          "id_from": "id1",
+          "id_to": "id11",
+          "properties": {
+            "from": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum",
+              "updatedAt": "<time>"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id12"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "Issue",
           "id": "id23",
           "id_from": "id1",
           "id_to": "id20",
-          "relationshipName": "ACTIVITY_ON_ISSUE",
-          "fromTypename": "Issue",
-          "toTypename": "ModerationAction",
-          "timestamp": "<time>",
-          "event": "create_relationship",
           "properties": {
             "from": {
-              "updatedAt": "<time>",
-              "locked": false,
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
               "isOpen": true,
-              "authorName": "mod",
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
               "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
+              "updatedAt": "<time>"
             },
+            "relationship": {},
             "to": {
-              "createdAt": "<time>",
-              "id": "id21",
+              "actionDescription": "Reported the channel",
               "actionType": "report",
-              "actionDescription": "Reported the channel"
-            },
-            "relationship": {}
-          }
-        }
+              "createdAt": "<time>",
+              "id": "id21"
+            }
+          },
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
       },
       {
-        "kind": "update",
         "event": {
-          "id": "id1",
-          "typename": "Issue",
-          "timestamp": "<time>",
-          "event": "update",
+          "event": "create_relationship",
+          "fromTypename": "Issue",
+          "id": "id4",
+          "id_from": "id1",
+          "id_to": "id5",
           "properties": {
-            "old": {
-              "updatedAt": "<time>",
-              "locked": false,
-              "flaggedServerRuleViolation": true,
-              "id": "id3",
-              "issueNumber": 1,
+            "from": {
               "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
-              "isOpen": false,
               "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
-            },
-            "new": {
-              "updatedAt": "<time>",
-              "locked": false,
+              "createdAt": "<time>",
               "flaggedServerRuleViolation": true,
               "id": "id3",
-              "issueNumber": 1,
-              "ageGateTouchedAt": "<time>",
-              "createdAt": "<time>",
               "isOpen": true,
-              "authorName": "mod",
-              "title": "[Reported channel] Forum",
-              "relatedChannelUniqueName": "forum"
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum"
+            },
+            "relationship": {},
+            "to": {
+              "displayName": "mod"
             }
-          }
-        }
+          },
+          "relationshipName": "AUTHORED_ISSUE",
+          "timestamp": "<time>",
+          "toTypename": "ModerationProfile"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id13",
+          "id_from": "id11",
+          "id_to": "id7",
+          "properties": {
+            "from": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id12"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationAction",
+          "id": "id22",
+          "id_from": "id20",
+          "id_to": "id16",
+          "properties": {
+            "from": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id21"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id17",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "relationshipName": "MODERATED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id10",
+          "id_from": "id5",
+          "id_to": "id11",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id12"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id18",
+          "id_from": "id5",
+          "id_to": "id16",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id17",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id19",
+          "id_from": "id5",
+          "id_to": "id20",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "actionDescription": "Reported the channel",
+              "actionType": "report",
+              "createdAt": "<time>",
+              "id": "id21"
+            }
+          },
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "timestamp": "<time>",
+          "toTypename": "ModerationAction"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "create_relationship",
+          "fromTypename": "ModerationProfile",
+          "id": "id9",
+          "id_from": "id5",
+          "id_to": "id7",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "relationship": {},
+            "to": {
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "id": "id8",
+              "isRootComment": true,
+              "isSticky": false,
+              "text": "\\nServer rule violations: No spam\\n\\nPlease review\\n\\n"
+            }
+          },
+          "relationshipName": "AUTHORED_COMMENT",
+          "timestamp": "<time>",
+          "toTypename": "Comment"
+        },
+        "kind": "create_relationship"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": false,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum",
+              "updatedAt": "<time>"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
+      },
+      {
+        "event": {
+          "event": "update",
+          "id": "id1",
+          "properties": {
+            "new": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum",
+              "updatedAt": "<time>"
+            },
+            "old": {
+              "ageGateTouchedAt": "<time>",
+              "authorName": "mod",
+              "createdAt": "<time>",
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "isOpen": true,
+              "issueNumber": 1,
+              "locked": false,
+              "relatedChannelUniqueName": "forum",
+              "title": "[Reported channel] Forum"
+            }
+          },
+          "timestamp": "<time>",
+          "typename": "Issue"
+        },
+        "kind": "update"
       }
+    ],
+    "issues": [
+      {
+        "channel": null,
+        "event": "forum",
+        "flagged": true,
+        "number": 1,
+        "open": true,
+        "title": "[Reported channel] Forum"
+      }
+    ],
+    "nodes": [
+      [
+        "Channel",
+        1
+      ],
+      [
+        "Comment",
+        2
+      ],
+      [
+        "Event",
+        1
+      ],
+      [
+        "Issue",
+        1
+      ],
+      [
+        "ModerationAction",
+        2
+      ],
+      [
+        "ModerationProfile",
+        1
+      ],
+      [
+        "ServerIssueCounter",
+        1
+      ],
+      [
+        "User",
+        1
+      ]
     ]
   }
 }

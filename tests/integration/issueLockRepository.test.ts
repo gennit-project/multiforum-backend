@@ -54,7 +54,11 @@ const selection = `{
           }
         }`;
 const seed=async()=>{await driver.executeQuery(`CREATE (:ModerationProfile {displayName:'mod'}),(:Issue {id:'i',issueNumber:1,channelUniqueName:'forum',authorName:'mod',isOpen:true,locked:false,createdAt:datetime(),title:'Issue'})`);};
-const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(['id','id_from','id_to'].includes(key)){const namespace=key==='id' && this.event?.includes('relationship')?'relationship':'node';const identity=namespace+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','createdAt','updatedAt','lockedAt','ageGateTouchedAt'].includes(key)&&value!==null?'<time>':value;}));};
+const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){
+// ActivityFeed has no requested/default sort, so its rows arrive in Neo4j order; sort by the
+// stable actionType before id-aliasing so the encounter-order aliases are reproducible.
+if(key==='ActivityFeed'&&Array.isArray(value))return [...value].sort((a,b)=>String(a.actionType).localeCompare(String(b.actionType)));
+if(['id','id_from','id_to'].includes(key)){const namespace=key==='id' && this.event?.includes('relationship')?'relationship':'node';const identity=namespace+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','createdAt','updatedAt','lockedAt','ageGateTouchedAt'].includes(key)&&value!==null?'<time>':value;}));};
 const snapshot=async()=>({graph:(await driver.executeQuery(`MATCH(i:Issue) RETURN i.locked AS locked,i.lockReason AS reason`)).records.map(r=>r.toObject()),comments:(await driver.executeQuery(`MATCH(c:Comment) RETURN c.text AS text,c.isRootComment AS root ORDER BY text`)).records.map(r=>r.toObject()),events:normalize(events)});
 const oldRepository=()=>{const model=protectIssueModelIdentity(ogm.model('Issue'));return {findLockState:(id:string)=>model.find({where:{id},selectionSet:'{id issueNumber channelUniqueName locked}'}),updateLock:(id:string,update:any)=>model.update({where:{id},update,selectionSet:selection})};};
 const context=()=>({driver,user:{username:'alice',data:{ModerationProfile:{displayName:'mod'}}}} as any);

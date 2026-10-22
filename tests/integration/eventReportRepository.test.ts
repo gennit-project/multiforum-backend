@@ -38,7 +38,10 @@ async function state(){return{
 const outcome=async(call:()=>Promise<unknown>)=>{try{return{value:normalize(await call()),error:null};}catch(error){return{value:null,error:(error as Error).message};}};
 test('event report reads preserve filters, implicit limit and quoted data',async(t)=>{
  await driver.executeQuery("UNWIND range(1,28) AS n CREATE(:Issue{id:toString(n),issueNumber:n,channelUniqueName:'forum',relatedEventId:'event'})");
- const repo=createEventReportRepository(driver);t.assert.snapshot(normalize(await repo.findExisting('forum','event')));assert.equal((await repo.findExisting('forum','event')).length,25);
+ // findExisting applies the generated default limit of 25 over 28 matched issues; which 25
+ // is only stable within a run (no ORDER BY), so assert the cap rather than snapshotting an
+ // unstable subset — matching the discussion/channel/comment report repositories.
+ const repo=createEventReportRepository(driver);assert.equal((await repo.findExisting('forum','event')).length,25);
  await driver.executeQuery('CREATE(:Event{id:$id,title:$title,canceled:false})',{id:'quote"\\id',title:'quoted'});t.assert.snapshot(normalize(await repo.findEvent('quote"\\id')));assert.deepEqual(await repo.findExisting('missing','event'),[]);
 });
 test('real resolver preserves identity, numbering, repeated activity, reopen and native payloads',async(t)=>{

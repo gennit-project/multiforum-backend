@@ -1,50 +1,109 @@
 exports[`all channel requirements validate before first discussion creation 1`] = `
 {
-  "value": null,
-  "error": "Failed to create discussions: At least one channel must be selected",
-  "graph": [],
   "edges": [],
-  "events": []
+  "error": "Failed to create discussions: At least one channel must be selected",
+  "events": [],
+  "graph": [],
+  "value": null
 }
 `;
 
 exports[`attached-file selection and missing discussion match OGM 1`] = `
 [
   {
-    "id": "d",
     "DownloadableFiles": [
       {
         "id": "file"
       }
-    ]
+    ],
+    "id": "d"
   }
 ]
 `;
 
 exports[`create/refetch retains generated inputs, raw channel links and native event order 1`] = `
 {
+  "edges": [
+    [
+      "POSTED_DISCUSSION",
+      1
+    ],
+    [
+      "POSTED_IN_CHANNEL",
+      2
+    ],
+    [
+      "UPVOTED_DISCUSSION",
+      1
+    ]
+  ],
+  "error": null,
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "body",
+            "createdAt": "<time>",
+            "id": "id3",
+            "title": "Title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Discussion"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "username": "author"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "body",
+            "createdAt": "<time>",
+            "id": "id3",
+            "title": "Title"
+          }
+        },
+        "relationshipName": "POSTED_DISCUSSION",
+        "timestamp": "<time>",
+        "toTypename": "Discussion"
+      },
+      "kind": "create_relationship"
+    }
+  ],
+  "graph": [
+    {
+      "channel": "forum",
+      "title": "Title"
+    }
+  ],
   "value": [
     {
-      "id": "id0",
-      "title": "Title",
-      "body": "body",
       "Author": {
         "username": "author"
       },
       "DiscussionChannels": [
         {
-          "id": "id1",
-          "createdAt": "<time>",
-          "channelUniqueName": "forum",
-          "discussionId": "id0",
-          "archived": false,
-          "Flairs": [],
           "Channel": {
             "uniqueName": "forum"
           },
           "Discussion": {
             "id": "id0"
           },
+          "Flairs": [],
           "UpvotedByUsers": [
             {
               "username": "author"
@@ -52,79 +111,20 @@ exports[`create/refetch retains generated inputs, raw channel links and native e
           ],
           "UpvotedByUsersAggregate": {
             "count": 1
-          }
+          },
+          "archived": false,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "discussionId": "id0",
+          "id": "id1"
         }
       ],
+      "Tags": [],
+      "body": "body",
       "createdAt": "<time>",
-      "updatedAt": null,
-      "Tags": []
-    }
-  ],
-  "error": null,
-  "graph": [
-    {
+      "id": "id0",
       "title": "Title",
-      "channel": "forum"
-    }
-  ],
-  "edges": [
-    [
-      "POSTED_DISCUSSION",
-      1
-    ],
-    [
-      "POSTED_IN_CHANNEL",
-      2
-    ],
-    [
-      "UPVOTED_DISCUSSION",
-      1
-    ]
-  ],
-  "events": [
-    {
-      "kind": "create_relationship",
-      "event": {
-        "id": "id0",
-        "id_from": "id1",
-        "id_to": "id2",
-        "relationshipName": "POSTED_DISCUSSION",
-        "fromTypename": "User",
-        "toTypename": "Discussion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "username": "author"
-          },
-          "to": {
-            "body": "body",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "title": "Title"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id2",
-        "typename": "Discussion",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "body": "body",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "title": "Title"
-          }
-        }
-      }
+      "updatedAt": null
     }
   ]
 }
@@ -132,14 +132,6 @@ exports[`create/refetch retains generated inputs, raw channel links and native e
 
 exports[`later invalid input preserves first discussion and channel commit 1`] = `
 {
-  "value": null,
-  "error": "Failed to create discussions: Variable \\"$input\\" got invalid value null at \\"input[0].title\\"; Expected non-nullable type \\"String!\\" not to be null.",
-  "graph": [
-    {
-      "title": "Title",
-      "channel": "forum"
-    }
-  ],
   "edges": [
     [
       "POSTED_DISCUSSION",
@@ -154,51 +146,59 @@ exports[`later invalid input preserves first discussion and channel commit 1`] =
       1
     ]
   ],
+  "error": "Failed to create discussions: Variable \\"$input\\" got invalid value null at \\"input[0].title\\"; Expected non-nullable type \\"String!\\" not to be null.",
   "events": [
     {
-      "kind": "create_relationship",
       "event": {
+        "event": "create",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "body",
+            "createdAt": "<time>",
+            "id": "id3",
+            "title": "Title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Discussion"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "User",
         "id": "id0",
         "id_from": "id1",
         "id_to": "id2",
-        "relationshipName": "POSTED_DISCUSSION",
-        "fromTypename": "User",
-        "toTypename": "Discussion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
             "username": "author"
           },
+          "relationship": {},
           "to": {
-            "body": "body",
-            "id": "id3",
             "ageGateTouchedAt": "<time>",
-            "createdAt": "<time>",
-            "title": "Title"
-          },
-          "relationship": {}
-        }
-      }
-    },
-    {
-      "kind": "create",
-      "event": {
-        "id": "id2",
-        "typename": "Discussion",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
             "body": "body",
-            "id": "id3",
-            "ageGateTouchedAt": "<time>",
             "createdAt": "<time>",
+            "id": "id3",
             "title": "Title"
           }
-        }
-      }
+        },
+        "relationshipName": "POSTED_DISCUSSION",
+        "timestamp": "<time>",
+        "toTypename": "Discussion"
+      },
+      "kind": "create_relationship"
     }
-  ]
+  ],
+  "graph": [
+    {
+      "channel": "forum",
+      "title": "Title"
+    }
+  ],
+  "value": null
 }
 `;

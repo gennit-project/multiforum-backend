@@ -3,76 +3,76 @@ exports[`connectOwner preserves repeated native event payloads and mutation resu
   {
     "channels": [
       {
-        "uniqueName": "cats",
-        "displayName": null,
-        "description": null,
-        "locked": null,
-        "lockReason": null,
-        "deleted": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
         "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
         "icon32Url": null,
         "icon48Url": null,
         "icon64Url": null,
         "icon96Url": null,
-        "channelBannerURL": null,
-        "eventsEnabled": null,
-        "wikiEnabled": null,
-        "feedbackEnabled": null,
-        "downloadsEnabled": null,
-        "emojiEnabled": null,
         "imageUploadsEnabled": null,
-        "markdownImagesEnabled": null,
-        "allowPaidDownloads": null,
-        "allowPaywalledPosts": null,
-        "requireVerifiedPhoneForUploads": null,
-        "requireVerifiedEmailToPost": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
         "markAsAnsweredEnabled": null,
-        "discussionFlairRequired": null,
-        "allowedFileTypes": null,
+        "markdownImagesEnabled": null,
         "payoutPercent": null,
-        "variantUrls": null,
-        "rules": null,
         "pluginPipelines": null,
-        "createdAt": "<generated-time>",
-        "lockedAt": null
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
       }
     ]
   },
   {
     "channels": [
       {
-        "uniqueName": "cats",
-        "displayName": null,
-        "description": null,
-        "locked": null,
-        "lockReason": null,
-        "deleted": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
         "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
         "icon32Url": null,
         "icon48Url": null,
         "icon64Url": null,
         "icon96Url": null,
-        "channelBannerURL": null,
-        "eventsEnabled": null,
-        "wikiEnabled": null,
-        "feedbackEnabled": null,
-        "downloadsEnabled": null,
-        "emojiEnabled": null,
         "imageUploadsEnabled": null,
-        "markdownImagesEnabled": null,
-        "allowPaidDownloads": null,
-        "allowPaywalledPosts": null,
-        "requireVerifiedPhoneForUploads": null,
-        "requireVerifiedEmailToPost": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
         "markAsAnsweredEnabled": null,
-        "discussionFlairRequired": null,
-        "allowedFileTypes": null,
+        "markdownImagesEnabled": null,
         "payoutPercent": null,
-        "variantUrls": null,
-        "rules": null,
         "pluginPipelines": null,
-        "createdAt": "<generated-time>",
-        "lockedAt": null
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
       }
     ]
   }
@@ -83,91 +83,91 @@ exports[`connectOwner preserves repeated native event payloads and mutation resu
 {
   "events": [
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "ADMIN_OF_CHANNEL",
-      "fromTypename": "User",
-      "toTypename": "Channel",
-      "timestamp": "<generated-time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "username": "alice"
         },
+        "relationship": {},
         "to": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "<id-2>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
-        "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "ADMIN_OF_CHANNEL",
-      "fromTypename": "User",
-      "toTypename": "Channel",
-      "timestamp": "<generated-time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "username": "alice"
         },
+        "relationship": {},
         "to": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
     },
     {
-      "id": "<id-2>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-2>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     }
   ],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 1,
-        "high": 0
+        "high": 0,
+        "low": 1
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -178,76 +178,76 @@ exports[`disconnectInvite preserves repeated native event payloads and mutation 
   {
     "channels": [
       {
-        "uniqueName": "cats",
-        "displayName": null,
-        "description": null,
-        "locked": null,
-        "lockReason": null,
-        "deleted": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
         "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
         "icon32Url": null,
         "icon48Url": null,
         "icon64Url": null,
         "icon96Url": null,
-        "channelBannerURL": null,
-        "eventsEnabled": null,
-        "wikiEnabled": null,
-        "feedbackEnabled": null,
-        "downloadsEnabled": null,
-        "emojiEnabled": null,
         "imageUploadsEnabled": null,
-        "markdownImagesEnabled": null,
-        "allowPaidDownloads": null,
-        "allowPaywalledPosts": null,
-        "requireVerifiedPhoneForUploads": null,
-        "requireVerifiedEmailToPost": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
         "markAsAnsweredEnabled": null,
-        "discussionFlairRequired": null,
-        "allowedFileTypes": null,
+        "markdownImagesEnabled": null,
         "payoutPercent": null,
-        "variantUrls": null,
-        "rules": null,
         "pluginPipelines": null,
-        "createdAt": "<generated-time>",
-        "lockedAt": null
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
       }
     ]
   },
   {
     "channels": [
       {
-        "uniqueName": "cats",
-        "displayName": null,
-        "description": null,
-        "locked": null,
-        "lockReason": null,
-        "deleted": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
         "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
         "icon32Url": null,
         "icon48Url": null,
         "icon64Url": null,
         "icon96Url": null,
-        "channelBannerURL": null,
-        "eventsEnabled": null,
-        "wikiEnabled": null,
-        "feedbackEnabled": null,
-        "downloadsEnabled": null,
-        "emojiEnabled": null,
         "imageUploadsEnabled": null,
-        "markdownImagesEnabled": null,
-        "allowPaidDownloads": null,
-        "allowPaywalledPosts": null,
-        "requireVerifiedPhoneForUploads": null,
-        "requireVerifiedEmailToPost": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
         "markAsAnsweredEnabled": null,
-        "discussionFlairRequired": null,
-        "allowedFileTypes": null,
+        "markdownImagesEnabled": null,
         "payoutPercent": null,
-        "variantUrls": null,
-        "rules": null,
         "pluginPipelines": null,
-        "createdAt": "<generated-time>",
-        "lockedAt": null
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
       }
     ]
   }
@@ -258,70 +258,70 @@ exports[`disconnectInvite preserves repeated native event payloads and mutation 
 {
   "events": [
     {
+      "event": "delete_relationship",
+      "fromTypename": "Channel",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "HAS_PENDING_INVITE",
-      "fromTypename": "Channel",
-      "toTypename": "User",
-      "timestamp": "<generated-time>",
-      "event": "delete_relationship",
       "properties": {
         "from": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         },
+        "relationship": {},
         "to": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<generated-time>",
+          "username": "alice"
+        }
+      },
+      "relationshipName": "HAS_PENDING_INVITE",
+      "timestamp": "<generated-time>",
+      "toTypename": "User"
     },
     {
-      "id": "<id-1>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-1>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     },
     {
-      "id": "<id-1>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-1>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     }
   ],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -332,76 +332,76 @@ exports[`disconnectOwner preserves repeated native event payloads and mutation r
   {
     "channels": [
       {
-        "uniqueName": "cats",
-        "displayName": null,
-        "description": null,
-        "locked": null,
-        "lockReason": null,
-        "deleted": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
         "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
         "icon32Url": null,
         "icon48Url": null,
         "icon64Url": null,
         "icon96Url": null,
-        "channelBannerURL": null,
-        "eventsEnabled": null,
-        "wikiEnabled": null,
-        "feedbackEnabled": null,
-        "downloadsEnabled": null,
-        "emojiEnabled": null,
         "imageUploadsEnabled": null,
-        "markdownImagesEnabled": null,
-        "allowPaidDownloads": null,
-        "allowPaywalledPosts": null,
-        "requireVerifiedPhoneForUploads": null,
-        "requireVerifiedEmailToPost": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
         "markAsAnsweredEnabled": null,
-        "discussionFlairRequired": null,
-        "allowedFileTypes": null,
+        "markdownImagesEnabled": null,
         "payoutPercent": null,
-        "variantUrls": null,
-        "rules": null,
         "pluginPipelines": null,
-        "createdAt": "<generated-time>",
-        "lockedAt": null
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
       }
     ]
   },
   {
     "channels": [
       {
-        "uniqueName": "cats",
-        "displayName": null,
-        "description": null,
-        "locked": null,
-        "lockReason": null,
-        "deleted": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
         "channelIconURL": null,
+        "createdAt": "<generated-time>",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
         "icon32Url": null,
         "icon48Url": null,
         "icon64Url": null,
         "icon96Url": null,
-        "channelBannerURL": null,
-        "eventsEnabled": null,
-        "wikiEnabled": null,
-        "feedbackEnabled": null,
-        "downloadsEnabled": null,
-        "emojiEnabled": null,
         "imageUploadsEnabled": null,
-        "markdownImagesEnabled": null,
-        "allowPaidDownloads": null,
-        "allowPaywalledPosts": null,
-        "requireVerifiedPhoneForUploads": null,
-        "requireVerifiedEmailToPost": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
         "markAsAnsweredEnabled": null,
-        "discussionFlairRequired": null,
-        "allowedFileTypes": null,
+        "markdownImagesEnabled": null,
         "payoutPercent": null,
-        "variantUrls": null,
-        "rules": null,
         "pluginPipelines": null,
-        "createdAt": "<generated-time>",
-        "lockedAt": null
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
       }
     ]
   }
@@ -412,70 +412,70 @@ exports[`disconnectOwner preserves repeated native event payloads and mutation r
 {
   "events": [
     {
+      "event": "delete_relationship",
+      "fromTypename": "User",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "ADMIN_OF_CHANNEL",
-      "fromTypename": "User",
-      "toTypename": "Channel",
-      "timestamp": "<generated-time>",
-      "event": "delete_relationship",
       "properties": {
         "from": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "username": "alice"
         },
+        "relationship": {},
         "to": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
     },
     {
-      "id": "<id-2>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-2>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     },
     {
-      "id": "<id-2>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-2>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     }
   ],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -516,15 +516,15 @@ exports[`owner writes preserve missing channel results and events 2`] = `
   "events": [],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -541,15 +541,15 @@ exports[`owner writes preserve missing channel results and events 4`] = `
   "events": [],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -566,15 +566,15 @@ exports[`owner writes preserve missing channel results and events 6`] = `
   "events": [],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -584,38 +584,38 @@ exports[`owner writes preserve missing user results and events 1`] = `
 {
   "channels": [
     {
-      "uniqueName": "cats",
-      "displayName": null,
-      "description": null,
-      "locked": null,
-      "lockReason": null,
-      "deleted": null,
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
       "channelIconURL": null,
+      "createdAt": "<generated-time>",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
       "icon32Url": null,
       "icon48Url": null,
       "icon64Url": null,
       "icon96Url": null,
-      "channelBannerURL": null,
-      "eventsEnabled": null,
-      "wikiEnabled": null,
-      "feedbackEnabled": null,
-      "downloadsEnabled": null,
-      "emojiEnabled": null,
       "imageUploadsEnabled": null,
-      "markdownImagesEnabled": null,
-      "allowPaidDownloads": null,
-      "allowPaywalledPosts": null,
-      "requireVerifiedPhoneForUploads": null,
-      "requireVerifiedEmailToPost": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
       "markAsAnsweredEnabled": null,
-      "discussionFlairRequired": null,
-      "allowedFileTypes": null,
+      "markdownImagesEnabled": null,
       "payoutPercent": null,
-      "variantUrls": null,
-      "rules": null,
       "pluginPipelines": null,
-      "createdAt": "<generated-time>",
-      "lockedAt": null
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
     }
   ]
 }
@@ -625,20 +625,20 @@ exports[`owner writes preserve missing user results and events 2`] = `
 {
   "events": [
     {
-      "id": "<id-0>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-0>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     }
   ],
   "graph": []
@@ -649,38 +649,38 @@ exports[`owner writes preserve missing user results and events 3`] = `
 {
   "channels": [
     {
-      "uniqueName": "cats",
-      "displayName": null,
-      "description": null,
-      "locked": null,
-      "lockReason": null,
-      "deleted": null,
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
       "channelIconURL": null,
+      "createdAt": "<generated-time>",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
       "icon32Url": null,
       "icon48Url": null,
       "icon64Url": null,
       "icon96Url": null,
-      "channelBannerURL": null,
-      "eventsEnabled": null,
-      "wikiEnabled": null,
-      "feedbackEnabled": null,
-      "downloadsEnabled": null,
-      "emojiEnabled": null,
       "imageUploadsEnabled": null,
-      "markdownImagesEnabled": null,
-      "allowPaidDownloads": null,
-      "allowPaywalledPosts": null,
-      "requireVerifiedPhoneForUploads": null,
-      "requireVerifiedEmailToPost": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
       "markAsAnsweredEnabled": null,
-      "discussionFlairRequired": null,
-      "allowedFileTypes": null,
+      "markdownImagesEnabled": null,
       "payoutPercent": null,
-      "variantUrls": null,
-      "rules": null,
       "pluginPipelines": null,
-      "createdAt": "<generated-time>",
-      "lockedAt": null
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
     }
   ]
 }
@@ -690,20 +690,20 @@ exports[`owner writes preserve missing user results and events 4`] = `
 {
   "events": [
     {
-      "id": "<id-0>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-0>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     }
   ],
   "graph": []
@@ -714,38 +714,38 @@ exports[`owner writes preserve missing user results and events 5`] = `
 {
   "channels": [
     {
-      "uniqueName": "cats",
-      "displayName": null,
-      "description": null,
-      "locked": null,
-      "lockReason": null,
-      "deleted": null,
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
       "channelIconURL": null,
+      "createdAt": "<generated-time>",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
       "icon32Url": null,
       "icon48Url": null,
       "icon64Url": null,
       "icon96Url": null,
-      "channelBannerURL": null,
-      "eventsEnabled": null,
-      "wikiEnabled": null,
-      "feedbackEnabled": null,
-      "downloadsEnabled": null,
-      "emojiEnabled": null,
       "imageUploadsEnabled": null,
-      "markdownImagesEnabled": null,
-      "allowPaidDownloads": null,
-      "allowPaywalledPosts": null,
-      "requireVerifiedPhoneForUploads": null,
-      "requireVerifiedEmailToPost": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
       "markAsAnsweredEnabled": null,
-      "discussionFlairRequired": null,
-      "allowedFileTypes": null,
+      "markdownImagesEnabled": null,
       "payoutPercent": null,
-      "variantUrls": null,
-      "rules": null,
       "pluginPipelines": null,
-      "createdAt": "<generated-time>",
-      "lockedAt": null
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
     }
   ]
 }
@@ -755,20 +755,20 @@ exports[`owner writes preserve missing user results and events 6`] = `
 {
   "events": [
     {
-      "id": "<id-0>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-0>",
       "properties": {
-        "old": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
-        },
         "new": {
-          "uniqueName": "cats",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     }
   ],
   "graph": []
@@ -779,51 +779,51 @@ exports[`projection failure preserves committed owner relationship and native ev
 {
   "events": [
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "ADMIN_OF_CHANNEL",
-      "fromTypename": "User",
-      "toTypename": "Channel",
-      "timestamp": "<generated-time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "username": "alice"
         },
+        "relationship": {},
         "to": {
           "uniqueName": "cats"
-        },
-        "relationship": {}
-      }
+        }
+      },
+      "relationshipName": "ADMIN_OF_CHANNEL",
+      "timestamp": "<generated-time>",
+      "toTypename": "Channel"
     },
     {
-      "id": "<id-2>",
-      "typename": "Channel",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-2>",
       "properties": {
-        "old": {
-          "uniqueName": "cats"
-        },
         "new": {
           "uniqueName": "cats"
+        },
+        "old": {
+          "uniqueName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "Channel"
     }
   ],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 1,
-        "high": 0
+        "high": 0,
+        "low": 1
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }

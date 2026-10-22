@@ -26,21 +26,19 @@ before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});be
 
 const models=()=>({Channel:ogm.model('Channel'),Discussion:ogm.model('Discussion'),DownloadableFile:ogm.model('DownloadableFile'),Plugin:ogm.model('Plugin'),PluginVersion:ogm.model('PluginVersion'),PluginPipelineRun:ogm.model('PluginPipelineRun'),PluginRun:ogm.model('PluginRun'),ServerConfig:ogm.model('ServerConfig'),ServerSecret:ogm.model('ServerSecret')});
 const old=()=>pipelineStartRepositoryStub(models());
-// Nested relationship projections and multi-row reads have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 async function seed(){await driver.executeQuery(`CREATE(f:DownloadableFile{id:'file',uploadedByUsername:'owner',uploadedAt:datetime('2020-01-01T00:00:00Z'),createdAt:datetime('2020-01-01T00:00:00Z')}),(s:ServerConfig{serverName:'fixture',pluginPipelines:$pipeline}),(p:Plugin{id:'plugin',name:'plugin'}),(v:PluginVersion{id:'version',version:'1.0.0',repoUrl:'fixture-only',entryPath:'index.js',manifest:$manifest}),(p)-[:HAS_VERSION]->(v),(s)-[:INSTALLED{enabled:true}]->(v),(:Channel{uniqueName:'channel',pluginPipelines:$pipeline})`,{pipeline:JSON.stringify([{event:'downloadableFile.created',steps:[{pluginId:'plugin'}]}]),manifest:JSON.stringify({events:['downloadableFile.created']})});}
 test('start snapshots preserve selections, literal values, missing rows and unbounded configuration reads',async(t)=>{
  await seed();await driver.executeQuery("UNWIND range(1,29) AS n CREATE(:ServerConfig{serverName:toString(n)})");const repo=createPipelineStartRepository(driver);
- for(const id of ['file','missing','quote"\\id'])t.assert.snapshot(sortDeep(await repo.findFileTarget(id)));
- for(const name of ['channel','absent',undefined])t.assert.snapshot(sortDeep(await repo.findChannelPlan(name)));
- t.assert.snapshot(sortDeep(await repo.findServerPlan()));assert.equal((await repo.findServerPlan()).length,30);assert.equal(events.length,0);
+ for(const id of ['file','missing','quote"\\id'])t.assert.snapshot(await repo.findFileTarget(id));
+ for(const name of ['channel','absent',undefined])t.assert.snapshot(await repo.findChannelPlan(name));
+ t.assert.snapshot(await repo.findServerPlan());assert.equal((await repo.findServerPlan()).length,30);assert.equal(events.length,0);
 });
 test('discussion target preserves existing singular-field validation failure',async()=>{const repo=createPipelineStartRepository(driver);await assert.rejects(repo.findDiscussionTarget('discussion'),/Cannot query field "DownloadableFile"/);assert.equal(events.length,0);});
 test('active attempts retain full predicate, unbounded result and started-attempt projection',async(t)=>{
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{id:toString(n),pipelineId:toString(n),targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER',status:'RUNNING',trigger:'OWNER_START',attemptNumber:n,configurationSnapshot:'{}',createdAt:datetime('2020-01-01T00:00:00Z'),updatedAt:datetime('2020-01-01T00:00:00Z')})`);
  const repo=createPipelineStartRepository(driver);const where={targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER'};
- t.assert.snapshot(sortDeep(await repo.findActiveAttempts(where)));assert.equal((await repo.findActiveAttempts(where)).length,29);
- for(const id of ['1','missing'])t.assert.snapshot(sortDeep(await repo.findStartedAttempt(id)));
+ t.assert.snapshot(await repo.findActiveAttempts(where));assert.equal((await repo.findActiveAttempts(where)).length,29);
+ for(const id of ['1','missing'])t.assert.snapshot(await repo.findStartedAttempt(id));
  await assert.rejects(repo.findActiveAttempts({attemptNumber:'not-int'} as never),/Int/);assert.equal(events.length,0);
 });
 test('actual start resolver retains authentication, ownership, runner identity and missing-attempt error',async()=>{

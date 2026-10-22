@@ -1,92 +1,92 @@
 exports[`caller owns transaction commit and native event behavior 1`] = `
 [
   {
-    "id": "id0",
-    "typename": "Discussion",
-    "timestamp": "<time>",
     "event": "update",
+    "id": "id0",
     "properties": {
-      "old": {
-        "title": "Before",
-        "body": "old",
-        "createdAt": {
-          "year": {
-            "low": 2020,
-            "high": 0
-          },
-          "month": {
-            "low": 1,
-            "high": 0
-          },
-          "day": {
-            "low": 1,
-            "high": 0
-          },
-          "hour": {
-            "low": 0,
-            "high": 0
-          },
-          "minute": {
-            "low": 0,
-            "high": 0
-          },
-          "second": {
-            "low": 0,
-            "high": 0
-          },
-          "nanosecond": {
-            "low": 0,
-            "high": 0
-          },
-          "timeZoneOffsetSeconds": {
-            "low": 0,
-            "high": 0
-          }
-        },
-        "id": "d"
-      },
       "new": {
-        "body": "old",
-        "updatedAt": "<time>",
-        "id": "d",
         "ageGateTouchedAt": "<time>",
+        "body": "old",
         "createdAt": {
-          "year": {
-            "low": 2020,
-            "high": 0
-          },
-          "month": {
-            "low": 1,
-            "high": 0
-          },
           "day": {
-            "low": 1,
-            "high": 0
+            "high": 0,
+            "low": 1
           },
           "hour": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
           },
           "minute": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
           },
-          "second": {
-            "low": 0,
-            "high": 0
+          "month": {
+            "high": 0,
+            "low": 1
           },
           "nanosecond": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
           },
           "timeZoneOffsetSeconds": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
           }
         },
-        "title": "After"
+        "id": "d",
+        "title": "After",
+        "updatedAt": "<time>"
+      },
+      "old": {
+        "body": "old",
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "id": "d",
+        "title": "Before"
       }
-    }
+    },
+    "timestamp": "<time>",
+    "typename": "Discussion"
   }
 ]
 `;
@@ -94,92 +94,92 @@ exports[`caller owns transaction commit and native event behavior 1`] = `
 exports[`caller owns transaction rollback and native event behavior 1`] = `
 [
   {
-    "id": "id0",
-    "typename": "Discussion",
-    "timestamp": "<time>",
     "event": "update",
+    "id": "id0",
     "properties": {
-      "old": {
-        "title": "Before",
-        "body": "old",
-        "createdAt": {
-          "year": {
-            "low": 2020,
-            "high": 0
-          },
-          "month": {
-            "low": 1,
-            "high": 0
-          },
-          "day": {
-            "low": 1,
-            "high": 0
-          },
-          "hour": {
-            "low": 0,
-            "high": 0
-          },
-          "minute": {
-            "low": 0,
-            "high": 0
-          },
-          "second": {
-            "low": 0,
-            "high": 0
-          },
-          "nanosecond": {
-            "low": 0,
-            "high": 0
-          },
-          "timeZoneOffsetSeconds": {
-            "low": 0,
-            "high": 0
-          }
-        },
-        "id": "d"
-      },
       "new": {
-        "body": "old",
-        "updatedAt": "<time>",
-        "id": "d",
         "ageGateTouchedAt": "<time>",
+        "body": "old",
         "createdAt": {
-          "year": {
-            "low": 2020,
-            "high": 0
-          },
-          "month": {
-            "low": 1,
-            "high": 0
-          },
           "day": {
-            "low": 1,
-            "high": 0
+            "high": 0,
+            "low": 1
           },
           "hour": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
           },
           "minute": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
           },
-          "second": {
-            "low": 0,
-            "high": 0
+          "month": {
+            "high": 0,
+            "low": 1
           },
           "nanosecond": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
           },
           "timeZoneOffsetSeconds": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
           }
         },
-        "title": "After"
+        "id": "d",
+        "title": "After",
+        "updatedAt": "<time>"
+      },
+      "old": {
+        "body": "old",
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "id": "d",
+        "title": "Before"
       }
-    }
+    },
+    "timestamp": "<time>",
+    "typename": "Discussion"
   }
 ]
 `;
@@ -187,92 +187,92 @@ exports[`caller owns transaction rollback and native event behavior 1`] = `
 exports[`default projection failure rolls back within caller transaction with legacy event behavior 1`] = `
 [
   {
-    "id": "id0",
-    "typename": "Discussion",
-    "timestamp": "<time>",
     "event": "update",
+    "id": "id0",
     "properties": {
-      "old": {
-        "title": "Before",
-        "body": "old",
-        "createdAt": {
-          "year": {
-            "low": 2020,
-            "high": 0
-          },
-          "month": {
-            "low": 1,
-            "high": 0
-          },
-          "day": {
-            "low": 1,
-            "high": 0
-          },
-          "hour": {
-            "low": 0,
-            "high": 0
-          },
-          "minute": {
-            "low": 0,
-            "high": 0
-          },
-          "second": {
-            "low": 0,
-            "high": 0
-          },
-          "nanosecond": {
-            "low": 0,
-            "high": 0
-          },
-          "timeZoneOffsetSeconds": {
-            "low": 0,
-            "high": 0
-          }
-        },
-        "id": "d"
-      },
       "new": {
-        "body": "old",
-        "updatedAt": "<time>",
-        "id": "d",
         "ageGateTouchedAt": "<time>",
+        "body": "old",
         "createdAt": {
-          "year": {
-            "low": 2020,
-            "high": 0
-          },
-          "month": {
-            "low": 1,
-            "high": 0
-          },
           "day": {
-            "low": 1,
-            "high": 0
+            "high": 0,
+            "low": 1
           },
           "hour": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
           },
           "minute": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
           },
-          "second": {
-            "low": 0,
-            "high": 0
+          "month": {
+            "high": 0,
+            "low": 1
           },
           "nanosecond": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
           },
           "timeZoneOffsetSeconds": {
-            "low": 0,
-            "high": 0
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
           }
         },
-        "title": "After"
+        "id": "d",
+        "title": "After",
+        "updatedAt": "<time>"
+      },
+      "old": {
+        "body": "old",
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "id": "d",
+        "title": "Before"
       }
-    }
+    },
+    "timestamp": "<time>",
+    "typename": "Discussion"
   }
 ]
 `;
@@ -280,14 +280,14 @@ exports[`default projection failure rolls back within caller transaction with le
 exports[`snapshot and final refetch preserve missing rows and full selected response 1`] = `
 [
   {
-    "id": "d",
-    "title": "Before",
-    "body": "old",
     "Author": null,
     "BodyLastEditedBy": null,
     "DiscussionChannels": [],
+    "PastBodyVersions": [],
     "PastTitleVersions": [],
-    "PastBodyVersions": []
+    "body": "old",
+    "id": "d",
+    "title": "Before"
   }
 ]
 `;
@@ -295,16 +295,16 @@ exports[`snapshot and final refetch preserve missing rows and full selected resp
 exports[`snapshot and final refetch preserve missing rows and full selected response 2`] = `
 [
   {
-    "id": "d",
-    "title": "Before",
-    "body": "old",
     "Author": null,
     "DiscussionChannels": [],
-    "createdAt": "2020-01-01T00:00:00.000Z",
-    "updatedAt": null,
-    "Tags": [],
+    "PastBodyVersions": [],
     "PastTitleVersions": [],
-    "PastBodyVersions": []
+    "Tags": [],
+    "body": "old",
+    "createdAt": "2020-01-01T00:00:00.000Z",
+    "id": "d",
+    "title": "Before",
+    "updatedAt": null
   }
 ]
 `;

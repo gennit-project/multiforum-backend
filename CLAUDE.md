@@ -45,6 +45,18 @@ them; the upgrades must be rejected until Neo4j ships support.
   the emitted `.js` extension, and CommonJS dependencies may require explicit
   named imports when their declaration files expose them.
 
+## Testing notes
+- **Order-normalized snapshots**: integration `t.assert.snapshot(...)` values are
+  canonicalized by `tests/helpers/snapshotSerializer.ts`, preloaded via
+  `node --import` in the test scripts and `build_scripts/integration-shard.sh`.
+  It sorts object keys and array elements before serializing, because Neo4j
+  returns property maps and multi-row reads in an order that differs between a
+  local database and CI — without this, a committed snapshot matches locally but
+  fails on CI. Consequence: a snapshot does NOT witness element/property order,
+  so when order is part of the contract (e.g. a paginated or `ORDER BY`'d read),
+  assert it explicitly in the test body. Do not reintroduce per-test array-sort
+  helpers; the serializer is the single mechanism.
+
 ## Code Style
 - **Imports**: ES modules with .js extensions, grouped (third-party first, then local)
 - **Naming**: camelCase for variables/functions, PascalCase for types/classes, UPPER_SNAKE for constants

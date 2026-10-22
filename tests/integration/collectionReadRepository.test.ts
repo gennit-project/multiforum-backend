@@ -27,17 +27,10 @@ beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown) => JSON.parse(JSON.stringify(value));
 // Nested relationship projections come back via Cypher collect(), whose ordering is not
-// guaranteed to be stable across executions, so deep-sort before snapshotting for determinism.
-const sortDeep = (value: unknown): unknown =>
-  Array.isArray(value)
-    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
-    : value && typeof value === "object"
-      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
-      : value;
 // The seed assigns some createdAt/updatedAt via datetime() (wall clock), so replace temporal
 // fields with a placeholder and deep-sort before snapshotting for determinism.
 const TIME_KEYS = new Set(["createdAt", "updatedAt", "timestamp"]);
-const norm = (value: unknown): unknown => sortDeep(JSON.parse(JSON.stringify(value, (key, v) => (TIME_KEYS.has(key) && v !== null ? "<time>" : v))));
+const norm = (value: unknown): unknown => JSON.parse(JSON.stringify(value, (key, v) => (TIME_KEYS.has(key) && v !== null ? "<time>" : v)));
 const outcome = async (call: () => Promise<unknown>) => call().then(value => ({value:plain(value)}), (error:Error) => ({error:error.message}));
 // Baseline selections copied before migration; intentionally independent of repository documents.
 const PROFILE_SELECTION = `{

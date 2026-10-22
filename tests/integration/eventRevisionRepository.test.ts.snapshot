@@ -1,3824 +1,3818 @@
 exports[`actual middleware preserves pre-resolver revision commits, attribution and native events (resolver rejects=false) 1`] = `
 {
-  "state": {
-    "revisions": [
-      {
-        "kind": "HAS_DESCRIPTION_VERSION",
-        "body": "old description",
-        "author": "prior",
-        "touched": true
-      },
-      {
-        "kind": "HAS_TITLE_VERSION",
-        "body": "old title",
-        "author": "editor",
-        "touched": true
-      }
-    ],
-    "event": [
-      {
-        "title": "new title",
-        "description": "new description",
-        "editor": "editor"
-      }
-    ],
-    "events": [
-      {
-        "id": "id0",
-        "id_from": "id1",
-        "id_to": "id2",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "username": "editor"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id3",
-            "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id2",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "id3",
-            "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          }
-        }
-      },
-      {
-        "id": "id4",
-        "id_from": "id5",
-        "id_to": "id2",
-        "relationshipName": "HAS_TITLE_VERSION",
-        "fromTypename": "Event",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "ageGateTouchedAt": "<time>",
-            "body": "old title",
-            "id": "id3",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          }
-        }
-      },
-      {
-        "id": "id7",
-        "id_from": "id8",
-        "id_to": "id9",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id10",
-            "body": "old description",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id9",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "id10",
-            "body": "old description",
-            "ageGateTouchedAt": "<time>"
-          }
-        }
-      },
-      {
-        "id": "id11",
-        "id_from": "id5",
-        "id_to": "id9",
-        "relationshipName": "HAS_DESCRIPTION_VERSION",
-        "fromTypename": "Event",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "ageGateTouchedAt": "<time>",
-            "body": "old description",
-            "id": "id10",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          }
-        }
-      },
-      {
-        "id": "id12",
-        "id_from": "id5",
-        "id_to": "id1",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "username": "editor"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id13",
-        "id_from": "id5",
-        "id_to": "id8",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "delete_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          }
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "new description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "new title"
-          }
-        }
-      }
-    ]
-  },
   "calls": [
-    [
-      "activity",
-      "edited the event title",
-      1
-    ],
     [
       "activity",
       "edited the event description",
       1
     ],
     [
-      "resolve"
+      "activity",
+      "edited the event title",
+      1
     ],
     [
       "notify",
       {
-        "username": "poster",
+        "notificationType": "general",
         "text": "editor edited your event [old title](undefined/forums/forum/events/e)",
-        "notificationType": "general"
+        "username": "poster"
+      }
+    ],
+    [
+      "resolve"
+    ]
+  ],
+  "state": {
+    "event": [
+      {
+        "description": "new description",
+        "editor": "editor",
+        "title": "new title"
+      }
+    ],
+    "events": [
+      {
+        "event": "create",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
+      },
+      {
+        "event": "create",
+        "id": "id9",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id10"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "Event",
+        "id": "id11",
+        "id_from": "id5",
+        "id_to": "id9",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id10"
+          }
+        },
+        "relationshipName": "HAS_DESCRIPTION_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "Event",
+        "id": "id12",
+        "id_from": "id5",
+        "id_to": "id1",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "username": "editor"
+          }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "Event",
+        "id": "id4",
+        "id_from": "id5",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "relationshipName": "HAS_TITLE_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "editor"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id7",
+        "id_from": "id8",
+        "id_to": "id9",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "prior"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id10"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "delete_relationship",
+        "fromTypename": "Event",
+        "id": "id13",
+        "id_from": "id5",
+        "id_to": "id8",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "username": "prior"
+          }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "new description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "new title",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      }
+    ],
+    "revisions": [
+      {
+        "author": "editor",
+        "body": "old title",
+        "kind": "HAS_TITLE_VERSION",
+        "touched": true
+      },
+      {
+        "author": "prior",
+        "body": "old description",
+        "kind": "HAS_DESCRIPTION_VERSION",
+        "touched": true
       }
     ]
-  ]
+  }
 }
 `;
 
 exports[`actual middleware preserves pre-resolver revision commits, attribution and native events (resolver rejects=true) 1`] = `
 {
-  "state": {
-    "revisions": [
-      {
-        "kind": "HAS_DESCRIPTION_VERSION",
-        "body": "old description",
-        "author": "prior",
-        "touched": true
-      },
-      {
-        "kind": "HAS_TITLE_VERSION",
-        "body": "old title",
-        "author": "editor",
-        "touched": true
-      }
-    ],
-    "event": [
-      {
-        "title": "old title",
-        "description": "old description",
-        "editor": "editor"
-      }
-    ],
-    "events": [
-      {
-        "id": "id0",
-        "id_from": "id1",
-        "id_to": "id2",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "username": "editor"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id3",
-            "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id2",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "id3",
-            "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          }
-        }
-      },
-      {
-        "id": "id4",
-        "id_from": "id5",
-        "id_to": "id2",
-        "relationshipName": "HAS_TITLE_VERSION",
-        "fromTypename": "Event",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "ageGateTouchedAt": "<time>",
-            "body": "old title",
-            "id": "id3",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          }
-        }
-      },
-      {
-        "id": "id7",
-        "id_from": "id8",
-        "id_to": "id9",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id10",
-            "body": "old description",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id9",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create",
-        "properties": {
-          "new": {
-            "createdAt": "<time>",
-            "id": "id10",
-            "body": "old description",
-            "ageGateTouchedAt": "<time>"
-          }
-        }
-      },
-      {
-        "id": "id11",
-        "id_from": "id5",
-        "id_to": "id9",
-        "relationshipName": "HAS_DESCRIPTION_VERSION",
-        "fromTypename": "Event",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "ageGateTouchedAt": "<time>",
-            "body": "old description",
-            "id": "id10",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          }
-        }
-      },
-      {
-        "id": "id12",
-        "id_from": "id5",
-        "id_to": "id1",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "username": "editor"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id13",
-        "id_from": "id5",
-        "id_to": "id8",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "delete_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
-          }
-        }
-      }
-    ]
-  },
   "calls": [
-    [
-      "activity",
-      "edited the event title",
-      1
-    ],
     [
       "activity",
       "edited the event description",
       1
     ],
     [
+      "activity",
+      "edited the event title",
+      1
+    ],
+    [
       "resolve"
     ]
-  ]
+  ],
+  "state": {
+    "event": [
+      {
+        "description": "old description",
+        "editor": "editor",
+        "title": "old title"
+      }
+    ],
+    "events": [
+      {
+        "event": "create",
+        "id": "id2",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
+      },
+      {
+        "event": "create",
+        "id": "id9",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id10"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "Event",
+        "id": "id11",
+        "id_from": "id5",
+        "id_to": "id9",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id10"
+          }
+        },
+        "relationshipName": "HAS_DESCRIPTION_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "Event",
+        "id": "id12",
+        "id_from": "id5",
+        "id_to": "id1",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "username": "editor"
+          }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "Event",
+        "id": "id4",
+        "id_from": "id5",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "relationshipName": "HAS_TITLE_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "editor"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id7",
+        "id_from": "id8",
+        "id_to": "id9",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "prior"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id10"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "delete_relationship",
+        "fromTypename": "Event",
+        "id": "id13",
+        "id_from": "id5",
+        "id_to": "id8",
+        "properties": {
+          "from": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "username": "prior"
+          }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      }
+    ],
+    "revisions": [
+      {
+        "author": "editor",
+        "body": "old title",
+        "kind": "HAS_TITLE_VERSION",
+        "touched": true
+      },
+      {
+        "author": "prior",
+        "body": "old description",
+        "kind": "HAS_DESCRIPTION_VERSION",
+        "touched": true
+      }
+    ]
+  }
 }
 `;
 
 exports[`default create response failure leaves orphan versions while editor replacement and later notification proceed 1`] = `
 {
+  "calls": [
+    [
+      "notify",
+      {
+        "notificationType": "general",
+        "text": "editor edited your event [old title](undefined/forums/forum/events/e)",
+        "username": "poster"
+      }
+    ],
+    [
+      "resolve"
+    ]
+  ],
   "state": {
-    "revisions": [],
     "event": [
       {
-        "title": "new title",
         "description": "new description",
-        "editor": "editor"
+        "editor": "editor",
+        "title": "new title"
       }
     ],
     "events": [
       {
-        "id": "id0",
-        "id_from": "id1",
-        "id_to": "id2",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "username": "editor"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id3",
-            "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
+        "event": "create",
         "id": "id2",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create",
         "properties": {
           "new": {
-            "createdAt": "<time>",
-            "id": "id3",
+            "ageGateTouchedAt": "<time>",
             "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          }
-        }
-      },
-      {
-        "id": "id4",
-        "id_from": "id5",
-        "id_to": "id6",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "to": {
             "createdAt": "<time>",
-            "id": "id7",
-            "body": "old description",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
+            "id": "id3"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
       },
       {
-        "id": "id6",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
         "event": "create",
+        "id": "id6",
         "properties": {
           "new": {
-            "createdAt": "<time>",
-            "id": "id7",
+            "ageGateTouchedAt": "<time>",
             "body": "old description",
-            "ageGateTouchedAt": "<time>"
+            "createdAt": "<time>",
+            "id": "id7"
           }
-        }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
       },
       {
+        "event": "create_relationship",
+        "fromTypename": "Event",
         "id": "id8",
         "id_from": "id9",
         "id_to": "id1",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
+            "canceled": false,
+            "createdAt": "<time>",
             "description": "old description",
             "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
               "day": {
-                "low": 2,
-                "high": 0
+                "high": 0,
+                "low": 2
               },
               "hour": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
               "minute": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
-              "second": {
-                "low": 0,
-                "high": 0
+              "month": {
+                "high": 0,
+                "low": 1
               },
               "nanosecond": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
               },
               "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
               }
             },
             "id": "id10",
-            "canceled": false,
-            "createdAt": "<time>",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
             "title": "old title"
           },
+          "relationship": {},
           "to": {
             "createdAt": "<time>",
             "username": "editor"
-          },
-          "relationship": {}
-        }
+          }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
       },
       {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "editor"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id4",
+        "id_from": "id5",
+        "id_to": "id6",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "prior"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id7"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "delete_relationship",
+        "fromTypename": "Event",
         "id": "id11",
         "id_from": "id9",
         "id_to": "id5",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "delete_relationship",
         "properties": {
           "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
+            "canceled": false,
+            "createdAt": "<time>",
             "description": "old description",
             "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
               "day": {
-                "low": 2,
-                "high": 0
+                "high": 0,
+                "low": 2
               },
               "hour": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
               "minute": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
-              "second": {
-                "low": 0,
-                "high": 0
+              "month": {
+                "high": 0,
+                "low": 1
               },
               "nanosecond": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
               },
               "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
               }
             },
             "id": "id10",
-            "canceled": false,
-            "createdAt": "<time>",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
             "title": "old title"
           },
+          "relationship": {},
           "to": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id9",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id10",
-            "canceled": false,
             "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id10",
-            "canceled": false,
-            "createdAt": "<time>",
-            "title": "old title"
+            "username": "prior"
           }
-        }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
       },
       {
-        "id": "id9",
-        "typename": "Event",
-        "timestamp": "<time>",
         "event": "update",
+        "id": "id9",
         "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id10",
+          "new": {
             "canceled": false,
             "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "updatedAt": "<time>",
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
             "description": "new description",
             "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
               "day": {
-                "low": 2,
-                "high": 0
+                "high": 0,
+                "low": 2
               },
               "hour": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
               "minute": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
-              "second": {
-                "low": 0,
-                "high": 0
+              "month": {
+                "high": 0,
+                "low": 1
               },
               "nanosecond": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
               },
               "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
               }
             },
             "id": "id10",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "new title",
+            "updatedAt": "<time>"
+          },
+          "old": {
             "canceled": false,
             "createdAt": "<time>",
-            "title": "new title"
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id10",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
           }
-        }
-      }
-    ]
-  },
-  "calls": [
-    [
-      "resolve"
-    ],
-    [
-      "notify",
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
       {
-        "username": "poster",
-        "text": "editor edited your event [old title](undefined/forums/forum/events/e)",
-        "notificationType": "general"
+        "event": "update",
+        "id": "id9",
+        "properties": {
+          "new": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id10",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "canceled": false,
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id10",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
       }
-    ]
-  ]
+    ],
+    "revisions": []
+  }
 }
 `;
 
 exports[`missing canceled causes postcommit default-projection failures, yet later resolver and author notification continue 1`] = `
 {
-  "state": {
-    "revisions": [
+  "calls": [
+    [
+      "notify",
       {
-        "kind": "HAS_DESCRIPTION_VERSION",
-        "body": "old description",
-        "author": "prior",
-        "touched": true
-      },
-      {
-        "kind": "HAS_TITLE_VERSION",
-        "body": "old title",
-        "author": "editor",
-        "touched": true
+        "notificationType": "general",
+        "text": "editor edited your event [old title](undefined/forums/forum/events/e)",
+        "username": "poster"
       }
     ],
+    [
+      "resolve"
+    ]
+  ],
+  "state": {
     "event": [
       {
-        "title": "new title",
         "description": "new description",
-        "editor": "editor"
+        "editor": "editor",
+        "title": "new title"
       }
     ],
     "events": [
       {
-        "id": "id0",
-        "id_from": "id1",
-        "id_to": "id2",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "createdAt": "<time>",
-            "username": "editor"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id3",
-            "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id2",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
         "event": "create",
+        "id": "id2",
         "properties": {
           "new": {
-            "createdAt": "<time>",
-            "id": "id3",
-            "body": "old title",
-            "ageGateTouchedAt": "<time>"
-          }
-        }
-      },
-      {
-        "id": "id4",
-        "id_from": "id5",
-        "id_to": "id2",
-        "relationshipName": "HAS_TITLE_VERSION",
-        "fromTypename": "Event",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "createdAt": "<time>",
-            "title": "old title"
-          },
-          "to": {
             "ageGateTouchedAt": "<time>",
             "body": "old title",
-            "id": "id3",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
             "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "createdAt": "<time>",
-            "title": "old title"
+            "id": "id3"
           }
-        }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
       },
       {
-        "id": "id7",
-        "id_from": "id8",
-        "id_to": "id9",
-        "relationshipName": "AUTHORED_VERSION",
-        "fromTypename": "User",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
-        "properties": {
-          "from": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "to": {
-            "createdAt": "<time>",
-            "id": "id10",
-            "body": "old description",
-            "ageGateTouchedAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id9",
-        "typename": "TextVersion",
-        "timestamp": "<time>",
         "event": "create",
+        "id": "id9",
         "properties": {
           "new": {
-            "createdAt": "<time>",
-            "id": "id10",
+            "ageGateTouchedAt": "<time>",
             "body": "old description",
-            "ageGateTouchedAt": "<time>"
+            "createdAt": "<time>",
+            "id": "id10"
           }
-        }
+        },
+        "timestamp": "<time>",
+        "typename": "TextVersion"
       },
       {
+        "event": "create_relationship",
+        "fromTypename": "Event",
         "id": "id11",
         "id_from": "id5",
         "id_to": "id9",
-        "relationshipName": "HAS_DESCRIPTION_VERSION",
-        "fromTypename": "Event",
-        "toTypename": "TextVersion",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
+            "createdAt": "<time>",
             "description": "old description",
             "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
               "day": {
-                "low": 2,
-                "high": 0
+                "high": 0,
+                "low": 2
               },
               "hour": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
               "minute": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
-              "second": {
-                "low": 0,
-                "high": 0
+              "month": {
+                "high": 0,
+                "low": 1
               },
               "nanosecond": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
               },
               "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
               }
             },
             "id": "id6",
-            "createdAt": "<time>",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
             "title": "old title"
           },
+          "relationship": {},
           "to": {
             "ageGateTouchedAt": "<time>",
             "body": "old description",
-            "id": "id10",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
             "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "createdAt": "<time>",
-            "title": "old title"
+            "id": "id10"
           }
-        }
+        },
+        "relationshipName": "HAS_DESCRIPTION_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
       },
       {
+        "event": "create_relationship",
+        "fromTypename": "Event",
         "id": "id12",
         "id_from": "id5",
         "id_to": "id1",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "create_relationship",
         "properties": {
           "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
+            "createdAt": "<time>",
             "description": "old description",
             "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
               "day": {
-                "low": 2,
-                "high": 0
+                "high": 0,
+                "low": 2
               },
               "hour": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
               "minute": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
-              "second": {
-                "low": 0,
-                "high": 0
+              "month": {
+                "high": 0,
+                "low": 1
               },
               "nanosecond": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
               },
               "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
               }
             },
             "id": "id6",
-            "createdAt": "<time>",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
             "title": "old title"
           },
+          "relationship": {},
           "to": {
             "createdAt": "<time>",
             "username": "editor"
-          },
-          "relationship": {}
-        }
+          }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
       },
       {
+        "event": "create_relationship",
+        "fromTypename": "Event",
+        "id": "id4",
+        "id_from": "id5",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "relationshipName": "HAS_TITLE_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "editor"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old title",
+            "createdAt": "<time>",
+            "id": "id3"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "create_relationship",
+        "fromTypename": "User",
+        "id": "id7",
+        "id_from": "id8",
+        "id_to": "id9",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "username": "prior"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "body": "old description",
+            "createdAt": "<time>",
+            "id": "id10"
+          }
+        },
+        "relationshipName": "AUTHORED_VERSION",
+        "timestamp": "<time>",
+        "toTypename": "TextVersion"
+      },
+      {
+        "event": "delete_relationship",
+        "fromTypename": "Event",
         "id": "id13",
         "id_from": "id5",
         "id_to": "id8",
-        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
-        "fromTypename": "Event",
-        "toTypename": "User",
-        "timestamp": "<time>",
-        "event": "delete_relationship",
         "properties": {
           "from": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
+            "createdAt": "<time>",
             "description": "old description",
             "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
               "day": {
-                "low": 2,
-                "high": 0
+                "high": 0,
+                "low": 2
               },
               "hour": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
               "minute": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
-              "second": {
-                "low": 0,
-                "high": 0
+              "month": {
+                "high": 0,
+                "low": 1
               },
               "nanosecond": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
               },
               "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
               }
             },
             "id": "id6",
-            "createdAt": "<time>",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
             "title": "old title"
           },
+          "relationship": {},
           "to": {
-            "username": "prior",
-            "createdAt": "<time>"
-          },
-          "relationship": {}
-        }
-      },
-      {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
-        "event": "update",
-        "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
             "createdAt": "<time>",
-            "title": "old title"
-          },
-          "new": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "createdAt": "<time>",
-            "title": "old title"
+            "username": "prior"
           }
-        }
+        },
+        "relationshipName": "DESCRIPTION_LAST_EDITED_BY",
+        "timestamp": "<time>",
+        "toTypename": "User"
       },
       {
-        "id": "id5",
-        "typename": "Event",
-        "timestamp": "<time>",
         "event": "update",
+        "id": "id5",
         "properties": {
-          "old": {
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "description": "old description",
-            "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 2,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
-            "id": "id6",
-            "createdAt": "<time>",
-            "title": "old title"
-          },
           "new": {
-            "updatedAt": "<time>",
-            "startTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
-              "day": {
-                "low": 1,
-                "high": 0
-              },
-              "hour": {
-                "low": 0,
-                "high": 0
-              },
-              "minute": {
-                "low": 0,
-                "high": 0
-              },
-              "second": {
-                "low": 0,
-                "high": 0
-              },
-              "nanosecond": {
-                "low": 0,
-                "high": 0
-              },
-              "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
-              }
-            },
+            "createdAt": "<time>",
             "description": "new description",
             "endTime": {
-              "year": {
-                "low": 2026,
-                "high": 0
-              },
-              "month": {
-                "low": 1,
-                "high": 0
-              },
               "day": {
-                "low": 2,
-                "high": 0
+                "high": 0,
+                "low": 2
               },
               "hour": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
               "minute": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
               },
-              "second": {
-                "low": 0,
-                "high": 0
+              "month": {
+                "high": 0,
+                "low": 1
               },
               "nanosecond": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
               },
               "timeZoneOffsetSeconds": {
-                "low": 0,
-                "high": 0
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
               }
             },
             "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "new title",
+            "updatedAt": "<time>"
+          },
+          "old": {
             "createdAt": "<time>",
-            "title": "new title"
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
           }
-        }
-      }
-    ]
-  },
-  "calls": [
-    [
-      "resolve"
-    ],
-    [
-      "notify",
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
       {
-        "username": "poster",
-        "text": "editor edited your event [old title](undefined/forums/forum/events/e)",
-        "notificationType": "general"
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      },
+      {
+        "event": "update",
+        "id": "id5",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          },
+          "old": {
+            "createdAt": "<time>",
+            "description": "old description",
+            "endTime": {
+              "day": {
+                "high": 0,
+                "low": 2
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "id": "id6",
+            "startTime": {
+              "day": {
+                "high": 0,
+                "low": 1
+              },
+              "hour": {
+                "high": 0,
+                "low": 0
+              },
+              "minute": {
+                "high": 0,
+                "low": 0
+              },
+              "month": {
+                "high": 0,
+                "low": 1
+              },
+              "nanosecond": {
+                "high": 0,
+                "low": 0
+              },
+              "second": {
+                "high": 0,
+                "low": 0
+              },
+              "timeZoneOffsetSeconds": {
+                "high": 0,
+                "low": 0
+              },
+              "year": {
+                "high": 0,
+                "low": 2026
+              }
+            },
+            "title": "old title"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Event"
+      }
+    ],
+    "revisions": [
+      {
+        "author": "editor",
+        "body": "old title",
+        "kind": "HAS_TITLE_VERSION",
+        "touched": true
+      },
+      {
+        "author": "prior",
+        "body": "old description",
+        "kind": "HAS_DESCRIPTION_VERSION",
+        "touched": true
       }
     ]
-  ]
+  }
 }
 `;
 
 exports[`snapshot nested limits and generated coercion remain identical 1`] = `
 [
   {
-    "id": "id0",
-    "title": "old title",
-    "description": "old description",
-    "Poster": {
-      "username": "poster"
-    },
     "DescriptionLastEditedBy": {
       "username": "prior"
     },
@@ -3827,8 +3821,14 @@ exports[`snapshot nested limits and generated coercion remain identical 1`] = `
         "channelUniqueName": "forum"
       }
     ],
+    "PastDescriptionVersions": 25,
     "PastTitleVersions": 25,
-    "PastDescriptionVersions": 25
+    "Poster": {
+      "username": "poster"
+    },
+    "description": "old description",
+    "id": "id0",
+    "title": "old title"
   }
 ]
 `;

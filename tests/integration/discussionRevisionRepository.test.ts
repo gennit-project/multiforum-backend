@@ -28,9 +28,7 @@ const outcome=async(call:()=>Promise<unknown>)=>call().then(()=>null,(e:Error)=>
 
 const plain=(value:unknown)=>JSON.parse(JSON.stringify(value));
 // Nested relationship projections (collect()) have no guaranteed cross-run ordering, and the seed stamps
-// createdAt via datetime(); deep-sort and normalize temporal fields before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
-const norm=(value:unknown)=>sortDeep(JSON.parse(JSON.stringify(value,(key,v)=>(['createdAt','updatedAt','timestamp','ageGateTouchedAt'].includes(key)&&v!==null)?'<time>':v)));
+const norm=(value:unknown)=>JSON.parse(JSON.stringify(value,(key,v)=>(['createdAt','updatedAt','timestamp','ageGateTouchedAt'].includes(key)&&v!==null)?'<time>':v));
 const SNAPSHOT='{id title body Author {username} BodyLastEditedBy {username} DiscussionChannels {channelUniqueName} PastTitleVersions {id body createdAt} PastBodyVersions {id body createdAt}}';
 function baseline(){const d=ogm.model('Discussion'),v=ogm.model('TextVersion'),u=ogm.model('User');return {
  findSnapshot:(id:string)=>d.find({where:{id},selectionSet:SNAPSHOT}),

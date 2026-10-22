@@ -22,8 +22,6 @@ function baseline(): EventSeriesDeletionRepository {const e=app.ogm.model('Event
 };}
 async function seed(linked=true,count=3){await driver.executeQuery("CREATE(s:EventSeries{id:'s',title:'Series',createdAt:datetime('2020-01-01T00:00:00Z')}) WITH s UNWIND range(0,$last) AS i CREATE(e:Event{id:'e'+toString(i),title:'Occurrence',occurrenceIndex:i,canceled:false,startTime:datetime('2026-06-01T10:00:00Z'),endTime:datetime('2026-06-01T12:00:00Z'),createdAt:datetime('2020-01-01T00:00:00Z')}) FOREACH(_ IN CASE WHEN $linked THEN [1] ELSE [] END | CREATE(s)-[:HAS_OCCURRENCE]->(e))",{linked,last:count-1});}
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(_key,x)=>{if(!isInt(x))return x;assert.ok(x.inSafeRange());return x.toNumber();}));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 async function state(){return {
  nodes:(await driver.executeQuery('MATCH(n) RETURN labels(n) AS labels,properties(n) AS properties ORDER BY n.id')).records.map(r=>r.toObject()),
  rels:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN a.id AS source,type(r) AS type,b.id AS target ORDER BY source,target')).records.map(r=>r.toObject()),
@@ -49,7 +47,7 @@ for(const scenario of [
    const rels=(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type')).records.map(r=>r.toObject());
    // First establish exact native read parity on the same allocated graph; the occurrence
    // sequence is unordered across runs, so deep-sort before snapshotting.
-   t.assert.snapshot(sortDeep(await createEventSeriesDeletionRepository(driver).findSnapshot(scenario.eventId)));
+   t.assert.snapshot(await createEventSeriesDeletionRepository(driver).findSnapshot(scenario.eventId));
    let observed:any;let calls=0;
    if('projection' in scenario)field.resolve=(source,args,context,info)=>{if(++calls===2)throw Error('fixture second delete projection failure');return original?original(source,args,context,info):source.nodesDeleted;};
    const repository={...repo,findSnapshot:async(id:string)=>{const rows=await repo.findSnapshot(id);

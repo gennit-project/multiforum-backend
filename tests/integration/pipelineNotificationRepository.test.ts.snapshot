@@ -1,128 +1,128 @@
 exports[`canonical author fallback and archived-only channel preserve null link 1`] = `
 {
-  "rows": [
-    {
-      "claimed": "2026-07-30T12:00:00Z",
-      "username": "owner",
-      "id": "id0",
-      "text": "Checks for “Fixture” did not pass.",
-      "link": null,
-      "type": "plugin_pipeline",
-      "read": false
-    }
-  ],
   "events": [
     {
-      "id": "id1",
-      "typename": "PluginPipelineRun",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "targetId": "file",
-          "id": "id2",
-          "status": "FAILED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        },
-        "new": {
-          "updatedAt": "<time>",
-          "notifiedAt": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 7,
-              "high": 0
-            },
-            "day": {
-              "low": 30,
-              "high": 0
-            },
-            "hour": {
-              "low": 12,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
-          "targetId": "file",
-          "id": "id2",
-          "status": "FAILED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        }
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "Notification",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "id3",
       "properties": {
         "new": {
-          "read": false,
-          "text": "Checks for “Fixture” did not pass.",
+          "createdAt": "<time>",
           "id": "id0",
           "notificationType": "plugin_pipeline",
-          "createdAt": "<time>"
+          "read": false,
+          "text": "Checks for “Fixture” did not pass."
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "id4",
       "id_from": "id5",
       "id_to": "id3",
-      "relationshipName": "HAS_NOTIFICATION",
-      "fromTypename": "User",
-      "toTypename": "Notification",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "createdAt": "<time>",
+          "username": "owner"
         },
+        "relationship": {},
         "to": {
-          "read": false,
-          "text": "Checks for “Fixture” did not pass.",
+          "createdAt": "<time>",
           "id": "id0",
           "notificationType": "plugin_pipeline",
-          "createdAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "read": false,
+          "text": "Checks for “Fixture” did not pass."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
     },
     {
-      "id": "id5",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "id1",
       "properties": {
-        "old": {
-          "username": "owner",
-          "createdAt": "<time>"
-        },
         "new": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline / \\"",
+          "status": "FAILED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "id": "id2",
+          "pipelineId": "pipeline / \\"",
+          "status": "FAILED",
+          "targetId": "file",
+          "targetType": "DownloadableFile"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "rows": [
+    {
+      "claimed": "2026-07-30T12:00:00Z",
+      "id": "id0",
+      "link": null,
+      "read": false,
+      "text": "Checks for “Fixture” did not pass.",
+      "type": "plugin_pipeline",
+      "username": "owner"
     }
   ]
 }
@@ -130,131 +130,131 @@ exports[`canonical author fallback and archived-only channel preserve null link 
 
 exports[`projection failure retains committed claim and notification; retry does not deliver again 1`] = `
 {
-  "rows": [
-    {
-      "claimed": "2026-07-30T12:00:00Z",
-      "username": "owner",
-      "id": "id0",
-      "text": "Checks for “Fixture” passed.",
-      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-      "type": "plugin_pipeline",
-      "read": false
-    }
-  ],
   "events": [
     {
-      "id": "id1",
-      "typename": "PluginPipelineRun",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "targetId": "file",
-          "id": "id2",
-          "status": "SUCCEEDED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        },
-        "new": {
-          "updatedAt": "<time>",
-          "notifiedAt": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 7,
-              "high": 0
-            },
-            "day": {
-              "low": 30,
-              "high": 0
-            },
-            "hour": {
-              "low": 12,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
-          "targetId": "file",
-          "id": "id2",
-          "status": "SUCCEEDED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        }
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "Notification",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "id3",
       "properties": {
         "new": {
-          "read": false,
-          "text": "Checks for “Fixture” passed.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” passed."
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "id4",
       "id_from": "id5",
       "id_to": "id3",
-      "relationshipName": "HAS_NOTIFICATION",
-      "fromTypename": "User",
-      "toTypename": "Notification",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "createdAt": "<time>",
+          "username": "owner"
         },
+        "relationship": {},
         "to": {
-          "read": false,
-          "text": "Checks for “Fixture” passed.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” passed."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
     },
     {
-      "id": "id5",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "id1",
       "properties": {
-        "old": {
-          "username": "owner",
-          "createdAt": "<time>"
-        },
         "new": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline / \\"",
+          "status": "SUCCEEDED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "id": "id2",
+          "pipelineId": "pipeline / \\"",
+          "status": "SUCCEEDED",
+          "targetId": "file",
+          "targetType": "DownloadableFile"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "rows": [
+    {
+      "claimed": "2026-07-30T12:00:00Z",
+      "id": "id0",
+      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
+      "read": false,
+      "text": "Checks for “Fixture” passed.",
+      "type": "plugin_pipeline",
+      "username": "owner"
     }
   ]
 }
@@ -262,131 +262,131 @@ exports[`projection failure retains committed claim and notification; retry does
 
 exports[`terminal CANCELLED preserves ordered events, graph, literal links and single claim 1`] = `
 {
-  "rows": [
-    {
-      "claimed": "2026-07-30T12:00:00Z",
-      "username": "owner",
-      "id": "id0",
-      "text": "Checks for “Fixture” did not pass.",
-      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-      "type": "plugin_pipeline",
-      "read": false
-    }
-  ],
   "events": [
     {
-      "id": "id1",
-      "typename": "PluginPipelineRun",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "targetId": "file",
-          "id": "id2",
-          "status": "CANCELLED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        },
-        "new": {
-          "updatedAt": "<time>",
-          "notifiedAt": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 7,
-              "high": 0
-            },
-            "day": {
-              "low": 30,
-              "high": 0
-            },
-            "hour": {
-              "low": 12,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
-          "targetId": "file",
-          "id": "id2",
-          "status": "CANCELLED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        }
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "Notification",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "id3",
       "properties": {
         "new": {
-          "read": false,
-          "text": "Checks for “Fixture” did not pass.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” did not pass."
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "id4",
       "id_from": "id5",
       "id_to": "id3",
-      "relationshipName": "HAS_NOTIFICATION",
-      "fromTypename": "User",
-      "toTypename": "Notification",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "createdAt": "<time>",
+          "username": "owner"
         },
+        "relationship": {},
         "to": {
-          "read": false,
-          "text": "Checks for “Fixture” did not pass.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” did not pass."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
     },
     {
-      "id": "id5",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "id1",
       "properties": {
-        "old": {
-          "username": "owner",
-          "createdAt": "<time>"
-        },
         "new": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline / \\"",
+          "status": "CANCELLED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "id": "id2",
+          "pipelineId": "pipeline / \\"",
+          "status": "CANCELLED",
+          "targetId": "file",
+          "targetType": "DownloadableFile"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "rows": [
+    {
+      "claimed": "2026-07-30T12:00:00Z",
+      "id": "id0",
+      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
+      "read": false,
+      "text": "Checks for “Fixture” did not pass.",
+      "type": "plugin_pipeline",
+      "username": "owner"
     }
   ]
 }
@@ -394,131 +394,131 @@ exports[`terminal CANCELLED preserves ordered events, graph, literal links and s
 
 exports[`terminal FAILED preserves ordered events, graph, literal links and single claim 1`] = `
 {
-  "rows": [
-    {
-      "claimed": "2026-07-30T12:00:00Z",
-      "username": "owner",
-      "id": "id0",
-      "text": "Checks for “Fixture” did not pass.",
-      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-      "type": "plugin_pipeline",
-      "read": false
-    }
-  ],
   "events": [
     {
-      "id": "id1",
-      "typename": "PluginPipelineRun",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "targetId": "file",
-          "id": "id2",
-          "status": "FAILED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        },
-        "new": {
-          "updatedAt": "<time>",
-          "notifiedAt": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 7,
-              "high": 0
-            },
-            "day": {
-              "low": 30,
-              "high": 0
-            },
-            "hour": {
-              "low": 12,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
-          "targetId": "file",
-          "id": "id2",
-          "status": "FAILED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        }
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "Notification",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "id3",
       "properties": {
         "new": {
-          "read": false,
-          "text": "Checks for “Fixture” did not pass.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” did not pass."
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "id4",
       "id_from": "id5",
       "id_to": "id3",
-      "relationshipName": "HAS_NOTIFICATION",
-      "fromTypename": "User",
-      "toTypename": "Notification",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "createdAt": "<time>",
+          "username": "owner"
         },
+        "relationship": {},
         "to": {
-          "read": false,
-          "text": "Checks for “Fixture” did not pass.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” did not pass."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
     },
     {
-      "id": "id5",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "id1",
       "properties": {
-        "old": {
-          "username": "owner",
-          "createdAt": "<time>"
-        },
         "new": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline / \\"",
+          "status": "FAILED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "id": "id2",
+          "pipelineId": "pipeline / \\"",
+          "status": "FAILED",
+          "targetId": "file",
+          "targetType": "DownloadableFile"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "rows": [
+    {
+      "claimed": "2026-07-30T12:00:00Z",
+      "id": "id0",
+      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
+      "read": false,
+      "text": "Checks for “Fixture” did not pass.",
+      "type": "plugin_pipeline",
+      "username": "owner"
     }
   ]
 }
@@ -526,131 +526,131 @@ exports[`terminal FAILED preserves ordered events, graph, literal links and sing
 
 exports[`terminal SUCCEEDED preserves ordered events, graph, literal links and single claim 1`] = `
 {
-  "rows": [
-    {
-      "claimed": "2026-07-30T12:00:00Z",
-      "username": "owner",
-      "id": "id0",
-      "text": "Checks for “Fixture” passed.",
-      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-      "type": "plugin_pipeline",
-      "read": false
-    }
-  ],
   "events": [
     {
-      "id": "id1",
-      "typename": "PluginPipelineRun",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "targetId": "file",
-          "id": "id2",
-          "status": "SUCCEEDED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        },
-        "new": {
-          "updatedAt": "<time>",
-          "notifiedAt": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 7,
-              "high": 0
-            },
-            "day": {
-              "low": 30,
-              "high": 0
-            },
-            "hour": {
-              "low": 12,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
-          "targetId": "file",
-          "id": "id2",
-          "status": "SUCCEEDED",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        }
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "Notification",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "id3",
       "properties": {
         "new": {
-          "read": false,
-          "text": "Checks for “Fixture” passed.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” passed."
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "id4",
       "id_from": "id5",
       "id_to": "id3",
-      "relationshipName": "HAS_NOTIFICATION",
-      "fromTypename": "User",
-      "toTypename": "Notification",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "createdAt": "<time>",
+          "username": "owner"
         },
+        "relationship": {},
         "to": {
-          "read": false,
-          "text": "Checks for “Fixture” passed.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” passed."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
     },
     {
-      "id": "id5",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "id1",
       "properties": {
-        "old": {
-          "username": "owner",
-          "createdAt": "<time>"
-        },
         "new": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline / \\"",
+          "status": "SUCCEEDED",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "id": "id2",
+          "pipelineId": "pipeline / \\"",
+          "status": "SUCCEEDED",
+          "targetId": "file",
+          "targetType": "DownloadableFile"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "rows": [
+    {
+      "claimed": "2026-07-30T12:00:00Z",
+      "id": "id0",
+      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
+      "read": false,
+      "text": "Checks for “Fixture” passed.",
+      "type": "plugin_pipeline",
+      "username": "owner"
     }
   ]
 }
@@ -658,131 +658,131 @@ exports[`terminal SUCCEEDED preserves ordered events, graph, literal links and s
 
 exports[`terminal TIMED_OUT preserves ordered events, graph, literal links and single claim 1`] = `
 {
-  "rows": [
-    {
-      "claimed": "2026-07-30T12:00:00Z",
-      "username": "owner",
-      "id": "id0",
-      "text": "Checks for “Fixture” timed out.",
-      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-      "type": "plugin_pipeline",
-      "read": false
-    }
-  ],
   "events": [
     {
-      "id": "id1",
-      "typename": "PluginPipelineRun",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "targetId": "file",
-          "id": "id2",
-          "status": "TIMED_OUT",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        },
-        "new": {
-          "updatedAt": "<time>",
-          "notifiedAt": {
-            "year": {
-              "low": 2026,
-              "high": 0
-            },
-            "month": {
-              "low": 7,
-              "high": 0
-            },
-            "day": {
-              "low": 30,
-              "high": 0
-            },
-            "hour": {
-              "low": 12,
-              "high": 0
-            },
-            "minute": {
-              "low": 0,
-              "high": 0
-            },
-            "second": {
-              "low": 0,
-              "high": 0
-            },
-            "nanosecond": {
-              "low": 0,
-              "high": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "low": 0,
-              "high": 0
-            }
-          },
-          "targetId": "file",
-          "id": "id2",
-          "status": "TIMED_OUT",
-          "targetType": "DownloadableFile",
-          "pipelineId": "pipeline / \\""
-        }
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "Notification",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "id3",
       "properties": {
         "new": {
-          "read": false,
-          "text": "Checks for “Fixture” timed out.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” timed out."
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Notification"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "id4",
       "id_from": "id5",
       "id_to": "id3",
-      "relationshipName": "HAS_NOTIFICATION",
-      "fromTypename": "User",
-      "toTypename": "Notification",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "createdAt": "<time>",
+          "username": "owner"
         },
+        "relationship": {},
         "to": {
-          "read": false,
-          "text": "Checks for “Fixture” timed out.",
+          "createdAt": "<time>",
           "id": "id0",
-          "notificationType": "plugin_pipeline",
           "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
-          "createdAt": "<time>"
-        },
-        "relationship": {}
-      }
+          "notificationType": "plugin_pipeline",
+          "read": false,
+          "text": "Checks for “Fixture” timed out."
+        }
+      },
+      "relationshipName": "HAS_NOTIFICATION",
+      "timestamp": "<time>",
+      "toTypename": "Notification"
     },
     {
-      "id": "id5",
-      "typename": "User",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "id1",
       "properties": {
-        "old": {
-          "username": "owner",
-          "createdAt": "<time>"
-        },
         "new": {
-          "username": "owner",
-          "createdAt": "<time>"
+          "id": "id2",
+          "notifiedAt": {
+            "day": {
+              "high": 0,
+              "low": 30
+            },
+            "hour": {
+              "high": 0,
+              "low": 12
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 7
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pipelineId": "pipeline / \\"",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "id": "id2",
+          "pipelineId": "pipeline / \\"",
+          "status": "TIMED_OUT",
+          "targetId": "file",
+          "targetType": "DownloadableFile"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginPipelineRun"
+    },
+    {
+      "event": "update",
+      "id": "id5",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "username": "owner"
+        },
+        "old": {
+          "createdAt": "<time>",
+          "username": "owner"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "User"
+    }
+  ],
+  "rows": [
+    {
+      "claimed": "2026-07-30T12:00:00Z",
+      "id": "id0",
+      "link": "/forums/forum%20%2F%20%22/downloads/discussion%20%2F%20%22/pipelines?attempt=pipeline%20%2F%20%22#attempt-pipeline%20%2F%20%22",
+      "read": false,
+      "text": "Checks for “Fixture” timed out.",
+      "type": "plugin_pipeline",
+      "username": "owner"
     }
   ]
 }

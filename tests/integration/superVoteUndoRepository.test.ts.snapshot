@@ -1,11 +1,11 @@
 exports[`both snapshots retain missing rows, author branches and nested default25 limit 1`] = `
 [
   {
-    "id": "c",
-    "SuperUpvotedByUsers": 25,
     "CommentAuthor": {
       "username": "author"
-    }
+    },
+    "SuperUpvotedByUsers": 25,
+    "id": "c"
   }
 ]
 `;
@@ -13,13 +13,13 @@ exports[`both snapshots retain missing rows, author branches and nested default2
 exports[`both snapshots retain missing rows, author branches and nested default25 limit 2`] = `
 [
   {
-    "id": "dc",
-    "SuperUpvotedByUsers": 25,
     "Discussion": {
       "Author": {
         "username": "author"
       }
-    }
+    },
+    "SuperUpvotedByUsers": 25,
+    "id": "dc"
   }
 ]
 `;
@@ -27,18 +27,18 @@ exports[`both snapshots retain missing rows, author branches and nested default2
 exports[`comment full undo preserves transaction state, scratchpad deletion and no generated write events 1`] = `
 {
   "result": {
-    "success": true,
     "message": "Super upvote removed successfully",
     "sourceId": "c",
     "sourceType": "comment",
+    "success": true,
     "superUpvotedByUsers": []
   },
   "values": [
-    6,
-    7,
+    0,
     1,
     2,
-    0
+    6,
+    7
   ]
 }
 `;
@@ -46,18 +46,18 @@ exports[`comment full undo preserves transaction state, scratchpad deletion and 
 exports[`discussion full undo preserves transaction state, scratchpad deletion and no generated write events 1`] = `
 {
   "result": {
-    "success": true,
     "message": "Super upvote removed successfully",
     "sourceId": "dc",
     "sourceType": "discussion",
+    "success": true,
     "superUpvotedByUsers": []
   },
   "values": [
-    7,
-    6,
-    2,
+    0,
     1,
-    0
+    2,
+    6,
+    7
   ]
 }
 `;

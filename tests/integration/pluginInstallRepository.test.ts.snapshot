@@ -1,122 +1,118 @@
 exports[`actual install parity: already-installed 1`] = `
 {
-  "response": {
-    "plugin": {
-      "id": "Plugin:plugin",
-      "name": "plugin",
-      "displayName": "After",
-      "description": null,
-      "authorName": null,
-      "authorUrl": null,
-      "homepage": null,
-      "license": null,
-      "tags": [
-        "fixture"
-      ],
-      "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+  "edges": [
+    {
+      "properties": {
+        "enabled": true,
+        "settingsJson": "{\\"keep\\":true}"
+      },
+      "source": "ServerConfig:server",
+      "target": "PluginVersion:1",
+      "type": "INSTALLED"
     },
-    "version": "1",
-    "scope": "SERVER",
-    "enabled": false,
-    "settingsJson": null,
-    "carryOverReport": null
-  },
-  "error": null,
-  "external": [
-    "registry",
-    "download",
-    "manifest"
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:1",
+      "type": "HAS_VERSION"
+    }
   ],
+  "error": null,
   "events": [
     {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "id": "Plugin:plugin",
-          "name": "plugin",
-          "displayName": "Before"
-        },
-        "new": {
-          "displayName": "After",
-          "name": "plugin",
-          "tags": [
-            "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
-        }
-      }
-    },
-    {
+      "event": "create_relationship",
+      "fromTypename": "Plugin",
       "id": "HAS_VERSION:Plugin:plugin:PluginVersion:1",
       "id_from": "Plugin:plugin",
       "id_to": "PluginVersion:1",
-      "relationshipName": "HAS_VERSION",
-      "fromTypename": "Plugin",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         },
+        "relationship": {},
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {}
-      }
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
+        }
+      },
+      "relationshipName": "HAS_VERSION",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     },
     {
-      "id": "PluginVersion:1",
-      "typename": "PluginVersion",
-      "timestamp": "<time>",
       "event": "update",
+      "id": "Plugin:plugin",
       "properties": {
-        "old": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "id": "PluginVersion:1",
-          "entryPath": "old.js",
-          "version": "1"
-        },
         "new": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
+          "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+          "name": "plugin",
+          "tags": [
+            "fixture"
+          ]
+        },
+        "old": {
+          "displayName": "Before",
+          "id": "Plugin:plugin",
+          "name": "plugin"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
+    },
+    {
+      "event": "update",
+      "id": "PluginVersion:1",
+      "properties": {
+        "new": {
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
+        },
+        "old": {
+          "entryPath": "old.js",
+          "id": "PluginVersion:1",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "version": "1"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginVersion"
     }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
   ],
   "nodes": [
     {
       "alias": "Plugin:plugin",
       "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
         "displayName": "After",
-        "name": "plugin",
         "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
         "tags": [
           "fixture"
         ]
@@ -125,14 +121,14 @@ exports[`actual install parity: already-installed 1`] = `
     {
       "alias": "PluginVersion:1",
       "properties": {
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "id": "PluginVersion:1",
         "entryPath": "index.js",
+        "id": "PluginVersion:1",
+        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+        "repoUrl": "https://fixture.invalid/plugin.tgz",
+        "settingsDefaults": "{\\"enabled\\":true}",
+        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+        "uiSchema": "{\\"type\\":\\"object\\"}",
         "version": "1"
       }
     },
@@ -146,148 +142,124 @@ exports[`actual install parity: already-installed 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION",
-      "properties": {}
+  "response": {
+    "carryOverReport": null,
+    "enabled": false,
+    "plugin": {
+      "authorName": null,
+      "authorUrl": null,
+      "description": null,
+      "displayName": "After",
+      "homepage": null,
+      "id": "Plugin:plugin",
+      "license": null,
+      "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+      "name": "plugin",
+      "tags": [
+        "fixture"
+      ]
     },
-    {
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:1",
-      "type": "INSTALLED",
-      "properties": {
-        "settingsJson": "{\\"keep\\":true}",
-        "enabled": true
-      }
-    }
-  ]
+    "scope": "SERVER",
+    "settingsJson": null,
+    "version": "1"
+  }
 }
 `;
 
 exports[`actual install parity: carry 1`] = `
 {
-  "response": {
-    "plugin": {
-      "id": "Plugin:plugin",
-      "name": "plugin",
-      "displayName": "After",
-      "description": null,
-      "authorName": null,
-      "authorUrl": null,
-      "homepage": null,
-      "license": null,
-      "tags": [
-        "fixture"
-      ],
-      "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+  "edges": [
+    {
+      "properties": {
+        "enabled": false,
+        "settingsJson": "{}"
+      },
+      "source": "ServerConfig:server",
+      "target": "PluginVersion:1",
+      "type": "INSTALLED"
     },
-    "version": "1",
-    "scope": "SERVER",
-    "enabled": false,
-    "settingsJson": {},
-    "carryOverReport": {
-      "carried": [],
-      "renamed": [],
-      "renamedSecrets": [],
-      "dropped": [
-        "enabled"
-      ],
-      "reset": [],
-      "newDefaults": []
+    {
+      "properties": {
+        "enabled": true,
+        "settingsJson": "{\\"enabled\\":false}"
+      },
+      "source": "ServerConfig:server",
+      "target": "PluginVersion:0",
+      "type": "INSTALLED"
+    },
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:0",
+      "type": "HAS_VERSION"
+    },
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:1",
+      "type": "HAS_VERSION"
     }
-  },
-  "error": null,
-  "external": [
-    "registry",
-    "download",
-    "manifest"
   ],
+  "error": null,
   "events": [
     {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create",
+      "id": "PluginVersion:1",
       "properties": {
-        "old": {
-          "id": "Plugin:plugin",
-          "name": "plugin",
-          "displayName": "Before"
-        },
         "new": {
-          "displayName": "After",
-          "name": "plugin",
-          "tags": [
-            "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginVersion"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Plugin",
       "id": "HAS_VERSION:Plugin:plugin:PluginVersion:1",
       "id_from": "Plugin:plugin",
       "id_to": "PluginVersion:1",
-      "relationshipName": "HAS_VERSION",
-      "fromTypename": "Plugin",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         },
+        "relationship": {},
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PluginVersion:1",
-      "typename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
           "repoUrl": "https://fixture.invalid/plugin.tgz",
           "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
           "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "HAS_VERSION",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "INSTALLED:ServerConfig:server:PluginVersion:1",
       "id_from": "ServerConfig:server",
       "id_to": "PluginVersion:1",
-      "relationshipName": "INSTALLED",
-      "fromTypename": "ServerConfig",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "pluginRegistries": [
@@ -295,32 +267,62 @@ exports[`actual install parity: carry 1`] = `
           ],
           "serverName": "server"
         },
+        "relationship": {
+          "enabled": false,
+          "settingsJson": "{}"
+        },
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {
-          "settingsJson": "{}",
-          "enabled": false
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "INSTALLED",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
+    },
+    {
+      "event": "update",
+      "id": "Plugin:plugin",
+      "properties": {
+        "new": {
+          "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+          "name": "plugin",
+          "tags": [
+            "fixture"
+          ]
+        },
+        "old": {
+          "displayName": "Before",
+          "id": "Plugin:plugin",
+          "name": "plugin"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
     }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
   ],
   "nodes": [
     {
       "alias": "Plugin:plugin",
       "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
         "displayName": "After",
-        "name": "plugin",
         "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
         "tags": [
           "fixture"
         ]
@@ -329,23 +331,23 @@ exports[`actual install parity: carry 1`] = `
     {
       "alias": "PluginVersion:0",
       "properties": {
-        "manifest": "{}",
-        "id": "PluginVersion:0",
         "entryPath": "old.js",
+        "id": "PluginVersion:0",
+        "manifest": "{}",
         "version": "0"
       }
     },
     {
       "alias": "PluginVersion:1",
       "properties": {
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "id": "PluginVersion:1",
         "entryPath": "index.js",
+        "id": "PluginVersion:1",
+        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+        "repoUrl": "https://fixture.invalid/plugin.tgz",
+        "settingsDefaults": "{\\"enabled\\":true}",
+        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+        "uiSchema": "{\\"type\\":\\"object\\"}",
         "version": "1"
       }
     },
@@ -359,128 +361,134 @@ exports[`actual install parity: carry 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:0",
-      "type": "HAS_VERSION",
-      "properties": {}
+  "response": {
+    "carryOverReport": {
+      "carried": [],
+      "dropped": [
+        "enabled"
+      ],
+      "newDefaults": [],
+      "renamed": [],
+      "renamedSecrets": [],
+      "reset": []
     },
-    {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION",
-      "properties": {}
+    "enabled": false,
+    "plugin": {
+      "authorName": null,
+      "authorUrl": null,
+      "description": null,
+      "displayName": "After",
+      "homepage": null,
+      "id": "Plugin:plugin",
+      "license": null,
+      "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+      "name": "plugin",
+      "tags": [
+        "fixture"
+      ]
     },
-    {
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:0",
-      "type": "INSTALLED",
-      "properties": {
-        "settingsJson": "{\\"enabled\\":false}",
-        "enabled": true
-      }
-    },
-    {
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:1",
-      "type": "INSTALLED",
-      "properties": {
-        "settingsJson": "{}",
-        "enabled": false
-      }
-    }
-  ]
+    "scope": "SERVER",
+    "settingsJson": {},
+    "version": "1"
+  }
 }
 `;
 
 exports[`actual install parity: connection-projection 1`] = `
 {
-  "error": "Failed to install plugin: fixture projection failure",
-  "external": [
-    "registry",
-    "download",
-    "manifest"
+  "edges": [
+    {
+      "properties": {
+        "enabled": false
+      },
+      "source": "ServerConfig:server",
+      "target": "PluginVersion:1",
+      "type": "INSTALLED"
+    },
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:1",
+      "type": "HAS_VERSION"
+    }
   ],
+  "error": "Failed to install plugin: fixture projection failure",
   "events": [
     {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Plugin:plugin",
       "properties": {
         "new": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
     },
     {
+      "event": "create",
+      "id": "PluginVersion:1",
+      "properties": {
+        "new": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginVersion"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Plugin",
       "id": "HAS_VERSION:Plugin:plugin:PluginVersion:1",
       "id_from": "Plugin:plugin",
       "id_to": "PluginVersion:1",
-      "relationshipName": "HAS_VERSION",
-      "fromTypename": "Plugin",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         },
+        "relationship": {},
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PluginVersion:1",
-      "typename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
           "repoUrl": "https://fixture.invalid/plugin.tgz",
           "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
           "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "HAS_VERSION",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "INSTALLED:ServerConfig:server:PluginVersion:1",
       "id_from": "ServerConfig:server",
       "id_to": "PluginVersion:1",
-      "relationshipName": "INSTALLED",
-      "fromTypename": "ServerConfig",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "pluginRegistries": [
@@ -488,31 +496,39 @@ exports[`actual install parity: connection-projection 1`] = `
           ],
           "serverName": "server"
         },
-        "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
         "relationship": {
           "enabled": false
+        },
+        "to": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "INSTALLED",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
   ],
   "nodes": [
     {
       "alias": "Plugin:plugin",
       "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
         "displayName": "After",
-        "name": "plugin",
         "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
         "tags": [
           "fixture"
         ]
@@ -521,14 +537,14 @@ exports[`actual install parity: connection-projection 1`] = `
     {
       "alias": "PluginVersion:1",
       "properties": {
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "id": "PluginVersion:1",
         "entryPath": "index.js",
+        "id": "PluginVersion:1",
+        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+        "repoUrl": "https://fixture.invalid/plugin.tgz",
+        "settingsDefaults": "{\\"enabled\\":true}",
+        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+        "uiSchema": "{\\"type\\":\\"object\\"}",
         "version": "1"
       }
     },
@@ -539,22 +555,6 @@ exports[`actual install parity: connection-projection 1`] = `
           "https://fixture.invalid/registry"
         ],
         "serverName": "server"
-      }
-    }
-  ],
-  "edges": [
-    {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION",
-      "properties": {}
-    },
-    {
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:1",
-      "type": "INSTALLED",
-      "properties": {
-        "enabled": false
       }
     }
   ]
@@ -563,117 +563,82 @@ exports[`actual install parity: connection-projection 1`] = `
 
 exports[`actual install parity: existing-plugin 1`] = `
 {
-  "response": {
-    "plugin": {
-      "id": "Plugin:plugin",
-      "name": "plugin",
-      "displayName": "After",
-      "description": null,
-      "authorName": null,
-      "authorUrl": null,
-      "homepage": null,
-      "license": null,
-      "tags": [
-        "fixture"
-      ],
-      "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+  "edges": [
+    {
+      "properties": {
+        "enabled": false
+      },
+      "source": "ServerConfig:server",
+      "target": "PluginVersion:1",
+      "type": "INSTALLED"
     },
-    "version": "1",
-    "scope": "SERVER",
-    "enabled": false,
-    "settingsJson": null,
-    "carryOverReport": null
-  },
-  "error": null,
-  "external": [
-    "registry",
-    "download",
-    "manifest"
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:1",
+      "type": "HAS_VERSION"
+    }
   ],
+  "error": null,
   "events": [
     {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
-      "event": "update",
+      "event": "create",
+      "id": "PluginVersion:1",
       "properties": {
-        "old": {
-          "id": "Plugin:plugin",
-          "name": "plugin",
-          "displayName": "Before"
-        },
         "new": {
-          "displayName": "After",
-          "name": "plugin",
-          "tags": [
-            "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginVersion"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "Plugin",
       "id": "HAS_VERSION:Plugin:plugin:PluginVersion:1",
       "id_from": "Plugin:plugin",
       "id_to": "PluginVersion:1",
-      "relationshipName": "HAS_VERSION",
-      "fromTypename": "Plugin",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         },
+        "relationship": {},
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PluginVersion:1",
-      "typename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
           "repoUrl": "https://fixture.invalid/plugin.tgz",
           "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
           "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "HAS_VERSION",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "INSTALLED:ServerConfig:server:PluginVersion:1",
       "id_from": "ServerConfig:server",
       "id_to": "PluginVersion:1",
-      "relationshipName": "INSTALLED",
-      "fromTypename": "ServerConfig",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "pluginRegistries": [
@@ -681,31 +646,61 @@ exports[`actual install parity: existing-plugin 1`] = `
           ],
           "serverName": "server"
         },
-        "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
         "relationship": {
           "enabled": false
+        },
+        "to": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "INSTALLED",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
+    },
+    {
+      "event": "update",
+      "id": "Plugin:plugin",
+      "properties": {
+        "new": {
+          "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+          "name": "plugin",
+          "tags": [
+            "fixture"
+          ]
+        },
+        "old": {
+          "displayName": "Before",
+          "id": "Plugin:plugin",
+          "name": "plugin"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
     }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
   ],
   "nodes": [
     {
       "alias": "Plugin:plugin",
       "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
         "displayName": "After",
-        "name": "plugin",
         "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
         "tags": [
           "fixture"
         ]
@@ -714,14 +709,14 @@ exports[`actual install parity: existing-plugin 1`] = `
     {
       "alias": "PluginVersion:1",
       "properties": {
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "id": "PluginVersion:1",
         "entryPath": "index.js",
+        "id": "PluginVersion:1",
+        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+        "repoUrl": "https://fixture.invalid/plugin.tgz",
+        "settingsDefaults": "{\\"enabled\\":true}",
+        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+        "uiSchema": "{\\"type\\":\\"object\\"}",
         "version": "1"
       }
     },
@@ -735,144 +730,89 @@ exports[`actual install parity: existing-plugin 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION",
-      "properties": {}
+  "response": {
+    "carryOverReport": null,
+    "enabled": false,
+    "plugin": {
+      "authorName": null,
+      "authorUrl": null,
+      "description": null,
+      "displayName": "After",
+      "homepage": null,
+      "id": "Plugin:plugin",
+      "license": null,
+      "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+      "name": "plugin",
+      "tags": [
+        "fixture"
+      ]
     },
-    {
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:1",
-      "type": "INSTALLED",
-      "properties": {
-        "enabled": false
-      }
-    }
-  ]
+    "scope": "SERVER",
+    "settingsJson": null,
+    "version": "1"
+  }
 }
 `;
 
 exports[`actual install parity: existing-version 1`] = `
 {
-  "response": {
-    "plugin": {
-      "id": "Plugin:plugin",
-      "name": "plugin",
-      "displayName": "After",
-      "description": null,
-      "authorName": null,
-      "authorUrl": null,
-      "homepage": null,
-      "license": null,
-      "tags": [
-        "fixture"
-      ],
-      "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+  "edges": [
+    {
+      "properties": {
+        "enabled": false
+      },
+      "source": "ServerConfig:server",
+      "target": "PluginVersion:1",
+      "type": "INSTALLED"
     },
-    "version": "1",
-    "scope": "SERVER",
-    "enabled": false,
-    "settingsJson": null,
-    "carryOverReport": null
-  },
-  "error": null,
-  "external": [
-    "registry",
-    "download",
-    "manifest"
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:1",
+      "type": "HAS_VERSION"
+    }
   ],
+  "error": null,
   "events": [
     {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "id": "Plugin:plugin",
-          "name": "plugin",
-          "displayName": "Before"
-        },
-        "new": {
-          "displayName": "After",
-          "name": "plugin",
-          "tags": [
-            "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
-        }
-      }
-    },
-    {
+      "event": "create_relationship",
+      "fromTypename": "Plugin",
       "id": "HAS_VERSION:Plugin:plugin:PluginVersion:1",
       "id_from": "Plugin:plugin",
       "id_to": "PluginVersion:1",
-      "relationshipName": "HAS_VERSION",
-      "fromTypename": "Plugin",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         },
+        "relationship": {},
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PluginVersion:1",
-      "typename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "update",
-      "properties": {
-        "old": {
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
           "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "id": "PluginVersion:1",
-          "entryPath": "old.js",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
           "version": "1"
-        },
-        "new": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
         }
-      }
+      },
+      "relationshipName": "HAS_VERSION",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "INSTALLED:ServerConfig:server:PluginVersion:1",
       "id_from": "ServerConfig:server",
       "id_to": "PluginVersion:1",
-      "relationshipName": "INSTALLED",
-      "fromTypename": "ServerConfig",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "pluginRegistries": [
@@ -880,31 +820,86 @@ exports[`actual install parity: existing-version 1`] = `
           ],
           "serverName": "server"
         },
-        "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
         "relationship": {
           "enabled": false
+        },
+        "to": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "INSTALLED",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
+    },
+    {
+      "event": "update",
+      "id": "Plugin:plugin",
+      "properties": {
+        "new": {
+          "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+          "name": "plugin",
+          "tags": [
+            "fixture"
+          ]
+        },
+        "old": {
+          "displayName": "Before",
+          "id": "Plugin:plugin",
+          "name": "plugin"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
+    },
+    {
+      "event": "update",
+      "id": "PluginVersion:1",
+      "properties": {
+        "new": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
+        },
+        "old": {
+          "entryPath": "old.js",
+          "id": "PluginVersion:1",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "version": "1"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginVersion"
     }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
   ],
   "nodes": [
     {
       "alias": "Plugin:plugin",
       "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
         "displayName": "After",
-        "name": "plugin",
         "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
         "tags": [
           "fixture"
         ]
@@ -913,14 +908,14 @@ exports[`actual install parity: existing-version 1`] = `
     {
       "alias": "PluginVersion:1",
       "properties": {
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "id": "PluginVersion:1",
         "entryPath": "index.js",
+        "id": "PluginVersion:1",
+        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+        "repoUrl": "https://fixture.invalid/plugin.tgz",
+        "settingsDefaults": "{\\"enabled\\":true}",
+        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+        "uiSchema": "{\\"type\\":\\"object\\"}",
         "version": "1"
       }
     },
@@ -934,143 +929,135 @@ exports[`actual install parity: existing-version 1`] = `
       }
     }
   ],
-  "edges": [
-    {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION",
-      "properties": {}
+  "response": {
+    "carryOverReport": null,
+    "enabled": false,
+    "plugin": {
+      "authorName": null,
+      "authorUrl": null,
+      "description": null,
+      "displayName": "After",
+      "homepage": null,
+      "id": "Plugin:plugin",
+      "license": null,
+      "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+      "name": "plugin",
+      "tags": [
+        "fixture"
+      ]
     },
-    {
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:1",
-      "type": "INSTALLED",
-      "properties": {
-        "enabled": false
-      }
-    }
-  ]
+    "scope": "SERVER",
+    "settingsJson": null,
+    "version": "1"
+  }
 }
 `;
 
 exports[`actual install parity: missing 1`] = `
 {
+  "edges": [],
   "error": "Failed to install plugin: No plugin registries configured",
-  "external": [],
   "events": [],
-  "nodes": [],
-  "edges": []
+  "external": [],
+  "nodes": []
 }
 `;
 
 exports[`actual install parity: new 1`] = `
 {
-  "response": {
-    "plugin": {
-      "id": "Plugin:plugin",
-      "name": "plugin",
-      "displayName": "After",
-      "description": null,
-      "authorName": null,
-      "authorUrl": null,
-      "homepage": null,
-      "license": null,
-      "tags": [
-        "fixture"
-      ],
-      "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+  "edges": [
+    {
+      "properties": {
+        "enabled": false
+      },
+      "source": "ServerConfig:server",
+      "target": "PluginVersion:1",
+      "type": "INSTALLED"
     },
-    "version": "1",
-    "scope": "SERVER",
-    "enabled": false,
-    "settingsJson": null,
-    "carryOverReport": null
-  },
-  "error": null,
-  "external": [
-    "registry",
-    "download",
-    "manifest"
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:1",
+      "type": "HAS_VERSION"
+    }
   ],
+  "error": null,
   "events": [
     {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Plugin:plugin",
       "properties": {
         "new": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
     },
     {
+      "event": "create",
+      "id": "PluginVersion:1",
+      "properties": {
+        "new": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginVersion"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Plugin",
       "id": "HAS_VERSION:Plugin:plugin:PluginVersion:1",
       "id_from": "Plugin:plugin",
       "id_to": "PluginVersion:1",
-      "relationshipName": "HAS_VERSION",
-      "fromTypename": "Plugin",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         },
+        "relationship": {},
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PluginVersion:1",
-      "typename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
           "repoUrl": "https://fixture.invalid/plugin.tgz",
           "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
           "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "HAS_VERSION",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "INSTALLED:ServerConfig:server:PluginVersion:1",
       "id_from": "ServerConfig:server",
       "id_to": "PluginVersion:1",
-      "relationshipName": "INSTALLED",
-      "fromTypename": "ServerConfig",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "pluginRegistries": [
@@ -1078,31 +1065,39 @@ exports[`actual install parity: new 1`] = `
           ],
           "serverName": "server"
         },
-        "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
         "relationship": {
           "enabled": false
+        },
+        "to": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "INSTALLED",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
   ],
   "nodes": [
     {
       "alias": "Plugin:plugin",
       "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
         "displayName": "After",
-        "name": "plugin",
         "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
         "tags": [
           "fixture"
         ]
@@ -1111,14 +1106,14 @@ exports[`actual install parity: new 1`] = `
     {
       "alias": "PluginVersion:1",
       "properties": {
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "id": "PluginVersion:1",
         "entryPath": "index.js",
+        "id": "PluginVersion:1",
+        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+        "repoUrl": "https://fixture.invalid/plugin.tgz",
+        "settingsDefaults": "{\\"enabled\\":true}",
+        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+        "uiSchema": "{\\"type\\":\\"object\\"}",
         "version": "1"
       }
     },
@@ -1132,166 +1127,179 @@ exports[`actual install parity: new 1`] = `
       }
     }
   ],
-  "edges": [
+  "response": {
+    "carryOverReport": null,
+    "enabled": false,
+    "plugin": {
+      "authorName": null,
+      "authorUrl": null,
+      "description": null,
+      "displayName": "After",
+      "homepage": null,
+      "id": "Plugin:plugin",
+      "license": null,
+      "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+      "name": "plugin",
+      "tags": [
+        "fixture"
+      ]
+    },
+    "scope": "SERVER",
+    "settingsJson": null,
+    "version": "1"
+  }
+}
+`;
+
+exports[`actual install parity: plugin-projection 1`] = `
+{
+  "edges": [],
+  "error": "Failed to install plugin: fixture projection failure",
+  "events": [
     {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION",
-      "properties": {}
+      "event": "create",
+      "id": "Plugin:plugin",
+      "properties": {
+        "new": {
+          "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+          "name": "plugin",
+          "tags": [
+            "fixture"
+          ]
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
+    }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
+  ],
+  "nodes": [
+    {
+      "alias": "Plugin:plugin",
+      "properties": {
+        "displayName": "After",
+        "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
+        "tags": [
+          "fixture"
+        ]
+      }
     },
     {
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:1",
-      "type": "INSTALLED",
+      "alias": "ServerConfig:server",
       "properties": {
-        "enabled": false
+        "pluginRegistries": [
+          "https://fixture.invalid/registry"
+        ],
+        "serverName": "server"
       }
     }
   ]
 }
 `;
 
-exports[`actual install parity: plugin-projection 1`] = `
-{
-  "error": "Failed to install plugin: fixture projection failure",
-  "external": [
-    "registry",
-    "download",
-    "manifest"
-  ],
-  "events": [
-    {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "displayName": "After",
-          "name": "plugin",
-          "tags": [
-            "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
-        }
-      }
-    }
-  ],
-  "nodes": [
-    {
-      "alias": "Plugin:plugin",
-      "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
-        "displayName": "After",
-        "name": "plugin",
-        "id": "Plugin:plugin",
-        "tags": [
-          "fixture"
-        ]
-      }
-    },
-    {
-      "alias": "ServerConfig:server",
-      "properties": {
-        "pluginRegistries": [
-          "https://fixture.invalid/registry"
-        ],
-        "serverName": "server"
-      }
-    }
-  ],
-  "edges": []
-}
-`;
-
 exports[`actual install parity: version-projection 1`] = `
 {
-  "error": "Failed to install plugin: fixture projection failure",
-  "external": [
-    "registry",
-    "download",
-    "manifest"
+  "edges": [
+    {
+      "properties": {},
+      "source": "Plugin:plugin",
+      "target": "PluginVersion:1",
+      "type": "HAS_VERSION"
+    }
   ],
+  "error": "Failed to install plugin: fixture projection failure",
   "events": [
     {
-      "id": "Plugin:plugin",
-      "typename": "Plugin",
-      "timestamp": "<time>",
       "event": "create",
+      "id": "Plugin:plugin",
       "properties": {
         "new": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         }
-      }
+      },
+      "timestamp": "<time>",
+      "typename": "Plugin"
     },
     {
+      "event": "create",
+      "id": "PluginVersion:1",
+      "properties": {
+        "new": {
+          "entryPath": "index.js",
+          "id": "PluginVersion:1",
+          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "repoUrl": "https://fixture.invalid/plugin.tgz",
+          "settingsDefaults": "{\\"enabled\\":true}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+          "uiSchema": "{\\"type\\":\\"object\\"}",
+          "version": "1"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "PluginVersion"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Plugin",
       "id": "HAS_VERSION:Plugin:plugin:PluginVersion:1",
       "id_from": "Plugin:plugin",
       "id_to": "PluginVersion:1",
-      "relationshipName": "HAS_VERSION",
-      "fromTypename": "Plugin",
-      "toTypename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
           "displayName": "After",
+          "id": "Plugin:plugin",
+          "metadata": "{\\"tags\\":[\\"fixture\\"]}",
           "name": "plugin",
           "tags": [
             "fixture"
-          ],
-          "id": "Plugin:plugin",
-          "metadata": "{\\"tags\\":[\\"fixture\\"]}"
+          ]
         },
+        "relationship": {},
         "to": {
-          "repoUrl": "https://fixture.invalid/plugin.tgz",
-          "settingsDefaults": "{\\"enabled\\":true}",
           "entryPath": "index.js",
           "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-          "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
           "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "PluginVersion:1",
-      "typename": "PluginVersion",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
+          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
           "repoUrl": "https://fixture.invalid/plugin.tgz",
           "settingsDefaults": "{\\"enabled\\":true}",
-          "entryPath": "index.js",
-          "id": "PluginVersion:1",
-          "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+          "tarballGsUri": "https://fixture.invalid/plugin.tgz",
           "uiSchema": "{\\"type\\":\\"object\\"}",
-          "version": "1",
-          "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-          "tarballGsUri": "https://fixture.invalid/plugin.tgz"
+          "version": "1"
         }
-      }
+      },
+      "relationshipName": "HAS_VERSION",
+      "timestamp": "<time>",
+      "toTypename": "PluginVersion"
     }
+  ],
+  "external": [
+    "download",
+    "manifest",
+    "registry"
   ],
   "nodes": [
     {
       "alias": "Plugin:plugin",
       "properties": {
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
         "displayName": "After",
-        "name": "plugin",
         "id": "Plugin:plugin",
+        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
+        "name": "plugin",
         "tags": [
           "fixture"
         ]
@@ -1300,14 +1308,14 @@ exports[`actual install parity: version-projection 1`] = `
     {
       "alias": "PluginVersion:1",
       "properties": {
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "id": "PluginVersion:1",
         "entryPath": "index.js",
+        "id": "PluginVersion:1",
+        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
+        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
+        "repoUrl": "https://fixture.invalid/plugin.tgz",
+        "settingsDefaults": "{\\"enabled\\":true}",
+        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
+        "uiSchema": "{\\"type\\":\\"object\\"}",
         "version": "1"
       }
     },
@@ -1319,14 +1327,6 @@ exports[`actual install parity: version-projection 1`] = `
         ],
         "serverName": "server"
       }
-    }
-  ],
-  "edges": [
-    {
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION",
-      "properties": {}
     }
   ]
 }
@@ -1335,120 +1335,120 @@ exports[`actual install parity: version-projection 1`] = `
 exports[`exact defaults, literal filters and unbounded configuration reads retain generated behavior 1`] = `
 [
   {
-    "serverName": "s1",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s1"
   },
   {
-    "serverName": "s10",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s10"
   },
   {
-    "serverName": "s11",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s11"
   },
   {
-    "serverName": "s12",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s12"
   },
   {
-    "serverName": "s13",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s13"
   },
   {
-    "serverName": "s14",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s14"
   },
   {
-    "serverName": "s15",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s15"
   },
   {
-    "serverName": "s16",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s16"
   },
   {
-    "serverName": "s17",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s17"
   },
   {
-    "serverName": "s18",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s18"
   },
   {
-    "serverName": "s19",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s19"
   },
   {
-    "serverName": "s2",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s2"
   },
   {
-    "serverName": "s20",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s20"
   },
   {
-    "serverName": "s21",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s21"
   },
   {
-    "serverName": "s22",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s22"
   },
   {
-    "serverName": "s23",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s23"
   },
   {
-    "serverName": "s24",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s24"
   },
   {
-    "serverName": "s25",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s25"
   },
   {
-    "serverName": "s26",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s26"
   },
   {
-    "serverName": "s27",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s27"
   },
   {
-    "serverName": "s28",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s28"
   },
   {
-    "serverName": "s29",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s29"
   },
   {
-    "serverName": "s3",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s3"
   },
   {
-    "serverName": "s4",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s4"
   },
   {
-    "serverName": "s5",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s5"
   },
   {
-    "serverName": "s6",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s6"
   },
   {
-    "serverName": "s7",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s7"
   },
   {
-    "serverName": "s8",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s8"
   },
   {
-    "serverName": "s9",
-    "pluginRegistries": []
+    "pluginRegistries": [],
+    "serverName": "s9"
   }
 ]
 `;

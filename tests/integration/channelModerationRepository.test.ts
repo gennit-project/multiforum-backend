@@ -31,8 +31,6 @@ const context=()=>({user:{username:'alice',email:null,email_verified:true,data:{
 const args={channelUniqueName:'forum',reason:'Repeated spam'};const info=null as unknown as GraphQLResolveInfo;
 async function seed(admins=2){await driver.executeQuery("CREATE(ch:Channel{uniqueName:'forum',displayName:'Forum',locked:false,createdAt:datetime('2020-01-01T00:00:00Z')}),(:ModerationProfile{displayName:'mod'}) WITH ch UNWIND range(1,$admins) AS n CREATE(u:User{username:'admin'+toString(n)}) CREATE(u)-[:ADMIN_OF_CHANNEL]->(ch)",{admins});}
 const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(['id','id_from','id_to'].includes(key)){const namespace=key==='id'&&this.event?.includes('relationship')?'relationship':'node';const identity=namespace+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','createdAt','updatedAt','ageGateTouchedAt','lockedAt'].includes(key)?(value===null?null:'<time>'):value;}));};
-// Multi-row reads have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 async function state(){return{
  channel:normalize((await driver.executeQuery('MATCH(c:Channel) RETURN c.uniqueName AS name,c.locked AS locked,c.lockReason AS reason,c.lockedAt AS lockedAt')).records.map(r=>r.toObject())),
  issues:(await driver.executeQuery('MATCH(i:Issue) RETURN i.issueNumber AS n,i.isOpen AS open,i.channelUniqueName AS scope,i.relatedChannelUniqueName AS target ORDER BY n')).records.map(r=>({n:r.get('n').toNumber(),open:r.get('open'),scope:r.get('scope'),target:r.get('target')})),
@@ -46,7 +44,10 @@ test('full Issue action projection and channel-admin default cap match productio
  // the channel with Admins reduced to a count and assert the cap separately.
  assert.equal((await repo.findChannel('forum'))[0].Admins?.length,25);const channelRows=normalize(await repo.findChannel('forum')) as any;channelRows[0].Admins=channelRows[0].Admins.length;t.assert.snapshot(channelRows);
  await driver.executeQuery("UNWIND range(1,28) AS n CREATE(:Issue{id:toString(n),issueNumber:n,isOpen:n%2=0,relatedChannelUniqueName:'forum'})");
- t.assert.snapshot(sortDeep(normalize(await repo.findOpenIssues('forum'))));
+ // findOpenIssues has no ORDER BY, so sort by the stable issueNumber before the
+ // id-aliasing normalize — otherwise the alias assigned to each row depends on
+ // Neo4j's row order and the snapshot is not reproducible across environments.
+ t.assert.snapshot(normalize((await repo.findOpenIssues('forum')).sort((a,b)=>a.issueNumber-b.issueNumber)));
  // findRelatedIssues applies a default limit of 25 over 28; which 25 is only stable within a run,
  // so assert the limit directly rather than snapshotting an unstable subset.
  assert.equal((await repo.findRelatedIssues('forum')).length,25);

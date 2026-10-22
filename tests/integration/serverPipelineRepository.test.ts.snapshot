@@ -1,8 +1,8 @@
 exports[`current projection and generated update retain native events and nullable serverName behavior 1`] = `
 [
   {
-    "serverName": "test",
-    "pluginPipelines": "[]"
+    "pluginPipelines": "[]",
+    "serverName": "test"
   }
 ]
 `;
@@ -10,20 +10,20 @@ exports[`current projection and generated update retain native events and nullab
 exports[`current projection and generated update retain native events and nullable serverName behavior 2`] = `
 [
   {
-    "id": "<id>",
-    "typename": "ServerConfig",
-    "timestamp": "<timestamp>",
     "event": "update",
+    "id": "<id>",
     "properties": {
-      "old": {
-        "pluginPipelines": "[]",
-        "serverName": "test"
-      },
       "new": {
         "pluginPipelines": "[{\\"event\\":\\"comment.created\\"}]",
         "serverName": "test"
+      },
+      "old": {
+        "pluginPipelines": "[]",
+        "serverName": "test"
       }
-    }
+    },
+    "timestamp": "<timestamp>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -31,8 +31,8 @@ exports[`current projection and generated update retain native events and nullab
 exports[`current projection and generated update retain native events and nullable serverName behavior 3`] = `
 [
   {
-    "serverName": null,
-    "pluginPipelines": "[]"
+    "pluginPipelines": "[]",
+    "serverName": null
   }
 ]
 `;
@@ -40,8 +40,8 @@ exports[`current projection and generated update retain native events and nullab
 exports[`current projection and generated update retain native events and nullable serverName behavior 4`] = `
 [
   {
-    "serverName": null,
-    "pluginPipelines": "[\\"null-key\\"]"
+    "pluginPipelines": "[\\"null-key\\"]",
+    "serverName": null
   }
 ]
 `;
@@ -49,18 +49,18 @@ exports[`current projection and generated update retain native events and nullab
 exports[`current projection and generated update retain native events and nullable serverName behavior 5`] = `
 [
   {
-    "id": "<id>",
-    "typename": "ServerConfig",
-    "timestamp": "<timestamp>",
     "event": "update",
+    "id": "<id>",
     "properties": {
-      "old": {
-        "pluginPipelines": "[]"
-      },
       "new": {
         "pluginPipelines": "[\\"null-key\\"]"
+      },
+      "old": {
+        "pluginPipelines": "[]"
       }
-    }
+    },
+    "timestamp": "<timestamp>",
+    "typename": "ServerConfig"
   }
 ]
 `;
@@ -68,22 +68,22 @@ exports[`current projection and generated update retain native events and nullab
 exports[`unused default projection failures remain postcommit errors 1`] = `
 [
   {
-    "id": "<id>",
-    "typename": "ServerConfig",
-    "timestamp": "<timestamp>",
     "event": "update",
+    "id": "<id>",
     "properties": {
-      "old": {
-        "pluginPipelines": "[]",
+      "new": {
         "enableDownloads": "invalid-boolean",
+        "pluginPipelines": "[\\"changed\\"]",
         "serverName": "test"
       },
-      "new": {
-        "pluginPipelines": "[\\"changed\\"]",
+      "old": {
         "enableDownloads": "invalid-boolean",
+        "pluginPipelines": "[]",
         "serverName": "test"
       }
-    }
+    },
+    "timestamp": "<timestamp>",
+    "typename": "ServerConfig"
   }
 ]
 `;

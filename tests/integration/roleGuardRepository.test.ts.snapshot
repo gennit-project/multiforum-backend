@@ -123,35 +123,35 @@ exports[`server capability filters retain every guarded flag and nullable values
 [
   {
     "canCreateChannel": null,
+    "canCreateComment": false,
     "canCreateDiscussion": null,
     "canCreateEvent": null,
-    "canCreateComment": true,
-    "canUpvoteDiscussion": null,
-    "canUpvoteComment": null,
-    "canUploadFile": null,
     "canGiveFeedback": null,
-    "canManageServerSettings": null,
+    "canManageAdmins": true,
+    "canManageMods": null,
     "canManagePlugins": null,
     "canManageRoles": null,
-    "canManageMods": null,
-    "canManageAdmins": null,
-    "canManageSuperAdmins": null
+    "canManageServerSettings": null,
+    "canManageSuperAdmins": null,
+    "canUploadFile": null,
+    "canUpvoteComment": null,
+    "canUpvoteDiscussion": null
   },
   {
     "canCreateChannel": null,
+    "canCreateComment": true,
     "canCreateDiscussion": null,
     "canCreateEvent": null,
-    "canCreateComment": false,
-    "canUpvoteDiscussion": null,
-    "canUpvoteComment": null,
-    "canUploadFile": null,
     "canGiveFeedback": null,
-    "canManageServerSettings": null,
+    "canManageAdmins": null,
+    "canManageMods": null,
     "canManagePlugins": null,
     "canManageRoles": null,
-    "canManageMods": null,
-    "canManageAdmins": true,
-    "canManageSuperAdmins": null
+    "canManageServerSettings": null,
+    "canManageSuperAdmins": null,
+    "canUploadFile": null,
+    "canUpvoteComment": null,
+    "canUpvoteDiscussion": null
   }
 ]
 `;
@@ -163,42 +163,42 @@ exports[`server capability filters retain every guarded flag and nullable values
 exports[`server capability filters retain every guarded flag and nullable values 3`] = `
 [
   {
-    "canLockChannel": null,
-    "canHideComment": null,
-    "canHideEvent": null,
-    "canHideDiscussion": null,
+    "canArchiveImage": null,
+    "canCloseSupportTickets": null,
+    "canDeleteWiki": null,
     "canEditComments": null,
     "canEditDiscussions": null,
     "canEditEvents": null,
     "canGiveFeedback": null,
+    "canHideComment": null,
+    "canHideDiscussion": null,
+    "canHideEvent": null,
+    "canLockChannel": null,
     "canOpenSupportTickets": null,
-    "canCloseSupportTickets": null,
-    "canReport": false,
-    "canSuspendUser": null,
-    "canArchiveImage": null,
-    "canDeleteWiki": null,
     "canPermanentlyRemoveImage": null,
     "canRemoveDiscussionChannel": null,
-    "canRemoveEventChannel": null
+    "canRemoveEventChannel": null,
+    "canReport": false,
+    "canSuspendUser": null
   },
   {
-    "canLockChannel": null,
-    "canHideComment": null,
-    "canHideEvent": null,
-    "canHideDiscussion": null,
+    "canArchiveImage": null,
+    "canCloseSupportTickets": null,
+    "canDeleteWiki": null,
     "canEditComments": null,
     "canEditDiscussions": null,
     "canEditEvents": null,
     "canGiveFeedback": null,
+    "canHideComment": null,
+    "canHideDiscussion": null,
+    "canHideEvent": null,
+    "canLockChannel": null,
     "canOpenSupportTickets": null,
-    "canCloseSupportTickets": null,
-    "canReport": true,
-    "canSuspendUser": null,
-    "canArchiveImage": null,
-    "canDeleteWiki": null,
     "canPermanentlyRemoveImage": null,
     "canRemoveDiscussionChannel": true,
-    "canRemoveEventChannel": null
+    "canRemoveEventChannel": null,
+    "canReport": true,
+    "canSuspendUser": null
   }
 ]
 `;
@@ -206,23 +206,23 @@ exports[`server capability filters retain every guarded flag and nullable values
 exports[`server capability filters retain every guarded flag and nullable values 4`] = `
 [
   {
-    "canLockChannel": null,
-    "canHideComment": null,
-    "canHideEvent": null,
-    "canHideDiscussion": null,
+    "canArchiveImage": null,
+    "canCloseSupportTickets": null,
+    "canDeleteWiki": null,
     "canEditComments": null,
     "canEditDiscussions": null,
     "canEditEvents": null,
     "canGiveFeedback": null,
+    "canHideComment": null,
+    "canHideDiscussion": null,
+    "canHideEvent": null,
+    "canLockChannel": null,
     "canOpenSupportTickets": null,
-    "canCloseSupportTickets": null,
-    "canReport": true,
-    "canSuspendUser": null,
-    "canArchiveImage": null,
-    "canDeleteWiki": null,
     "canPermanentlyRemoveImage": null,
     "canRemoveDiscussionChannel": true,
-    "canRemoveEventChannel": null
+    "canRemoveEventChannel": null,
+    "canReport": true,
+    "canSuspendUser": null
   }
 ]
 `;

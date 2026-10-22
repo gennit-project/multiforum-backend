@@ -30,8 +30,8 @@ exports[`ordinary values preserve all three legacy projections and resolver resu
 exports[`ordinary values preserve all three legacy projections and resolver result without exposing ciphertext 3`] = `
 [
   {
-    "key": "token",
     "isValid": true,
+    "key": "token",
     "lastValidatedAt": "2026-01-01T00:00:00.000Z",
     "validationError": null
   }

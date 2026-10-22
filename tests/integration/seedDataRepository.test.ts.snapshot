@@ -1,113 +1,113 @@
 exports[`createChannelRoles preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [
+    "OWNS_CHANNEL_ROLE"
+  ],
+  "events": [
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "allowPaidDownloads": false,
+          "allowPaywalledPosts": false,
+          "createdAt": "<time>",
+          "downloadsEnabled": true,
+          "emojiEnabled": true,
+          "eventsEnabled": true,
+          "feedbackEnabled": true,
+          "imageUploadsEnabled": true,
+          "markAsAnsweredEnabled": true,
+          "markdownImagesEnabled": true,
+          "payoutPercent": 98,
+          "requireVerifiedEmailToPost": false,
+          "requireVerifiedPhoneForUploads": false,
+          "uniqueName": "forum",
+          "wikiEnabled": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Channel"
+    },
+    {
+      "event": "create",
+      "id": "id3",
+      "properties": {
+        "new": {
+          "channelUniqueName": "forum",
+          "id": "id0",
+          "name": "member"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ChannelRole"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
+      "id": "id2",
+      "id_from": "id1",
+      "id_to": "id3",
+      "properties": {
+        "from": {
+          "allowPaidDownloads": false,
+          "allowPaywalledPosts": false,
+          "createdAt": "<time>",
+          "downloadsEnabled": true,
+          "emojiEnabled": true,
+          "eventsEnabled": true,
+          "feedbackEnabled": true,
+          "imageUploadsEnabled": true,
+          "markAsAnsweredEnabled": true,
+          "markdownImagesEnabled": true,
+          "payoutPercent": 98,
+          "requireVerifiedEmailToPost": false,
+          "requireVerifiedPhoneForUploads": false,
+          "uniqueName": "forum",
+          "wikiEnabled": true
+        },
+        "relationship": {},
+        "to": {
+          "channelUniqueName": "forum",
+          "id": "id0",
+          "name": "member"
+        }
+      },
+      "relationshipName": "OWNS_CHANNEL_ROLE",
+      "timestamp": "<time>",
+      "toTypename": "ChannelRole"
+    }
+  ],
   "nodes": [
     {
       "label": "Channel",
       "properties": {
-        "imageUploadsEnabled": true,
-        "requireVerifiedEmailToPost": false,
-        "eventsEnabled": true,
-        "allowPaywalledPosts": false,
-        "downloadsEnabled": true,
-        "requireVerifiedPhoneForUploads": false,
-        "markdownImagesEnabled": true,
-        "createdAt": "<time>",
-        "uniqueName": "forum",
         "allowPaidDownloads": false,
-        "markAsAnsweredEnabled": true,
-        "payoutPercent": {
-          "low": 98,
-          "high": 0
-        },
-        "feedbackEnabled": true,
+        "allowPaywalledPosts": false,
+        "createdAt": "<time>",
+        "downloadsEnabled": true,
         "emojiEnabled": true,
+        "eventsEnabled": true,
+        "feedbackEnabled": true,
+        "imageUploadsEnabled": true,
+        "markAsAnsweredEnabled": true,
+        "markdownImagesEnabled": true,
+        "payoutPercent": {
+          "high": 0,
+          "low": 98
+        },
+        "requireVerifiedEmailToPost": false,
+        "requireVerifiedPhoneForUploads": false,
+        "uniqueName": "forum",
         "wikiEnabled": true
       }
     },
     {
       "label": "ChannelRole",
       "properties": {
-        "name": "member",
+        "channelUniqueName": "forum",
         "id": "id0",
-        "channelUniqueName": "forum"
-      }
-    }
-  ],
-  "edgeTypes": [
-    "OWNS_CHANNEL_ROLE"
-  ],
-  "events": [
-    {
-      "id": "id1",
-      "typename": "Channel",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "feedbackEnabled": true,
-          "markdownImagesEnabled": true,
-          "requireVerifiedPhoneForUploads": false,
-          "requireVerifiedEmailToPost": false,
-          "wikiEnabled": true,
-          "createdAt": "<time>",
-          "eventsEnabled": true,
-          "uniqueName": "forum",
-          "allowPaidDownloads": false,
-          "markAsAnsweredEnabled": true,
-          "payoutPercent": 98,
-          "downloadsEnabled": true,
-          "emojiEnabled": true,
-          "allowPaywalledPosts": false,
-          "imageUploadsEnabled": true
-        }
-      }
-    },
-    {
-      "id": "id2",
-      "id_from": "id1",
-      "id_to": "id3",
-      "relationshipName": "OWNS_CHANNEL_ROLE",
-      "fromTypename": "Channel",
-      "toTypename": "ChannelRole",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "feedbackEnabled": true,
-          "markdownImagesEnabled": true,
-          "requireVerifiedPhoneForUploads": false,
-          "requireVerifiedEmailToPost": false,
-          "wikiEnabled": true,
-          "createdAt": "<time>",
-          "eventsEnabled": true,
-          "uniqueName": "forum",
-          "allowPaidDownloads": false,
-          "markAsAnsweredEnabled": true,
-          "payoutPercent": 98,
-          "downloadsEnabled": true,
-          "emojiEnabled": true,
-          "allowPaywalledPosts": false,
-          "imageUploadsEnabled": true
-        },
-        "to": {
-          "name": "member",
-          "id": "id0",
-          "channelUniqueName": "forum"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "ChannelRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "member",
-          "id": "id0",
-          "channelUniqueName": "forum"
-        }
+        "name": "member"
       }
     }
   ]
@@ -116,56 +116,56 @@ exports[`createChannelRoles preserves default projection, persisted state and na
 
 exports[`createChannels preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "allowPaidDownloads": false,
+          "allowPaywalledPosts": false,
+          "createdAt": "<time>",
+          "downloadsEnabled": true,
+          "emojiEnabled": true,
+          "eventsEnabled": true,
+          "feedbackEnabled": true,
+          "imageUploadsEnabled": true,
+          "markAsAnsweredEnabled": true,
+          "markdownImagesEnabled": true,
+          "payoutPercent": 98,
+          "requireVerifiedEmailToPost": false,
+          "requireVerifiedPhoneForUploads": false,
+          "uniqueName": "forum",
+          "wikiEnabled": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Channel"
+    }
+  ],
   "nodes": [
     {
       "label": "Channel",
       "properties": {
-        "imageUploadsEnabled": true,
-        "requireVerifiedEmailToPost": false,
-        "eventsEnabled": true,
-        "allowPaywalledPosts": false,
-        "downloadsEnabled": true,
-        "requireVerifiedPhoneForUploads": false,
-        "markdownImagesEnabled": true,
-        "createdAt": "<time>",
-        "uniqueName": "forum",
         "allowPaidDownloads": false,
-        "markAsAnsweredEnabled": true,
-        "payoutPercent": {
-          "low": 98,
-          "high": 0
-        },
-        "feedbackEnabled": true,
+        "allowPaywalledPosts": false,
+        "createdAt": "<time>",
+        "downloadsEnabled": true,
         "emojiEnabled": true,
+        "eventsEnabled": true,
+        "feedbackEnabled": true,
+        "imageUploadsEnabled": true,
+        "markAsAnsweredEnabled": true,
+        "markdownImagesEnabled": true,
+        "payoutPercent": {
+          "high": 0,
+          "low": 98
+        },
+        "requireVerifiedEmailToPost": false,
+        "requireVerifiedPhoneForUploads": false,
+        "uniqueName": "forum",
         "wikiEnabled": true
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id0",
-      "typename": "Channel",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "feedbackEnabled": true,
-          "markdownImagesEnabled": true,
-          "requireVerifiedPhoneForUploads": false,
-          "requireVerifiedEmailToPost": false,
-          "wikiEnabled": true,
-          "createdAt": "<time>",
-          "eventsEnabled": true,
-          "uniqueName": "forum",
-          "allowPaidDownloads": false,
-          "markAsAnsweredEnabled": true,
-          "payoutPercent": 98,
-          "downloadsEnabled": true,
-          "emojiEnabled": true,
-          "allowPaywalledPosts": false,
-          "imageUploadsEnabled": true
-        }
       }
     }
   ]
@@ -174,35 +174,35 @@ exports[`createChannels preserves default projection, persisted state and native
 
 exports[`createComments preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "id": "id0",
+          "isRootComment": true,
+          "isSticky": false,
+          "text": "fixture comment"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
+    }
+  ],
   "nodes": [
     {
       "label": "Comment",
       "properties": {
         "ageGateTouchedAt": "<time>",
         "createdAt": "<time>",
-        "isRootComment": true,
         "id": "id0",
-        "text": "fixture comment",
-        "isSticky": false
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id1",
-      "typename": "Comment",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "isRootComment": true,
-          "text": "fixture comment",
-          "id": "id0",
-          "ageGateTouchedAt": "<time>",
-          "createdAt": "<time>",
-          "isSticky": false
-        }
+        "isRootComment": true,
+        "isSticky": false,
+        "text": "fixture comment"
       }
     }
   ]
@@ -211,114 +211,114 @@ exports[`createComments preserves default projection, persisted state and native
 
 exports[`createModChannelRoles preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [
+    "OWNS_MOD_CHANNEL_ROLE"
+  ],
+  "events": [
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "allowPaidDownloads": false,
+          "allowPaywalledPosts": false,
+          "createdAt": "<time>",
+          "downloadsEnabled": true,
+          "emojiEnabled": true,
+          "eventsEnabled": true,
+          "feedbackEnabled": true,
+          "imageUploadsEnabled": true,
+          "markAsAnsweredEnabled": true,
+          "markdownImagesEnabled": true,
+          "payoutPercent": 98,
+          "requireVerifiedEmailToPost": false,
+          "requireVerifiedPhoneForUploads": false,
+          "uniqueName": "forum",
+          "wikiEnabled": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Channel"
+    },
+    {
+      "event": "create",
+      "id": "id3",
+      "properties": {
+        "new": {
+          "channelUniqueName": "forum",
+          "id": "id0",
+          "name": "mod"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModChannelRole"
+    },
+    {
+      "event": "create_relationship",
+      "fromTypename": "Channel",
+      "id": "id2",
+      "id_from": "id1",
+      "id_to": "id3",
+      "properties": {
+        "from": {
+          "allowPaidDownloads": false,
+          "allowPaywalledPosts": false,
+          "createdAt": "<time>",
+          "downloadsEnabled": true,
+          "emojiEnabled": true,
+          "eventsEnabled": true,
+          "feedbackEnabled": true,
+          "imageUploadsEnabled": true,
+          "markAsAnsweredEnabled": true,
+          "markdownImagesEnabled": true,
+          "payoutPercent": 98,
+          "requireVerifiedEmailToPost": false,
+          "requireVerifiedPhoneForUploads": false,
+          "uniqueName": "forum",
+          "wikiEnabled": true
+        },
+        "relationship": {},
+        "to": {
+          "channelUniqueName": "forum",
+          "id": "id0",
+          "name": "mod"
+        }
+      },
+      "relationshipName": "OWNS_MOD_CHANNEL_ROLE",
+      "timestamp": "<time>",
+      "toTypename": "ModChannelRole"
+    }
+  ],
   "nodes": [
     {
       "label": "Channel",
       "properties": {
-        "imageUploadsEnabled": true,
-        "requireVerifiedEmailToPost": false,
-        "eventsEnabled": true,
-        "allowPaywalledPosts": false,
-        "downloadsEnabled": true,
-        "requireVerifiedPhoneForUploads": false,
-        "markdownImagesEnabled": true,
-        "createdAt": "<time>",
-        "uniqueName": "forum",
         "allowPaidDownloads": false,
-        "markAsAnsweredEnabled": true,
-        "payoutPercent": {
-          "low": 98,
-          "high": 0
-        },
-        "feedbackEnabled": true,
+        "allowPaywalledPosts": false,
+        "createdAt": "<time>",
+        "downloadsEnabled": true,
         "emojiEnabled": true,
+        "eventsEnabled": true,
+        "feedbackEnabled": true,
+        "imageUploadsEnabled": true,
+        "markAsAnsweredEnabled": true,
+        "markdownImagesEnabled": true,
+        "payoutPercent": {
+          "high": 0,
+          "low": 98
+        },
+        "requireVerifiedEmailToPost": false,
+        "requireVerifiedPhoneForUploads": false,
+        "uniqueName": "forum",
         "wikiEnabled": true
       }
     },
     {
       "label": "ModChannelRole",
       "properties": {
-        "name": "mod",
+        "channelUniqueName": "forum",
         "id": "id0",
-        "channelUniqueName": "forum"
-      }
-    }
-  ],
-  "edgeTypes": [
-    "OWNS_MOD_CHANNEL_ROLE"
-  ],
-  "events": [
-    {
-      "id": "id1",
-      "typename": "Channel",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "feedbackEnabled": true,
-          "markdownImagesEnabled": true,
-          "requireVerifiedPhoneForUploads": false,
-          "requireVerifiedEmailToPost": false,
-          "wikiEnabled": true,
-          "createdAt": "<time>",
-          "eventsEnabled": true,
-          "uniqueName": "forum",
-          "allowPaidDownloads": false,
-          "markAsAnsweredEnabled": true,
-          "payoutPercent": 98,
-          "downloadsEnabled": true,
-          "emojiEnabled": true,
-          "allowPaywalledPosts": false,
-          "imageUploadsEnabled": true
-        }
-      }
-    },
-    {
-      "id": "id2",
-      "id_from": "id1",
-      "id_to": "id3",
-      "relationshipName": "OWNS_MOD_CHANNEL_ROLE",
-      "fromTypename": "Channel",
-      "toTypename": "ModChannelRole",
-      "timestamp": "<time>",
-      "event": "create_relationship",
-      "properties": {
-        "from": {
-          "feedbackEnabled": true,
-          "markdownImagesEnabled": true,
-          "requireVerifiedPhoneForUploads": false,
-          "requireVerifiedEmailToPost": false,
-          "wikiEnabled": true,
-          "createdAt": "<time>",
-          "eventsEnabled": true,
-          "uniqueName": "forum",
-          "allowPaidDownloads": false,
-          "markAsAnsweredEnabled": true,
-          "payoutPercent": 98,
-          "downloadsEnabled": true,
-          "emojiEnabled": true,
-          "allowPaywalledPosts": false,
-          "imageUploadsEnabled": true
-        },
-        "to": {
-          "name": "mod",
-          "id": "id0",
-          "channelUniqueName": "forum"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "id3",
-      "typename": "ModChannelRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "mod",
-          "id": "id0",
-          "channelUniqueName": "forum"
-        }
+        "name": "mod"
       }
     }
   ]
@@ -327,6 +327,42 @@ exports[`createModChannelRoles preserves default projection, persisted state and
 
 exports[`createModServerRoles preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "name": "BasicModRole"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModServerRole"
+    },
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "name": "DefaultElevatedModRole"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModServerRole"
+    },
+    {
+      "event": "create",
+      "id": "id2",
+      "properties": {
+        "new": {
+          "name": "DefaultSuspendedModRole"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ModServerRole"
+    }
+  ],
   "nodes": [
     {
       "label": "ModServerRole",
@@ -344,42 +380,6 @@ exports[`createModServerRoles preserves default projection, persisted state and 
       "label": "ModServerRole",
       "properties": {
         "name": "DefaultSuspendedModRole"
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id0",
-      "typename": "ModServerRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "BasicModRole"
-        }
-      }
-    },
-    {
-      "id": "id1",
-      "typename": "ModServerRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "DefaultElevatedModRole"
-        }
-      }
-    },
-    {
-      "id": "id2",
-      "typename": "ModServerRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "DefaultSuspendedModRole"
-        }
       }
     }
   ]
@@ -388,41 +388,41 @@ exports[`createModServerRoles preserves default projection, persisted state and 
 
 exports[`createServerConfigs preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "accountAgeGateEnabled": false,
+          "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
+          "minimumSensitiveContentAge": 18,
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
+    }
+  ],
   "nodes": [
     {
       "label": "ServerConfig",
       "properties": {
-        "minimumAccountAge": {
-          "low": 13,
-          "high": 0
-        },
-        "brandingShowUpstreamLinks": true,
-        "sensitiveContentAgeGateEnabled": false,
-        "minimumSensitiveContentAge": {
-          "low": 18,
-          "high": 0
-        },
         "accountAgeGateEnabled": false,
+        "brandingShowUpstreamLinks": true,
+        "minimumAccountAge": {
+          "high": 0,
+          "low": 13
+        },
+        "minimumSensitiveContentAge": {
+          "high": 0,
+          "low": 18
+        },
+        "sensitiveContentAgeGateEnabled": false,
         "serverName": "Cypress Test Server"
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id0",
-      "typename": "ServerConfig",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
-          "brandingShowUpstreamLinks": true,
-          "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
-        }
       }
     }
   ]
@@ -431,6 +431,31 @@ exports[`createServerConfigs preserves default projection, persisted state and n
 
 exports[`createServerRoles preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "name": "CanCreateAnything"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerRole"
+    },
+    {
+      "event": "create",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "name": "Suspended Role"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerRole"
+    }
+  ],
   "nodes": [
     {
       "label": "ServerRole",
@@ -442,31 +467,6 @@ exports[`createServerRoles preserves default projection, persisted state and nat
       "label": "ServerRole",
       "properties": {
         "name": "Suspended Role"
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id0",
-      "typename": "ServerRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "CanCreateAnything"
-        }
-      }
-    },
-    {
-      "id": "id1",
-      "typename": "ServerRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "Suspended Role"
-        }
       }
     }
   ]
@@ -475,25 +475,25 @@ exports[`createServerRoles preserves default projection, persisted state and nat
 
 exports[`createTags preserves default projection, persisted state and native events 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "text": "fixture"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Tag"
+    }
+  ],
   "nodes": [
     {
       "label": "Tag",
       "properties": {
         "text": "fixture"
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id0",
-      "typename": "Tag",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "text": "fixture"
-        }
       }
     }
   ]
@@ -502,55 +502,6 @@ exports[`createTags preserves default projection, persisted state and native eve
 
 exports[`default role connection retains existing roles, relationship events and order 1`] = `
 {
-  "nodes": [
-    {
-      "label": "ModServerRole",
-      "properties": {
-        "name": "BasicModRole"
-      }
-    },
-    {
-      "label": "ModServerRole",
-      "properties": {
-        "name": "DefaultElevatedModRole"
-      }
-    },
-    {
-      "label": "ModServerRole",
-      "properties": {
-        "name": "DefaultSuspendedModRole"
-      }
-    },
-    {
-      "label": "ServerConfig",
-      "properties": {
-        "minimumAccountAge": {
-          "low": 13,
-          "high": 0
-        },
-        "brandingShowUpstreamLinks": true,
-        "sensitiveContentAgeGateEnabled": false,
-        "minimumSensitiveContentAge": {
-          "low": 18,
-          "high": 0
-        },
-        "accountAgeGateEnabled": false,
-        "serverName": "Cypress Test Server"
-      }
-    },
-    {
-      "label": "ServerRole",
-      "properties": {
-        "name": "CanCreateAnything"
-      }
-    },
-    {
-      "label": "ServerRole",
-      "properties": {
-        "name": "Suspended Role"
-      }
-    }
-  ],
   "edgeTypes": [
     "HAS_DEFAULT_ELEVATED_MOD_ROLE",
     "HAS_DEFAULT_MOD_ROLE",
@@ -560,147 +511,196 @@ exports[`default role connection retains existing roles, relationship events and
   ],
   "events": [
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "id0",
       "id_from": "id1",
       "id_to": "id2",
-      "relationshipName": "HAS_DEFAULT_SUSPENDED_ROLE",
-      "fromTypename": "ServerConfig",
-      "toTypename": "ModServerRole",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
+          "accountAgeGateEnabled": false,
           "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
           "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
         },
+        "relationship": {},
         "to": {
           "name": "DefaultSuspendedModRole"
-        },
-        "relationship": {}
-      }
+        }
+      },
+      "relationshipName": "HAS_DEFAULT_SUSPENDED_ROLE",
+      "timestamp": "<time>",
+      "toTypename": "ModServerRole"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "id3",
       "id_from": "id1",
       "id_to": "id4",
-      "relationshipName": "HAS_DEFAULT_SUSPENDED_ROLE",
-      "fromTypename": "ServerConfig",
-      "toTypename": "ServerRole",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
+          "accountAgeGateEnabled": false,
           "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
           "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
         },
+        "relationship": {},
         "to": {
           "name": "Suspended Role"
-        },
-        "relationship": {}
-      }
+        }
+      },
+      "relationshipName": "HAS_DEFAULT_SUSPENDED_ROLE",
+      "timestamp": "<time>",
+      "toTypename": "ServerRole"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "id5",
       "id_from": "id1",
       "id_to": "id6",
-      "relationshipName": "HAS_DEFAULT_ELEVATED_MOD_ROLE",
-      "fromTypename": "ServerConfig",
-      "toTypename": "ModServerRole",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
+          "accountAgeGateEnabled": false,
           "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
           "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
         },
+        "relationship": {},
         "to": {
           "name": "DefaultElevatedModRole"
-        },
-        "relationship": {}
-      }
+        }
+      },
+      "relationshipName": "HAS_DEFAULT_ELEVATED_MOD_ROLE",
+      "timestamp": "<time>",
+      "toTypename": "ModServerRole"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "id7",
       "id_from": "id1",
       "id_to": "id8",
-      "relationshipName": "HAS_DEFAULT_MOD_ROLE",
-      "fromTypename": "ServerConfig",
-      "toTypename": "ModServerRole",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
+          "accountAgeGateEnabled": false,
           "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
           "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
         },
+        "relationship": {},
         "to": {
           "name": "BasicModRole"
-        },
-        "relationship": {}
-      }
+        }
+      },
+      "relationshipName": "HAS_DEFAULT_MOD_ROLE",
+      "timestamp": "<time>",
+      "toTypename": "ModServerRole"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "ServerConfig",
       "id": "id9",
       "id_from": "id1",
       "id_to": "id10",
-      "relationshipName": "HAS_DEFAULT_SERVER_ROLE",
-      "fromTypename": "ServerConfig",
-      "toTypename": "ServerRole",
-      "timestamp": "<time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
+          "accountAgeGateEnabled": false,
           "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
           "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
         },
+        "relationship": {},
         "to": {
           "name": "CanCreateAnything"
+        }
+      },
+      "relationshipName": "HAS_DEFAULT_SERVER_ROLE",
+      "timestamp": "<time>",
+      "toTypename": "ServerRole"
+    },
+    {
+      "event": "update",
+      "id": "id1",
+      "properties": {
+        "new": {
+          "accountAgeGateEnabled": false,
+          "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
+          "minimumSensitiveContentAge": 18,
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
         },
-        "relationship": {}
+        "old": {
+          "accountAgeGateEnabled": false,
+          "brandingShowUpstreamLinks": true,
+          "minimumAccountAge": 13,
+          "minimumSensitiveContentAge": 18,
+          "sensitiveContentAgeGateEnabled": false,
+          "serverName": "Cypress Test Server"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerConfig"
+    }
+  ],
+  "nodes": [
+    {
+      "label": "ModServerRole",
+      "properties": {
+        "name": "BasicModRole"
       }
     },
     {
-      "id": "id1",
-      "typename": "ServerConfig",
-      "timestamp": "<time>",
-      "event": "update",
+      "label": "ModServerRole",
       "properties": {
-        "old": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
-          "brandingShowUpstreamLinks": true,
-          "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
+        "name": "DefaultElevatedModRole"
+      }
+    },
+    {
+      "label": "ModServerRole",
+      "properties": {
+        "name": "DefaultSuspendedModRole"
+      }
+    },
+    {
+      "label": "ServerConfig",
+      "properties": {
+        "accountAgeGateEnabled": false,
+        "brandingShowUpstreamLinks": true,
+        "minimumAccountAge": {
+          "high": 0,
+          "low": 13
         },
-        "new": {
-          "serverName": "Cypress Test Server",
-          "sensitiveContentAgeGateEnabled": false,
-          "minimumAccountAge": 13,
-          "brandingShowUpstreamLinks": true,
-          "minimumSensitiveContentAge": 18,
-          "accountAgeGateEnabled": false
-        }
+        "minimumSensitiveContentAge": {
+          "high": 0,
+          "low": 18
+        },
+        "sensitiveContentAgeGateEnabled": false,
+        "serverName": "Cypress Test Server"
+      }
+    },
+    {
+      "label": "ServerRole",
+      "properties": {
+        "name": "CanCreateAnything"
+      }
+    },
+    {
+      "label": "ServerRole",
+      "properties": {
+        "name": "Suspended Role"
       }
     }
   ]
@@ -709,25 +709,25 @@ exports[`default role connection retains existing roles, relationship events and
 
 exports[`late coercion failure retains prior committed roles and stops before comment creation 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "name": "prior"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "ServerRole"
+    }
+  ],
   "nodes": [
     {
       "label": "ServerRole",
       "properties": {
         "name": "prior"
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id0",
-      "typename": "ServerRole",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "name": "prior"
-        }
       }
     }
   ]
@@ -736,25 +736,25 @@ exports[`late coercion failure retains prior committed roles and stops before co
 
 exports[`unused default projection is still evaluated after commit 1`] = `
 {
+  "edgeTypes": [],
+  "events": [
+    {
+      "event": "create",
+      "id": "id0",
+      "properties": {
+        "new": {
+          "text": "fixture"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Tag"
+    }
+  ],
   "nodes": [
     {
       "label": "Tag",
       "properties": {
         "text": "fixture"
-      }
-    }
-  ],
-  "edgeTypes": [],
-  "events": [
-    {
-      "id": "id0",
-      "typename": "Tag",
-      "timestamp": "<time>",
-      "event": "create",
-      "properties": {
-        "new": {
-          "text": "fixture"
-        }
       }
     }
   ]

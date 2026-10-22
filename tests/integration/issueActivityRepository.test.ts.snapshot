@@ -1,7 +1,17 @@
 exports[`activity write matches baseline graph, errors and native events (valid issue=false) 1`] = `
 {
-  "result": "Cannot return null for non-nullable field Issue.issueNumber.",
   "events": [
+    {
+      "kind": "create",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ],
+      "typename": "ModerationAction"
+    },
     {
       "kind": "create_relationship",
       "properties": [
@@ -14,17 +24,6 @@ exports[`activity write matches baseline graph, errors and native events (valid 
         "relationshipName",
         "timestamp",
         "toTypename"
-      ]
-    },
-    {
-      "kind": "create",
-      "typename": "ModerationAction",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
       ]
     },
     {
@@ -43,23 +42,34 @@ exports[`activity write matches baseline graph, errors and native events (valid 
     },
     {
       "kind": "update",
-      "typename": "Issue",
       "properties": [
         "event",
         "id",
         "properties",
         "timestamp",
         "typename"
-      ]
+      ],
+      "typename": "Issue"
     }
-  ]
+  ],
+  "result": "Cannot return null for non-nullable field Issue.issueNumber."
 }
 `;
 
 exports[`activity write matches baseline graph, errors and native events (valid issue=true) 1`] = `
 {
-  "result": null,
   "events": [
+    {
+      "kind": "create",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ],
+      "typename": "ModerationAction"
+    },
     {
       "kind": "create_relationship",
       "properties": [
@@ -72,17 +82,6 @@ exports[`activity write matches baseline graph, errors and native events (valid 
         "relationshipName",
         "timestamp",
         "toTypename"
-      ]
-    },
-    {
-      "kind": "create",
-      "typename": "ModerationAction",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
       ]
     },
     {
@@ -101,16 +100,17 @@ exports[`activity write matches baseline graph, errors and native events (valid 
     },
     {
       "kind": "update",
-      "typename": "Issue",
       "properties": [
         "event",
         "id",
         "properties",
         "timestamp",
         "typename"
-      ]
+      ],
+      "typename": "Issue"
     }
-  ]
+  ],
+  "result": null
 }
 `;
 

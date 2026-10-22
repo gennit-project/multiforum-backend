@@ -27,8 +27,6 @@ after(async()=>stopNeo4j());
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 
 const plain=(value:unknown)=>JSON.parse(JSON.stringify(value));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 function baseline(){const w=ogm.model('WikiPage'),v=ogm.model('TextVersion'),u=ogm.model('User');return {
  findSnapshot:(id:string)=>w.find({where:{id},selectionSet:'{id title body editReason VersionAuthor {username} PastVersions {id body createdAt}}'}),
  findAuthor:(username:string)=>u.find({where:{username},selectionSet:'{username}'}),
@@ -40,7 +38,7 @@ async function seed(invalid=false){await driver.executeQuery(`CREATE (u:User {us
 async function state(){const r=await driver.executeQuery(`MATCH (v:TextVersion) OPTIONAL MATCH (v)<-[:AUTHORED_VERSION]-(u:User) OPTIONAL MATCH (w:WikiPage)-[:HAS_VERSION]->(v) RETURN v.body AS body,v.editReason AS reason,u.username AS author,w.id AS parent ORDER BY body`);return r.records.map(x=>({body:x.get('body'),reason:x.get('reason'),author:x.get('author'),parent:x.get('parent')}));}
 function eventShape(){return events.map(({kind,event})=>({kind,typename:event.typename,from:event.fromTypename,to:event.toTypename,relationship:event.relationshipName}));}
 test('wiki snapshots and author lookup retain exact projections and missing behavior',async(t)=>{
- await seed();for(const id of ['w','absent']){t.assert.snapshot(sortDeep(plain(await repository.findSnapshot(id))));t.assert.snapshot(plain(await repository.findPageId(id)));}
+ await seed();for(const id of ['w','absent']){t.assert.snapshot(plain(await repository.findSnapshot(id)));t.assert.snapshot(plain(await repository.findPageId(id)));}
  t.assert.snapshot(plain(await repository.findAuthor('previous')));
 });
 for(const [name,update,invalid] of [['title',{title:'New'},false],['body',{body:'New'},false],['both',{title:'New',body:'New'},false],['unchanged',{title:'Title',body:'Body'},false],['invalid default',{title:'New',body:'New'},true]] as const)test(`actual wiki revision hook graph and event parity: ${name}`,async(t)=>{

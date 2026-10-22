@@ -1,16 +1,16 @@
 exports[`rerun reads preserve selections, literal IDs, missing results and unbounded related attempts 1`] = `
 [
   {
+    "channelId": null,
+    "createdAt": "2026-01-01T10:00:00.000Z",
+    "eventType": "downloadableFile.created",
     "pipelineId": "source",
+    "scope": "SERVER",
+    "status": "FAILED",
     "targetId": "file",
     "targetType": "DownloadableFile",
     "targetVersion": null,
-    "eventType": "downloadableFile.created",
-    "scope": "SERVER",
-    "channelId": null,
-    "status": "FAILED",
-    "trigger": "OWNER_START",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_START"
   }
 ]
 `;
@@ -26,8 +26,8 @@ exports[`rerun reads preserve selections, literal IDs, missing results and unbou
 exports[`rerun reads preserve selections, literal IDs, missing results and unbounded related attempts 4`] = `
 [
   {
-    "uploadedAt": "2020-01-01T00:00:00.000Z",
-    "createdAt": "2020-01-01T00:00:00.000Z"
+    "createdAt": "2020-01-01T00:00:00.000Z",
+    "uploadedAt": "2020-01-01T00:00:00.000Z"
   }
 ]
 `;
@@ -39,178 +39,178 @@ exports[`rerun reads preserve selections, literal IDs, missing results and unbou
 exports[`rerun reads preserve selections, literal IDs, missing results and unbounded related attempts 6`] = `
 [
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "1",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "10",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "11",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "12",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "13",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "14",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "15",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "16",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "17",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "18",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "19",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "2",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "20",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "21",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "22",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "23",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "24",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "25",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "26",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "27",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "28",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "29",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "3",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "4",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "5",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "6",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "7",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "8",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   },
   {
+    "createdAt": "2026-01-01T10:00:00.000Z",
     "pipelineId": "9",
     "status": "FAILED",
-    "trigger": "OWNER_RETRY",
-    "createdAt": "2026-01-01T10:00:00.000Z"
+    "trigger": "OWNER_RETRY"
   }
 ]
 `;

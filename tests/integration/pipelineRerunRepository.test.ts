@@ -28,18 +28,16 @@ before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});be
 
 const models=()=>({Channel:ogm.model('Channel'),Discussion:ogm.model('Discussion'),DownloadableFile:ogm.model('DownloadableFile'),Plugin:ogm.model('Plugin'),PluginVersion:ogm.model('PluginVersion'),PluginPipelineRun:ogm.model('PluginPipelineRun'),PluginRun:ogm.model('PluginRun'),ServerConfig:ogm.model('ServerConfig'),ServerSecret:ogm.model('ServerSecret')});
 const old=()=>pipelineRerunRepositoryStub(models());
-// Nested relationship projections and multi-row reads have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 async function seed(){await driver.executeQuery(`CREATE(f:DownloadableFile{id:'file',uploadedByUsername:'owner',uploadedAt:datetime('2020-01-01T00:00:00Z'),createdAt:datetime('2020-01-01T00:00:00Z')}),(s:ServerConfig{serverName:'fixture',pluginPipelines:$pipeline}),(p:Plugin{id:'plugin',name:'plugin'}),(v:PluginVersion{id:'version',version:'1.0.0',repoUrl:'fixture-only',entryPath:'index.js',manifest:$manifest}),(p)-[:HAS_VERSION]->(v),(s)-[:INSTALLED{enabled:true}]->(v),(:Channel{uniqueName:'channel',pluginPipelines:$pipeline})`,{pipeline:JSON.stringify([{event:'downloadableFile.created',steps:[{pluginId:'plugin'}]}]),manifest:JSON.stringify({events:['downloadableFile.created']})});}
 
 const now=Date.parse('2026-01-01T12:00:00Z');
 async function attempt(pipelineId='source',status='FAILED',trigger='OWNER_START',createdAt='2026-01-01T10:00:00Z',targetVersion:string|null=null){await driver.executeQuery(`CREATE(:PluginPipelineRun{id:$pipelineId,pipelineId:$pipelineId,targetId:'file',targetType:'DownloadableFile',targetVersion:$targetVersion,eventType:'downloadableFile.created',scope:'SERVER',status:$status,trigger:$trigger,createdAt:datetime($createdAt),updatedAt:datetime($createdAt),attemptNumber:1,configurationSnapshot:'{}'})`,{pipelineId,status,trigger,createdAt,targetVersion});}
 test('rerun reads preserve selections, literal IDs, missing results and unbounded related attempts',async(t)=>{
  await seed();await attempt();const repo=createPipelineRerunRepository(driver);
- for(const id of ['source','missing','quote"\\id'])t.assert.snapshot(sortDeep(await repo.findSourceAttempt(id)));
- for(const id of ['file','missing'])t.assert.snapshot(sortDeep(await repo.findFileVersion(id)));
+ for(const id of ['source','missing','quote"\\id'])t.assert.snapshot(await repo.findSourceAttempt(id));
+ for(const id of ['file','missing'])t.assert.snapshot(await repo.findFileVersion(id));
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{pipelineId:toString(n),targetId:'other',targetType:'DownloadableFile',status:'FAILED',trigger:'OWNER_RETRY',createdAt:datetime('2026-01-01T10:00:00Z')})`);
- const where={targetId:'other',targetType:'DownloadableFile'};t.assert.snapshot(sortDeep(await repo.findRelatedAttempts(where)));assert.equal((await repo.findRelatedAttempts(where)).length,29);assert.equal(events.length,0);
+ const where={targetId:'other',targetType:'DownloadableFile'};t.assert.snapshot(await repo.findRelatedAttempts(where));assert.equal((await repo.findRelatedAttempts(where)).length,29);assert.equal(events.length,0);
 });
 test('discussion version query preserves the existing singular-selection error',async()=>{await assert.rejects(createPipelineRerunRepository(driver).findDiscussionVersion('discussion'),/Cannot query field "DownloadableFile"/);});
 for(const scenario of ['missing','status','changed','latest','cooldown','limit'] as const)test(`actual rerun preserves ${scenario} rejection without runner calls`,async()=>{

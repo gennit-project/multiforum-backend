@@ -1,22 +1,22 @@
 exports[`collections remain unbounded at root and public downloads retain limit five 1`] = `
 [
   {
-    "id": "first",
-    "name": "First",
-    "description": null,
-    "visibility": "PUBLIC",
-    "collectionType": "DOWNLOADS",
-    "itemCount": 13,
-    "shareCount": 0,
-    "createdAt": "<time>",
-    "updatedAt": "<time>",
-    "itemOrder": [],
     "CreatedBy": {
-      "username": "owner",
       "displayName": null,
-      "profilePicURL": null
+      "profilePicURL": null,
+      "username": "owner"
     },
-    "Downloads": 5
+    "Downloads": 5,
+    "collectionType": "DOWNLOADS",
+    "createdAt": "<time>",
+    "description": null,
+    "id": "first",
+    "itemCount": 13,
+    "itemOrder": [],
+    "name": "First",
+    "shareCount": 0,
+    "updatedAt": "<time>",
+    "visibility": "PUBLIC"
   }
 ]
 `;
@@ -24,13 +24,13 @@ exports[`collections remain unbounded at root and public downloads retain limit 
 exports[`owned sharing snapshots retain ownership filter and narrow projections 1`] = `
 [
   {
-    "id": "first",
-    "name": "First",
-    "description": null,
-    "visibility": "PUBLIC",
     "CreatedBy": {
       "username": "owner"
-    }
+    },
+    "description": null,
+    "id": "first",
+    "name": "First",
+    "visibility": "PUBLIC"
   }
 ]
 `;
@@ -55,47 +55,47 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
+      "Channels": [],
+      "Comments": [],
+      "Discussions": [],
+      "Downloads": [],
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "second",
+      "itemCount": 0,
+      "itemOrder": [],
+      "name": "Second",
       "updatedAt": "<time>",
+      "visibility": "PRIVATE"
+    },
+    {
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
-    },
-    {
-      "id": "second",
-      "name": "Second",
-      "description": null,
-      "visibility": "PRIVATE",
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 0,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
       "updatedAt": "<time>",
-      "Channels": [],
-      "Discussions": [],
-      "Comments": [],
-      "Downloads": [],
-      "Images": []
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -105,31 +105,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -139,31 +139,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -179,31 +179,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -213,31 +213,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -253,31 +253,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -287,31 +287,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -327,47 +327,47 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
+      "Channels": [],
+      "Comments": [],
+      "Discussions": [],
+      "Downloads": [],
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "second",
+      "itemCount": 0,
+      "itemOrder": [],
+      "name": "Second",
       "updatedAt": "<time>",
+      "visibility": "PRIVATE"
+    },
+    {
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
-    },
-    {
-      "id": "second",
-      "name": "Second",
-      "description": null,
-      "visibility": "PRIVATE",
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 0,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
       "updatedAt": "<time>",
-      "Channels": [],
-      "Discussions": [],
-      "Comments": [],
-      "Downloads": [],
-      "Images": []
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -377,31 +377,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -411,47 +411,47 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
+      "Channels": [],
+      "Comments": [],
+      "Discussions": [],
+      "Downloads": [],
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "second",
+      "itemCount": 0,
+      "itemOrder": [],
+      "name": "Second",
       "updatedAt": "<time>",
+      "visibility": "PRIVATE"
+    },
+    {
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
-    },
-    {
-      "id": "second",
-      "name": "Second",
-      "description": null,
-      "visibility": "PRIVATE",
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 0,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
       "updatedAt": "<time>",
-      "Channels": [],
-      "Discussions": [],
-      "Comments": [],
-      "Downloads": [],
-      "Images": []
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -461,47 +461,47 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
+      "Channels": [],
+      "Comments": [],
+      "Discussions": [],
+      "Downloads": [],
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "second",
+      "itemCount": 0,
+      "itemOrder": [],
+      "name": "Second",
       "updatedAt": "<time>",
+      "visibility": "PRIVATE"
+    },
+    {
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
-    },
-    {
-      "id": "second",
-      "name": "Second",
-      "description": null,
-      "visibility": "PRIVATE",
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 0,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
       "updatedAt": "<time>",
-      "Channels": [],
-      "Discussions": [],
-      "Comments": [],
-      "Downloads": [],
-      "Images": []
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -511,31 +511,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -545,47 +545,47 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
+      "Channels": [],
+      "Comments": [],
+      "Discussions": [],
+      "Downloads": [],
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "second",
+      "itemCount": 0,
+      "itemOrder": [],
+      "name": "Second",
       "updatedAt": "<time>",
+      "visibility": "PRIVATE"
+    },
+    {
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
-    },
-    {
-      "id": "second",
-      "name": "Second",
-      "description": null,
-      "visibility": "PRIVATE",
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 0,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
       "updatedAt": "<time>",
-      "Channels": [],
-      "Discussions": [],
-      "Comments": [],
-      "Downloads": [],
-      "Images": []
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -595,47 +595,47 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
+      "Channels": [],
+      "Comments": [],
+      "Discussions": [],
+      "Downloads": [],
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "second",
+      "itemCount": 0,
+      "itemOrder": [],
+      "name": "Second",
       "updatedAt": "<time>",
+      "visibility": "PRIVATE"
+    },
+    {
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
-    },
-    {
-      "id": "second",
-      "name": "Second",
-      "description": null,
-      "visibility": "PRIVATE",
+      "Images": [],
       "collectionType": "DOWNLOADS",
-      "itemCount": 0,
-      "itemOrder": [],
       "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
       "updatedAt": "<time>",
-      "Channels": [],
-      "Discussions": [],
-      "Comments": [],
-      "Downloads": [],
-      "Images": []
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -645,31 +645,31 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 {
   "value": [
     {
-      "id": "first",
-      "name": "First",
-      "description": null,
-      "visibility": "PUBLIC",
-      "collectionType": "DOWNLOADS",
-      "itemCount": 3,
-      "itemOrder": [],
-      "createdAt": "<time>",
-      "updatedAt": "<time>",
       "Channels": [
         {
-          "uniqueName": "cats",
+          "channelIconURL": null,
           "displayName": null,
-          "channelIconURL": null
+          "uniqueName": "cats"
         }
       ],
-      "Discussions": [],
       "Comments": [],
+      "Discussions": [],
       "Downloads": [
         {
           "id": "clear",
           "title": "Clear"
         }
       ],
-      "Images": []
+      "Images": [],
+      "collectionType": "DOWNLOADS",
+      "createdAt": "<time>",
+      "description": null,
+      "id": "first",
+      "itemCount": 3,
+      "itemOrder": [],
+      "name": "First",
+      "updatedAt": "<time>",
+      "visibility": "PUBLIC"
     }
   ]
 }
@@ -678,50 +678,50 @@ exports[`profile collections preserve arbitrary filters, options and computed co
 exports[`public collections preserve explicit sensitive filtering and anonymous schema authorization 1`] = `
 [
   {
-    "id": "first",
-    "name": "First",
-    "description": null,
-    "visibility": "PUBLIC",
-    "collectionType": "DOWNLOADS",
-    "itemCount": 3,
-    "shareCount": 0,
-    "createdAt": "<time>",
-    "updatedAt": "<time>",
-    "itemOrder": [],
     "CreatedBy": {
-      "username": "owner",
       "displayName": null,
-      "profilePicURL": null
+      "profilePicURL": null,
+      "username": "owner"
     },
     "Downloads": [
       {
-        "id": "clear",
-        "title": "Clear",
-        "createdAt": "<time>",
-        "hasSensitiveContent": null,
         "Album": {
-          "id": "album",
-          "imageOrder": [],
           "Images": [
             {
+              "caption": null,
               "id": "image",
-              "url": "https://example.test/image",
-              "caption": null
+              "url": "https://example.test/image"
             }
-          ]
+          ],
+          "id": "album",
+          "imageOrder": []
+        },
+        "Author": {
+          "commentKarma": null,
+          "createdAt": "<time>",
+          "discussionKarma": null,
+          "displayName": null,
+          "profilePicURL": null,
+          "username": "owner"
         },
         "DiscussionChannels": [],
         "Tags": [],
-        "Author": {
-          "username": "owner",
-          "displayName": null,
-          "profilePicURL": null,
-          "commentKarma": null,
-          "discussionKarma": null,
-          "createdAt": "<time>"
-        }
+        "createdAt": "<time>",
+        "hasSensitiveContent": null,
+        "id": "clear",
+        "title": "Clear"
       }
-    ]
+    ],
+    "collectionType": "DOWNLOADS",
+    "createdAt": "<time>",
+    "description": null,
+    "id": "first",
+    "itemCount": 3,
+    "itemOrder": [],
+    "name": "First",
+    "shareCount": 0,
+    "updatedAt": "<time>",
+    "visibility": "PUBLIC"
   }
 ]
 `;
@@ -729,50 +729,50 @@ exports[`public collections preserve explicit sensitive filtering and anonymous 
 exports[`public collections preserve explicit sensitive filtering and anonymous schema authorization 2`] = `
 [
   {
-    "id": "first",
-    "name": "First",
-    "description": null,
-    "visibility": "PUBLIC",
-    "collectionType": "DOWNLOADS",
-    "itemCount": 3,
-    "shareCount": 0,
-    "createdAt": "<time>",
-    "updatedAt": "<time>",
-    "itemOrder": [],
     "CreatedBy": {
-      "username": "owner",
       "displayName": null,
-      "profilePicURL": null
+      "profilePicURL": null,
+      "username": "owner"
     },
     "Downloads": [
       {
-        "id": "clear",
-        "title": "Clear",
-        "createdAt": "<time>",
-        "hasSensitiveContent": null,
         "Album": {
-          "id": "album",
-          "imageOrder": [],
           "Images": [
             {
+              "caption": null,
               "id": "image",
-              "url": "https://example.test/image",
-              "caption": null
+              "url": "https://example.test/image"
             }
-          ]
+          ],
+          "id": "album",
+          "imageOrder": []
+        },
+        "Author": {
+          "commentKarma": null,
+          "createdAt": "<time>",
+          "discussionKarma": null,
+          "displayName": null,
+          "profilePicURL": null,
+          "username": "owner"
         },
         "DiscussionChannels": [],
         "Tags": [],
-        "Author": {
-          "username": "owner",
-          "displayName": null,
-          "profilePicURL": null,
-          "commentKarma": null,
-          "discussionKarma": null,
-          "createdAt": "<time>"
-        }
+        "createdAt": "<time>",
+        "hasSensitiveContent": null,
+        "id": "clear",
+        "title": "Clear"
       }
-    ]
+    ],
+    "collectionType": "DOWNLOADS",
+    "createdAt": "<time>",
+    "description": null,
+    "id": "first",
+    "itemCount": 3,
+    "itemOrder": [],
+    "name": "First",
+    "shareCount": 0,
+    "updatedAt": "<time>",
+    "visibility": "PUBLIC"
   }
 ]
 `;

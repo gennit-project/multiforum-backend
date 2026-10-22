@@ -42,13 +42,6 @@ const methods = [
   ["findChildCreationOwners", "{ Channel { uniqueName } }"],
 ] as const;
 const outcome = async (call: () => Promise<unknown>) => call().then(value => ({ value: plain(value) }), (error: Error) => ({ error: error.message }));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep = (value: unknown): unknown =>
-  Array.isArray(value)
-    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
-    : value && typeof value === "object"
-      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
-      : value;
 for (const [method, selectionSet] of methods) {
   test(`${method}: arbitrary filters and default projection match production OGM`, async (t) => {
     await seed();
@@ -60,7 +53,7 @@ for (const [method, selectionSet] of methods) {
     ]) {
       const actual = await outcome(() => repository[method](where));
       assert.ok("value" in actual, JSON.stringify(actual));
-      t.assert.snapshot(sortDeep(actual));
+      t.assert.snapshot(actual);
     }
   });
   test(`${method}: malformed filters expose the same first generated error`, async () => {

@@ -3,8 +3,8 @@ exports[`matches production OGM selected scalar behavior: {\"serverName\":\"name
   {
     "accountAgeGateEnabled": true,
     "minimumAccountAge": 13,
-    "sensitiveContentAgeGateEnabled": false,
-    "minimumSensitiveContentAge": 18
+    "minimumSensitiveContentAge": 18,
+    "sensitiveContentAgeGateEnabled": false
   }
 ]
 `;
@@ -32,8 +32,8 @@ exports[`matches production OGM selected scalar behavior: {\"serverName\":\"name
   {
     "accountAgeGateEnabled": false,
     "minimumAccountAge": 0,
-    "sensitiveContentAgeGateEnabled": true,
-    "minimumSensitiveContentAge": 21
+    "minimumSensitiveContentAge": 21,
+    "sensitiveContentAgeGateEnabled": true
   }
 ]
 `;
@@ -61,8 +61,8 @@ exports[`matches production OGM selected scalar behavior: {\"serverName\":\"name
   {
     "accountAgeGateEnabled": null,
     "minimumAccountAge": 0,
-    "sensitiveContentAgeGateEnabled": null,
-    "minimumSensitiveContentAge": 21
+    "minimumSensitiveContentAge": 21,
+    "sensitiveContentAgeGateEnabled": null
   }
 ]
 `;
@@ -90,8 +90,8 @@ exports[`matches production OGM selected scalar behavior: {\"serverName\":\"name
   {
     "accountAgeGateEnabled": null,
     "minimumAccountAge": null,
-    "sensitiveContentAgeGateEnabled": null,
-    "minimumSensitiveContentAge": null
+    "minimumSensitiveContentAge": null,
+    "sensitiveContentAgeGateEnabled": null
   }
 ]
 `;

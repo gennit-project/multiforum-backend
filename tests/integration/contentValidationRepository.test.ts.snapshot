@@ -29,8 +29,8 @@ exports[`all four validation snapshots preserve missing and populated results 5`
 exports[`all four validation snapshots preserve missing and populated results 6`] = `
 [
   {
-    "id": "f",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "f"
   }
 ]
 `;
@@ -38,15 +38,15 @@ exports[`all four validation snapshots preserve missing and populated results 6`
 exports[`all four validation snapshots preserve missing and populated results 7`] = `
 [
   {
-    "id": "dc",
-    "emoji": "{}",
-    "locked": false,
+    "Channel": {
+      "emojiEnabled": false,
+      "uniqueName": "cats"
+    },
     "archived": false,
     "channelUniqueName": "cats",
-    "Channel": {
-      "uniqueName": "cats",
-      "emojiEnabled": false
-    }
+    "emoji": "{}",
+    "id": "dc",
+    "locked": false
   }
 ]
 `;
@@ -54,22 +54,22 @@ exports[`all four validation snapshots preserve missing and populated results 7`
 exports[`all four validation snapshots preserve missing and populated results 8`] = `
 [
   {
-    "id": "c",
-    "emoji": "{}",
-    "archived": false,
     "Channel": {
-      "uniqueName": "cats",
-      "emojiEnabled": false
+      "emojiEnabled": false,
+      "uniqueName": "cats"
     },
     "DiscussionChannel": {
-      "channelUniqueName": "cats",
-      "locked": false,
-      "archived": false,
       "Channel": {
-        "uniqueName": "cats",
-        "emojiEnabled": false
-      }
-    }
+        "emojiEnabled": false,
+        "uniqueName": "cats"
+      },
+      "archived": false,
+      "channelUniqueName": "cats",
+      "locked": false
+    },
+    "archived": false,
+    "emoji": "{}",
+    "id": "c"
   }
 ]
 `;
@@ -148,277 +148,92 @@ exports[`arbitrary compound filters and default25 limits match generated operati
 exports[`arbitrary compound filters and default25 limits match generated operations 2`] = `
 [
   {
-    "id": "1",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "1"
   },
   {
-    "id": "10",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "10"
   },
   {
-    "id": "11",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "11"
   },
   {
-    "id": "12",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "12"
   },
   {
-    "id": "13",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "13"
   },
   {
-    "id": "14",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "14"
   },
   {
-    "id": "15",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "15"
   },
   {
-    "id": "16",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "16"
   },
   {
-    "id": "17",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "17"
   },
   {
-    "id": "18",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "18"
   },
   {
-    "id": "19",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "19"
   },
   {
-    "id": "2",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "2"
   },
   {
-    "id": "20",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "20"
   },
   {
-    "id": "21",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "21"
   },
   {
-    "id": "22",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "22"
   },
   {
-    "id": "23",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "23"
   },
   {
-    "id": "24",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "24"
   },
   {
-    "id": "25",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "25"
   },
   {
-    "id": "26",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "26"
   },
   {
-    "id": "27",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "27"
   },
   {
-    "id": "28",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "28"
   },
   {
-    "id": "29",
-    "fileName": "old.zip"
-  }
-]
-`;
-
-exports[`arbitrary compound filters and default25 limits match generated operations 3`] = `
-[
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  },
-  {
-    "DiscussionChannels": []
-  }
-]
-`;
-
-exports[`arbitrary compound filters and default25 limits match generated operations 4`] = `
-[
-  {
-    "id": "0",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "1",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "2",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "3",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "4",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "5",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "6",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "7",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "8",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "9",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "10",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "11",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "12",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "13",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "14",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "15",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "16",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "17",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "18",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "19",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "20",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "21",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "22",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "23",
-    "fileName": "old.zip"
-  },
-  {
-    "id": "24",
-    "fileName": "old.zip"
+    "fileName": "old.zip",
+    "id": "29"
   }
 ]
 `;
@@ -438,14 +253,14 @@ exports[`nested discussion channels preserve filtering when the root remains vis
 exports[`nested discussion channels preserve filtering when the root remains visible 3`] = `
 [
   {
-    "id": "c",
-    "emoji": "{}",
-    "archived": false,
     "Channel": {
-      "uniqueName": "cats",
-      "emojiEnabled": false
+      "emojiEnabled": false,
+      "uniqueName": "cats"
     },
-    "DiscussionChannel": null
+    "DiscussionChannel": null,
+    "archived": false,
+    "emoji": "{}",
+    "id": "c"
   }
 ]
 `;

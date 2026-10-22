@@ -21,15 +21,15 @@ exports[`administrator writes preserve missing server results and events 2`] = `
   "events": [],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -46,15 +46,15 @@ exports[`administrator writes preserve missing server results and events 4`] = `
   "events": [],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -64,31 +64,31 @@ exports[`administrator writes preserve missing user results and events 1`] = `
 {
   "serverConfigs": [
     {
-      "serverName": "cats",
-      "serverDescription": null,
-      "serverIconURL": null,
+      "accountAgeGateEnabled": null,
       "allowedFileTypes": null,
-      "featuredWikiPageIds": null,
+      "brandingCustomFooterLinks": null,
+      "brandingDocsURL": null,
+      "brandingFaviconURL": null,
+      "brandingIssuesURL": null,
+      "brandingLogoAlt": null,
+      "brandingLogoDarkURL": null,
+      "brandingPrimaryColor": null,
+      "brandingProductName": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingSourceURL": null,
+      "brandingSupportEmail": null,
       "enableDownloads": null,
       "enableEvents": null,
-      "accountAgeGateEnabled": null,
+      "featuredWikiPageIds": null,
       "minimumAccountAge": null,
-      "sensitiveContentAgeGateEnabled": null,
       "minimumSensitiveContentAge": null,
-      "brandingProductName": null,
-      "brandingDocsURL": null,
-      "brandingSourceURL": null,
-      "brandingIssuesURL": null,
-      "brandingSupportEmail": null,
-      "brandingShowUpstreamLinks": null,
-      "brandingLogoDarkURL": null,
-      "brandingLogoAlt": null,
-      "brandingFaviconURL": null,
-      "brandingPrimaryColor": null,
+      "pluginPipelines": null,
       "pluginRegistries": null,
       "rules": null,
-      "brandingCustomFooterLinks": null,
-      "pluginPipelines": null
+      "sensitiveContentAgeGateEnabled": null,
+      "serverDescription": null,
+      "serverIconURL": null,
+      "serverName": "cats"
     }
   ]
 }
@@ -98,20 +98,20 @@ exports[`administrator writes preserve missing user results and events 2`] = `
 {
   "events": [
     {
-      "id": "<id-0>",
-      "typename": "ServerConfig",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-0>",
       "properties": {
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
         "new": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ServerConfig"
     }
   ],
   "graph": []
@@ -122,31 +122,31 @@ exports[`administrator writes preserve missing user results and events 3`] = `
 {
   "serverConfigs": [
     {
-      "serverName": "cats",
-      "serverDescription": null,
-      "serverIconURL": null,
+      "accountAgeGateEnabled": null,
       "allowedFileTypes": null,
-      "featuredWikiPageIds": null,
+      "brandingCustomFooterLinks": null,
+      "brandingDocsURL": null,
+      "brandingFaviconURL": null,
+      "brandingIssuesURL": null,
+      "brandingLogoAlt": null,
+      "brandingLogoDarkURL": null,
+      "brandingPrimaryColor": null,
+      "brandingProductName": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingSourceURL": null,
+      "brandingSupportEmail": null,
       "enableDownloads": null,
       "enableEvents": null,
-      "accountAgeGateEnabled": null,
+      "featuredWikiPageIds": null,
       "minimumAccountAge": null,
-      "sensitiveContentAgeGateEnabled": null,
       "minimumSensitiveContentAge": null,
-      "brandingProductName": null,
-      "brandingDocsURL": null,
-      "brandingSourceURL": null,
-      "brandingIssuesURL": null,
-      "brandingSupportEmail": null,
-      "brandingShowUpstreamLinks": null,
-      "brandingLogoDarkURL": null,
-      "brandingLogoAlt": null,
-      "brandingFaviconURL": null,
-      "brandingPrimaryColor": null,
+      "pluginPipelines": null,
       "pluginRegistries": null,
       "rules": null,
-      "brandingCustomFooterLinks": null,
-      "pluginPipelines": null
+      "sensitiveContentAgeGateEnabled": null,
+      "serverDescription": null,
+      "serverIconURL": null,
+      "serverName": "cats"
     }
   ]
 }
@@ -156,20 +156,20 @@ exports[`administrator writes preserve missing user results and events 4`] = `
 {
   "events": [
     {
-      "id": "<id-0>",
-      "typename": "ServerConfig",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-0>",
       "properties": {
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
         "new": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ServerConfig"
     }
   ],
   "graph": []
@@ -181,62 +181,62 @@ exports[`connectAdmin preserves repeated native event payloads and mutation resu
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   },
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   }
@@ -247,91 +247,91 @@ exports[`connectAdmin preserves repeated native event payloads and mutation resu
 {
   "events": [
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "ADMIN_OF_SERVER",
-      "fromTypename": "User",
-      "toTypename": "ServerConfig",
-      "timestamp": "<generated-time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "username": "alice"
         },
+        "relationship": {},
         "to": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "<id-2>",
-      "typename": "ServerConfig",
-      "timestamp": "<generated-time>",
-      "event": "update",
-      "properties": {
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "new": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
         }
-      }
+      },
+      "relationshipName": "ADMIN_OF_SERVER",
+      "timestamp": "<generated-time>",
+      "toTypename": "ServerConfig"
     },
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "ADMIN_OF_SERVER",
-      "fromTypename": "User",
-      "toTypename": "ServerConfig",
-      "timestamp": "<generated-time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "username": "alice"
         },
+        "relationship": {},
         "to": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
-        },
-        "relationship": {}
-      }
+        }
+      },
+      "relationshipName": "ADMIN_OF_SERVER",
+      "timestamp": "<generated-time>",
+      "toTypename": "ServerConfig"
     },
     {
-      "id": "<id-2>",
-      "typename": "ServerConfig",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-2>",
       "properties": {
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
         "new": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ServerConfig"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ServerConfig"
     }
   ],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 1,
-        "high": 0
+        "high": 0,
+        "low": 1
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -342,62 +342,62 @@ exports[`disconnectInvite preserves repeated native event payloads and mutation 
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   },
   {
     "serverConfigs": [
       {
-        "serverName": "cats",
-        "serverDescription": null,
-        "serverIconURL": null,
+        "accountAgeGateEnabled": null,
         "allowedFileTypes": null,
-        "featuredWikiPageIds": null,
+        "brandingCustomFooterLinks": null,
+        "brandingDocsURL": null,
+        "brandingFaviconURL": null,
+        "brandingIssuesURL": null,
+        "brandingLogoAlt": null,
+        "brandingLogoDarkURL": null,
+        "brandingPrimaryColor": null,
+        "brandingProductName": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingSourceURL": null,
+        "brandingSupportEmail": null,
         "enableDownloads": null,
         "enableEvents": null,
-        "accountAgeGateEnabled": null,
+        "featuredWikiPageIds": null,
         "minimumAccountAge": null,
-        "sensitiveContentAgeGateEnabled": null,
         "minimumSensitiveContentAge": null,
-        "brandingProductName": null,
-        "brandingDocsURL": null,
-        "brandingSourceURL": null,
-        "brandingIssuesURL": null,
-        "brandingSupportEmail": null,
-        "brandingShowUpstreamLinks": null,
-        "brandingLogoDarkURL": null,
-        "brandingLogoAlt": null,
-        "brandingFaviconURL": null,
-        "brandingPrimaryColor": null,
+        "pluginPipelines": null,
         "pluginRegistries": null,
         "rules": null,
-        "brandingCustomFooterLinks": null,
-        "pluginPipelines": null
+        "sensitiveContentAgeGateEnabled": null,
+        "serverDescription": null,
+        "serverIconURL": null,
+        "serverName": "cats"
       }
     ]
   }
@@ -408,70 +408,70 @@ exports[`disconnectInvite preserves repeated native event payloads and mutation 
 {
   "events": [
     {
+      "event": "delete_relationship",
+      "fromTypename": "ServerConfig",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
-      "fromTypename": "ServerConfig",
-      "toTypename": "User",
-      "timestamp": "<generated-time>",
-      "event": "delete_relationship",
       "properties": {
         "from": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
         },
+        "relationship": {},
         "to": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
-        },
-        "relationship": {}
-      }
+          "createdAt": "<generated-time>",
+          "username": "alice"
+        }
+      },
+      "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
+      "timestamp": "<generated-time>",
+      "toTypename": "User"
     },
     {
-      "id": "<id-1>",
-      "typename": "ServerConfig",
-      "timestamp": "<generated-time>",
       "event": "update",
+      "id": "<id-1>",
       "properties": {
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
         "new": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
-        }
-      }
-    },
-    {
-      "id": "<id-1>",
-      "typename": "ServerConfig",
-      "timestamp": "<generated-time>",
-      "event": "update",
-      "properties": {
+        },
         "old": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
-        },
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ServerConfig"
+    },
+    {
+      "event": "update",
+      "id": "<id-1>",
+      "properties": {
         "new": {
           "createdAt": "<generated-time>",
           "serverName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
         }
-      }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ServerConfig"
     }
   ],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 0,
-        "high": 0
+        "high": 0,
+        "low": 0
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }
@@ -481,57 +481,57 @@ exports[`projection failure preserves committed administrator relationship and n
 {
   "events": [
     {
+      "event": "create_relationship",
+      "fromTypename": "User",
       "id": "<id-0>",
       "id_from": "<id-1>",
       "id_to": "<id-2>",
-      "relationshipName": "ADMIN_OF_SERVER",
-      "fromTypename": "User",
-      "toTypename": "ServerConfig",
-      "timestamp": "<generated-time>",
-      "event": "create_relationship",
       "properties": {
         "from": {
-          "username": "alice",
-          "createdAt": "<generated-time>"
+          "createdAt": "<generated-time>",
+          "username": "alice"
         },
+        "relationship": {},
         "to": {
-          "enableEvents": "invalid",
           "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "relationship": {}
-      }
-    },
-    {
-      "id": "<id-2>",
-      "typename": "ServerConfig",
-      "timestamp": "<generated-time>",
-      "event": "update",
-      "properties": {
-        "old": {
           "enableEvents": "invalid",
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "new": {
-          "enableEvents": "invalid",
-          "createdAt": "<generated-time>",
           "serverName": "cats"
         }
-      }
+      },
+      "relationshipName": "ADMIN_OF_SERVER",
+      "timestamp": "<generated-time>",
+      "toTypename": "ServerConfig"
+    },
+    {
+      "event": "update",
+      "id": "<id-2>",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "enableEvents": "invalid",
+          "serverName": "cats"
+        },
+        "old": {
+          "createdAt": "<generated-time>",
+          "enableEvents": "invalid",
+          "serverName": "cats"
+        }
+      },
+      "timestamp": "<generated-time>",
+      "typename": "ServerConfig"
     }
   ],
   "graph": [
     {
-      "username": "alice",
       "admins": {
-        "low": 1,
-        "high": 0
+        "high": 0,
+        "low": 1
       },
       "invites": {
-        "low": 0,
-        "high": 0
-      }
+        "high": 0,
+        "low": 0
+      },
+      "username": "alice"
     }
   ]
 }

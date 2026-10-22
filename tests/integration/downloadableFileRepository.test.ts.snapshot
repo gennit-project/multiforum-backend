@@ -20,8 +20,8 @@ exports[`attachment metadata matches the production OGM projection and hidden-fi
 
 exports[`attachment metadata matches the production OGM projection and hidden-file outcome 2`] = `
 {
-  "id": "file",
-  "fileName": "archive.zip"
+  "fileName": "archive.zip",
+  "id": "file"
 }
 `;
 
@@ -31,8 +31,8 @@ true
 
 exports[`attachment metadata matches the production OGM projection and hidden-file outcome 4`] = `
 {
-  "id": "file",
-  "fileName": ""
+  "fileName": "",
+  "id": "file"
 }
 `;
 
@@ -42,8 +42,8 @@ true
 
 exports[`attachment metadata matches the production OGM projection and hidden-file outcome 6`] = `
 {
-  "id": "file",
-  "fileName": "archive.zip"
+  "fileName": "archive.zip",
+  "id": "file"
 }
 `;
 
@@ -53,8 +53,8 @@ true
 
 exports[`attachment metadata matches the production OGM projection and hidden-file outcome 8`] = `
 {
-  "id": "file",
-  "fileName": ""
+  "fileName": "",
+  "id": "file"
 }
 `;
 

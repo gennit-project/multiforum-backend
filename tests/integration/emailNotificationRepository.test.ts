@@ -29,8 +29,6 @@ beforeEach(async()=>{await resetDatabase(driver);events=[];});
 afterEach(()=>assert.equal(nativeCalls,0));
 after(async()=>{mock.restoreAll();await engine.close();await stopNeo4j();});
 const plain=(value:unknown)=>JSON.parse(JSON.stringify(value));
-// Nested relationship projections (collect()) have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep=(value:unknown):unknown=>Array.isArray(value)?value.map(sortDeep).sort((a,b)=>(JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sortDeep(v)])):value;
 const oldWrite=async()=>Boolean((await ogm.model("User").update({where:{username:"alice"},update:{Notifications:[{create:[{node:{text:"Notice",read:false}}]}]}})).users[0]);
 const normalize=(value:unknown):unknown=>{
  const identities=new Map<string,string>();
@@ -50,7 +48,7 @@ test("recipient read retains missing user/email and exact selected projection",a
  for(const phase of["missing","no-email","email"]){
   if(phase==="no-email")await driver.executeQuery("CREATE (:User {username:'alice'})");
   if(phase==="email")await driver.executeQuery("MATCH (u:User {username:'alice'}) CREATE (:Email {address:'alice@example.test'})-[:HAS_EMAIL]->(u)");
-  t.assert.snapshot(sortDeep(plain(await repository.findRecipient("alice"))));
+  t.assert.snapshot(plain(await repository.findRecipient("alice")));
  }
 });
 test("notification writes omit type and retain duplicates and native events",async(t)=>{

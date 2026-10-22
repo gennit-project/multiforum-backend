@@ -28,13 +28,6 @@ before(async () => {
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
-// Unsorted multi-row projections have no guaranteed cross-run ordering, so deep-sort before snapshotting.
-const sortDeep = (value: unknown): unknown =>
-  Array.isArray(value)
-    ? value.map(sortDeep).sort((a, b) => (JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0))
-    : value && typeof value === "object"
-      ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sortDeep(v)]))
-      : value;
 
 const HISTORY = `{
         id
@@ -94,7 +87,7 @@ test("four history/summary projections preserve OGM filtering, ordering and unbo
   assert.equal(attempts[0].id, "attempt-27");
   t.assert.snapshot(plain(attempts));
   // findSummaryJobs applies no sort, so its cross-run order is not stable: deep-sort before snapshot.
-  t.assert.snapshot(sortDeep(plain(await repository.findSummaryJobs("file", "DownloadableFile"))));
+  t.assert.snapshot(plain(await repository.findSummaryJobs("file", "DownloadableFile")));
   assert.deepEqual(await repository.findDownloadHistory("missing"), []);
 });
 
