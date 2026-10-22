@@ -535,6 +535,9 @@ export const triggerPluginRunsForComment = async (
               parsedBotMentions.length > 0
                 ? 'tagged-comment'
                 : 'comment-created',
+            server: {
+              rules: serverConfig.rules
+            },
             channel: {
               uniqueName: channelUniqueName,
               displayName:

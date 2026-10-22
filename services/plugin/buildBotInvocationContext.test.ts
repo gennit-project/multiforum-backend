@@ -8,6 +8,9 @@ import {
 test("buildBotInvocationContext includes forum, discussion, and threaded parent context", () => {
   const result = buildBotInvocationContext({
     invocationType: "tagged-comment",
+    server: {
+      rules: ["No spam", "No threats"],
+    },
     channel: {
       uniqueName: "bad-advice",
       displayName: "Bad Advice",
@@ -46,6 +49,9 @@ test("buildBotInvocationContext includes forum, discussion, and threaded parent 
 
   assert.deepEqual(result, {
     invocationType: "tagged-comment",
+    server: {
+      rules: ["No spam", "No threats"],
+    },
     channel: {
       uniqueName: "bad-advice",
       displayName: "Bad Advice",

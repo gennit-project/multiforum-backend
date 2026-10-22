@@ -2,7 +2,7 @@
 // config. Idempotent — safe to run on a fresh install or an existing instance.
 //
 //   NEO4J_PASSWORD=... SERVER_CONFIG_NAME="My Server" \
-//     node --loader ts-node/esm build_scripts/provisionServerDefaults.ts
+//     node --import tsx build_scripts/provisionServerDefaults.ts
 //
 // Also backfills existing admins into SuperAdmins (isAdmin phase-out). See
 // docs/isadmin-phaseout-design.md and seedData/.

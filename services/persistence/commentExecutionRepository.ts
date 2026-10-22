@@ -85,6 +85,7 @@ export const COMMENT_SELECTION = `{
     }`;
 export const CONFIGURATION_SELECTION = `{
       serverName
+      rules
       pluginPipelines
       InstalledVersionsConnection {
         edges {
