@@ -55,6 +55,10 @@ export const DISCUSSION_SELECTION = `{
       id
       title
       body
+      Author {
+        username
+        isBot
+      }
       DownloadableFile {
         id
         fileName
@@ -69,6 +73,7 @@ export const DISCUSSION_SELECTION = `{
     }`;
 export const CONFIGURATION_SELECTION = `{
       serverName
+      rules
       pluginPipelines
       InstalledVersionsConnection {
         edges {

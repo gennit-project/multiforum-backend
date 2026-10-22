@@ -19,6 +19,7 @@ import {
   mergeSettings,
   buildPluginVersionMaps,
   getPluginForStep,
+  parseManifest,
   parseStoredPipelines,
 } from './pipelineUtils.js'
 import {
@@ -45,6 +46,10 @@ import {
   type DownloadScanOutcome,
 } from './downloadScanOutcome.js'
 import { createDownloadReadUrl } from '../downloadStorage.js'
+import { createBotReport } from '../botReportService.js'
+import { buildBotUsername } from '../botUserService.js'
+import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
+import { createChannelPermissionRepository } from '../persistence/channelPermissionRepository.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFileUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 
@@ -92,22 +97,35 @@ export const triggerChannelPluginPipeline = async (
 
   const channel: Channel = channels[0]
   const channelPipelines = parseStoredPipelines(channel.pluginPipelines)
-  const eventPipeline = channelPipelines.find(p => p.event === event)
+  const channelEventPipeline = channelPipelines.find(p => p.event === event)
 
-  // Build a map of channel-level plugin settings by plugin name
-  const channelPluginSettingsMap = new Map<string, unknown>()
+  type ChannelPluginState = {
+    enabled: boolean
+    settingsJson: unknown
+  }
+  const channelPluginStatesByVersionId = new Map<string, ChannelPluginState>()
+  const channelPluginStatesByName = new Map<string, ChannelPluginState>()
   if (channel?.EnabledPluginsConnection?.edges) {
     for (const edge of channel.EnabledPluginsConnection.edges) {
+      const state = {
+        enabled: edge.properties?.enabled === true,
+        settingsJson: edge.properties?.settingsJson,
+      }
+      if (edge.node?.id) {
+        channelPluginStatesByVersionId.set(edge.node.id, state)
+      }
       const pluginName = edge.node?.Plugin?.name
-      if (pluginName && edge.properties?.settingsJson) {
-        channelPluginSettingsMap.set(pluginName, edge.properties.settingsJson)
+      const existing = pluginName && !edge.node?.id
+        ? channelPluginStatesByName.get(pluginName)
+        : undefined
+      if (
+        pluginName &&
+        !edge.node?.id &&
+        (!existing || (!existing.enabled && state.enabled))
+      ) {
+        channelPluginStatesByName.set(pluginName, state)
       }
     }
-  }
-
-  // If no pipeline is configured for this event, nothing to do
-  if (!eventPipeline || eventPipeline.steps.length === 0) {
-    return []
   }
 
   // Get the discussion with its downloadable file
@@ -125,11 +143,6 @@ export const triggerChannelPluginPipeline = async (
   }
   const downloadableFile = discussion.DownloadableFile
 
-  // If no downloadable file, nothing to process
-  if (!downloadableFile) {
-    return []
-  }
-
   // Get server config for enabled plugins (channels can only use server-enabled plugins)
   const serverConfigs = await repository.findConfiguration()
 
@@ -139,10 +152,11 @@ export const triggerChannelPluginPipeline = async (
   }
 
   const edges = serverConfig.InstalledVersionsConnection?.edges || []
-  const serverUploadPipeline = parseStoredPipelines(
-    serverConfig.pluginPipelines
+  const serverPipelines = parseStoredPipelines(serverConfig.pluginPipelines)
+  const serverEventPipeline = serverPipelines.find(p => p.event === event)
+  const serverUploadPipeline = serverPipelines.find(
+    pipeline => pipeline.event === 'downloadableFile.created'
   )
-    .find(pipeline => pipeline.event === 'downloadableFile.created')
   const serverSecurityRequired = Boolean(
     serverUploadPipeline?.steps.some(
       step => step.pluginId === SECURITY_SCAN_PLUGIN_ID
@@ -156,26 +170,74 @@ export const triggerChannelPluginPipeline = async (
     edges as unknown as PluginEdgeData[]
   )
 
-  // Filter pipeline steps to only include server-enabled plugins
-  const pluginsToRun: PluginToRun[] = []
-
-  eventPipeline.steps.forEach((step, index) => {
-    // A server-wide security requirement takes precedence. Do not scan the
-    // same bytes again merely because the channel also selected the scanner.
-    if (step.pluginId === SECURITY_SCAN_PLUGIN_ID && serverSecurityRequired) {
-      return
+  // Server-wide candidates establish the baseline. Channel candidates can
+  // override a server-selected version of the same plugin, but each plugin is
+  // executed at most once for a discussion in a given channel.
+  const pluginsById = new Map<string, Omit<PluginToRun, 'order'>>()
+  const pluginOrder: string[] = []
+  const addPipelineSteps = (
+    pipeline: EventPipeline | undefined,
+    replaceExisting: boolean
+  ) => {
+    for (const step of pipeline?.steps || []) {
+      if (step.pluginId === SECURITY_SCAN_PLUGIN_ID && !downloadableFile) {
+        continue
+      }
+      if (
+        step.pluginId === SECURITY_SCAN_PLUGIN_ID &&
+        serverSecurityRequired
+      ) {
+        continue
+      }
+      const pluginMatch = getPluginForStep(
+        pluginVersionsMap,
+        step.pluginId,
+        step.version
+      )
+      if (!pluginMatch) continue
+      const manifest = parseManifest(pluginMatch.edgeData.node.manifest)
+      const manifestEvents = Array.isArray(manifest.events) ? manifest.events : []
+      if (!manifestEvents.includes(event)) continue
+      if (!pluginsById.has(step.pluginId)) {
+        pluginOrder.push(step.pluginId)
+      }
+      if (replaceExisting || !pluginsById.has(step.pluginId)) {
+        pluginsById.set(step.pluginId, {
+          pluginId: step.pluginId,
+          edgeData: pluginMatch.edgeData,
+          step,
+        })
+      }
     }
-    // Get plugin for step, respecting version specification
-    const pluginMatch = getPluginForStep(pluginVersionsMap, step.pluginId, step.version)
-    if (pluginMatch) {
-      pluginsToRun.push({
-        pluginId: step.pluginId,
-        edgeData: pluginMatch.edgeData,
-        step,
-        order: index
+  }
+
+  if (serverEventPipeline) {
+    addPipelineSteps(serverEventPipeline, false)
+  } else {
+    for (const [pluginId, versions] of pluginVersionsMap) {
+      const latestVersion = versions[0]
+      if (!latestVersion) continue
+      if (
+        pluginId === SECURITY_SCAN_PLUGIN_ID &&
+        (!downloadableFile || serverSecurityRequired)
+      ) continue
+      const manifest = parseManifest(latestVersion.edgeData.node.manifest)
+      const manifestEvents = Array.isArray(manifest.events) ? manifest.events : []
+      if (!manifestEvents.includes(event)) continue
+      pluginOrder.push(pluginId)
+      pluginsById.set(pluginId, {
+        pluginId,
+        edgeData: latestVersion.edgeData,
+        step: { pluginId, condition: 'ALWAYS', continueOnError: false },
       })
     }
-  })
+  }
+  addPipelineSteps(channelEventPipeline, true)
+
+  const pluginsToRun: PluginToRun[] = pluginOrder.map((pluginId, order) => ({
+    ...pluginsById.get(pluginId)!,
+    order,
+  }))
 
   if (pluginsToRun.length === 0) {
     return []
@@ -184,13 +246,21 @@ export const triggerChannelPluginPipeline = async (
   const pipelineId = execution?.pipelineId || generatePipelineId()
   const runs: unknown[] = []
   const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
-  const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
+  const stopOnFirstFailure =
+    channelEventPipeline?.stopOnFirstFailure ??
+    serverEventPipeline?.stopOnFirstFailure ??
+    true
+  const eventPipeline: EventPipeline = {
+    event,
+    steps: pluginsToRun.map(plugin => plugin.step),
+    stopOnFirstFailure,
+  }
   const securityScanExpected = pluginsToRun.some(
     plugin => plugin.pluginId === SECURITY_SCAN_PLUGIN_ID
   )
   let securityScanOutcome: DownloadScanOutcome | null = null
 
-  if (securityScanExpected) {
+  if (securityScanExpected && downloadableFile) {
     await repository.writeScanState(downloadableFile.id, ({
         scanStatus: 'PENDING',
         scanReason: null,
@@ -208,7 +278,7 @@ export const triggerChannelPluginPipeline = async (
       targetId: discussionId,
       targetType: 'Discussion',
       targetVersion:
-        downloadableFile.uploadedAt || downloadableFile.createdAt || null,
+        downloadableFile?.uploadedAt || downloadableFile?.createdAt || null,
       eventType: event,
       scope: 'CHANNEL',
       channelId: channelUniqueName,
@@ -245,7 +315,7 @@ export const triggerChannelPluginPipeline = async (
           payload: JSON.stringify({
             discussionId,
             channelUniqueName,
-            fileName: downloadableFile.fileName,
+            fileName: downloadableFile?.fileName || null,
             event
           }),
           updatedAt: new Date().toISOString()
@@ -355,7 +425,13 @@ export const triggerChannelPluginPipeline = async (
       // Merge settings: defaults < server < channel (channel takes highest precedence)
       const settingsDefaults = parseIfString(pluginVersionData.settingsDefaults)
       const serverSettingsJson = parseIfString(edgeData.properties?.settingsJson)
-      const channelSettingsJsonRaw = parseIfString(channelPluginSettingsMap.get(pluginId))
+      const channelPluginState =
+        channelPluginStatesByVersionId.get(pluginVersionData.id) ||
+        channelPluginStatesByName.get(pluginId) ||
+        { enabled: false, settingsJson: null }
+      const channelSettingsJsonRaw = channelPluginState.enabled
+        ? parseIfString(channelPluginState.settingsJson)
+        : {}
 
       // Channel settings are stored flat but need to be merged into the 'channel' sub-key
       // to match the plugin's expected structure: { server: {...}, channel: {...} }
@@ -429,30 +505,77 @@ export const triggerChannelPluginPipeline = async (
           pluginId,
           channelId: channelUniqueName,
           logs
-        })
+        }),
+        reportContentAsBot: async (input: {
+          contentType: 'comment' | 'discussion' | 'event'
+          contentId: string
+          reportText: string
+          selectedForumRules: string[]
+          selectedServerRules: string[]
+          botName: string
+          profileId?: string | null
+          profileLabel?: string | null
+        }) => {
+          if (!driver) {
+            throw new Error('Database driver not available for reportContentAsBot')
+          }
+
+          const botUsername = buildBotUsername(
+            channelUniqueName,
+            input.botName,
+            input.profileId
+          )
+          const suspensionInfo = await getActiveSuspension({
+            repository: createChannelPermissionRepository(driver),
+            channelUniqueName,
+            username: botUsername,
+          })
+          if (suspensionInfo.isSuspended) {
+            logs.push(`Bot "${botUsername}" is suspended - action blocked`)
+            return null
+          }
+
+          return createBotReport({
+            driver,
+            channelUniqueName,
+            reportInput: input,
+          })
+        }
       }
 
       const pluginInstance = new PluginClass(context)
-      const attachmentUrl = await createDownloadReadUrl({ file: downloadableFile })
+      const attachmentUrl = downloadableFile
+        ? await createDownloadReadUrl({ file: downloadableFile })
+        : null
       const eventEnvelope = {
         type: event,
         payload: {
           discussionId: discussion.id,
           discussionTitle: discussion.title,
           discussionBody: discussion.body,
-          downloadableFileId: downloadableFile.id,
-          fileName: downloadableFile.fileName,
-          fileSize: downloadableFile.size,
-          fileUrl: downloadableFile.url,
+          author: discussion.Author
+            ? {
+                username: discussion.Author.username,
+                isBot: discussion.Author.isBot || false,
+              }
+            : null,
+          downloadableFileId: downloadableFile?.id || null,
+          fileName: downloadableFile?.fileName || null,
+          fileSize: downloadableFile?.size || null,
+          fileUrl: downloadableFile?.url || null,
           attachmentUrls: attachmentUrl ? [attachmentUrl] : [],
           channel: channelContext,
           context: buildBotInvocationContext({
             invocationType: 'discussion-created',
+            server: {
+              rules: serverConfig.rules,
+            },
             channel: {
               uniqueName: channel.uniqueName,
               displayName: channel.displayName,
               description: channel.description,
-              rules: channel.rules
+              rules: channel.rules,
+              pluginEnabled: channelPluginState.enabled,
             },
             discussion: {
               id: discussion.id,
@@ -550,7 +673,7 @@ export const triggerChannelPluginPipeline = async (
     }
   }
 
-  if (securityScanExpected) {
+  if (securityScanExpected && downloadableFile) {
     const outcome = securityScanOutcome || failedDownloadScanOutcome(
       'The security scan was skipped before it could complete.'
     )

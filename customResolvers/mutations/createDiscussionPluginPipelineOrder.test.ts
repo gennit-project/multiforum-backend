@@ -5,7 +5,7 @@ import type {
   triggerChannelPluginPipeline,
   triggerPluginRunsForDownloadableFile,
 } from "../../services/pluginRunner.js";
-import { triggerCreatedDownloadPipelines } from "./createDiscussionWithChannelConnections.js";
+import { triggerCreatedDiscussionPipelines } from "./createDiscussionWithChannelConnections.js";
 
 test("runs server download security before channel automation", async () => {
   const calls: string[] = [];
@@ -22,7 +22,7 @@ test("runs server download security before channel automation", async () => {
       calls.push(`channel:${channelUniqueName}`);
       return [];
     };
-  await triggerCreatedDownloadPipelines({
+  await triggerCreatedDiscussionPipelines({
     driver,
     discussionId: "discussion-1",
     downloadableFileId: "file-1",
@@ -46,7 +46,7 @@ test("continues channel automation when the server pipeline fails", async () => 
     return [];
   };
 
-  await triggerCreatedDownloadPipelines({
+  await triggerCreatedDiscussionPipelines({
     discussionId: "discussion-1",
     downloadableFileId: "file-1",
     channelConnections: ["cats"],
@@ -55,4 +55,30 @@ test("continues channel automation when the server pipeline fails", async () => 
   });
 
   assert.deepEqual(calls, ["server-failed", "channel"]);
+});
+
+test("runs channel automation for text discussions without invoking a download pipeline", async () => {
+  const calls: string[] = [];
+  const triggerDownload: typeof triggerPluginRunsForDownloadableFile =
+    async () => {
+      calls.push("server");
+      return [];
+    };
+  const triggerChannel: typeof triggerChannelPluginPipeline =
+    async ({ channelUniqueName, discussionId, event }) => {
+      calls.push(`${event}:${discussionId}:${channelUniqueName}`);
+      return [];
+    };
+
+  await triggerCreatedDiscussionPipelines({
+    discussionId: "discussion-1",
+    channelConnections: ["cats", "mods"],
+    triggerDownload,
+    triggerChannel,
+  });
+
+  assert.deepEqual(calls, [
+    "discussionChannel.created:discussion-1:cats",
+    "discussionChannel.created:discussion-1:mods",
+  ]);
 });

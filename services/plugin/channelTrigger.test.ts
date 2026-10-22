@@ -80,12 +80,20 @@ test("throws when the channel does not exist", async () => {
 
 test("returns [] when no pipeline is configured for the event", async () => {
   const channel = channelWith([{ event: "some.other.event", steps: [{ pluginId: "p1" }] }]);
-  assert.deepEqual(await run(makeModels({ channel })), []);
+  assert.deepEqual(await run(makeModels({
+    channel,
+    discussion: discussionWithFile,
+    serverConfig: serverConfigNoPlugins,
+  })), []);
 });
 
 test("returns [] when the matching pipeline has no steps", async () => {
   const channel = channelWith([{ event: EVENT, steps: [] }]);
-  assert.deepEqual(await run(makeModels({ channel })), []);
+  assert.deepEqual(await run(makeModels({
+    channel,
+    discussion: discussionWithFile,
+    serverConfig: serverConfigNoPlugins,
+  })), []);
 });
 
 test("throws when the discussion does not exist", async () => {

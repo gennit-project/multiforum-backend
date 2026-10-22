@@ -30,7 +30,7 @@ type Input = {
   driver: Driver;
 };
 
-export const triggerCreatedDownloadPipelines = async ({
+export const triggerCreatedDiscussionPipelines = async ({
   driver,
   discussionId,
   downloadableFileId,
@@ -40,25 +40,27 @@ export const triggerCreatedDownloadPipelines = async ({
 }: {
   driver?: Driver;
   discussionId: string;
-  downloadableFileId: string;
+  downloadableFileId?: string;
   channelConnections: string[];
   triggerDownload?: typeof triggerPluginRunsForDownloadableFile;
   triggerChannel?: typeof triggerChannelPluginPipeline;
 }) => {
-  try {
-    await triggerDownload({
-      driver,
-      downloadableFileId,
-      event: "downloadableFile.created",
-    });
-  } catch (triggerError: unknown) {
-    const message = triggerError instanceof Error
-      ? triggerError.message
-      : String(triggerError);
-    logger.error(
-      `downloadableFile.created plugin trigger error for ${discussionId}:`,
-      message
-    );
+  if (downloadableFileId) {
+    try {
+      await triggerDownload({
+        driver,
+        downloadableFileId,
+        event: "downloadableFile.created",
+      });
+    } catch (triggerError: unknown) {
+      const message = triggerError instanceof Error
+        ? triggerError.message
+        : String(triggerError);
+      logger.error(
+        `downloadableFile.created plugin trigger error for ${discussionId}:`,
+        message
+      );
+    }
   }
 
   for (const channelUniqueName of channelConnections) {
@@ -206,6 +208,7 @@ export const createDiscussionsFromInput = async (
 
       // Check if this discussion has a download attached
       const hasDownload = discussionCreateInput.hasDownload === true;
+      const createdChannelConnections: string[] = [];
 
       // Link the discussion to channels
       for (const channelUniqueName of channelConnections) {
@@ -219,6 +222,7 @@ export const createDiscussionsFromInput = async (
               flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
             })
           );
+          createdChannelConnections.push(channelUniqueName);
 
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error);
@@ -231,24 +235,13 @@ export const createDiscussionsFromInput = async (
         }
       }
 
-      // Trigger the downloadable-file plugin pipeline (e.g. security scan) once
-      // per created download, mirroring the channel pipeline trigger above.
-      // Without this, plugins that handle downloadableFile.created never run on
-      // upload.
+      let downloadableFileId: string | undefined;
       if (hasDownload) {
         try {
           const withFile = await repository.findAttachedFiles(newDiscussionId);
-          const downloadableFileId = (
+          downloadableFileId = (
             withFile?.[0] as unknown as { DownloadableFiles?: Array<{ id?: string }> }
           )?.DownloadableFiles?.[0]?.id;
-          if (downloadableFileId) {
-            await triggerCreatedDownloadPipelines({
-              driver,
-              discussionId: newDiscussionId,
-              downloadableFileId,
-              channelConnections,
-            });
-          }
         } catch (triggerError: unknown) {
           const message =
             triggerError instanceof Error ? triggerError.message : String(triggerError);
@@ -258,6 +251,16 @@ export const createDiscussionsFromInput = async (
           );
         }
       }
+
+      // Every successful DiscussionChannel creation emits its own channel event,
+      // including ordinary text discussions. Downloads additionally emit the
+      // file event once so attachment scanning remains independent.
+      await triggerCreatedDiscussionPipelines({
+        driver,
+        discussionId: newDiscussionId,
+        downloadableFileId,
+        channelConnections: createdChannelConnections,
+      });
 
       // Refetch the discussion with all related data
       const fetchedDiscussion = await repository.findCreatedDiscussion(newDiscussionId);

@@ -31,7 +31,7 @@ type FileUpdateArgs = Parameters<ModelMap["DownloadableFile"]["update"]>[0];
 const EVENT = "discussionChannel.created";
 
 const installedEdge = (name: string) => ({
-  properties: { enabled: true, settingsJson: null },
+  properties: { enabled: true, settingsJson: null as unknown },
   node: {
     id: `pv-${name}`,
     version: "1.0.0",
@@ -55,7 +55,12 @@ const discussionWithFile = {
 function makeExecModels(
   steps: unknown[],
   edges: unknown[],
-  serverPipelines: unknown[] = []
+  serverPipelines: unknown[] = [],
+  options: {
+    discussion?: unknown
+    channelPluginEdges?: unknown[]
+    serverRules?: string[]
+  } = {}
 ) {
   const updates: RunUpdateArgs[] = [];
   const creates: RunCreateArgs[] = [];
@@ -70,10 +75,11 @@ function makeExecModels(
     pluginPipelines: [{ event: EVENT, steps }],
     Tags: [],
     FilterGroups: [],
-    EnabledPluginsConnection: { edges: [] },
+    EnabledPluginsConnection: { edges: options.channelPluginEdges || [] },
   };
   const serverConfig = {
     serverName: "s",
+    rules: options.serverRules || [],
     pluginPipelines: serverPipelines,
     InstalledVersionsConnection: { edges },
   };
@@ -102,7 +108,7 @@ function makeExecModels(
   const models = {
     Channel: modelStub<"Channel">({ find: async () => [channel] }),
     Discussion: modelStub<"Discussion">({
-      find: async () => [discussionWithFile],
+      find: async () => [options.discussion || discussionWithFile],
     }),
     ServerConfig: modelStub<"ServerConfig">({
       find: async () => [serverConfig],
@@ -152,6 +158,64 @@ test("runs a pipeline plugin to SUCCEEDED", async () => {
   assert.ok(statuses.includes("RUNNING"));
   assert.ok(statuses.includes("SUCCEEDED"));
   assert.equal(runs.length, 1);
+});
+
+test("runs discussion moderation without an attachment and supplies rule context", async () => {
+  const edge = installedEdge("mybot");
+  edge.properties.settingsJson = { mode: "report" };
+  const { models, creates, fileUpdates } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [edge],
+    [],
+    {
+      discussion: {
+        id: "d-1",
+        title: "Text discussion",
+        body: "Please review this post",
+        Author: { username: "alice", isBot: false },
+        DownloadableFile: null,
+      },
+      channelPluginEdges: [edge],
+      serverRules: ["Be kind"],
+    }
+  );
+  const receivedContexts: Array<Record<string, any>> = [];
+  const receivedEvents: Array<Record<string, any>> = [];
+  const Plugin: PluginConstructor = class {
+    constructor(...args: unknown[]) {
+      receivedContexts.push(args[0] as Record<string, any>);
+    }
+    async handleEvent(event: unknown) {
+      receivedEvents.push(event as Record<string, any>);
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin));
+
+  assert.equal(creates.length, 1);
+  assert.deepEqual(fileUpdates, []);
+  assert.equal(typeof receivedContexts[0]?.reportContentAsBot, "function");
+  assert.deepEqual(receivedEvents[0]?.payload?.author, {
+    username: "alice",
+    isBot: false,
+  });
+  assert.deepEqual(receivedEvents[0]?.payload?.attachmentUrls, []);
+  assert.deepEqual(receivedEvents[0]?.payload?.context?.server?.rules, ["Be kind"]);
+  assert.equal(receivedEvents[0]?.payload?.context?.channel?.pluginEnabled, true);
+});
+
+test("deduplicates a plugin selected by both server and channel pipelines", async () => {
+  const edge = installedEdge("mybot");
+  const { models, creates } = makeExecModels(
+    [{ pluginId: "mybot", version: "1.0.0", condition: "ALWAYS" }],
+    [edge],
+    [{ event: EVENT, steps: [{ pluginId: "mybot", condition: "ALWAYS" }] }]
+  );
+
+  await execRun(models, loaderFor(pluginReturning({ success: true })));
+
+  assert.equal(creates.length, 1);
 });
 
 test("marks the run FAILED when the plugin reports failure", async () => {
