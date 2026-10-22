@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
 #
-# Run one shard of the integration suite. Files are partitioned round-robin,
-# with an optional set of measured overrides to balance actual runtime.
-# CI runs the shards in parallel (a matrix job), each against its own
-# Testcontainers Neo4j. Coverage (lcov) is written for this shard's subset; CI
-# uploads each shard under the `integration` Codecov flag and Codecov unions
-# them, so a line covered by any shard counts as covered.
+# Run one shard of the integration suite. Files are partitioned across shards by
+# a longest-processing-time (LPT) bin-packing pass over measured per-file
+# runtimes, so every shard carries roughly equal wall-clock and the matrix
+# critical path is ~= total suite time / shard count. CI runs the shards in
+# parallel (a matrix job), each against its own Testcontainers Neo4j. Coverage
+# (lcov) is written for this shard's subset; CI uploads each shard under the
+# `integration` Codecov flag and Codecov unions them, so a line covered by any
+# shard counts as covered.
+#
+# The assignment is computed identically and deterministically by every shard
+# job (same file list + same timings + same algorithm), then each job keeps the
+# files assigned to its own index. Timings come from the manifest below; files
+# not listed there fall back to the mean measured time, so newly added tests are
+# still distributed evenly until the manifest is refreshed. With no manifest at
+# all, every file weighs the same and LPT degrades gracefully to an even
+# by-count split.
 #
 # Env:
 #   SHARD       1-based shard index   (default 1)
@@ -17,23 +27,44 @@ cd "$(dirname "$0")/.."
 
 SHARD="${SHARD:-1}"
 SHARD_TOTAL="${SHARD_TOTAL:-1}"
-OVERRIDES_FILE="build_scripts/integration-shard-overrides.txt"
+TIMINGS_FILE="build_scripts/integration-shard-timings.txt"
 
-# Round-robin is the general rule, so newly added tests are always included.
-# Apply timing-based overrides only when the map targets this shard layout.
-list_files() {
-  find ./tests/integration -name '*test.ts' -print | sort \
-    | awk -v shard="${SHARD}" -v total="${SHARD_TOTAL}" '
-        FNR == NR {
-          if ($1 !~ /^#/ && NF == 2) overrides[$2] = $1
-          next
+# Emit "<shard-index>\t<file>" for every integration test file, assigning each
+# to a shard via LPT bin-packing. Sorting is forced to the C locale so the
+# descending-time / filename-tiebreak order — and therefore the whole
+# assignment — is byte-for-byte identical on every runner.
+assign_files() {
+  find ./tests/integration -name '*test.ts' -print \
+    | LC_ALL=C awk -v tf="${TIMINGS_FILE}" '
+        BEGIN {
+          n = 0; sum = 0;
+          while ((getline line < tf) > 0) {
+            if (line ~ /^[[:space:]]*#/ || line ~ /^[[:space:]]*$/) continue
+            split(line, a, /[[:space:]]+/)
+            # a[1] = seconds, a[2] = path (integration paths never contain spaces)
+            t[a[2]] = a[1]; sum += a[1]; n++
+          }
+          def = (n > 0) ? sum / n : 1
         }
+        { secs = ($0 in t) ? t[$0] : def; printf "%d\t%s\n", secs, $0 }
+      ' \
+    | LC_ALL=C sort -k1,1nr -k2,2 \
+    | LC_ALL=C awk -v total="${SHARD_TOTAL}" '
         {
-          target = (FNR % total) + 1
-          if (($0 in overrides) && overrides[$0] <= total) target = overrides[$0]
-          if (target == shard) print
+          # Place this file on the currently least-loaded shard (lowest index
+          # wins ties), the standard LPT greedy step.
+          best = 1
+          for (j = 2; j <= total; j++) if (load[j] < load[best]) best = j
+          load[best] += $1
+          print best "\t" $2
         }
-      ' "${OVERRIDES_FILE}" -
+      '
+}
+
+# This shard's files, back in filename order for stable, readable CI logs.
+list_files() {
+  assign_files | LC_ALL=C awk -v shard="${SHARD}" -F'\t' '$1 == shard { print $2 }' \
+    | LC_ALL=C sort
 }
 
 if [ -z "$(list_files)" ]; then

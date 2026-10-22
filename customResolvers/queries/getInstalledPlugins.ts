@@ -24,10 +24,19 @@ const getResolver = (input: Input) => {
         return []
       }
 
-      const serverConfig = serverConfigs[0] as {
+      // A server has a single ServerConfig in practice, but this read is
+      // unscoped (no serverName filter) and Neo4j does not guarantee row order
+      // without an ORDER BY. Select the config that actually carries installed
+      // versions rather than assuming it is the first row returned, otherwise a
+      // second, install-less config sorting first would mask the real one.
+      const typedConfigs = serverConfigs as Array<{
         pluginRegistries?: string[]
         InstalledVersionsConnection?: { edges?: InstalledPluginEdge[] }
-      }
+      }>
+      const serverConfig =
+        typedConfigs.find(
+          (config) => config.InstalledVersionsConnection?.edges?.length
+        ) ?? typedConfigs[0]
       const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
       if (!edges.length) {
