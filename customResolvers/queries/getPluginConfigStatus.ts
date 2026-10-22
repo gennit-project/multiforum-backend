@@ -28,7 +28,14 @@ const getResolver = ({ driver, pluginStatusRepository: repository = createPlugin
       }
 
       const serverConfigs = await repository.findInstallation(pluginVersion.id)
-      const edge = serverConfigs[0]?.InstalledVersionsConnection?.edges?.[0]
+      // The installation read is unscoped across ServerConfigs and Neo4j does
+      // not guarantee row order without an ORDER BY. Pick the first config that
+      // actually has this version installed rather than assuming it is the
+      // first row returned, otherwise a config without the install sorting
+      // first would report the version as not installed.
+      const edge = serverConfigs
+        .map((config) => config.InstalledVersionsConnection?.edges?.[0])
+        .find((candidate) => candidate)
       if (!edge) {
         throw new Error(`Plugin ${args.pluginId} version ${args.version} is not installed`)
       }
