@@ -1,0 +1,376 @@
+exports[`actual history handler parity: body 1`] = `
+{
+  "state": {
+    "links": [
+      {
+        "titles": [],
+        "bodies": [
+          "Body"
+        ],
+        "editors": [
+          "editor"
+        ]
+      }
+    ],
+    "revisions": [
+      {
+        "body": "Body",
+        "author": "prior"
+      }
+    ],
+    "touched": false
+  },
+  "events": [
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "TextVersion",
+      "relationship": "HAS_BODY_VERSION"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "User",
+      "relationship": "BODY_LAST_EDITED_BY"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ]
+}
+`;
+
+exports[`actual history handler parity: both 1`] = `
+{
+  "state": {
+    "links": [
+      {
+        "titles": [
+          "Old"
+        ],
+        "bodies": [
+          "Body"
+        ],
+        "editors": [
+          "editor"
+        ]
+      }
+    ],
+    "revisions": [
+      {
+        "body": "Body",
+        "author": "prior"
+      },
+      {
+        "body": "Old",
+        "author": "editor"
+      }
+    ],
+    "touched": false
+  },
+  "events": [
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "TextVersion",
+      "relationship": "HAS_TITLE_VERSION"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "TextVersion",
+      "relationship": "HAS_BODY_VERSION"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "User",
+      "relationship": "BODY_LAST_EDITED_BY"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ]
+}
+`;
+
+exports[`actual history handler parity: invalid projection 1`] = `
+{
+  "state": {
+    "links": [
+      {
+        "titles": [
+          "Old"
+        ],
+        "bodies": [
+          "Body"
+        ],
+        "editors": [
+          "editor"
+        ]
+      }
+    ],
+    "revisions": [
+      {
+        "body": "Body",
+        "author": "prior"
+      },
+      {
+        "body": "Old",
+        "author": "editor"
+      }
+    ],
+    "touched": false
+  },
+  "events": [
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "TextVersion",
+      "relationship": "HAS_TITLE_VERSION"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "TextVersion",
+      "relationship": "HAS_BODY_VERSION"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "User",
+      "relationship": "BODY_LAST_EDITED_BY"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ]
+}
+`;
+
+exports[`actual history handler parity: missing parent 1`] = `
+{
+  "state": {
+    "links": [],
+    "revisions": [
+      {
+        "body": "Body",
+        "author": "prior"
+      },
+      {
+        "body": "Old",
+        "author": "editor"
+      }
+    ],
+    "touched": false
+  },
+  "events": [
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    }
+  ]
+}
+`;
+
+exports[`actual history handler parity: title 1`] = `
+{
+  "state": {
+    "links": [
+      {
+        "titles": [
+          "Old"
+        ],
+        "bodies": [],
+        "editors": [
+          "prior"
+        ]
+      }
+    ],
+    "revisions": [
+      {
+        "body": "Old",
+        "author": "editor"
+      }
+    ],
+    "touched": false
+  },
+  "events": [
+    {
+      "kind": "create_relationship",
+      "from": "User",
+      "to": "TextVersion",
+      "relationship": "AUTHORED_VERSION"
+    },
+    {
+      "kind": "create",
+      "typename": "TextVersion"
+    },
+    {
+      "kind": "create_relationship",
+      "from": "Discussion",
+      "to": "TextVersion",
+      "relationship": "HAS_TITLE_VERSION"
+    },
+    {
+      "kind": "update",
+      "typename": "Discussion"
+    }
+  ]
+}
+`;
+
+exports[`actual history handler parity: unchanged 1`] = `
+{
+  "state": {
+    "links": [
+      {
+        "titles": [],
+        "bodies": [],
+        "editors": [
+          "prior"
+        ]
+      }
+    ],
+    "revisions": [],
+    "touched": false
+  },
+  "events": []
+}
+`;
+
+exports[`fallback and author snapshots preserve projection and hidden/missing behavior 1`] = `
+[
+  {
+    "id": "d",
+    "title": "Old",
+    "body": "Body",
+    "Author": {
+      "username": "author"
+    },
+    "BodyLastEditedBy": {
+      "username": "prior"
+    },
+    "DiscussionChannels": [],
+    "PastTitleVersions": [],
+    "PastBodyVersions": []
+  }
+]
+`;
+
+exports[`fallback and author snapshots preserve projection and hidden/missing behavior 2`] = `
+[
+  {
+    "id": "d"
+  }
+]
+`;
+
+exports[`fallback and author snapshots preserve projection and hidden/missing behavior 3`] = `
+[]
+`;
+
+exports[`fallback and author snapshots preserve projection and hidden/missing behavior 4`] = `
+[]
+`;
+
+exports[`fallback and author snapshots preserve projection and hidden/missing behavior 5`] = `
+[
+  {
+    "username": "editor"
+  }
+]
+`;
+
+exports[`fallback and author snapshots preserve projection and hidden/missing behavior 6`] = `
+[]
+`;

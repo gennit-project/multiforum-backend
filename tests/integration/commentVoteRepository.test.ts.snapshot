@@ -1,0 +1,105 @@
+exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 1`] = `
+[
+  {
+    "id": "c",
+    "CommentAuthor": {
+      "username": "author",
+      "commentKarma": 7,
+      "createdAt": "<time>"
+    },
+    "weightedVotesCount": 3,
+    "UpvotedByUsers": 25,
+    "UpvotedByUsersAggregate": {
+      "count": 28
+    }
+  }
+]
+`;
+
+exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 2`] = `
+[
+  {
+    "username": "voter",
+    "commentKarma": 25
+  }
+]
+`;
+
+exports[`comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors 3`] = `
+[
+  {
+    "id": "c",
+    "CommentAuthor": {
+      "displayName": "mod",
+      "createdAt": "<time>"
+    },
+    "weightedVotesCount": 3,
+    "UpvotedByUsers": 25,
+    "UpvotedByUsersAggregate": {
+      "count": 28
+    }
+  }
+]
+`;
+
+exports[`karma generated write preserves native events and default projection failure after committed write 1`] = `
+{
+  "state": [
+    {
+      "karma": 8,
+      "weight": 3,
+      "voters": []
+    }
+  ],
+  "events": [
+    {
+      "id": "<node-id>",
+      "typename": "User",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "createdAt": "<time>",
+          "username": "author",
+          "commentKarma": 7
+        },
+        "new": {
+          "commentKarma": 8,
+          "createdAt": "<time>",
+          "username": "author"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`karma generated write preserves native events and default projection failure after committed write 2`] = `
+{
+  "state": [
+    {
+      "karma": 8,
+      "weight": 3,
+      "voters": []
+    }
+  ],
+  "events": [
+    {
+      "id": "<node-id>",
+      "typename": "User",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "username": "author",
+          "commentKarma": 7
+        },
+        "new": {
+          "commentKarma": 8,
+          "username": "author"
+        }
+      }
+    }
+  ]
+}
+`;

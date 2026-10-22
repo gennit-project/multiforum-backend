@@ -1,0 +1,864 @@
+exports[`connectModerator preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "channels": [
+      {
+        "uniqueName": "cats",
+        "displayName": null,
+        "description": null,
+        "locked": null,
+        "lockReason": null,
+        "deleted": null,
+        "channelIconURL": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "channelBannerURL": null,
+        "eventsEnabled": null,
+        "wikiEnabled": null,
+        "feedbackEnabled": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "imageUploadsEnabled": null,
+        "markdownImagesEnabled": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "requireVerifiedPhoneForUploads": null,
+        "requireVerifiedEmailToPost": null,
+        "markAsAnsweredEnabled": null,
+        "discussionFlairRequired": null,
+        "allowedFileTypes": null,
+        "payoutPercent": null,
+        "variantUrls": null,
+        "rules": null,
+        "pluginPipelines": null,
+        "createdAt": "<generated-time>",
+        "lockedAt": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "uniqueName": "cats",
+        "displayName": null,
+        "description": null,
+        "locked": null,
+        "lockReason": null,
+        "deleted": null,
+        "channelIconURL": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "channelBannerURL": null,
+        "eventsEnabled": null,
+        "wikiEnabled": null,
+        "feedbackEnabled": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "imageUploadsEnabled": null,
+        "markdownImagesEnabled": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "requireVerifiedPhoneForUploads": null,
+        "requireVerifiedEmailToPost": null,
+        "markAsAnsweredEnabled": null,
+        "discussionFlairRequired": null,
+        "allowedFileTypes": null,
+        "payoutPercent": null,
+        "variantUrls": null,
+        "rules": null,
+        "pluginPipelines": null,
+        "createdAt": "<generated-time>",
+        "lockedAt": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`connectModerator preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "MODERATOR_OF_CHANNEL",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "ModAlice"
+        },
+        "to": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    },
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "MODERATOR_OF_CHANNEL",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "ModAlice"
+        },
+        "to": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 1,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`disconnectInvite preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "channels": [
+      {
+        "uniqueName": "cats",
+        "displayName": null,
+        "description": null,
+        "locked": null,
+        "lockReason": null,
+        "deleted": null,
+        "channelIconURL": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "channelBannerURL": null,
+        "eventsEnabled": null,
+        "wikiEnabled": null,
+        "feedbackEnabled": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "imageUploadsEnabled": null,
+        "markdownImagesEnabled": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "requireVerifiedPhoneForUploads": null,
+        "requireVerifiedEmailToPost": null,
+        "markAsAnsweredEnabled": null,
+        "discussionFlairRequired": null,
+        "allowedFileTypes": null,
+        "payoutPercent": null,
+        "variantUrls": null,
+        "rules": null,
+        "pluginPipelines": null,
+        "createdAt": "<generated-time>",
+        "lockedAt": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "uniqueName": "cats",
+        "displayName": null,
+        "description": null,
+        "locked": null,
+        "lockReason": null,
+        "deleted": null,
+        "channelIconURL": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "channelBannerURL": null,
+        "eventsEnabled": null,
+        "wikiEnabled": null,
+        "feedbackEnabled": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "imageUploadsEnabled": null,
+        "markdownImagesEnabled": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "requireVerifiedPhoneForUploads": null,
+        "requireVerifiedEmailToPost": null,
+        "markAsAnsweredEnabled": null,
+        "discussionFlairRequired": null,
+        "allowedFileTypes": null,
+        "payoutPercent": null,
+        "variantUrls": null,
+        "rules": null,
+        "pluginPipelines": null,
+        "createdAt": "<generated-time>",
+        "lockedAt": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`disconnectInvite preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "HAS_PENDING_MOD_INVITE",
+      "fromTypename": "Channel",
+      "toTypename": "User",
+      "timestamp": "<generated-time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "to": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-1>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    },
+    {
+      "id": "<id-1>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`disconnectModerator preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "channels": [
+      {
+        "uniqueName": "cats",
+        "displayName": null,
+        "description": null,
+        "locked": null,
+        "lockReason": null,
+        "deleted": null,
+        "channelIconURL": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "channelBannerURL": null,
+        "eventsEnabled": null,
+        "wikiEnabled": null,
+        "feedbackEnabled": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "imageUploadsEnabled": null,
+        "markdownImagesEnabled": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "requireVerifiedPhoneForUploads": null,
+        "requireVerifiedEmailToPost": null,
+        "markAsAnsweredEnabled": null,
+        "discussionFlairRequired": null,
+        "allowedFileTypes": null,
+        "payoutPercent": null,
+        "variantUrls": null,
+        "rules": null,
+        "pluginPipelines": null,
+        "createdAt": "<generated-time>",
+        "lockedAt": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "uniqueName": "cats",
+        "displayName": null,
+        "description": null,
+        "locked": null,
+        "lockReason": null,
+        "deleted": null,
+        "channelIconURL": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "channelBannerURL": null,
+        "eventsEnabled": null,
+        "wikiEnabled": null,
+        "feedbackEnabled": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "imageUploadsEnabled": null,
+        "markdownImagesEnabled": null,
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "requireVerifiedPhoneForUploads": null,
+        "requireVerifiedEmailToPost": null,
+        "markAsAnsweredEnabled": null,
+        "discussionFlairRequired": null,
+        "allowedFileTypes": null,
+        "payoutPercent": null,
+        "variantUrls": null,
+        "rules": null,
+        "pluginPipelines": null,
+        "createdAt": "<generated-time>",
+        "lockedAt": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`disconnectModerator preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "MODERATOR_OF_CHANNEL",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "displayName": "ModAlice"
+        },
+        "to": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 1`] = `
+[]
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 2`] = `
+[]
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 3`] = `
+[
+  {
+    "PendingModInvites": 25
+  }
+]
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 4`] = `
+[
+  {
+    "ModerationProfile": {
+      "displayName": "ModAlice"
+    }
+  }
+]
+`;
+
+exports[`moderator writes preserve missing channel results and events 1`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`moderator writes preserve missing channel results and events 2`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing channel results and events 3`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`moderator writes preserve missing channel results and events 4`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing channel results and events 5`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`moderator writes preserve missing channel results and events 6`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 1`] = `
+{
+  "channels": [
+    {
+      "uniqueName": "cats",
+      "displayName": null,
+      "description": null,
+      "locked": null,
+      "lockReason": null,
+      "deleted": null,
+      "channelIconURL": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "channelBannerURL": null,
+      "eventsEnabled": null,
+      "wikiEnabled": null,
+      "feedbackEnabled": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "imageUploadsEnabled": null,
+      "markdownImagesEnabled": null,
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "requireVerifiedPhoneForUploads": null,
+      "requireVerifiedEmailToPost": null,
+      "markAsAnsweredEnabled": null,
+      "discussionFlairRequired": null,
+      "allowedFileTypes": null,
+      "payoutPercent": null,
+      "variantUrls": null,
+      "rules": null,
+      "pluginPipelines": null,
+      "createdAt": "<generated-time>",
+      "lockedAt": null
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 2`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 3`] = `
+{
+  "channels": [
+    {
+      "uniqueName": "cats",
+      "displayName": null,
+      "description": null,
+      "locked": null,
+      "lockReason": null,
+      "deleted": null,
+      "channelIconURL": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "channelBannerURL": null,
+      "eventsEnabled": null,
+      "wikiEnabled": null,
+      "feedbackEnabled": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "imageUploadsEnabled": null,
+      "markdownImagesEnabled": null,
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "requireVerifiedPhoneForUploads": null,
+      "requireVerifiedEmailToPost": null,
+      "markAsAnsweredEnabled": null,
+      "discussionFlairRequired": null,
+      "allowedFileTypes": null,
+      "payoutPercent": null,
+      "variantUrls": null,
+      "rules": null,
+      "pluginPipelines": null,
+      "createdAt": "<generated-time>",
+      "lockedAt": null
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 4`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 5`] = `
+{
+  "channels": [
+    {
+      "uniqueName": "cats",
+      "displayName": null,
+      "description": null,
+      "locked": null,
+      "lockReason": null,
+      "deleted": null,
+      "channelIconURL": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "channelBannerURL": null,
+      "eventsEnabled": null,
+      "wikiEnabled": null,
+      "feedbackEnabled": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "imageUploadsEnabled": null,
+      "markdownImagesEnabled": null,
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "requireVerifiedPhoneForUploads": null,
+      "requireVerifiedEmailToPost": null,
+      "markAsAnsweredEnabled": null,
+      "discussionFlairRequired": null,
+      "allowedFileTypes": null,
+      "payoutPercent": null,
+      "variantUrls": null,
+      "rules": null,
+      "pluginPipelines": null,
+      "createdAt": "<generated-time>",
+      "lockedAt": null
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 6`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "uniqueName": "cats",
+          "createdAt": "<generated-time>"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`projection failure preserves committed moderator relationship and native events 1`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "MODERATOR_OF_CHANNEL",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "ModAlice"
+        },
+        "to": {
+          "uniqueName": "cats"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "Channel",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "cats"
+        },
+        "new": {
+          "uniqueName": "cats"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 1,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;

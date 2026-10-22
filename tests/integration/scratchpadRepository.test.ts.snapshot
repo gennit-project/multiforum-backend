@@ -1,0 +1,728 @@
+exports[`Comment {id UpvotedByUsers{username} SuperUpvotedByUsers{username} DiscussionChannel{discussionId channelUniqueName} CommentAuthor{... on User{username}}} parity for missing and seeded targets 1`] = `
+[]
+`;
+
+exports[`Comment {id UpvotedByUsers{username} SuperUpvotedByUsers{username} DiscussionChannel{discussionId channelUniqueName} CommentAuthor{... on User{username}}} parity for missing and seeded targets 2`] = `
+[
+  {
+    "id": "comment",
+    "UpvotedByUsers": [
+      {
+        "username": "alice"
+      }
+    ],
+    "SuperUpvotedByUsers": [
+      {
+        "username": "alice"
+      }
+    ],
+    "DiscussionChannel": {
+      "discussionId": "d",
+      "channelUniqueName": "cats"
+    },
+    "CommentAuthor": {
+      "username": "bob"
+    }
+  }
+]
+`;
+
+exports[`DiscussionChannel {id discussionId channelUniqueName UpvotedByUsers{username} SuperUpvotedByUsers{username} Discussion{Author{username}}} parity for missing and seeded targets 1`] = `
+[]
+`;
+
+exports[`DiscussionChannel {id discussionId channelUniqueName UpvotedByUsers{username} SuperUpvotedByUsers{username} Discussion{Author{username}}} parity for missing and seeded targets 2`] = `
+[
+  {
+    "id": "dc",
+    "discussionId": "d",
+    "channelUniqueName": "cats",
+    "UpvotedByUsers": [
+      {
+        "username": "alice"
+      }
+    ],
+    "SuperUpvotedByUsers": [
+      {
+        "username": "alice"
+      }
+    ],
+    "Discussion": {
+      "Author": {
+        "username": "bob"
+      }
+    }
+  }
+]
+`;
+
+exports[`ScratchpadEntry {id Recipient{username}} parity for missing and seeded targets 1`] = `
+[]
+`;
+
+exports[`ScratchpadEntry {id Recipient{username}} parity for missing and seeded targets 2`] = `
+[
+  {
+    "id": "entry",
+    "Recipient": {
+      "username": "bob"
+    }
+  }
+]
+`;
+
+exports[`ScratchpadEntry {id isPublic text sourceType sourceId sourceChannelUniqueName discussionId createdAt Recipient{username} Author{username displayName profilePicURL}} parity for missing and seeded targets 1`] = `
+[]
+`;
+
+exports[`ScratchpadEntry {id isPublic text sourceType sourceId sourceChannelUniqueName discussionId createdAt Recipient{username} Author{username displayName profilePicURL}} parity for missing and seeded targets 2`] = `
+[
+  {
+    "id": "entry",
+    "isPublic": false,
+    "text": "thanks",
+    "sourceType": "comment",
+    "sourceId": "comment",
+    "sourceChannelUniqueName": null,
+    "discussionId": null,
+    "createdAt": "<time>",
+    "Recipient": {
+      "username": "bob"
+    },
+    "Author": {
+      "username": "alice",
+      "displayName": null,
+      "profilePicURL": null
+    }
+  }
+]
+`;
+
+exports[`User {username displayName} parity for missing and seeded targets 1`] = `
+[]
+`;
+
+exports[`User {username displayName} parity for missing and seeded targets 2`] = `
+[
+  {
+    "username": "bob",
+    "displayName": null
+  }
+]
+`;
+
+exports[`delete preserves detach cleanup, votes, notifications and native events (relationship order 0) 1`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete",
+      "properties": {
+        "old": {
+          "sourceType": "comment",
+          "text": "thanks",
+          "isPublic": false,
+          "id": "entry",
+          "createdAt": "<time>",
+          "sourceId": "comment"
+        }
+      }
+    },
+    {
+      "id": "<id-1>",
+      "id_from": "<id-2>",
+      "id_to": "<id-0>",
+      "relationshipName": "HAS_SCRATCHPAD_ENTRY",
+      "fromTypename": "User",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "bob"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-3>",
+      "id_from": "<id-4>",
+      "id_to": "<id-0>",
+      "relationshipName": "NOTIFICATION_FOR_SCRATCHPAD_ENTRY",
+      "fromTypename": "Notification",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "id": "notice"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-5>",
+      "id_from": "<id-6>",
+      "id_to": "<id-0>",
+      "relationshipName": "WROTE_SCRATCHPAD_ENTRY",
+      "fromTypename": "User",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "alice"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    }
+  ],
+  "counts": [
+    {
+      "label": "Comment",
+      "count": 1
+    },
+    {
+      "label": "Discussion",
+      "count": 1
+    },
+    {
+      "label": "DiscussionChannel",
+      "count": 1
+    },
+    {
+      "label": "Notification",
+      "count": 1
+    },
+    {
+      "label": "User",
+      "count": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "AUTHORED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "CONTAINS_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "POSTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "POSTED_IN_CHANNEL",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_DISCUSSION",
+      "count": 1
+    }
+  ],
+  "entries": []
+}
+`;
+
+exports[`delete preserves detach cleanup, votes, notifications and native events (relationship order 1) 1`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete",
+      "properties": {
+        "old": {
+          "sourceType": "comment",
+          "text": "thanks",
+          "isPublic": false,
+          "id": "entry",
+          "createdAt": "<time>",
+          "sourceId": "comment"
+        }
+      }
+    },
+    {
+      "id": "<id-1>",
+      "id_from": "<id-2>",
+      "id_to": "<id-0>",
+      "relationshipName": "HAS_SCRATCHPAD_ENTRY",
+      "fromTypename": "User",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "bob"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-3>",
+      "id_from": "<id-4>",
+      "id_to": "<id-0>",
+      "relationshipName": "NOTIFICATION_FOR_SCRATCHPAD_ENTRY",
+      "fromTypename": "Notification",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "id": "notice"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-5>",
+      "id_from": "<id-6>",
+      "id_to": "<id-0>",
+      "relationshipName": "WROTE_SCRATCHPAD_ENTRY",
+      "fromTypename": "User",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "alice"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    }
+  ],
+  "counts": [
+    {
+      "label": "Comment",
+      "count": 1
+    },
+    {
+      "label": "Discussion",
+      "count": 1
+    },
+    {
+      "label": "DiscussionChannel",
+      "count": 1
+    },
+    {
+      "label": "Notification",
+      "count": 1
+    },
+    {
+      "label": "User",
+      "count": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "AUTHORED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "CONTAINS_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "POSTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "POSTED_IN_CHANNEL",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_DISCUSSION",
+      "count": 1
+    }
+  ],
+  "entries": []
+}
+`;
+
+exports[`delete preserves detach cleanup, votes, notifications and native events (relationship order 2) 1`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete",
+      "properties": {
+        "old": {
+          "sourceType": "comment",
+          "text": "thanks",
+          "isPublic": false,
+          "id": "entry",
+          "createdAt": "<time>",
+          "sourceId": "comment"
+        }
+      }
+    },
+    {
+      "id": "<id-1>",
+      "id_from": "<id-2>",
+      "id_to": "<id-0>",
+      "relationshipName": "HAS_SCRATCHPAD_ENTRY",
+      "fromTypename": "User",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "bob"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-3>",
+      "id_from": "<id-4>",
+      "id_to": "<id-0>",
+      "relationshipName": "NOTIFICATION_FOR_SCRATCHPAD_ENTRY",
+      "fromTypename": "Notification",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "id": "notice"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-5>",
+      "id_from": "<id-6>",
+      "id_to": "<id-0>",
+      "relationshipName": "WROTE_SCRATCHPAD_ENTRY",
+      "fromTypename": "User",
+      "toTypename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "alice"
+        },
+        "to": {
+          "sourceId": "comment",
+          "createdAt": "<time>",
+          "sourceType": "comment",
+          "isPublic": false,
+          "text": "thanks",
+          "id": "entry"
+        },
+        "relationship": {}
+      }
+    }
+  ],
+  "counts": [
+    {
+      "label": "Comment",
+      "count": 1
+    },
+    {
+      "label": "Discussion",
+      "count": 1
+    },
+    {
+      "label": "DiscussionChannel",
+      "count": 1
+    },
+    {
+      "label": "Notification",
+      "count": 1
+    },
+    {
+      "label": "User",
+      "count": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "AUTHORED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "CONTAINS_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "POSTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "POSTED_IN_CHANNEL",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_DISCUSSION",
+      "count": 1
+    }
+  ],
+  "entries": []
+}
+`;
+
+exports[`source reads preserve User/Moderator union, nested vote limits and age filtering 1`] = `
+[
+  {
+    "id": "comment",
+    "UpvotedByUsers": 25,
+    "SuperUpvotedByUsers": [
+      {
+        "username": "alice"
+      }
+    ],
+    "DiscussionChannel": {
+      "discussionId": "d",
+      "channelUniqueName": "cats"
+    },
+    "CommentAuthor": {
+      "username": "bob"
+    }
+  }
+]
+`;
+
+exports[`visibility repeated writes preserve native events and default response errors 1`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "sourceType": "comment",
+          "text": "thanks",
+          "isPublic": false,
+          "id": "entry",
+          "createdAt": "<time>",
+          "sourceId": "comment"
+        },
+        "new": {
+          "sourceType": "comment",
+          "text": "thanks",
+          "isPublic": true,
+          "id": "entry",
+          "createdAt": "<time>",
+          "sourceId": "comment"
+        }
+      }
+    },
+    {
+      "id": "<id-0>",
+      "typename": "ScratchpadEntry",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "sourceType": "comment",
+          "text": "thanks",
+          "isPublic": true,
+          "id": "entry",
+          "createdAt": "<time>",
+          "sourceId": "comment"
+        },
+        "new": {
+          "sourceType": "comment",
+          "text": "thanks",
+          "isPublic": true,
+          "id": "entry",
+          "createdAt": "<time>",
+          "sourceId": "comment"
+        }
+      }
+    }
+  ],
+  "counts": [
+    {
+      "label": "Comment",
+      "count": 1
+    },
+    {
+      "label": "Discussion",
+      "count": 1
+    },
+    {
+      "label": "DiscussionChannel",
+      "count": 1
+    },
+    {
+      "label": "Notification",
+      "count": 1
+    },
+    {
+      "label": "ScratchpadEntry",
+      "count": 1
+    },
+    {
+      "label": "User",
+      "count": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "AUTHORED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "CONTAINS_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "HAS_SCRATCHPAD_ENTRY",
+      "count": 1
+    },
+    {
+      "type": "NOTIFICATION_FOR_SCRATCHPAD_ENTRY",
+      "count": 1
+    },
+    {
+      "type": "POSTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "POSTED_IN_CHANNEL",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "SUPER_UPVOTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_COMMENT",
+      "count": 1
+    },
+    {
+      "type": "UPVOTED_DISCUSSION",
+      "count": 1
+    },
+    {
+      "type": "WROTE_SCRATCHPAD_ENTRY",
+      "count": 1
+    }
+  ],
+  "entries": [
+    {
+      "public": true,
+      "text": "thanks"
+    }
+  ]
+}
+`;

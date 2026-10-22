@@ -21,7 +21,7 @@ before(async()=>{
 },{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});
-const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>key==="timestamp"?"<timestamp>":value));
+const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>["timestamp","id","id_from","id_to"].includes(key)?`<${key}>`:value));
 test("current projection and generated update retain native events and nullable serverName behavior",async(t)=>{
   const repo=createServerPipelineRepository(driver);
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'test',pluginPipelines:'[]'})");

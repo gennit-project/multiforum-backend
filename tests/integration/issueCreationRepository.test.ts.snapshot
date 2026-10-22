@@ -1,0 +1,1797 @@
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 1`] = `
+{
+  "id": "generated",
+  "issueNumber": 1,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 10`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 5,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "alice"
+    },
+    {
+      "number": {
+        "low": 5,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 5,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_WIKI_PAGE",
+      "target": "w"
+    },
+    {
+      "number": {
+        "low": 5,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_WIKI_REVISION",
+      "target": "v"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_WIKI_REVISION",
+      "fromTypename": "Issue",
+      "toTypename": "TextVersion",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedWikiRevisionId": "v",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 5,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        },
+        "to": {
+          "id": "id4"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "TARGETS_WIKI_PAGE",
+      "fromTypename": "Issue",
+      "toTypename": "WikiPage",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedWikiRevisionId": "v",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 5,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        },
+        "to": {
+          "id": "id7"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id8",
+      "id_from": "id1",
+      "id_to": "id9",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedWikiRevisionId": "v",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 5,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id10",
+      "id_from": "id11",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "relatedWikiRevisionId": "v",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 5,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "relatedWikiRevisionId": "v",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 5,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 11`] = `
+{
+  "id": "generated",
+  "issueNumber": 6,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 12`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 6,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "mod"
+    },
+    {
+      "number": {
+        "low": 6,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 6,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_IMAGE",
+      "target": "im"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_IMAGE",
+      "fromTypename": "Issue",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedImageId": "im",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 6,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "id": "id4"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationProfile",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedImageId": "im",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 6,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "displayName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "relatedImageId": "im",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 6,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "relatedImageId": "im",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 6,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 13`] = `
+{
+  "id": "generated",
+  "issueNumber": 7,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 14`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 7,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "alice"
+    },
+    {
+      "number": {
+        "low": 7,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 7,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_ALBUM",
+      "target": "a"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_ALBUM",
+      "fromTypename": "Issue",
+      "toTypename": "Album",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "relatedAlbumId": "a",
+          "id": "id3",
+          "issueNumber": 7,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "id": "id4"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "relatedAlbumId": "a",
+          "id": "id3",
+          "issueNumber": 7,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "relatedAlbumId": "a",
+          "id": "id3",
+          "issueNumber": 7,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "relatedAlbumId": "a",
+          "id": "id3",
+          "issueNumber": 7,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 15`] = `
+{
+  "id": "generated",
+  "issueNumber": 8,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 16`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 8,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "mod"
+    },
+    {
+      "number": {
+        "low": 8,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 8,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_USER",
+      "target": "alice"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_USER",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 8,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id4",
+      "id_from": "id1",
+      "id_to": "id5",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationProfile",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 8,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "displayName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "id_from": "id7",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 8,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 8,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 17`] = `
+{
+  "id": "generated",
+  "issueNumber": 9,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 18`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 9,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "alice"
+    },
+    {
+      "number": {
+        "low": 9,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 9,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_MOD_PROFILE",
+      "target": "mod"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_MOD_PROFILE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationProfile",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 9,
+          "createdAt": "<time>",
+          "relatedModProfileName": "mod",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "displayName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id4",
+      "id_from": "id1",
+      "id_to": "id5",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 9,
+          "createdAt": "<time>",
+          "relatedModProfileName": "mod",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "id_from": "id7",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 9,
+          "createdAt": "<time>",
+          "relatedModProfileName": "mod",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 9,
+          "createdAt": "<time>",
+          "relatedModProfileName": "mod",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 19`] = `
+{
+  "id": "generated",
+  "issueNumber": 10,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 2`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 1,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "alice"
+    },
+    {
+      "number": {
+        "low": 1,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 1,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_DISCUSSION",
+      "target": "d"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_DISCUSSION",
+      "fromTypename": "Issue",
+      "toTypename": "Discussion",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedDiscussionId": "d",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "id": "id4"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedDiscussionId": "d",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedDiscussionId": "d",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedDiscussionId": "d",
+          "isOpen": true,
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 20`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 10,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "mod"
+    },
+    {
+      "number": {
+        "low": 10,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 10,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_PROFILE_PICTURE_USER",
+      "target": "alice"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_PROFILE_PICTURE_USER",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "issueNumber": 10,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "relatedProfilePicUserId": "alice",
+          "id": "id3",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id4",
+      "id_from": "id1",
+      "id_to": "id5",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationProfile",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "issueNumber": 10,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "relatedProfilePicUserId": "alice",
+          "id": "id3",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "displayName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "id_from": "id7",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "issueNumber": 10,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "relatedProfilePicUserId": "alice",
+          "id": "id3",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "issueNumber": 10,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "relatedProfilePicUserId": "alice",
+          "id": "id3",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 21`] = `
+{
+  "id": "generated",
+  "issueNumber": 11,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 22`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 11,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "alice"
+    },
+    {
+      "number": {
+        "low": 11,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 11,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_CHANNEL",
+      "target": "forum"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_CHANNEL",
+      "fromTypename": "Issue",
+      "toTypename": "Channel",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 11,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedChannelUniqueName": "forum",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "uniqueName": "forum"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id4",
+      "id_from": "id1",
+      "id_to": "id5",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 11,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedChannelUniqueName": "forum",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "id_from": "id2",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 11,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedChannelUniqueName": "forum",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 11,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedChannelUniqueName": "forum",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 3`] = `
+{
+  "id": "generated",
+  "issueNumber": 2,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 4`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 2,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "mod"
+    },
+    {
+      "number": {
+        "low": 2,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 2,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_COMMENT",
+      "target": "c"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_COMMENT",
+      "fromTypename": "Issue",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedCommentId": "c",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 2,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "id": "id4"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationProfile",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedCommentId": "c",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 2,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "displayName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "relatedCommentId": "c",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 2,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "relatedCommentId": "c",
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 2,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 5`] = `
+{
+  "id": "generated",
+  "issueNumber": 3,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 6`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 3,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "alice"
+    },
+    {
+      "number": {
+        "low": 3,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 3,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_EVENT",
+      "target": "e"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_EVENT",
+      "fromTypename": "Issue",
+      "toTypename": "Event",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 3,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "relatedEventId": "e",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "id": "id4"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 3,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "relatedEventId": "e",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 3,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "relatedEventId": "e",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 3,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "alice",
+          "relatedEventId": "e",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 7`] = `
+{
+  "id": "generated",
+  "issueNumber": 4,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 8`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 4,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "mod"
+    },
+    {
+      "number": {
+        "low": 4,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 4,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_WIKI_PAGE",
+      "target": "w"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_WIKI_PAGE",
+      "fromTypename": "Issue",
+      "toTypename": "WikiPage",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 4,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        },
+        "to": {
+          "id": "id4"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationProfile",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 4,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        },
+        "to": {
+          "displayName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 4,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 4,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "authorName": "mod",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>",
+          "relatedWikiPageId": "w"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`all eleven typed targets, channel and both author unions retain graph/default/event parity 9`] = `
+{
+  "id": "generated",
+  "issueNumber": 5,
+  "flaggedServerRuleViolation": null
+}
+`;
+
+exports[`selected projection errors preserve durable writes and native events 1`] = `
+{
+  "rows": [
+    {
+      "number": {
+        "low": 1,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "AUTHORED_ISSUE",
+      "target": "alice"
+    },
+    {
+      "number": {
+        "low": 1,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "HAS_ISSUE",
+      "target": "forum"
+    },
+    {
+      "number": {
+        "low": 1,
+        "high": 0
+      },
+      "locked": false,
+      "touched": true,
+      "relation": "TARGETS_USER",
+      "target": "alice"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_USER",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id4",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "username": "alice"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "HAS_ISSUE",
+      "fromTypename": "Channel",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum"
+        },
+        "to": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "relatedUsername": "alice",
+          "authorName": "alice",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;

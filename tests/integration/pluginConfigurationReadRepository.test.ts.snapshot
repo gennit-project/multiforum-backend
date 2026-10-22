@@ -1,0 +1,103 @@
+exports[`installed plugin projections preserve relationship data, metadata and unscoped config order 1`] = `
+[
+  {
+    "serverName": "first",
+    "pluginRegistries": null,
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{\\"mode\\":\\"safe\\"}"
+          },
+          "node": {
+            "id": "version-id",
+            "version": "1.0.0",
+            "repoUrl": "https://example.test/repo",
+            "tarballGsUri": null,
+            "integritySha256": null,
+            "registryUrl": null,
+            "releaseNotesUrl": null,
+            "sourceRepoUrl": null,
+            "sourceCommit": null,
+            "minServerVersion": null,
+            "apiVersion": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"name\\":\\"scanner\\"}",
+            "settingsDefaults": "{\\"enabled\\":true}",
+            "uiSchema": "{}",
+            "documentationPath": "docs/index.md",
+            "readmeMarkdown": "Read me",
+            "Plugin": {
+              "id": "plugin-id",
+              "name": "scanner",
+              "displayName": "Scanner",
+              "description": null,
+              "authorName": null,
+              "authorUrl": null,
+              "homepage": null,
+              "license": null,
+              "tags": [
+                "scan"
+              ],
+              "metadata": "{\\"kind\\":\\"scanner\\"}"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "serverName": "second",
+    "pluginRegistries": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  }
+]
+`;
+
+exports[`reconciliation snapshots preserve global secret status and default apply preview wiring 1`] = `
+[
+  {
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  }
+]
+`;
+
+exports[`reconciliation snapshots preserve global secret status and default apply preview wiring 2`] = `
+[
+  {
+    "pluginId": "scanner",
+    "key": "key",
+    "isValid": false,
+    "lastValidatedAt": null
+  }
+]
+`;
+
+exports[`secret-status projections match OGM without exposing ciphertext 1`] = `
+[
+  {
+    "key": "invalid",
+    "isValid": false,
+    "lastValidatedAt": "2026-01-02T03:04:05.000Z",
+    "validationError": "Rejected"
+  },
+  {
+    "key": "untested",
+    "isValid": null,
+    "lastValidatedAt": null,
+    "validationError": null
+  },
+  {
+    "key": "valid",
+    "isValid": true,
+    "lastValidatedAt": "2026-01-02T03:04:05.000Z",
+    "validationError": null
+  }
+]
+`;

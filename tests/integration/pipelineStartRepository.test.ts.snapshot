@@ -1,0 +1,377 @@
+exports[`active attempts retain full predicate, unbounded result and started-attempt projection 1`] = `
+[
+  {
+    "pipelineId": "1"
+  },
+  {
+    "pipelineId": "10"
+  },
+  {
+    "pipelineId": "11"
+  },
+  {
+    "pipelineId": "12"
+  },
+  {
+    "pipelineId": "13"
+  },
+  {
+    "pipelineId": "14"
+  },
+  {
+    "pipelineId": "15"
+  },
+  {
+    "pipelineId": "16"
+  },
+  {
+    "pipelineId": "17"
+  },
+  {
+    "pipelineId": "18"
+  },
+  {
+    "pipelineId": "19"
+  },
+  {
+    "pipelineId": "2"
+  },
+  {
+    "pipelineId": "20"
+  },
+  {
+    "pipelineId": "21"
+  },
+  {
+    "pipelineId": "22"
+  },
+  {
+    "pipelineId": "23"
+  },
+  {
+    "pipelineId": "24"
+  },
+  {
+    "pipelineId": "25"
+  },
+  {
+    "pipelineId": "26"
+  },
+  {
+    "pipelineId": "27"
+  },
+  {
+    "pipelineId": "28"
+  },
+  {
+    "pipelineId": "29"
+  },
+  {
+    "pipelineId": "3"
+  },
+  {
+    "pipelineId": "4"
+  },
+  {
+    "pipelineId": "5"
+  },
+  {
+    "pipelineId": "6"
+  },
+  {
+    "pipelineId": "7"
+  },
+  {
+    "pipelineId": "8"
+  },
+  {
+    "pipelineId": "9"
+  }
+]
+`;
+
+exports[`active attempts retain full predicate, unbounded result and started-attempt projection 2`] = `
+[
+  {
+    "pipelineId": "1",
+    "targetId": "file",
+    "targetType": "DownloadableFile",
+    "targetVersion": null,
+    "eventType": "downloadableFile.created",
+    "scope": "SERVER",
+    "channelId": null,
+    "status": "RUNNING",
+    "trigger": "OWNER_START",
+    "initiatedByUsername": null,
+    "retryOfPipelineRunId": null,
+    "attemptNumber": 1,
+    "configurationSnapshot": "{}",
+    "applicability": null,
+    "policyEffectiveAt": null,
+    "policyId": null,
+    "campaignId": null,
+    "queuedAt": null,
+    "startedAt": null,
+    "heartbeatAt": null,
+    "timeoutAt": null,
+    "finishedAt": null,
+    "createdAt": "2020-01-01T00:00:00.000Z",
+    "updatedAt": "2020-01-01T00:00:00.000Z"
+  }
+]
+`;
+
+exports[`active attempts retain full predicate, unbounded result and started-attempt projection 3`] = `
+[]
+`;
+
+exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 1`] = `
+[
+  {
+    "id": "file",
+    "uploadedAt": "2020-01-01T00:00:00.000Z",
+    "createdAt": "2020-01-01T00:00:00.000Z",
+    "uploadedByUsername": "owner",
+    "Discussion": null
+  }
+]
+`;
+
+exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 2`] = `
+[]
+`;
+
+exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 3`] = `
+[]
+`;
+
+exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 4`] = `
+[
+  {
+    "uniqueName": "channel",
+    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]"
+  }
+]
+`;
+
+exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 5`] = `
+[]
+`;
+
+exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 6`] = `
+[
+  {
+    "uniqueName": "channel",
+    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]"
+  }
+]
+`;
+
+exports[`start snapshots preserve selections, literal values, missing rows and unbounded configuration reads 7`] = `
+[
+  {
+    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"plugin\\"}]}]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": null
+          },
+          "node": {
+            "id": "version",
+            "version": "1.0.0",
+            "repoUrl": "fixture-only",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "plugin",
+              "name": "plugin",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "pluginPipelines": null,
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  }
+]
+`;

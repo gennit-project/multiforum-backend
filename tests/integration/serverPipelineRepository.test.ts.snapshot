@@ -1,0 +1,89 @@
+exports[`current projection and generated update retain native events and nullable serverName behavior 1`] = `
+[
+  {
+    "serverName": "test",
+    "pluginPipelines": "[]"
+  }
+]
+`;
+
+exports[`current projection and generated update retain native events and nullable serverName behavior 2`] = `
+[
+  {
+    "id": "<id>",
+    "typename": "ServerConfig",
+    "timestamp": "<timestamp>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "pluginPipelines": "[]",
+        "serverName": "test"
+      },
+      "new": {
+        "pluginPipelines": "[{\\"event\\":\\"comment.created\\"}]",
+        "serverName": "test"
+      }
+    }
+  }
+]
+`;
+
+exports[`current projection and generated update retain native events and nullable serverName behavior 3`] = `
+[
+  {
+    "serverName": null,
+    "pluginPipelines": "[]"
+  }
+]
+`;
+
+exports[`current projection and generated update retain native events and nullable serverName behavior 4`] = `
+[
+  {
+    "serverName": null,
+    "pluginPipelines": "[\\"null-key\\"]"
+  }
+]
+`;
+
+exports[`current projection and generated update retain native events and nullable serverName behavior 5`] = `
+[
+  {
+    "id": "<id>",
+    "typename": "ServerConfig",
+    "timestamp": "<timestamp>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "pluginPipelines": "[]"
+      },
+      "new": {
+        "pluginPipelines": "[\\"null-key\\"]"
+      }
+    }
+  }
+]
+`;
+
+exports[`unused default projection failures remain postcommit errors 1`] = `
+[
+  {
+    "id": "<id>",
+    "typename": "ServerConfig",
+    "timestamp": "<timestamp>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "pluginPipelines": "[]",
+        "enableDownloads": "invalid-boolean",
+        "serverName": "test"
+      },
+      "new": {
+        "pluginPipelines": "[\\"changed\\"]",
+        "enableDownloads": "invalid-boolean",
+        "serverName": "test"
+      }
+    }
+  }
+]
+`;

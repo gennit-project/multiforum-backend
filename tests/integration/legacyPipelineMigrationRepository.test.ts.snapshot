@@ -1,0 +1,1115 @@
+exports[`CLI materialization retains skip behavior, exact writes and logging with standalone schemas 1`] = `
+[
+  {
+    "serverName": "first",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v",
+            "version": "1.0.0",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p",
+              "name": "scanner",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "serverName": "later",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  }
+]
+`;
+
+exports[`CLI materialization retains skip behavior, exact writes and logging with standalone schemas 2`] = `
+{
+  "logs": [
+    "[pipeline-migration] first: added downloadableFile.created"
+  ],
+  "state": [
+    {
+      "name": "first",
+      "pipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"scanner\\",\\"condition\\":\\"ALWAYS\\",\\"continueOnError\\":false}],\\"stopOnFirstFailure\\":true,\\"applicability\\":\\"ALL_FILES_IMMEDIATE\\",\\"effectiveAt\\":\\"2026-01-01T00:00:00.000Z\\",\\"policyId\\":\\"fixture-policy\\"}]"
+    },
+    {
+      "name": "later",
+      "pipelines": "[]"
+    }
+  ]
+}
+`;
+
+exports[`nullable names and literal strings retain write filters and generated coercion 1`] = `
+[
+  {
+    "name": "quote\\"\\\\",
+    "pipelines": "[\\"literal\\"]"
+  },
+  {
+    "name": null,
+    "pipelines": "[\\"null\\"]"
+  }
+]
+`;
+
+exports[`standalone CLI schema preserves exact default response and unbounded nested configuration reads 1`] = `
+[
+  {
+    "serverName": "server1",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v1",
+            "version": "1",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p1",
+              "name": "plugin1",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v10",
+            "version": "10",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p10",
+              "name": "plugin10",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v11",
+            "version": "11",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p11",
+              "name": "plugin11",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v12",
+            "version": "12",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p12",
+              "name": "plugin12",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v13",
+            "version": "13",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p13",
+              "name": "plugin13",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v14",
+            "version": "14",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p14",
+              "name": "plugin14",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v15",
+            "version": "15",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p15",
+              "name": "plugin15",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v16",
+            "version": "16",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p16",
+              "name": "plugin16",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v17",
+            "version": "17",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p17",
+              "name": "plugin17",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v18",
+            "version": "18",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p18",
+              "name": "plugin18",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v19",
+            "version": "19",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p19",
+              "name": "plugin19",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v2",
+            "version": "2",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p2",
+              "name": "plugin2",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v20",
+            "version": "20",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p20",
+              "name": "plugin20",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v21",
+            "version": "21",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p21",
+              "name": "plugin21",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v22",
+            "version": "22",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p22",
+              "name": "plugin22",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v23",
+            "version": "23",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p23",
+              "name": "plugin23",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v24",
+            "version": "24",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p24",
+              "name": "plugin24",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v25",
+            "version": "25",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p25",
+              "name": "plugin25",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v26",
+            "version": "26",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p26",
+              "name": "plugin26",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v27",
+            "version": "27",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p27",
+              "name": "plugin27",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v28",
+            "version": "28",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p28",
+              "name": "plugin28",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v29",
+            "version": "29",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p29",
+              "name": "plugin29",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v3",
+            "version": "3",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p3",
+              "name": "plugin3",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v4",
+            "version": "4",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p4",
+              "name": "plugin4",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v5",
+            "version": "5",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p5",
+              "name": "plugin5",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v6",
+            "version": "6",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p6",
+              "name": "plugin6",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v7",
+            "version": "7",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p7",
+              "name": "plugin7",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v8",
+            "version": "8",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p8",
+              "name": "plugin8",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        },
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v9",
+            "version": "9",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": null,
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p9",
+              "name": "plugin9",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "serverName": "server10",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server11",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server12",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server13",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server14",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server15",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server16",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server17",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server18",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server19",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server2",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server20",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server21",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server22",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server23",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server24",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server25",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server26",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server27",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server28",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server29",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server3",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server4",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server5",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server6",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server7",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server8",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  },
+  {
+    "serverName": "server9",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": []
+    }
+  }
+]
+`;
+
+exports[`standalone enableDownloads projection failure keeps committed write and prevents later saves/logs 1`] = `
+[
+  {
+    "serverName": "first",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v",
+            "version": "1.0.0",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p",
+              "name": "scanner",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "serverName": "later",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v",
+            "version": "1.0.0",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p",
+              "name": "scanner",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`standalone enableDownloads projection failure keeps committed write and prevents later saves/logs 2`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"invalid\\"",
+  "state": [
+    {
+      "name": "first",
+      "pipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"scanner\\",\\"condition\\":\\"ALWAYS\\",\\"continueOnError\\":false}],\\"stopOnFirstFailure\\":true,\\"applicability\\":\\"ALL_FILES_IMMEDIATE\\",\\"effectiveAt\\":\\"2026-01-01T00:00:00.000Z\\",\\"policyId\\":\\"fixture-policy\\"}]"
+    },
+    {
+      "name": "later",
+      "pipelines": "[]"
+    }
+  ]
+}
+`;
+
+exports[`standalone rankingSettingsJson projection failure keeps committed write and prevents later saves/logs 1`] = `
+[
+  {
+    "serverName": "first",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v",
+            "version": "1.0.0",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p",
+              "name": "scanner",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "serverName": "later",
+    "pluginPipelines": "[]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": "{}"
+          },
+          "node": {
+            "id": "v",
+            "version": "1.0.0",
+            "repoUrl": "https://fixture.invalid/plugin",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\"]}",
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "p",
+              "name": "scanner",
+              "displayName": null,
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`standalone rankingSettingsJson projection failure keeps committed write and prevents later saves/logs 2`] = `
+{
+  "error": "String cannot represent value: [\\"invalid\\"]",
+  "state": [
+    {
+      "name": "first",
+      "pipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"scanner\\",\\"condition\\":\\"ALWAYS\\",\\"continueOnError\\":false}],\\"stopOnFirstFailure\\":true,\\"applicability\\":\\"ALL_FILES_IMMEDIATE\\",\\"effectiveAt\\":\\"2026-01-01T00:00:00.000Z\\",\\"policyId\\":\\"fixture-policy\\"}]"
+    },
+    {
+      "name": "later",
+      "pipelines": "[]"
+    }
+  ]
+}
+`;

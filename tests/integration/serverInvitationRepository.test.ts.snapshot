@@ -1,0 +1,591 @@
+exports[`admin missing targets and malformed inputs retain generated behavior 1`] = `
+{
+  "serverConfigs": []
+}
+`;
+
+exports[`admin missing targets and malformed inputs retain generated behavior 2`] = `
+{
+  "serverConfigs": [
+    {
+      "serverName": "cats",
+      "serverDescription": null,
+      "serverIconURL": null,
+      "allowedFileTypes": null,
+      "featuredWikiPageIds": null,
+      "enableDownloads": null,
+      "enableEvents": null,
+      "accountAgeGateEnabled": null,
+      "minimumAccountAge": null,
+      "sensitiveContentAgeGateEnabled": null,
+      "minimumSensitiveContentAge": null,
+      "brandingProductName": null,
+      "brandingDocsURL": null,
+      "brandingSourceURL": null,
+      "brandingIssuesURL": null,
+      "brandingSupportEmail": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingLogoDarkURL": null,
+      "brandingLogoAlt": null,
+      "brandingFaviconURL": null,
+      "brandingPrimaryColor": null,
+      "pluginRegistries": null,
+      "rules": null,
+      "brandingCustomFooterLinks": null,
+      "pluginPipelines": null
+    }
+  ]
+}
+`;
+
+exports[`admin missing targets and malformed inputs retain generated behavior 3`] = `
+[
+  {
+    "id": "<id-0>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  }
+]
+`;
+
+exports[`admin projection failure preserves committed invite and events 1`] = `
+[
+  {
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
+    "fromTypename": "ServerConfig",
+    "toTypename": "User",
+    "timestamp": "<generated-time>",
+    "event": "create_relationship",
+    "properties": {
+      "from": {
+        "enableEvents": "invalid",
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "to": {
+        "username": "alice",
+        "createdAt": "<generated-time>"
+      },
+      "relationship": {}
+    }
+  },
+  {
+    "id": "<id-1>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "enableEvents": "invalid",
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "enableEvents": "invalid",
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  }
+]
+`;
+
+exports[`admin projection failure preserves committed invite and events 2`] = `
+[
+  {
+    "username": "alice",
+    "invites": {
+      "low": 1,
+      "high": 0
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`admin repeated invitation writes preserve result and native events 1`] = `
+[
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  },
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`admin repeated invitation writes preserve result and native events 2`] = `
+[
+  {
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
+    "fromTypename": "ServerConfig",
+    "toTypename": "User",
+    "timestamp": "<generated-time>",
+    "event": "create_relationship",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "to": {
+        "username": "alice",
+        "createdAt": "<generated-time>"
+      },
+      "relationship": {}
+    }
+  },
+  {
+    "id": "<id-1>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  },
+  {
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
+    "fromTypename": "ServerConfig",
+    "toTypename": "User",
+    "timestamp": "<generated-time>",
+    "event": "create_relationship",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "to": {
+        "username": "alice",
+        "createdAt": "<generated-time>"
+      },
+      "relationship": {}
+    }
+  },
+  {
+    "id": "<id-1>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  }
+]
+`;
+
+exports[`admin repeated invitation writes preserve result and native events 3`] = `
+[
+  {
+    "username": "alice",
+    "invites": {
+      "low": 1,
+      "high": 0
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`invitee existence snapshots preserve missing recipients and coercion errors 1`] = `
+[]
+`;
+
+exports[`invitee existence snapshots preserve missing recipients and coercion errors 2`] = `
+[
+  {
+    "username": "alice"
+  }
+]
+`;
+
+exports[`moderator missing targets and malformed inputs retain generated behavior 1`] = `
+{
+  "serverConfigs": []
+}
+`;
+
+exports[`moderator missing targets and malformed inputs retain generated behavior 2`] = `
+{
+  "serverConfigs": [
+    {
+      "serverName": "cats",
+      "serverDescription": null,
+      "serverIconURL": null,
+      "allowedFileTypes": null,
+      "featuredWikiPageIds": null,
+      "enableDownloads": null,
+      "enableEvents": null,
+      "accountAgeGateEnabled": null,
+      "minimumAccountAge": null,
+      "sensitiveContentAgeGateEnabled": null,
+      "minimumSensitiveContentAge": null,
+      "brandingProductName": null,
+      "brandingDocsURL": null,
+      "brandingSourceURL": null,
+      "brandingIssuesURL": null,
+      "brandingSupportEmail": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingLogoDarkURL": null,
+      "brandingLogoAlt": null,
+      "brandingFaviconURL": null,
+      "brandingPrimaryColor": null,
+      "pluginRegistries": null,
+      "rules": null,
+      "brandingCustomFooterLinks": null,
+      "pluginPipelines": null
+    }
+  ]
+}
+`;
+
+exports[`moderator missing targets and malformed inputs retain generated behavior 3`] = `
+[
+  {
+    "id": "<id-0>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  }
+]
+`;
+
+exports[`moderator projection failure preserves committed invite and events 1`] = `
+[
+  {
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
+    "fromTypename": "ServerConfig",
+    "toTypename": "User",
+    "timestamp": "<generated-time>",
+    "event": "create_relationship",
+    "properties": {
+      "from": {
+        "enableEvents": "invalid",
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "to": {
+        "username": "alice",
+        "createdAt": "<generated-time>"
+      },
+      "relationship": {}
+    }
+  },
+  {
+    "id": "<id-1>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "enableEvents": "invalid",
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "enableEvents": "invalid",
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  }
+]
+`;
+
+exports[`moderator projection failure preserves committed invite and events 2`] = `
+[
+  {
+    "username": "alice",
+    "invites": {
+      "low": 1,
+      "high": 0
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator repeated invitation writes preserve result and native events 1`] = `
+[
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  },
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator repeated invitation writes preserve result and native events 2`] = `
+[
+  {
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
+    "fromTypename": "ServerConfig",
+    "toTypename": "User",
+    "timestamp": "<generated-time>",
+    "event": "create_relationship",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "to": {
+        "username": "alice",
+        "createdAt": "<generated-time>"
+      },
+      "relationship": {}
+    }
+  },
+  {
+    "id": "<id-1>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  },
+  {
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
+    "fromTypename": "ServerConfig",
+    "toTypename": "User",
+    "timestamp": "<generated-time>",
+    "event": "create_relationship",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "to": {
+        "username": "alice",
+        "createdAt": "<generated-time>"
+      },
+      "relationship": {}
+    }
+  },
+  {
+    "id": "<id-1>",
+    "typename": "ServerConfig",
+    "timestamp": "<generated-time>",
+    "event": "update",
+    "properties": {
+      "old": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      },
+      "new": {
+        "createdAt": "<generated-time>",
+        "serverName": "cats"
+      }
+    }
+  }
+]
+`;
+
+exports[`moderator repeated invitation writes preserve result and native events 3`] = `
+[
+  {
+    "username": "alice",
+    "invites": {
+      "low": 1,
+      "high": 0
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ]
+  }
+]
+`;

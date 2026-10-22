@@ -9,36 +9,6 @@ exports[`attempt projection failure preserves earlier committed recovery effects
       }
     },
     {
-      "label": "Image",
-      "properties": {
-        "storageBucket": "synthetic-bucket",
-        "createdAt": "<time>",
-        "storageObjectName": "synthetic-object",
-        "scanStatus": "PENDING",
-        "id": "id1",
-        "url": "https://example.invalid/image"
-      }
-    },
-    {
-      "label": "Issue",
-      "properties": {
-        "relatedImageId": "c",
-        "isOpen": true,
-        "issueNumber": {
-          "low": 9,
-          "high": 0
-        },
-        "id": "id2",
-        "channelUniqueName": "forum"
-      }
-    },
-    {
-      "label": "ModerationProfile",
-      "properties": {
-        "displayName": "mod"
-      }
-    },
-    {
       "label": "PluginPipelineRun",
       "properties": {
         "attemptNumber": {
@@ -87,7 +57,7 @@ exports[`attempt projection failure preserves earlier committed recovery effects
         "pipelineId": "pipeline",
         "createdAt": "<time>",
         "scope": "SERVER",
-        "id": "id3",
+        "id": "id1",
         "updatedAt": "<time>",
         "status": "TIMED_OUT"
       }
@@ -96,7 +66,7 @@ exports[`attempt projection failure preserves earlier committed recovery effects
       "label": "PluginRun",
       "properties": {
         "createdAt": "<time>",
-        "id": "id4",
+        "id": "id2",
         "message": "Plugin execution lease expired",
         "heartbeatAt": {
           "year": {
@@ -175,29 +145,20 @@ exports[`attempt projection failure preserves earlier committed recovery effects
       "label": "User",
       "properties": {
         "createdAt": "<time>",
-        "username": "author"
-      }
-    },
-    {
-      "label": "User",
-      "properties": {
-        "createdAt": "<time>",
         "username": "owner"
       }
     }
   ],
-  "edgeTypes": [
-    "UPLOADED_IMAGE"
-  ],
+  "edgeTypes": [],
   "events": [
     {
-      "id": "id5",
+      "id": "id3",
       "typename": "PluginRun",
       "timestamp": "<time>",
       "event": "update",
       "properties": {
         "old": {
-          "id": "id4",
+          "id": "id2",
           "timeoutAt": {
             "year": {
               "low": 2026,
@@ -272,7 +233,7 @@ exports[`attempt projection failure preserves earlier committed recovery effects
               "high": 0
             }
           },
-          "id": "id4",
+          "id": "id2",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "message": "Plugin execution lease expired",
@@ -315,14 +276,14 @@ exports[`attempt projection failure preserves earlier committed recovery effects
       }
     },
     {
-      "id": "id6",
+      "id": "id4",
       "typename": "PluginPipelineRun",
       "timestamp": "<time>",
       "event": "update",
       "properties": {
         "old": {
           "scope": "SERVER",
-          "id": "id3",
+          "id": "id1",
           "status": "RUNNING",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -336,7 +297,7 @@ exports[`attempt projection failure preserves earlier committed recovery effects
         },
         "new": {
           "scope": "SERVER",
-          "id": "id3",
+          "id": "id1",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -1012,55 +973,10 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
 {
   "nodes": [
     {
-      "label": "Comment",
-      "properties": {
-        "ageGateTouchedAt": {
-          "year": {
-            "low": 2026,
-            "high": 0
-          },
-          "month": {
-            "low": 10,
-            "high": 0
-          },
-          "day": {
-            "low": 22,
-            "high": 0
-          },
-          "hour": {
-            "low": 9,
-            "high": 0
-          },
-          "minute": {
-            "low": 7,
-            "high": 0
-          },
-          "second": {
-            "low": 58,
-            "high": 0
-          },
-          "nanosecond": {
-            "low": 283000000,
-            "high": 0
-          },
-          "timeZoneOffsetSeconds": {
-            "low": 0,
-            "high": 0
-          }
-        },
-        "createdAt": "<time>",
-        "isRootComment": false,
-        "id": "id0",
-        "text": "Bot text",
-        "isFeedbackComment": false,
-        "isSticky": false
-      }
-    },
-    {
       "label": "DownloadableFile",
       "properties": {
         "uploadedByUsername": "owner",
-        "id": "id1"
+        "id": "id0"
       }
     },
     {
@@ -1068,7 +984,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
       "properties": {
         "createdAt": "<time>",
         "read": false,
-        "id": "id2",
+        "id": "id1",
         "notificationType": "plugin_pipeline",
         "text": "Checks for “your download” timed out."
       }
@@ -1122,7 +1038,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
         "pipelineId": "pipeline",
         "createdAt": "<time>",
         "scope": "SERVER",
-        "id": "id3",
+        "id": "id2",
         "notifiedAt": {
           "year": {
             "low": 2026,
@@ -1165,7 +1081,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
       "label": "PluginRun",
       "properties": {
         "createdAt": "<time>",
-        "id": "id4",
+        "id": "id3",
         "message": "Plugin execution lease expired",
         "heartbeatAt": {
           "year": {
@@ -1253,7 +1169,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
   ],
   "events": [
     {
-      "id": "id5",
+      "id": "id4",
       "typename": "PluginRun",
       "timestamp": "<time>",
       "event": "update",
@@ -1262,7 +1178,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
           "pipelineId": "pipeline",
           "createdAt": "<time>",
           "status": "RUNNING",
-          "id": "id4"
+          "id": "id3"
         },
         "new": {
           "updatedAt": "<time>",
@@ -1300,7 +1216,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
               "high": 0
             }
           },
-          "id": "id4",
+          "id": "id3",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "message": "Plugin execution lease expired",
@@ -1343,14 +1259,14 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
       }
     },
     {
-      "id": "id6",
+      "id": "id5",
       "typename": "PluginPipelineRun",
       "timestamp": "<time>",
       "event": "update",
       "properties": {
         "old": {
           "scope": "SERVER",
-          "id": "id3",
+          "id": "id2",
           "status": "RUNNING",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -1364,7 +1280,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
         },
         "new": {
           "scope": "SERVER",
-          "id": "id3",
+          "id": "id2",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -1413,14 +1329,14 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
       }
     },
     {
-      "id": "id6",
+      "id": "id5",
       "typename": "PluginPipelineRun",
       "timestamp": "<time>",
       "event": "update",
       "properties": {
         "old": {
           "scope": "SERVER",
-          "id": "id3",
+          "id": "id2",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -1502,7 +1418,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
               "high": 0
             }
           },
-          "id": "id3",
+          "id": "id2",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -1551,7 +1467,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
       }
     },
     {
-      "id": "id7",
+      "id": "id6",
       "typename": "Notification",
       "timestamp": "<time>",
       "event": "create",
@@ -1559,16 +1475,16 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
         "new": {
           "read": false,
           "text": "Checks for “your download” timed out.",
-          "id": "id2",
+          "id": "id1",
           "notificationType": "plugin_pipeline",
           "createdAt": "<time>"
         }
       }
     },
     {
-      "id": "id8",
-      "id_from": "id9",
-      "id_to": "id7",
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id6",
       "relationshipName": "HAS_NOTIFICATION",
       "fromTypename": "User",
       "toTypename": "Notification",
@@ -1582,7 +1498,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
         "to": {
           "read": false,
           "text": "Checks for “your download” timed out.",
-          "id": "id2",
+          "id": "id1",
           "notificationType": "plugin_pipeline",
           "createdAt": "<time>"
         },
@@ -1590,7 +1506,7 @@ exports[`expired job recovers attempt and emits one uploader notification legacy
       }
     },
     {
-      "id": "id9",
+      "id": "id8",
       "typename": "User",
       "timestamp": "<time>",
       "event": "update",
@@ -1706,41 +1622,11 @@ exports[`notification projection failure preserves earlier committed recovery ef
       }
     },
     {
-      "label": "Image",
-      "properties": {
-        "storageBucket": "synthetic-bucket",
-        "createdAt": "<time>",
-        "storageObjectName": "synthetic-object",
-        "scanStatus": "PENDING",
-        "id": "id1",
-        "url": "https://example.invalid/image"
-      }
-    },
-    {
-      "label": "Issue",
-      "properties": {
-        "relatedImageId": "c",
-        "isOpen": true,
-        "issueNumber": {
-          "low": 9,
-          "high": 0
-        },
-        "id": "id2",
-        "channelUniqueName": "forum"
-      }
-    },
-    {
-      "label": "ModerationProfile",
-      "properties": {
-        "displayName": "mod"
-      }
-    },
-    {
       "label": "Notification",
       "properties": {
         "createdAt": "<time>",
         "read": false,
-        "id": "id3",
+        "id": "id1",
         "notificationType": "plugin_pipeline",
         "text": "Checks for “your download” timed out."
       }
@@ -1794,7 +1680,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
         "pipelineId": "pipeline",
         "createdAt": "<time>",
         "scope": "SERVER",
-        "id": "id4",
+        "id": "id2",
         "notifiedAt": {
           "year": {
             "low": 2026,
@@ -1837,7 +1723,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
       "label": "PluginRun",
       "properties": {
         "createdAt": "<time>",
-        "id": "id5",
+        "id": "id3",
         "message": "Plugin execution lease expired",
         "heartbeatAt": {
           "year": {
@@ -1916,30 +1802,22 @@ exports[`notification projection failure preserves earlier committed recovery ef
       "label": "User",
       "properties": {
         "createdAt": "<time>",
-        "username": "author"
-      }
-    },
-    {
-      "label": "User",
-      "properties": {
-        "createdAt": "<time>",
         "username": "owner"
       }
     }
   ],
   "edgeTypes": [
-    "UPLOADED_IMAGE",
     "HAS_NOTIFICATION"
   ],
   "events": [
     {
-      "id": "id6",
+      "id": "id4",
       "typename": "PluginRun",
       "timestamp": "<time>",
       "event": "update",
       "properties": {
         "old": {
-          "id": "id5",
+          "id": "id3",
           "timeoutAt": {
             "year": {
               "low": 2026,
@@ -2014,7 +1892,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
               "high": 0
             }
           },
-          "id": "id5",
+          "id": "id3",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "message": "Plugin execution lease expired",
@@ -2057,14 +1935,14 @@ exports[`notification projection failure preserves earlier committed recovery ef
       }
     },
     {
-      "id": "id7",
+      "id": "id5",
       "typename": "PluginPipelineRun",
       "timestamp": "<time>",
       "event": "update",
       "properties": {
         "old": {
           "scope": "SERVER",
-          "id": "id4",
+          "id": "id2",
           "status": "RUNNING",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -2078,7 +1956,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
         },
         "new": {
           "scope": "SERVER",
-          "id": "id4",
+          "id": "id2",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -2127,14 +2005,14 @@ exports[`notification projection failure preserves earlier committed recovery ef
       }
     },
     {
-      "id": "id7",
+      "id": "id5",
       "typename": "PluginPipelineRun",
       "timestamp": "<time>",
       "event": "update",
       "properties": {
         "old": {
           "scope": "SERVER",
-          "id": "id4",
+          "id": "id2",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -2216,7 +2094,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
               "high": 0
             }
           },
-          "id": "id4",
+          "id": "id2",
           "status": "TIMED_OUT",
           "createdAt": "<time>",
           "attemptNumber": 1,
@@ -2265,7 +2143,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
       }
     },
     {
-      "id": "id8",
+      "id": "id6",
       "typename": "Notification",
       "timestamp": "<time>",
       "event": "create",
@@ -2273,16 +2151,16 @@ exports[`notification projection failure preserves earlier committed recovery ef
         "new": {
           "read": false,
           "text": "Checks for “your download” timed out.",
-          "id": "id3",
+          "id": "id1",
           "notificationType": "plugin_pipeline",
           "createdAt": "<time>"
         }
       }
     },
     {
-      "id": "id9",
-      "id_from": "id10",
-      "id_to": "id8",
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id6",
       "relationshipName": "HAS_NOTIFICATION",
       "fromTypename": "User",
       "toTypename": "Notification",
@@ -2296,7 +2174,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
         "to": {
           "read": false,
           "text": "Checks for “your download” timed out.",
-          "id": "id3",
+          "id": "id1",
           "notificationType": "plugin_pipeline",
           "createdAt": "<time>"
         },
@@ -2304,7 +2182,7 @@ exports[`notification projection failure preserves earlier committed recovery ef
       }
     },
     {
-      "id": "id10",
+      "id": "id8",
       "typename": "User",
       "timestamp": "<time>",
       "event": "update",

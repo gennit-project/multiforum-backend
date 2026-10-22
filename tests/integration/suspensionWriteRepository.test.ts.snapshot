@@ -1,0 +1,7012 @@
+exports[`channel mod suspension cycle preserves responses, graph, native event ordering and notification boundary 1`] = `
+{
+  "results": [
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "suspension"
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "close"
+          },
+          {
+            "id": "id3",
+            "actionType": "suspension"
+          },
+          {
+            "id": "id4",
+            "actionType": "unsuspend"
+          }
+        ]
+      }
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 1,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 4,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [
+    "notify",
+    "notify"
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id9",
+      "id_from": "id8",
+      "id_to": "id10",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id10",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id10",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        }
+      }
+    },
+    {
+      "id": "id13",
+      "id_from": "id2",
+      "id_to": "id10",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "issueNumber": 1,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": true,
+          "title": "Report",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id14",
+      "id_from": "id15",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id17",
+      "id_from": "id6",
+      "id_to": "id15",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id18",
+      "id_from": "id8",
+      "id_to": "id15",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id19",
+      "id_from": "id8",
+      "id_to": "id20",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id15",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id22",
+      "id_from": "id20",
+      "id_to": "id15",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id20",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        }
+      }
+    },
+    {
+      "id": "id23",
+      "id_from": "id2",
+      "id_to": "id20",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id24",
+      "id_from": "id25",
+      "id_to": "id2",
+      "relationshipName": "HAS_CONTEXT",
+      "fromTypename": "Suspension",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "target",
+          "modProfileName": "TargetMod",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "id_from": "id28",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_MOD",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "TargetMod"
+        },
+        "to": {
+          "username": "target",
+          "modProfileName": "TargetMod",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id25",
+      "typename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "username": "target",
+          "modProfileName": "TargetMod",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        }
+      }
+    },
+    {
+      "id": "id29",
+      "id_from": "id6",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_MOD",
+      "fromTypename": "Channel",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "username": "target",
+          "modProfileName": "TargetMod",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "new": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id30",
+      "id_from": "id31",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id33",
+      "id_from": "id6",
+      "id_to": "id31",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id34",
+      "id_from": "id8",
+      "id_to": "id31",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id35",
+      "id_from": "id8",
+      "id_to": "id36",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id38",
+      "id_from": "id39",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id41",
+      "id_from": "id6",
+      "id_to": "id39",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id42",
+      "id_from": "id8",
+      "id_to": "id39",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id43",
+      "id_from": "id8",
+      "id_to": "id44",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id39",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id46",
+      "id_from": "id44",
+      "id_to": "id39",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id44",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        }
+      }
+    },
+    {
+      "id": "id47",
+      "id_from": "id2",
+      "id_to": "id44",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id31",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id48",
+      "id_from": "id36",
+      "id_to": "id31",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id36",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        }
+      }
+    },
+    {
+      "id": "id49",
+      "id_from": "id2",
+      "id_to": "id36",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id29",
+      "id_from": "id6",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_MOD",
+      "fromTypename": "Channel",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "username": "target",
+          "modProfileName": "TargetMod",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "new": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`channel unsuspend default projection error follows durable disconnect 1`] = `
+{
+  "results": [
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "suspension"
+          }
+        ]
+      }
+    },
+    {
+      "error": "Error unsuspending user"
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 1,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 4,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [
+    "notify",
+    "notify"
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id9",
+      "id_from": "id8",
+      "id_to": "id10",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id10",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id10",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        }
+      }
+    },
+    {
+      "id": "id13",
+      "id_from": "id2",
+      "id_to": "id10",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "issueNumber": 1,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id14",
+      "id_from": "id15",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id17",
+      "id_from": "id6",
+      "id_to": "id15",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id18",
+      "id_from": "id8",
+      "id_to": "id15",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id19",
+      "id_from": "id8",
+      "id_to": "id20",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id15",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id22",
+      "id_from": "id20",
+      "id_to": "id15",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id20",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        }
+      }
+    },
+    {
+      "id": "id23",
+      "id_from": "id2",
+      "id_to": "id20",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id24",
+      "id_from": "id25",
+      "id_to": "id2",
+      "relationshipName": "HAS_CONTEXT",
+      "fromTypename": "Suspension",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "id_from": "id28",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "User",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "target"
+        },
+        "to": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id25",
+      "typename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        }
+      }
+    },
+    {
+      "id": "id29",
+      "id_from": "id6",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "Channel",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "new": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id30",
+      "id_from": "id31",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id33",
+      "id_from": "id6",
+      "id_to": "id31",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id34",
+      "id_from": "id8",
+      "id_to": "id31",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id35",
+      "id_from": "id8",
+      "id_to": "id36",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id38",
+      "id_from": "id39",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id41",
+      "id_from": "id6",
+      "id_to": "id39",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id42",
+      "id_from": "id8",
+      "id_to": "id39",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id43",
+      "id_from": "id8",
+      "id_to": "id44",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id39",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id46",
+      "id_from": "id44",
+      "id_to": "id39",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id44",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        }
+      }
+    },
+    {
+      "id": "id47",
+      "id_from": "id2",
+      "id_to": "id44",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id31",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id48",
+      "id_from": "id36",
+      "id_to": "id31",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id36",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        }
+      }
+    },
+    {
+      "id": "id49",
+      "id_from": "id2",
+      "id_to": "id36",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id29",
+      "id_from": "id6",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "Channel",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "new": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`channel user suspension cycle preserves responses, graph, native event ordering and notification boundary 1`] = `
+{
+  "results": [
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "suspension"
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "close"
+          },
+          {
+            "id": "id3",
+            "actionType": "suspension"
+          },
+          {
+            "id": "id4",
+            "actionType": "unsuspend"
+          }
+        ]
+      }
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 1,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 4,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [
+    "notify",
+    "notify"
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id9",
+      "id_from": "id8",
+      "id_to": "id10",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id10",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id10",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        }
+      }
+    },
+    {
+      "id": "id13",
+      "id_from": "id2",
+      "id_to": "id10",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "issueNumber": 1,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id14",
+      "id_from": "id15",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id17",
+      "id_from": "id6",
+      "id_to": "id15",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id18",
+      "id_from": "id8",
+      "id_to": "id15",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id19",
+      "id_from": "id8",
+      "id_to": "id20",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id15",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id22",
+      "id_from": "id20",
+      "id_to": "id15",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id20",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        }
+      }
+    },
+    {
+      "id": "id23",
+      "id_from": "id2",
+      "id_to": "id20",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id24",
+      "id_from": "id25",
+      "id_to": "id2",
+      "relationshipName": "HAS_CONTEXT",
+      "fromTypename": "Suspension",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "id_from": "id28",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "User",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "target"
+        },
+        "to": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id25",
+      "typename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        }
+      }
+    },
+    {
+      "id": "id29",
+      "id_from": "id6",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "Channel",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "new": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id30",
+      "id_from": "id31",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id33",
+      "id_from": "id6",
+      "id_to": "id31",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id34",
+      "id_from": "id8",
+      "id_to": "id31",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id35",
+      "id_from": "id8",
+      "id_to": "id36",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id38",
+      "id_from": "id39",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id41",
+      "id_from": "id6",
+      "id_to": "id39",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id42",
+      "id_from": "id8",
+      "id_to": "id39",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id43",
+      "id_from": "id8",
+      "id_to": "id44",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id39",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id46",
+      "id_from": "id44",
+      "id_to": "id39",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id40",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id44",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        }
+      }
+    },
+    {
+      "id": "id47",
+      "id_from": "id2",
+      "id_to": "id44",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id45",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id31",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id48",
+      "id_from": "id36",
+      "id_to": "id31",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id32",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id36",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        }
+      }
+    },
+    {
+      "id": "id49",
+      "id_from": "id2",
+      "id_to": "id36",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id37",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id29",
+      "id_from": "id6",
+      "id_to": "id25",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "Channel",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "username": "target",
+          "id": "id26",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id6",
+      "typename": "Channel",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "new": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`default Issue projection failure preserves partial-write error contract 1`] = `
+{
+  "results": [
+    {
+      "error": "Error updating issue"
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 1,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 1,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id9",
+      "id_from": "id8",
+      "id_to": "id10",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id10",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id10",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        }
+      }
+    },
+    {
+      "id": "id13",
+      "id_from": "id2",
+      "id_to": "id10",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`notification failure follows committed issue activities and prevents scope suspension 1`] = `
+{
+  "results": [
+    {
+      "error": "fake notification failure"
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [
+    "notify"
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id9",
+      "id_from": "id8",
+      "id_to": "id10",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id10",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id10",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        }
+      }
+    },
+    {
+      "id": "id13",
+      "id_from": "id2",
+      "id_to": "id10",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id11",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "issueNumber": 1,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id14",
+      "id_from": "id15",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id17",
+      "id_from": "id6",
+      "id_to": "id15",
+      "relationshipName": "HAS_COMMENT",
+      "fromTypename": "Channel",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "uniqueName": "forum",
+          "createdAt": "<time>"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id18",
+      "id_from": "id8",
+      "id_to": "id15",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id19",
+      "id_from": "id8",
+      "id_to": "id20",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id15",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id22",
+      "id_from": "id20",
+      "id_to": "id15",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id16",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id20",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        }
+      }
+    },
+    {
+      "id": "id23",
+      "id_from": "id2",
+      "id_to": "id20",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id21",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`server mod suspension cycle preserves responses, graph, native event ordering and notification boundary 1`] = `
+{
+  "results": [
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "suspension"
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "close"
+          },
+          {
+            "id": "id3",
+            "actionType": "suspension"
+          },
+          {
+            "id": "id4",
+            "actionType": "unsuspend"
+          }
+        ]
+      }
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 1,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 4,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [
+    "notify",
+    "notify"
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id6",
+      "id_to": "id8",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id10",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id8",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        }
+      }
+    },
+    {
+      "id": "id11",
+      "id_from": "id2",
+      "id_to": "id8",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "issueNumber": 1,
+          "channelUniqueName": "",
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": true,
+          "title": "Report",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id13",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id15",
+      "id_from": "id6",
+      "id_to": "id13",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id16",
+      "id_from": "id6",
+      "id_to": "id17",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id13",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id19",
+      "id_from": "id17",
+      "id_to": "id13",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id17",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        }
+      }
+    },
+    {
+      "id": "id20",
+      "id_from": "id2",
+      "id_to": "id17",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id21",
+      "id_from": "id22",
+      "id_to": "id2",
+      "relationshipName": "HAS_CONTEXT",
+      "fromTypename": "Suspension",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "target",
+          "serverName": "server",
+          "modProfileName": "TargetMod",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id24",
+      "id_from": "id25",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_MOD",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "TargetMod"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "modProfileName": "TargetMod",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id22",
+      "typename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "username": "target",
+          "serverName": "server",
+          "modProfileName": "TargetMod",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        }
+      }
+    },
+    {
+      "id": "id26",
+      "id_from": "id27",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_MOD",
+      "fromTypename": "ServerConfig",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "serverName": "server"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "modProfileName": "TargetMod",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "typename": "ServerConfig",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "serverName": "server"
+        },
+        "new": {
+          "serverName": "server"
+        }
+      }
+    },
+    {
+      "id": "id28",
+      "id_from": "id29",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id31",
+      "id_from": "id6",
+      "id_to": "id29",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id32",
+      "id_from": "id6",
+      "id_to": "id33",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id35",
+      "id_from": "id36",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id38",
+      "id_from": "id6",
+      "id_to": "id36",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id39",
+      "id_from": "id6",
+      "id_to": "id40",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id36",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id42",
+      "id_from": "id40",
+      "id_to": "id36",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id40",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        }
+      }
+    },
+    {
+      "id": "id43",
+      "id_from": "id2",
+      "id_to": "id40",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id29",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id44",
+      "id_from": "id33",
+      "id_to": "id29",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id33",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        }
+      }
+    },
+    {
+      "id": "id45",
+      "id_from": "id2",
+      "id_to": "id33",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended TargetMod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "relatedModProfileName": "TargetMod",
+          "isOpen": false,
+          "title": "Report",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id26",
+      "id_from": "id27",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_MOD",
+      "fromTypename": "ServerConfig",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "serverName": "server"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "modProfileName": "TargetMod",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "typename": "ServerConfig",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "serverName": "server"
+        },
+        "new": {
+          "serverName": "server"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`server unsuspend default projection error follows durable disconnect 1`] = `
+{
+  "results": [
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "suspension"
+          }
+        ]
+      }
+    },
+    {
+      "error": "Error unsuspending user"
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 1,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 4,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [
+    "notify",
+    "notify"
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id6",
+      "id_to": "id8",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id10",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id8",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        }
+      }
+    },
+    {
+      "id": "id11",
+      "id_from": "id2",
+      "id_to": "id8",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "issueNumber": 1,
+          "channelUniqueName": "",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id13",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id15",
+      "id_from": "id6",
+      "id_to": "id13",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id16",
+      "id_from": "id6",
+      "id_to": "id17",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id13",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id19",
+      "id_from": "id17",
+      "id_to": "id13",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id17",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        }
+      }
+    },
+    {
+      "id": "id20",
+      "id_from": "id2",
+      "id_to": "id17",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id21",
+      "id_from": "id22",
+      "id_to": "id2",
+      "relationshipName": "HAS_CONTEXT",
+      "fromTypename": "Suspension",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id24",
+      "id_from": "id25",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "User",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "target"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id22",
+      "typename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        }
+      }
+    },
+    {
+      "id": "id26",
+      "id_from": "id27",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "ServerConfig",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "serverName": "server"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "typename": "ServerConfig",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "serverName": "server"
+        },
+        "new": {
+          "serverName": "server"
+        }
+      }
+    },
+    {
+      "id": "id28",
+      "id_from": "id29",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id31",
+      "id_from": "id6",
+      "id_to": "id29",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id32",
+      "id_from": "id6",
+      "id_to": "id33",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id35",
+      "id_from": "id36",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id38",
+      "id_from": "id6",
+      "id_to": "id36",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id39",
+      "id_from": "id6",
+      "id_to": "id40",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id36",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id42",
+      "id_from": "id40",
+      "id_to": "id36",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id40",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        }
+      }
+    },
+    {
+      "id": "id43",
+      "id_from": "id2",
+      "id_to": "id40",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id29",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id44",
+      "id_from": "id33",
+      "id_to": "id29",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id33",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        }
+      }
+    },
+    {
+      "id": "id45",
+      "id_from": "id2",
+      "id_to": "id33",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id26",
+      "id_from": "id27",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "ServerConfig",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "serverName": "server"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "typename": "ServerConfig",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "serverName": "server"
+        },
+        "new": {
+          "serverName": "server"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`server user suspension cycle preserves responses, graph, native event ordering and notification boundary 1`] = `
+{
+  "results": [
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "suspension"
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "id": "id0",
+        "issueNumber": 1,
+        "ActivityFeed": [
+          {
+            "id": "id1",
+            "actionType": "close"
+          },
+          {
+            "id": "id2",
+            "actionType": "close"
+          },
+          {
+            "id": "id3",
+            "actionType": "suspension"
+          },
+          {
+            "id": "id4",
+            "actionType": "unsuspend"
+          }
+        ]
+      }
+    }
+  ],
+  "suspended": [
+    {
+      "open": false,
+      "activities": {
+        "low": 2,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 1,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "final": [
+    {
+      "open": false,
+      "activities": {
+        "low": 4,
+        "high": 0
+      },
+      "channelCount": {
+        "low": 0,
+        "high": 0
+      },
+      "serverCount": {
+        "low": 0,
+        "high": 0
+      },
+      "suspensions": {
+        "low": 1,
+        "high": 0
+      }
+    }
+  ],
+  "notifications": [
+    "notify",
+    "notify"
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id6",
+      "id_to": "id1",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id6",
+      "id_to": "id8",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id10",
+      "id_from": "id8",
+      "id_to": "id1",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\nLength of suspension: Indefinite\\n",
+          "id": "id3",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id8",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        }
+      }
+    },
+    {
+      "id": "id11",
+      "id_from": "id2",
+      "id_to": "id8",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "suspension",
+          "actionDescription": "Suspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "id": "id4",
+          "issueNumber": 1,
+          "channelUniqueName": "",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id13",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id15",
+      "id_from": "id6",
+      "id_to": "id13",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id16",
+      "id_from": "id6",
+      "id_to": "id17",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id13",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id19",
+      "id_from": "id17",
+      "id_to": "id13",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id14",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id17",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        }
+      }
+    },
+    {
+      "id": "id20",
+      "id_from": "id2",
+      "id_to": "id17",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id18",
+          "actionType": "close",
+          "actionDescription": "Closed the issue while suspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id21",
+      "id_from": "id22",
+      "id_to": "id2",
+      "relationshipName": "HAS_CONTEXT",
+      "fromTypename": "Suspension",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id24",
+      "id_from": "id25",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "User",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "username": "target"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id22",
+      "typename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        }
+      }
+    },
+    {
+      "id": "id26",
+      "id_from": "id27",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "ServerConfig",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "serverName": "server"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "typename": "ServerConfig",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "serverName": "server"
+        },
+        "new": {
+          "serverName": "server"
+        }
+      }
+    },
+    {
+      "id": "id28",
+      "id_from": "id29",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id31",
+      "id_from": "id6",
+      "id_to": "id29",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id32",
+      "id_from": "id6",
+      "id_to": "id33",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id35",
+      "id_from": "id36",
+      "id_to": "id2",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id38",
+      "id_from": "id6",
+      "id_to": "id36",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id39",
+      "id_from": "id6",
+      "id_to": "id40",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "Actor"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id36",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id42",
+      "id_from": "id40",
+      "id_to": "id36",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "to": {
+          "isRootComment": true,
+          "id": "id37",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id40",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        }
+      }
+    },
+    {
+      "id": "id43",
+      "id_from": "id2",
+      "id_to": "id40",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id41",
+          "actionType": "close",
+          "actionDescription": "Closed the issue after unsuspending the user"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id29",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id44",
+      "id_from": "id33",
+      "id_to": "id29",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "\\n reason \\n\\n",
+          "id": "id30",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id33",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        }
+      }
+    },
+    {
+      "id": "id45",
+      "id_from": "id2",
+      "id_to": "id33",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id34",
+          "actionType": "unsuspend",
+          "actionDescription": "Unsuspended target"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "id": "id4",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "Report",
+          "relatedUsername": "target",
+          "authorName": "Actor",
+          "channelUniqueName": "",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    },
+    {
+      "id": "id26",
+      "id_from": "id27",
+      "id_to": "id22",
+      "relationshipName": "SUSPENDED_AS_USER",
+      "fromTypename": "ServerConfig",
+      "toTypename": "Suspension",
+      "timestamp": "<time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "serverName": "server"
+        },
+        "to": {
+          "username": "target",
+          "serverName": "server",
+          "id": "id23",
+          "createdAt": "<time>",
+          "suspendedIndefinitely": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id27",
+      "typename": "ServerConfig",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "serverName": "server"
+        },
+        "new": {
+          "serverName": "server"
+        }
+      }
+    }
+  ]
+}
+`;

@@ -1,3 +1,1829 @@
+exports[`permanent flag-only removal retains graph/events/storage and server issue selection existing=false 1`] = `
+{
+  "result": {
+    "id": "id0",
+    "issueNumber": 1,
+    "flaggedServerRuleViolation": true
+  },
+  "state": {
+    "rows": [
+      {
+        "removed": true,
+        "hasTimestamp": true,
+        "url": "https://example.invalid/image",
+        "bucket": "synthetic-bucket",
+        "object": "synthetic-object",
+        "number": {
+          "low": 1,
+          "high": 0
+        },
+        "open": false,
+        "flagged": true,
+        "userTarget": true,
+        "modLink": true,
+        "cited": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "close",
+        "description": "Closed the issue"
+      },
+      {
+        "type": "permanent-removal",
+        "description": "Permanently removed the image"
+      }
+    ],
+    "events": [
+      {
+        "id": "id1",
+        "id_from": "id2",
+        "id_to": "id3",
+        "relationshipName": "TARGETS_IMAGE",
+        "fromTypename": "Issue",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id6",
+        "id_from": "id2",
+        "id_to": "id7",
+        "relationshipName": "TARGETS_USER",
+        "fromTypename": "Issue",
+        "toTypename": "User",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "username": "author"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id8",
+        "id_from": "id2",
+        "id_to": "id9",
+        "relationshipName": "AUTHORED_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationProfile",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "displayName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id10",
+        "id_from": "id11",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id13",
+        "id_from": "id9",
+        "id_to": "id11",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id14",
+        "id_from": "id9",
+        "id_to": "id15",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id11",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id17",
+        "id_from": "id15",
+        "id_to": "id11",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id12",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id15",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          }
+        }
+      },
+      {
+        "id": "id18",
+        "id_from": "id2",
+        "id_to": "id15",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id16",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id19",
+        "id_from": "id20",
+        "id_to": "id2",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id22",
+        "id_from": "id9",
+        "id_to": "id20",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id23",
+        "id_from": "id9",
+        "id_to": "id24",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id20",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id26",
+        "id_from": "id24",
+        "id_to": "id20",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id21",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id24",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          }
+        }
+      },
+      {
+        "id": "id27",
+        "id_from": "id2",
+        "id_to": "id24",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id25",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          }
+        }
+      },
+      {
+        "id": "id28",
+        "id_from": "id2",
+        "id_to": "id3",
+        "relationshipName": "CITED_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "locked": false,
+            "flaggedServerRuleViolation": true,
+            "id": "id4",
+            "issueNumber": 1,
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isOpen": false,
+            "title": "[Permanently removed image] https://example.invalid/image",
+            "relatedUsername": "author",
+            "authorName": "mod"
+          },
+          "to": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "permanentlyRemovedAt": "<time>",
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket",
+            "permanentlyRemoved": true
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id29",
+        "id_from": "id9",
+        "id_to": "id3",
+        "relationshipName": "REMOVED_IMAGE",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "permanentlyRemovedAt": "<time>",
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket",
+            "permanentlyRemoved": true
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id3",
+        "typename": "Image",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket"
+          },
+          "new": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "permanentlyRemovedAt": "<time>",
+            "scanStatus": "PENDING",
+            "id": "id5",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket",
+            "permanentlyRemoved": true
+          }
+        }
+      }
+    ]
+  },
+  "notificationCount": 1
+}
+`;
+
+exports[`permanent flag-only removal retains graph/events/storage and server issue selection existing=true 1`] = `
+{
+  "result": {
+    "id": "id0",
+    "issueNumber": 3,
+    "flaggedServerRuleViolation": true
+  },
+  "state": {
+    "rows": [
+      {
+        "removed": true,
+        "hasTimestamp": true,
+        "url": "https://example.invalid/image",
+        "bucket": "synthetic-bucket",
+        "object": "synthetic-object",
+        "number": {
+          "low": 3,
+          "high": 0
+        },
+        "open": false,
+        "flagged": true,
+        "userTarget": true,
+        "modLink": true,
+        "cited": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "close",
+        "description": "Closed the issue"
+      },
+      {
+        "type": "permanent-removal",
+        "description": "Permanently removed the image"
+      }
+    ],
+    "events": [
+      {
+        "id": "id1",
+        "id_from": "id2",
+        "id_to": "id3",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id4",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": true,
+            "relatedUsername": "author"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id6",
+        "id_from": "id7",
+        "id_to": "id2",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id4",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id8",
+        "id_from": "id7",
+        "id_to": "id9",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id10",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id4",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id11",
+        "id_from": "id9",
+        "id_to": "id2",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id10",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id4",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id9",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id10",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          }
+        }
+      },
+      {
+        "id": "id12",
+        "id_from": "id3",
+        "id_to": "id9",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": true,
+            "relatedUsername": "author"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id10",
+            "actionType": "permanent-removal",
+            "actionDescription": "Permanently removed the image"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id3",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "relatedImageId": "c",
+            "id": "id5",
+            "issueNumber": 3,
+            "isOpen": true,
+            "relatedUsername": "author"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": true,
+            "relatedUsername": "author"
+          }
+        }
+      },
+      {
+        "id": "id13",
+        "id_from": "id14",
+        "id_to": "id3",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Comment",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id15",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": false,
+            "relatedUsername": "author"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id16",
+        "id_from": "id7",
+        "id_to": "id14",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id15",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id17",
+        "id_from": "id7",
+        "id_to": "id18",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id19",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id14",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id15",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id20",
+        "id_from": "id18",
+        "id_to": "id14",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id19",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "reason",
+            "id": "id15",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id18",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id19",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          }
+        }
+      },
+      {
+        "id": "id21",
+        "id_from": "id3",
+        "id_to": "id18",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": false,
+            "relatedUsername": "author"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id19",
+            "actionType": "close",
+            "actionDescription": "Closed the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id3",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": true,
+            "relatedUsername": "author"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": false,
+            "relatedUsername": "author"
+          }
+        }
+      },
+      {
+        "id": "id22",
+        "id_from": "id3",
+        "id_to": "id23",
+        "relationshipName": "CITED_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "relatedImageId": "c",
+            "flaggedServerRuleViolation": true,
+            "id": "id5",
+            "issueNumber": 3,
+            "ageGateTouchedAt": "<time>",
+            "isOpen": false,
+            "relatedUsername": "author"
+          },
+          "to": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "permanentlyRemovedAt": "<time>",
+            "scanStatus": "PENDING",
+            "id": "id24",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket",
+            "permanentlyRemoved": true
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id25",
+        "id_from": "id7",
+        "id_to": "id23",
+        "relationshipName": "REMOVED_IMAGE",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Image",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "permanentlyRemovedAt": "<time>",
+            "scanStatus": "PENDING",
+            "id": "id24",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket",
+            "permanentlyRemoved": true
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id23",
+        "typename": "Image",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "scanStatus": "PENDING",
+            "id": "id24",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket"
+          },
+          "new": {
+            "storageObjectName": "synthetic-object",
+            "url": "https://example.invalid/image",
+            "permanentlyRemovedAt": "<time>",
+            "scanStatus": "PENDING",
+            "id": "id24",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "storageBucket": "synthetic-bucket",
+            "permanentlyRemoved": true
+          }
+        }
+      }
+    ]
+  },
+  "notificationCount": 1
+}
+`;
+
 exports[`removal default projection exactly matches production OGM 1`] = `
 "{idurlwidthheightlist80Urllist160Urllist320Urldetail640Urldetail960Urldetail1280UrlstorageBucketstorageObjectNamestorageUrluploadedByUsernameuploadedByIpaltcaptionlongDescriptioncopyrighthasSensitiveContenthasSpoilerarchivedpermanentlyRemovedpermanentlyRemovedByUsernamepermanentlyRemovedByModNamevariantUrlsscanStatusuploadedAtcreatedAtscanCheckedAtpermanentlyRemovedAt}"
+`;
+
+exports[`response projection failure retains committed removal metadata and prior issue effects 1`] = `
+{
+  "rows": [
+    {
+      "removed": true,
+      "hasTimestamp": true,
+      "url": "https://example.invalid/image",
+      "bucket": "synthetic-bucket",
+      "object": "synthetic-object",
+      "number": {
+        "low": 1,
+        "high": 0
+      },
+      "open": false,
+      "flagged": true,
+      "userTarget": true,
+      "modLink": true,
+      "cited": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "close",
+      "description": "Closed the issue"
+    },
+    {
+      "type": "permanent-removal",
+      "description": "Permanently removed the image"
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "TARGETS_IMAGE",
+      "fromTypename": "Issue",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "to": {
+          "storageObjectName": "synthetic-object",
+          "url": "https://example.invalid/image",
+          "scanStatus": "PENDING",
+          "id": "id4",
+          "createdAt": "<time>",
+          "storageBucket": "synthetic-bucket"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "id_from": "id1",
+      "id_to": "id6",
+      "relationshipName": "TARGETS_USER",
+      "fromTypename": "Issue",
+      "toTypename": "User",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "username": "author"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id1",
+      "id_to": "id8",
+      "relationshipName": "AUTHORED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationProfile",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "to": {
+          "displayName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        }
+      }
+    },
+    {
+      "id": "id9",
+      "id_from": "id10",
+      "id_to": "id1",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id11",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id12",
+      "id_from": "id8",
+      "id_to": "id10",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id11",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id13",
+      "id_from": "id8",
+      "id_to": "id14",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id15",
+          "actionType": "permanent-removal",
+          "actionDescription": "Permanently removed the image"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id10",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id11",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id16",
+      "id_from": "id14",
+      "id_to": "id10",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id15",
+          "actionType": "permanent-removal",
+          "actionDescription": "Permanently removed the image"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id11",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id14",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id15",
+          "actionType": "permanent-removal",
+          "actionDescription": "Permanently removed the image"
+        }
+      }
+    },
+    {
+      "id": "id17",
+      "id_from": "id1",
+      "id_to": "id14",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id15",
+          "actionType": "permanent-removal",
+          "actionDescription": "Permanently removed the image"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        }
+      }
+    },
+    {
+      "id": "id18",
+      "id_from": "id19",
+      "id_to": "id1",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Comment",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id20",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "to": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id21",
+      "id_from": "id8",
+      "id_to": "id19",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id20",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id22",
+      "id_from": "id8",
+      "id_to": "id23",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id24",
+          "actionType": "close",
+          "actionDescription": "Closed the issue"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id19",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id20",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id25",
+      "id_from": "id23",
+      "id_to": "id19",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id24",
+          "actionType": "close",
+          "actionDescription": "Closed the issue"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "reason",
+          "id": "id20",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id23",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id24",
+          "actionType": "close",
+          "actionDescription": "Closed the issue"
+        }
+      }
+    },
+    {
+      "id": "id26",
+      "id_from": "id1",
+      "id_to": "id23",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id24",
+          "actionType": "close",
+          "actionDescription": "Closed the issue"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id1",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "new": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        }
+      }
+    },
+    {
+      "id": "id27",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "CITED_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "updatedAt": "<time>",
+          "relatedImageId": "c",
+          "locked": false,
+          "flaggedServerRuleViolation": true,
+          "id": "id3",
+          "issueNumber": 1,
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isOpen": false,
+          "title": "[Permanently removed image] https://example.invalid/image",
+          "relatedUsername": "author",
+          "authorName": "mod"
+        },
+        "to": {
+          "storageObjectName": "synthetic-object",
+          "url": "https://example.invalid/image",
+          "permanentlyRemovedAt": "<time>",
+          "scanStatus": "PENDING",
+          "id": "id4",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "storageBucket": "synthetic-bucket",
+          "permanentlyRemoved": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id28",
+      "id_from": "id8",
+      "id_to": "id2",
+      "relationshipName": "REMOVED_IMAGE",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Image",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "storageObjectName": "synthetic-object",
+          "url": "https://example.invalid/image",
+          "permanentlyRemovedAt": "<time>",
+          "scanStatus": "PENDING",
+          "id": "id4",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "storageBucket": "synthetic-bucket",
+          "permanentlyRemoved": true
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Image",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "storageObjectName": "synthetic-object",
+          "url": "https://example.invalid/image",
+          "scanStatus": "PENDING",
+          "id": "id4",
+          "createdAt": "<time>",
+          "storageBucket": "synthetic-bucket"
+        },
+        "new": {
+          "storageObjectName": "synthetic-object",
+          "url": "https://example.invalid/image",
+          "permanentlyRemovedAt": "<time>",
+          "scanStatus": "PENDING",
+          "id": "id4",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "storageBucket": "synthetic-bucket",
+          "permanentlyRemoved": true
+        }
+      }
+    }
+  ]
+}
 `;

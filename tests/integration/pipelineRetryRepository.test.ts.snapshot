@@ -1,0 +1,738 @@
+exports[`retry reads preserve canonical owner/channel projections, literals and unbounded attempts/jobs 1`] = `
+[
+  {
+    "uploadedByUsername": "owner",
+    "scanStatus": "FAILED",
+    "Discussion": {
+      "id": "discussion",
+      "Author": {
+        "username": "author"
+      },
+      "DiscussionChannels": [
+        {
+          "channelUniqueName": "active",
+          "archived": false
+        },
+        {
+          "channelUniqueName": "archived",
+          "archived": true
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`retry reads preserve canonical owner/channel projections, literals and unbounded attempts/jobs 2`] = `
+[]
+`;
+
+exports[`retry reads preserve canonical owner/channel projections, literals and unbounded attempts/jobs 3`] = `
+[]
+`;
+
+exports[`retry reads preserve canonical owner/channel projections, literals and unbounded attempts/jobs 4`] = `
+[
+  {
+    "pipelineId": "1",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "10",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "11",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "12",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "13",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "14",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "15",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "16",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "17",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "18",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "19",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "2",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "20",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "21",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "22",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "23",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "24",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "25",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "26",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "27",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "28",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "29",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "3",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "4",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "5",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "6",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "7",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "8",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "pipelineId": "9",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]
+`;
+
+exports[`retry reads preserve canonical owner/channel projections, literals and unbounded attempts/jobs 5`] = `
+[
+  {
+    "id": "1",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "10",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "11",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "12",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "13",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "14",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "15",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "16",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "17",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "18",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "19",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "20",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "21",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "22",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "23",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "24",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "25",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "26",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "27",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "28",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "29",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "5",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "6",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "7",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "8",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "9",
+    "pluginId": "plugin",
+    "pluginName": null,
+    "version": "1.0.0",
+    "scope": "SERVER",
+    "channelId": null,
+    "eventType": "fixture",
+    "status": "FAILED",
+    "message": null,
+    "durationMs": null,
+    "targetId": null,
+    "targetType": null,
+    "payload": null,
+    "pipelineId": "new",
+    "executionOrder": null,
+    "skippedReason": null,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+]
+`;

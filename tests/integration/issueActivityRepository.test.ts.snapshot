@@ -1,0 +1,119 @@
+exports[`activity write matches baseline graph, errors and native events (valid issue=false) 1`] = `
+{
+  "result": "Cannot return null for non-nullable field Issue.issueNumber.",
+  "events": [
+    {
+      "kind": "create_relationship",
+      "properties": [
+        "event",
+        "fromTypename",
+        "id",
+        "id_from",
+        "id_to",
+        "properties",
+        "relationshipName",
+        "timestamp",
+        "toTypename"
+      ]
+    },
+    {
+      "kind": "create",
+      "typename": "ModerationAction",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ]
+    },
+    {
+      "kind": "create_relationship",
+      "properties": [
+        "event",
+        "fromTypename",
+        "id",
+        "id_from",
+        "id_to",
+        "properties",
+        "relationshipName",
+        "timestamp",
+        "toTypename"
+      ]
+    },
+    {
+      "kind": "update",
+      "typename": "Issue",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ]
+    }
+  ]
+}
+`;
+
+exports[`activity write matches baseline graph, errors and native events (valid issue=true) 1`] = `
+{
+  "result": null,
+  "events": [
+    {
+      "kind": "create_relationship",
+      "properties": [
+        "event",
+        "fromTypename",
+        "id",
+        "id_from",
+        "id_to",
+        "properties",
+        "relationshipName",
+        "timestamp",
+        "toTypename"
+      ]
+    },
+    {
+      "kind": "create",
+      "typename": "ModerationAction",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ]
+    },
+    {
+      "kind": "create_relationship",
+      "properties": [
+        "event",
+        "fromTypename",
+        "id",
+        "id_from",
+        "id_to",
+        "properties",
+        "relationshipName",
+        "timestamp",
+        "toTypename"
+      ]
+    },
+    {
+      "kind": "update",
+      "typename": "Issue",
+      "properties": [
+        "event",
+        "id",
+        "properties",
+        "timestamp",
+        "typename"
+      ]
+    }
+  ]
+}
+`;
+
+exports[`missing issue update preserves empty-result behavior 1`] = `
+null
+`;

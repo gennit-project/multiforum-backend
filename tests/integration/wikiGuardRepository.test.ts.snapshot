@@ -1,0 +1,387 @@
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 1`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    },
+    {
+      "Channel": {
+        "uniqueName": "dogs"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 10`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    },
+    {
+      "Channel": {
+        "uniqueName": "dogs"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 2`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    },
+    {
+      "Channel": {
+        "uniqueName": "dogs"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 3`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    },
+    {
+      "Channel": {
+        "uniqueName": "dogs"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 4`] = `
+{
+  "value": []
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 5`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    },
+    {
+      "Channel": {
+        "uniqueName": "dogs"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 6`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 7`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 8`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findChildCreationOwners: arbitrary filters and default projection match production OGM 9`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      }
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 1`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "Channel": {
+        "uniqueName": "dogs"
+      },
+      "locked": false,
+      "OriginalAuthor": null,
+      "ChildPages": []
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 10`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "Channel": {
+        "uniqueName": "dogs"
+      },
+      "locked": false,
+      "OriginalAuthor": null,
+      "ChildPages": []
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 2`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "Channel": {
+        "uniqueName": "dogs"
+      },
+      "locked": false,
+      "OriginalAuthor": null,
+      "ChildPages": []
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 3`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "Channel": {
+        "uniqueName": "dogs"
+      },
+      "locked": false,
+      "OriginalAuthor": null,
+      "ChildPages": []
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 4`] = `
+{
+  "value": []
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 5`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "Channel": {
+        "uniqueName": "dogs"
+      },
+      "locked": false,
+      "OriginalAuthor": null,
+      "ChildPages": []
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 6`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 7`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 8`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    }
+  ]
+}
+`;
+
+exports[`findPermissionTargets: arbitrary filters and default projection match production OGM 9`] = `
+{
+  "value": [
+    {
+      "id": "a",
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "locked": true,
+      "OriginalAuthor": {
+        "username": "author"
+      },
+      "ChildPages": [
+        {
+          "id": "b"
+        }
+      ]
+    }
+  ]
+}
+`;

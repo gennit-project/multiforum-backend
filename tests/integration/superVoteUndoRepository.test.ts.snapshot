@@ -1,0 +1,63 @@
+exports[`both snapshots retain missing rows, author branches and nested default25 limit 1`] = `
+[
+  {
+    "id": "c",
+    "SuperUpvotedByUsers": 25,
+    "CommentAuthor": {
+      "username": "author"
+    }
+  }
+]
+`;
+
+exports[`both snapshots retain missing rows, author branches and nested default25 limit 2`] = `
+[
+  {
+    "id": "dc",
+    "SuperUpvotedByUsers": 25,
+    "Discussion": {
+      "Author": {
+        "username": "author"
+      }
+    }
+  }
+]
+`;
+
+exports[`comment full undo preserves transaction state, scratchpad deletion and no generated write events 1`] = `
+{
+  "result": {
+    "success": true,
+    "message": "Super upvote removed successfully",
+    "sourceId": "c",
+    "sourceType": "comment",
+    "superUpvotedByUsers": []
+  },
+  "values": [
+    6,
+    7,
+    1,
+    2,
+    0
+  ]
+}
+`;
+
+exports[`discussion full undo preserves transaction state, scratchpad deletion and no generated write events 1`] = `
+{
+  "result": {
+    "success": true,
+    "message": "Super upvote removed successfully",
+    "sourceId": "dc",
+    "sourceType": "discussion",
+    "superUpvotedByUsers": []
+  },
+  "values": [
+    7,
+    6,
+    2,
+    1,
+    0
+  ]
+}
+`;

@@ -1,0 +1,929 @@
+exports[`actual lock/unlock resolvers preserve explicit response, nested comment/mod links and native event parity 1`] = `
+{
+  "results": [
+    {
+      "id": "id0",
+      "issueNumber": 1,
+      "title": "Issue",
+      "body": null,
+      "channelUniqueName": "forum",
+      "isOpen": true,
+      "createdAt": "<time>",
+      "updatedAt": "<time>",
+      "relatedCommentId": null,
+      "relatedDiscussionId": null,
+      "relatedEventId": null,
+      "flaggedServerRuleViolation": null,
+      "locked": true,
+      "lockedAt": "<time>",
+      "lockReason": "  raw reason  ",
+      "LockedBy": {
+        "displayName": "mod"
+      },
+      "SubscribedToNotifications": [],
+      "ActivityFeed": [
+        {
+          "id": "id1",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue",
+          "createdAt": "<time>",
+          "ModerationProfile": {
+            "displayName": "mod"
+          }
+        }
+      ]
+    },
+    {
+      "id": "id0",
+      "issueNumber": 1,
+      "title": "Issue",
+      "body": null,
+      "channelUniqueName": "forum",
+      "isOpen": true,
+      "createdAt": "<time>",
+      "updatedAt": "<time>",
+      "relatedCommentId": null,
+      "relatedDiscussionId": null,
+      "relatedEventId": null,
+      "flaggedServerRuleViolation": null,
+      "locked": false,
+      "lockedAt": null,
+      "lockReason": null,
+      "LockedBy": null,
+      "SubscribedToNotifications": [],
+      "ActivityFeed": [
+        {
+          "id": "id2",
+          "actionType": "unlock",
+          "actionDescription": "Unlocked the issue",
+          "createdAt": "<time>",
+          "ModerationProfile": {
+            "displayName": "mod"
+          }
+        },
+        {
+          "id": "id1",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue",
+          "createdAt": "<time>",
+          "ModerationProfile": {
+            "displayName": "mod"
+          }
+        }
+      ]
+    }
+  ],
+  "notifications": [
+    "lock",
+    "unlock"
+  ],
+  "snapshot": {
+    "graph": [
+      {
+        "locked": false,
+        "reason": null
+      }
+    ],
+    "comments": [
+      {
+        "text": "**Reason for locking:**   raw reason  ",
+        "root": true
+      },
+      {
+        "text": "**Reason for unlocking:**   raw reason  ",
+        "root": true
+      }
+    ],
+    "events": [
+      {
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "relationshipName": "LOCKED_ISSUE",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "locked": true,
+            "id": "id3",
+            "lockedAt": "<time>",
+            "issueNumber": 1,
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod",
+            "updatedAt": "<time>",
+            "lockReason": "  raw reason  ",
+            "channelUniqueName": "forum",
+            "ageGateTouchedAt": "<time>"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id4",
+        "id_from": "id1",
+        "id_to": "id5",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "**Reason for locking:**   raw reason  ",
+            "id": "id6",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id7",
+        "id_from": "id1",
+        "id_to": "id8",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id9",
+            "actionType": "lock",
+            "actionDescription": "Locked the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id5",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "**Reason for locking:**   raw reason  ",
+            "id": "id6",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id10",
+        "id_from": "id8",
+        "id_to": "id5",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id9",
+            "actionType": "lock",
+            "actionDescription": "Locked the issue"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "**Reason for locking:**   raw reason  ",
+            "id": "id6",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id8",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id9",
+            "actionType": "lock",
+            "actionDescription": "Locked the issue"
+          }
+        }
+      },
+      {
+        "id": "id11",
+        "id_from": "id2",
+        "id_to": "id8",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "locked": true,
+            "id": "id3",
+            "lockedAt": "<time>",
+            "issueNumber": 1,
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod",
+            "updatedAt": "<time>",
+            "lockReason": "  raw reason  ",
+            "channelUniqueName": "forum",
+            "ageGateTouchedAt": "<time>"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id9",
+            "actionType": "lock",
+            "actionDescription": "Locked the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "locked": false,
+            "id": "id3",
+            "issueNumber": 1,
+            "channelUniqueName": "forum",
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod"
+          },
+          "new": {
+            "locked": true,
+            "id": "id3",
+            "lockedAt": "<time>",
+            "issueNumber": 1,
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod",
+            "updatedAt": "<time>",
+            "lockReason": "  raw reason  ",
+            "channelUniqueName": "forum",
+            "ageGateTouchedAt": "<time>"
+          }
+        }
+      },
+      {
+        "id": "id12",
+        "id_from": "id1",
+        "id_to": "id13",
+        "relationshipName": "AUTHORED_COMMENT",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "**Reason for unlocking:**   raw reason  ",
+            "id": "id14",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id15",
+        "id_from": "id1",
+        "id_to": "id16",
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id17",
+            "actionType": "unlock",
+            "actionDescription": "Unlocked the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id13",
+        "typename": "Comment",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "isRootComment": true,
+            "text": "**Reason for unlocking:**   raw reason  ",
+            "id": "id14",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          }
+        }
+      },
+      {
+        "id": "id18",
+        "id_from": "id16",
+        "id_to": "id13",
+        "relationshipName": "MODERATED_COMMENT",
+        "fromTypename": "ModerationAction",
+        "toTypename": "Comment",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "id": "id17",
+            "actionType": "unlock",
+            "actionDescription": "Unlocked the issue"
+          },
+          "to": {
+            "isRootComment": true,
+            "text": "**Reason for unlocking:**   raw reason  ",
+            "id": "id14",
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "isSticky": false
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id16",
+        "typename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create",
+        "properties": {
+          "new": {
+            "createdAt": "<time>",
+            "id": "id17",
+            "actionType": "unlock",
+            "actionDescription": "Unlocked the issue"
+          }
+        }
+      },
+      {
+        "id": "id19",
+        "id_from": "id2",
+        "id_to": "id16",
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "fromTypename": "Issue",
+        "toTypename": "ModerationAction",
+        "timestamp": "<time>",
+        "event": "create_relationship",
+        "properties": {
+          "from": {
+            "updatedAt": "<time>",
+            "locked": false,
+            "id": "id3",
+            "issueNumber": 1,
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "ageGateTouchedAt": "<time>"
+          },
+          "to": {
+            "createdAt": "<time>",
+            "id": "id17",
+            "actionType": "unlock",
+            "actionDescription": "Unlocked the issue"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id0",
+        "id_from": "id1",
+        "id_to": "id2",
+        "relationshipName": "LOCKED_ISSUE",
+        "fromTypename": "ModerationProfile",
+        "toTypename": "Issue",
+        "timestamp": "<time>",
+        "event": "delete_relationship",
+        "properties": {
+          "from": {
+            "displayName": "mod"
+          },
+          "to": {
+            "updatedAt": "<time>",
+            "locked": false,
+            "id": "id3",
+            "issueNumber": 1,
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "ageGateTouchedAt": "<time>"
+          },
+          "relationship": {}
+        }
+      },
+      {
+        "id": "id2",
+        "typename": "Issue",
+        "timestamp": "<time>",
+        "event": "update",
+        "properties": {
+          "old": {
+            "locked": true,
+            "id": "id3",
+            "lockedAt": "<time>",
+            "issueNumber": 1,
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod",
+            "updatedAt": "<time>",
+            "lockReason": "  raw reason  ",
+            "channelUniqueName": "forum",
+            "ageGateTouchedAt": "<time>"
+          },
+          "new": {
+            "updatedAt": "<time>",
+            "locked": false,
+            "id": "id3",
+            "issueNumber": 1,
+            "createdAt": "<time>",
+            "isOpen": true,
+            "title": "Issue",
+            "authorName": "mod",
+            "channelUniqueName": "forum",
+            "ageGateTouchedAt": "<time>"
+          }
+        }
+      }
+    ]
+  }
+}
+`;
+
+exports[`notification failure follows durable lock, nested comment and native events 1`] = `
+{
+  "graph": [
+    {
+      "locked": true,
+      "reason": "  raw reason  "
+    }
+  ],
+  "comments": [
+    {
+      "text": "**Reason for locking:**   raw reason  ",
+      "root": true
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "LOCKED_ISSUE",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "locked": true,
+          "id": "id3",
+          "lockedAt": "<time>",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod",
+          "updatedAt": "<time>",
+          "lockReason": "  raw reason  ",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id4",
+      "id_from": "id1",
+      "id_to": "id5",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "**Reason for locking:**   raw reason  ",
+          "id": "id6",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id1",
+      "id_to": "id8",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "**Reason for locking:**   raw reason  ",
+          "id": "id6",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id10",
+      "id_from": "id8",
+      "id_to": "id5",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "**Reason for locking:**   raw reason  ",
+          "id": "id6",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id8",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        }
+      }
+    },
+    {
+      "id": "id11",
+      "id_from": "id2",
+      "id_to": "id8",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": true,
+          "id": "id3",
+          "lockedAt": "<time>",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod",
+          "updatedAt": "<time>",
+          "lockReason": "  raw reason  ",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod"
+        },
+        "new": {
+          "locked": true,
+          "id": "id3",
+          "lockedAt": "<time>",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod",
+          "updatedAt": "<time>",
+          "lockReason": "  raw reason  ",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`selected response failure preserves committed lock and generic resolver error 1`] = `
+{
+  "graph": [
+    {
+      "locked": true,
+      "reason": "  raw reason  "
+    }
+  ],
+  "comments": [
+    {
+      "text": "**Reason for locking:**   raw reason  ",
+      "root": true
+    }
+  ],
+  "events": [
+    {
+      "id": "id0",
+      "id_from": "id1",
+      "id_to": "id2",
+      "relationshipName": "LOCKED_ISSUE",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Issue",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "locked": true,
+          "id": "id3",
+          "lockedAt": "<time>",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod",
+          "updatedAt": "<time>",
+          "lockReason": "  raw reason  ",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id4",
+      "id_from": "id1",
+      "id_to": "id5",
+      "relationshipName": "AUTHORED_COMMENT",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "**Reason for locking:**   raw reason  ",
+          "id": "id6",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id7",
+      "id_from": "id1",
+      "id_to": "id8",
+      "relationshipName": "PERFORMED_MODERATION_ACTION",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "mod"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id5",
+      "typename": "Comment",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "isRootComment": true,
+          "text": "**Reason for locking:**   raw reason  ",
+          "id": "id6",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        }
+      }
+    },
+    {
+      "id": "id10",
+      "id_from": "id8",
+      "id_to": "id5",
+      "relationshipName": "MODERATED_COMMENT",
+      "fromTypename": "ModerationAction",
+      "toTypename": "Comment",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        },
+        "to": {
+          "isRootComment": true,
+          "text": "**Reason for locking:**   raw reason  ",
+          "id": "id6",
+          "ageGateTouchedAt": "<time>",
+          "createdAt": "<time>",
+          "isSticky": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id8",
+      "typename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        }
+      }
+    },
+    {
+      "id": "id11",
+      "id_from": "id2",
+      "id_to": "id8",
+      "relationshipName": "ACTIVITY_ON_ISSUE",
+      "fromTypename": "Issue",
+      "toTypename": "ModerationAction",
+      "timestamp": "<time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "locked": true,
+          "id": "id3",
+          "lockedAt": "<time>",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod",
+          "updatedAt": "<time>",
+          "lockReason": "  raw reason  ",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        },
+        "to": {
+          "createdAt": "<time>",
+          "id": "id9",
+          "actionType": "lock",
+          "actionDescription": "Locked the issue"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "id2",
+      "typename": "Issue",
+      "timestamp": "<time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "locked": false,
+          "id": "id3",
+          "issueNumber": 1,
+          "channelUniqueName": "forum",
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod"
+        },
+        "new": {
+          "locked": true,
+          "id": "id3",
+          "lockedAt": "<time>",
+          "issueNumber": 1,
+          "createdAt": "<time>",
+          "isOpen": true,
+          "title": "Issue",
+          "authorName": "mod",
+          "updatedAt": "<time>",
+          "lockReason": "  raw reason  ",
+          "channelUniqueName": "forum",
+          "ageGateTouchedAt": "<time>"
+        }
+      }
+    }
+  ]
+}
+`;

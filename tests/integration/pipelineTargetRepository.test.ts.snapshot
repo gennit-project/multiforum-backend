@@ -1,0 +1,127 @@
+exports[`all five applicability/visibility projections match production OGM 1`] = `
+[
+  {
+    "id": "discussion",
+    "deleted": false,
+    "DownloadableFiles": [
+      {
+        "id": "file",
+        "permanentlyRemoved": null
+      }
+    ],
+    "DiscussionChannels": [
+      {
+        "archived": false
+      }
+    ]
+  }
+]
+`;
+
+exports[`all five applicability/visibility projections match production OGM 2`] = `
+[
+  {
+    "id": "file",
+    "permanentlyRemoved": null,
+    "Discussion": {
+      "id": "discussion",
+      "deleted": false,
+      "DiscussionChannels": [
+        {
+          "channelUniqueName": "cats",
+          "archived": false
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`all five applicability/visibility projections match production OGM 3`] = `
+[
+  {
+    "id": "file",
+    "uploadedAt": "2026-01-02T00:00:00.000Z",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]
+`;
+
+exports[`all five applicability/visibility projections match production OGM 4`] = `
+[
+  {
+    "pluginPipelines": "[{\\"event\\":\\"downloadableFile.created\\",\\"steps\\":[{\\"pluginId\\":\\"scanner\\"}]}]",
+    "InstalledVersionsConnection": {
+      "edges": [
+        {
+          "properties": {
+            "enabled": true,
+            "settingsJson": null
+          },
+          "node": {
+            "id": "version",
+            "version": "1.0.0",
+            "repoUrl": "https://example.test/repo",
+            "tarballGsUri": null,
+            "entryPath": "index.js",
+            "manifest": "{\\"events\\":[\\"downloadableFile.created\\",\\"discussionChannel.created\\"]}",
+            "settingsDefaults": null,
+            "uiSchema": null,
+            "Plugin": {
+              "id": "scanner",
+              "name": "scanner",
+              "displayName": "Scanner",
+              "description": null,
+              "metadata": null
+            }
+          }
+        }
+      ]
+    }
+  }
+]
+`;
+
+exports[`all five applicability/visibility projections match production OGM 5`] = `
+[
+  {
+    "uniqueName": "cats",
+    "pluginPipelines": "[{\\"event\\":\\"discussionChannel.created\\",\\"steps\\":[{\\"pluginId\\":\\"scanner\\"}]}]"
+  }
+]
+`;
+
+exports[`context-free generated age filters keep restricted targets out of public pipeline reads 1`] = `
+[
+  {
+    "id": "file",
+    "permanentlyRemoved": null,
+    "Discussion": null
+  }
+]
+`;
+
+exports[`nested visibility selections preserve generated limits and restricted channel filtering 1`] = `
+[
+  {
+    "id": "discussion",
+    "deleted": false,
+    "DownloadableFiles": 25,
+    "DiscussionChannels": 25
+  }
+]
+`;
+
+exports[`nested visibility selections preserve generated limits and restricted channel filtering 2`] = `
+[
+  {
+    "id": "file",
+    "permanentlyRemoved": null,
+    "Discussion": {
+      "id": "discussion",
+      "deleted": false,
+      "DiscussionChannels": []
+    }
+  }
+]
+`;

@@ -2007,3 +2007,785 @@ exports[`projection failure preserves committed creation and exact catch contrac
   }
 }
 `;
+
+exports[`real resolver preserves identity, numbering, repeated activity, reopen and native payloads 1`] = `
+{
+  "first": {
+    "id": "id0",
+    "issueNumber": 1,
+    "flaggedServerRuleViolation": false
+  },
+  "snapshot": {
+    "issues": [
+      {
+        "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+        "number": 1,
+        "open": true,
+        "flagged": true,
+        "event": "event",
+        "channel": "forum"
+      }
+    ],
+    "nodes": [
+      [
+        "Channel",
+        1
+      ],
+      [
+        "ChannelIssueCounter",
+        1
+      ],
+      [
+        "Comment",
+        3
+      ],
+      [
+        "Issue",
+        1
+      ],
+      [
+        "ModerationAction",
+        2
+      ],
+      [
+        "ModerationProfile",
+        1
+      ],
+      [
+        "User",
+        1
+      ]
+    ],
+    "edges": [
+      [
+        "ACTIVITY_ON_ISSUE",
+        4
+      ],
+      [
+        "AUTHORED_COMMENT",
+        3
+      ],
+      [
+        "AUTHORED_ISSUE",
+        1
+      ],
+      [
+        "HAS_COMMENT",
+        2
+      ],
+      [
+        "HAS_ISSUE",
+        1
+      ],
+      [
+        "MODERATED_COMMENT",
+        2
+      ],
+      [
+        "PERFORMED_MODERATION_ACTION",
+        2
+      ],
+      [
+        "TARGETS_COMMENT",
+        1
+      ],
+      [
+        "TARGETS_USER",
+        1
+      ]
+    ],
+    "comments": [
+      "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+      "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n"
+    ],
+    "counter": [
+      1
+    ],
+    "events": [
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id0",
+          "id_from": "id1",
+          "id_to": "id2",
+          "relationshipName": "TARGETS_USER",
+          "fromTypename": "Issue",
+          "toTypename": "User",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "to": {
+              "username": "alice"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id4",
+          "id_from": "id1",
+          "id_to": "id5",
+          "relationshipName": "TARGETS_COMMENT",
+          "fromTypename": "Issue",
+          "toTypename": "Comment",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "to": {
+              "isRootComment": true,
+              "text": "A text longer than fifty characters to characterize truncation",
+              "createdAt": "<time>",
+              "id": "id6"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id7",
+          "id_from": "id1",
+          "id_to": "id8",
+          "relationshipName": "AUTHORED_ISSUE",
+          "fromTypename": "Issue",
+          "toTypename": "ModerationProfile",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "to": {
+              "displayName": "mod"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id9",
+          "id_from": "id10",
+          "id_to": "id1",
+          "relationshipName": "HAS_ISSUE",
+          "fromTypename": "Channel",
+          "toTypename": "Issue",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "to": {
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create",
+        "event": {
+          "id": "id1",
+          "typename": "Issue",
+          "timestamp": "<time>",
+          "event": "create",
+          "properties": {
+            "new": {
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            }
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id11",
+          "id_from": "id12",
+          "id_to": "id1",
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "fromTypename": "Comment",
+          "toTypename": "Issue",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id13",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "to": {
+              "updatedAt": "<time>",
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id14",
+          "id_from": "id10",
+          "id_to": "id12",
+          "relationshipName": "HAS_COMMENT",
+          "fromTypename": "Channel",
+          "toTypename": "Comment",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "to": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id13",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id15",
+          "id_from": "id8",
+          "id_to": "id12",
+          "relationshipName": "AUTHORED_COMMENT",
+          "fromTypename": "ModerationProfile",
+          "toTypename": "Comment",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "to": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id13",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id16",
+          "id_from": "id8",
+          "id_to": "id17",
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "fromTypename": "ModerationProfile",
+          "toTypename": "ModerationAction",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "to": {
+              "createdAt": "<time>",
+              "id": "id18",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create",
+        "event": {
+          "id": "id12",
+          "typename": "Comment",
+          "timestamp": "<time>",
+          "event": "create",
+          "properties": {
+            "new": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id13",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            }
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id19",
+          "id_from": "id17",
+          "id_to": "id12",
+          "relationshipName": "MODERATED_COMMENT",
+          "fromTypename": "ModerationAction",
+          "toTypename": "Comment",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "createdAt": "<time>",
+              "id": "id18",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            },
+            "to": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id13",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create",
+        "event": {
+          "id": "id17",
+          "typename": "ModerationAction",
+          "timestamp": "<time>",
+          "event": "create",
+          "properties": {
+            "new": {
+              "createdAt": "<time>",
+              "id": "id18",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            }
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id20",
+          "id_from": "id1",
+          "id_to": "id17",
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "fromTypename": "Issue",
+          "toTypename": "ModerationAction",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "updatedAt": "<time>",
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "to": {
+              "createdAt": "<time>",
+              "id": "id18",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "update",
+        "event": {
+          "id": "id1",
+          "typename": "Issue",
+          "timestamp": "<time>",
+          "event": "update",
+          "properties": {
+            "old": {
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "new": {
+              "updatedAt": "<time>",
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            }
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id21",
+          "id_from": "id22",
+          "id_to": "id1",
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "fromTypename": "Comment",
+          "toTypename": "Issue",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id23",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "to": {
+              "updatedAt": "<time>",
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id24",
+          "id_from": "id10",
+          "id_to": "id22",
+          "relationshipName": "HAS_COMMENT",
+          "fromTypename": "Channel",
+          "toTypename": "Comment",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "uniqueName": "forum"
+            },
+            "to": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id23",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id25",
+          "id_from": "id8",
+          "id_to": "id22",
+          "relationshipName": "AUTHORED_COMMENT",
+          "fromTypename": "ModerationProfile",
+          "toTypename": "Comment",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "to": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id23",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id26",
+          "id_from": "id8",
+          "id_to": "id27",
+          "relationshipName": "PERFORMED_MODERATION_ACTION",
+          "fromTypename": "ModerationProfile",
+          "toTypename": "ModerationAction",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "displayName": "mod"
+            },
+            "to": {
+              "createdAt": "<time>",
+              "id": "id28",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create",
+        "event": {
+          "id": "id22",
+          "typename": "Comment",
+          "timestamp": "<time>",
+          "event": "create",
+          "properties": {
+            "new": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id23",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            }
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id29",
+          "id_from": "id27",
+          "id_to": "id22",
+          "relationshipName": "MODERATED_COMMENT",
+          "fromTypename": "ModerationAction",
+          "toTypename": "Comment",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "createdAt": "<time>",
+              "id": "id28",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            },
+            "to": {
+              "isRootComment": true,
+              "text": "\\n\\nForum rule violations: Kindness\\n\\nServer rule violations: No spam\\n\\nPlease review\\n\\n\\n\\n",
+              "id": "id23",
+              "ageGateTouchedAt": "<time>",
+              "createdAt": "<time>",
+              "isSticky": false
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "create",
+        "event": {
+          "id": "id27",
+          "typename": "ModerationAction",
+          "timestamp": "<time>",
+          "event": "create",
+          "properties": {
+            "new": {
+              "createdAt": "<time>",
+              "id": "id28",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            }
+          }
+        }
+      },
+      {
+        "kind": "create_relationship",
+        "event": {
+          "id": "id30",
+          "id_from": "id1",
+          "id_to": "id27",
+          "relationshipName": "ACTIVITY_ON_ISSUE",
+          "fromTypename": "Issue",
+          "toTypename": "ModerationAction",
+          "timestamp": "<time>",
+          "event": "create_relationship",
+          "properties": {
+            "from": {
+              "updatedAt": "<time>",
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "to": {
+              "createdAt": "<time>",
+              "id": "id28",
+              "actionType": "report",
+              "actionDescription": "Reported the comment"
+            },
+            "relationship": {}
+          }
+        }
+      },
+      {
+        "kind": "update",
+        "event": {
+          "id": "id1",
+          "typename": "Issue",
+          "timestamp": "<time>",
+          "event": "update",
+          "properties": {
+            "old": {
+              "updatedAt": "<time>",
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": false,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": false,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            },
+            "new": {
+              "updatedAt": "<time>",
+              "relatedCommentId": "event",
+              "locked": false,
+              "flaggedServerRuleViolation": true,
+              "id": "id3",
+              "issueNumber": 1,
+              "createdAt": "<time>",
+              "isOpen": true,
+              "title": "[Reported comment] \\"A text longer than fifty characters to characteriz...\\"",
+              "relatedUsername": "alice",
+              "authorName": "mod",
+              "channelUniqueName": "forum",
+              "ageGateTouchedAt": "<time>"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+`;

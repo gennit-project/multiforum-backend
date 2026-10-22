@@ -1,0 +1,212 @@
+exports[`notification writes omit type and retain duplicates and native events 1`] = `
+{
+  "rows": [
+    {
+      "text": "Notice",
+      "read": false,
+      "type": null
+    },
+    {
+      "text": "Notice",
+      "read": false,
+      "type": null
+    }
+  ],
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "Notification",
+      "timestamp": "<generated-time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "id": "<id-1>",
+          "text": "Notice",
+          "read": false
+        }
+      }
+    },
+    {
+      "id": "<id-2>",
+      "id_from": "<id-3>",
+      "id_to": "<id-0>",
+      "relationshipName": "HAS_NOTIFICATION",
+      "fromTypename": "User",
+      "toTypename": "Notification",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        },
+        "to": {
+          "createdAt": "<generated-time>",
+          "id": "<id-1>",
+          "text": "Notice",
+          "read": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-3>",
+      "typename": "User",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        }
+      }
+    },
+    {
+      "id": "<id-4>",
+      "typename": "Notification",
+      "timestamp": "<generated-time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "id": "<id-5>",
+          "text": "Notice",
+          "read": false
+        }
+      }
+    },
+    {
+      "id": "<id-6>",
+      "id_from": "<id-3>",
+      "id_to": "<id-4>",
+      "relationshipName": "HAS_NOTIFICATION",
+      "fromTypename": "User",
+      "toTypename": "Notification",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        },
+        "to": {
+          "createdAt": "<generated-time>",
+          "id": "<id-5>",
+          "text": "Notice",
+          "read": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-3>",
+      "typename": "User",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        },
+        "new": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`projection failure preserves committed notification and first error 1`] = `
+{
+  "rows": [
+    {
+      "text": "Notice",
+      "read": false,
+      "type": null
+    }
+  ],
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "Notification",
+      "timestamp": "<generated-time>",
+      "event": "create",
+      "properties": {
+        "new": {
+          "createdAt": "<generated-time>",
+          "id": "<id-1>",
+          "text": "Notice",
+          "read": false
+        }
+      }
+    },
+    {
+      "id": "<id-2>",
+      "id_from": "<id-3>",
+      "id_to": "<id-0>",
+      "relationshipName": "HAS_NOTIFICATION",
+      "fromTypename": "User",
+      "toTypename": "Notification",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "username": "alice"
+        },
+        "to": {
+          "createdAt": "<generated-time>",
+          "id": "<id-1>",
+          "text": "Notice",
+          "read": false
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-3>",
+      "typename": "User",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "username": "alice"
+        },
+        "new": {
+          "username": "alice"
+        }
+      }
+    }
+  ]
+}
+`;
+
+exports[`recipient read retains missing user/email and exact selected projection 1`] = `
+[]
+`;
+
+exports[`recipient read retains missing user/email and exact selected projection 2`] = `
+[
+  {
+    "username": "alice",
+    "Email": null
+  }
+]
+`;
+
+exports[`recipient read retains missing user/email and exact selected projection 3`] = `
+[
+  {
+    "username": "alice",
+    "Email": {
+      "address": "alice@example.test"
+    }
+  }
+]
+`;

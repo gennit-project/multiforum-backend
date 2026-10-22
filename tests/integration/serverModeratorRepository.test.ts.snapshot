@@ -1,0 +1,573 @@
+exports[`connectModerator preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  },
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`connectModerator preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "MODERATOR_OF_SERVER",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "ModAlice"
+        },
+        "to": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "new": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      }
+    },
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "MODERATOR_OF_SERVER",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "ModAlice"
+        },
+        "to": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "new": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 1,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`disconnectInvite preserves repeated native event payloads and mutation results 1`] = `
+[
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  },
+  {
+    "serverConfigs": [
+      {
+        "serverName": "cats",
+        "serverDescription": null,
+        "serverIconURL": null,
+        "allowedFileTypes": null,
+        "featuredWikiPageIds": null,
+        "enableDownloads": null,
+        "enableEvents": null,
+        "accountAgeGateEnabled": null,
+        "minimumAccountAge": null,
+        "sensitiveContentAgeGateEnabled": null,
+        "minimumSensitiveContentAge": null,
+        "brandingProductName": null,
+        "brandingDocsURL": null,
+        "brandingSourceURL": null,
+        "brandingIssuesURL": null,
+        "brandingSupportEmail": null,
+        "brandingShowUpstreamLinks": null,
+        "brandingLogoDarkURL": null,
+        "brandingLogoAlt": null,
+        "brandingFaviconURL": null,
+        "brandingPrimaryColor": null,
+        "pluginRegistries": null,
+        "rules": null,
+        "brandingCustomFooterLinks": null,
+        "pluginPipelines": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`disconnectInvite preserves repeated native event payloads and mutation results 2`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
+      "fromTypename": "ServerConfig",
+      "toTypename": "User",
+      "timestamp": "<generated-time>",
+      "event": "delete_relationship",
+      "properties": {
+        "from": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "to": {
+          "username": "alice",
+          "createdAt": "<generated-time>"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-1>",
+      "typename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "new": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      }
+    },
+    {
+      "id": "<id-1>",
+      "typename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "new": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 1`] = `
+[]
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 2`] = `
+[]
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 3`] = `
+[
+  {
+    "PendingModInvites": 25
+  }
+]
+`;
+
+exports[`moderator reads preserve missing results, nested recipients and generated limits 4`] = `
+[
+  {
+    "ModerationProfile": {
+      "displayName": "ModAlice"
+    }
+  }
+]
+`;
+
+exports[`moderator writes preserve missing profile results and events 1`] = `
+{
+  "serverConfigs": [
+    {
+      "serverName": "cats",
+      "serverDescription": null,
+      "serverIconURL": null,
+      "allowedFileTypes": null,
+      "featuredWikiPageIds": null,
+      "enableDownloads": null,
+      "enableEvents": null,
+      "accountAgeGateEnabled": null,
+      "minimumAccountAge": null,
+      "sensitiveContentAgeGateEnabled": null,
+      "minimumSensitiveContentAge": null,
+      "brandingProductName": null,
+      "brandingDocsURL": null,
+      "brandingSourceURL": null,
+      "brandingIssuesURL": null,
+      "brandingSupportEmail": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingLogoDarkURL": null,
+      "brandingLogoAlt": null,
+      "brandingFaviconURL": null,
+      "brandingPrimaryColor": null,
+      "pluginRegistries": null,
+      "rules": null,
+      "brandingCustomFooterLinks": null,
+      "pluginPipelines": null
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 2`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "new": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 3`] = `
+{
+  "serverConfigs": [
+    {
+      "serverName": "cats",
+      "serverDescription": null,
+      "serverIconURL": null,
+      "allowedFileTypes": null,
+      "featuredWikiPageIds": null,
+      "enableDownloads": null,
+      "enableEvents": null,
+      "accountAgeGateEnabled": null,
+      "minimumAccountAge": null,
+      "sensitiveContentAgeGateEnabled": null,
+      "minimumSensitiveContentAge": null,
+      "brandingProductName": null,
+      "brandingDocsURL": null,
+      "brandingSourceURL": null,
+      "brandingIssuesURL": null,
+      "brandingSupportEmail": null,
+      "brandingShowUpstreamLinks": null,
+      "brandingLogoDarkURL": null,
+      "brandingLogoAlt": null,
+      "brandingFaviconURL": null,
+      "brandingPrimaryColor": null,
+      "pluginRegistries": null,
+      "rules": null,
+      "brandingCustomFooterLinks": null,
+      "pluginPipelines": null
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing profile results and events 4`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "typename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "new": {
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing server results and events 1`] = `
+{
+  "serverConfigs": []
+}
+`;
+
+exports[`moderator writes preserve missing server results and events 2`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderator writes preserve missing server results and events 3`] = `
+{
+  "serverConfigs": []
+}
+`;
+
+exports[`moderator writes preserve missing server results and events 4`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 0,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
+
+exports[`projection failure preserves committed moderator relationship and native events 1`] = `
+{
+  "events": [
+    {
+      "id": "<id-0>",
+      "id_from": "<id-1>",
+      "id_to": "<id-2>",
+      "relationshipName": "MODERATOR_OF_SERVER",
+      "fromTypename": "ModerationProfile",
+      "toTypename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "create_relationship",
+      "properties": {
+        "from": {
+          "displayName": "ModAlice"
+        },
+        "to": {
+          "enableEvents": "invalid",
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "relationship": {}
+      }
+    },
+    {
+      "id": "<id-2>",
+      "typename": "ServerConfig",
+      "timestamp": "<generated-time>",
+      "event": "update",
+      "properties": {
+        "old": {
+          "enableEvents": "invalid",
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        },
+        "new": {
+          "enableEvents": "invalid",
+          "createdAt": "<generated-time>",
+          "serverName": "cats"
+        }
+      }
+    }
+  ],
+  "graph": [
+    {
+      "username": "alice",
+      "moderators": {
+        "low": 1,
+        "high": 0
+      },
+      "invites": {
+        "low": 0,
+        "high": 0
+      }
+    }
+  ]
+}
+`;
