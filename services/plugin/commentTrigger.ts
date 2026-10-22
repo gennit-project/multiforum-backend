@@ -4,7 +4,7 @@ import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRe
 import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
 import { performance } from 'perf_hooks'
 import type { CommentTriggerArgs, PluginEdgeData, PluginToRun, PendingRun } from './types.js'
-import { COMMENT_EVENTS } from './constants.js'
+import { COMMENT_EVENTS, PLUGIN_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
 import { loadPluginImplementation } from './pluginLoader.js'
 import { generatePipelineId, shouldRunStep, mergeSettings, parseStoredPipelines, parseManifest, buildPluginVersionMaps, getPluginForStep } from './pipelineUtils.js'
@@ -556,7 +556,9 @@ export const triggerPluginRunsForComment = async (
           parentCommentId: comment.ParentComment?.id || null,
           context: buildBotInvocationContext({
             invocationType:
-              parsedBotMentions.length > 0
+              event === PLUGIN_EVENTS.COMMENT_EDITED
+                ? 'comment-edited'
+                : parsedBotMentions.length > 0
                 ? 'tagged-comment'
                 : 'comment-created',
             server: {

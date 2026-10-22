@@ -6,7 +6,7 @@
 // returns the resolver result — with a stubbed resolver and a minimal context.
 import assert from "node:assert/strict";
 import test from "node:test";
-import middleware from "./commentPluginPipelineMiddleware.js";
+import middleware, { createCommentPluginPipelineMiddleware } from "./commentPluginPipelineMiddleware.js";
 
 const M: any = (middleware as any).Mutation;
 
@@ -106,4 +106,68 @@ test("a failure while dispatching is swallowed and the result still returns", as
   const out = await M.createComments(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "c-1" }] });
   assert.equal(state.calls, 1);
+});
+
+test("dispatches comment.edited after a successful text update", async () => {
+  const calls: Array<{ commentId: string; event: string; driver: unknown }> = [];
+  const injected = createCommentPluginPipelineMiddleware(async args => {
+    calls.push(args);
+    return [];
+  });
+  const driver = {} as any;
+  const result = { comments: [{ id: "c-1" }, { id: "c-2" }] };
+
+  const out = await injected.Mutation.updateComments(
+    async () => result,
+    null,
+    { update: { text: "edited text" } },
+    { driver } as any,
+    {} as any
+  );
+
+  assert.equal(out, result);
+  assert.deepEqual(calls, [
+    { commentId: "c-1", event: "comment.edited", driver },
+    { commentId: "c-2", event: "comment.edited", driver },
+  ]);
+});
+
+test("does not dispatch comment.edited for a non-text update", async () => {
+  const calls: unknown[] = [];
+  const injected = createCommentPluginPipelineMiddleware(async args => {
+    calls.push(args);
+    return [];
+  });
+  const result = { comments: [{ id: "c-1" }] };
+
+  const out = await injected.Mutation.updateComments(
+    async () => result,
+    null,
+    { update: { isSticky: true } },
+    { driver: {} } as any,
+    {} as any
+  );
+
+  assert.equal(out, result);
+  assert.deepEqual(calls, []);
+});
+
+test("does not dispatch comment.edited when the update fails", async () => {
+  const calls: unknown[] = [];
+  const injected = createCommentPluginPipelineMiddleware(async args => {
+    calls.push(args);
+    return [];
+  });
+
+  await assert.rejects(
+    injected.Mutation.updateComments(
+      async () => { throw new Error("update failed"); },
+      null,
+      { update: { text: "edited text" } },
+      { driver: {} } as any,
+      {} as any
+    ),
+    /update failed/
+  );
+  assert.deepEqual(calls, []);
 });

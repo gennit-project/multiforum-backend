@@ -3,6 +3,7 @@ export const PLUGIN_EVENTS = {
   DOWNLOADABLE_FILE_UPDATED: "downloadableFile.updated",
   DOWNLOADABLE_FILE_DOWNLOADED: "downloadableFile.downloaded",
   COMMENT_CREATED: "comment.created",
+  COMMENT_EDITED: "comment.edited",
   DISCUSSION_CHANNEL_CREATED: "discussionChannel.created",
 } as const;
 
@@ -18,6 +19,7 @@ export const DOWNLOAD_EVENTS: ReadonlySet<string> = new Set([
 // Comment events
 export const COMMENT_EVENTS: ReadonlySet<string> = new Set([
   PLUGIN_EVENTS.COMMENT_CREATED,
+  PLUGIN_EVENTS.COMMENT_EDITED,
 ]);
 
 // Channel-scoped events
