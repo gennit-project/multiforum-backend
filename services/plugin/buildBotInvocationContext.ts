@@ -6,6 +6,7 @@ type BotChannelSnapshot = {
   displayName?: string | null
   description?: string | null
   rules?: unknown
+  pluginEnabled?: boolean | null
 }
 
 type BotDiscussionSnapshot = {
@@ -35,6 +36,7 @@ export type BotInvocationContext = {
     displayName: string
     description: string | null
     rules: string[]
+    pluginEnabled: boolean
   }
   discussion: {
     id: string
@@ -140,6 +142,7 @@ export const buildBotInvocationContext = ({
       displayName: channel.displayName || channel.uniqueName || '',
       description: channel.description || null,
       rules: normalizeRules(channel.rules),
+      pluginEnabled: channel.pluginEnabled === true,
     },
     discussion: discussion?.id
       ? {

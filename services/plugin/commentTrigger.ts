@@ -97,13 +97,31 @@ export const triggerPluginRunsForComment = async (
     parentCommentId: comment.ParentComment?.id || null
   })
 
-  // Build a map of channel-level plugin settings by plugin name
-  const channelPluginSettingsMap = new Map<string, unknown>()
+  type ChannelPluginState = {
+    enabled: boolean
+    settingsJson: unknown
+  }
+  const channelPluginStatesByVersionId = new Map<string, ChannelPluginState>()
+  const channelPluginStatesByName = new Map<string, ChannelPluginState>()
   if (channel?.EnabledPluginsConnection?.edges) {
     for (const edge of channel.EnabledPluginsConnection.edges) {
+      const state = {
+        enabled: edge.properties?.enabled === true,
+        settingsJson: edge.properties?.settingsJson,
+      }
+      if (edge.node?.id) {
+        channelPluginStatesByVersionId.set(edge.node.id, state)
+      }
       const pluginName = edge.node?.Plugin?.name
-      if (pluginName && edge.properties?.settingsJson) {
-        channelPluginSettingsMap.set(pluginName, edge.properties.settingsJson)
+      const existing = pluginName && !edge.node?.id
+        ? channelPluginStatesByName.get(pluginName)
+        : undefined
+      if (
+        pluginName &&
+        !edge.node?.id &&
+        (!existing || (!existing.enabled && state.enabled))
+      ) {
+        channelPluginStatesByName.set(pluginName, state)
       }
     }
   }
@@ -355,7 +373,13 @@ export const triggerPluginRunsForComment = async (
       // Merge settings: defaults < server < channel (channel takes highest precedence)
       const settingsDefaults = parseIfString(pluginVersionData.settingsDefaults)
       const serverSettingsJson = parseIfString(edgeData.properties?.settingsJson)
-      const channelSettingsJsonRaw = parseIfString(channelPluginSettingsMap.get(pluginId))
+      const channelPluginState =
+        channelPluginStatesByVersionId.get(pluginVersionData.id) ||
+        channelPluginStatesByName.get(pluginId) ||
+        { enabled: false, settingsJson: null }
+      const channelSettingsJsonRaw = channelPluginState.enabled
+        ? parseIfString(channelPluginState.settingsJson)
+        : {}
 
       // Channel settings are stored flat but need to be merged into the 'channel' sub-key
       // to match the plugin's expected structure: { server: {...}, channel: {...} }
@@ -548,7 +572,8 @@ export const triggerPluginRunsForComment = async (
                 channel?.description ||
                 comment.Channel?.description ||
                 null,
-              rules: channel?.rules
+              rules: channel?.rules,
+              pluginEnabled: channelPluginState.enabled,
             },
             discussion: discussionChannel?.Discussion
               ? {

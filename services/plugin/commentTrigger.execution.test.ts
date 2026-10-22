@@ -78,7 +78,16 @@ const installedEdge = (name: string, manifestEvents: string[] = [EVENT]) => ({
 // Build stubbed models with a valid discussion comment, a channel with no
 // channel-level settings, and a server config whose installed plugins are the
 // given edges (no pipeline -> fallback runs all enabled plugins for the event).
-function makeExecModels(edges: unknown[]) {
+function makeExecModels(
+  edges: unknown[],
+  {
+    channelRules = [],
+    channelPluginEdges = [],
+  }: {
+    channelRules?: string[];
+    channelPluginEdges?: unknown[];
+  } = {}
+) {
   const updates: RunUpdateArgs[] = [];
   const creates: RunCreateArgs[] = [];
   let seq = 0;
@@ -86,9 +95,9 @@ function makeExecModels(edges: unknown[]) {
     uniqueName: "cats",
     displayName: "Cats",
     description: "",
-    rules: [],
+    rules: channelRules,
     pluginPipelines: null,
-    EnabledPluginsConnection: { edges: [] },
+    EnabledPluginsConnection: { edges: channelPluginEdges },
   };
   const serverConfig = {
     serverName: "s",
@@ -196,6 +205,137 @@ test("passes canonical server rules to the plugin invocation context", async () 
     (receivedContext as { server?: { rules?: string[] } })?.server?.rules,
     ["No spam", "No threats"]
   );
+});
+
+test("passes version-aware channel enablement and canonical forum rules", async () => {
+  const { models, creates } = makeExecModels([installedEdge("mybot")], {
+    channelRules: ["Stay on topic", "No spoilers"],
+    channelPluginEdges: [
+      {
+        properties: { enabled: true, settingsJson: null },
+        node: { id: "pv-mybot", Plugin: { name: "mybot" } },
+      },
+    ],
+  });
+  let receivedContext: unknown;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      const event = envelope as { payload?: { context?: unknown } };
+      receivedContext = event.payload?.context;
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.deepEqual(
+    (receivedContext as {
+      channel?: { pluginEnabled?: boolean; rules?: string[] };
+    })?.channel,
+    {
+      uniqueName: "cats",
+      displayName: "Cats",
+      description: null,
+      rules: ["Stay on topic", "No spoilers"],
+      pluginEnabled: true,
+    }
+  );
+  assert.equal(creates.length, 1, "channel enablement does not create a second run");
+});
+
+test("prefers exact disabled version state and ignores its channel settings", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")], {
+    channelPluginEdges: [
+      {
+        properties: {
+          enabled: false,
+          settingsJson: JSON.stringify({ confidenceThreshold: 0.1 }),
+        },
+        node: { id: "pv-mybot", Plugin: { name: "mybot" } },
+      },
+      {
+        properties: {
+          enabled: true,
+          settingsJson: JSON.stringify({ confidenceThreshold: 0.2 }),
+        },
+        node: { id: "pv-old", Plugin: { name: "mybot" } },
+      },
+    ],
+  });
+  let receivedContext: unknown;
+  let receivedSettings: unknown;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(context: unknown) {
+      receivedSettings = (context as { settings?: unknown }).settings;
+    }
+    async handleEvent(envelope: unknown) {
+      receivedContext = (envelope as { payload?: { context?: unknown } }).payload?.context;
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.equal(
+    (receivedContext as { channel?: { pluginEnabled?: boolean } })?.channel?.pluginEnabled,
+    false
+  );
+  assert.deepEqual(receivedSettings, {});
+});
+
+test("falls back to plugin-name channel enablement for migrated edges", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")], {
+    channelPluginEdges: [
+      {
+        properties: { enabled: true, settingsJson: null },
+        node: { Plugin: { name: "mybot" } },
+      },
+    ],
+  });
+  let pluginEnabled = false;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      pluginEnabled = Boolean(
+        (envelope as {
+          payload?: { context?: { channel?: { pluginEnabled?: boolean } } };
+        }).payload?.context?.channel?.pluginEnabled
+      );
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.equal(pluginEnabled, true);
+});
+
+test("does not apply another plugin version's channel enablement", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")], {
+    channelPluginEdges: [
+      {
+        properties: { enabled: true, settingsJson: null },
+        node: { id: "pv-old", Plugin: { name: "mybot" } },
+      },
+    ],
+  });
+  let pluginEnabled = true;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      pluginEnabled = Boolean(
+        (envelope as {
+          payload?: { context?: { channel?: { pluginEnabled?: boolean } } };
+        }).payload?.context?.channel?.pluginEnabled
+      );
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.equal(pluginEnabled, false);
 });
 
 test("marks the run FAILED when the plugin reports failure", async () => {

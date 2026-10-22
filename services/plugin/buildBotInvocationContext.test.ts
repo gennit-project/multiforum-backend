@@ -16,6 +16,7 @@ test("buildBotInvocationContext includes forum, discussion, and threaded parent 
       displayName: "Bad Advice",
       description: "Questionable guidance only.",
       rules: ["Stay in character", "No harassment"],
+      pluginEnabled: true,
     },
     discussion: {
       id: "discussion-1",
@@ -57,6 +58,7 @@ test("buildBotInvocationContext includes forum, discussion, and threaded parent 
       displayName: "Bad Advice",
       description: "Questionable guidance only.",
       rules: ["Stay in character", "No harassment"],
+      pluginEnabled: true,
     },
     discussion: {
       id: "discussion-1",
@@ -88,6 +90,15 @@ test("buildBotInvocationContext includes forum, discussion, and threaded parent 
       rootCommentId: "comment-1",
     },
   });
+});
+
+test("buildBotInvocationContext defaults channel plugin enablement to false", () => {
+  const result = buildBotInvocationContext({
+    invocationType: "comment-created",
+    channel: { uniqueName: "cats", rules: [] },
+  });
+
+  assert.equal(result.channel.pluginEnabled, false);
 });
 
 test("collectParentCommentThread walks parent comments back to the root", async () => {
