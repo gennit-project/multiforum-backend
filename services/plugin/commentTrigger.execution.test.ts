@@ -92,6 +92,7 @@ function makeExecModels(edges: unknown[]) {
   };
   const serverConfig = {
     serverName: "s",
+    rules: ["No spam", "No threats"],
     pluginPipelines: null,
     InstalledVersionsConnection: { edges },
   };
@@ -175,6 +176,26 @@ test("runs a matching plugin to SUCCEEDED", async () => {
   assert.ok(statuses.includes("SUCCEEDED"), "ends SUCCEEDED");
   assert.ok(!statuses.includes("FAILED"));
   assert.equal(runs.length, 1);
+});
+
+test("passes canonical server rules to the plugin invocation context", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")]);
+  let receivedContext: unknown;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      const event = envelope as { payload?: { context?: unknown } };
+      receivedContext = event.payload?.context;
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(CapturingPlugin));
+
+  assert.deepEqual(
+    (receivedContext as { server?: { rules?: string[] } })?.server?.rules,
+    ["No spam", "No threats"]
+  );
 });
 
 test("marks the run FAILED when the plugin reports failure", async () => {

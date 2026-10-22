@@ -14,6 +14,9 @@ type BotDiscussionSnapshot = {
   body?: string | null
 }
 
+type BotServerSnapshot = {
+  rules?: unknown
+}
 
 export type BotThreadCommentContext = {
   id: string
@@ -24,6 +27,9 @@ export type BotThreadCommentContext = {
 
 export type BotInvocationContext = {
   invocationType: string
+  server: {
+    rules: string[]
+  }
   channel: {
     uniqueName: string
     displayName: string
@@ -107,12 +113,14 @@ export const collectParentCommentThread = async ({
 
 export const buildBotInvocationContext = ({
   invocationType,
+  server,
   channel,
   discussion,
   comment,
   parentComments = [],
 }: {
   invocationType: string
+  server?: BotServerSnapshot | null
   channel: BotChannelSnapshot
   discussion?: BotDiscussionSnapshot | null
   comment?: BotCommentSnapshot | null
@@ -124,6 +132,9 @@ export const buildBotInvocationContext = ({
 
   return {
     invocationType,
+    server: {
+      rules: normalizeRules(server?.rules),
+    },
     channel: {
       uniqueName: channel.uniqueName || '',
       displayName: channel.displayName || channel.uniqueName || '',
