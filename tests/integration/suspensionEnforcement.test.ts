@@ -31,7 +31,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: any;
 
 before(async () => {
   let builder = new Neo4jContainer("neo4j:5-community").withApoc();
@@ -48,8 +47,7 @@ before(async () => {
   const { buildPermissionedSchema } = await import(
     "../helpers/buildPermissionedSchema.js"
   );
-  ({ schema, driver, ogm } = await buildPermissionedSchema());
-  await ogm.init();
+  ({ schema, driver } = await buildPermissionedSchema());
 
   await run("MATCH (n) DETACH DELETE n");
   await run(
@@ -104,7 +102,6 @@ const exec = (
     variableValues,
     contextValue: {
       driver,
-      ogm,
       req: {
         headers: { authorization: token(caller.username, caller.email) },
         body: {},

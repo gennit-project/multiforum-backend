@@ -30,7 +30,7 @@ beforeEach(async () => {
   await resetDb();
 });
 
-const deps = () => ({ ogm: env.ogm, driver: env.driver });
+const deps = () => ({ driver: env.driver });
 
 const notificationsFor = (username: string) =>
   run(

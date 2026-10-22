@@ -45,7 +45,6 @@ beforeEach(async () => {
 const asUser = (username: string) => ({
   user: { username },
   driver: env.driver,
-  ogm: env.ogm,
 });
 
 const createScratchpadEntry = (args: Record<string, unknown>, username = "alice") =>

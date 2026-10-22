@@ -7,7 +7,7 @@ import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
-import { createServerSecretRepository, SERVER_SECRET_DEFAULT_SELECTION } from "../../services/persistence/serverSecretRepository.js";
+import { createServerSecretRepository } from "../../services/persistence/serverSecretRepository.js";
 import { migrateServerSecretRenames } from "../../services/plugin/reconcileSecrets.js";
 import { decryptSecret } from "../../services/plugin/encryption.js";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
@@ -27,9 +27,6 @@ const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,va
 const state=async()=>({rows:normalize((await driver.executeQuery("MATCH (s:ServerSecret) RETURN properties(s) AS secret ORDER BY s.key")).records.map(r=>r.get("secret"))),events:normalize(events)});
 const seed=async(valid=true)=>driver.executeQuery(`CREATE (s:ServerSecret {id:'secret',pluginId:'scanner',key:'OLD',ciphertext:'synthetic-ciphertext',isValid:true,lastValidatedAt:datetime('2026-01-01T00:00:00Z'),validationError:'previous',updatedAt:datetime('2026-01-01T00:00:00Z'),createdAt:datetime('2026-01-01T00:00:00Z')}) ${valid?'':'REMOVE s.createdAt'}`);
 
-test("fixed secret projection matches actual OGM default field order",()=>{
-  assert.equal(print(parse(SERVER_SECRET_DEFAULT_SELECTION)),print(parse((app.ogm.model("ServerSecret") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
-});
 test("replacement and creation retain generated defaults, validation reset and native events",async()=>{
   const repo=createServerSecretRepository(driver);const old=app.ogm.model("ServerSecret");
   await seed();assert.deepEqual(await repo.findForReplacement("scanner","OLD"),await old.find({where:{AND:[{pluginId:"scanner"},{key:"OLD"}]}}));

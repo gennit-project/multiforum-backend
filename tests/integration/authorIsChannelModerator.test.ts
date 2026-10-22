@@ -17,7 +17,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 let container: StartedNeo4jContainer;
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: any;
 
 before(async () => {
   let builder = new Neo4jContainer("neo4j:5-community").withApoc();
@@ -31,8 +30,7 @@ before(async () => {
   const { buildPermissionedSchema } = await import(
     "../helpers/buildPermissionedSchema.js"
   );
-  ({ schema, driver, ogm } = await buildPermissionedSchema());
-  await ogm.init();
+  ({ schema, driver } = await buildPermissionedSchema());
 
   const session = driver.session();
   try {
@@ -99,7 +97,7 @@ const run = async (id: string, channelUniqueName: string | null) => {
   const result = await graphql({
     schema,
     source: QUERY,
-    contextValue: { driver, ogm, req: { headers: {} } },
+    contextValue: { driver, req: { headers: {} } },
     variableValues: { id, channelUniqueName },
   });
   assert.equal(result.errors, undefined, JSON.stringify(result.errors));
@@ -155,7 +153,7 @@ test("getDiscussionsInChannel (custom resolver) populates authorIsChannelModerat
   const result = await graphql({
     schema,
     source: LIST_QUERY,
-    contextValue: { driver, ogm, req: { headers: {} } },
+    contextValue: { driver, req: { headers: {} } },
     variableValues: { ch: CHANNEL },
   });
   assert.equal(result.errors, undefined, JSON.stringify(result.errors));

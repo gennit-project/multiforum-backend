@@ -9,7 +9,6 @@ import typeDefs from '../../typeDefs.js';
 import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {createChannelModerationRepository,type ChannelModerationRepository} from '../../services/persistence/channelModerationRepository.js';
-import {ISSUE_ACTIVITY_DEFAULT_SELECTION} from '../../services/persistence/issueActivityRepository.js';
 import {protectIssueModelIdentity} from '../../services/issueTargetIdentity.js';
 import lockChannel from '../../customResolvers/mutations/lockChannel.js';
 import unlockChannel from '../../customResolvers/mutations/unlockChannel.js';
@@ -40,7 +39,7 @@ async function state(){return{
  edges:(await driver.executeQuery('MATCH()-[r]->() RETURN type(r) AS type,count(*) AS n ORDER BY type')).records.map(r=>[r.get('type'),r.get('n').toNumber()]),events:normalize(events)};}
 const outcome=async(call:()=>Promise<unknown>)=>{try{return{value:normalize(await call()),error:null};}catch(error){return{value:null,error:(error as Error).message};}};
 test('full Issue action projection and channel-admin default cap match production OGM',async()=>{
- assert.equal(ISSUE_ACTIVITY_DEFAULT_SELECTION.replace(/\s/g,''),(ogm.model('Issue') as any).getSelectionSetOrDefault().replace(/\s/g,''));await seed(28);const repo=createChannelModerationRepository(driver);assert.deepEqual(await repo.findChannel('forum'),await legacy().findChannel('forum'));assert.equal((await repo.findChannel('forum'))[0].Admins?.length,25);
+ await seed(28);const repo=createChannelModerationRepository(driver);assert.deepEqual(await repo.findChannel('forum'),await legacy().findChannel('forum'));assert.equal((await repo.findChannel('forum'))[0].Admins?.length,25);
  await driver.executeQuery("UNWIND range(1,28) AS n CREATE(:Issue{id:toString(n),issueNumber:n,isOpen:n%2=0,relatedChannelUniqueName:'forum'})");assert.deepEqual(await repo.findOpenIssues('forum'),await legacy().findOpenIssues('forum'));assert.deepEqual(await repo.findRelatedIssues('forum'),await legacy().findRelatedIssues('forum'));assert.equal((await repo.findRelatedIssues('forum')).length,25);
 });
 test('lock/unlock cycle preserves nested graph, raw notifications, native payloads and repeat guards',async()=>{

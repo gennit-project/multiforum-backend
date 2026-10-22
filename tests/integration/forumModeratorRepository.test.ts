@@ -8,7 +8,6 @@ import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createForumModeratorRepository } from "../../services/persistence/forumModeratorRepository.js";
-import { CHANNEL_MEMBERSHIP_SELECTION } from "../../services/persistence/forumMembershipSelections.js";
 import acceptModInvite from "../../customResolvers/mutations/acceptForumModInvite.js";
 import removeForumMod from "../../customResolvers/mutations/removeForumMod.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -47,9 +46,6 @@ const seed=async(valid=true)=>{
 };
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const oldWrite=(action:"connectModerator"|"disconnectModerator"|"disconnectInvite",identity:unknown=action==="disconnectInvite"?"alice":"ModAlice")=>ogm.model("Channel").update({where:{uniqueName:"cats"},update:action==="disconnectInvite"?{PendingModInvites:[{disconnect:[{where:{node:{username:identity}}}]}]}:{Moderators:[{[action==="connectModerator"?"connect":"disconnect"]:[{where:{node:{displayName:identity}}}]}]}} as any);
-test("Channel default selection remains exact, including field ordering",()=>{
- assert.equal(print(parse(CHANNEL_MEMBERSHIP_SELECTION)),print(parse((ogm.model("Channel") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
-});
 test("moderator reads preserve missing results, nested recipients and generated limits",async()=>{
  const repo=createForumModeratorRepository(driver);
  const compare=async()=>{

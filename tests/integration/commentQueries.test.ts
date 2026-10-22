@@ -2,7 +2,7 @@
 // getCommentSection, getEventComments, getCommentReplies. Each runs a .cypher
 // query to fetch comments. They call setUserDataOnContext but work anonymously
 // (no auth token -> loggedInUsername null), so the context just supplies the
-// driver/ogm and an empty request.
+// driver and an empty request.
 
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
@@ -30,7 +30,6 @@ beforeEach(async () => {
 
 const anon = () => ({
   driver: env.driver,
-  ogm: env.ogm,
   req: { headers: {}, body: {} },
 });
 

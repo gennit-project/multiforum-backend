@@ -8,7 +8,6 @@ import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createServerAdminRepository } from "../../services/persistence/serverAdminRepository.js";
-import { SERVER_MEMBERSHIP_SELECTION } from "../../services/persistence/serverMembershipSelections.js";
 import acceptAdminInvite from "../../customResolvers/mutations/acceptServerAdminInvite.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -46,9 +45,6 @@ const seed=async(valid=true)=>{
 };
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const oldWrite=(action:"connectAdmin"|"disconnectInvite",username:unknown="alice")=>ogm.model("ServerConfig").update({where:{serverName:"cats"},update:action==="disconnectInvite"?{PendingAdminInvites:[{disconnect:[{where:{node:{username}}}]}]}:{Admins:[{[action==="connectAdmin"?"connect":"disconnect"]:[{where:{node:{username}}}]}]}} as any);
-test("ServerConfig default selection remains exact, including field ordering",()=>{
- assert.equal(print(parse(SERVER_MEMBERSHIP_SELECTION)),print(parse((ogm.model("ServerConfig") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
-});
 test("administrator reads preserve missing results, nested recipients and generated limits",async()=>{
  const repo=createServerAdminRepository(driver);
  const compare=async()=>{

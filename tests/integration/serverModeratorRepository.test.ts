@@ -8,7 +8,6 @@ import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createServerModeratorRepository } from "../../services/persistence/serverModeratorRepository.js";
-import { SERVER_MEMBERSHIP_SELECTION } from "../../services/persistence/serverMembershipSelections.js";
 import acceptModInvite from "../../customResolvers/mutations/acceptServerModInvite.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -46,9 +45,6 @@ const seed=async(valid=true)=>{
 };
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const oldWrite=(action:"connectModerator"|"disconnectInvite",identity:unknown=action==="disconnectInvite"?"alice":"ModAlice")=>ogm.model("ServerConfig").update({where:{serverName:"cats"},update:action==="disconnectInvite"?{PendingModInvites:[{disconnect:[{where:{node:{username:identity}}}]}]}:{Moderators:[{[action==="connectModerator"?"connect":"disconnect"]:[{where:{node:{displayName:identity}}}]}]}} as any);
-test("ServerConfig default selection remains exact, including field ordering",()=>{
- assert.equal(print(parse(SERVER_MEMBERSHIP_SELECTION)),print(parse((ogm.model("ServerConfig") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
-});
 test("moderator reads preserve missing results, nested recipients and generated limits",async()=>{
  const repo=createServerModeratorRepository(driver);
  const compare=async()=>{

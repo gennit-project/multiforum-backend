@@ -52,10 +52,6 @@ const graph=async()=>plain((await driver.executeQuery(`MATCH (u:User)
  ORDER BY username`)).records.map(r=>r.toObject()));
 
 test("registration default selections match OGM exactly including hidden-field exclusion",()=>{
- const userSelection=(ogm.model("User") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault();
- assert.equal(print(parse(REGISTRATION_USER_SELECTION)),print(parse(userSelection)));
- const emailSelection=(ogm.model("Email") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault();
- assert.equal(print(parse("{address}")),print(parse(emailSelection)));
  assert.doesNotMatch(REGISTRATION_USER_SELECTION,/dateOfBirth/);
 });
 

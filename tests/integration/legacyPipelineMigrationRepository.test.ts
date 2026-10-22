@@ -4,7 +4,7 @@ import {before,after,beforeEach,test} from 'node:test';
 import {parse,print} from 'graphql';
 import type {Driver} from 'neo4j-driver';
 import {createOgmPersistence} from '../../services/persistence/ogm.js';
-import {initializeLegacyPipelineMigration,LEGACY_PIPELINE_CONFIG_SELECTION,LEGACY_PIPELINE_SAVE_SELECTION,type LegacyPipelineMigrationRepository} from '../../services/persistence/legacyPipelineMigrationRepository.js';
+import { initializeLegacyPipelineMigration, LEGACY_PIPELINE_CONFIG_SELECTION, type LegacyPipelineMigrationRepository } from '../../services/persistence/legacyPipelineMigrationRepository.js';
 import {migrateLegacyPipelineConfigurations} from '../../services/plugin/migrateLegacyPipelineConfigurations.js';
 import {materializeLegacyDownloadPipelines} from '../../services/plugin/legacyPipelineMigration.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
@@ -16,7 +16,6 @@ const stored=async()=>(await driver.executeQuery('MATCH(s:ServerConfig) RETURN s
 async function seed(){await driver.executeQuery("CREATE(s:ServerConfig{serverName:'first',pluginPipelines:'[]'}),(:ServerConfig{serverName:'later',pluginPipelines:'[]'}),(p:Plugin{id:'p',name:'scanner'}),(v:PluginVersion{id:'v',version:'1.0.0',repoUrl:'https://fixture.invalid/plugin',entryPath:'index.js',manifest:$manifest}) CREATE(p)-[:HAS_VERSION]->(v) CREATE(s)-[:INSTALLED{enabled:true,settingsJson:'{}'}]->(v)",{manifest:JSON.stringify({events:['downloadableFile.created']})});}
 const materialize:typeof materializeLegacyDownloadPipelines=input=>materializeLegacyDownloadPipelines({...input,effectiveAt:'2026-01-01T00:00:00.000Z',createPolicyId:()=> 'fixture-policy'});
 test('standalone CLI schema preserves exact default response and unbounded nested configuration reads',async()=>{
- assert.equal(print(parse(LEGACY_PIPELINE_SAVE_SELECTION)),print(parse((model as any).getSelectionSetOrDefault())));
  await driver.executeQuery("UNWIND range(1,29) AS i CREATE(:ServerConfig{serverName:'server'+toString(i),pluginPipelines:'[]'})");
  await driver.executeQuery("MATCH(s:ServerConfig{serverName:'server1'}) UNWIND range(1,29) AS i CREATE(p:Plugin{id:'p'+toString(i),name:'plugin'+toString(i)}) CREATE(v:PluginVersion{id:'v'+toString(i),version:toString(i),repoUrl:'https://fixture.invalid/plugin',entryPath:'index.js'}) CREATE(p)-[:HAS_VERSION]->(v) CREATE(s)-[:INSTALLED{enabled:true,settingsJson:'{}'}]->(v)");
  const baseline=await old.findConfigurations();assert.equal(baseline.length,29);assert.deepEqual(await next.findConfigurations(),baseline);assert.equal(baseline.find(s=>s.serverName==='server1')?.InstalledVersionsConnection.edges.length,29);

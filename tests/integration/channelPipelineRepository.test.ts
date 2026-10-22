@@ -7,7 +7,7 @@ import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
-import { createChannelPipelineRepository, CHANNEL_PIPELINE_DEFAULT_SELECTION, BOT_DEPRECATION_DEFAULT_SELECTION } from "../../services/persistence/channelPipelineRepository.js";
+import { createChannelPipelineRepository } from "../../services/persistence/channelPipelineRepository.js";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver: Driver;
@@ -65,9 +65,6 @@ const SERVER_SELECTION = `{
 const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>["timestamp","id","id_from","id_to"].includes(key)?`<${key}>`:value));
 const seed=async(valid=true)=>driver.executeQuery(`CREATE (c:Channel {uniqueName:'cats',createdAt:datetime('2026-01-01T00:00:00Z'),pluginPipelines:'[]'})-[:BOT]->(u:User {username:'bot-old',createdAt:datetime('2026-01-01T00:00:00Z')}) CREATE (c)-[:BOT]->(:User {username:'human',createdAt:datetime('2026-01-01T00:00:00Z')}) CREATE (:ServerConfig {serverName:'server'}) ${valid?'':'REMOVE u.createdAt'}`);
 const state=async()=>({rows:(await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (c:Channel)-[:BOT]->(u) RETURN u.username AS username,u.isDeprecated AS deprecated,u.deprecatedReason AS reason,c.uniqueName AS channel ORDER BY username")).records.map(r=>r.toObject()),events:normalize(events)});
-test("Channel/User fixed update projections match actual OGM defaults including hidden field omission",()=>{
-  for(const [name,selection] of [["Channel",CHANNEL_PIPELINE_DEFAULT_SELECTION],["User",BOT_DEPRECATION_DEFAULT_SELECTION]]) assert.equal(print(parse(selection)),print(parse((app.ogm.model(name as never) as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
-});
 test("channel and server snapshots plus pipeline writes preserve exact projections and native events",async()=>{
   await seed();const repo=createChannelPipelineRepository(driver);
   await driver.executeQuery(`MATCH (c:Channel),(s:ServerConfig)

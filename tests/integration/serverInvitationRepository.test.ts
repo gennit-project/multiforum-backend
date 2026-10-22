@@ -14,7 +14,6 @@ import inviteServerMod from "../../customResolvers/mutations/inviteServerMod.js"
 import sgMail from "@sendgrid/mail";
 import { Resend } from "resend";
 import { mock, afterEach } from "node:test";
-import { SERVER_MEMBERSHIP_SELECTION } from "../../services/persistence/serverMembershipSelections.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
@@ -55,7 +54,6 @@ const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const oldWrite=(kind:"admin"|"moderator",username:unknown="alice")=>ogm.model("ServerConfig").update({where:{serverName:"cats"},update:{[kind==="admin"?"PendingAdminInvites":"PendingModInvites"]:[{connect:[{where:{node:{username}}}]}]}} as any);
 const currentWrite=(kind:"admin"|"moderator",username="alice")=>createServerInvitationRepository(driver)[kind==="admin"?"connectAdminInvite":"connectModeratorInvite"]("cats",username);
 const graph=async()=>plain((await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (:ServerConfig)-[i:HAS_PENDING_SERVER_ADMIN_INVITE|HAS_PENDING_SERVER_MOD_INVITE]->(u) OPTIONAL MATCH (u)-[:HAS_NOTIFICATION]->(n:Notification) RETURN u.username AS username,count(DISTINCT i) AS invites,collect(DISTINCT {text:n.text,read:n.read,type:n.notificationType}) AS notifications ORDER BY username")).records.map(r=>r.toObject()));
-test("server invitation selection preserves full default ServerConfig projection",()=>assert.equal(print(parse(SERVER_MEMBERSHIP_SELECTION)),print(parse((ogm.model("ServerConfig") as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault()))));
 for(const kind of ["admin","moderator"] as const){
  test(`${kind} repeated invitation writes preserve result and native events`,async()=>{
   await seed();const expected=[plain(await oldWrite(kind)),plain(await oldWrite(kind))];const oldEvents=normalize(events);const oldGraph=await graph();

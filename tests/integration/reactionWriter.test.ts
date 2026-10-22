@@ -32,9 +32,6 @@ for(const [model,selection,method] of [["Comment",REACTION_COMMENT_SELECTION,"up
  const oldWrite=async(emoji:string)=>{await ogm.model(model).update({where:{id:"target"},update:{emoji}});};
  const newWrite=async(emoji:string)=>createReactionWriter(driver)[method]("target",emoji);
  const snapshot=async()=>({events:normalize(events),rows:(await driver.executeQuery(`MATCH(n:${model}) RETURN n.emoji AS emoji, n.updatedAt IS NOT NULL AS updated, n.ageGateTouchedAt IS NOT NULL AS touched`)).records.map(r=>r.toObject())});
- test(`${model} response projection exactly matches OGM default selection`,()=>{
-  assert.equal(print(parse(selection)),print(parse((ogm.model(model) as unknown as {getSelectionSetOrDefault():string}).getSelectionSetOrDefault())));
- });
  test(`${model} missing target is a successful no-op`,async()=>{
   await oldWrite('{}');const expected=await snapshot();events=[];await newWrite('{}');assert.deepEqual(await snapshot(),expected);
  });

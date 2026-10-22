@@ -89,7 +89,6 @@ test("resolves authenticated identity, moderation profile, and age access in one
 
   const context = {
     driver,
-    ogm: { model: () => ({}) },
     req: { headers: { authorization: `Bearer ${token}` } },
   } as unknown as GraphQLContext;
 
