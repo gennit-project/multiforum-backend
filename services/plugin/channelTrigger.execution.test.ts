@@ -179,6 +179,33 @@ test("runs a pipeline plugin to SUCCEEDED", async () => {
   assert.equal(runs.length, 1);
 });
 
+test("enqueues a deferred discussion job without loading the plugin", async () => {
+  const { models, updates, creates } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [installedEdge("mybot")]
+  );
+  let loadCount = 0;
+  await execRun(models, async () => {
+    loadCount += 1;
+    return pluginReturning({ success: true });
+  }, { execution: { deferExecution: true } });
+
+  assert.deepEqual(
+    {
+      deferred: creates[0].input[0].deferred,
+      status: creates[0].input[0].status,
+      loadCount,
+      runTransitions: statusesOf(updates).filter(Boolean),
+    },
+    {
+      deferred: true,
+      status: "PENDING",
+      loadCount: 0,
+      runTransitions: ["CANCELLED"],
+    }
+  );
+});
+
 test("does not publish a stale discussion verdict when an edit lands during execution", async () => {
   const { models } = makeExecModels(
     [{ pluginId: "mybot", condition: "ALWAYS" }],

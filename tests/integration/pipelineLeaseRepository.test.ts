@@ -6,6 +6,7 @@ import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import { createPipelineLeaseRepository, type PipelineLeaseRepository } from '../../services/persistence/pipelineLeaseRepository.js';
+import { createPluginEventQueueRepository } from '../../services/persistence/pluginEventQueueRepository.js';
 import {cancelSupersededPluginRuns,claimPluginRunLease,renewPluginRunLease,completePluginRunLease} from '../../services/plugin/executionLease.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
@@ -52,6 +53,121 @@ test('newer content revision cancels only matching older pending jobs',async()=>
   {id:'other-plugin',status:'PENDING'},
   {id:'other-target',status:'PENDING'},
  ]);
+});
+test('atomic event claims enforce concurrency across competing workers',async()=>{
+ await driver.executeQuery(`
+  CREATE (:ServerConfig {serverName:'test'})
+  WITH 1 AS ignored
+  UNWIND ['one','two'] AS suffix
+  CREATE (:PluginPipelineRun {
+   id:'attempt-'+suffix,pipelineId:'pipeline-'+suffix,targetId:'comment-'+suffix,
+   targetType:'Comment',eventType:'comment.created',scope:'SERVER',status:'QUEUED',
+   trigger:'EVENT',attemptNumber:1,configurationSnapshot:'{}',
+   createdAt:datetime('2026-07-30T11:00:00Z'),updatedAt:datetime('2026-07-30T11:00:00Z')
+  })
+  CREATE (:PluginRun {
+   id:'job-'+suffix,pluginId:'moderator',version:'1.0.0',scope:'SERVER',
+   eventType:'comment.created',status:'PENDING',targetId:'comment-'+suffix,
+   targetType:'Comment',pipelineId:'pipeline-'+suffix,deferred:true,
+   createdAt:datetime('2026-07-30T11:00:00Z'),updatedAt:datetime('2026-07-30T11:00:00Z')
+  })
+ `);
+ const repository=createPipelineLeaseRepository(driver);
+ const claimEvent=(suffix:string)=>claimPluginRunLease({
+  repository,
+  pluginRunId:`job-${suffix}`,
+  pipelineId:`pipeline-${suffix}`,
+  leaseId:`lease-${suffix}`,
+  now,
+  leaseDurationMs:60000,
+  claimLimits:{concurrency:1,rateLimitPerMinute:30,windowStart:'2026-07-30T11:59:00.000Z'},
+ });
+ const claims=await Promise.all([claimEvent('one'),claimEvent('two')]);
+ assert.equal(claims.filter(Boolean).length,1);
+ const statuses=(await driver.executeQuery(`MATCH(job:PluginRun) RETURN job.status AS status`)).records.map(record=>record.get('status')).sort();
+ assert.deepEqual(statuses,['PENDING','RUNNING']);
+});
+test('atomic event claims include completed starts in the rolling rate window',async()=>{
+ await driver.executeQuery(`
+  CREATE (:ServerConfig {serverName:'test'})
+  WITH 1 AS ignored
+  CREATE (:PluginPipelineRun {
+   id:'attempt',pipelineId:'pipeline',targetId:'comment',targetType:'Comment',
+   eventType:'comment.created',scope:'SERVER',status:'QUEUED',trigger:'EVENT',
+   attemptNumber:1,configurationSnapshot:'{}',createdAt:datetime('2026-07-30T11:00:00Z'),
+   updatedAt:datetime('2026-07-30T11:00:00Z')
+  })
+  CREATE (:PluginRun {
+   id:'recent',pluginId:'moderator',version:'1.0.0',scope:'SERVER',eventType:'comment.created',
+   status:'SUCCEEDED',targetType:'Comment',deferred:true,startedAt:datetime('2026-07-30T11:59:30Z'),
+   createdAt:datetime('2026-07-30T11:00:00Z'),updatedAt:datetime('2026-07-30T11:00:00Z')
+  })
+  CREATE (:PluginRun {
+   id:'job',pluginId:'moderator',version:'1.0.0',scope:'SERVER',eventType:'comment.created',
+   status:'PENDING',targetId:'comment',targetType:'Comment',pipelineId:'pipeline',deferred:true,
+   createdAt:datetime('2026-07-30T11:00:00Z'),updatedAt:datetime('2026-07-30T11:00:00Z')
+  })
+ `);
+ const lease=await claimPluginRunLease({
+  repository:createPipelineLeaseRepository(driver),pluginRunId:'job',pipelineId:'pipeline',
+  leaseId:'rate-limited',now,leaseDurationMs:60000,
+  claimLimits:{concurrency:2,rateLimitPerMinute:1,windowStart:'2026-07-30T11:59:00.000Z'},
+ });
+ assert.equal(lease,null);
+ const status=(await driver.executeQuery(`MATCH(job:PluginRun{id:'job'}) RETURN job.status AS status`)).records[0].get('status');
+ assert.equal(status,'PENDING');
+});
+test('event queue repository returns oldest eligible attempts and ordered jobs',async()=>{
+ await driver.executeQuery(`
+  UNWIND [
+   {suffix:'older',queuedAt:datetime('2026-07-30T11:58:00Z')},
+   {suffix:'newer',queuedAt:datetime('2026-07-30T11:59:00Z')}
+  ] AS item
+  CREATE (:PluginPipelineRun {
+   id:'attempt-'+item.suffix,pipelineId:'pipeline-'+item.suffix,targetId:'comment-'+item.suffix,
+   targetType:'Comment',targetVersion:'revision',eventType:'comment.created',scope:'SERVER',
+   status:'QUEUED',trigger:'EVENT',attemptNumber:1,configurationSnapshot:'{}',
+   queuedAt:item.queuedAt,createdAt:item.queuedAt,updatedAt:item.queuedAt
+  })
+  CREATE (:PluginRun {
+   id:'job-'+item.suffix+'-1',pluginId:'moderator',version:'1.0.0',scope:'SERVER',
+   eventType:'comment.created',status:'PENDING',targetId:'comment-'+item.suffix,
+   targetType:'Comment',targetVersion:'revision',pipelineId:'pipeline-'+item.suffix,
+   executionOrder:1,deferred:true,createdAt:item.queuedAt,updatedAt:item.queuedAt
+  })
+  CREATE (:PluginRun {
+   id:'job-'+item.suffix+'-0',pluginId:'moderator',version:'1.0.0',scope:'SERVER',
+   eventType:'comment.created',status:'SUCCEEDED',targetId:'comment-'+item.suffix,
+   targetType:'Comment',targetVersion:'revision',pipelineId:'pipeline-'+item.suffix,
+   executionOrder:0,deferred:true,startedAt:datetime('2026-07-30T11:59:30Z'),
+   createdAt:item.queuedAt,updatedAt:item.queuedAt
+  })
+ `);
+ const repository=createPluginEventQueueRepository(driver);
+ const capacity=await repository.getCapacity('2026-07-30T11:59:00.000Z');
+ const attempts=await repository.findQueuedAttempts(1);
+ const runs=await repository.findRuns('pipeline-older');
+ await repository.failPendingAttempt('pipeline-newer','target was deleted','2026-07-30T12:00:00.000Z');
+ const failed=(await driver.executeQuery(`
+  MATCH(node) WHERE node.pipelineId='pipeline-newer'
+  RETURN labels(node)[0] AS label,node.id AS id,node.status AS status,node.message AS message
+  ORDER BY label,id
+ `)).records.map(record=>record.toObject());
+ assert.deepEqual({
+  capacity,
+  attempts:attempts.map(attempt=>attempt.pipelineId),
+  runOrders:runs.map(run=>run.executionOrder),
+  failed,
+ },{
+  capacity:{runningCount:0,recentStartCount:2},
+  attempts:['pipeline-older'],
+  runOrders:[0,1],
+  failed:[
+   {label:'PluginPipelineRun',id:'attempt-newer',status:'FAILED',message:null},
+   {label:'PluginRun',id:'job-newer-0',status:'SUCCEEDED',message:null},
+   {label:'PluginRun',id:'job-newer-1',status:'FAILED',message:'target was deleted'},
+  ],
+ });
 });
 test('attempt projection error retains committed job claim and parent update',async(t)=>{await schema('attempt');try{await seed();await assert.rejects(claim(createPipelineLeaseRepository(driver)),/attempt projection failed/);const expected=await state();assert.equal(expected.rows[1].status,'RUNNING');assert.ok(expected.rows[0].heartbeat);t.assert.snapshot(expected);}finally{await schema();}});
 test('pending sibling projection error preserves renewed job and siblings but prevents parent renewal',async(t)=>{await schema('job');try{async function run(repository:PipelineLeaseRepository){await seed();await claim(repository);await assert.rejects(renew(repository),/job projection failed/);const value=await state();assert.equal(value.rows[0].heartbeat,'2026-07-30T12:00:00Z');assert.equal(value.rows[1].heartbeat,'2026-07-30T12:00:30Z');assert.equal(value.rows[2].timeout,'2026-07-30T12:01:30Z');return value;}t.assert.snapshot(await run(createPipelineLeaseRepository(driver)));}finally{await schema();}});

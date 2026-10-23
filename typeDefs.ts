@@ -2398,6 +2398,7 @@ const typeDefinitions = gql`
     targetType: String
     targetVersion: String
     ruleSetVersion: String
+    deferred: Boolean @default(value: false)
     payload: JSON
     publicDiagnostics: JSON
     pipelineId: String

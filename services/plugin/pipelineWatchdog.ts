@@ -38,6 +38,7 @@ type ExpirableJob = Pick<
   | "id"
   | "pipelineId"
   | "status"
+  | "deferred"
   | "queuedAt"
   | "startedAt"
   | "heartbeatAt"
@@ -85,6 +86,9 @@ export const recoverExpiredPluginJobs = async ({
   const candidates = await persistence.findActiveJobs() as ExpirableJob[];
   const expired = candidates.filter(
     job => {
+      if (job.status === PluginRunStatus.Pending && job.deferred === true) {
+        return false;
+      }
       const explicitDeadline = job.timeoutAt
         ? Date.parse(String(job.timeoutAt))
         : Number.NaN;

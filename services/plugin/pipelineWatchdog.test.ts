@@ -97,6 +97,34 @@ test("leaves a renewed lease active", async () => {
   );
 });
 
+test("does not expire a deferred job while it is waiting to be claimed", async () => {
+  const updates: RunUpdateArgs[] = [];
+  const result = await recoverExpiredPluginJobs({
+    PluginRun: modelStub<"PluginRun">({
+      find: async () => [{
+        id: "queued-job",
+        pipelineId: "queued-pipeline",
+        status: PluginRunStatus.Pending,
+        deferred: true,
+        queuedAt: "2026-07-30T11:00:00.000Z",
+        timeoutAt: null,
+      }],
+      update: async args => {
+        updates.push(args);
+        return { pluginRuns: [] };
+      },
+    }),
+    PluginPipelineRun: modelStub<"PluginPipelineRun">(),
+    now: new Date("2026-07-30T12:00:00.000Z"),
+    leaseDurationMs: 60_000,
+  });
+
+  assert.deepEqual({ result, updates }, {
+    result: { jobsTimedOut: 0, attemptsTimedOut: 0 },
+    updates: [],
+  });
+});
+
 test("recovers an active legacy job that predates lease deadlines", async () => {
   const updates: RunUpdateArgs[] = [];
   const PluginRun = modelStub<"PluginRun">({

@@ -65,12 +65,15 @@ export const triggerCreatedDiscussionPipelines = async ({
 
   for (const channelUniqueName of channelConnections) {
     try {
-      await triggerChannel({
-        driver,
-        discussionId,
-        channelUniqueName,
-        event: 'discussionChannel.created',
-      });
+      await triggerChannel(
+        {
+          driver,
+          discussionId,
+          channelUniqueName,
+          event: 'discussionChannel.created',
+        },
+        { execution: { deferExecution: true } }
+      );
     } catch (pipelineError: unknown) {
       const message = pipelineError instanceof Error
         ? pipelineError.message

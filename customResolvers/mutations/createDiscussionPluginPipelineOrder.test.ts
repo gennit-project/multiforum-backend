@@ -9,6 +9,7 @@ import { triggerCreatedDiscussionPipelines } from "./createDiscussionWithChannel
 
 test("runs server download security before channel automation", async () => {
   const calls: string[] = [];
+  const executionModes: unknown[] = [];
   const driver = {} as Driver;
   const triggerDownload: typeof triggerPluginRunsForDownloadableFile =
     async args => {
@@ -17,9 +18,10 @@ test("runs server download security before channel automation", async () => {
       return [];
     };
   const triggerChannel: typeof triggerChannelPluginPipeline =
-    async ({ channelUniqueName, driver: forwardedDriver }) => {
+    async ({ channelUniqueName, driver: forwardedDriver }, options) => {
       assert.equal(forwardedDriver, driver);
       calls.push(`channel:${channelUniqueName}`);
+      executionModes.push(options?.execution);
       return [];
     };
   await triggerCreatedDiscussionPipelines({
@@ -32,6 +34,10 @@ test("runs server download security before channel automation", async () => {
   });
 
   assert.deepEqual(calls, ["server", "channel:cats", "channel:mods"]);
+  assert.deepEqual(executionModes, [
+    { deferExecution: true },
+    { deferExecution: true },
+  ]);
 });
 
 test("continues channel automation when the server pipeline fails", async () => {

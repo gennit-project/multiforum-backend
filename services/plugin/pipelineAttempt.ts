@@ -100,11 +100,13 @@ export const createPipelineAttempt = async ({
   repository,
   context,
   now = () => new Date().toISOString(),
+  startImmediately = true,
 }: {
   driver?: Driver
   repository?: PipelineAttemptRepository
   context: PipelineAttemptContext
   now?: () => string
+  startImmediately?: boolean
 }) => {
   const timestamp = now()
   const queuedTiming = createQueuedPluginRunTiming({
@@ -144,7 +146,9 @@ export const createPipelineAttempt = async ({
         updatedAt: timestamp,
       } as PluginPipelineRunCreateInput)
 
-  await persistence.markRunning(context.pipelineId, timestamp)
+  if (startImmediately) {
+    await persistence.markRunning(context.pipelineId, timestamp)
+  }
 
   return result.pluginPipelineRuns[0]
 }

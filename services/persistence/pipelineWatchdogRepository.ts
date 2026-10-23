@@ -1,9 +1,9 @@
 import type { Driver } from "neo4j-driver";
 import type { PluginRun, PluginPipelineRun } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
-export const EXPIRABLE_PIPELINE_JOB_SELECTION = `{id pipelineId status queuedAt startedAt heartbeatAt timeoutAt createdAt}`;
+export const EXPIRABLE_PIPELINE_JOB_SELECTION = `{id pipelineId status deferred queuedAt startedAt heartbeatAt timeoutAt createdAt}`;
 export interface PipelineWatchdogRepository {
- findActiveJobs():Promise<Array<Pick<PluginRun,'id'|'pipelineId'|'status'|'queuedAt'|'startedAt'|'heartbeatAt'|'timeoutAt'|'createdAt'>>>;
+ findActiveJobs():Promise<Array<Pick<PluginRun,'id'|'pipelineId'|'status'|'deferred'|'queuedAt'|'startedAt'|'heartbeatAt'|'timeoutAt'|'createdAt'>>>;
  markExpiredJob(id:string,hasExplicitDeadline:boolean,timestamp:string):Promise<{pluginRuns:Array<{id:string}>}>;
  findActiveAttempt(pipelineId:string):Promise<Array<Pick<PluginPipelineRun,'pipelineId'|'status'>>>;
  findAttemptJobStatuses(pipelineId:string):Promise<Array<{status:string}>>;
