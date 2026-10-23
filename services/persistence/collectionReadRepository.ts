@@ -142,8 +142,12 @@ export function createCollectionReadRepository(driver: Driver): CollectionReadRe
       return result.collections;
     },
     async findPublicContaining(where, canViewSensitiveContent) {
+      // The caller has already resolved age-gate eligibility; convey it as the
+      // jwt so the generated schema's @authorization sensitive-content filters
+      // agree (otherwise an eligible viewer's sensitive rows are excluded).
       const result = await executeGeneratedOperation<{collections: Record<string, unknown>[]}>(driver,
-        PUBLIC_COLLECTIONS[canViewSensitiveContent ? 1 : 0], { where });
+        PUBLIC_COLLECTIONS[canViewSensitiveContent ? 1 : 0], { where }, undefined,
+        { mayAccessSensitiveContent: canViewSensitiveContent });
       return result.collections;
     },
     async findOwnedShareTarget(id, username) {
