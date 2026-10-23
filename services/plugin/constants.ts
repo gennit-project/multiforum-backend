@@ -5,6 +5,7 @@ export const PLUGIN_EVENTS = {
   COMMENT_CREATED: "comment.created",
   COMMENT_EDITED: "comment.edited",
   DISCUSSION_CHANNEL_CREATED: "discussionChannel.created",
+  DISCUSSION_CHANNEL_EDITED: "discussionChannel.edited",
 } as const;
 
 export type PluginEvent = (typeof PLUGIN_EVENTS)[keyof typeof PLUGIN_EVENTS];
@@ -25,6 +26,7 @@ export const COMMENT_EVENTS: ReadonlySet<string> = new Set([
 // Channel-scoped events
 export const CHANNEL_EVENTS: ReadonlySet<string> = new Set([
   PLUGIN_EVENTS.DISCUSSION_CHANNEL_CREATED,
+  PLUGIN_EVENTS.DISCUSSION_CHANNEL_EDITED,
 ]);
 
 export const CURRENT_SERVER_VERSION = "1.0.0";

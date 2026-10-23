@@ -1,4 +1,5 @@
 import middleware from "../../middleware/discussionVersionHistoryMiddleware.js";
+import {createDiscussionPluginPipelineMiddleware} from "../../middleware/discussionPluginPipelineMiddleware.js";
 import assert from 'node:assert/strict';
 import {before,after,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
@@ -59,4 +60,29 @@ for(const [name,update,custom] of [['title',{title:'New'},false],['body',{body:'
  assert.equal(out.state.revisions.length,name==='both'?2:name==='equal'||custom?0:1);
  assert.equal(out.notifications.length,custom?0:1);
  t.assert.snapshot(out);
+});
+
+test('discussion edit plugin middleware dispatches to final channel membership',async()=>{
+ await seed();
+ await driver.executeQuery("MATCH (d:Discussion {id:'d'}) CREATE (old:DiscussionChannel {id:'old',channelUniqueName:'old-forum'}) CREATE (old)-[:POSTED_IN_CHANNEL]->(d)");
+ const calls:Array<{discussionId:string;channelUniqueName:string;event:string}>=[];
+ const pluginMiddleware=createDiscussionPluginPipelineMiddleware(async({discussionId,channelUniqueName,event})=>{
+  calls.push({discussionId,channelUniqueName,event});
+  return [];
+ }).Mutation;
+ const resolve=async()=>{
+  await driver.executeQuery("MATCH (d:Discussion {id:'d'}) OPTIONAL MATCH (old:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(d) DETACH DELETE old SET d.body='Edited body' CREATE (next:DiscussionChannel {id:'next',channelUniqueName:'new-forum'}) CREATE (next)-[:POSTED_IN_CHANNEL]->(d)");
+  return {id:'d'};
+ };
+
+ const result=await pluginMiddleware.updateDiscussionWithChannelConnections(
+  resolve,
+  null,
+  {where:{id:'d'},discussionUpdateInput:{body:'Edited body'}},
+  {driver,discussionRevisionRepository:repository} as any,
+  {} as any
+ );
+
+ assert.deepEqual(result,{id:'d'});
+ assert.deepEqual(calls,[{discussionId:'d',channelUniqueName:'new-forum',event:'discussionChannel.edited'}]);
 });

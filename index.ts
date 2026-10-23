@@ -17,6 +17,7 @@ import type { ApolloServerPlugin } from "@apollo/server";
 import typesDefinitions from "./typeDefs.js";
 import permissions from "./permissions.js";
 import discussionVersionHistoryMiddleware from "./middleware/discussionVersionHistoryMiddleware.js";
+import discussionPluginPipelineMiddleware from "./middleware/discussionPluginPipelineMiddleware.js";
 import commentVersionHistoryMiddleware from "./middleware/commentVersionHistoryMiddleware.js";
 import eventVersionHistoryMiddleware from "./middleware/eventVersionHistoryMiddleware.js";
 import commentMentionsMiddleware from "./middleware/commentMentionsMiddleware.js";
@@ -237,6 +238,7 @@ async function initializeServer() {
       channelRoleOwnershipMiddleware as AppMiddleware,
       issueIdentityMiddleware as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
+      discussionPluginPipelineMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,
       commentVersionHistoryMiddleware as AppMiddleware,
       eventVersionHistoryMiddleware as AppMiddleware,

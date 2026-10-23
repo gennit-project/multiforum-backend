@@ -74,6 +74,7 @@ async function testIsSupportedEventDownloadEvents() {
 async function testIsSupportedEventRejectsInvalidEvents() {
   assert.equal(isSupportedEvent('unknown.event'), false, "Unknown event should not be supported");
   assert.equal(isSupportedEvent('discussionChannel.created'), false, "Channel event should not be in server events");
+  assert.equal(isSupportedEvent('discussionChannel.edited'), false, "Channel event should not be in server events");
   assert.equal(isSupportedEvent(''), false, "Empty string should not be supported");
 }
 
@@ -81,6 +82,7 @@ async function testIsSupportedEventRejectsInvalidEvents() {
 
 async function testIsChannelEventChannelEvents() {
   assert.equal(isChannelEvent('discussionChannel.created'), true, "discussionChannel.created should be channel event");
+  assert.equal(isChannelEvent('discussionChannel.edited'), true, "discussionChannel.edited should be channel event");
 }
 
 async function testIsChannelEventRejectsServerEvents() {

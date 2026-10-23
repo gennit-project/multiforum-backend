@@ -759,7 +759,7 @@ const typeDefinitions = gql`
 
     # plugins
     EnabledPlugins: [PluginVersion!]! @relationship(type: "ENABLED", direction: OUT, properties: "ChannelPluginProperties")
-    pluginPipelines: JSON  # Channel-scoped pipeline configuration for events like discussionChannel.created
+    pluginPipelines: JSON  # Channel-scoped pipeline configuration for events like discussionChannel.created and discussionChannel.edited
   }
 
   type DiscussionChannel @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
