@@ -87,7 +87,7 @@ const typeDefinitions = gql`
     detail: String!
   }
 
-  type Image @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type Image @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -151,7 +151,7 @@ const typeDefinitions = gql`
   }
 
   """SPDX or custom content licence"""
-  type License {
+  type License @node {
     id: ID! @id @unique
     name:      String!  # human‑readable name ("Creative Commons BY 4.0")
     shortName: String   # SPDX‑style short code ("CC‑BY‑4.0")
@@ -160,7 +160,7 @@ const typeDefinitions = gql`
   }
 
   """Single checkout / acquisition (free or paid)"""
-  type Purchase {
+  type Purchase @node {
     id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     priceCents: Int
@@ -171,7 +171,7 @@ const typeDefinitions = gql`
   }
 
   """Older revision of a downloadable file"""
-  type FileVersion @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type FileVersion @node @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -201,7 +201,7 @@ const typeDefinitions = gql`
   }
 
 
-  type Collection {
+  type Collection @node {
     id: ID! @id @unique
     name: String!
     description: String
@@ -236,7 +236,7 @@ const typeDefinitions = gql`
     """, columnName: "shareCount")
   }
 
-  type Album {
+  type Album @node {
     id: ID! @id @unique
     Owner: User @relationship(type: "HAS_ALBUM", direction: IN)
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
@@ -245,7 +245,7 @@ const typeDefinitions = gql`
     detailImagesPageInfo: DetailCollectionPageInfo! @customResolver
   }
 
-  type Notification
+  type Notification @node
     @limit(default: 25, max: 100)
     @authorization(filter: [{
       operations: [READ, AGGREGATE]
@@ -269,14 +269,14 @@ const typeDefinitions = gql`
       @settable(onCreate: false, onUpdate: false)
   }
 
-  type Message {
+  type Message @node {
     id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     text: String
     Contact: Contact @relationship(type: "HAS_MESSAGE", direction: IN)
   }
 
-  type Contact {
+  type Contact @node {
     id: ID! @id @unique
     MessageAuthor: CommentAuthor
       @relationship(type: "AUTHORED_MESSAGE", direction: IN)
@@ -285,7 +285,7 @@ const typeDefinitions = gql`
     Messages: [Message!]! @relationship(type: "HAS_MESSAGE", direction: OUT)
   }
 
-  type User @limit(default: 25, max: 100) {
+  type User @node @limit(default: 25, max: 100) {
     # media
     Albums:   [Album!]!  @relationship(type: "HAS_ALBUM", direction: OUT)
     Images:   [Image!]!  @relationship(type: "UPLOADED_IMAGE", direction: OUT)
@@ -404,7 +404,7 @@ const typeDefinitions = gql`
     WrittenScratchpadEntries: [ScratchpadEntry!]! @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: OUT)
   }
 
-  type ScratchpadEntry {
+  type ScratchpadEntry @node {
     id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     text: String!
@@ -425,7 +425,7 @@ const typeDefinitions = gql`
     superUpvotedByUsers: [User!]
   }
 
-  type TextVersion @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type TextVersion @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -450,7 +450,7 @@ const typeDefinitions = gql`
     Author: User @relationship(type: "AUTHORED_VERSION", direction: IN)
   }
 
-  type LabelChangeHistory {
+  type LabelChangeHistory @node {
     id: ID! @id @unique
     createdAt: DateTime! @timestamp(operations: [CREATE])
     actionType: String! # "added" or "removed"
@@ -462,7 +462,7 @@ const typeDefinitions = gql`
     DiscussionChannel: DiscussionChannel @relationship(type: "HAS_LABEL_CHANGE", direction: IN)
   }
 
-  type WikiPage
+  type WikiPage @node
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
@@ -497,7 +497,7 @@ const typeDefinitions = gql`
       @relationship(type: "HAS_CHILD_PAGE", direction: OUT)
   }
 
-  type Suspension {
+  type Suspension @node {
     id: ID! @id @unique
     channelUniqueName: String
     serverName: String
@@ -512,7 +512,7 @@ const typeDefinitions = gql`
     RelatedIssue: Issue @relationship(type: "HAS_CONTEXT", direction: OUT)
   }
 
-   type DownloadableFile @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+   type DownloadableFile @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -587,7 +587,7 @@ const typeDefinitions = gql`
     Discussion: Discussion @relationship(type: "HAS_DOWNLOADABLE_FILE", direction: IN)
   }
 
-  type FilterGroup {
+  type FilterGroup @node {
     id: ID! # Neo4j auto ID
     order: Int! # for manual re‑ordering
     key: String! # computer‑friendly, e.g. "lot_size"
@@ -605,7 +605,7 @@ const typeDefinitions = gql`
   """
   A single checkbox inside a group, e.g. “10×20”.
   """
-  type FilterOption {
+  type FilterOption @node {
     id: ID!
     order: Int!
     value: String! # computer‑friendly, e.g. "10x20"
@@ -618,7 +618,7 @@ const typeDefinitions = gql`
   in that channel. Flairs are archived instead of deleted so historical
   assignments can continue to render.
   """
-  type DiscussionFlair
+  type DiscussionFlair @node
     @query(read: false, aggregate: false)
     @mutation(operations: [])
     @subscription(events: []) {
@@ -651,7 +651,7 @@ const typeDefinitions = gql`
   # search in getSortedChannels; created on startup by ensureSchemaConstraints.
   # The indexName must stay in sync with CHANNEL_FULLTEXT_INDEX in
   # services/channelFulltext.ts.
-  type Channel
+  type Channel @node
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
@@ -762,7 +762,7 @@ const typeDefinitions = gql`
     pluginPipelines: JSON  # Channel-scoped pipeline configuration for events like discussionChannel.created and discussionChannel.edited
   }
 
-  type DiscussionChannel @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type DiscussionChannel @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -814,7 +814,7 @@ const typeDefinitions = gql`
       @settable(onCreate: false, onUpdate: false)
   }
 
-  type Discussion
+  type Discussion @node
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
@@ -893,7 +893,7 @@ const typeDefinitions = gql`
     SharedCollection: Collection @relationship(type: "SHARES_COLLECTION", direction: OUT)
   }
 
-  type EventChannel @limit(default: 25, max: 100) {
+  type EventChannel @node @limit(default: 25, max: 100) {
     id: ID! @id @unique
     locked: Boolean
     eventId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
@@ -959,7 +959,7 @@ const typeDefinitions = gql`
 
   # A repeat pattern is its own node (Neo4j can't store a nested object as a
   # property), linked to its EventSeries via HAS_REPEAT_PATTERN.
-  type RepeatPattern {
+  type RepeatPattern @node {
     id: ID! @id @unique
     type: RepeatPatternType!
     count: Int
@@ -983,7 +983,7 @@ const typeDefinitions = gql`
     endTime: DateTime!
   }
 
-  type EventSeries @limit(default: 25, max: 100) {
+  type EventSeries @node @limit(default: 25, max: 100) {
     id: ID! @id @unique
     title: String!
     description: String
@@ -1012,14 +1012,14 @@ const typeDefinitions = gql`
   }
 
   # Legacy type - keeping for backward compatibility during migration
-  type RecurringEvent {
+  type RecurringEvent @node {
     id: ID! @id @unique
     repeatEvery: RepeatEvery
     repeatEnds: RepeatEnds
     Events: [Event!]! @relationship(type: "HAS_RECURRING_EVENT", direction: OUT)
   }
 
-  type Event @limit(default: 25, max: 100) {
+  type Event @node @limit(default: 25, max: 100) {
     id: ID! @id @unique
     title: String!
     description: String
@@ -1086,7 +1086,7 @@ const typeDefinitions = gql`
     """, columnName: "authorIsChannelModerator")
   }
 
-  type Comment @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
+  type Comment @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
     id: ID! @id @unique
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
@@ -1154,19 +1154,19 @@ const typeDefinitions = gql`
     InCollections: [Collection!]! @relationship(type: "CONTAINS_COMMENT", direction: IN)
   }
 
-  type Emoji {
+  type Emoji @node {
     id: ID! @id @unique
     name: String! @unique
     PostedByUser: User @relationship(type: "POSTED_EMOJI", direction: IN)
     createdAt: DateTime! @timestamp(operations: [CREATE])
   }
 
-  type Email {
+  type Email @node {
     address: String! @unique
     User: User @relationship(type: "HAS_EMAIL", direction: OUT)
   }
 
-  type ModerationProfile {
+  type ModerationProfile @node {
     createdAt: DateTime! @timestamp(operations: [CREATE])
     displayName: String @unique
     User: User @relationship(type: "MODERATION_PROFILE", direction: IN)
@@ -1186,7 +1186,7 @@ const typeDefinitions = gql`
       @relationship(type: "SUSPENDED_AS_MOD", direction: OUT)
   }
 
-  type ModerationAction @limit(default: 25, max: 100) {
+  type ModerationAction @node @limit(default: 25, max: 100) {
     id: ID! @id @unique
     idempotencyKey: String
       @unique(constraintName: "moderation_action_idempotency_key")
@@ -1202,7 +1202,7 @@ const typeDefinitions = gql`
     actionDescription: String
   }
 
-  type Issue
+  type Issue @node
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
@@ -1298,7 +1298,7 @@ const typeDefinitions = gql`
     LockedBy: ModerationProfile @relationship(type: "LOCKED_ISSUE", direction: IN)
   }
 
-  type Feed {
+  type Feed @node {
     id: ID! @id @unique
     title: String
     description: String
@@ -1307,7 +1307,7 @@ const typeDefinitions = gql`
     deleted: Boolean
   }
 
-  type Tag {
+  type Tag @node {
     text: String! @unique
     Channels: [Channel!]! @relationship(type: "HAS_TAG", direction: IN)
     Discussions: [Discussion!]! @relationship(type: "HAS_TAG", direction: IN)
@@ -2081,7 +2081,7 @@ const typeDefinitions = gql`
     cssClass: String
   }
 
-  type ServerRole {
+  type ServerRole @node {
     name: String @unique
     description: String
     canCreateChannel: Boolean
@@ -2103,7 +2103,7 @@ const typeDefinitions = gql`
     canManageSuperAdmins: Boolean
   }
 
-  type ChannelRole {
+  type ChannelRole @node {
     id: ID! @id @unique
     name: String! @settable(onCreate: true, onUpdate: false)
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false)
@@ -2119,7 +2119,7 @@ const typeDefinitions = gql`
     canUpdateChannel: Boolean
   }
 
-  type ModChannelRole {
+  type ModChannelRole @node {
     id: ID! @id @unique
     name: String! @settable(onCreate: true, onUpdate: false)
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false)
@@ -2141,7 +2141,7 @@ const typeDefinitions = gql`
     canDeleteWiki: Boolean
   }
 
-  type ModServerRole {
+  type ModServerRole @node {
     name: String @unique
     description: String
     canLockChannel: Boolean
@@ -2165,7 +2165,7 @@ const typeDefinitions = gql`
     canRemoveEventChannel: Boolean
   }
 
-  type Plugin {
+  type Plugin @node {
     id: ID! @id @unique
     name: String!
     displayName: String
@@ -2179,7 +2179,7 @@ const typeDefinitions = gql`
     Versions: [PluginVersion!]! @relationship(type: "HAS_VERSION", direction: OUT)
   }
 
-  type PluginVersion {
+  type PluginVersion @node {
     id: ID! @id @unique
     version: String!
     repoUrl: String!
@@ -2245,7 +2245,7 @@ const typeDefinitions = gql`
     settingsJson: JSON
   }
 
-  type ServerSecret {
+  type ServerSecret @node {
     id: ID! @id @unique
     pluginId: String!
     key: String!
@@ -2286,7 +2286,7 @@ const typeDefinitions = gql`
     CAMPAIGN
   }
 
-  type PluginPipelineRun {
+  type PluginPipelineRun @node {
     id: ID! @id @unique
     pipelineId: String!
       @unique(constraintName: "plugin_pipeline_run_pipeline_id")
@@ -2324,7 +2324,7 @@ const typeDefinitions = gql`
     CANCELLED
   }
 
-  type PluginPipelineCampaign
+  type PluginPipelineCampaign @node
     # The OGM-backed campaign resolvers and startup worker require these
     # generated operations. GraphQL Shield's deny fallback keeps the generated
     # root fields private; clients use the application-defined campaign fields.
@@ -2383,7 +2383,7 @@ const typeDefinitions = gql`
     attemptNumber: Int!
   }
 
-  type PluginRun {
+  type PluginRun @node {
     id: ID! @id @unique
     pluginId: String!
     pluginName: String
@@ -2512,7 +2512,7 @@ const typeDefinitions = gql`
     jobs: [PluginRun!]!
   }
 
-  type ServerConfig {
+  type ServerConfig @node {
     serverName: String @unique
     serverDescription: String
     serverIconURL: String
