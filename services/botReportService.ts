@@ -1,11 +1,12 @@
 import { createBotReportRepository, type BotReportRepository } from "./persistence/botReportRepository.js";
 import type { BotIdentityRepository } from './persistence/botIdentityRepository.js'
 import type { Driver } from 'neo4j-driver'
-import type {
-  IssueCreateInput,
-  IssueUpdateInput,
-  IssueWhere,
-  ModerationActionCreateInput
+import {
+  ModerationRecommendedAction,
+  type IssueCreateInput,
+  type IssueUpdateInput,
+  type IssueWhere,
+  type ModerationActionCreateInput
 } from '../ogm_types.js'
 import { ensureBotUserForChannel } from './botUserService.js'
 import {
@@ -16,7 +17,7 @@ import { getFinalCommentText } from "../customResolvers/mutations/shared/reportT
 import getNextIssueNumber from '../customResolvers/mutations/utils/getNextIssueNumber.js'
 import { logger } from "../logger.js";
 
-type ReportContentAsBotInput = {
+export type ReportContentAsBotInput = {
   contentType: 'comment' | 'discussion' | 'event'
   contentId: string
   reportText: string
@@ -25,12 +26,47 @@ type ReportContentAsBotInput = {
   botName: string
   profileId?: string | null
   profileLabel?: string | null
+  recommendedAction?: 'edit' | 'remove' | null
+  recommendationConfidence?: number | null
+  recommendationRationale?: string | null
 }
 
 type ReportContentAsBotResult = {
   issueId: string
   issueNumber: number
 } | null
+
+export const normalizeBotRecommendation = (
+  input: {
+    recommendedAction?: unknown
+    recommendationConfidence?: unknown
+    recommendationRationale?: unknown
+  }
+) => {
+  const recommendedAction = input.recommendedAction === 'edit'
+    ? ModerationRecommendedAction.Edit
+    : input.recommendedAction === 'remove'
+      ? ModerationRecommendedAction.Remove
+      : undefined
+  const recommendationConfidence =
+    typeof input.recommendationConfidence === 'number' &&
+    Number.isFinite(input.recommendationConfidence) &&
+    input.recommendationConfidence >= 0 &&
+    input.recommendationConfidence <= 1
+      ? input.recommendationConfidence
+      : undefined
+  const recommendationRationale =
+    typeof input.recommendationRationale === 'string' &&
+    input.recommendationRationale.trim()
+      ? input.recommendationRationale.trim()
+      : undefined
+
+  return {
+    recommendedAction,
+    recommendationConfidence,
+    recommendationRationale
+  }
+}
 
 /**
  * Creates or updates a moderation issue report on behalf of a bot user.
@@ -163,6 +199,7 @@ export const createBotReport = async (input: {
     selectedForumRules,
     selectedServerRules
   })
+  const recommendation = normalizeBotRecommendation(reportInput)
 
   // If an issue does NOT already exist, create a new one
   if (!existingIssueId) {
@@ -204,7 +241,8 @@ export const createBotReport = async (input: {
       actionType: 'report',
       actionDescription: `Reported the ${contentType}`,
       issueId: existingIssueId,
-      idempotencyKey: input.idempotencyKey
+      idempotencyKey: input.idempotencyKey,
+      ...recommendation
     })
 
   // Update the issue with the new moderation action

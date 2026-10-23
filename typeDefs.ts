@@ -75,6 +75,11 @@ const typeDefinitions = gql`
   union CommentAuthor = User | ModerationProfile
   union IssueAuthor = User | ModerationProfile
 
+  enum ModerationRecommendedAction {
+    EDIT
+    REMOVE
+  }
+
   # Populated only by server middleware; never trusted from a client token.
   type JWTPayload @jwt {
     mayAccessSensitiveContent: Boolean!
@@ -1200,6 +1205,9 @@ const typeDefinitions = gql`
     createdAt: DateTime! @timestamp(operations: [CREATE])
     actionType: String
     actionDescription: String
+    recommendedAction: ModerationRecommendedAction
+    recommendationConfidence: Float
+    recommendationRationale: String
   }
 
   type Issue @node

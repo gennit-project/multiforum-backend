@@ -414,6 +414,9 @@ test("reports a discussion with the channel-scoped bot identity", async () => {
         selectedServerRules: [],
         botName: "moderator",
         profileId: "primary",
+        recommendedAction: "remove",
+        recommendationConfidence: 0.93,
+        recommendationRationale: "The discussion should be removed.",
       });
       return { success: true };
     }
@@ -449,6 +452,9 @@ test("reports a discussion with the channel-scoped bot identity", async () => {
     selectedServerRules: [],
     botName: "moderator",
     profileId: "primary",
+    recommendedAction: "remove",
+    recommendationConfidence: 0.93,
+    recommendationRationale: "The discussion should be removed.",
   });
   assert.match(
     reports[0]?.idempotencyKey,
