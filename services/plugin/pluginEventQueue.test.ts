@@ -158,6 +158,52 @@ test('terminally records an attempt that cannot be rehydrated', async () => {
   })
 })
 
+test('terminally records a queued discussion with no persisted channel', async () => {
+  const failures: string[] = []
+  const missingChannel = {
+    ...attempt('broken-discussion', 'Discussion'),
+    channelId: null,
+  }
+  const result = await processQueuedPluginEvents({
+    driver: {} as Driver,
+    repository: {
+      getCapacity: async () => ({ runningCount: 0, recentStartCount: 0 }),
+      findQueuedAttempts: async () => [missingChannel],
+      findRuns: async () => [run('broken-discussion')],
+      failPendingAttempt: async (_pipelineId, message) => {
+        failures.push(message)
+      },
+    },
+    triggerComment: async () => [],
+    triggerChannel: async () => {
+      throw new Error('channel trigger should not run')
+    },
+  })
+
+  assert.deepEqual(result, { startedCount: 0, failedCount: 1 })
+  assert.match(failures[0], /has no channel/)
+})
+
+test('continues draining when persisting a terminal queue failure also fails', async () => {
+  const result = await processQueuedPluginEvents({
+    driver: {} as Driver,
+    repository: {
+      getCapacity: async () => ({ runningCount: 0, recentStartCount: 0 }),
+      findQueuedAttempts: async () => [attempt('broken-persistence')],
+      findRuns: async () => [run('broken-persistence')],
+      failPendingAttempt: async () => {
+        throw new Error('database unavailable')
+      },
+    },
+    triggerComment: async () => {
+      throw 'invalid queued payload'
+    },
+    triggerChannel: async () => [],
+  })
+
+  assert.deepEqual(result, { startedCount: 0, failedCount: 1 })
+})
+
 test('uses conservative defaults for invalid environment limits', () => {
   const previousConcurrency = process.env.PLUGIN_EVENT_WORKER_CONCURRENCY
   const previousRate = process.env.PLUGIN_EVENT_WORKER_RATE_LIMIT_PER_MINUTE
