@@ -15,7 +15,6 @@ import {
 
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: ReturnType<typeof makeRequestContext>["ogm"];
 
 const publicProfileAggregateFields = [
   "CommentsAggregate",
@@ -30,7 +29,7 @@ const publicProfileAggregateFields = [
 
 before(
   async () => {
-    ({ schema, driver, ogm } = await buildPermissionedSchema({
+    ({ schema, driver } = await buildPermissionedSchema({
       transformSchema: (baseSchema) => {
         const transformedSchema = extendSchema(
           baseSchema,
@@ -98,7 +97,7 @@ test("an unruled field is denied by the shield fallback", async () => {
         permissionFallbackProbe: "must not escape",
       },
     },
-    contextValue: makeRequestContext({ driver, ogm }),
+    contextValue: makeRequestContext({ driver }),
   });
 
   assert.match(result.errors?.[0]?.message ?? "", /Not Authoris/i);
@@ -135,7 +134,7 @@ test("instance setup status fields are publicly readable", async () => {
         uploads: capability,
       },
     },
-    contextValue: makeRequestContext({ driver, ogm }),
+    contextValue: makeRequestContext({ driver }),
   });
 
   assert.deepEqual(result.errors, undefined);
@@ -157,7 +156,7 @@ test("sitewide discussion pagination metadata is publicly readable", async () =>
         }
       }
     `,
-    contextValue: makeRequestContext({ driver, ogm }),
+    contextValue: makeRequestContext({ driver }),
   });
 
   assert.deepEqual(result.errors, undefined);
@@ -195,7 +194,7 @@ test("public user profile aggregate counters are readable anonymously", async ()
       }
     `,
     variableValues: { username: "public-user" },
-    contextValue: makeRequestContext({ driver, ogm }),
+    contextValue: makeRequestContext({ driver }),
   });
 
   assert.deepEqual(result.errors, undefined);
@@ -227,7 +226,7 @@ test("notification aggregate traversal delegates ownership filtering to Neo4j Gr
         }
       }
     `,
-    contextValue: makeRequestContext({ driver, ogm }),
+    contextValue: makeRequestContext({ driver }),
   });
 
   assert.deepEqual(result.errors, undefined);

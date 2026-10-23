@@ -11,13 +11,13 @@ import { resolveRequestIdentityRepository } from "../services/persistence/reques
  * Forces the owner of albums and collections created through the public API
  * to be the signed-in user, whatever the client sent.
  *
- * This is middleware rather than a custom resolver on purpose. The OGM reuses
- * the application schema (services/initializeOgmFromExistingSchema.ts), so a
- * custom resolver that replaces a generated `createX` mutation also replaces
- * what `X.create()` runs. A replacement that then calls `X.create()` calls
- * itself without the HTTP request, finds no signed-in user and fails.
- * Middleware only wraps the schema served over HTTP (`applyMiddleware` builds
- * a new schema), so server-side OGM calls still reach the generated mutation.
+ * This is middleware rather than a custom resolver on purpose. Server-side
+ * writes run the generated mutations over the base schema (see
+ * services/persistence/generatedSchemaOperations.ts), whereas `applyMiddleware`
+ * wraps only the schema served over HTTP. A custom resolver replacing the
+ * generated `createX` mutation would also change what a server-side `createX`
+ * runs, so a replacement that then calls `createX` would recurse without the
+ * HTTP request, find no signed-in user and fail. Middleware avoids that.
  */
 
 type Resolver = (

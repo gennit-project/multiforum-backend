@@ -10,10 +10,9 @@ import {
 
 let schema: GraphQLSchema
 let driver: Driver
-let ogm: PermissionedSchema["ogm"]
 
 before(async () => {
-  ({ schema, driver, ogm } = await buildPermissionedSchema())
+  ({ schema, driver } = await buildPermissionedSchema())
 }, { timeout: 120000 })
 
 after(async () => {
@@ -24,7 +23,7 @@ const execute = (source: string) =>
   graphql({
     schema,
     source,
-    contextValue: makeRequestContext({ driver, ogm }),
+    contextValue: makeRequestContext({ driver }),
   })
 
 test('anonymous callers cannot enumerate raw plugin run payloads', async () => {

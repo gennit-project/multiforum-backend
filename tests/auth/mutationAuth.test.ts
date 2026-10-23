@@ -19,10 +19,9 @@ import { ERROR_MESSAGES } from "../../rules/errorMessages.js";
 
 let schema: GraphQLSchema;
 let driver: Driver;
-let ogm: any;
 
 before(async () => {
-  ({ schema, driver, ogm } = await buildPermissionedSchema());
+  ({ schema, driver } = await buildPermissionedSchema());
 }, { timeout: 120000 });
 
 after(async () => {
@@ -33,7 +32,7 @@ const execUnauthenticated = (source: string) =>
   graphql({
     schema,
     source,
-    contextValue: makeRequestContext({ isMutation: true, driver, ogm }),
+    contextValue: makeRequestContext({ isMutation: true, driver }),
   });
 
 // delete<Type>s mutations take only an optional `where`, so these are valid

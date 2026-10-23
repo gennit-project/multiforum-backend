@@ -43,10 +43,9 @@ export default tseslint.config(
     },
   },
   {
-    // The adapter owns the runtime dependency. Type generation and tests may
-    // still exercise the concrete package while the migration is in progress.
+    // Type generation still imports the concrete @neo4j/graphql-ogm package
+    // until it is removed (campaign #284, batch 6); tests may import freely.
     files: [
-      "services/persistence/ogm.ts",
       "build_scripts/generateTypes.ts",
       "tests/**",
       "**/*.test.ts",

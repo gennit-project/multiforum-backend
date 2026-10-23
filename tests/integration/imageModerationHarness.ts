@@ -13,9 +13,11 @@ import { registerGeneratedSchema } from "../../services/persistence/generatedSch
 // User + ModerationProfile so the caller resolves as a moderator.
 
 import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
+import { Neo4jGraphQL } from "@neo4j/graphql";
 import neo4j, { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
+import typeDefs from "../../typeDefs.js";
 import { CHANNEL_FULLTEXT_CREATE_CYPHER } from "../../services/channelFulltext.js";
 import { CONTENT_FULLTEXT_CREATE_STATEMENTS } from "../../services/contentFulltext.js";
 
@@ -28,7 +30,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 export interface ImageModEnv {
   driver: Driver;
-  ogm: any;
   resolvers: any;
 }
 
@@ -46,9 +47,9 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
     neo4j.auth.basic(container.getUsername(), container.getPassword())
   );
 
-  const { ogm, resolvers } = getCustomResolvers(driver);
-  await ogm.init();
-  registerGeneratedSchema(driver, ogm.schema);
+  const { resolvers } = getCustomResolvers(driver);
+  const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers });
+  registerGeneratedSchema(driver, await neoSchema.getSchema());
 
   // Production creates full-text indexes on startup via ensureSchemaConstraints
   // (the OGM's assertIndexesAndConstraints). This harness wires resolvers
@@ -66,7 +67,7 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
     await indexSession.close();
   }
 
-  return { driver, ogm, resolvers };
+  return { driver, resolvers };
 }
 
 export async function stopImageModEnv(): Promise<void> {
@@ -117,7 +118,6 @@ export function mockToken(claims: Record<string, unknown>): string {
 export function modContext(env: ImageModEnv, token: string) {
   return {
     driver: env.driver,
-    ogm: env.ogm,
     req: {
       headers: { authorization: `Bearer ${token}` },
       body: {},
