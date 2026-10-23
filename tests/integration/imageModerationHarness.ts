@@ -18,11 +18,13 @@ import neo4j, { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
+import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { CHANNEL_FULLTEXT_CREATE_CYPHER } from "../../services/channelFulltext.js";
 import { CONTENT_FULLTEXT_CREATE_STATEMENTS } from "../../services/contentFulltext.js";
 
 let container: StartedNeo4jContainer | undefined;
 let driver: Driver | undefined;
+let subscriptionEngine: ReturnType<typeof createSubscriptionEngine> | undefined;
 
 // See neo4jHarness.ts: when TESTCONTAINERS_REUSE_ENABLE=true, all integration
 // files share one Neo4j container instead of each starting its own (~30-40s).
@@ -48,7 +50,19 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
   );
 
   const { resolvers } = getCustomResolvers(driver);
-  const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers });
+  // Mirror the production schema config (index.ts): the MATCHES string filter
+  // and the CDC subscription engine, so the registered generated schema matches
+  // what the app serves.
+  subscriptionEngine = createSubscriptionEngine();
+  const neoSchema = new Neo4jGraphQL({
+    typeDefs,
+    driver,
+    resolvers,
+    features: {
+      filters: { String: { MATCHES: true } },
+      subscriptions: subscriptionEngine,
+    },
+  });
   registerGeneratedSchema(driver, await neoSchema.getSchema());
 
   // Production creates full-text indexes on startup via ensureSchemaConstraints
@@ -71,6 +85,8 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
 }
 
 export async function stopImageModEnv(): Promise<void> {
+  await subscriptionEngine?.close();
+  subscriptionEngine = undefined;
   await driver?.close();
   // With reuse the container is shared — never stop it here (see neo4jHarness).
   if (!REUSE) await container?.stop();
