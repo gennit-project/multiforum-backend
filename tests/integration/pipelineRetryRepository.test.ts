@@ -11,7 +11,7 @@ import type {GraphQLContext} from '../../types/context.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
-for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
+for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,(event: unknown)=>events.push(event));
 async function schema(failure?:'file'|'job'){const app=getCustomResolvers(driver);const overrides:Record<string,Record<string,()=>never>>=failure==='file'?{DownloadableFile:{storageUrl:()=>{throw Error('file projection failed');}}}:failure==='job'?{PluginRun:{message:()=>{throw Error('job projection failed');}}}:{};const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,...overrides},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();registerGeneratedSchema(driver,executable);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 
@@ -23,7 +23,7 @@ test('retry reads preserve canonical owner/channel projections, literals and unb
  await seed();const repo=createPipelineRetryRepository(driver);t.assert.snapshot(await repo.findScanTarget('file'));const file=(await repo.findScanTarget('file'))[0] as any;assert.equal(file.Discussion.Author.username,'author');assert.deepEqual(file.Discussion.DiscussionChannels.map((c:any)=>c.channelUniqueName).sort(),['active','archived']);
  for(const id of ['missing','quote"\\id'])t.assert.snapshot(await repo.findScanTarget(id));
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{pipelineId:toString(n),targetId:'file',status:'FAILED',createdAt:datetime('2026-01-01T00:00:00Z')}),(:PluginRun{id:toString(n),pipelineId:'new',pluginId:'plugin',version:'1.0.0',scope:'SERVER',eventType:'fixture',status:'FAILED',createdAt:datetime('2026-01-01T00:00:00Z'),updatedAt:datetime('2026-01-01T00:00:00Z')})`);
- t.assert.snapshot(await repo.findFailedAttempts({targetId:'file'}));assert.equal((await repo.findFailedAttempts({targetId:'file'})).length,29);t.assert.snapshot(await repo.findRetryJobs('new'));assert.equal((await repo.findRetryJobs('new')).length,29);assert.equal(events.length,0);
+ t.assert.snapshot(await repo.findFailedAttempts({targetId:{eq:'file'}}));assert.equal((await repo.findFailedAttempts({targetId:{eq:'file'}})).length,29);t.assert.snapshot(await repo.findRetryJobs('new'));assert.equal((await repo.findRetryJobs('new')).length,29);assert.equal(events.length,0);
 });
 test('actual retry retains missing/clean/unauthorized errors before runner calls',async()=>{
  {await resetDatabase(driver);events=[];await seed();let calls=0;const resolver=createRetryDownloadableFileScanResolver({retryRepository:createPipelineRetryRepository(driver)},async()=>false,async()=>{calls++;return [];});

@@ -8,7 +8,7 @@ import {registerGeneratedSchema} from '../../services/persistence/generatedSchem
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
-for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
+for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,(event: unknown)=>events.push(event));
 async function schema(failure=false,trustedUrlFixture=false){const app=getCustomResolvers(driver);const overrides:Record<string,Record<string,(...args:any[])=>any>>={...(failure?{PluginPipelineCampaign:{enforcementBehavior:()=>{throw Error('campaign projection failed');}}}:{}),...(trustedUrlFixture?{DownloadableFile:{url:(parent:{url:string})=>parent.url}}:{})};const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,...overrides},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();registerGeneratedSchema(driver,executable);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 

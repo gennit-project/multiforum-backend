@@ -34,6 +34,6 @@ for(const mode of ['create','append'])test(`${mode} projection failure preserves
 
 test('append rejects immutable identity changes before persistence, like protected OGM',async()=>{
  await seed();for(const update of [{issueNumber:99},{channelUniqueName:'other'},{authorName:'other'},{TargetUser:{connect:{where:{node:{username:'other'}}}}}]){
-  await assert.rejects(async()=>current.appendProfileReport({id:'missing'},update as never),/Issue identity cannot be updated/);
+  await assert.rejects(async()=>current.appendProfileReport({id:{eq:'missing'}},update as never),/Issue identity cannot be updated/);
  }const snap=await state();assert.deepEqual(snap.rows,[]);assert.deepEqual(snap.counters,[]);assert.deepEqual(snap.events,[]);
 });

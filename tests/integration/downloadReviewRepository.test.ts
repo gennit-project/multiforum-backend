@@ -12,7 +12,7 @@ import requestReview from '../../customResolvers/mutations/requestDownloadableFi
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
-for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
+for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,(event: unknown)=>events.push(event));
 before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const seed=(legacyNotificationEdge=false)=>driver.executeQuery("CREATE(u:User{username:'alice',createdAt:datetime('2020-01-01T00:00:00Z')})-[:POSTED_DISCUSSION]->(d:Discussion{id:'d',title:'Download',hasSensitiveContent:false,createdAt:datetime('2020-01-01T00:00:00Z')})-[:HAS_DOWNLOADABLE_FILE]->(f:DownloadableFile{id:'f',fileName:'fixture.zip',kind:'ZIP',url:'https://example.invalid/fixture.zip',createdAt:datetime('2020-01-01T00:00:00Z'),priceModel:'FREE',scanStatus:'SUSPICIOUS',uploadedByUsername:'alice'}) FOREACH(_ IN CASE WHEN $legacyNotificationEdge THEN [1] ELSE [] END | CREATE(u)-[:AUTHORED_DISCUSSION]->(d))",{legacyNotificationEdge});

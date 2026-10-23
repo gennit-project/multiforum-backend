@@ -84,7 +84,7 @@ test('related lookup failure is swallowed', async () => {
 test('activity keeps moderator priority, duplicate ids and sequential continuation after failure', async () => {
   const calls: string[] = [];
   const repository: IssueActivityRepository = {findRelatedIssueIds:async()=>[],appendActivity:async(id,node)=>{
-    calls.push(id); assert.equal(node.User, undefined); assert.equal(node.ModerationProfile?.connect?.where?.node?.displayName, 'mod');
+    calls.push(id); assert.equal(node.User, undefined); assert.equal((node.ModerationProfile as any)?.connect?.where?.node?.displayName, 'mod');
     await Promise.resolve(); if(id==='bad') throw Error('write'); calls.push(`done:${id}`);
   }};
   await createIssueActivityFeedItems({issueActivityRepository:repository,issueIds:['a','bad','a'],attribution:{username:'u',modProfileName:'mod'},actionDescription:'edited'});

@@ -14,7 +14,7 @@ import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver:Driver;
 let repository:ReturnType<typeof createEmailNotificationRepository>;
 const engine=createSubscriptionEngine();let events:unknown[]=[];let nativeCalls=0;
-for(const kind of ["create","update","create_relationship","delete_relationship","delete"])engine.events.on(kind,event=>events.push(event));
+for(const kind of ["create","update","create_relationship","delete_relationship","delete"])engine.events.on(kind,(event: unknown)=>events.push(event));
 before(async()=>{
  mock.method(sgMail,"send",async()=>{nativeCalls++;throw new Error("Native SendGrid forbidden");});
  mock.method(Resend.prototype,"post",async()=>{nativeCalls++;throw new Error("Native Resend forbidden");});

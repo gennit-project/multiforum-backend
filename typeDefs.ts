@@ -92,8 +92,8 @@ const typeDefinitions = gql`
     detail: String!
   }
 
-  type Image @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+  type Image @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: { eq: false } } }, { node: { hasSensitiveContent: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -157,7 +157,7 @@ const typeDefinitions = gql`
 
   """SPDX or custom content licence"""
   type License @node {
-    id: ID! @id @unique
+    id: ID! @id
     name:      String!  # human‑readable name ("Creative Commons BY 4.0")
     shortName: String   # SPDX‑style short code ("CC‑BY‑4.0")
     url:       String
@@ -166,18 +166,18 @@ const typeDefinitions = gql`
 
   """Single checkout / acquisition (free or paid)"""
   type Purchase @node {
-    id: ID! @id @unique
+    id: ID! @id
     createdAt: DateTime! @timestamp(operations: [CREATE])
     priceCents: Int
     priceCurrency: String
 
-    file:   DownloadableFile! @relationship(type: "PURCHASED_FILE", direction: OUT)
-    buyer:  User!             @relationship(type: "MADE_PURCHASE",   direction: IN)
+    file:   DownloadableFile @relationship(type: "PURCHASED_FILE", direction: OUT)
+    buyer:  User             @relationship(type: "MADE_PURCHASE",   direction: IN)
   }
 
   """Older revision of a downloadable file"""
-  type FileVersion @node @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+  type FileVersion @node @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -202,17 +202,17 @@ const typeDefinitions = gql`
     url:      String!
     changelog: String
 
-    mainFile: DownloadableFile! @relationship(type: "HAS_VERSION", direction: IN)
+    mainFile: DownloadableFile @relationship(type: "HAS_VERSION", direction: IN)
   }
 
 
   type Collection @node {
-    id: ID! @id @unique
+    id: ID! @id
     name: String!
     description: String
     visibility: CollectionVisibility!
     collectionType: CollectionType!
-    CreatedBy: User! @relationship(type: "CREATED_BY", direction: OUT)
+    CreatedBy: User @relationship(type: "CREATED_BY", direction: OUT)
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime! @timestamp(operations: [UPDATE])
 
@@ -242,10 +242,10 @@ const typeDefinitions = gql`
   }
 
   type Album @node {
-    id: ID! @id @unique
+    id: ID! @id
     Owner: User @relationship(type: "HAS_ALBUM", direction: IN)
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
-    imageOrder: [ID]
+    imageOrder: [ID!]
     Discussions: [Discussion!]! @relationship(type: "HAS_ALBUM", direction: IN)
     detailImagesPageInfo: DetailCollectionPageInfo! @customResolver
   }
@@ -254,9 +254,9 @@ const typeDefinitions = gql`
     @limit(default: 25, max: 100)
     @authorization(filter: [{
       operations: [READ, AGGREGATE]
-      where: { node: { User: { username: "$jwt.sub" } } }
+      where: { node: { User: { username: { eq: "$jwt.sub" } } } }
     }]) {
-    id: ID! @id @unique
+    id: ID! @id
     createdAt: DateTime! @timestamp(operations: [CREATE])
     read: Boolean
     text: String
@@ -275,14 +275,14 @@ const typeDefinitions = gql`
   }
 
   type Message @node {
-    id: ID! @id @unique
+    id: ID! @id
     createdAt: DateTime! @timestamp(operations: [CREATE])
     text: String
     Contact: Contact @relationship(type: "HAS_MESSAGE", direction: IN)
   }
 
   type Contact @node {
-    id: ID! @id @unique
+    id: ID! @id
     MessageAuthor: CommentAuthor
       @relationship(type: "AUTHORED_MESSAGE", direction: IN)
     createdAt: DateTime! @timestamp(operations: [CREATE])
@@ -296,7 +296,7 @@ const typeDefinitions = gql`
     Images:   [Image!]!  @relationship(type: "UPLOADED_IMAGE", direction: OUT)
 
     # identity
-    username: String! @unique
+    username: String!
     Email: Email  @relationship(type: "HAS_EMAIL", direction: IN)
     displayName: String
     pronouns: String
@@ -410,7 +410,7 @@ const typeDefinitions = gql`
   }
 
   type ScratchpadEntry @node {
-    id: ID! @id @unique
+    id: ID! @id
     createdAt: DateTime! @timestamp(operations: [CREATE])
     text: String!
     isPublic: Boolean! @default(value: false)
@@ -423,15 +423,15 @@ const typeDefinitions = gql`
     discussionId: String
 
     # Relationships
-    Author: User! @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: IN)
-    Recipient: User! @relationship(type: "HAS_SCRATCHPAD_ENTRY", direction: IN)
+    Author: User @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: IN)
+    Recipient: User @relationship(type: "HAS_SCRATCHPAD_ENTRY", direction: IN)
 
     # For cache updates after super upvoting (not a DB field)
     superUpvotedByUsers: [User!]
   }
 
-  type TextVersion @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+  type TextVersion @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -456,7 +456,7 @@ const typeDefinitions = gql`
   }
 
   type LabelChangeHistory @node {
-    id: ID! @id @unique
+    id: ID! @id
     createdAt: DateTime! @timestamp(operations: [CREATE])
     actionType: String! # "added" or "removed"
     labelDisplayName: String!
@@ -471,10 +471,10 @@ const typeDefinitions = gql`
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
-        { indexName: "wikiPageFulltext", fields: ["title", "body"] }
+        { indexName: "wikiPageFulltext", queryName: "wikiPageFulltext", fields: ["title", "body"] }
       ]
     ) {
-    id: ID! @id @unique
+    id: ID! @id
     title: String!
     body: String
     editReason: String
@@ -490,7 +490,7 @@ const typeDefinitions = gql`
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
     OriginalAuthor: User @relationship(type: "AUTHORED_WIKI_PAGE", direction: IN)
-    Channel: Channel!
+    Channel: Channel
       @relationship(type: "OWNS_WIKI_PAGE", direction: IN, nestedOperations: [CONNECT])
       @settable(onCreate: true, onUpdate: false)
     VersionAuthor: User @relationship(type: "AUTHORED_VERSION", direction: IN)
@@ -503,7 +503,7 @@ const typeDefinitions = gql`
   }
 
   type Suspension @node {
-    id: ID! @id @unique
+    id: ID! @id
     channelUniqueName: String
     serverName: String
     username: String
@@ -517,8 +517,8 @@ const typeDefinitions = gql`
     RelatedIssue: Issue @relationship(type: "HAS_CONTEXT", direction: OUT)
   }
 
-   type DownloadableFile @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+   type DownloadableFile @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -600,7 +600,7 @@ const typeDefinitions = gql`
     mode: FilterMode! # INCLUDE or EXCLUDE
     uploadSelection: FilterSelection! @default(value: MULTIPLE)
     # One channel owns many groups
-    channel: Channel! @relationship(type: "HAS_FILTER_GROUP", direction: IN)
+    channel: Channel @relationship(type: "HAS_FILTER_GROUP", direction: IN)
 
     # Each group owns many options
     options: [FilterOption!]!
@@ -615,7 +615,7 @@ const typeDefinitions = gql`
     order: Int!
     value: String! # computer‑friendly, e.g. "10x20"
     displayName: String! # human‑friendly, e.g. "10 × 20"
-    group: FilterGroup! @relationship(type: "HAS_FILTER_OPTION", direction: IN)
+    group: FilterGroup @relationship(type: "HAS_FILTER_OPTION", direction: IN)
   }
 
   """
@@ -627,7 +627,7 @@ const typeDefinitions = gql`
     @query(read: false, aggregate: false)
     @mutation(operations: [])
     @subscription(events: []) {
-    id: ID! @id @unique
+    id: ID! @id
     channelUniqueName: String!
       @cypher(
         statement: "MATCH (channel:Channel)-[:HAS_DISCUSSION_FLAIR]->(this) RETURN channel.uniqueName AS channelUniqueName"
@@ -644,7 +644,7 @@ const typeDefinitions = gql`
       @settable(onCreate: false, onUpdate: false)
     archived: Boolean! @default(value: false)
       @settable(onCreate: false, onUpdate: false)
-    Channel: Channel!
+    Channel: Channel
       @relationship(type: "HAS_DISCUSSION_FLAIR", direction: IN)
       @settable(onCreate: false, onUpdate: false)
     DiscussionChannels: [DiscussionChannel!]!
@@ -660,13 +660,13 @@ const typeDefinitions = gql`
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
-        { indexName: "channelFulltext", fields: ["uniqueName", "description"] }
+        { indexName: "channelFulltext", queryName: "channelFulltext", fields: ["uniqueName", "description"] }
       ]
     ) {
     # Public URL and denormalized identity key. Renaming requires an explicit
     # migration that updates every stored reference; generic updates must not
     # change it.
-    uniqueName: String! @unique @settable(onCreate: true, onUpdate: false)
+    uniqueName: String! @settable(onCreate: true, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
       @settable(onCreate: false, onUpdate: false)
     displayName: String
@@ -716,7 +716,7 @@ const typeDefinitions = gql`
     discussionFlairRequired: Boolean @default(value: false)
       @settable(onCreate: false, onUpdate: false)
 
-    allowedFileTypes: [String]
+    allowedFileTypes: [String!]
     payoutPercent: Int @default(value: 98)
 
     # tags & relationships (unchanged)
@@ -767,8 +767,8 @@ const typeDefinitions = gql`
     pluginPipelines: JSON  # Channel-scoped pipeline configuration for events like discussionChannel.created and discussionChannel.edited
   }
 
-  type DiscussionChannel @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+  type DiscussionChannel @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -823,11 +823,11 @@ const typeDefinitions = gql`
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
-        { indexName: "discussionFulltext", fields: ["title", "body"] }
+        { indexName: "discussionFulltext", queryName: "discussionFulltext", fields: ["title", "body"] }
       ]
     )
-    @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: false } }, { node: { hasSensitiveContent: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+    @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { hasSensitiveContent: { eq: false } } }, { node: { hasSensitiveContent: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -899,7 +899,7 @@ const typeDefinitions = gql`
   }
 
   type EventChannel @node @limit(default: 25, max: 100) {
-    id: ID! @id @unique
+    id: ID! @id
     locked: Boolean
     eventId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
@@ -965,10 +965,10 @@ const typeDefinitions = gql`
   # A repeat pattern is its own node (Neo4j can't store a nested object as a
   # property), linked to its EventSeries via HAS_REPEAT_PATTERN.
   type RepeatPattern @node {
-    id: ID! @id @unique
+    id: ID! @id
     type: RepeatPatternType!
     count: Int
-    daysOfWeek: [Int]
+    daysOfWeek: [Int!]
     endType: RepeatEndType!
     endCount: Int
     endDate: DateTime
@@ -989,7 +989,7 @@ const typeDefinitions = gql`
   }
 
   type EventSeries @node @limit(default: 25, max: 100) {
-    id: ID! @id @unique
+    id: ID! @id
     title: String!
     description: String
     locationName: String
@@ -1018,14 +1018,14 @@ const typeDefinitions = gql`
 
   # Legacy type - keeping for backward compatibility during migration
   type RecurringEvent @node {
-    id: ID! @id @unique
+    id: ID! @id
     repeatEvery: RepeatEvery
     repeatEnds: RepeatEnds
     Events: [Event!]! @relationship(type: "HAS_RECURRING_EVENT", direction: OUT)
   }
 
   type Event @node @limit(default: 25, max: 100) {
-    id: ID! @id @unique
+    id: ID! @id
     title: String!
     description: String
     editReason: String
@@ -1091,8 +1091,8 @@ const typeDefinitions = gql`
     """, columnName: "authorIsChannelModerator")
   }
 
-  type Comment @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+  type Comment @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -1160,20 +1160,20 @@ const typeDefinitions = gql`
   }
 
   type Emoji @node {
-    id: ID! @id @unique
-    name: String! @unique
+    id: ID! @id
+    name: String!
     PostedByUser: User @relationship(type: "POSTED_EMOJI", direction: IN)
     createdAt: DateTime! @timestamp(operations: [CREATE])
   }
 
   type Email @node {
-    address: String! @unique
+    address: String!
     User: User @relationship(type: "HAS_EMAIL", direction: OUT)
   }
 
   type ModerationProfile @node {
     createdAt: DateTime! @timestamp(operations: [CREATE])
-    displayName: String @unique
+    displayName: String
     User: User @relationship(type: "MODERATION_PROFILE", direction: IN)
     AuthoredIssues: [Issue!]!
       @relationship(type: "AUTHORED_ISSUE", direction: IN)
@@ -1192,9 +1192,8 @@ const typeDefinitions = gql`
   }
 
   type ModerationAction @node @limit(default: 25, max: 100) {
-    id: ID! @id @unique
+    id: ID! @id
     idempotencyKey: String
-      @unique(constraintName: "moderation_action_idempotency_key")
       @settable(onCreate: true, onUpdate: false)
     ModerationProfile: ModerationProfile
       @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
@@ -1214,11 +1213,11 @@ const typeDefinitions = gql`
     @limit(default: 25, max: 100)
     @fulltext(
       indexes: [
-        { indexName: "issueFulltext", fields: ["title", "body"] }
+        { indexName: "issueFulltext", queryName: "issueFulltext", fields: ["title", "body"] }
       ]
     )
-    @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: false } }, { node: { ageGateRestricted: null } }, { jwt: { mayAccessSensitiveContent: true } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: true } } }]) {
-    id: ID! @id @unique
+    @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
+    id: ID! @id
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -1307,7 +1306,7 @@ const typeDefinitions = gql`
   }
 
   type Feed @node {
-    id: ID! @id @unique
+    id: ID! @id
     title: String
     description: String
     Owner: User @relationship(type: "CREATED_FEED", direction: IN)
@@ -1316,7 +1315,7 @@ const typeDefinitions = gql`
   }
 
   type Tag @node {
-    text: String! @unique
+    text: String!
     Channels: [Channel!]! @relationship(type: "HAS_TAG", direction: IN)
     Discussions: [Discussion!]! @relationship(type: "HAS_TAG", direction: IN)
     Events: [Event!]! @relationship(type: "HAS_TAG", direction: IN)
@@ -1413,10 +1412,8 @@ const typeDefinitions = gql`
     archived: Boolean! = false
   }
 
-  type DiscussionFlairOption
-    @query(read: false, aggregate: false)
-    @mutation(operations: [])
-    @subscription(events: []) {
+ type DiscussionFlairOption
+     {
     id: ID!
     channelUniqueName: String!
     displayName: String!
@@ -1425,10 +1422,8 @@ const typeDefinitions = gql`
     archived: Boolean!
   }
 
-  type ChannelDiscussionFlairConfig
-    @query(read: false, aggregate: false)
-    @mutation(operations: [])
-    @subscription(events: []) {
+ type ChannelDiscussionFlairConfig
+     {
     channelUniqueName: String!
     flairRequired: Boolean!
     flairs: [DiscussionFlairOption!]!
@@ -2090,7 +2085,7 @@ const typeDefinitions = gql`
   }
 
   type ServerRole @node {
-    name: String @unique
+    name: String
     description: String
     canCreateChannel: Boolean
     canCreateDiscussion: Boolean
@@ -2112,10 +2107,10 @@ const typeDefinitions = gql`
   }
 
   type ChannelRole @node {
-    id: ID! @id @unique
+    id: ID! @id
     name: String! @settable(onCreate: true, onUpdate: false)
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false)
-    Owner: Channel!
+    Owner: Channel
       @relationship(type: "OWNS_CHANNEL_ROLE", direction: IN)
     description: String
     canCreateDiscussion: Boolean
@@ -2128,10 +2123,10 @@ const typeDefinitions = gql`
   }
 
   type ModChannelRole @node {
-    id: ID! @id @unique
+    id: ID! @id
     name: String! @settable(onCreate: true, onUpdate: false)
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false)
-    Owner: Channel!
+    Owner: Channel
       @relationship(type: "OWNS_MOD_CHANNEL_ROLE", direction: IN)
     description: String
     canHideComment: Boolean
@@ -2150,7 +2145,7 @@ const typeDefinitions = gql`
   }
 
   type ModServerRole @node {
-    name: String @unique
+    name: String
     description: String
     canLockChannel: Boolean
     canHideComment: Boolean
@@ -2174,7 +2169,7 @@ const typeDefinitions = gql`
   }
 
   type Plugin @node {
-    id: ID! @id @unique
+    id: ID! @id
     name: String!
     displayName: String
     description: String
@@ -2188,7 +2183,7 @@ const typeDefinitions = gql`
   }
 
   type PluginVersion @node {
-    id: ID! @id @unique
+    id: ID! @id
     version: String!
     repoUrl: String!
     tarballGsUri: String
@@ -2205,7 +2200,7 @@ const typeDefinitions = gql`
     uiSchema: JSON
     documentationPath: String
     readmeMarkdown: String
-    Plugin: Plugin! @relationship(type: "HAS_VERSION", direction: IN)
+    Plugin: Plugin @relationship(type: "HAS_VERSION", direction: IN)
   }
 
   type InstallationProperties @relationshipProperties {
@@ -2254,7 +2249,7 @@ const typeDefinitions = gql`
   }
 
   type ServerSecret @node {
-    id: ID! @id @unique
+    id: ID! @id
     pluginId: String!
     key: String!
     ciphertext: String!
@@ -2295,9 +2290,8 @@ const typeDefinitions = gql`
   }
 
   type PluginPipelineRun @node {
-    id: ID! @id @unique
+    id: ID! @id
     pipelineId: String!
-      @unique(constraintName: "plugin_pipeline_run_pipeline_id")
     targetId: String!
     targetType: String!
     targetVersion: String
@@ -2339,7 +2333,7 @@ const typeDefinitions = gql`
     @query(read: true, aggregate: false)
     @mutation(operations: [CREATE, UPDATE])
     @subscription(events: []) {
-    id: ID! @id @unique
+    id: ID! @id
     policyId: ID!
     eventType: String!
     scope: String!
@@ -2365,10 +2359,8 @@ const typeDefinitions = gql`
     finishedAt: DateTime
   }
 
-  type PluginPipelineCampaignPreview
-    @query(read: false, aggregate: false)
-    @mutation(operations: [])
-    @subscription(events: []) {
+ type PluginPipelineCampaignPreview
+     {
     policyId: ID!
     eventType: String!
     applicability: PipelineApplicability!
@@ -2379,10 +2371,8 @@ const typeDefinitions = gql`
     estimatedProviderRuns: Int!
   }
 
-  type PluginPipelineCampaignFailure
-    @query(read: false, aggregate: false)
-    @mutation(operations: [])
-    @subscription(events: []) {
+ type PluginPipelineCampaignFailure
+     {
     pipelineId: ID!
     targetId: ID!
     discussionId: ID!
@@ -2392,7 +2382,7 @@ const typeDefinitions = gql`
   }
 
   type PluginRun @node {
-    id: ID! @id @unique
+    id: ID! @id
     pluginId: String!
     pluginName: String
     version: String!
@@ -2524,7 +2514,7 @@ const typeDefinitions = gql`
   }
 
   type ServerConfig @node {
-    serverName: String @unique
+    serverName: String
     serverDescription: String
     serverIconURL: String
     rules: JSON
@@ -2540,8 +2530,8 @@ const typeDefinitions = gql`
     rankingSettingsUpdatedBy: String
       @selectable(onRead: false, onAggregate: false)
       @settable(onCreate: false, onUpdate: false)
-    allowedFileTypes: [String]
-    featuredWikiPageIds: [ID]
+    allowedFileTypes: [String!]
+    featuredWikiPageIds: [ID!]
     enableDownloads: Boolean
     enableEvents: Boolean
     accountAgeGateEnabled: Boolean @default(value: false)
@@ -2595,7 +2585,7 @@ const typeDefinitions = gql`
     brandingPrimaryColor: String
 
     # plugins
-    pluginRegistries: [String]
+    pluginRegistries: [String!]
     pluginPipelines: JSON
     AllowedPlugins: [Plugin!]! @relationship(type: "ALLOWS", direction: OUT)
     InstalledVersions: [PluginVersion!]! @relationship(type: "INSTALLED", direction: OUT, properties: "InstallationProperties")
@@ -2606,18 +2596,14 @@ const typeDefinitions = gql`
     currentDatabase: String
   }
 
-  type HotRankingSettings
-    @query(read: false, aggregate: false)
-    @mutation(operations: [])
-    @subscription(events: []) {
+ type HotRankingSettings
+     {
     ageOffsetMonths: Float!
     gravity: Float!
   }
 
-  type RankingSettings
-    @query(read: false, aggregate: false)
-    @mutation(operations: [])
-    @subscription(events: []) {
+ type RankingSettings
+     {
     version: Int!
     discussionHot: HotRankingSettings!
     commentHot: HotRankingSettings!
@@ -2888,7 +2874,7 @@ const typeDefinitions = gql`
     activities: [ModActivity!]!
   }
 
-  type ServerHealthSummary @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type ServerHealthSummary  {
     activeChannelCount: Int!
     discussionCount: Int!
     commentCount: Int!
@@ -2914,7 +2900,7 @@ const typeDefinitions = gql`
     medianOpenIssueAgeDays: Float
   }
 
-  type ServerHealthTimeSeriesPoint @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type ServerHealthTimeSeriesPoint  {
     date: String!
     discussions: Int!
     comments: Int!
@@ -2924,7 +2910,7 @@ const typeDefinitions = gql`
     moderationActions: Int!
   }
 
-  type ChannelHealthRow @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type ChannelHealthRow  {
     id: ID!
     channelUniqueName: String!
     displayName: String
@@ -2946,14 +2932,14 @@ const typeDefinitions = gql`
     healthLabel: String!
   }
 
-  type IssueAgingBucket @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type IssueAgingBucket  {
     label: String!
     minDays: Int!
     maxDays: Int
     count: Int!
   }
 
-  type ServerHealthAttentionItem @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type ServerHealthAttentionItem  {
     severity: String!
     title: String!
     description: String!
@@ -2963,7 +2949,7 @@ const typeDefinitions = gql`
     value: Float
   }
 
-  type ServerHealthDashboard @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type ServerHealthDashboard  {
     startDate: String!
     endDate: String!
     generatedAt: DateTime!
@@ -2974,7 +2960,7 @@ const typeDefinitions = gql`
     attentionItems: [ServerHealthAttentionItem!]!
   }
 
-  type DownloadScanReviewItem @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type DownloadScanReviewItem  {
     downloadableFileId: ID!
     fileName: String!
     scanStatus: ScanStatus!
@@ -3029,7 +3015,7 @@ const typeDefinitions = gql`
   Whether a discussion is behind the sensitive-content age gate for this
   viewer. Carries no content fields.
   """
-  type AgeGateCheck @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type AgeGateCheck  {
     requiresAgeCheck: Boolean!
     status: AgeGateCheckStatus!
     minimumAge: Int
@@ -3042,7 +3028,7 @@ const typeDefinitions = gql`
     mayAccessSensitiveContent: Boolean!
   }
 
-  type UploadedDownloadableFileDiscussion @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type UploadedDownloadableFileDiscussion  {
     id: ID!
     title: String!
     createdAt: DateTime
@@ -3050,19 +3036,19 @@ const typeDefinitions = gql`
     channelUniqueNames: [String!]!
   }
 
-  type UploadedDownloadableFileGroup @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type UploadedDownloadableFileGroup  {
     discussion: UploadedDownloadableFileDiscussion!
     files: [DownloadableFile!]!
   }
 
-  type ImageAlbumUsage @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type ImageAlbumUsage  {
     imageId: ID!
     uploaderUsername: String
     uploaderOwnedAlbums: [Album!]!
     otherAlbums: [Album!]!
   }
 
-  type InstanceCapabilityStatus @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type InstanceCapabilityStatus  {
     configured: Boolean!
     enabled: Boolean!
     requiredEnvVarsMissing: [String!]!
@@ -3070,7 +3056,7 @@ const typeDefinitions = gql`
     docsPath: String!
   }
 
-  type InstanceSetupStatus @query(read: false, aggregate: false) @mutation(operations: []) @subscription(events: []) {
+ type InstanceSetupStatus  {
     auth: InstanceCapabilityStatus!
     mail: InstanceCapabilityStatus!
     maps: InstanceCapabilityStatus!

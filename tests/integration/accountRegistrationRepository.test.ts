@@ -15,7 +15,7 @@ let repository: ReturnType<typeof createAccountRegistrationRepository>;
 const engine = createSubscriptionEngine();
 let events: unknown[] = [];
 const sessions: SessionConfig[] = [];
-for (const kind of ["create","update","create_relationship","delete_relationship","delete"]) engine.events.on(kind,event=>events.push(event));
+for (const kind of ["create","update","create_relationship","delete_relationship","delete"]) engine.events.on(kind,(event: unknown)=>events.push(event));
 before(async()=>{
  driver=await startNeo4j();
  const open=driver.session.bind(driver);

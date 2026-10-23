@@ -12,7 +12,7 @@ import type {PluginRunCreateInput,PluginRunUpdateInput,DownloadableFileUpdateInp
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
-for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
+for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,(event: unknown)=>events.push(event));
 async function schema(failure?:'file'|'job'){const app=getCustomResolvers(driver);const overrides:Record<string,Record<string,()=>never>>=failure==='file'?{DownloadableFile:{storageUrl:()=>{throw Error('file projection failed');}}}:failure==='job'?{PluginRun:{message:()=>{throw Error('job projection failed');}}}:{};const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,...overrides},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();registerGeneratedSchema(driver,executable);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 
@@ -27,7 +27,7 @@ test('start snapshots preserve selections, literal values, missing rows and unbo
 test('discussion target preserves existing singular-field validation failure',async()=>{const repo=createPipelineStartRepository(driver);await assert.rejects(repo.findDiscussionTarget('discussion'),/Cannot query field "DownloadableFile"/);assert.equal(events.length,0);});
 test('active attempts retain full predicate, unbounded result and started-attempt projection',async(t)=>{
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{id:toString(n),pipelineId:toString(n),targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER',status:'RUNNING',trigger:'OWNER_START',attemptNumber:n,configurationSnapshot:'{}',createdAt:datetime('2020-01-01T00:00:00Z'),updatedAt:datetime('2020-01-01T00:00:00Z')})`);
- const repo=createPipelineStartRepository(driver);const where={targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER'};
+ const repo=createPipelineStartRepository(driver);const where={targetId:{eq:'file'},targetType:{eq:'DownloadableFile'},eventType:{eq:'downloadableFile.created'},scope:{eq:'SERVER'}};
  t.assert.snapshot(await repo.findActiveAttempts(where));assert.equal((await repo.findActiveAttempts(where)).length,29);
  for(const id of ['1','missing'])t.assert.snapshot(await repo.findStartedAttempt(id));
  await assert.rejects(repo.findActiveAttempts({attemptNumber:'not-int'} as never),/Int/);assert.equal(events.length,0);

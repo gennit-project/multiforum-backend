@@ -11,7 +11,7 @@ import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver: Driver;
 let app: ReturnType<typeof getCustomResolvers>;
 const engine=createSubscriptionEngine();let events:unknown[]=[];
-for(const kind of ["create","update","delete_relationship"]) engine.events.on(kind,event=>events.push(event));
+for(const kind of ["create","update","delete_relationship"]) engine.events.on(kind,(event: unknown)=>events.push(event));
 before(async()=>{
   driver=await startNeo4j();app=getCustomResolvers(driver);
   const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});

@@ -13,7 +13,7 @@ import {getAgeGateStatements} from '../../services/ageGate/definitions.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;
 const engine=createSubscriptionEngine();let events:any[]=[];
-for(const kind of ['create','update','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
+for(const kind of ['create','update','create_relationship','delete_relationship'])engine.events.on(kind,(event: unknown)=>events.push(event));
 async function registerSchema(overrides:Record<string,unknown>={}){const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,...overrides},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});registerGeneratedSchema(driver,await neo.getSchema());}
 before(async()=>{driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));await registerSchema();},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});

@@ -15,7 +15,7 @@ let app: ReturnType<typeof getCustomResolvers>;
 let schema: GraphQLSchema;
 let events: any[] = [];
 const engine = createSubscriptionEngine();
-for (const kind of ['create', 'update', 'create_relationship', 'delete_relationship']) engine.events.on(kind, event => events.push(event));
+for (const kind of ['create', 'update', 'create_relationship', 'delete_relationship']) engine.events.on(kind, (event: unknown) => events.push(event));
 before(async () => {
   driver = await startNeo4j(); app = getCustomResolvers(driver);
   const neo = new Neo4jGraphQL({driver, typeDefs, resolvers: app.resolvers, features: {filters: {String: {MATCHES: true}}, subscriptions: engine}});

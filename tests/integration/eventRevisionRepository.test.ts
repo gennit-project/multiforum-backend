@@ -13,7 +13,7 @@ import {getAgeGateStatements} from '../../services/ageGate/definitions.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;let baseSchema:Awaited<ReturnType<Neo4jGraphQL['getSchema']>>;
 const engine=createSubscriptionEngine();let events:any[]=[];
-for(const kind of ['create','update','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
+for(const kind of ['create','update','create_relationship','delete_relationship'])engine.events.on(kind,(event: unknown)=>events.push(event));
 before(async()=>{driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});baseSchema=await neo.getSchema();registerGeneratedSchema(driver,baseSchema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const seed=async(valid=true)=>{await driver.executeQuery(`CREATE (p:User {username:'poster',createdAt:datetime()}),(u:User {username:'editor',createdAt:datetime()}),(a:User {username:'prior',createdAt:datetime()}),(e:Event {id:'e',title:'old title',description:'old description',createdAt:datetime(),startTime:datetime('2026-01-01T00:00:00Z'),endTime:datetime('2026-01-02T00:00:00Z')}),(c:EventChannel {channelUniqueName:'forum'}) CREATE (p)-[:POSTED_BY]->(e),(c)-[:POSTED_IN_CHANNEL]->(e),(e)-[:DESCRIPTION_LAST_EDITED_BY]->(a) SET e.canceled=$canceled`,{canceled:valid?false:null});};

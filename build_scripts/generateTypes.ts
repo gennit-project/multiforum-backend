@@ -16,6 +16,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import typeDefs from "../typeDefs.js";
+import { createSubscriptionEngine } from "../services/subscriptionEngine.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
@@ -57,7 +58,10 @@ async function main() {
     typeDefs,
     features: {
       filters: { String: { MATCHES: true } },
-      subscriptions: true,
+      // v7 CDC subscriptions (`subscriptions: true`) require a driver at
+      // construction; codegen is DB-free, so use the same in-process engine the
+      // server and tests use — it needs no driver and yields the full schema.
+      subscriptions: createSubscriptionEngine(),
     },
   });
   const schema = await neoSchema.getSchema();

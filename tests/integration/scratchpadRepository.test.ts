@@ -11,7 +11,7 @@ import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver:Driver;
 const engine=createSubscriptionEngine();let events:unknown[]=[];
-for(const kind of ["create","update","create_relationship","delete_relationship","delete"])engine.events.on(kind,event=>events.push(event));
+for(const kind of ["create","update","create_relationship","delete_relationship","delete"])engine.events.on(kind,(event: unknown)=>events.push(event));
 before(async()=>{
  driver=await startNeo4j();const app=getCustomResolvers(driver);
  const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});

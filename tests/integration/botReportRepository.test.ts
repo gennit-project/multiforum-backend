@@ -11,7 +11,7 @@ import * as persistence from '../../services/persistence/botReportRepository.js'
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
-for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
+for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,(event: unknown)=>events.push(event));
 before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const identity={findIdentity:async()=>[{username:'bot-forum-helper',isBot:true,botProfileId:null,isDeprecated:false,deprecatedReason:null}] as any,createIdentity:async()=>{throw Error('unexpected identity create');},reactivateIdentity:async()=>{throw Error('unexpected identity update');},findChannelBots:async()=>[{uniqueName:'forum',Bots:[{username:'bot-forum-helper'}]}] as any,connectBot:async()=>{throw Error('unexpected identity connect');},disconnectBots:async()=>{throw Error('unexpected identity disconnect');}};
