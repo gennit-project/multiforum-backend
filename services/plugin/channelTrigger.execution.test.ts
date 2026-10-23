@@ -157,7 +157,7 @@ const execRun = (
   );
 
 test("runs a pipeline plugin to SUCCEEDED", async () => {
-  const { models, updates, creates } = makeExecModels(
+  const { models, updates, creates, attemptCreates } = makeExecModels(
     [{ pluginId: "mybot", condition: "ALWAYS" }],
     [installedEdge("mybot")]
   );
@@ -165,6 +165,8 @@ test("runs a pipeline plugin to SUCCEEDED", async () => {
 
   assert.equal(creates.length, 1);
   assert.equal(creates[0].input[0].status, "PENDING");
+  assert.match(String(creates[0].input[0].ruleSetVersion), /^[a-f0-9]{64}$/);
+  assert.match(String(attemptCreates[0].input[0].targetVersion), /^[a-f0-9]{64}$/);
   const statuses = statusesOf(updates);
   assert.ok(statuses.includes("RUNNING"));
   assert.ok(statuses.includes("SUCCEEDED"));
@@ -286,6 +288,10 @@ test("reports a discussion with the channel-scoped bot identity", async () => {
     botName: "moderator",
     profileId: "primary",
   });
+  assert.match(
+    reports[0]?.idempotencyKey,
+    /^bot-report:v1:[a-f0-9]{64}$/
+  );
 });
 
 test("blocks reports from a suspended channel bot", async () => {

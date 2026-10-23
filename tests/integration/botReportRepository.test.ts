@@ -17,6 +17,7 @@ before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const 
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 function baseline():persistence.BotReportRepository{const i=app.ogm.model('Issue');return{
  findExistingReport:where=>i.find({where,selectionSet:persistence.FINDEXISTINGREPORT_SELECTION}),
+ findIdempotentReport:(where,idempotencyKey)=>i.find({where:{...where,ActivityFeed_SOME:{idempotencyKey}},selectionSet:persistence.FINDEXISTINGREPORT_SELECTION}),
  findReportedComment:id=>app.ogm.model('Comment').find({where:{id},selectionSet:persistence.FINDREPORTEDCOMMENT_SELECTION}),
  findReportedDiscussion:id=>app.ogm.model('Discussion').find({where:{id},selectionSet:persistence.FINDREPORTEDDISCUSSION_SELECTION}),
  findReportedEvent:id=>app.ogm.model('Event').find({where:{id},selectionSet:persistence.FINDREPORTEDEVENT_SELECTION}),

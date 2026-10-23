@@ -52,6 +52,11 @@ import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.
 import { createChannelPermissionRepository } from '../persistence/channelPermissionRepository.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFileUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
+import {
+  createContentRevisionHash,
+  createReportIdempotencyKey,
+  createRuleSetVersion,
+} from './moderationJobIdentity.js'
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
 
@@ -248,6 +253,18 @@ export const triggerChannelPluginPipeline = async (
     return []
   }
 
+  const contentRevisionHash = createContentRevisionHash({
+    channelUniqueName,
+    contentId: discussion.id,
+    contentType: 'Discussion',
+    title: discussion.title,
+    body: discussion.body,
+    attachmentVersion:
+      downloadableFile?.uploadedAt || downloadableFile?.createdAt || null,
+  })
+  const serverRules = Array.isArray(serverConfig.rules) ? serverConfig.rules : []
+  const forumRules = Array.isArray(channel.rules) ? channel.rules : []
+
   const pipelineId = execution?.pipelineId || generatePipelineId()
   const runs: unknown[] = []
   const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
@@ -282,8 +299,7 @@ export const triggerChannelPluginPipeline = async (
       pipelineId,
       targetId: discussionId,
       targetType: 'Discussion',
-      targetVersion:
-        downloadableFile?.uploadedAt || downloadableFile?.createdAt || null,
+      targetVersion: contentRevisionHash,
       eventType: event,
       scope: 'CHANNEL',
       channelId: channelUniqueName,
@@ -300,6 +316,12 @@ export const triggerChannelPluginPipeline = async (
   for (const { pluginId, edgeData, order } of pluginsToRun) {
     const pluginNode = edgeData.node.Plugin
     const pluginVersionData = edgeData.node
+    const ruleSetVersion = createRuleSetVersion({
+      pluginId,
+      pluginVersion: pluginVersionData.version,
+      serverRules,
+      forumRules,
+    })
 
     const timing = createQueuedPluginRunTiming()
     const runCreateResult = await repository.createPendingRuns([
@@ -313,6 +335,7 @@ export const triggerChannelPluginPipeline = async (
           status: 'PENDING',
           targetId: discussionId,
           targetType: 'Discussion',
+          ruleSetVersion,
           pipelineId,
           executionOrder: order,
           queuedAt: timing.queuedAt,
@@ -540,10 +563,26 @@ export const triggerChannelPluginPipeline = async (
             return null
           }
 
+          const ruleSetVersion = createRuleSetVersion({
+            pluginId,
+            pluginVersion: pluginVersionData.version,
+            serverRules,
+            forumRules,
+          })
+
           return reportAsBot({
             driver,
             channelUniqueName,
             reportInput: input,
+            idempotencyKey: createReportIdempotencyKey({
+              channelUniqueName,
+              contentType: input.contentType,
+              contentId: input.contentId,
+              contentRevisionHash,
+              ruleSetVersion,
+              pluginId,
+              pluginVersion: pluginVersionData.version,
+            }),
           })
         }
       }

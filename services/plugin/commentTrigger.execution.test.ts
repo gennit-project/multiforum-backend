@@ -37,6 +37,8 @@ type Models = Pick<
 type LoadPlugin = NonNullable<TriggerOptions["loadPlugin"]>;
 type RunCreateArgs = Parameters<ModelMap["PluginRun"]["create"]>[0];
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
+type AttemptCreateArgs =
+  Parameters<ModelMap["PluginPipelineRun"]["create"]>[0];
 
 const EVENT = "comment.created";
 
@@ -90,6 +92,7 @@ function makeExecModels(
 ) {
   const updates: RunUpdateArgs[] = [];
   const creates: RunCreateArgs[] = [];
+  const attemptCreates: AttemptCreateArgs[] = [];
   let seq = 0;
   const channel = {
     uniqueName: "cats",
@@ -119,9 +122,12 @@ function makeExecModels(
   });
   const PluginPipelineRun = modelStub<"PluginPipelineRun">({
     find: async () => [],
-    create: async args => ({
-      pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
-    }),
+    create: async args => {
+      attemptCreates.push(args);
+      return {
+        pluginPipelineRuns: [{ id: 'attempt-1', ...args.input[0] }],
+      };
+    },
     update: async () => ({}),
   });
   const models = {
@@ -140,7 +146,7 @@ function makeExecModels(
     Issue: modelStub<"Issue">(),
     User: modelStub<"User">(),
   } satisfies Models;
-  return { models, updates, creates };
+  return { models, updates, creates, attemptCreates };
 }
 
 // A fake plugin class whose handleEvent returns/throws as configured.
@@ -163,7 +169,8 @@ const loaderFor = (cls: PluginConstructor): LoadPlugin => async () => cls;
 const execRun = (
   models: Models,
   loadPlugin: LoadPlugin,
-  event = EVENT
+  event = EVENT,
+  options: Omit<TriggerOptions, "loadPlugin"> = {}
 ) =>
   triggerPluginRunsForComment(
     {
@@ -172,23 +179,68 @@ const execRun = (
       driver: {} as Driver,
     },
     models,
-    { loadPlugin }
+    { ...options, loadPlugin }
   );
 
 const statusesOf = (updates: RunUpdateArgs[]) =>
   updates.map(update => update.update?.status);
 
 test("runs a matching plugin to SUCCEEDED", async () => {
-  const { models, updates, creates } = makeExecModels([installedEdge("mybot")]);
+  const { models, updates, creates, attemptCreates } = makeExecModels([installedEdge("mybot")]);
   const runs = await execRun(models, loaderFor(pluginReturning({ success: true, result: { message: "ok" } })));
 
   assert.equal(creates.length, 1);
   assert.equal(creates[0].input[0].status, "PENDING");
+  assert.match(String(creates[0].input[0].ruleSetVersion), /^[a-f0-9]{64}$/);
+  assert.match(String(attemptCreates[0].input[0].targetVersion), /^[a-f0-9]{64}$/);
   const statuses = statusesOf(updates);
   assert.ok(statuses.includes("RUNNING"), "transitions to RUNNING");
   assert.ok(statuses.includes("SUCCEEDED"), "ends SUCCEEDED");
   assert.ok(!statuses.includes("FAILED"));
   assert.equal(runs.length, 1);
+});
+
+test("supplies an internal replay key when a plugin reports a comment", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")]);
+  const reports: Array<Record<string, any>> = [];
+  const Plugin: PluginConstructor = class {
+    private readonly context: Record<string, any>;
+    constructor(context: unknown) {
+      this.context = context as Record<string, any>;
+    }
+    async handleEvent() {
+      await this.context.reportContentAsBot({
+        contentType: "comment",
+        contentId: "comment-1",
+        reportText: "Rule violation",
+        selectedForumRules: ["Be kind"],
+        selectedServerRules: [],
+        botName: "moderator",
+      });
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin), EVENT, {
+    getSuspension: async () => ({
+      activeSuspension: null,
+      isSuspended: false,
+      relatedIssueId: null,
+      relatedIssueNumber: null,
+      expiredUserSuspensions: [],
+      expiredModSuspensions: [],
+      suspendedEntity: null,
+    }),
+    reportAsBot: async input => {
+      reports.push(input as unknown as Record<string, any>);
+      return { issueId: "issue-1", issueNumber: 1 };
+    },
+  });
+
+  assert.match(
+    reports[0]?.idempotencyKey,
+    /^bot-report:v1:[a-f0-9]{64}$/
+  );
 });
 
 test("runs comment edits with the updated content and edit invocation type", async () => {
