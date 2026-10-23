@@ -33,25 +33,12 @@ export default tseslint.config(
           paths: [
             {
               name: "@neo4j/graphql-ogm",
-              allowTypeImports: true,
               message:
-                "Use the application repository boundary in services/persistence; only its temporary adapter may import the OGM at runtime.",
+                "@neo4j/graphql-ogm has been removed (campaign #284). Use the driver-backed repositories in services/persistence and executeGeneratedOperation.",
             },
           ],
         },
       ],
-    },
-  },
-  {
-    // Type generation still imports the concrete @neo4j/graphql-ogm package
-    // until it is removed (campaign #284, batch 6); tests may import freely.
-    files: [
-      "build_scripts/generateTypes.ts",
-      "tests/**",
-      "**/*.test.ts",
-    ],
-    rules: {
-      "no-restricted-imports": "off",
     },
   },
   {
