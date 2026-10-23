@@ -1,0 +1,2380 @@
+exports[`append projection failure preserves counters, committed partial writes and events 1`] = `
+{
+  "counters": [
+    {
+      "current": 1
+    }
+  ],
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "channelBannerURL": "https://example.test/banner.png",
+            "channelIconURL": "https://example.test/icon.png",
+            "createdAt": "<time>",
+            "displayName": "Original Name",
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "TARGETS_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 1,
+      "authors": [
+        "Moderator"
+      ],
+      "banner": null,
+      "comments": 1,
+      "flag": true,
+      "icon": "forum",
+      "number": 1,
+      "open": true,
+      "scope": null,
+      "target": "forum",
+      "texts": [
+        "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+      ],
+      "title": "[Reported channel icon] Original Name"
+    }
+  ]
+}
+`;
+
+exports[`channel target/prior lookup preserves selected fields, absence and coercion 1`] = `
+[
+  {
+    "channelBannerURL": "https://example.test/banner.png",
+    "channelIconURL": "https://example.test/icon.png",
+    "displayName": "Original Name",
+    "uniqueName": "forum"
+  }
+]
+`;
+
+exports[`channel target/prior lookup preserves selected fields, absence and coercion 2`] = `
+[]
+`;
+
+exports[`channel target/prior lookup preserves selected fields, absence and coercion 3`] = `
+"Variable \\"$where\\" got invalid value 123 at \\"where.uniqueName\\"; String cannot represent a non string value: 123"
+`;
+
+exports[`channel target/prior lookup preserves selected fields, absence and coercion 4`] = `
+[]
+`;
+
+exports[`create projection failure preserves counters, committed partial writes and events 1`] = `
+{
+  "counters": [
+    {
+      "current": 1
+    }
+  ],
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "channelBannerURL": "https://example.test/banner.png",
+            "channelIconURL": "https://example.test/icon.png",
+            "createdAt": "<time>",
+            "displayName": "Original Name",
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "TARGETS_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 0,
+      "authors": [],
+      "banner": null,
+      "comments": 0,
+      "flag": true,
+      "icon": "forum",
+      "number": 1,
+      "open": true,
+      "scope": null,
+      "target": "forum",
+      "texts": [],
+      "title": "[Reported channel icon] Original Name"
+    }
+  ]
+}
+`;
+
+exports[`icon and banner get distinct server-scoped issues and sequential counter values 1`] = `
+{
+  "counters": [
+    {
+      "current": 2
+    }
+  ],
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 2,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 2,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "channelBannerURL": "https://example.test/banner.png",
+            "channelIconURL": "https://example.test/icon.png",
+            "createdAt": "<time>",
+            "displayName": "Original Name",
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "TARGETS_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 2,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 2,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "channelBannerURL": "https://example.test/banner.png",
+            "channelIconURL": "https://example.test/icon.png",
+            "createdAt": "<time>",
+            "displayName": "Original Name",
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "TARGETS_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 2,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 2,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 2,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 1,
+      "authors": [
+        "Moderator"
+      ],
+      "banner": "forum",
+      "comments": 1,
+      "flag": true,
+      "icon": null,
+      "number": 2,
+      "open": true,
+      "scope": null,
+      "target": "forum",
+      "texts": [
+        "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+      ],
+      "title": "[Reported channel banner] Original Name"
+    },
+    {
+      "actions": 1,
+      "authors": [
+        "Moderator"
+      ],
+      "banner": null,
+      "comments": 1,
+      "flag": true,
+      "icon": "forum",
+      "number": 1,
+      "open": true,
+      "scope": null,
+      "target": "forum",
+      "texts": [
+        "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+      ],
+      "title": "[Reported channel icon] Original Name"
+    }
+  ]
+}
+`;
+
+exports[`replacing channel BANNER reuses original issue/title and reopens/server-flags 1`] = `
+{
+  "counters": [
+    {
+      "current": 1
+    }
+  ],
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "channelBannerURL": "https://example.test/banner.png",
+            "channelIconURL": "https://example.test/icon.png",
+            "createdAt": "<time>",
+            "displayName": "Original Name",
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "TARGETS_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel banner",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": false,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelBannerName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel banner] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 2,
+      "authors": [
+        "Moderator"
+      ],
+      "banner": "forum",
+      "comments": 2,
+      "flag": true,
+      "icon": null,
+      "number": 1,
+      "open": true,
+      "scope": null,
+      "target": "forum",
+      "texts": [
+        "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+      ],
+      "title": "[Reported channel banner] Original Name"
+    }
+  ]
+}
+`;
+
+exports[`replacing channel ICON reuses original issue/title and reopens/server-flags 1`] = `
+{
+  "counters": [
+    {
+      "current": 1
+    }
+  ],
+  "events": [
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "ModerationAction"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Comment"
+      },
+      "kind": "create"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Comment",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "Issue"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "ACTIVITY_ON_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "channelBannerURL": "https://example.test/banner.png",
+            "channelIconURL": "https://example.test/icon.png",
+            "createdAt": "<time>",
+            "displayName": "Original Name",
+            "uniqueName": "forum"
+          }
+        },
+        "relationshipName": "TARGETS_CHANNEL",
+        "timestamp": "<time>",
+        "toTypename": "Channel"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "Issue",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          },
+          "relationship": {},
+          "to": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          }
+        },
+        "relationshipName": "AUTHORED_ISSUE",
+        "timestamp": "<time>",
+        "toTypename": "ModerationProfile"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationAction",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "MODERATED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "actionDescription": "Reported the channel icon",
+            "actionType": "report",
+            "createdAt": "<time>",
+            "id": "<id>"
+          }
+        },
+        "relationshipName": "PERFORMED_MODERATION_ACTION",
+        "timestamp": "<time>",
+        "toTypename": "ModerationAction"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "create_relationship",
+        "fromTypename": "ModerationProfile",
+        "id": "<internal-id>",
+        "id_from": "<internal-id>",
+        "id_to": "<internal-id>",
+        "properties": {
+          "from": {
+            "createdAt": "<time>",
+            "displayName": "Moderator"
+          },
+          "relationship": {},
+          "to": {
+            "ageGateTouchedAt": "<time>",
+            "createdAt": "<time>",
+            "id": "<id>",
+            "isRootComment": true,
+            "isSticky": false,
+            "text": "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+          }
+        },
+        "relationshipName": "AUTHORED_COMMENT",
+        "timestamp": "<time>",
+        "toTypename": "Comment"
+      },
+      "kind": "create_relationship"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": false,
+            "id": "<id>",
+            "isOpen": false,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    },
+    {
+      "event": {
+        "event": "update",
+        "id": "<internal-id>",
+        "properties": {
+          "new": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name",
+            "updatedAt": "<time>"
+          },
+          "old": {
+            "ageGateTouchedAt": "<time>",
+            "authorName": "Moderator",
+            "createdAt": "<time>",
+            "flaggedServerRuleViolation": true,
+            "id": "<id>",
+            "isOpen": true,
+            "issueNumber": 1,
+            "locked": false,
+            "relatedChannelIconName": "forum",
+            "relatedChannelUniqueName": "forum",
+            "title": "[Reported channel icon] Original Name"
+          }
+        },
+        "timestamp": "<time>",
+        "typename": "Issue"
+      },
+      "kind": "update"
+    }
+  ],
+  "rows": [
+    {
+      "actions": 2,
+      "authors": [
+        "Moderator"
+      ],
+      "banner": null,
+      "comments": 2,
+      "flag": true,
+      "icon": "forum",
+      "number": 1,
+      "open": true,
+      "scope": null,
+      "target": "forum",
+      "texts": [
+        "\\nServer rule violations: rule\\n\\nreason\\n\\n"
+      ],
+      "title": "[Reported channel icon] Original Name"
+    }
+  ]
+}
+`;

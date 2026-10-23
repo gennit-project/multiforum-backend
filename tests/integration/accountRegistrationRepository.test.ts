@@ -5,14 +5,12 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import neo4j, { type Driver, type SessionConfig } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createAccountRegistrationRepository, REGISTRATION_USER_SELECTION } from "../../services/persistence/accountRegistrationRepository.js";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver: Driver;
 let schema: GraphQLSchema;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 let repository: ReturnType<typeof createAccountRegistrationRepository>;
 const engine = createSubscriptionEngine();
 let events: unknown[] = [];
@@ -22,9 +20,9 @@ before(async()=>{
  driver=await startNeo4j();
  const open=driver.session.bind(driver);
  driver.session=(config?:SessionConfig)=>{sessions.push(config??{});return open(config);};
- const app=getCustomResolvers(driver);ogm=app.ogm;
+ const app=getCustomResolvers(driver);
  const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
- schema=await neoSchema.getSchema(); initializeOgmFromExistingSchema(ogm,neoSchema,schema);registerGeneratedSchema(driver,schema);
+ schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createAccountRegistrationRepository(driver);
 },{timeout:240_000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];sessions.length=0;});
@@ -57,7 +55,7 @@ test("registration default selections match OGM exactly including hidden-field e
 
 test("existence reads preserve missing/case-sensitive matches, projection and session routing",async(t)=>{
  for(const username of ["missing","alice"]){
-  if(username==="alice") await ogm.model("User").create({input:[input()]});
+  if(username==="alice") await repository.createAccount(input());
   t.assert.snapshot({users:normalize(await repository.findExistingUsername(username)),session:sessions[sessions.length-1]});
  }
  for(const address of ["Alice@Example.test","alice@example.test","missing"]){

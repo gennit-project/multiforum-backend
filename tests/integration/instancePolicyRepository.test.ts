@@ -4,35 +4,23 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
+import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createInstancePolicyRepository } from "../../services/persistence/instancePolicyRepository.js";
 import { loadAgePolicy, DEFAULT_AGE_POLICY } from "../../services/agePolicy.js";
 import { installRequestScopedBookmarks } from "../../services/requestScopedBookmarks.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 before(async () => {
   driver = installRequestScopedBookmarks(await startNeo4j());
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
-  const schema = new Neo4jGraphQL({ typeDefs, driver, resolvers: app.resolvers,
+  const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true } });
-  initializeOgmFromExistingSchema(ogm, schema, await schema.getSchema());
+  const schema = await neoSchema.getSchema();
+  registerGeneratedSchema(driver, schema);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
-
-const oldAge = (serverName: string) => ogm.model("ServerConfig").find({
-  where: { serverName }, selectionSet: `{
-    accountAgeGateEnabled minimumAccountAge sensitiveContentAgeGateEnabled minimumSensitiveContentAge
-  }`,
-});
-const oldSetup = (serverName?: string) => ogm.model("ServerConfig").find({
-  ...(serverName ? { where: { serverName } } : {}),
-  selectionSet: "{ serverName enableDownloads enableEvents }",
-}).then(rows => rows.map(({ enableDownloads, enableEvents }) => ({ enableDownloads, enableEvents })));
-const plain = (value: unknown) => JSON.parse(JSON.stringify(value));
 
 for (const properties of [
   { serverName: "named" },
@@ -76,7 +64,6 @@ for (const [field, value, operation, message] of [
 
 test("validates every selected record rather than limiting to the first config", async () => {
   await driver.executeQuery("CREATE (:ServerConfig {serverName:'named', enableEvents:true}), (:ServerConfig {serverName:'other', enableDownloads:'invalid'})");
-  await assert.rejects(oldSetup, /Boolean cannot represent/);
   await assert.rejects(() => createInstancePolicyRepository(driver).findSetupConfigs(), /Boolean cannot represent/);
 });
 

@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
 import { before, beforeEach, after, test } from "node:test";
-import { parse, print } from "graphql";
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createChannelPipelineRepository } from "../../services/persistence/channelPipelineRepository.js";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
@@ -17,51 +15,10 @@ for(const kind of ["create","update","delete_relationship"]) engine.events.on(ki
 before(async()=>{
   driver=await startNeo4j();app=getCustomResolvers(driver);
   const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
-  const schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);
+  const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);
 },{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});
-const CHANNEL_SELECTION = `{
-        uniqueName
-        pluginPipelines
-        Bots {
-          username
-        }
-        EnabledPluginsConnection {
-          edges {
-            properties {
-              enabled
-              settingsJson
-            }
-            node {
-              settingsDefaults
-              Plugin {
-                name
-                tags
-              }
-            }
-          }
-        }
-      }`;
-const SERVER_SELECTION = `{
-          serverName
-          InstalledVersionsConnection {
-            edges {
-              properties {
-                enabled
-                settingsJson
-              }
-              node {
-                version
-                settingsDefaults
-                Plugin {
-                  name
-                  tags
-                }
-              }
-            }
-          }
-        }`;
 const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>["timestamp","id","id_from","id_to"].includes(key)?`<${key}>`:value));
 const seed=async(valid=true)=>driver.executeQuery(`CREATE (c:Channel {uniqueName:'cats',createdAt:datetime('2026-01-01T00:00:00Z'),pluginPipelines:'[]'})-[:BOT]->(u:User {username:'bot-old',createdAt:datetime('2026-01-01T00:00:00Z')}) CREATE (c)-[:BOT]->(:User {username:'human',createdAt:datetime('2026-01-01T00:00:00Z')}) CREATE (:ServerConfig {serverName:'server'}) ${valid?'':'REMOVE u.createdAt'}`);
 const state=async()=>({rows:(await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (c:Channel)-[:BOT]->(u) RETURN u.username AS username,u.isDeprecated AS deprecated,u.deprecatedReason AS reason,c.uniqueName AS channel ORDER BY username")).records.map(r=>r.toObject()),events:normalize(events)});
@@ -73,14 +30,15 @@ test("channel and server snapshots plus pipeline writes preserve exact projectio
     CREATE (s)-[:INSTALLED {enabled:true,settingsJson:'{"botName":"Server"}'}]->(v)`);
   t.assert.snapshot(await repo.findSettings("cats"));
   t.assert.snapshot(await repo.listServerSettings());
-  await app.ogm.model("Channel").update({where:{uniqueName:"cats"},update:{pluginPipelines:'[{"event":"comment.created"}]'}});const expected=normalize(events);
-  events=[];await driver.executeQuery("MATCH (c:Channel) SET c.pluginPipelines='[]'");await repo.savePipelines("cats",'[{"event":"comment.created"}]');assert.deepEqual(normalize(events),expected);
+  // The driver repo write emits native subscription events directly; snapshot
+  // them in place of the removed OGM parity comparison.
+  events=[];await repo.savePipelines("cats",'[{"event":"comment.created"}]');t.assert.snapshot(normalize(events));
 });
-test("deprecation and disconnection preserve graph writes and native relationship events",async()=>{
+test("deprecation and disconnection preserve graph writes and native relationship events",async(t)=>{
   await seed();const reason='Bot profile removed from channel "cats"';
-  await app.ogm.model("User").update({where:{username:"bot-old"},update:{isDeprecated:true,deprecatedReason:reason}});
-  await app.ogm.model("Channel").update({where:{uniqueName:"cats"},disconnect:{Bots:[{where:{node:{username:"bot-old"}}}]}});const expected=await state();
-  await resetDatabase(driver);await seed();events=[];const repo=createChannelPipelineRepository(driver);await repo.deprecateBot("bot-old",reason);await repo.disconnectBots("cats",["bot-old"]);assert.deepEqual(await state(),expected);
+  // Snapshot the driver repo's graph writes and native events directly, in
+  // place of the removed OGM parity baseline.
+  events=[];const repo=createChannelPipelineRepository(driver);await repo.deprecateBot("bot-old",reason);await repo.disconnectBots("cats",["bot-old"]);t.assert.snapshot(await state());
 });
 test("wired channel mutation deprecates only orphan bots; failed deprecation remains caught after committed writes",async()=>{
   await seed();const pipelines=[{event:"comment.created",steps:[{pluginId:"scanner"}]}];
