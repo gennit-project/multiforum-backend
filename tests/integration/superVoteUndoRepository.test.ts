@@ -6,21 +6,19 @@ import type {GraphQLResolveInfo} from 'graphql';
 import type {GraphQLContext} from '../../types/context.js';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createSuperVoteUndoRepository,SUPER_VOTE_COMMENT_SELECTION,SUPER_VOTE_DISCUSSION_SELECTION,type SuperVoteUndoRepository} from '../../services/persistence/superVoteUndoRepository.js';
+import {createSuperVoteUndoRepository,type SuperVoteUndoRepository} from '../../services/persistence/superVoteUndoRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import undo from '../../customResolvers/mutations/undoSuperUpvote.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
-let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];let repository:SuperVoteUndoRepository;
+let driver:Driver;let repository:SuperVoteUndoRepository;
 const engine=createSubscriptionEngine();let events:unknown[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);ogm=app.ogm;const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();initializeOgmFromExistingSchema(ogm,neo,schema);registerGeneratedSchema(driver,schema);repository=createSuperVoteUndoRepository(driver);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);repository=createSuperVoteUndoRepository(driver);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
 const normalize=(x:unknown)=>JSON.parse(JSON.stringify(x,function(key,value){return ['timestamp','createdAt','updatedAt'].includes(key)?'<time>':key==='id'&&this.event?'<node-id>':value;}));
-const legacy:SuperVoteUndoRepository={findComment:async id=>ogm.model('Comment').find({where:{id},selectionSet:SUPER_VOTE_COMMENT_SELECTION}),findDiscussion:async id=>ogm.model('DiscussionChannel').find({where:{id},selectionSet:SUPER_VOTE_DISCUSSION_SELECTION})};
 // The nested SuperUpvotedByUsers projection applies a default limit of 25; which 25 (and order) is
 // only stable within a run, so reduce it to a count and normalize temporal fields before snapshotting.
 const snapSuper=(rows:any)=>{const r=plain(rows);if(r[0]&&Array.isArray(r[0].SuperUpvotedByUsers))r[0].SuperUpvotedByUsers=r[0].SuperUpvotedByUsers.length;return JSON.parse(JSON.stringify(r,(k,v)=>['createdAt','updatedAt','timestamp'].includes(k)&&v!==null?'<time>':v));};

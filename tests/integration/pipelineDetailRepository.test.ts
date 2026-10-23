@@ -1,14 +1,11 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
-import { SortDirection } from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createPipelineDetailRepository } from "../../services/persistence/pipelineDetailRepository.js";
-import { PUBLIC_PIPELINE_ATTEMPT_SELECTION, PUBLIC_PLUGIN_JOB_SELECTION } from "../../services/plugin/publicPipeline.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
@@ -21,24 +18,11 @@ before(async () => {
   });
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(app.ogm, neoSchema, schema);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
 
-const INTERNAL_ATTEMPT = `{
-      id pipelineId targetId targetType eventType scope channelId status trigger
-      initiatedByUsername retryOfPipelineRunId attemptNumber
-      configurationSnapshot applicability policyEffectiveAt policyId campaignId queuedAt startedAt
-      heartbeatAt timeoutAt finishedAt createdAt updatedAt
-    }`;
-const INTERNAL_JOBS = `{
-      id pluginId pluginName version scope channelId eventType status message
-      durationMs targetId targetType payload publicDiagnostics pipelineId
-      executionOrder skippedReason leaseId queuedAt startedAt heartbeatAt
-      timeoutAt finishedAt createdAt updatedAt
-    }`;
 async function seed(): Promise<void> {
   await driver.executeQuery(`
     CREATE (d:Discussion {id:'discussion', deleted:false})-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile {id:'file'})

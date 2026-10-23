@@ -5,7 +5,6 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createServerSecretRepository } from "../../services/persistence/serverSecretRepository.js";
 import { migrateServerSecretRenames } from "../../services/plugin/reconcileSecrets.js";
@@ -19,7 +18,7 @@ for(const kind of ["create","update"]) engine.events.on(kind,event=>events.push(
 before(async()=>{
   driver=await startNeo4j();app=getCustomResolvers(driver);
   const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
-  const schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);
+  const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);
 },{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});

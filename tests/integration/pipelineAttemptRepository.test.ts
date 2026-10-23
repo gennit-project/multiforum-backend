@@ -4,18 +4,15 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {createPipelineAttemptRepository,type PipelineAttemptRepository} from '../../services/persistence/pipelineAttemptRepository.js';
 import {createPipelineAttempt,completePipelineAttempt,type PipelineAttemptContext,type PipelineJobStatus} from '../../services/plugin/pipelineAttempt.js';
-import {pipelineAttemptRepositoryStub} from '../fixtures/pipelineAttemptRepositoryStub.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
-let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];const engine=createSubscriptionEngine();let events:any[]=[];
+let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
-async function schema(failure?:'create'|'running'|'complete'){const app=getCustomResolvers(driver);const overrides:Record<string,Record<string,(source:any)=>unknown>>=failure?{PluginPipelineRun:{targetVersion:source=>{if(failure==='create'||(failure==='running'&&source.status==='RUNNING')||(failure==='complete'&&source.status==='SUCCEEDED'))throw Error(failure+' projection failed');return source.targetVersion;}}}:{};const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,...overrides},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();ogm=app.ogm;initializeOgmFromExistingSchema(ogm,neo,executable);registerGeneratedSchema(driver,executable);}
+async function schema(failure?:'create'|'running'|'complete'){const app=getCustomResolvers(driver);const overrides:Record<string,Record<string,(source:any)=>unknown>>=failure?{PluginPipelineRun:{targetVersion:source=>{if(failure==='create'||(failure==='running'&&source.status==='RUNNING')||(failure==='complete'&&source.status==='SUCCEEDED'))throw Error(failure+' projection failed');return source.targetVersion;}}}:{};const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,...overrides},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();registerGeneratedSchema(driver,executable);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-const old=()=>pipelineAttemptRepositoryStub(ogm.model('PluginPipelineRun'));
 const now=()=> '2026-07-30T12:00:00.000Z';
 const context:PipelineAttemptContext={pipelineId:'pipeline / "',targetId:'file',targetType:'DownloadableFile',targetVersion:'version / "',eventType:'fixture',scope:'SERVER',pluginsToRun:[],eventPipeline:{event:'fixture',steps:[],stopOnFirstFailure:false},applicability:'ALL_FILES_GRADUAL',policyId:'policy'};
 const create=(repository:PipelineAttemptRepository,value=context)=>createPipelineAttempt({repository,context:value,now});

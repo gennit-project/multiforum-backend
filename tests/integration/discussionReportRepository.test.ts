@@ -6,26 +6,17 @@ import type {GraphQLResolveInfo} from 'graphql';
 import type {GraphQLContext} from '../../types/context.js';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {createDiscussionReportRepository,type DiscussionReportRepository} from '../../services/persistence/discussionReportRepository.js';
-import {protectIssueModelIdentity} from '../../services/issueTargetIdentity.js';
 import reportDiscussion from '../../customResolvers/mutations/reportDiscussion.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
-let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];
+let driver:Driver;
 const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push({kind,event}));
-async function schema(failProjection=false){const app=getCustomResolvers(driver);ogm=app.ogm;const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:failProjection?{...app.resolvers,Issue:{flaggedServerRuleViolation:()=>{throw Error('report projection failed');}}}:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const value=await neo.getSchema();initializeOgmFromExistingSchema(ogm,neo,value);registerGeneratedSchema(driver,value);}
+async function schema(failProjection=false){const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:failProjection?{...app.resolvers,Issue:{flaggedServerRuleViolation:()=>{throw Error('report projection failed');}}}:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const value=await neo.getSchema();registerGeneratedSchema(driver,value);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-function legacy():DiscussionReportRepository{const Issue=protectIssueModelIdentity(ogm.model('Issue'));return{
- findExisting:(channelUniqueName,discussionId)=>Issue.find({where:{channelUniqueName,relatedDiscussionId:discussionId},selectionSet:'{id issueNumber flaggedServerRuleViolation}'}),
- findDiscussion:discussionId=>ogm.model('Discussion').find({where:{id:discussionId},selectionSet:'{id title}'}),
- findChannel:uniqueName=>ogm.model('Channel').find({where:{uniqueName},selectionSet:'{uniqueName}'}),
- createIssue:input=>Issue.create({input:[input],selectionSet:'{issues{id issueNumber flaggedServerRuleViolation}}'}),
- appendReport:(where,update)=>Issue.update({where,update,selectionSet:'{issues{id issueNumber flaggedServerRuleViolation}}'}),
-};}
 const context=()=>({user:{username:'alice',email:null,email_verified:true,data:{ModerationProfile:{displayName:'mod'}},dateOfBirth:null}} as GraphQLContext);
 const args={discussionId:'event',channelUniqueName:'forum',reportText:'Please review',selectedForumRules:['Kindness'],selectedServerRules:[] as string[]};
 const seed=async()=>{await driver.executeQuery("CREATE (:Channel{uniqueName:'forum'}),(:ModerationProfile{displayName:'mod'}),(:User{username:'alice'}),(:Discussion{id:'event',title:'A title longer than fifty characters to characterize truncation',canceled:false})");};

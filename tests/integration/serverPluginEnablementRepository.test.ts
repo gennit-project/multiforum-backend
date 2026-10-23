@@ -6,23 +6,16 @@ import type {GraphQLObjectType,GraphQLSchema,GraphQLResolveInfo} from 'graphql';
 import type {GraphQLContext} from '../../types/context.js';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import { createServerPluginEnablementRepository, ENABLEMENT_PLUGIN_SELECTION, ENABLEMENT_INSTALLATION_SELECTION, type ServerPluginEnablementRepository } from '../../services/persistence/serverPluginEnablementRepository.js';
+import { createServerPluginEnablementRepository, type ServerPluginEnablementRepository } from '../../services/persistence/serverPluginEnablementRepository.js';
 import enable from '../../customResolvers/mutations/enableServerPlugin.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:unknown[]=[];
 const engine=createSubscriptionEngine();for(const kind of ['create','update','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const seed=async(version='1.0',id='v',name='plugin')=>driver.executeQuery(`CREATE(p:Plugin{id:'p',name:$name})-[:HAS_VERSION]->(v:PluginVersion{id:$id,version:$version,manifest:'{"settings":[]}'}) CREATE(:ServerConfig{serverName:'server'})-[:INSTALLED{enabled:false,settingsJson:'{"saved":true}'}]->(v) CREATE(:ServerSecret{pluginId:$name,key:'token',ciphertext:'synthetic-unused',isValid:true})`,{version,id,name});
-const old=():ServerPluginEnablementRepository=>({
- findPlugin:(name,version)=>app.ogm.model('Plugin').find({where:{name},selectionSet:ENABLEMENT_PLUGIN_SELECTION.replace('$version',`"${version}"`)}) as never,
- findInstallations:id=>app.ogm.model('ServerConfig').find({selectionSet:ENABLEMENT_INSTALLATION_SELECTION.split('$id').join(`"${id}"`)}) as never,
- findSecrets:pluginId=>app.ogm.model('ServerSecret').find({where:{pluginId},selectionSet:'{key isValid validationError lastValidatedAt}'}),
- setInstallation:async(serverName,id,enabled,settingsJson)=>{await app.ogm.model('ServerConfig').update({where:{serverName},update:{InstalledVersions:[{where:{node:{id}},update:{edge:{enabled,settingsJson}}}]}});}
-});
 const call=(repository:ServerPluginEnablementRepository,enabled=true,version='1.0',settingsJson?:Record<string,unknown>)=>enable({repository})(null,{pluginId:'plugin',version,enabled,settingsJson},{} as GraphQLContext,{} as GraphQLResolveInfo);
 const plain=(value:unknown)=>JSON.parse(JSON.stringify(value));
 const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){const identity=(key==='id'&&this.event.includes('relationship')?'relationship':'node')+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return key==='timestamp'?'<time>':value;}));};

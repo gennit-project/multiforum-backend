@@ -5,17 +5,15 @@ import type {Driver,ManagedTransaction} from 'neo4j-driver';
 import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createEventWriteRepository,CREATED_EVENT_SELECTION,EVENT_UPDATE_SNAPSHOT_SELECTION,UPDATED_EVENT_SELECTION} from '../../services/persistence/eventWriteRepository.js';
+import {createEventWriteRepository,EVENT_UPDATE_SNAPSHOT_SELECTION,UPDATED_EVENT_SELECTION} from '../../services/persistence/eventWriteRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:unknown[]=[];const engine=createSubscriptionEngine();
 for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const seed=()=>driver.executeQuery("CREATE(:Event{id:'d',title:'Before',description:'old',canceled:false,startTime:datetime('2026-06-01T10:00:00Z'),endTime:datetime('2026-06-01T12:00:00Z'),createdAt:datetime('2020-01-01T00:00:00Z')})");
-const oldUpdate=async(tx:ManagedTransaction,update:unknown)=>{await app.ogm.model('Event').update({where:{id:'d'},update:update as never,context:{executionContext:tx}});};
 const newUpdate=(tx:ManagedTransaction,update:unknown)=>createEventWriteRepository(driver).updateWithinTransaction({id:'d'},update as never,tx);
 const title=async()=> (await driver.executeQuery("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title');
 const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){const identity=(key==='id'&&this.event.includes('relationship')?'relationship':'node')+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','updatedAt'].includes(key)?'<time>':value;}));};
@@ -43,8 +41,7 @@ test('generated input coercion fails with the same error and no mutation',async(
 test('default projection failure rolls back within caller transaction with legacy event behavior',async(t)=>{const field=(schema.getType('Event') as GraphQLObjectType).getFields().title;const original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};try{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:'After'})),{message:'fixture projection failure'});}finally{await session.close();}assert.equal(await title(),'Before');assertNativeUpdateEvent();t.assert.snapshot(normalize(events));}}finally{field.resolve=original;}});
 
 const eventInput = {title: 'Created', canceled: false, startTime: '2026-06-01T10:00:00Z', endTime: '2026-06-01T12:00:00Z'};
-const oldCreate = async (tx: ManagedTransaction, input: unknown) => (await app.ogm.model('Event').create({input: [input] as never, selectionSet: `{events ${CREATED_EVENT_SELECTION}}`, context: {executionContext: tx}})).events;
-const newCreate = (tx: ManagedTransaction, input: unknown) => createEventWriteRepository(driver).createWithinTransaction(input as never, tx);
+const newCreate =(tx: ManagedTransaction, input: unknown) => createEventWriteRepository(driver).createWithinTransaction(input as never, tx);
 for (const abort of [false, true]) test(`creation preserves caller-owned ${abort ? 'rollback' : 'commit'}, projection and native events`, async (t) => {
   {
     await resetDatabase(driver); events = [];

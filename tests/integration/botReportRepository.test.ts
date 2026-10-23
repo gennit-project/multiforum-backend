@@ -6,23 +6,14 @@ import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import {createBotReport} from '../../services/botReportService.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import * as persistence from '../../services/persistence/botReportRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
 for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-function baseline():persistence.BotReportRepository{const i=app.ogm.model('Issue');return{
- findExistingReport:where=>i.find({where,selectionSet:persistence.FINDEXISTINGREPORT_SELECTION}),
- findReportedComment:id=>app.ogm.model('Comment').find({where:{id},selectionSet:persistence.FINDREPORTEDCOMMENT_SELECTION}),
- findReportedDiscussion:id=>app.ogm.model('Discussion').find({where:{id},selectionSet:persistence.FINDREPORTEDDISCUSSION_SELECTION}),
- findReportedEvent:id=>app.ogm.model('Event').find({where:{id},selectionSet:persistence.FINDREPORTEDEVENT_SELECTION}),
- createReportedIssue:input=>i.create({input,selectionSet:persistence.CREATEREPORTEDISSUE_SELECTION}),
- appendBotReport:(where,update)=>i.update({where,update,selectionSet:persistence.APPENDBOTREPORT_SELECTION}),
-};}
 const identity={findIdentity:async()=>[{username:'bot-forum-helper',isBot:true,botProfileId:null,isDeprecated:false,deprecatedReason:null}] as any,createIdentity:async()=>{throw Error('unexpected identity create');},reactivateIdentity:async()=>{throw Error('unexpected identity update');},findChannelBots:async()=>[{uniqueName:'forum',Bots:[{username:'bot-forum-helper'}]}] as any,connectBot:async()=>{throw Error('unexpected identity connect');},disconnectBots:async()=>{throw Error('unexpected identity disconnect');}};
 const graph=async()=>({nodes:(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject()),edges:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type,properties(r) AS properties')).records.map(r=>r.toObject())});
 async function seed(kind:string,existing:boolean){await driver.executeQuery("CREATE(:Channel{uniqueName:'forum'}),(:ModerationProfile{displayName:'bot-forum-helper'}),(u:User{username:'alice'}),(m:ModerationProfile{displayName:'human-mod'})");if(kind==='comment'||kind==='mod-comment')await driver.executeQuery("MATCH(a) WHERE (a:User AND a.username='alice' AND $kind='comment') OR (a:ModerationProfile AND a.displayName='human-mod' AND $kind='mod-comment') CREATE(a)-[:AUTHORED_COMMENT]->(:Comment{id:'content',text:'Reported text',isRootComment:true,createdAt:datetime()})",{kind});if(kind==='discussion')await driver.executeQuery("MATCH(u:User{username:'alice'}) CREATE(u)-[:POSTED_DISCUSSION]->(:Discussion{id:'content',title:'Reported title'})");if(kind==='event')await driver.executeQuery("MATCH(u:User{username:'alice'}) CREATE(u)-[:POSTED_BY]->(:Event{id:'content',title:'Reported event'})");if(existing)await driver.executeQuery("CREATE(i:Issue{id:'existing',channelUniqueName:'forum',issueNumber:7,isOpen:false,flaggedServerRuleViolation:true}) SET i[$key]='content', i.relatedUsername='alice'",{key:kind==='discussion'?'relatedDiscussionId':kind==='event'?'relatedEventId':'relatedCommentId'});}

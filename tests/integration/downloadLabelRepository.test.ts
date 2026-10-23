@@ -5,24 +5,15 @@ import {isInt,type Driver} from 'neo4j-driver';
 import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import * as persistence from '../../services/persistence/downloadLabelRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
 for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const seed=()=>driver.executeQuery("CREATE(u:User{username:'owner',createdAt:datetime('2020-01-01T00:00:00Z')})-[:POSTED_DISCUSSION]->(d:Discussion{id:'d',title:'Download',createdAt:datetime('2020-01-01T00:00:00Z')}) CREATE(dc:DiscussionChannel{id:'dc',discussionId:'d',channelUniqueName:'c',createdAt:datetime('2020-01-01T00:00:00Z')})-[:POSTED_IN_CHANNEL]->(d) CREATE(g:FilterGroup{id:'g',key:'size',displayName:'Size',order:1,mode:'INCLUDE',uploadSelection:'MULTIPLE'})-[:HAS_FILTER_OPTION]->(old:FilterOption{id:'old',value:'small',displayName:'Small',order:1}) CREATE(g)-[:HAS_FILTER_OPTION]->(:FilterOption{id:'new',value:'large',displayName:'Large',order:2}) CREATE(dc)-[:HAS_LABEL_OPTION]->(old)");
-function baseline():persistence.DownloadLabelRepository {const d=app.ogm.model('Discussion'),dc=app.ogm.model('DiscussionChannel'),f=app.ogm.model('FilterOption');return {
- findDiscussion:id=>d.find({where:{id},selectionSet:persistence.FINDDISCUSSION_SELECTION}),
- findChannel:(discussionId,channelUniqueName)=>dc.find({where:{discussionId,channelUniqueName},selectionSet:persistence.FINDCHANNEL_SELECTION}),
- findOptions:ids=>f.find({where:{id_IN:ids},selectionSet:persistence.FINDOPTIONS_SELECTION}),
- updateLabels:(id,update)=>dc.update({where:{id},update,selectionSet:persistence.UPDATELABELS_SELECTION}),
- createHistory:async input=>{await app.ogm.model('LabelChangeHistory').create({input});},
- createModerationAction:async input=>{await app.ogm.model('ModerationAction').create({input});},
-};}
 const graph=async()=>({nodes:(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject()),edges:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type')).records.map(r=>r.toObject())});
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(_k,x)=>{if(!isInt(x))return x;assert.ok(x.inSafeRange());return x.toNumber();}));
 function checkedResult(before:Awaited<ReturnType<typeof graph>>,after:Awaited<ReturnType<typeof graph>>,response:unknown,error:string|null){
