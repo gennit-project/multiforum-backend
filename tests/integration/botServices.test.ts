@@ -93,6 +93,76 @@ test("createBotReport throws when no rule is selected", async () => {
   );
 });
 
+test("createBotReport persists replay keys and does not append or reopen comment reports", async () => {
+  await run(
+    `CREATE (ch:Channel { uniqueName: 'test-channel', displayName: 'Test', createdAt: datetime() })
+     CREATE (author:User { username: 'poster' })
+     CREATE (c:Comment { id: 'comment-1', text: 'bad comment', isRootComment: true, createdAt: datetime() })
+     CREATE (author)-[:AUTHORED_COMMENT]->(c)`
+  );
+  const input = {
+    driver: env.driver,
+    channelUniqueName: "test-channel",
+    idempotencyKey: "bot-report:v1:comment-replay",
+    reportInput: {
+      contentType: "comment" as const,
+      contentId: "comment-1",
+      reportText: "This violates the rules",
+      selectedForumRules: ["Be kind"],
+      selectedServerRules: [] as string[],
+      botName: "modbot",
+    },
+  };
+
+  const first = await createBotReport(input);
+  await run('MATCH (i:Issue { id: $issueId }) SET i.isOpen = false', {
+    issueId: first?.issueId,
+  });
+  const replay = await createBotReport(input);
+
+  assert.deepEqual(replay, first);
+  const result = await run(
+    `MATCH (i:Issue { relatedCommentId: 'comment-1' })-[:ACTIVITY_ON_ISSUE]->(a:ModerationAction)
+     RETURN i.isOpen AS isOpen, count(a) AS actionCount, collect(a.idempotencyKey) AS keys`
+  );
+  assert.equal(result[0].isOpen, false);
+  assert.equal(Number(result[0].actionCount), 1);
+  assert.deepEqual(result[0].keys, [input.idempotencyKey]);
+});
+
+test("createBotReport deduplicates a replayed discussion report", async () => {
+  await run(
+    `CREATE (:Channel { uniqueName: 'test-channel', displayName: 'Test', createdAt: datetime() })
+     CREATE (author:User { username: 'poster' })
+     CREATE (d:Discussion { id: 'discussion-1', title: 'Bad discussion', body: 'Bad body', createdAt: datetime() })
+     CREATE (author)-[:AUTHORED_DISCUSSION]->(d)`
+  );
+  const input = {
+    driver: env.driver,
+    channelUniqueName: "test-channel",
+    idempotencyKey: "bot-report:v1:discussion-replay",
+    reportInput: {
+      contentType: "discussion" as const,
+      contentId: "discussion-1",
+      reportText: "This violates the rules",
+      selectedForumRules: ["Be kind"],
+      selectedServerRules: [] as string[],
+      botName: "modbot",
+    },
+  };
+
+  await createBotReport(input);
+  await createBotReport(input);
+
+  const result = await run(
+    `MATCH (i:Issue { relatedDiscussionId: 'discussion-1' })-[:ACTIVITY_ON_ISSUE]->(a:ModerationAction)
+     RETURN count(i) AS issueCount, count(a) AS actionCount, collect(a.idempotencyKey) AS keys`
+  );
+  assert.equal(Number(result[0].issueCount), 1);
+  assert.equal(Number(result[0].actionCount), 1);
+  assert.deepEqual(result[0].keys, [input.idempotencyKey]);
+});
+
 // --- botUserService.ensureBotUserForChannel ---
 
 test("ensureBotUserForChannel creates a bot user with a moderation profile, connected to the channel", async () => {

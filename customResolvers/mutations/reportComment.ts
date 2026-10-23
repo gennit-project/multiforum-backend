@@ -46,6 +46,7 @@ type ModActionInput = {
   actionType: string
   actionDescription: string
   issueId: string
+  idempotencyKey?: string | null
   suspendUntil?: string
   suspendIndefinitely?: boolean
 }
@@ -64,11 +65,13 @@ export const getModerationActionCreateInput = (input: ModActionInput) => {
     actionType,
     actionDescription,
     issueId,
+    idempotencyKey,
     suspendIndefinitely,
     suspendUntil
   } = input
 
   return {
+    ...(idempotencyKey ? { idempotencyKey } : {}),
     ModerationProfile: {
       connect: {
         where: {

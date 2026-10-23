@@ -51,6 +51,7 @@ export const APPENDBOTREPORT_SELECTION = `{
       }`;
 export interface BotReportRepository {
   findExistingReport(where: IssueWhere): Promise<Issue[]>;
+  findIdempotentReport(where: IssueWhere, idempotencyKey: string): Promise<Issue[]>;
   findReportedComment(id: string): Promise<Comment[]>;
   findReportedDiscussion(id: string): Promise<Discussion[]>;
   findReportedEvent(id: string): Promise<Event[]>;
@@ -62,6 +63,16 @@ export function createBotReportRepository(driver: Driver): BotReportRepository {
     async findExistingReport(where) {
       const result = await executeGeneratedOperation<{issues:Issue[]}>(driver,
         `query BotReport_findExistingReport($where: IssueWhere) { issues(where: $where) ${FINDEXISTINGREPORT_SELECTION} }`, {where});
+      return result.issues;
+    },
+    async findIdempotentReport(where, idempotencyKey) {
+      const result = await executeGeneratedOperation<{issues:Issue[]}>(driver,
+        `query BotReport_findIdempotentReport($where: IssueWhere) { issues(where: $where) ${FINDEXISTINGREPORT_SELECTION} }`, {
+          where: {
+            ...where,
+            ActivityFeed_SOME: { idempotencyKey },
+          },
+        });
       return result.issues;
     },
     async findReportedComment(id) {

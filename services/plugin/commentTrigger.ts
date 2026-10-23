@@ -31,6 +31,11 @@ import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.
 import { createChannelPermissionRepository } from '../persistence/channelPermissionRepository.js'
 import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Comment, ServerConfig } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
+import {
+  createContentRevisionHash,
+  createReportIdempotencyKey,
+  createRuleSetVersion,
+} from './moderationJobIdentity.js'
 
 export const isCommentEvent = (event: string) => COMMENT_EVENTS.has(event)
 
@@ -42,7 +47,21 @@ export const triggerPluginRunsForComment = async (
   }: CommentTriggerArgs,
   // Injectable plugin loader so the execution path can be tested without
   // downloading/running a real plugin tarball. Defaults to the real loader.
-  { loadPlugin = loadPluginImplementation, leaseRepository, attemptRepository, commentRepository }: { loadPlugin?: typeof loadPluginImplementation; leaseRepository?: PipelineLeaseRepository; attemptRepository?: PipelineAttemptRepository; commentRepository?: CommentExecutionRepository } = {}
+  {
+    loadPlugin = loadPluginImplementation,
+    leaseRepository,
+    attemptRepository,
+    commentRepository,
+    getSuspension = getActiveSuspension,
+    reportAsBot = createBotReport,
+  }: {
+    loadPlugin?: typeof loadPluginImplementation
+    leaseRepository?: PipelineLeaseRepository
+    attemptRepository?: PipelineAttemptRepository
+    commentRepository?: CommentExecutionRepository
+    getSuspension?: typeof getActiveSuspension
+    reportAsBot?: typeof createBotReport
+  } = {}
 ) => {
   if (!COMMENT_EVENTS.has(event)) {
     throw new Error(`Unsupported comment plugin event: ${event}`)
@@ -222,6 +241,15 @@ export const triggerPluginRunsForComment = async (
     return []
   }
 
+  const contentRevisionHash = createContentRevisionHash({
+    channelUniqueName,
+    contentId: comment.id,
+    contentType: 'Comment',
+    text: comment.text,
+  })
+  const serverRules = Array.isArray(serverConfig.rules) ? serverConfig.rules : []
+  const forumRules = Array.isArray(channel.rules) ? channel.rules : []
+
   const runs: unknown[] = []
   const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
@@ -235,6 +263,7 @@ export const triggerPluginRunsForComment = async (
       pipelineId,
       targetId: comment.id,
       targetType: 'Comment',
+      targetVersion: contentRevisionHash,
       eventType: event,
       scope: 'SERVER',
       channelId: channelUniqueName,
@@ -247,6 +276,12 @@ export const triggerPluginRunsForComment = async (
   for (const { pluginId, edgeData, order } of pluginsToRun) {
     const pluginNode = edgeData.node.Plugin
     const pluginVersionData = edgeData.node
+    const ruleSetVersion = createRuleSetVersion({
+      pluginId,
+      pluginVersion: pluginVersionData.version,
+      serverRules,
+      forumRules,
+    })
 
     const timing = createQueuedPluginRunTiming()
     const runCreateResult = await repository.createPendingRuns([
@@ -260,6 +295,7 @@ export const triggerPluginRunsForComment = async (
           status: 'PENDING',
           targetId: comment.id,
           targetType: 'Comment',
+          ruleSetVersion,
           pipelineId,
           executionOrder: order,
           queuedAt: timing.queuedAt,
@@ -433,7 +469,7 @@ export const triggerPluginRunsForComment = async (
         }) => {
           // Check if the bot is suspended before allowing it to comment
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
-          const suspensionInfo = await getActiveSuspension({
+          const suspensionInfo = await getSuspension({
             repository: createChannelPermissionRepository(driver),
             channelUniqueName,
             username: botUsername,
@@ -471,7 +507,7 @@ export const triggerPluginRunsForComment = async (
 
           // Check if the bot is suspended before allowing it to report
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
-          const suspensionInfo = await getActiveSuspension({
+          const suspensionInfo = await getSuspension({
             repository: createChannelPermissionRepository(driver),
             channelUniqueName,
             username: botUsername,
@@ -481,10 +517,26 @@ export const triggerPluginRunsForComment = async (
             return null
           }
 
-          return createBotReport({
+          const ruleSetVersion = createRuleSetVersion({
+            pluginId,
+            pluginVersion: pluginVersionData.version,
+            serverRules,
+            forumRules,
+          })
+
+          return reportAsBot({
             driver,
             channelUniqueName,
-            reportInput: input
+            reportInput: input,
+            idempotencyKey: createReportIdempotencyKey({
+              channelUniqueName,
+              contentType: input.contentType,
+              contentId: input.contentId,
+              contentRevisionHash,
+              ruleSetVersion,
+              pluginId,
+              pluginVersion: pluginVersionData.version,
+            }),
           })
         }
       }

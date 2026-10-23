@@ -11,6 +11,7 @@ import { createBotReport as actualCreateBotReport } from "./botReportService.js"
 // Test-only adapter keeps the original assertions and mock failure behavior.
 const createBotReport = (input: any) => actualCreateBotReport({...input,botReportRepository:{
  findExistingReport:(where:any)=>input.models.Issue.find({where}),
+ findIdempotentReport:async(where:any,idempotencyKey:string)=>(await input.models.Issue.find({where})).filter((issue:any)=>issue.ActivityFeed?.some((action:any)=>action.idempotencyKey===idempotencyKey)),
  findReportedComment:(id:string)=>input.models.Comment.find({where:{id}}),
  findReportedDiscussion:(id:string)=>input.models.Discussion.find({where:{id}}),
  findReportedEvent:(id:string)=>input.models.Event.find({where:{id}}),
@@ -104,6 +105,31 @@ test("appends a moderation action to an existing issue for a reported comment", 
   assert.equal(result?.issueNumber, 5);
   assert.ok(ops.includes("Issue.update"), "updated the existing issue with the report action");
   assert.ok(!ops.includes("Issue.create"), "did not create a new issue");
+});
+
+test("persists the supplied idempotency key on the moderation action", async () => {
+  const { models } = makeModels({
+    comment: { id: "c-1", text: "bad words", CommentAuthor: { __typename: "User", username: "alice" } },
+  });
+  let update: any;
+  models.Issue.update = async (args: any) => {
+    update = args.update;
+    return { issues: [{ id: "i-1", issueNumber: 5 }] };
+  };
+
+  await createBotReport({
+    botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)},
+    models,
+    driver,
+    channelUniqueName: "cats",
+    reportInput: baseReport,
+    idempotencyKey: "bot-report:v1:test",
+  });
+
+  assert.equal(
+    update.ActivityFeed[0].create[0].node.idempotencyKey,
+    "bot-report:v1:test"
+  );
 });
 
 test("resolves the reported author for a discussion report", async () => {

@@ -42,6 +42,7 @@ export const createBotReport = async (input: {
   driver: Driver
   channelUniqueName: string
   reportInput: ReportContentAsBotInput
+  idempotencyKey?: string | null
 }): Promise<ReportContentAsBotResult> => {
   const { driver, channelUniqueName, reportInput } = input
   const {
@@ -103,6 +104,20 @@ export const createBotReport = async (input: {
     case 'event':
       issueWhereClause.relatedEventId = contentId
       break
+  }
+
+  const replayedIssue = input.idempotencyKey
+    ? (await repository.findIdempotentReport(
+        issueWhereClause,
+        input.idempotencyKey
+      ))[0]
+    : undefined
+
+  if (replayedIssue?.id) {
+    return {
+      issueId: replayedIssue.id,
+      issueNumber: replayedIssue.issueNumber ?? 0
+    }
   }
 
   const existingIssues = await repository.findExistingReport(issueWhereClause)
@@ -188,7 +203,8 @@ export const createBotReport = async (input: {
       channelUniqueName,
       actionType: 'report',
       actionDescription: `Reported the ${contentType}`,
-      issueId: existingIssueId
+      issueId: existingIssueId,
+      idempotencyKey: input.idempotencyKey
     })
 
   // Update the issue with the new moderation action
@@ -231,6 +247,18 @@ export const createBotReport = async (input: {
       issueNumber: issue.issueNumber ?? 0
     }
   } catch (error) {
+    if (input.idempotencyKey) {
+      const replayedIssue = (await repository.findIdempotentReport(
+        issueWhereClause,
+        input.idempotencyKey
+      ))[0]
+      if (replayedIssue?.id) {
+        return {
+          issueId: replayedIssue.id,
+          issueNumber: replayedIssue.issueNumber ?? 0
+        }
+      }
+    }
     logger.error('Error updating issue:', error)
     throw new Error(`Error updating issue: ${(error as Error)?.message || 'unknown error'}`)
   }

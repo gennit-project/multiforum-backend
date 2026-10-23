@@ -1188,6 +1188,9 @@ const typeDefinitions = gql`
 
   type ModerationAction @limit(default: 25, max: 100) {
     id: ID! @id @unique
+    idempotencyKey: String
+      @unique(constraintName: "moderation_action_idempotency_key")
+      @settable(onCreate: true, onUpdate: false)
     ModerationProfile: ModerationProfile
       @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
     User: User @relationship(type: "PERFORMED_MODERATION_ACTION", direction: IN)
@@ -2393,6 +2396,7 @@ const typeDefinitions = gql`
     durationMs: Int
     targetId: String
     targetType: String
+    ruleSetVersion: String
     payload: JSON
     publicDiagnostics: JSON
     pipelineId: String
