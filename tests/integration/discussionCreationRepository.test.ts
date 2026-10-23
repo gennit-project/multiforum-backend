@@ -4,16 +4,14 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createDiscussionCreationRepository,DISCUSSION_CREATE_SELECTION,type DiscussionCreationRepository} from '../../services/persistence/discussionCreationRepository.js';
+import {createDiscussionCreationRepository,type DiscussionCreationRepository} from '../../services/persistence/discussionCreationRepository.js';
 import {createDiscussionsFromInput} from '../../customResolvers/mutations/createDiscussionWithChannelConnections.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
-let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];const engine=createSubscriptionEngine();let events:any[]=[];
+let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push({kind,event}));
-before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);ogm=app.ogm;const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();initializeOgmFromExistingSchema(ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-function legacy():DiscussionCreationRepository{const D=ogm.model('Discussion');return{createDiscussion:input=>D.create({input:[input],selectionSet:`{discussions${DISCUSSION_CREATE_SELECTION}}`}),findAttachedFiles:id=>D.find({where:{id},selectionSet:'{id DownloadableFiles{id}}'}),findCreatedDiscussion:id=>D.find({where:{id},selectionSet:DISCUSSION_CREATE_SELECTION})};}
+before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(['id','id_from','id_to','discussionId'].includes(key)){const namespace=key==='id'&&this.event?.includes('relationship')?'relationship':'node';const identity=namespace+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','createdAt','updatedAt','ageGateTouchedAt'].includes(key)?(value===null?null:'<time>'):value;}));};
 async function seed(){await driver.executeQuery("CREATE(:Channel{uniqueName:'forum',createdAt:datetime('2020-01-01T00:00:00Z')}),(:User{username:'author'})");}
 const input=(title:any='Title')=>({discussionCreateInput:{title,body:'body',Author:{connect:{where:{node:{username:'author'}}}},Tags:{connect:[{where:{node:{text:'tag'}}}]}},channelConnections:['forum']});

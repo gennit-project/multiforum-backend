@@ -6,30 +6,27 @@ import sgMail from "@sendgrid/mail";
 import { Resend } from "resend";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createEmailNotificationRepository } from "../../services/persistence/emailNotificationRepository.js";
 import { sendEmailToUser } from "../../customResolvers/mutations/shared/emailUtils.js";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver:Driver;
-let ogm:ReturnType<typeof getCustomResolvers>["ogm"];
 let repository:ReturnType<typeof createEmailNotificationRepository>;
 const engine=createSubscriptionEngine();let events:unknown[]=[];let nativeCalls=0;
 for(const kind of ["create","update","create_relationship","delete_relationship","delete"])engine.events.on(kind,event=>events.push(event));
 before(async()=>{
  mock.method(sgMail,"send",async()=>{nativeCalls++;throw new Error("Native SendGrid forbidden");});
  mock.method(Resend.prototype,"post",async()=>{nativeCalls++;throw new Error("Native Resend forbidden");});
- driver=await startNeo4j();const app=getCustomResolvers(driver);ogm=app.ogm;
+ driver=await startNeo4j();const app=getCustomResolvers(driver);
  const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
- const schema=await neoSchema.getSchema();initializeOgmFromExistingSchema(ogm,neoSchema,schema);registerGeneratedSchema(driver,schema);
+ const schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createEmailNotificationRepository(driver);
 },{timeout:240_000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 afterEach(()=>assert.equal(nativeCalls,0));
 after(async()=>{mock.restoreAll();await engine.close();await stopNeo4j();});
 const plain=(value:unknown)=>JSON.parse(JSON.stringify(value));
-const oldWrite=async()=>Boolean((await ogm.model("User").update({where:{username:"alice"},update:{Notifications:[{create:[{node:{text:"Notice",read:false}}]}]}})).users[0]);
 const normalize=(value:unknown):unknown=>{
  const identities=new Map<string,string>();
  return JSON.parse(JSON.stringify(value,function(key,value){

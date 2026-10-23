@@ -3,14 +3,13 @@ import assert from 'node:assert/strict';
 import {before,after,beforeEach,test} from 'node:test';
 import {parse,print} from 'graphql';
 import type {Driver} from 'neo4j-driver';
-import {createOgmPersistence} from '../../services/persistence/ogm.js';
-import { initializeLegacyPipelineMigration, LEGACY_PIPELINE_CONFIG_SELECTION, type LegacyPipelineMigrationRepository } from '../../services/persistence/legacyPipelineMigrationRepository.js';
+import { initializeLegacyPipelineMigration, type LegacyPipelineMigrationRepository } from '../../services/persistence/legacyPipelineMigrationRepository.js';
 import {migrateLegacyPipelineConfigurations} from '../../services/plugin/migrateLegacyPipelineConfigurations.js';
 import {materializeLegacyDownloadPipelines} from '../../services/plugin/legacyPipelineMigration.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 const originalTypeDefs=print(typeDefs);
-let driver:Driver,old:LegacyPipelineMigrationRepository,next:LegacyPipelineMigrationRepository;let model:import('../../ogm_types.js').ServerConfigModel;
-before(async()=>{driver=await startNeo4j();const {ogm}=createOgmPersistence(driver);await ogm.init();model=ogm.model('ServerConfig');old={findConfigurations:()=>model.find({selectionSet:LEGACY_PIPELINE_CONFIG_SELECTION}),saveConfiguration:async(serverName,pluginPipelines)=>{await model.update({where:{serverName},update:{pluginPipelines}});}};next=await initializeLegacyPipelineMigration(driver);assert.equal(print(typeDefs),originalTypeDefs);},{timeout:240000});
+let driver:Driver,next:LegacyPipelineMigrationRepository;
+before(async()=>{driver=await startNeo4j();next=await initializeLegacyPipelineMigration(driver);assert.equal(print(typeDefs),originalTypeDefs);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);});after(async()=>{await stopNeo4j();});
 const stored=async()=>(await driver.executeQuery('MATCH(s:ServerConfig) RETURN s.serverName AS name,s.pluginPipelines AS pipelines ORDER BY name')).records.map(r=>r.toObject());
 async function seed(){await driver.executeQuery("CREATE(s:ServerConfig{serverName:'first',pluginPipelines:'[]'}),(:ServerConfig{serverName:'later',pluginPipelines:'[]'}),(p:Plugin{id:'p',name:'scanner'}),(v:PluginVersion{id:'v',version:'1.0.0',repoUrl:'https://fixture.invalid/plugin',entryPath:'index.js',manifest:$manifest}) CREATE(p)-[:HAS_VERSION]->(v) CREATE(s)-[:INSTALLED{enabled:true,settingsJson:'{}'}]->(v)",{manifest:JSON.stringify({events:['downloadableFile.created']})});}

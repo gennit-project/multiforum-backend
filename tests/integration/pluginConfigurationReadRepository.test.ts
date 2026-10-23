@@ -5,7 +5,6 @@ import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createPluginConfigurationReadRepository } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import getInstalledPlugins from "../../customResolvers/queries/getInstalledPlugins.js";
@@ -23,73 +22,10 @@ before(async () => {
   });
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(app.ogm, neoSchema, schema);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
-
-// Exact legacy projections captured before migration. They intentionally retain
-// selected metadata even when the final resolver does not use those fields.
-const SECRET_SELECTION = `{
-          key
-          isValid
-          lastValidatedAt
-          validationError
-        }`;
-const INSTALLED_SELECTION = `{
-          serverName
-          pluginRegistries
-          InstalledVersionsConnection {
-            edges {
-              properties {
-                enabled
-                settingsJson
-              }
-              node {
-                id
-                version
-                repoUrl
-                tarballGsUri
-                integritySha256
-                registryUrl
-                releaseNotesUrl
-                sourceRepoUrl
-                sourceCommit
-                minServerVersion
-                apiVersion
-                entryPath
-                manifest
-                settingsDefaults
-                uiSchema
-                documentationPath
-                readmeMarkdown
-                Plugin {
-                  id
-                  name
-                  displayName
-                  description
-                  authorName
-                  authorUrl
-                  homepage
-                  license
-                  tags
-                  metadata
-                }
-              }
-            }
-          }
-        }`;
-const RECONCILIATION_SELECTION = `{
-        pluginPipelines
-        InstalledVersionsConnection {
-          edges {
-            properties { enabled settingsJson }
-            node { version Plugin { name } }
-          }
-        }
-      }`;
-const RECONCILIATION_SECRET_SELECTION = `{ pluginId key isValid lastValidatedAt }`;
 
 test("secret-status projections match OGM without exposing ciphertext", async (t) => {
   await driver.executeQuery(`

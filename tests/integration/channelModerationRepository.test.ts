@@ -6,27 +6,17 @@ import type {GraphQLResolveInfo} from 'graphql';
 import type {GraphQLContext} from '../../types/context.js';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {createChannelModerationRepository,type ChannelModerationRepository} from '../../services/persistence/channelModerationRepository.js';
-import {protectIssueModelIdentity} from '../../services/issueTargetIdentity.js';
 import lockChannel from '../../customResolvers/mutations/lockChannel.js';
 import unlockChannel from '../../customResolvers/mutations/unlockChannel.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
-let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];
+let driver:Driver;
 const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push({kind,event}));
-async function schema(failChannel=false){const app=getCustomResolvers(driver);ogm=app.ogm;const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:failChannel?{...app.resolvers,Channel:{lockReason:()=>{throw Error('channel projection failed');}}}:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const value=await neo.getSchema();initializeOgmFromExistingSchema(ogm,neo,value);registerGeneratedSchema(driver,value);}
+async function schema(failChannel=false){const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:failChannel?{...app.resolvers,Channel:{lockReason:()=>{throw Error('channel projection failed');}}}:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const value=await neo.getSchema();registerGeneratedSchema(driver,value);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-function legacy():ChannelModerationRepository{const Issue=protectIssueModelIdentity(ogm.model('Issue'));const Channel=ogm.model('Channel');return{
- findChannel:uniqueName=>Channel.find({where:{uniqueName},selectionSet:'{uniqueName displayName locked Admins{username}}'}),
- findOpenIssues:uniqueName=>Issue.find({where:{channelUniqueName:null,relatedChannelUniqueName:uniqueName,isOpen:true},selectionSet:'{id issueNumber}'}),
- findRelatedIssues:uniqueName=>Issue.find({where:{channelUniqueName:null,relatedChannelUniqueName:uniqueName},selectionSet:'{id issueNumber isOpen}'}),
- createLockIssue:input=>Issue.create({input:[input],selectionSet:'{issues{id issueNumber}}'}),
- recordAction:async(id,update)=>{await Issue.update({where:{id},update});},
- updateLockState:(uniqueName,update)=>Channel.update({where:{uniqueName},update,selectionSet:'{channels{uniqueName displayName locked lockedAt lockReason LockedBy{displayName}}}'}),
-};}
 const context=()=>({user:{username:'alice',email:null,email_verified:true,data:{ModerationProfile:{displayName:'mod'}},dateOfBirth:null}} as GraphQLContext);
 const args={channelUniqueName:'forum',reason:'Repeated spam'};const info=null as unknown as GraphQLResolveInfo;
 async function seed(admins=2){await driver.executeQuery("CREATE(ch:Channel{uniqueName:'forum',displayName:'Forum',locked:false,createdAt:datetime('2020-01-01T00:00:00Z')}),(:ModerationProfile{displayName:'mod'}) WITH ch UNWIND range(1,$admins) AS n CREATE(u:User{username:'admin'+toString(n)}) CREATE(u)-[:ADMIN_OF_CHANNEL]->(ch)",{admins});}

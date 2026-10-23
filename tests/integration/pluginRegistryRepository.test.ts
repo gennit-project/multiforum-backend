@@ -6,24 +6,15 @@ import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import getResolver from '../../customResolvers/mutations/refreshPlugins.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import * as persistence from '../../services/persistence/pluginRegistryRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
 for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const url='https://fixture.invalid/plugin.tgz';
-function baseline():persistence.PluginRegistryRepository {const p=app.ogm.model('Plugin'),v=app.ogm.model('PluginVersion'),s=app.ogm.model('ServerConfig');return {
- findRegistryConfigs:()=>s.find({selectionSet:persistence.FINDREGISTRYCONFIGS_SELECTION}),findOrphanCandidates:()=>v.find({selectionSet:persistence.FINDORPHANCANDIDATES_SELECTION}),
- findPluginsForVersion:versionId=>p.find({where:{Versions:{id:versionId}},selectionSet:persistence.FINDPLUGINSFORVERSION_SELECTION}),findPluginDefaultByName:name=>p.find({where:{name}}),
- createOrphanPlugin:input=>p.create({input}),connectOrphanVersion:async(id,pluginId)=>{await v.update({where:{id},connect:{Plugin:{where:{node:{id:pluginId}}}}});},
- findPluginByName:name=>p.find({where:{name},selectionSet:persistence.FINDPLUGINBYNAME_SELECTION}),createRegistryPlugin:input=>p.create({input}),updateRegistryPlugin:async(id,update)=>{await p.update({where:{id},update});},
- findRegistryVersion:(version,repoUrl)=>v.find({where:{AND:[{version},{repoUrl}]},selectionSet:persistence.FINDREGISTRYVERSION_SELECTION}),createRegistryVersion:async input=>{await v.create({input});},updateRegistryVersion:async(id,update,pluginId)=>{await v.update({where:{id},update,connect:{Plugin:{where:{node:{id:pluginId}}}}});},
- findRegistryResult:id=>p.find({where:{id},selectionSet:persistence.FINDREGISTRYRESULT_SELECTION}),
-};}
 const graph=async()=>({nodes:(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject()),edges:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type')).records.map(r=>r.toObject())});
 async function seed(kind:string){if(kind==='missing')return;await driver.executeQuery("CREATE(:ServerConfig{serverName:'server',pluginRegistries:['https://fixture.invalid/registry']})");if(['existing-plugin','existing-version'].includes(kind))await driver.executeQuery("CREATE(:Plugin{id:'p',name:'plugin',displayName:'Before'})");if(['orphan','existing-version'].includes(kind))await driver.executeQuery("CREATE(:PluginVersion{id:'v',version:'1.0.0',repoUrl:$url})",{url});if(kind==='existing-version')await driver.executeQuery("MATCH(p:Plugin),(v:PluginVersion) CREATE(p)-[:HAS_VERSION]->(v)");}
 for(const kind of ['missing','new','existing-plugin','existing-version','orphan','version-projection','final-projection'] as const)test(`actual registry refresh parity: ${kind}`,async(t)=>{

@@ -5,10 +5,8 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {protectIssueModelIdentity} from '../../services/issueTargetIdentity.js';
-import { createSuspensionWriteRepository, SUSPENSION_ISSUE_SELECTION } from '../../services/persistence/suspensionWriteRepository.js';
+import { createSuspensionWriteRepository } from '../../services/persistence/suspensionWriteRepository.js';
 import suspendUser from '../../customResolvers/mutations/suspendUser.js';
 import suspendMod from '../../customResolvers/mutations/suspendMod.js';
 import unsuspendUser from '../../customResolvers/mutations/unsuspendUser.js';
@@ -17,18 +15,10 @@ import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {installAgeGateReconcile} from '../../services/ageGate/reconcile.js';
 import {getAgeGateStatements} from '../../services/ageGate/definitions.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
-let schema:GraphQLSchema;let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];const engine=createSubscriptionEngine();let events:any[]=[];
+let schema:GraphQLSchema;let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{process.env.SERVER_CONFIG_NAME='server';driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);ogm=app.ogm;const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240_000});
+before(async()=>{process.env.SERVER_CONFIG_NAME='server';driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240_000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-const oldRepository=()=>{const Issue=protectIssueModelIdentity(ogm.model('Issue'));const Channel=ogm.model('Channel');const Server=ogm.model('ServerConfig');return {
- appendSuspensionActivity:async(id:string,update:any)=>{await Issue.update({where:{id},update});},
- closeSuspensionIssue:(id:string,update:any)=>Issue.update({where:{id},update,selectionSet:SUSPENSION_ISSUE_SELECTION}),
- addChannelSuspension:(uniqueName:any,update:any)=>Channel.update({where:{uniqueName},update,selectionSet:'{channels{uniqueName}}'}),
- addServerSuspension:(serverName:any,update:any)=>Server.update({where:{serverName},update,selectionSet:'{serverConfigs{serverName}}'}),
- removeChannelSuspensions:async(uniqueName:any,update:any)=>{await Channel.update({where:{uniqueName},update});},
- removeServerSuspensions:async(serverName:any,update:any)=>{await Server.update({where:{serverName},update});},
-};};
 async function seed(scope='channel',entity='user') {await driver.executeQuery(`CREATE (ch:Channel {uniqueName:'forum',createdAt:datetime()}) CREATE (:ServerConfig {serverName:'server'}) CREATE (:ModerationProfile {displayName:'Actor'}) CREATE (u:User {username:'target',createdAt:datetime()})-[:MODERATION_PROFILE]->(:ModerationProfile {displayName:'TargetMod'}) CREATE (i:Issue {id:'i',issueNumber:1,channelUniqueName:$channel,relatedUsername:$username,relatedModProfileName:$mod,authorName:'Actor',title:'Report',createdAt:datetime(),isOpen:true}) FOREACH (_ IN CASE WHEN $scope='channel' THEN [1] ELSE [] END | CREATE (ch)-[:HAS_ISSUE]->(i))`,{scope,channel:scope==='channel'?'forum':'',username:entity==='user'?'target':null,mod:entity==='mod'?'TargetMod':null});events=[];}
 const normalize=(value:unknown,unorderedActivityFeed=false)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){
 // ActivityFeed has no requested/default sort; native event arrays remain strictly ordered.

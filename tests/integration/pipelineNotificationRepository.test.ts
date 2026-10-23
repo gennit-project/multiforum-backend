@@ -4,22 +4,15 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createPipelineNotificationRepository,PIPELINE_NOTIFICATION_ATTEMPT_SELECTION,PIPELINE_NOTIFICATION_FILE_SELECTION,type PipelineNotificationRepository} from '../../services/persistence/pipelineNotificationRepository.js';
+import {createPipelineNotificationRepository,type PipelineNotificationRepository} from '../../services/persistence/pipelineNotificationRepository.js';
 import {notifyUploaderOfPipelineResult} from '../../services/plugin/pipelineNotifications.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
-let driver:Driver;let ogm:ReturnType<typeof getCustomResolvers>['ogm'];const engine=createSubscriptionEngine();let events:any[]=[];
+let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
-async function schema(fail=false){const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:fail?{...app.resolvers,User:{displayName:()=>{throw Error('notification projection failed');}}}:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();ogm=app.ogm;initializeOgmFromExistingSchema(ogm,neo,executable);registerGeneratedSchema(driver,executable);}
+async function schema(fail=false){const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:fail?{...app.resolvers,User:{displayName:()=>{throw Error('notification projection failed');}}}:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const executable=await neo.getSchema();registerGeneratedSchema(driver,executable);}
 before(async()=>{driver=await startNeo4j();await schema();},{timeout:240000});beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-function legacy():PipelineNotificationRepository{return{
- findAttempt:pipelineId=>ogm.model('PluginPipelineRun').find({where:{pipelineId},selectionSet:PIPELINE_NOTIFICATION_ATTEMPT_SELECTION}),
- findTargetFile:id=>ogm.model('DownloadableFile').find({where:{id},selectionSet:PIPELINE_NOTIFICATION_FILE_SELECTION}),
- claimNotification:(pipelineId,notifiedAt)=>ogm.model('PluginPipelineRun').update({where:{pipelineId,notifiedAt:null},update:{notifiedAt},selectionSet:'{pluginPipelineRuns{pipelineId}}'}),
- createNotification:async input=>{await ogm.model('User').update(input);},
-};}
 const now=()=> '2026-07-30T12:00:00.000Z';
 async function seed(status='SUCCEEDED',uploader=true){await driver.executeQuery(`CREATE(u:User{username:'owner',createdAt:datetime()}),(d:Discussion{id:'discussion / "',title:'Fixture',createdAt:datetime()}),(f:DownloadableFile{id:'file',uploadedByUsername:$uploader}),(c:DiscussionChannel{channelUniqueName:'forum / "',archived:false}),(p:PluginPipelineRun{id:'attempt',pipelineId:'pipeline / "',targetId:'file',targetType:'DownloadableFile',status:$status}) CREATE(u)-[:POSTED_DISCUSSION]->(d),(d)-[:HAS_DOWNLOADABLE_FILE]->(f),(c)-[:POSTED_IN_CHANNEL]->(d)`,{status,uploader:uploader?'owner':null});}
 async function run(repository:PipelineNotificationRepository){return notifyUploaderOfPipelineResult({repository,pipelineId:'pipeline / "',now});}

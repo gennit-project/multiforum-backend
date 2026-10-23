@@ -16,20 +16,17 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { createSubscriptionTargetRepository } from "../../services/persistence/subscriptionTargetRepository.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 let repository: ReturnType<typeof createSubscriptionTargetRepository>;
 before(async () => {
   driver = await startNeo4j();
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true } });
-  initializeOgmFromExistingSchema(ogm, neoSchema, await neoSchema.getSchema());
+  await neoSchema.getSchema();
   repository = createSubscriptionTargetRepository(driver);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));

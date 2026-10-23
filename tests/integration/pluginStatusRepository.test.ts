@@ -5,7 +5,6 @@ import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createPluginStatusRepository } from "../../services/persistence/pluginStatusRepository.js";
 import getPluginConfigStatus from "../../customResolvers/queries/getPluginConfigStatus.js";
@@ -24,7 +23,6 @@ before(async () => {
   });
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(app.ogm, neoSchema, schema);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
@@ -35,8 +33,6 @@ const seed = async (version = '1.0.0', id = 'version-id', name = 'scanner') => {
     CREATE (:ServerConfig {serverName:'first'})-[:INSTALLED {settingsJson:'{}'}]->(v)
     CREATE (:ServerSecret {pluginId:$name,key:'token',ciphertext:'synthetic-only',isValid:true,lastValidatedAt:datetime('2026-01-01T00:00:00Z')})`, {version,id,name});
 };
-const legacyVersion = (name: string, version: string) => app.ogm.model('Plugin').find({where:{name},selectionSet:`{ Versions(where: { version: "${version}" }) { id manifest } }`});
-const legacyInstallation = (id: string) => app.ogm.model('ServerConfig').find({selectionSet:`{ InstalledVersionsConnection(where: { node: { id: "${id}" } }) { edges { properties { settingsJson } } } }`});
 const graph = async () => plain((await driver.executeQuery('MATCH (n) RETURN labels(n) AS labels, properties(n) AS properties ORDER BY labels')).records.map(r=>r.toObject()));
 
 test('ordinary values preserve all three legacy projections and resolver result without exposing ciphertext', async (t) => {

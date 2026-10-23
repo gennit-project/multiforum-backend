@@ -4,7 +4,6 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createWikiGuardRepository } from "../../services/persistence/wikiGuardRepository.js";
 import { createOwnedChildWikiPages } from "../../middleware/wikiPageOwnershipMiddleware.js";
@@ -12,17 +11,14 @@ import type { GraphQLContext } from "../../types/context.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 let repository: ReturnType<typeof createWikiGuardRepository>;
 before(async () => {
   driver = await startNeo4j();
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true } });
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(ogm, neoSchema, schema);
   repository = createWikiGuardRepository(driver);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
@@ -87,7 +83,7 @@ test("owner selection does not introduce validation of unselected lock/author/ch
 
 test("owner middleware remains fail closed for empty or multi-channel matches", async () => {
   await seed();
-  const ctx = { driver, ogm } as GraphQLContext;
+  const ctx = { driver } as GraphQLContext;
   for (const where of [{ id: "missing" }, {}]) {
     await assert.rejects(createOwnedChildWikiPages(async () => assert.fail("must not write"), null,
       { where, update: { ChildPages: { create: [{ node: {} }] } } }, ctx, {} as never), /one channel owner/);

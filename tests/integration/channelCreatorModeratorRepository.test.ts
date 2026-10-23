@@ -8,12 +8,10 @@ import { Neo4jError, type Driver } from "neo4j-driver";
 import { subscribe, parse, graphql, type GraphQLSchema } from "graphql";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
 let schema: GraphQLSchema;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 let events: Array<Record<string, unknown>>;
 const engine = createSubscriptionEngine();
 let service: ReturnType<typeof createChannelCreatorModeratorService>;
@@ -21,13 +19,11 @@ let service: ReturnType<typeof createChannelCreatorModeratorService>;
 before(async () => {
   driver = await startNeo4j();
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({
     typeDefs, driver, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: engine },
   });
   schema = await neoSchema.getSchema();
-  initializeOgmFromExistingSchema(ogm, neoSchema, schema);
   service = createChannelCreatorModeratorService(createChannelCreatorModeratorRepository(driver), engine);
   engine.events.on("create_relationship", (event: Record<string, unknown>) => {
     events.push(event);

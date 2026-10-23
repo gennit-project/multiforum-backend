@@ -5,20 +5,18 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {createRevisionRedactionRepository} from '../../services/persistence/revisionRedactionRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>['ogm'];
 let repository: ReturnType<typeof createRevisionRedactionRepository>;
 const engine=createSubscriptionEngine();
 let events: Array<{kind:string,event:Record<string,unknown>}>=[];
 before(async()=>{
- driver=await startNeo4j(); const app=getCustomResolvers(driver);ogm=app.ogm;
+ driver=await startNeo4j(); const app=getCustomResolvers(driver);
  const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
- const schema=await neoSchema.getSchema();initializeOgmFromExistingSchema(ogm,neoSchema,schema);registerGeneratedSchema(driver,schema);
+ const schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createRevisionRedactionRepository(driver);
  for(const kind of ['create','update','create_relationship']) engine.events.on(kind,(event:Record<string,unknown>)=>events.push({kind,event}));
 },{timeout:240000});
@@ -29,10 +27,6 @@ const outcome=async(call:()=>Promise<unknown>)=>call().then(()=>null,(e:Error)=>
 const plain=(value:unknown)=>JSON.parse(JSON.stringify(value));
 // The seed stamps createdAt/updatedAt via datetime() (wall clock), so normalize temporal fields before snapshotting.
 const norm=(value:unknown)=>JSON.parse(JSON.stringify(value,(key,v)=>(['createdAt','updatedAt','timestamp','ageGateTouchedAt'].includes(key)&&v!==null)?'<time>':v));
-function baseline(){const v=ogm.model('TextVersion');return {
- findRevision:(id:string)=>v.find({where:{id},selectionSet:'{id body editReason createdAt updatedAt Author {username}}'}),
- redactRevision:(id:string)=>v.update({where:{id},update:{body:'[deleted]'},selectionSet:'{textVersions {id body editReason createdAt updatedAt Author {username}}}'}),
-};}
 const targets=[['comment','Comment','HAS_VERSION','AUTHORED_COMMENT'],['discussion body','Discussion','HAS_BODY_VERSION','POSTED_DISCUSSION'],['wiki','WikiPage','HAS_VERSION','AUTHORED_WIKI_PAGE'],['event description','Event','HAS_DESCRIPTION_VERSION','POSTED_BY']] as const;
 async function seed(kind:typeof targets[number]=targets[0]){await driver.executeQuery(`CREATE (u:User {username:'owner',createdAt:datetime()}) CREATE (p:${kind[1]} {id:'parent',title:'Title',text:'Text',isRootComment:true,createdAt:datetime()}) CREATE (u)-[:${kind[3]}]->(p) CREATE (v:TextVersion {id:'v',body:'Original',editReason:'Reason',createdAt:datetime()}) CREATE (p)-[:${kind[2]}]->(v) CREATE (u)-[:AUTHORED_VERSION]->(v)`);}
 function eventShape(){return events.map(({kind,event})=>({kind,typename:event.typename,relationship:event.relationshipName}));}

@@ -6,9 +6,8 @@ import type {GraphQLSchema, GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import getResolver from '../../customResolvers/mutations/updateEventInSeries.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import { createEventSeriesUpdateRepository, SERIES_OCCURRENCE_SNAPSHOT_SELECTION, UPDATED_SERIES_OCCURRENCE_SELECTION, type EventSeriesUpdateRepository } from '../../services/persistence/eventSeriesUpdateRepository.js';
+import { createEventSeriesUpdateRepository } from '../../services/persistence/eventSeriesUpdateRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j, stopNeo4j, resetDatabase} from './neo4jHarness.js';
 let driver: Driver;
@@ -20,19 +19,10 @@ for (const kind of ['create', 'update', 'create_relationship', 'delete_relations
 before(async () => {
   driver = await startNeo4j(); app = getCustomResolvers(driver);
   const neo = new Neo4jGraphQL({driver, typeDefs, resolvers: app.resolvers, features: {filters: {String: {MATCHES: true}}, subscriptions: engine}});
-  schema = await neo.getSchema(); initializeOgmFromExistingSchema(app.ogm, neo, schema); registerGeneratedSchema(driver, schema);
+  schema = await neo.getSchema(); registerGeneratedSchema(driver, schema);
 }, {timeout: 240000});
 beforeEach(async () => {await resetDatabase(driver); events = [];});
 after(async () => {await engine.close(); await stopNeo4j();});
-function baseline(): EventSeriesUpdateRepository {
-  const event = app.ogm.model('Event'), series = app.ogm.model('EventSeries');
-  return {
-    findSnapshot: id => event.find({where: {id}, selectionSet: SERIES_OCCURRENCE_SNAPSHOT_SELECTION}),
-    updateOccurrence: async (id, update, tx) => {await event.update({where: {id}, update, context: {executionContext: tx}});},
-    updateTemplate: async (id, update, tx) => {await series.update({where: {id}, update, context: {executionContext: tx}});},
-    findUpdatedOccurrence: id => event.find({where: {id}, selectionSet: UPDATED_SERIES_OCCURRENCE_SELECTION}),
-  };
-}
 // Subscription events carry the volatile internal node id (this.event is set on them); neutralize it so the snapshot is stable, while leaving business ids intact. updatedAt/timestamp are wall-clock-ish.
 const normalize = (value: unknown) => JSON.parse(JSON.stringify(value, function (key, item) {if (key === 'id' && this.event) return '<nodeId>'; return ['updatedAt','timestamp'].includes(key) ? '<time>' : item;}));
 async function seed(count: number, linked: boolean) {

@@ -5,7 +5,6 @@ import type {Driver} from 'neo4j-driver';
 import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import * as persistence from '../../services/persistence/downloadReviewRepository.js';
 import {createClearDownloadableFileScanResolver} from '../../customResolvers/mutations/clearDownloadableFileScan.js';
@@ -14,14 +13,10 @@ import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
 for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const seed=(legacyNotificationEdge=false)=>driver.executeQuery("CREATE(u:User{username:'alice',createdAt:datetime('2020-01-01T00:00:00Z')})-[:POSTED_DISCUSSION]->(d:Discussion{id:'d',title:'Download',hasSensitiveContent:false,createdAt:datetime('2020-01-01T00:00:00Z')})-[:HAS_DOWNLOADABLE_FILE]->(f:DownloadableFile{id:'f',fileName:'fixture.zip',kind:'ZIP',url:'https://example.invalid/fixture.zip',createdAt:datetime('2020-01-01T00:00:00Z'),priceModel:'FREE',scanStatus:'SUSPICIOUS',uploadedByUsername:'alice'}) FOREACH(_ IN CASE WHEN $legacyNotificationEdge THEN [1] ELSE [] END | CREATE(u)-[:AUTHORED_DISCUSSION]->(d))",{legacyNotificationEdge});
 const readSelections={findPreparation:persistence.FINDPREPARATION_SELECTION,findReleaseStatus:persistence.FINDRELEASESTATUS_SELECTION,findCleared:persistence.FINDCLEARED_SELECTION,findReviewAuthority:persistence.FINDREVIEWAUTHORITY_SELECTION,findRequested:persistence.FINDREQUESTED_SELECTION};
-function baseline():persistence.DownloadReviewRepository {const file=app.ogm.model('DownloadableFile');return {
- ...Object.fromEntries(Object.entries(readSelections).map(([name,selectionSet])=>[name,(id:string)=>file.find({where:{id},selectionSet})])),
- clearScan:async(id,update)=>{await file.update({where:{id},update});},requestReview:async(id,update)=>{await file.update({where:{id},update});},
-} as persistence.DownloadReviewRepository;}
 const state=async()=> (await driver.executeQuery("MATCH(f:DownloadableFile{id:'f'}) RETURN toString(id(f)) AS identity,properties(f) AS properties")).records[0].toObject();
 function normalize(v:unknown){return JSON.parse(JSON.stringify(v,function(key,value){if(this.event&&key==='id')return 'file-node';return ['timestamp','ageGateTouchedAt'].includes(key)?'<time>':value;}));}
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v));

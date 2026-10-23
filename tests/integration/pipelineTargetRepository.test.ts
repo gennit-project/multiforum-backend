@@ -4,7 +4,6 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createPipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js";
 import { assertPublicPipelineTargetVisible } from "../../customResolvers/queries/pluginPipelineVisibility.js";
@@ -21,53 +20,10 @@ before(async () => {
   });
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(app.ogm, neoSchema, schema);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
 const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
-
-// Exact pre-migration projections, retained independently of repository documents.
-const DISCUSSION_SELECTION = `{
-        id
-        deleted
-        DownloadableFiles {
-          id
-          permanentlyRemoved
-        }
-        DiscussionChannels {
-          archived
-        }
-      }`;
-const FILE_SELECTION = `{
-        id
-        permanentlyRemoved
-        Discussion {
-          id
-          deleted
-          DiscussionChannels {
-            channelUniqueName
-            archived
-          }
-        }
-      }`;
-const TIMING_SELECTION = `{ id uploadedAt createdAt }`;
-const SERVER_SELECTION = `{
-      pluginPipelines
-      InstalledVersionsConnection {
-        edges {
-          properties { enabled settingsJson }
-          node {
-            id version repoUrl tarballGsUri entryPath manifest
-            settingsDefaults uiSchema
-            Plugin {
-              id name displayName description metadata
-            }
-          }
-        }
-      }
-    }`;
-const CHANNEL_SELECTION = `{ uniqueName pluginPipelines }`;
 
 async function seed(): Promise<void> {
   await driver.executeQuery(`
