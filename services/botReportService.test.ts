@@ -6,7 +6,10 @@
 // is left to integration.
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createBotReport as actualCreateBotReport } from "./botReportService.js";
+import {
+  createBotReport as actualCreateBotReport,
+  normalizeBotRecommendation,
+} from "./botReportService.js";
 
 // Test-only adapter keeps the original assertions and mock failure behavior.
 const createBotReport = (input: any) => actualCreateBotReport({...input,botReportRepository:{
@@ -130,6 +133,46 @@ test("persists the supplied idempotency key on the moderation action", async () 
     update.ActivityFeed[0].create[0].node.idempotencyKey,
     "bot-report:v1:test"
   );
+});
+
+test("persists normalized structured recommendation metadata", async () => {
+  const { models } = makeModels({
+    comment: { id: "c-1", text: "bad words", CommentAuthor: { __typename: "User", username: "alice" } },
+  });
+  let update: any;
+  models.Issue.update = async (args: any) => {
+    update = args.update;
+    return { issues: [{ id: "i-1", issueNumber: 5 }] };
+  };
+
+  await createBotReport({
+    botIdentityRepository: {findIdentity:async()=>[],createIdentity:async()=>({users:[{username:"bot-cats-helper"}]} as any),reactivateIdentity:async()=>({users:[]} as any),findChannelBots:async()=>[{uniqueName:"cats",Bots:[]}] as any,connectBot:async()=>({channels:[]} as any),disconnectBots:async()=>({channels:[]} as any)},
+    models,
+    driver,
+    channelUniqueName: "cats",
+    reportInput: {
+      ...baseReport,
+      recommendedAction: "remove",
+      recommendationConfidence: 0.91,
+      recommendationRationale: "  Repeated promotional spam.  ",
+    },
+  });
+
+  assert.equal(update.ActivityFeed[0].create[0].node.recommendedAction, "REMOVE");
+  assert.equal(update.ActivityFeed[0].create[0].node.recommendationConfidence, 0.91);
+  assert.equal(update.ActivityFeed[0].create[0].node.recommendationRationale, "Repeated promotional spam.");
+});
+
+test("drops malformed optional recommendation metadata without dropping the report", () => {
+  assert.deepEqual(normalizeBotRecommendation({
+    recommendedAction: "archive",
+    recommendationConfidence: Number.NaN,
+    recommendationRationale: "   ",
+  }), {
+    recommendedAction: undefined,
+    recommendationConfidence: undefined,
+    recommendationRationale: undefined,
+  });
 });
 
 test("resolves the reported author for a discussion report", async () => {

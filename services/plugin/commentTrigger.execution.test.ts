@@ -426,6 +426,9 @@ test("supplies an internal replay key when a plugin reports a comment", async ()
         selectedForumRules: ["Be kind"],
         selectedServerRules: [],
         botName: "moderator",
+        recommendedAction: "edit",
+        recommendationConfidence: 0.87,
+        recommendationRationale: "The comment needs revision.",
       });
       return { success: true };
     }
@@ -451,6 +454,17 @@ test("supplies an internal replay key when a plugin reports a comment", async ()
     reports[0]?.idempotencyKey,
     /^bot-report:v1:[a-f0-9]{64}$/
   );
+  assert.deepEqual(reports[0]?.reportInput, {
+    contentType: "comment",
+    contentId: "comment-1",
+    reportText: "Rule violation",
+    selectedForumRules: ["Be kind"],
+    selectedServerRules: [],
+    botName: "moderator",
+    recommendedAction: "edit",
+    recommendationConfidence: 0.87,
+    recommendationRationale: "The comment needs revision.",
+  });
 });
 
 test("runs comment edits with the updated content and edit invocation type", async () => {

@@ -27,7 +27,7 @@ import {
   type PublicDiagnostic,
 } from './publicDiagnostics.js'
 import { createBotComment, buildBotUsername } from '../botUserService.js'
-import { createBotReport } from '../botReportService.js'
+import { createBotReport, type ReportContentAsBotInput } from '../botReportService.js'
 import { buildBotInvocationContext, collectParentCommentThread } from './buildBotInvocationContext.js'
 import { createPromptDebugLogger } from './promptDebug.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
@@ -644,16 +644,7 @@ export const triggerPluginRunsForComment = async (
             eventId: comment.Event?.id || null
           })
         },
-        reportContentAsBot: async (input: {
-          contentType: 'comment' | 'discussion' | 'event'
-          contentId: string
-          reportText: string
-          selectedForumRules: string[]
-          selectedServerRules: string[]
-          botName: string
-          profileId?: string | null
-          profileLabel?: string | null
-        }) => {
+        reportContentAsBot: async (input: ReportContentAsBotInput) => {
           if (!driver) {
             throw new Error('Database driver not available for reportContentAsBot')
           }

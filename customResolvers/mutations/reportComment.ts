@@ -2,6 +2,7 @@ import { createCommentReportRepository, type CommentReportRepository } from "../
 import type {
   IssueCreateInput,
   ModerationActionCreateInput,
+  ModerationRecommendedAction,
   IssueWhere,
   IssueUpdateInput
 } from '../../ogm_types.js'
@@ -47,6 +48,9 @@ type ModActionInput = {
   actionDescription: string
   issueId: string
   idempotencyKey?: string | null
+  recommendedAction?: ModerationRecommendedAction | null
+  recommendationConfidence?: number | null
+  recommendationRationale?: string | null
   suspendUntil?: string
   suspendIndefinitely?: boolean
 }
@@ -66,12 +70,20 @@ export const getModerationActionCreateInput = (input: ModActionInput) => {
     actionDescription,
     issueId,
     idempotencyKey,
+    recommendedAction,
+    recommendationConfidence,
+    recommendationRationale,
     suspendIndefinitely,
     suspendUntil
   } = input
 
   return {
     ...(idempotencyKey ? { idempotencyKey } : {}),
+    ...(recommendedAction ? { recommendedAction } : {}),
+    ...(recommendationConfidence !== null && recommendationConfidence !== undefined
+      ? { recommendationConfidence }
+      : {}),
+    ...(recommendationRationale ? { recommendationRationale } : {}),
     ModerationProfile: {
       connect: {
         where: {

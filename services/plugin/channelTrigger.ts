@@ -50,7 +50,7 @@ import {
   type DownloadScanOutcome,
 } from './downloadScanOutcome.js'
 import { createDownloadReadUrl } from '../downloadStorage.js'
-import { createBotReport } from '../botReportService.js'
+import { createBotReport, type ReportContentAsBotInput } from '../botReportService.js'
 import { buildBotUsername } from '../botUserService.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import { createChannelPermissionRepository } from '../persistence/channelPermissionRepository.js'
@@ -711,16 +711,7 @@ export const triggerChannelPluginPipeline = async (
           channelId: channelUniqueName,
           logs
         }),
-        reportContentAsBot: async (input: {
-          contentType: 'comment' | 'discussion' | 'event'
-          contentId: string
-          reportText: string
-          selectedForumRules: string[]
-          selectedServerRules: string[]
-          botName: string
-          profileId?: string | null
-          profileLabel?: string | null
-        }) => {
+        reportContentAsBot: async (input: ReportContentAsBotInput) => {
           if (!driver) {
             throw new Error('Database driver not available for reportContentAsBot')
           }

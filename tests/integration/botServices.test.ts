@@ -52,6 +52,9 @@ test("createBotReport ensures a bot, opens an Issue, and records a report action
       selectedForumRules: [],
       selectedServerRules: ["No spam"],
       botName: "modbot",
+      recommendedAction: "remove",
+      recommendationConfidence: 0.94,
+      recommendationRationale: "Promotional spam should be removed.",
     },
   });
 
@@ -69,9 +72,15 @@ test("createBotReport ensures a bot, opens an Issue, and records a report action
 
   const actions = await run(
     `MATCH (i:Issue { relatedCommentId: 'comment-1' })-[:ACTIVITY_ON_ISSUE]->(a:ModerationAction)
-     RETURN collect(a.actionType) AS types`
+     RETURN collect(a.actionType) AS types,
+            a.recommendedAction AS recommendedAction,
+            a.recommendationConfidence AS confidence,
+            a.recommendationRationale AS rationale`
   );
   assert.ok((actions[0].types as string[]).includes("report"));
+  assert.equal(actions[0].recommendedAction, "REMOVE");
+  assert.equal(actions[0].confidence, 0.94);
+  assert.equal(actions[0].rationale, "Promotional spam should be removed.");
 });
 
 test("createBotReport throws when no rule is selected", async () => {
@@ -111,6 +120,9 @@ test("createBotReport persists replay keys and does not append or reopen comment
       selectedForumRules: ["Be kind"],
       selectedServerRules: [] as string[],
       botName: "modbot",
+      recommendedAction: "edit" as const,
+      recommendationConfidence: 0.82,
+      recommendationRationale: "Revise the comment.",
     },
   };
 
@@ -118,16 +130,32 @@ test("createBotReport persists replay keys and does not append or reopen comment
   await run('MATCH (i:Issue { id: $issueId }) SET i.isOpen = false', {
     issueId: first?.issueId,
   });
-  const replay = await createBotReport(input);
+  const replay = await createBotReport({
+    ...input,
+    reportInput: {
+      ...input.reportInput,
+      recommendedAction: "remove",
+      recommendationConfidence: 0.99,
+      recommendationRationale: "A replay must not replace persisted metadata.",
+    },
+  });
 
   assert.deepEqual(replay, first);
   const result = await run(
     `MATCH (i:Issue { relatedCommentId: 'comment-1' })-[:ACTIVITY_ON_ISSUE]->(a:ModerationAction)
-     RETURN i.isOpen AS isOpen, count(a) AS actionCount, collect(a.idempotencyKey) AS keys`
+     RETURN i.isOpen AS isOpen,
+            count(a) AS actionCount,
+            collect(a.idempotencyKey) AS keys,
+            a.recommendedAction AS recommendedAction,
+            a.recommendationConfidence AS confidence,
+            a.recommendationRationale AS rationale`
   );
   assert.equal(result[0].isOpen, false);
   assert.equal(Number(result[0].actionCount), 1);
   assert.deepEqual(result[0].keys, [input.idempotencyKey]);
+  assert.equal(result[0].recommendedAction, "EDIT");
+  assert.equal(result[0].confidence, 0.82);
+  assert.equal(result[0].rationale, "Revise the comment.");
 });
 
 test("createBotReport deduplicates a replayed discussion report", async () => {
