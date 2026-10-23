@@ -6,20 +6,15 @@ import {getNamedType, type GraphQLSchema, type GraphQLObjectType} from 'graphql'
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import getResolver from '../../customResolvers/mutations/deleteEventInSeries.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createEventSeriesDeletionRepository, SERIES_DELETION_SNAPSHOT_SELECTION, type EventSeriesDeletionRepository} from '../../services/persistence/eventSeriesDeletionRepository.js';
+import {createEventSeriesDeletionRepository} from '../../services/persistence/eventSeriesDeletionRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j, stopNeo4j, resetDatabase} from './neo4jHarness.js';
 let driver: Driver; let app: ReturnType<typeof getCustomResolvers>; let schema: GraphQLSchema;
 let events: any[] = []; const engine = createSubscriptionEngine();
 for (const kind of ['delete','delete_relationship','create','update']) engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
-function baseline(): EventSeriesDeletionRepository {const e=app.ogm.model('Event'),s=app.ogm.model('EventSeries');return {
- findSnapshot:id=>e.find({where:{id},selectionSet:SERIES_DELETION_SNAPSHOT_SELECTION}),
- deleteOccurrence:async id=>{await e.delete({where:{id}});},deleteTemplate:async id=>{await s.delete({where:{id}});},
-};}
 async function seed(linked=true,count=3){await driver.executeQuery("CREATE(s:EventSeries{id:'s',title:'Series',createdAt:datetime('2020-01-01T00:00:00Z')}) WITH s UNWIND range(0,$last) AS i CREATE(e:Event{id:'e'+toString(i),title:'Occurrence',occurrenceIndex:i,canceled:false,startTime:datetime('2026-06-01T10:00:00Z'),endTime:datetime('2026-06-01T12:00:00Z'),createdAt:datetime('2020-01-01T00:00:00Z')}) FOREACH(_ IN CASE WHEN $linked THEN [1] ELSE [] END | CREATE(s)-[:HAS_OCCURRENCE]->(e))",{linked,last:count-1});}
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(_key,x)=>{if(!isInt(x))return x;assert.ok(x.inSafeRange());return x.toNumber();}));
 async function state(){return {

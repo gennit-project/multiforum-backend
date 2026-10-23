@@ -11,7 +11,6 @@ import {
 } from "@testcontainers/neo4j";
 import typeDefinitions from "../../typeDefs.js";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import ownershipCreateMiddleware from "../../middleware/ownershipCreateMiddleware.js";
 
@@ -24,7 +23,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 let container: StartedNeo4jContainer;
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 let httpSchema: GraphQLSchema;
 
 before(async () => {
@@ -38,14 +36,12 @@ before(async () => {
   );
 
   const custom = getCustomResolvers(driver);
-  ogm = custom.ogm;
   const neoSchema = new Neo4jGraphQL({
     typeDefs: typeDefinitions,
     driver,
     resolvers: custom.resolvers,
   });
   const schema = await neoSchema.getSchema();
-  initializeOgmFromExistingSchema(ogm, neoSchema, schema);
   registerGeneratedSchema(driver, schema);
   httpSchema = applyMiddleware(schema, ownershipCreateMiddleware);
 }, { timeout: 240000 });
@@ -67,7 +63,6 @@ beforeEach(async () => {
 
 const aliceContext = () => ({
   driver,
-  ogm,
   req: {
     headers: {
       authorization: `Bearer ${jwt.sign(

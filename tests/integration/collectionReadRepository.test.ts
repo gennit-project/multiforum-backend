@@ -4,23 +4,19 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createCollectionReadRepository } from "../../services/persistence/collectionReadRepository.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 let repository: ReturnType<typeof createCollectionReadRepository>;
 before(async () => {
   driver = await startNeo4j();
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true } });
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(ogm, neoSchema, schema);
   repository = createCollectionReadRepository(driver);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
@@ -32,108 +28,6 @@ const plain = (value: unknown) => JSON.parse(JSON.stringify(value));
 const TIME_KEYS = new Set(["createdAt", "updatedAt", "timestamp"]);
 const norm = (value: unknown): unknown => JSON.parse(JSON.stringify(value, (key, v) => (TIME_KEYS.has(key) && v !== null ? "<time>" : v)));
 const outcome = async (call: () => Promise<unknown>) => call().then(value => ({value:plain(value)}), (error:Error) => ({error:error.message}));
-// Baseline selections copied before migration; intentionally independent of repository documents.
-const PROFILE_SELECTION = `{
-        id
-        name
-        description
-        visibility
-        collectionType
-        itemCount
-        itemOrder
-        createdAt
-        updatedAt
-        Channels {
-          uniqueName
-          displayName
-          channelIconURL
-        }
-        Discussions {
-          id
-          title
-        }
-        Comments {
-          id
-          text
-        }
-        Downloads {
-          id
-          title
-        }
-        Images {
-          id
-          url
-        }
-      }`;
-const selectionSetTemplate = `
-{
-  id
-  name
-  description
-  visibility
-  collectionType
-  itemCount
-  shareCount
-  createdAt
-  updatedAt
-  itemOrder
-  CreatedBy {
-    username
-    displayName
-    profilePicURL
-  }
-  Downloads(options: { limit: 5 }__DISCUSSION_AGE_FILTER__) {
-    id
-    title
-    createdAt
-    hasSensitiveContent
-    Album {
-      id
-      imageOrder
-      Images__IMAGE_AGE_FILTER__ {
-        id
-        url
-        caption
-      }
-    }
-    DiscussionChannels {
-      id
-      channelUniqueName
-      CommentsAggregate {
-        count
-      }
-      Channel {
-        uniqueName
-        displayName
-      }
-    }
-    Tags {
-      text
-    }
-    Author {
-      username
-      displayName
-      profilePicURL
-      commentKarma
-      discussionKarma
-      createdAt
-    }
-  }
-}
-`;
-
-const CLEAR_SOURCE_CONTENT_FILTER = "{ OR: [{ hasSensitiveContent: false }, { hasSensitiveContent: null }] }";
-
-const legacyPublicSelection = (canViewSensitiveContent: boolean) =>
-  selectionSetTemplate
-    .replace(
-      "__DISCUSSION_AGE_FILTER__",
-      canViewSensitiveContent ? "" : `, where: ${CLEAR_SOURCE_CONTENT_FILTER}`
-    )
-    .replace(
-      "__IMAGE_AGE_FILTER__",
-      canViewSensitiveContent ? "" : `(where: ${CLEAR_SOURCE_CONTENT_FILTER})`
-    );
 
 const seed = () => driver.executeQuery(`
   CREATE (owner:User {username:'owner', createdAt: datetime()})

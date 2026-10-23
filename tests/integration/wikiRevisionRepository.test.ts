@@ -6,20 +6,18 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import { createWikiRevisionRepository } from '../../services/persistence/wikiRevisionRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>['ogm'];
 let repository: ReturnType<typeof createWikiRevisionRepository>;
 const engine=createSubscriptionEngine();
 let events: Array<{kind:string,event:Record<string,unknown>}>=[];
 before(async()=>{
- driver=await startNeo4j(); const app=getCustomResolvers(driver);ogm=app.ogm;
+ driver=await startNeo4j(); const app=getCustomResolvers(driver);
  const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
- const schema=await neoSchema.getSchema();initializeOgmFromExistingSchema(ogm,neoSchema,schema);registerGeneratedSchema(driver,schema);
+ const schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createWikiRevisionRepository(driver);
  for(const kind of ['create','update','create_relationship']) engine.events.on(kind,(event:Record<string,unknown>)=>events.push({kind,event}));
 },{timeout:240000});
@@ -27,13 +25,6 @@ after(async()=>stopNeo4j());
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 
 const plain=(value:unknown)=>JSON.parse(JSON.stringify(value));
-function baseline(){const w=ogm.model('WikiPage'),v=ogm.model('TextVersion'),u=ogm.model('User');return {
- findSnapshot:(id:string)=>w.find({where:{id},selectionSet:'{id title body editReason VersionAuthor {username} PastVersions {id body createdAt}}'}),
- findAuthor:(username:string)=>u.find({where:{username},selectionSet:'{username}'}),
- createRevision:(input:any)=>v.create({input:[input]}),
- findPageId:(id:string)=>w.find({where:{id},selectionSet:'{id}'}),
- connectRevision:async(id:string,revisionId:string)=>{await w.update({where:{id},update:{PastVersions:{connect:[{where:{node:{id:revisionId}}}]}} as any});},
-};}
 async function seed(invalid=false){await driver.executeQuery(`CREATE (u:User {username:'previous',createdAt:datetime()}) CREATE (:User {username:'system',createdAt:datetime()}) CREATE (w:WikiPage {id:'w',title:'Title',body:'Body',editReason:'old reason',${invalid?'':"slug:'page',channelUniqueName:'cats',"}createdAt:datetime()}) CREATE (u)-[:AUTHORED_VERSION]->(w)`);}
 async function state(){const r=await driver.executeQuery(`MATCH (v:TextVersion) OPTIONAL MATCH (v)<-[:AUTHORED_VERSION]-(u:User) OPTIONAL MATCH (w:WikiPage)-[:HAS_VERSION]->(v) RETURN v.body AS body,v.editReason AS reason,u.username AS author,w.id AS parent ORDER BY body`);return r.records.map(x=>({body:x.get('body'),reason:x.get('reason'),author:x.get('author'),parent:x.get('parent')}));}
 function eventShape(){return events.map(({kind,event})=>({kind,typename:event.typename,from:event.fromTypename,to:event.toTypename,relationship:event.relationshipName}));}

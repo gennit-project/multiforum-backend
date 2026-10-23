@@ -4,22 +4,18 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
-import { createNotificationSnapshotRepository, FULL_COMMENT_SELECTION_SET } from "../../services/persistence/notificationSnapshotRepository.js";
+import { createNotificationSnapshotRepository } from "../../services/persistence/notificationSnapshotRepository.js";
 import { installRequestScopedBookmarks } from "../../services/requestScopedBookmarks.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 before(async () => {
   driver = installRequestScopedBookmarks(await startNeo4j());
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true } });
   const schema = await neoSchema.getSchema();
-  initializeOgmFromExistingSchema(ogm, neoSchema, schema);
   registerGeneratedSchema(driver, schema);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
@@ -27,10 +23,6 @@ after(async () => stopNeo4j());
 const plain = (value: unknown) => JSON.parse(JSON.stringify(value));
 const equal = async (t: TestContext, current: Promise<unknown>) => t.assert.snapshot(plain(await current));
 
-const commentSelection = `{id text CommentAuthor {... on User {username displayName} ... on ModerationProfile {displayName User {username}}} DiscussionChannel {discussionId channelUniqueName Discussion {id title}} Event {id title EventChannels {channelUniqueName}}}`;
-const discussionSelection = `{id title body Author {username displayName} DiscussionChannels {channelUniqueName}}`;
-const subscriberSelection = `{id SubscribedToNotifications {username Email {address}}}`;
-const issueSelection = `{id issueNumber title channelUniqueName SubscribedToNotifications {username notifyOnSubscribedIssueUpdates Email {address}}}`;
 const seed = async () => driver.executeQuery(`
   CREATE (author:User {username:'author',displayName:'Author'})
   CREATE (reader:User {username:'reader',notifyOnFeedback:true,notifyWhenTagged:true,notifyOnSubscribedIssueUpdates:false})

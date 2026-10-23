@@ -5,7 +5,6 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createForumModeratorRepository } from "../../services/persistence/forumModeratorRepository.js";
 import acceptModInvite from "../../customResolvers/mutations/acceptForumModInvite.js";
@@ -15,15 +14,14 @@ import type { GraphQLResolveInfo } from "graphql";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 const engine = createSubscriptionEngine();
 let events: unknown[] = [];
 for (const kind of ["create", "update", "create_relationship", "delete_relationship", "delete"]) engine.events.on(kind, event => events.push(event));
 before(async () => {
  driver = await startNeo4j();
- const app = getCustomResolvers(driver); ogm = app.ogm;
+ const app = getCustomResolvers(driver);
  const neoSchema = new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
- const schema = await neoSchema.getSchema(); initializeOgmFromExistingSchema(ogm,neoSchema,schema); registerGeneratedSchema(driver,schema);
+ const schema = await neoSchema.getSchema(); registerGeneratedSchema(driver,schema);
 }, {timeout:240_000});
 beforeEach(async () => {await resetDatabase(driver); events=[];});
 after(async () => {await engine.close(); await stopNeo4j();});
@@ -45,7 +43,6 @@ const seed=async(valid=true)=>{
  if(!valid)await driver.executeQuery("MATCH (c:Channel) REMOVE c.createdAt");
 };
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
-const oldWrite=(action:"connectModerator"|"disconnectModerator"|"disconnectInvite",identity:unknown=action==="disconnectInvite"?"alice":"ModAlice")=>ogm.model("Channel").update({where:{uniqueName:"cats"},update:action==="disconnectInvite"?{PendingModInvites:[{disconnect:[{where:{node:{username:identity}}}]}]}:{Moderators:[{[action==="connectModerator"?"connect":"disconnect"]:[{where:{node:{displayName:identity}}}]}]}} as any);
 test("moderator reads preserve missing results, nested recipients and generated limits",async(t)=>{
  const repo=createForumModeratorRepository(driver);
  // The nested PendingModInvites projection applies a default limit of 25; which 25 of the 30

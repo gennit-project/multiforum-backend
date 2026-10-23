@@ -7,25 +7,15 @@ import type {GraphQLSchema,GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import getResolver from '../../customResolvers/mutations/installPluginVersion.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import * as persistence from '../../services/persistence/pluginInstallRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let app:ReturnType<typeof getCustomResolvers>;let schema:GraphQLSchema;let events:any[]=[];const engine=createSubscriptionEngine();
 for(const kind of ['update','create','create_relationship','delete_relationship'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();initializeOgmFromExistingSchema(app.ogm,neo,schema);registerGeneratedSchema(driver,schema);},{timeout:240000});
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const url='https://fixture.invalid/plugin.tgz';const bytes=Buffer.from('synthetic-only');const digest=crypto.createHash('sha256').update(bytes).digest('hex');
-function baseline():persistence.PluginInstallRepository {const p=app.ogm.model('Plugin'),v=app.ogm.model('PluginVersion'),s=app.ogm.model('ServerConfig');return {
- findInstallConfigs:()=>s.find({selectionSet:persistence.FINDINSTALLCONFIGS_SELECTION}),
- findInstallPlugin:pluginId=>p.find({where:{OR:[{id:pluginId},{name:pluginId}]},selectionSet:persistence.FINDINSTALLPLUGIN_SELECTION}),
- findInstallVersion:(version,name)=>v.find({where:{AND:[{version},{Plugin:{name}}]},selectionSet:persistence.FINDINSTALLVERSION_SELECTION}),
- createInstallPlugin:input=>p.create({input}),updateInstallPlugin:async(id,update)=>{await p.update({where:{id},update});},
- createInstallVersion:input=>v.create({input}),updateInstallVersion:async(id,update,pluginId)=>{await v.update({where:{id},update,connect:{Plugin:{where:{node:{id:pluginId}}}}});},
- findInstalledVersions:serverName=>s.find({where:{serverName},selectionSet:persistence.FINDINSTALLEDVERSIONS_SELECTION}),
- connectInstallation:async(serverName,id,settingsJson)=>{await s.update({where:{serverName},connect:{InstalledVersions:[{where:{node:{id}},edge:{enabled:false,settingsJson}}]}});},
-};}
 const graph=async()=>({nodes:(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject()),edges:(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type,properties(r) AS properties')).records.map(r=>r.toObject())});
 async function seed(kind:string){if(kind==='missing')return;await driver.executeQuery("CREATE(:ServerConfig{serverName:'server',pluginRegistries:['https://fixture.invalid/registry']})");if(['existing-plugin','existing-version','already-installed','carry'].includes(kind))await driver.executeQuery("CREATE(:Plugin{id:'p',name:'plugin',displayName:'Before'})");if(['existing-version','already-installed'].includes(kind))await driver.executeQuery("MATCH(p:Plugin) CREATE(p)-[:HAS_VERSION]->(:PluginVersion{id:'v',version:'1',repoUrl:$url,entryPath:'old.js'})",{url});if(kind==='already-installed')await driver.executeQuery("MATCH(s:ServerConfig),(v:PluginVersion) CREATE(s)-[:INSTALLED{enabled:true,settingsJson:'{\"keep\":true}'}]->(v)");if(kind==='carry')await driver.executeQuery("MATCH(s:ServerConfig),(p:Plugin) CREATE(p)-[:HAS_VERSION]->(v:PluginVersion{id:'old',version:'0',entryPath:'old.js',manifest:'{}'}) CREATE(s)-[:INSTALLED{enabled:true,settingsJson:'{\"enabled\":false}'}]->(v)");}
 for(const kind of ['missing','new','existing-plugin','existing-version','already-installed','carry','plugin-projection','version-projection','connection-projection'] as const)test(`actual install parity: ${kind}`,async(t)=>{

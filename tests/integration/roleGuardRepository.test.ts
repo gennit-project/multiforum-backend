@@ -6,7 +6,6 @@ import type { GraphQLResolveInfo } from "graphql";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
 import type { GraphQLContext } from "../../types/context.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createRoleGuardRepository } from "../../services/persistence/roleGuardRepository.js";
 import { SERVER_ROLE_CAPABILITY_FIELDS, MOD_SERVER_ROLE_CAPABILITY_FIELDS } from "../../rules/permission/actorCapabilities.js";
@@ -14,18 +13,15 @@ import { updateChannelsWithOwnedRoles } from "../../middleware/channelRoleOwners
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 before(async () => {
   driver = await startNeo4j();
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({
     typeDefs, driver, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true },
   });
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(ogm, neoSchema, schema);
 }, { timeout: 240_000 });
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());

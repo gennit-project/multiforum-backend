@@ -5,9 +5,8 @@ import {isInt, type Driver, type ManagedTransaction} from 'neo4j-driver';
 import type {GraphQLSchema, GraphQLObjectType} from 'graphql';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
-import {initializeOgmFromExistingSchema} from '../../services/initializeOgmFromExistingSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createEventSeriesCreationRepository, CREATED_EVENT_SERIES_SELECTION} from '../../services/persistence/eventSeriesCreationRepository.js';
+import {createEventSeriesCreationRepository} from '../../services/persistence/eventSeriesCreationRepository.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j, stopNeo4j, resetDatabase} from './neo4jHarness.js';
 let driver: Driver;
@@ -19,13 +18,12 @@ for (const kind of ['create', 'update', 'create_relationship', 'delete_relations
 before(async () => {
   driver = await startNeo4j(); app = getCustomResolvers(driver);
   const neo = new Neo4jGraphQL({driver, typeDefs, resolvers: app.resolvers, features: {filters: {String: {MATCHES: true}}, subscriptions: engine}});
-  schema = await neo.getSchema(); initializeOgmFromExistingSchema(app.ogm, neo, schema); registerGeneratedSchema(driver, schema);
+  schema = await neo.getSchema(); registerGeneratedSchema(driver, schema);
 }, {timeout: 240000});
 beforeEach(async () => {await resetDatabase(driver); events = [];});
 after(async () => {await engine.close(); await stopNeo4j();});
 const input = {title: 'Series', Occurrences: {create: [{node: {title: 'Occurrence', canceled: false, occurrenceIndex: 0, startTime: '2026-06-01T10:00:00Z', endTime: '2026-06-01T12:00:00Z'}}]}};
-const oldCreate = async (tx: ManagedTransaction, value: unknown) => (await app.ogm.model('EventSeries').create({input: [value] as never, selectionSet: `{eventSeries ${CREATED_EVENT_SERIES_SELECTION}}`, context: {executionContext: tx}})).eventSeries;
-const newCreate = (tx: ManagedTransaction, value: unknown) => createEventSeriesCreationRepository(driver).createWithinTransaction(value as never, tx);
+const newCreate =(tx: ManagedTransaction, value: unknown) => createEventSeriesCreationRepository(driver).createWithinTransaction(value as never, tx);
 
 // Native generated events convert integer properties to JavaScript numbers.
 // Compare the same exact safe values; keep temporal objects and raw IDs checked.
