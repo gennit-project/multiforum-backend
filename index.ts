@@ -56,6 +56,7 @@ import { WikiPageVersionHistoryService } from "./services/wikiPageVersionHistory
 import { createVersionHistoryRepository } from "./services/persistence/versionHistoryRepository.js";
 import { PluginPipelineWatchdogService } from "./services/plugin/pipelineWatchdog.js";
 import { PluginPipelineCampaignService } from "./services/plugin/pipelineCampaign.js";
+import { PluginEventQueueService } from "./services/plugin/pluginEventQueue.js";
 import { ensureSchemaConstraints } from "./services/schemaConstraints.js";
 import { provisionInstanceOnStartup } from "./services/startupProvisioning.js";
 import {
@@ -420,6 +421,11 @@ async function startBackgroundServices(
     {
       name: 'Plugin Pipeline Campaigns',
       service: () => new PluginPipelineCampaignService({ driver }),
+      critical: false
+    },
+    {
+      name: 'Plugin Event Queue',
+      service: () => new PluginEventQueueService(driver),
       critical: false
     }
   ];

@@ -98,12 +98,15 @@ const wrapDiscussionEdit = (
 
   for (const channelUniqueName of channelUniqueNames) {
     try {
-      await triggerChannelPlugins({
-        driver: context.driver,
-        discussionId,
-        channelUniqueName,
-        event: PLUGIN_EVENTS.DISCUSSION_CHANNEL_EDITED,
-      });
+      await triggerChannelPlugins(
+        {
+          driver: context.driver,
+          discussionId,
+          channelUniqueName,
+          event: PLUGIN_EVENTS.DISCUSSION_CHANNEL_EDITED,
+        },
+        { execution: { deferExecution: true } }
+      );
     } catch (error) {
       logger.warn(
         `Discussion plugin pipeline failed for ${channelUniqueName}:`,

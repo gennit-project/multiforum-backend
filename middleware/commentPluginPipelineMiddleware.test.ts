@@ -110,8 +110,10 @@ test("a failure while dispatching is swallowed and the result still returns", as
 
 test("dispatches comment.edited after a successful text update", async () => {
   const calls: Array<{ commentId: string; event: string; driver: unknown }> = [];
-  const injected = createCommentPluginPipelineMiddleware(async args => {
+  const executionModes: unknown[] = [];
+  const injected = createCommentPluginPipelineMiddleware(async (args, options) => {
     calls.push(args);
+    executionModes.push(options?.execution);
     return [];
   });
   const driver = {} as any;
@@ -129,6 +131,10 @@ test("dispatches comment.edited after a successful text update", async () => {
   assert.deepEqual(calls, [
     { commentId: "c-1", event: "comment.edited", driver },
     { commentId: "c-2", event: "comment.edited", driver },
+  ]);
+  assert.deepEqual(executionModes, [
+    { deferExecution: true },
+    { deferExecution: true },
   ]);
 });
 

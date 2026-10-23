@@ -21,7 +21,7 @@ const setup = ({
     channelUniqueName: string;
     event: string;
     driver?: unknown;
-  }) => Promise<unknown>;
+  }, options?: { execution?: { deferExecution?: boolean } }) => Promise<unknown>;
 } = {}) => {
   let reads = 0;
   const calls: Array<{
@@ -105,6 +105,32 @@ test("uses the custom mutation input and its final forum membership", async () =
   );
 
   assert.deepEqual(calls.map(call => call.channelUniqueName), ["new-forum"]);
+});
+
+test("dispatches edited discussions through the deferred queue path", async () => {
+  const modes: unknown[] = [];
+  const after = {
+    ...OLD,
+    body: "New body",
+    DiscussionChannels: [{ channelUniqueName: "cats" }],
+  };
+  const { context, middleware } = setup({
+    snapshots: [OLD, after],
+    trigger: async (_args, options) => {
+      modes.push(options?.execution);
+      return [];
+    },
+  });
+
+  await middleware.updateDiscussions(
+    async () => RESULT,
+    null,
+    { where: { id: "discussion" }, update: { body: "New body" } },
+    context,
+    {} as never
+  );
+
+  assert.deepEqual(modes, [{ deferExecution: true }]);
 });
 
 test("skips metadata-only updates without reading discussion snapshots", async () => {

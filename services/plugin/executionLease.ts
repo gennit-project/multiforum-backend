@@ -1,6 +1,10 @@
 import { PluginRunStatus } from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
-import {createPipelineLeaseRepository,type PipelineLeaseRepository} from "../persistence/pipelineLeaseRepository.js";
+import {
+  createPipelineLeaseRepository,
+  type PipelineLeaseRepository,
+  type PluginEventClaimLimits,
+} from "../persistence/pipelineLeaseRepository.js";
 import { randomUUID } from "node:crypto";
 import type {
   PluginRunUpdateInput,
@@ -96,6 +100,7 @@ export const claimPluginRunLease = async ({
   now = new Date(),
   leaseDurationMs = pluginJobLeaseDurationMs(),
   leaseId = randomUUID(),
+  claimLimits,
 }: {
   driver?: Driver;
   repository?: PipelineLeaseRepository;
@@ -104,17 +109,21 @@ export const claimPluginRunLease = async ({
   now?: Date;
   leaseDurationMs?: number;
   leaseId?: string;
+  claimLimits?: PluginEventClaimLimits;
 }): Promise<PluginRunLease | null> => {
   const timestamp = now.toISOString();
   const timeoutAt = leaseDeadline(now, leaseDurationMs);
   const persistence = repository ?? createPipelineLeaseRepository(driver!);
-  const result = await persistence.claimPendingJob(pluginRunId, {
+  const update = {
       status: PluginRunStatus.Running,
       leaseId,
       startedAt: timestamp,
       heartbeatAt: timestamp,
       timeoutAt,
-  });
+  };
+  const result = claimLimits && persistence.claimPendingEventJob
+    ? await persistence.claimPendingEventJob(pluginRunId, update, claimLimits)
+    : await persistence.claimPendingJob(pluginRunId, update);
   if (result.pluginRuns.length === 0) return null;
 
   await persistence.extendAttempt(pipelineId, {

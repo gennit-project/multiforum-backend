@@ -9,6 +9,7 @@ import type {
   PluginToRun,
   PendingRun,
   PipelineExecutionMetadata,
+  EventTriggerExecutionOptions,
 } from './types.js'
 import { CHANNEL_EVENTS } from './constants.js'
 import { decryptSecret } from './encryption.js'
@@ -58,8 +59,23 @@ import {
   createReportIdempotencyKey,
   createRuleSetVersion,
 } from './moderationJobIdentity.js'
+import {
+  parseStoredPipelineConfiguration,
+  pipelineFromStoredConfiguration,
+} from './queuedPipeline.js'
 
 export const isChannelEvent = (event: string) => CHANNEL_EVENTS.has(event)
+
+const isPipelineJobStatus = (value: unknown): value is PipelineJobStatus =>
+  typeof value === 'string' && [
+    'PENDING',
+    'RUNNING',
+    'SUCCEEDED',
+    'FAILED',
+    'SKIPPED',
+    'TIMED_OUT',
+    'CANCELLED',
+  ].includes(value)
 
 /**
  * Triggers channel-scoped plugin pipelines when content is submitted to a channel.
@@ -84,7 +100,7 @@ export const triggerChannelPluginPipeline = async (
     reportAsBot = createBotReport,
   }: {
     loadPlugin?: typeof loadPluginImplementation
-    execution?: PipelineExecutionMetadata
+    execution?: PipelineExecutionMetadata & EventTriggerExecutionOptions
     leaseRepository?: PipelineLeaseRepository
     attemptRepository?: PipelineAttemptRepository
     channelRepository?: ChannelExecutionRepository
@@ -180,6 +196,15 @@ export const triggerChannelPluginPipeline = async (
   const pluginVersionsMap = buildPluginVersionMaps(
     edges as unknown as PluginEdgeData[]
   )
+  const storedConfiguration = execution?.resume
+    ? parseStoredPipelineConfiguration(execution.resume.configurationSnapshot)
+    : null
+  if (execution?.resume && !storedConfiguration) {
+    throw new Error(`Queued pipeline "${execution.resume.pipelineId}" has an invalid configuration snapshot`)
+  }
+  if (storedConfiguration?.event !== undefined && storedConfiguration.event !== event) {
+    throw new Error(`Queued pipeline event "${storedConfiguration.event}" does not match "${event}"`)
+  }
 
   // Server-wide candidates establish the baseline. Channel candidates can
   // override a server-selected version of the same plugin, but each plugin is
@@ -245,10 +270,32 @@ export const triggerChannelPluginPipeline = async (
   }
   addPipelineSteps(channelEventPipeline, true)
 
-  const pluginsToRun: PluginToRun[] = pluginOrder.map((pluginId, order) => ({
+  let pluginsToRun: PluginToRun[] = pluginOrder.map((pluginId, order) => ({
     ...pluginsById.get(pluginId)!,
     order,
   }))
+
+  if (storedConfiguration) {
+    const storedPipeline = pipelineFromStoredConfiguration(storedConfiguration)
+    pluginsToRun = storedConfiguration.steps.flatMap((storedStep, index) => {
+      const step = storedPipeline.steps[index]
+      const pluginMatch = getPluginForStep(
+        pluginVersionsMap,
+        storedStep.pluginId,
+        storedStep.version
+      )
+      if (!pluginMatch) return []
+      return [{
+        pluginId: storedStep.pluginId,
+        edgeData: pluginMatch.edgeData,
+        step,
+        order: storedStep.order,
+      }]
+    })
+    if (pluginsToRun.length !== storedConfiguration.steps.length) {
+      throw new Error(`Queued pipeline "${execution?.resume?.pipelineId}" references an unavailable plugin version`)
+    }
+  }
 
   if (pluginsToRun.length === 0) {
     return []
@@ -283,10 +330,17 @@ export const triggerChannelPluginPipeline = async (
   const serverRules = Array.isArray(serverConfig.rules) ? serverConfig.rules : []
   const forumRules = Array.isArray(channel.rules) ? channel.rules : []
 
-  const pipelineId = execution?.pipelineId || generatePipelineId()
+  const pipelineId = execution?.resume?.pipelineId || execution?.pipelineId || generatePipelineId()
   const runs: unknown[] = []
-  const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
+  const resumedRunsByOrder = new Map(
+    (execution?.resume?.runs || []).map(run => [run.order, run])
+  )
+  const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(({ order }) => {
+    const status = resumedRunsByOrder.get(order)?.status
+    return isPipelineJobStatus(status) ? status : 'PENDING'
+  })
   const stopOnFirstFailure =
+    storedConfiguration?.stopOnFirstFailure ??
     channelEventPipeline?.stopOnFirstFailure ??
     serverEventPipeline?.stopOnFirstFailure ??
     true
@@ -310,10 +364,12 @@ export const triggerChannelPluginPipeline = async (
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null
   let pipelineStopped = false
 
-  await createPipelineAttempt({
-    driver,
-    repository: attemptRepository,
-    context: {
+  if (!execution?.resume) {
+    await createPipelineAttempt({
+      driver,
+      repository: attemptRepository,
+      startImmediately: !execution?.deferExecution,
+      context: {
       pipelineId,
       targetId: discussionId,
       targetType: 'Discussion',
@@ -326,12 +382,33 @@ export const triggerChannelPluginPipeline = async (
       trigger: execution?.trigger,
       initiatedByUsername: execution?.initiatedByUsername,
       retryOfPipelineRunId: execution?.retryOfPipelineRunId,
-    },
-  })
+      },
+    })
+  } else if (execution.resume.targetVersion !== contentRevisionHash) {
+    for (const run of execution.resume.runs.filter(run => run.status === 'PENDING')) {
+      await repository.markSkippedRun(run.id, {
+        status: 'CANCELLED',
+        skippedReason: 'Superseded by a newer content revision',
+        message: 'Cancelled: superseded content revision',
+        finishedAt: new Date().toISOString(),
+        timeoutAt: null,
+      } as PluginRunUpdateInput)
+      jobStatuses[run.order] = 'CANCELLED'
+    }
+    await completePipelineAttempt({
+      driver,
+      repository: attemptRepository,
+      pipelineId,
+      statuses: jobStatuses,
+    })
+    return []
+  }
 
   // Create PENDING records for all plugins first
-  const pendingRuns: PendingRun[] = []
-  for (const { pluginId, edgeData, order } of pluginsToRun) {
+  const pendingRuns: PendingRun[] = execution?.resume
+    ? execution.resume.runs.map(({ id, pluginId, order }) => ({ id, pluginId, order }))
+    : []
+  if (!execution?.resume) for (const { pluginId, edgeData, order } of pluginsToRun) {
     const pluginNode = edgeData.node.Plugin
     const pluginVersionData = edgeData.node
     const ruleSetVersion = createRuleSetVersion({
@@ -355,6 +432,7 @@ export const triggerChannelPluginPipeline = async (
           targetType: 'Discussion',
           targetVersion: contentRevisionHash,
           ruleSetVersion,
+          deferred: execution?.deferExecution === true,
           pipelineId,
           executionOrder: order,
           queuedAt: timing.queuedAt,
@@ -391,7 +469,14 @@ export const triggerChannelPluginPipeline = async (
     })
   }
 
+  if (execution?.deferExecution && !execution.resume) {
+    return Promise.all(
+      pendingRuns.map(async run => (await repository.findReturnedRun(run.id))[0])
+    )
+  }
+
   // Execute each plugin in order
+  let executedRuns = 0
   for (let i = 0; i < pluginsToRun.length; i++) {
     const { pluginId, edgeData, step, order } = pluginsToRun[i]
     const pendingRun = pendingRuns.find(r => r.pluginId === pluginId && r.order === order)
@@ -400,6 +485,46 @@ export const triggerChannelPluginPipeline = async (
     const pluginRunId = pendingRun.id
     const pluginVersionData = edgeData.node
     const pluginNode = pluginVersionData.Plugin
+    const resumedRun = resumedRunsByOrder.get(order)
+
+    if (resumedRun && resumedRun.status !== 'PENDING') {
+      if (resumedRun.status === 'RUNNING') break
+      if (resumedRun.status === 'SUCCEEDED') previousStatus = 'SUCCEEDED'
+      if (resumedRun.status === 'FAILED') {
+        previousStatus = 'FAILED'
+        if (stopOnFirstFailure && !step.continueOnError) pipelineStopped = true
+      }
+      if (resumedRun.status === 'TIMED_OUT' || resumedRun.status === 'CANCELLED') {
+        previousStatus = 'FAILED'
+        if (stopOnFirstFailure && !step.continueOnError) pipelineStopped = true
+      }
+      continue
+    }
+
+    if (
+      execution?.resume?.maxRuns !== undefined &&
+      executedRuns >= execution.resume.maxRuns
+    ) {
+      break
+    }
+
+    const expectedRuleSetVersion = createRuleSetVersion({
+      pluginId,
+      pluginVersion: pluginVersionData.version,
+      serverRules,
+      forumRules,
+    })
+    if (resumedRun?.ruleSetVersion && resumedRun.ruleSetVersion !== expectedRuleSetVersion) {
+      await repository.markSkippedRun(pluginRunId, {
+        status: 'CANCELLED',
+        skippedReason: 'Rules changed after this job was queued',
+        message: 'Cancelled: superseded rule set',
+        finishedAt: new Date().toISOString(),
+        timeoutAt: null,
+      } as PluginRunUpdateInput)
+      jobStatuses[order] = 'CANCELLED'
+      continue
+    }
 
     // Check if pipeline was stopped
     if (pipelineStopped) {
@@ -442,6 +567,7 @@ export const triggerChannelPluginPipeline = async (
       repository: leaseRepository,
       pluginRunId,
       pipelineId,
+      claimLimits: execution?.resume?.claimLimits,
     })
     if (!lease) {
       const unclaimed = await repository.findReturnedRun(pluginRunId)
@@ -455,8 +581,10 @@ export const triggerChannelPluginPipeline = async (
         jobStatuses[order] = status
       }
       if (unclaimed[0]) runs.push(unclaimed[0])
+      if (execution?.resume) break
       continue
     }
+    executedRuns += 1
 
     const heartbeat = startPluginRunHeartbeat({
       driver,
@@ -769,7 +897,11 @@ export const triggerChannelPluginPipeline = async (
     }
   }
 
-  if (securityScanExpected && downloadableFile) {
+  if (
+    securityScanExpected &&
+    downloadableFile &&
+    !jobStatuses.some(status => status === 'PENDING' || status === 'RUNNING')
+  ) {
     const outcome = securityScanOutcome || failedDownloadScanOutcome(
       'The security scan was skipped before it could complete.'
     )

@@ -36,11 +36,14 @@ const dispatchCommentEvents = async ({
     const commentId = comment?.id
     if (!commentId) continue
 
-    await triggerCommentPlugins({
-      commentId,
-      event,
-      driver,
-    })
+    await triggerCommentPlugins(
+      {
+        commentId,
+        event,
+        driver,
+      },
+      { execution: { deferExecution: true } }
+    )
   }
 }
 

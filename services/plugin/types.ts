@@ -91,6 +91,31 @@ export type PipelineExecutionMetadata = {
   campaignId?: string | null
 }
 
+export type QueuedPluginRun = PendingRun & {
+  status: string
+  version: string
+  ruleSetVersion?: string | null
+  targetVersion?: string | null
+}
+
+export type QueuedPipelineResume = {
+  pipelineId: string
+  targetVersion?: string | null
+  configurationSnapshot: unknown
+  runs: QueuedPluginRun[]
+  maxRuns?: number
+  claimLimits?: {
+    concurrency: number
+    rateLimitPerMinute: number
+    windowStart: string
+  }
+}
+
+export type EventTriggerExecutionOptions = {
+  deferExecution?: boolean
+  resume?: QueuedPipelineResume
+}
+
 // Arguments for comment trigger
 export type CommentTriggerArgs = {
   commentId: string
