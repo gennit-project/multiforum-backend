@@ -206,6 +206,51 @@ test("enqueues a deferred discussion job without loading the plugin", async () =
   );
 });
 
+test("resumes a persisted discussion job without creating a second attempt", async () => {
+  const { models, updates, creates, attemptCreates } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [installedEdge("mybot")]
+  );
+  const loader = loaderFor(pluginReturning({ success: true, result: { message: "ok" } }));
+  await execRun(models, loader, { execution: { deferExecution: true } });
+
+  const queued = creates[0].input[0];
+  await execRun(models, loader, {
+    execution: {
+      resume: {
+        pipelineId: String(queued.pipelineId),
+        targetVersion: String(queued.targetVersion),
+        configurationSnapshot: attemptCreates[0].input[0].configurationSnapshot,
+        maxRuns: 1,
+        runs: [{
+          id: "run-1",
+          pluginId: String(queued.pluginId),
+          order: Number(queued.executionOrder),
+          status: "PENDING",
+          version: String(queued.version),
+          ruleSetVersion: String(queued.ruleSetVersion),
+          targetVersion: String(queued.targetVersion),
+        }],
+      },
+    },
+  });
+
+  assert.deepEqual(
+    {
+      attemptsCreated: attemptCreates.length,
+      jobsCreated: creates.length,
+      ran: statusesOf(updates).includes("RUNNING"),
+      succeeded: statusesOf(updates).includes("SUCCEEDED"),
+    },
+    {
+      attemptsCreated: 1,
+      jobsCreated: 1,
+      ran: true,
+      succeeded: true,
+    }
+  );
+});
+
 test("does not publish a stale discussion verdict when an edit lands during execution", async () => {
   const { models } = makeExecModels(
     [{ pluginId: "mybot", condition: "ALWAYS" }],
