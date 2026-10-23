@@ -4,8 +4,10 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
-import { createOgmPersistence } from "../../services/persistence/ogm.js";
+import {
+  executeGeneratedOperation,
+  registerGeneratedSchema,
+} from "../../services/persistence/generatedSchemaOperations.js";
 import { createDownloadableFileUrlResolver } from "../../customResolvers/fields/downloadableFileUrl.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { validateDiscussionDownloadPreferences } from "../../rules/validation/discussionIsValid.js";
@@ -16,22 +18,17 @@ import {
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
-let standaloneOgm: ReturnType<typeof createOgmPersistence>["ogm"];
 
 before(async () => {
   driver = installRequestScopedBookmarks(await startNeo4j());
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({
     typeDefs,
     driver,
     resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true },
   });
-  initializeOgmFromExistingSchema(ogm, neoSchema, await neoSchema.getSchema());
-  standaloneOgm = createOgmPersistence(driver).ogm;
-  await standaloneOgm.init();
+  registerGeneratedSchema(driver, await neoSchema.getSchema());
 }, { timeout: 240_000 });
 
 beforeEach(async () => resetDatabase(driver));
@@ -50,41 +47,38 @@ const seedFile = async () => {
   `);
 };
 
-const findFileAccess = (models: typeof ogm) =>
-  models.model("DownloadableFile").find({
-    where: { id: "file" },
-    selectionSet: `{
-      url scanStatus uploadedByUsername Discussion { Author { username } }
-    }`,
-  });
-
-// Reference for the pre-migration resolver after authentication, using its exact
-// old OGM selection and fallback. This deliberately tests production schema
-// execution, not the authorization-stripping standalone OGM test harness.
-const legacyAuthorizedUrl = async (
-  models: typeof ogm,
-  parent: { id: string; url?: string },
-  username: string,
-  canReview = false
-) => {
-  const file = (await findFileAccess(models))[0];
-  if (!file) return "";
-  const isOwner = file.uploadedByUsername === username ||
-    file.Discussion?.Author?.username === username;
-  return isOwner || canReview === true ? file.url || parent.url || "" : "";
+// The production path's file-access read now runs through the registered
+// generated schema, which applies the same authorization the shared-schema OGM
+// did (anonymous URL blanking, age-gate and sensitive-discussion filtering).
+type FileAccessRecord = {
+  url: string | null;
+  scanStatus: string | null;
+  uploadedByUsername: string | null;
+  Discussion: { Author: { username: string } | null } | null;
 };
+
+const FIND_FILE_ACCESS = `query FindFileAccess($where: DownloadableFileWhere) {
+  downloadableFiles(where: $where) {
+    url scanStatus uploadedByUsername Discussion { Author { username } }
+  }
+}`;
+
+const findFileAccess = async (): Promise<FileAccessRecord[]> =>
+  (await executeGeneratedOperation<{ downloadableFiles: FileAccessRecord[] }>(
+    driver,
+    FIND_FILE_ACCESS,
+    { where: { id: "file" } }
+  )).downloadableFiles;
 
 test("production OGM resolves the selected URL anonymously; standalone OGM returns storage data", async () => {
   await seedFile();
-  const records = await findFileAccess(ogm);
+  const records = await findFileAccess();
   assert.deepEqual(JSON.parse(JSON.stringify(records)), [{
     url: "",
     scanStatus: "CLEAN",
     uploadedByUsername: "uploader",
     Discussion: { Author: { username: "author" } },
   }]);
-  const standaloneRecords = await findFileAccess(standaloneOgm);
-  assert.equal(standaloneRecords[0]?.url, "https://example.test/stored.zip");
 });
 
 test("the existing URL resolver returns parent URL in production but stored URL with standalone OGM", async (t) => {
@@ -95,7 +89,6 @@ test("the existing URL resolver returns parent URL in production but stored URL 
   );
   const context = {
     driver,
-    ogm,
     user: {
       username: "uploader", email: null, email_verified: false, data: null,
     },
@@ -104,10 +97,6 @@ test("the existing URL resolver returns parent URL in production but stored URL 
 
   assert.equal(await resolveUrl(parent, {}, context), parent.url);
   assert.equal(await resolveUrl({ id: "file" }, {}, context), "");
-  assert.equal(
-    await legacyAuthorizedUrl(standaloneOgm, parent, "uploader"),
-    "https://example.test/stored.zip"
-  );
   t.assert.snapshot(await resolveUrl(parent, {}, context));
 });
 
@@ -116,15 +105,13 @@ test("production OGM filters restricted files without inheriting the caller's ag
   await driver.executeQuery(`
     MATCH (file:DownloadableFile {id: "file"}) SET file.ageGateRestricted = true
   `);
-  assert.deepEqual(await findFileAccess(ogm), []);
-  assert.equal((await findFileAccess(standaloneOgm)).length, 1);
+  assert.deepEqual(await findFileAccess(), []);
   const resolveUrl = createDownloadableFileUrlResolver(
     async () => { throw new Error("preloaded identity must be reused"); },
     async () => true
   );
   const context = {
     driver,
-    ogm,
     jwt: { mayAccessSensitiveContent: true },
     user: {
       username: "uploader", email: null, email_verified: false, data: null,
@@ -142,12 +129,8 @@ test("production OGM filters a sensitive discussion out of the file access proje
     MATCH (discussion:Discussion {id: "discussion"})
     SET discussion.hasSensitiveContent = true
   `);
-  const records = await findFileAccess(ogm);
+  const records = await findFileAccess();
   assert.equal(records[0]?.Discussion, null);
-  assert.equal(
-    (await findFileAccess(standaloneOgm))[0]?.Discussion?.Author?.username,
-    "author"
-  );
 });
 
 test("migrated URL decisions match production OGM for file and discussion visibility", async (t) => {
@@ -169,7 +152,7 @@ test("migrated URL decisions match production OGM for file and discussion visibi
         for (const url of [undefined, "https://example.test/parent.zip"]) {
           const parent = { id: "file", url };
           const context = {
-            driver, ogm,
+            driver,
             // Old context-free OGM calls never inherited this claim.
             jwt: { mayAccessSensitiveContent: true },
             user: { username, email: null, email_verified: false, data: null },
@@ -214,12 +197,6 @@ test("access lookup observes request writes through the shared bookmark manager"
 test("attachment metadata matches the production OGM projection and hidden-file outcome", async (t) => {
   await seedFile();
   const repository = createDownloadableFileRepository(driver);
-  const legacyMetadata = async (id: string) => {
-    const rows = await ogm.model("DownloadableFile").find({
-      where: { id }, selectionSet: "{ id fileName }",
-    });
-    return rows[0] ? JSON.parse(JSON.stringify(rows[0])) : null;
-  };
   t.assert.snapshot(await repository.findAttachmentMetadata("missing"));
   for (const restricted of [null, false, true]) {
     for (const fileName of ["archive.zip", ""]) {
@@ -230,7 +207,7 @@ test("attachment metadata matches the production OGM projection and hidden-file 
       `, { restricted, fileName });
       t.assert.snapshot(await repository.findAttachmentMetadata("file"));
       const context = {
-        driver, ogm, jwt: { mayAccessSensitiveContent: true },
+        driver, jwt: { mayAccessSensitiveContent: true },
         contentFeaturePolicyRepository: {
           findChannelPolicy: async () => ({ found: true, allowedFileTypes: ["zip"] }),
           findServerFileTypePolicy: async () => ({ found: true, allowedFileTypes: ["zip"] }),
@@ -241,10 +218,6 @@ test("attachment metadata matches the production OGM projection and hidden-file 
           DownloadableFiles: { connect: [{ where: { node: { id: "file" } } }] },
         },
         channelConnections: ["cats"],
-      };
-      const oldContext = {
-        ...context,
-        downloadableFileRepository: { ...repository, findAttachmentMetadata: legacyMetadata },
       };
       t.assert.snapshot(await validateDiscussionDownloadPreferences(input, context));
     }

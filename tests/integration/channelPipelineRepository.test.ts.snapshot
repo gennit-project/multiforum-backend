@@ -61,3 +61,287 @@ exports[`channel and server snapshots plus pipeline writes preserve exact projec
   }
 ]
 `;
+
+exports[`channel and server snapshots plus pipeline writes preserve exact projections and native events 3`] = `
+[
+  {
+    "event": "update",
+    "id": "<id>",
+    "properties": {
+      "new": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "pluginPipelines": "[{\\"event\\":\\"comment.created\\"}]",
+        "uniqueName": "cats"
+      },
+      "old": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2026
+          }
+        },
+        "pluginPipelines": "[]",
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<timestamp>",
+    "typename": "Channel"
+  }
+]
+`;
+
+exports[`deprecation and disconnection preserve graph writes and native relationship events 1`] = `
+{
+  "events": [
+    {
+      "event": "delete_relationship",
+      "fromTypename": "Channel",
+      "id": "<id>",
+      "id_from": "<id_from>",
+      "id_to": "<id_to>",
+      "properties": {
+        "from": {
+          "createdAt": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 0
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "pluginPipelines": "[]",
+          "uniqueName": "cats"
+        },
+        "relationship": {},
+        "to": {
+          "createdAt": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 0
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "deprecatedReason": "Bot profile removed from channel \\"cats\\"",
+          "isDeprecated": true,
+          "username": "bot-old"
+        }
+      },
+      "relationshipName": "BOT",
+      "timestamp": "<timestamp>",
+      "toTypename": "User"
+    },
+    {
+      "event": "update",
+      "id": "<id>",
+      "properties": {
+        "new": {
+          "createdAt": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 0
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "deprecatedReason": "Bot profile removed from channel \\"cats\\"",
+          "isDeprecated": true,
+          "username": "bot-old"
+        },
+        "old": {
+          "createdAt": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 0
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2026
+            }
+          },
+          "username": "bot-old"
+        }
+      },
+      "timestamp": "<timestamp>",
+      "typename": "User"
+    }
+  ],
+  "rows": [
+    {
+      "channel": "cats",
+      "deprecated": null,
+      "reason": null,
+      "username": "human"
+    },
+    {
+      "channel": null,
+      "deprecated": true,
+      "reason": "Bot profile removed from channel \\"cats\\"",
+      "username": "bot-old"
+    }
+  ]
+}
+`;

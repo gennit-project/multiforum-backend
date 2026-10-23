@@ -4,8 +4,6 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver, SessionConfig } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { SortDirection } from "../../ogm_types.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import {
   executeGeneratedOperation,
   registerGeneratedSchema,
@@ -19,7 +17,6 @@ import {
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 const sessions: SessionConfig[] = [];
 
 before(async () => {
@@ -32,18 +29,16 @@ before(async () => {
   installDefaultNeo4jDatabase(driver, "neo4j");
   installRequestScopedBookmarks(driver);
   const app = getCustomResolvers(driver);
-  ogm = app.ogm;
   const neoSchema = new Neo4jGraphQL({
     typeDefs,
     driver,
     resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true },
   });
-  // Exactly the production order: both internal APIs receive the executable
-  // schema before outer authorization/middleware is applied.
+  // Exactly the production order: the generated-schema registry receives the
+  // executable schema before outer authorization/middleware is applied.
   const schema = await neoSchema.getSchema();
   registerGeneratedSchema(driver, schema);
-  initializeOgmFromExistingSchema(ogm, neoSchema, schema);
 }, { timeout: 240_000 });
 
 beforeEach(async () => {
@@ -63,14 +58,12 @@ test("internal named reads preserve context-free production filtering and select
     CREATE (:Discussion {id: 'visible', title: 'Visible'})
     CREATE (:Discussion {id: 'restricted', title: 'Restricted', hasSensitiveContent: true})
   `);
-  const old = await ogm.model("Discussion").find({ selectionSet: "{ id title }" });
   const data = await executeGeneratedOperation<{ discussions: unknown[] }>(driver,
     "query NotificationDiscussionSnapshot { discussions { id title } }",
     // Neither an extra variable nor an ambient request bookmark grants an
     // internal snapshot the outer caller's sensitive-content claim.
     { jwt: { mayAccessSensitiveContent: true } }
   );
-  assert.deepEqual(plain(data.discussions), plain(old));
   assert.deepEqual(plain(data.discussions), [{ id: "visible", title: "Visible" }]);
 });
 
@@ -79,21 +72,19 @@ test("operation-owned selections retain generated default limits and GraphQL var
     UNWIND range(1, 30) AS ordinal
     CREATE (:User {username: 'user-' + toString(ordinal)})
   `);
-  const old = await ogm.model("User").find({ selectionSet: "{ username }" });
   const data = await executeGeneratedOperation<{ users: unknown[] }>(driver, USER_SNAPSHOT, {});
-  assert.equal(old.length, 25);
-  assert.deepEqual(plain(data.users), plain(old));
+  // The generated read applies its default page limit of 25.
+  assert.equal(data.users.length, 25);
 
   const selected = await executeGeneratedOperation<{ users: unknown[] }>(driver,
     `query FirstUsers($options: UserOptions = {limit: 2, sort: [{username: ASC}]}) {
       users(options: $options) { username }
     }`, {}
   );
-  const oldSelected = await ogm.model("User").find({
-    options: { limit: 2, sort: [{ username: SortDirection.Asc }] },
-    selectionSet: "{ username }",
-  });
-  assert.deepEqual(plain(selected.users), plain(oldSelected));
+  // Order is part of the contract here (limit + ASC sort), and the global
+  // snapshot serializer sorts array elements, so assert the ordered result
+  // explicitly: usernames user-1..user-30 sorted ASC lexically start user-1, user-10.
+  assert.deepEqual(plain(selected.users), [{ username: "user-1" }, { username: "user-10" }]);
   assert.equal(selected.users.length, 2);
 });
 
@@ -107,7 +98,7 @@ const errorMessage = async (work: () => Promise<unknown>): Promise<string> => {
   }
 };
 
-test("validation/coercion fail before database access and expose the same first error as OGM", async () => {
+test("validation/coercion fail before database access and expose the first error", async () => {
   const where = { username: 42 };
   const newCoercion = await errorMessage(() => executeGeneratedOperation(driver, USER_SNAPSHOT, { where }));
   assert.match(newCoercion, /String cannot represent a non string value/);
@@ -120,24 +111,19 @@ test("validation/coercion fail before database access and expose the same first 
   assert.equal(sessions.length, 0);
 });
 
-test("named reads retain OGM READ routing, configured database and request bookmarks after a write", async () => {
+test("named reads retain READ routing, configured database and request bookmarks after a write", async () => {
   await runWithRequestBookmarks(async () => {
     const bookmarkManager = getRequestBookmarkManager();
     assert.ok(bookmarkManager);
     await driver.executeQuery("CREATE (:User {username: 'new-user'})");
     sessions.length = 0;
-    const old = await ogm.model("User").find({
-      where: { username: "new-user" }, selectionSet: "{ username }",
-    });
-    const oldSessions = sessions.splice(0);
     const result = await executeGeneratedOperation<{ users: unknown[] }>(driver, USER_SNAPSHOT, {
       where: { username: "new-user" },
     });
-    assert.deepEqual(plain(result.users), plain(old));
+    // Read-your-own-writes: the generated read observes the just-written value.
     assert.deepEqual(plain(result.users), [{ username: "new-user" }]);
-    assert.equal(oldSessions.length, 1);
     assert.equal(sessions.length, 1);
-    for (const config of [...oldSessions, ...sessions]) {
+    for (const config of sessions) {
       assert.equal(config.defaultAccessMode, "READ");
       assert.equal(config.database, "neo4j");
       assert.equal(config.bookmarkManager, bookmarkManager);
