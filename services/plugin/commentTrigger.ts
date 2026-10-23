@@ -18,8 +18,10 @@ import {
   claimPluginRunLease,
   completePluginRunLease,
   createQueuedPluginRunTiming,
+  reschedulePluginRunLease,
   startPluginRunHeartbeat,
 } from './executionLease.js'
+import { createPluginEventRetrySchedule } from './pluginEventRetry.js'
 import {
   createPublicDiagnosticCollector,
   type PublicDiagnostic,
@@ -802,6 +804,31 @@ export const triggerPluginRunsForComment = async (
       const result = await pluginInstance.handleEvent(eventEnvelope)
       const runEnd = performance.now()
       const durationMs = Math.round(runEnd - runStart)
+
+      const retrySchedule = execution.resume && result?.success === false
+        ? createPluginEventRetrySchedule({
+            retryable: result.retryable === true,
+            currentRetryCount: resumedRun?.retryCount ?? 0,
+            error: result.error,
+          })
+        : null
+      if (retrySchedule) {
+        await reschedulePluginRunLease({
+          driver,
+          repository: leaseRepository,
+          lease,
+          update: {
+            ...retrySchedule,
+            durationMs,
+            publicDiagnostics: JSON.stringify(publicDiagnostics),
+            payload: JSON.stringify({ event, flags, logs, result }),
+          },
+        })
+        jobStatuses[order] = 'PENDING'
+        const updated = await repository.findReturnedRun(pluginRunId)
+        if (updated[0]) runs.push(updated[0])
+        break
+      }
 
       const succeeded = result?.success !== false
       previousStatus = succeeded ? 'SUCCEEDED' : 'FAILED'

@@ -44,6 +44,7 @@ const run = (pipelineId: string): QueuedEventRun => ({
   executionOrder: 0,
   ruleSetVersion: 'rules-1',
   targetVersion: 'revision-1',
+  retryCount: 0,
 })
 
 const repository = ({

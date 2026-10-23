@@ -7,7 +7,7 @@ import typeDefs from '../../typeDefs.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import { createPipelineLeaseRepository, type PipelineLeaseRepository } from '../../services/persistence/pipelineLeaseRepository.js';
 import { createPluginEventQueueRepository } from '../../services/persistence/pluginEventQueueRepository.js';
-import {cancelSupersededPluginRuns,claimPluginRunLease,renewPluginRunLease,completePluginRunLease} from '../../services/plugin/executionLease.js';
+import {cancelSupersededPluginRuns,claimPluginRunLease,renewPluginRunLease,completePluginRunLease,reschedulePluginRunLease} from '../../services/plugin/executionLease.js';
 import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;const engine=createSubscriptionEngine();let events:any[]=[];
@@ -24,6 +24,33 @@ const renew=(repository:PipelineLeaseRepository,identity=lease)=>renewPluginRunL
 const complete=(repository:PipelineLeaseRepository,identity=lease)=>completePluginRunLease({repository,lease:identity,update:{status:'SUCCEEDED',message:'done'},now:later});
 test('claim, heartbeat sibling extension, completion retain exact responses and ordered native events',async(t)=>{async function run(repository:PipelineLeaseRepository){await seed();assert.deepEqual(await claim(repository),lease);assert.equal(await renew(repository),true);const result=await complete(repository);assert.equal(result.pluginRuns[0].status,'SUCCEEDED');return {result:normalize(result),state:await state()};}const result=await run(createPipelineLeaseRepository(driver));assert.deepEqual(result.state.rows.map((r:any)=>[r.label,r.status,r.timeout]),[['PluginPipelineRun','RUNNING','2026-07-30T12:01:30Z'],['PluginRun','SUCCEEDED',null],['PluginRun','PENDING','2026-07-30T12:01:30Z']]);t.assert.snapshot(result);});
 test('second claimant and stale owner cannot renew or complete after first committed claim',async(t)=>{async function run(repository:PipelineLeaseRepository){await seed();assert.ok(await claim(repository));const expected=await state();assert.equal(await claim(repository,'loser'),null);assert.equal(await renew(repository,{...lease,leaseId:'loser'}),false);assert.equal((await complete(repository,{...lease,leaseId:'loser'})).pluginRuns.length,0);assert.deepEqual(await state(),expected);return expected;}t.assert.snapshot(await run(createPipelineLeaseRepository(driver)));});
+test('only the current lease can reschedule a running job',async()=>{
+ await seed();
+ const repository=createPipelineLeaseRepository(driver);
+ assert.ok(await claim(repository));
+ const nextAttemptAt='2026-07-30T12:00:30.000Z';
+ const rescheduled=await reschedulePluginRunLease({
+  repository,
+  lease,
+  update:{retryCount:1,nextAttemptAt,message:'temporary failure'},
+ });
+ assert.equal(rescheduled.pluginRuns.length,1);
+ const stale=await reschedulePluginRunLease({
+  repository,
+  lease:{...lease,leaseId:'stale'},
+  update:{retryCount:2,nextAttemptAt:'2026-07-30T12:01:00.000Z'},
+ });
+ assert.equal(stale.pluginRuns.length,0);
+ const row=(await driver.executeQuery(`MATCH(job:PluginRun{id:'job'}) RETURN job{.status,.retryCount,.message,.leaseId,.heartbeatAt,.timeoutAt,.finishedAt,nextAttemptAt:toString(job.nextAttemptAt)} AS job`)).records[0].get('job');
+ assert.deepEqual({
+  ...row,
+  retryCount:row.retryCount.toNumber(),
+  nextAttemptAt:new Date(row.nextAttemptAt).toISOString(),
+ },{
+  status:'PENDING',retryCount:1,message:'temporary failure',leaseId:null,
+  heartbeatAt:null,timeoutAt:null,finishedAt:null,nextAttemptAt:'2026-07-30T12:00:30.000Z',
+ });
+});
 test('missing job retains null claim and no writes; generated input validation matches',async()=>{for(const repo of [createPipelineLeaseRepository(driver)]){assert.equal(await claim(repo),null);assert.equal(await renew(repo),false);assert.equal((await complete(repo)).pluginRuns.length,0);}assert.equal(events.length,0);await assert.rejects(createPipelineLeaseRepository(driver).claimPendingJob('job',{heartbeatAt:'invalid'}),/DateTime cannot represent non temporal value/);});
 test('newer content revision cancels only matching older pending jobs',async()=>{
  await driver.executeQuery(`
@@ -89,7 +116,10 @@ test('atomic event claims enforce concurrency across competing workers',async()=
 });
 test('atomic event claims include completed starts in the rolling rate window',async()=>{
  await driver.executeQuery(`
-  CREATE (:ServerConfig {serverName:'test'})
+  CREATE (:ServerConfig {
+   serverName:'test',
+   pluginEventStartTimes:[datetime('2026-07-30T11:59:30Z')]
+  })
   WITH 1 AS ignored
   CREATE (:PluginPipelineRun {
    id:'attempt',pipelineId:'pipeline',targetId:'comment',targetType:'Comment',
@@ -117,8 +147,51 @@ test('atomic event claims include completed starts in the rolling rate window',a
  const status=(await driver.executeQuery(`MATCH(job:PluginRun{id:'job'}) RETURN job.status AS status`)).records[0].get('status');
  assert.equal(status,'PENDING');
 });
+test('a retry claim records another start in the rolling rate window',async()=>{
+ await driver.executeQuery(`
+  CREATE (:ServerConfig {serverName:'test'})
+  CREATE (:PluginPipelineRun {
+   id:'attempt',pipelineId:'pipeline',targetId:'comment',targetType:'Comment',
+   eventType:'comment.created',scope:'SERVER',status:'QUEUED',trigger:'EVENT',
+   attemptNumber:1,configurationSnapshot:'{}',createdAt:datetime('2026-07-30T11:00:00Z'),
+   updatedAt:datetime('2026-07-30T11:00:00Z')
+  })
+  CREATE (:PluginRun {
+   id:'job',pluginId:'moderator',version:'1.0.0',scope:'SERVER',eventType:'comment.created',
+   status:'PENDING',targetId:'comment',targetType:'Comment',pipelineId:'pipeline',deferred:true,
+   createdAt:datetime('2026-07-30T11:00:00Z'),updatedAt:datetime('2026-07-30T11:00:00Z')
+  })
+ `);
+ const repository=createPipelineLeaseRepository(driver);
+ const first=await claimPluginRunLease({
+  repository,pluginRunId:'job',pipelineId:'pipeline',leaseId:'first',now,
+  leaseDurationMs:60000,
+  claimLimits:{concurrency:1,rateLimitPerMinute:2,windowStart:'2026-07-30T11:59:00.000Z'},
+ });
+ assert.ok(first);
+ await reschedulePluginRunLease({
+  repository,lease:first,
+  update:{retryCount:1,nextAttemptAt:later.toISOString(),message:'retry'},
+ });
+ const second=await claimPluginRunLease({
+  repository,pluginRunId:'job',pipelineId:'pipeline',leaseId:'second',now:later,
+  leaseDurationMs:60000,
+  claimLimits:{concurrency:1,rateLimitPerMinute:2,windowStart:'2026-07-30T11:59:30.000Z'},
+ });
+ assert.ok(second);
+ const starts=(await driver.executeQuery(`MATCH(config:ServerConfig) RETURN [started IN config.pluginEventStartTimes | toString(started)] AS starts`)).records[0].get('starts');
+ assert.deepEqual(starts,['2026-07-30T12:00:00Z','2026-07-30T12:00:30Z']);
+});
 test('event queue repository returns oldest eligible attempts and ordered jobs',async()=>{
  await driver.executeQuery(`
+  CREATE (:ServerConfig {
+   serverName:'test',
+   pluginEventStartTimes:[
+    datetime('2026-07-30T11:59:30Z'),
+    datetime('2026-07-30T11:59:30Z')
+   ]
+  })
+  WITH 1 AS ignored
   UNWIND [
    {suffix:'older',queuedAt:datetime('2026-07-30T11:58:00Z')},
    {suffix:'newer',queuedAt:datetime('2026-07-30T11:59:00Z')}
@@ -145,7 +218,7 @@ test('event queue repository returns oldest eligible attempts and ordered jobs',
  `);
  const repository=createPluginEventQueueRepository(driver);
  const capacity=await repository.getCapacity('2026-07-30T11:59:00.000Z');
- const attempts=await repository.findQueuedAttempts(1);
+ const attempts=await repository.findQueuedAttempts(1,'2026-07-30T12:00:00.000Z');
  const runs=await repository.findRuns('pipeline-older');
  await repository.failPendingAttempt('pipeline-newer','target was deleted','2026-07-30T12:00:00.000Z');
  const failed=(await driver.executeQuery(`
@@ -168,6 +241,35 @@ test('event queue repository returns oldest eligible attempts and ordered jobs',
    {label:'PluginRun',id:'job-newer-1',status:'FAILED',message:'target was deleted'},
   ],
  });
+});
+test('event queue waits for the earliest pending pipeline step retry',async()=>{
+ await driver.executeQuery(`
+  CREATE (:PluginPipelineRun {
+   id:'attempt',pipelineId:'pipeline',targetId:'comment',targetType:'Comment',
+   targetVersion:'revision',eventType:'comment.created',scope:'SERVER',status:'QUEUED',
+   trigger:'EVENT',attemptNumber:1,configurationSnapshot:'{}',
+   queuedAt:datetime('2026-07-30T11:58:00Z'),createdAt:datetime('2026-07-30T11:58:00Z'),
+   updatedAt:datetime('2026-07-30T11:58:00Z')
+  })
+  WITH 1 AS ignored
+  UNWIND [
+   {id:'first',executionOrder:0,nextAttemptAt:datetime('2026-07-30T12:01:00Z')},
+   {id:'second',executionOrder:1,nextAttemptAt:null}
+  ] AS item
+  CREATE (:PluginRun {
+   id:item.id,pluginId:'moderator',version:'1.0.0',scope:'SERVER',
+   eventType:'comment.created',status:'PENDING',targetId:'comment',targetType:'Comment',
+   targetVersion:'revision',pipelineId:'pipeline',executionOrder:item.executionOrder,
+   nextAttemptAt:item.nextAttemptAt,deferred:true,createdAt:datetime('2026-07-30T11:58:00Z'),
+   updatedAt:datetime('2026-07-30T11:58:00Z')
+  })
+ `);
+ const repository=createPluginEventQueueRepository(driver);
+ assert.deepEqual(await repository.findQueuedAttempts(1,'2026-07-30T12:00:59.000Z'),[]);
+ assert.deepEqual(
+  (await repository.findQueuedAttempts(1,'2026-07-30T12:01:00.000Z')).map(attempt=>attempt.pipelineId),
+  ['pipeline']
+ );
 });
 test('attempt projection error retains committed job claim and parent update',async(t)=>{await schema('attempt');try{await seed();await assert.rejects(claim(createPipelineLeaseRepository(driver)),/attempt projection failed/);const expected=await state();assert.equal(expected.rows[1].status,'RUNNING');assert.ok(expected.rows[0].heartbeat);t.assert.snapshot(expected);}finally{await schema();}});
 test('pending sibling projection error preserves renewed job and siblings but prevents parent renewal',async(t)=>{await schema('job');try{async function run(repository:PipelineLeaseRepository){await seed();await claim(repository);await assert.rejects(renew(repository),/job projection failed/);const value=await state();assert.equal(value.rows[0].heartbeat,'2026-07-30T12:00:00Z');assert.equal(value.rows[1].heartbeat,'2026-07-30T12:00:30Z');assert.equal(value.rows[2].timeout,'2026-07-30T12:01:30Z');return value;}t.assert.snapshot(await run(createPipelineLeaseRepository(driver)));}finally{await schema();}});

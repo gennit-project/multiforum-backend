@@ -285,6 +285,81 @@ test("resumes a persisted comment job without creating a second attempt", async 
   );
 });
 
+test("reschedules a retryable persisted comment job", async () => {
+  const { models, updates, creates, attemptCreates } = makeExecModels([installedEdge("mybot")]);
+  const loader = loaderFor(pluginReturning({
+    success: false,
+    error: "service unavailable",
+    retryable: true,
+  }));
+  await execRun(models, loader, EVENT, { execution: { deferExecution: true } });
+
+  const queued = creates[0].input[0];
+  await execRun(models, loader, EVENT, {
+    execution: {
+      resume: {
+        pipelineId: String(queued.pipelineId),
+        targetVersion: String(queued.targetVersion),
+        configurationSnapshot: attemptCreates[0].input[0].configurationSnapshot,
+        maxRuns: 1,
+        runs: [{
+          id: "run-1",
+          pluginId: String(queued.pluginId),
+          order: Number(queued.executionOrder),
+          status: "PENDING",
+          version: String(queued.version),
+          ruleSetVersion: String(queued.ruleSetVersion),
+          targetVersion: String(queued.targetVersion),
+          retryCount: 0,
+        }],
+      },
+    },
+  });
+
+  const rescheduled = updates.find(update => update.update?.retryCount === 1);
+  assert.equal(attemptCreates.length, 1);
+  assert.equal(creates.length, 1);
+  assert.equal(rescheduled?.update?.status, "PENDING");
+  assert.match(String(rescheduled?.update?.message), /retry 1\/3 scheduled/);
+  assert.ok(Number.isFinite(Date.parse(String(rescheduled?.update?.nextAttemptAt))));
+  assert.ok(!statusesOf(updates).includes("FAILED"));
+});
+
+test("fails a retryable persisted comment job after retries are exhausted", async () => {
+  const { models, updates, creates, attemptCreates } = makeExecModels([installedEdge("mybot")]);
+  const loader = loaderFor(pluginReturning({
+    success: false,
+    error: "still unavailable",
+    retryable: true,
+  }));
+  await execRun(models, loader, EVENT, { execution: { deferExecution: true } });
+
+  const queued = creates[0].input[0];
+  await execRun(models, loader, EVENT, {
+    execution: {
+      resume: {
+        pipelineId: String(queued.pipelineId),
+        targetVersion: String(queued.targetVersion),
+        configurationSnapshot: attemptCreates[0].input[0].configurationSnapshot,
+        maxRuns: 1,
+        runs: [{
+          id: "run-1",
+          pluginId: String(queued.pluginId),
+          order: Number(queued.executionOrder),
+          status: "PENDING",
+          version: String(queued.version),
+          ruleSetVersion: String(queued.ruleSetVersion),
+          targetVersion: String(queued.targetVersion),
+          retryCount: 3,
+        }],
+      },
+    },
+  });
+
+  assert.ok(statusesOf(updates).includes("FAILED"));
+  assert.equal(updates.some(update => update.update?.retryCount === 4), false);
+});
+
 test("does not publish a stale comment verdict when an edit lands during execution", async () => {
   const original = discussionComment();
   const edited = { ...discussionComment(), text: "newer text" };

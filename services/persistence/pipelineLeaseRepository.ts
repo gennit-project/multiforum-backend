@@ -15,6 +15,8 @@ export const PLUGIN_RUN_DEFAULT_SELECTION = `{
   targetId
   targetType
   targetVersion
+  retryCount
+  nextAttemptAt
   pipelineId
   executionOrder
   skippedReason
@@ -66,6 +68,7 @@ export interface PipelineLeaseRepository {
  renewOwnedJob(lease:LeaseIdentity,update:PluginRunUpdateInput):Promise<{pluginRuns:Array<{id:string}>}>;
  extendPendingJobs(pipelineId:string,timeoutAt:string):Promise<UpdatePluginRunsMutationResponse>;
  extendAttempt(pipelineId:string,update:PluginPipelineRunUpdateInput):Promise<UpdatePluginPipelineRunsMutationResponse>;
+ rescheduleOwnedJob(lease:LeaseIdentity,update:PluginRunUpdateInput):Promise<UpdatePluginRunsMutationResponse>;
  completeOwnedJob(lease:LeaseIdentity,update:PluginRunUpdateInput):Promise<UpdatePluginRunsMutationResponse>;
 }
 export function createPipelineLeaseRepository(driver:Driver):PipelineLeaseRepository {
@@ -84,26 +87,28 @@ export function createPipelineLeaseRepository(driver:Driver):PipelineLeaseReposi
     );
     if(lock.records.length===0){await transaction.rollback();return {pluginRuns:[]};}
     const result=await transaction.run(
-     `MATCH (job:PluginRun {id:$id,status:'PENDING',deferred:true})
+     `MATCH (limiter:ServerConfig)
+     WITH limiter ORDER BY limiter.serverName ASC LIMIT 1
+     MATCH (job:PluginRun {id:$id,status:'PENDING',deferred:true})
+     WHERE job.nextAttemptAt IS NULL
+       OR job.nextAttemptAt <= datetime($update.startedAt)
      CALL {
        MATCH (running:PluginRun {status:'RUNNING',deferred:true})
        WHERE running.targetType IN ['Comment','Discussion']
        RETURN count(running) AS runningCount
      }
-     CALL {
-       MATCH (recent:PluginRun {deferred:true})
-       WHERE recent.targetType IN ['Comment','Discussion']
-         AND recent.startedAt >= datetime($windowStart)
-       RETURN count(recent) AS recentStartCount
-     }
-     WITH job,runningCount,recentStartCount
+     WITH limiter,job,runningCount,
+          [started IN coalesce(limiter.pluginEventStartTimes, [])
+           WHERE started >= datetime($windowStart)] AS recentStarts
      WHERE runningCount < $concurrency
-       AND recentStartCount < $rateLimitPerMinute
-     SET job.status=$update.status,
+       AND size(recentStarts) < $rateLimitPerMinute
+     SET limiter.pluginEventStartTimes=recentStarts+datetime($update.startedAt),
+         job.status=$update.status,
          job.leaseId=$update.leaseId,
          job.startedAt=datetime($update.startedAt),
          job.heartbeatAt=datetime($update.heartbeatAt),
-         job.timeoutAt=datetime($update.timeoutAt)
+         job.timeoutAt=datetime($update.timeoutAt),
+         job.nextAttemptAt=null
      RETURN job.id AS id`,
      {id,update, ...limits}
     );
@@ -119,6 +124,7 @@ export function createPipelineLeaseRepository(driver:Driver):PipelineLeaseReposi
   async renewOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:{pluginRuns:Array<{id:string}>}}>(driver,`mutation RenewOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns{id}}}`,{where:{id:lease.pluginRunId,leaseId:lease.leaseId,status:'RUNNING'},update});return r.updatePluginRuns;},
   async extendPendingJobs(pipelineId,timeoutAt){const r=await executeGeneratedOperation<{updatePluginRuns:UpdatePluginRunsMutationResponse}>(driver,`mutation ExtendPendingPipelineJobs($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{pipelineId,status:'PENDING'},update:{timeoutAt}});return r.updatePluginRuns;},
   async extendAttempt(pipelineId,update){const r=await executeGeneratedOperation<{updatePluginPipelineRuns:UpdatePluginPipelineRunsMutationResponse}>(driver,`mutation ExtendPipelineAttempt($where:PluginPipelineRunWhere,$update:PluginPipelineRunUpdateInput){updatePluginPipelineRuns(where:$where,update:$update){pluginPipelineRuns${PIPELINE_RUN_DEFAULT_SELECTION}}}`,{where:{pipelineId},update});return r.updatePluginPipelineRuns;},
+  async rescheduleOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:UpdatePluginRunsMutationResponse}>(driver,`mutation RescheduleOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:lease.pluginRunId,leaseId:lease.leaseId,status:'RUNNING'},update});return r.updatePluginRuns;},
   async completeOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:UpdatePluginRunsMutationResponse}>(driver,`mutation CompleteOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:lease.pluginRunId,leaseId:lease.leaseId,status:'RUNNING'},update});return r.updatePluginRuns;},
  };
 }

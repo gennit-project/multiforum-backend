@@ -12,6 +12,7 @@ import {
   completePluginRunLease as actualcompletePluginRunLease,
   createQueuedPluginRunTiming,
   renewPluginRunLease as actualrenewPluginRunLease,
+  reschedulePluginRunLease as actualreschedulePluginRunLease,
 } from "./executionLease.js";
 
 type RunUpdateArgs = Parameters<ModelMap["PluginRun"]["update"]>[0];
@@ -257,6 +258,48 @@ test("terminal writes require the current running lease", async () => {
   });
 });
 
+test("retry scheduling returns only the leased running job to pending", async () => {
+  const updates: RunUpdateArgs[] = [];
+  const PluginRun = modelStub<"PluginRun">({
+    update: async args => {
+      updates.push(args);
+      return { pluginRuns: [{ id: "job-1" }] };
+    },
+  });
+
+  await reschedulePluginRunLease({
+    PluginRun,
+    lease: {
+      pluginRunId: "job-1",
+      pipelineId: "pipeline-1",
+      leaseId: "lease-1",
+    },
+    update: {
+      retryCount: 1,
+      nextAttemptAt: "2026-07-30T12:00:30.000Z",
+      message: "service unavailable (retry 1/3 scheduled)",
+    },
+  });
+
+  assert.deepEqual(updates[0], {
+    where: {
+      id: "job-1",
+      leaseId: "lease-1",
+      status: PluginRunStatus.Running,
+    },
+    update: {
+      retryCount: 1,
+      nextAttemptAt: "2026-07-30T12:00:30.000Z",
+      message: "service unavailable (retry 1/3 scheduled)",
+      status: PluginRunStatus.Pending,
+      leaseId: null,
+      heartbeatAt: null,
+      timeoutAt: null,
+      finishedAt: null,
+    },
+  });
+});
+
 type LeaseModels = {
   PluginRun?: ModelMap['PluginRun']
   PluginPipelineRun?: ModelMap['PluginPipelineRun']
@@ -281,6 +324,13 @@ const renewPluginRunLease = (
 ) => {
   const { PluginRun, PluginPipelineRun, ...rest } = args
   return actualrenewPluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
+}
+
+const reschedulePluginRunLease = (
+  args: Parameters<typeof actualreschedulePluginRunLease>[0] & LeaseModels
+) => {
+  const { PluginRun, PluginPipelineRun, ...rest } = args
+  return actualreschedulePluginRunLease({...rest,repository:pipelineLeaseRepositoryStub({PluginRun,PluginPipelineRun})})
 }
 
 test('heartbeat retains non-overlap, ordered renewal and stop boundary', async t => {

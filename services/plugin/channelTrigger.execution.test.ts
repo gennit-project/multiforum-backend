@@ -251,6 +251,49 @@ test("resumes a persisted discussion job without creating a second attempt", asy
   );
 });
 
+test("reschedules a retryable persisted discussion job", async () => {
+  const { models, updates, creates, attemptCreates } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [installedEdge("mybot")]
+  );
+  const loader = loaderFor(pluginReturning({
+    success: false,
+    error: "service unavailable",
+    retryable: true,
+  }));
+  await execRun(models, loader, { execution: { deferExecution: true } });
+
+  const queued = creates[0].input[0];
+  await execRun(models, loader, {
+    execution: {
+      resume: {
+        pipelineId: String(queued.pipelineId),
+        targetVersion: String(queued.targetVersion),
+        configurationSnapshot: attemptCreates[0].input[0].configurationSnapshot,
+        maxRuns: 1,
+        runs: [{
+          id: "run-1",
+          pluginId: String(queued.pluginId),
+          order: Number(queued.executionOrder),
+          status: "PENDING",
+          version: String(queued.version),
+          ruleSetVersion: String(queued.ruleSetVersion),
+          targetVersion: String(queued.targetVersion),
+          retryCount: 0,
+        }],
+      },
+    },
+  });
+
+  const rescheduled = updates.find(update => update.update?.retryCount === 1);
+  assert.equal(attemptCreates.length, 1);
+  assert.equal(creates.length, 1);
+  assert.equal(rescheduled?.update?.status, "PENDING");
+  assert.match(String(rescheduled?.update?.message), /retry 1\/3 scheduled/);
+  assert.ok(Number.isFinite(Date.parse(String(rescheduled?.update?.nextAttemptAt))));
+  assert.ok(!statusesOf(updates).includes("FAILED"));
+});
+
 test("does not publish a stale discussion verdict when an edit lands during execution", async () => {
   const { models } = makeExecModels(
     [{ pluginId: "mybot", condition: "ALWAYS" }],
