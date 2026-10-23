@@ -217,3 +217,50 @@ those with local types in `subscriptionEngine.ts` and `channelCreatorModeratorRe
 - Resolvers that hand-build a `where` via `JSON.parse(JSON.stringify(...))` (e.g.
   `publicCollectionsContaining.ts`) have scalar leaves tsc can't type-check; they need
   the `{ eq: }` sweep for runtime correctness. Audit other such resolvers in Phase 2.
+
+---
+
+## Family 3 — spike decision & execution plan (APPROVED: driver write)
+
+**Decision (evidence-backed):** v7 exposes no nested connect/disconnect for to-one
+relationships anywhere — ruled out `nestedOperations` (adding
+`[CREATE,CONNECT,DISCONNECT,UPDATE,DELETE]` still yields a `create`-only field
+input), update-based connect (`ModerationActionUpdateInput` has only scalars; no
+`ModerationActionConnectInput`), and denormalization (the
+`PERFORMED_MODERATION_ACTION` edge is traversed by `getSiteWideIssuesQuery` /
+`getModContributionsQuery`). → **Use parameterized driver writes**, following the
+existing `OPTIONAL MATCH … FOREACH (… | MERGE …)` precedent in
+`permanentlyDeleteStoredUpload`. Prototype primitive:
+`services/persistence/moderationActorConnect.ts`.
+
+**Two tiers (different risk):**
+
+- **Tier A — moderation-action/issue creation (the crux, ~95 errors). NOT a safe
+  parallel fan-out — build centrally, integration-test.** Built by the shared
+  `getModerationActionCreateInput` + `getIssueCreateInput` (in `reportComment.ts`)
+  and ~5 inline copies, executed through generated operation strings in
+  `commentModerationRepository`, `discussionModerationRepository`,
+  `eventModerationRepository`, `issueActivityRepository`, and `botReportRepository`
+  (plus `attachIssueIdentityRelationships`). The structure is a `ModerationAction`
+  embedding a `Comment` that connects union `CommentAuthor` (User|ModerationProfile,
+  `AUTHORED_COMMENT` IN), `Channel` (`HAS_COMMENT` IN), `Issue` (`ACTIVITY_ON_ISSUE`
+  OUT); the `Issue` itself connects an `Author` (union). Plan: one driver-backed
+  `recordModerationAction` repository write (create-or-append issue + action +
+  comment + all edges in Cypher), route the ~20 callers + the 5 repos through it,
+  then validate with the moderation integration tests.
+- **Tier B — standalone to-one sites (~30 errors). Fannable.** Each is a single
+  targeted edge in its repository, via `MERGE` (connect) or relationship `DELETE`
+  (disconnect), following the Tier-A primitive's pattern:
+  - `LockedBy` connect (lockChannel, lockIssue) / disconnect (unlockChannel, unlockIssue)
+  - `PermanentlyRemovedByMod` (permanentlyRemoveImage, report image paths)
+  - `Owner` (utils/ownershipSanitizers: Album/Collection/Image)
+  - `Album` on DiscussionUpdateInput (updateDiscussionWithChannelConnections)
+  - `WikiHomePage` on ChannelUpdateInput (wikiRules + canEditWikiPagesRule test)
+  - suspension targets (createSuspensionResolver: SuspendedUser/SuspendedMod/RelatedIssue)
+  - rules/ family-3 (contentCreationRules, commentIsValid) are READ-side payload
+    inspections of the now-removed `.connect` keys — adapt the inspection to the v7
+    payload shape; these are not driver writes.
+
+Each to-one edge: confirm the `@relationship(type, direction)` in typeDefs, then
+MERGE/DELETE accordingly. Best-effort connects use OPTIONAL MATCH + FOREACH so a
+missing target is skipped. Preserve leader routing (driver default).
