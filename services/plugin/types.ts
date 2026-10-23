@@ -96,6 +96,7 @@ export type QueuedPluginRun = PendingRun & {
   version: string
   ruleSetVersion?: string | null
   targetVersion?: string | null
+  retryCount?: number
 }
 
 export type QueuedPipelineResume = {

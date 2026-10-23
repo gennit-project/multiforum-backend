@@ -92,6 +92,7 @@ const resumeAttempt = async ({
       version: run.version,
       ruleSetVersion: run.ruleSetVersion,
       targetVersion: run.targetVersion,
+      retryCount: run.retryCount,
     })),
   }
 
@@ -147,7 +148,10 @@ export const processQueuedPluginEvents = async ({
   )
   if (available === 0) return { startedCount: 0, failedCount: 0 }
 
-  const attempts = await repository.findQueuedAttempts(available)
+  const attempts = await repository.findQueuedAttempts(
+    available,
+    now.toISOString()
+  )
   const claimLimits = {
     concurrency,
     rateLimitPerMinute,

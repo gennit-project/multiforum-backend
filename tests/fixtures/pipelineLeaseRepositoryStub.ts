@@ -8,6 +8,7 @@ export function pipelineLeaseRepositoryStub(models: Partial<Pick<ModelMap,'Plugi
   renewOwnedJob:(lease,update)=>models.PluginRun!.update({where:{id:lease.pluginRunId,leaseId:lease.leaseId,status:'RUNNING'},update,selectionSet:'{ pluginRuns { id } }'}),
   extendPendingJobs:(pipelineId,timeoutAt)=>models.PluginRun!.update({where:{pipelineId,status:'PENDING'},update:{timeoutAt}}),
   extendAttempt:(pipelineId,update)=>models.PluginPipelineRun!.update({where:{pipelineId},update}),
+  rescheduleOwnedJob:(lease,update)=>models.PluginRun!.update({where:{id:lease.pluginRunId,leaseId:lease.leaseId,status:'RUNNING'},update}),
   completeOwnedJob:(lease,update)=>models.PluginRun!.update({where:{id:lease.pluginRunId,leaseId:lease.leaseId,status:'RUNNING'},update}),
  };
 }

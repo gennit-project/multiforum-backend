@@ -2399,6 +2399,8 @@ const typeDefinitions = gql`
     targetVersion: String
     ruleSetVersion: String
     deferred: Boolean
+    retryCount: Int @default(value: 0)
+    nextAttemptAt: DateTime
     payload: JSON
     publicDiagnostics: JSON
     pipelineId: String
@@ -2518,6 +2520,9 @@ const typeDefinitions = gql`
     serverDescription: String
     serverIconURL: String
     rules: JSON
+    pluginEventStartTimes: [DateTime!]
+      @selectable(onRead: false, onAggregate: false)
+      @settable(onCreate: false, onUpdate: false)
     rankingSettingsJson: String
       @selectable(onRead: false, onAggregate: false)
       @settable(onCreate: false, onUpdate: false)

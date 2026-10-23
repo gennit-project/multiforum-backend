@@ -180,6 +180,28 @@ export const completePluginRunLease = async ({
   });
 };
 
+export const reschedulePluginRunLease = async ({
+  driver,
+  repository,
+  lease,
+  update,
+}: {
+  driver?: Driver;
+  repository?: PipelineLeaseRepository;
+  lease: PluginRunLease;
+  update: PluginRunUpdateInput;
+}) => {
+  const persistence = repository ?? createPipelineLeaseRepository(driver!);
+  return persistence.rescheduleOwnedJob(lease, {
+    ...update,
+    status: PluginRunStatus.Pending,
+    leaseId: null,
+    heartbeatAt: null,
+    timeoutAt: null,
+    finishedAt: null,
+  });
+};
+
 export const startPluginRunHeartbeat = ({
   driver,
   repository,
