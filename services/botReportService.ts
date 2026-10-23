@@ -226,15 +226,10 @@ export const createBotReport = async (input: {
       existingIssueFlaggedServerRuleViolation || selectedServerRules.length > 0
   }
 
-  const existingIssue = existingIssues[0]
-
-  if (!existingIssue?.relatedUsername && relatedUsername) {
-    issueUpdateInput.relatedUsername = relatedUsername
-  }
-
-  if (!existingIssue?.relatedModProfileName && relatedModProfileName) {
-    issueUpdateInput.relatedModProfileName = relatedModProfileName
-  }
+  // relatedUsername / relatedModProfileName are @settable(onUpdate: false): they
+  // are set once when the issue is created and are immutable thereafter, so the
+  // generated IssueUpdateInput omits them and the append-report update must not
+  // carry them. (The removed OGM schema accepted them server-side, masking this.)
 
   try {
     const issueData = await repository.appendBotReport(issueUpdateWhere, issueUpdateInput)

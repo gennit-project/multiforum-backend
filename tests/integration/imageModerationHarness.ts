@@ -13,14 +13,18 @@ import { registerGeneratedSchema } from "../../services/persistence/generatedSch
 // User + ModerationProfile so the caller resolves as a moderator.
 
 import { Neo4jContainer, StartedNeo4jContainer } from "@testcontainers/neo4j";
+import { Neo4jGraphQL } from "@neo4j/graphql";
 import neo4j, { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
+import typeDefs from "../../typeDefs.js";
+import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { CHANNEL_FULLTEXT_CREATE_CYPHER } from "../../services/channelFulltext.js";
 import { CONTENT_FULLTEXT_CREATE_STATEMENTS } from "../../services/contentFulltext.js";
 
 let container: StartedNeo4jContainer | undefined;
 let driver: Driver | undefined;
+let subscriptionEngine: ReturnType<typeof createSubscriptionEngine> | undefined;
 
 // See neo4jHarness.ts: when TESTCONTAINERS_REUSE_ENABLE=true, all integration
 // files share one Neo4j container instead of each starting its own (~30-40s).
@@ -28,7 +32,6 @@ const REUSE = process.env.TESTCONTAINERS_REUSE_ENABLE === "true";
 
 export interface ImageModEnv {
   driver: Driver;
-  ogm: any;
   resolvers: any;
 }
 
@@ -46,9 +49,21 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
     neo4j.auth.basic(container.getUsername(), container.getPassword())
   );
 
-  const { ogm, resolvers } = getCustomResolvers(driver);
-  await ogm.init();
-  registerGeneratedSchema(driver, ogm.schema);
+  const { resolvers } = getCustomResolvers(driver);
+  // Mirror the production schema config (index.ts): the MATCHES string filter
+  // and the CDC subscription engine, so the registered generated schema matches
+  // what the app serves.
+  subscriptionEngine = createSubscriptionEngine();
+  const neoSchema = new Neo4jGraphQL({
+    typeDefs,
+    driver,
+    resolvers,
+    features: {
+      filters: { String: { MATCHES: true } },
+      subscriptions: subscriptionEngine,
+    },
+  });
+  registerGeneratedSchema(driver, await neoSchema.getSchema());
 
   // Production creates full-text indexes on startup via ensureSchemaConstraints
   // (the OGM's assertIndexesAndConstraints). This harness wires resolvers
@@ -66,10 +81,12 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
     await indexSession.close();
   }
 
-  return { driver, ogm, resolvers };
+  return { driver, resolvers };
 }
 
 export async function stopImageModEnv(): Promise<void> {
+  await subscriptionEngine?.close();
+  subscriptionEngine = undefined;
   await driver?.close();
   // With reuse the container is shared — never stop it here (see neo4jHarness).
   if (!REUSE) await container?.stop();
@@ -117,7 +134,6 @@ export function mockToken(claims: Record<string, unknown>): string {
 export function modContext(env: ImageModEnv, token: string) {
   return {
     driver: env.driver,
-    ogm: env.ogm,
     req: {
       headers: { authorization: `Bearer ${token}` },
       body: {},

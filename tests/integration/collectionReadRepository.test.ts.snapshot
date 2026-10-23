@@ -736,8 +736,30 @@ exports[`public collections preserve explicit sensitive filtering and anonymous 
     },
     "Downloads": [
       {
+        "Album": null,
+        "Author": {
+          "commentKarma": null,
+          "createdAt": "<time>",
+          "discussionKarma": null,
+          "displayName": null,
+          "profilePicURL": null,
+          "username": "owner"
+        },
+        "DiscussionChannels": [],
+        "Tags": [],
+        "createdAt": "<time>",
+        "hasSensitiveContent": true,
+        "id": "sensitive",
+        "title": "Sensitive"
+      },
+      {
         "Album": {
           "Images": [
+            {
+              "caption": null,
+              "id": "hidden-image",
+              "url": "https://example.test/hidden"
+            },
             {
               "caption": null,
               "id": "image",

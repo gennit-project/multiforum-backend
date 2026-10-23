@@ -24,17 +24,17 @@ for(const [kind,existing,failure] of [['comment',false,''],['mod-comment',false,
   const repo={...raw,createReportedIssue:async(input:any)=>{fail=failure==='create';return raw.createReportedIssue(input);},appendBotReport:async(where:any,update:any)=>{fail=failure==='append';return raw.appendBotReport(where,update);}};
   const contentType=kind==='discussion'||kind==='event'?kind:'comment';let response:unknown,error:string|null=null;
   try{response=await createBotReport({driver,botIdentityRepository:identity,botReportRepository:repo,channelUniqueName:'forum',reportInput:{contentType,contentId:'content',reportText:'Please review',selectedForumRules:['Kindness'],selectedServerRules:[],botName:'helper'}});}catch(e){error=(e as Error).message;}
-  // The real middleware passes a raw model: preserve production-schema coercion failure, not a mutation-resolver proxy guard.
-  const identityFailure=!existing && kind!=='missing' && failure!=='create';
-  if(identityFailure)assert.match(error!,/Error updating issue: Variable.*Field "related(?:Username|ModProfileName)" is not defined by type "IssueUpdateInput"/);
-  else assert.equal(error,failure?`Error ${failure==='create'?'creating':'updating'} issue: fixture projection failure`:null);
+  // relatedUsername/relatedModProfileName are set at issue creation and are
+  // @settable(onUpdate:false); the append-report update no longer carries them,
+  // so a new-issue report succeeds (only the injected fixture failures error).
+  assert.equal(error,failure?`Error ${failure==='create'?'creating':'updating'} issue: fixture projection failure`:null);
   const state=await graph();const node=(id:string)=>{const n=state.nodes.find(n=>n.identity===id);assert.ok(n);return n;};
   const alias=(id:string)=>{const n=node(id),p=n.properties;return n.label+':'+(p.username??p.displayName??p.uniqueName??p.text??p.title??p.actionDescription??p.channelUniqueName);};
   assert.equal(new Set(state.nodes.map(n=>alias(n.identity))).size,state.nodes.length);
   for(const n of state.nodes)for(const key of ['createdAt','updatedAt','ageGateTouchedAt'])if(n.properties[key])assert.match(n.properties[key].toString(),/^\d{4}-\d{2}-\d{2}T/);
   const ids=new Map(state.nodes.filter(n=>n.properties.id).map(n=>[n.properties.id,alias(n.identity)]));
   for(const e of events){assert.ok(e.timestamp>0);if(e.event.includes('relationship')){const r=state.edges.find(r=>r.identity===e.id);assert.ok(r);assert.equal(e.id_from,r.source);assert.equal(e.id_to,r.target);assert.equal(e.relationshipName,r.type);}else{const n=node(e.id);assert.equal(e.typename,n.label);assert.equal(e.properties.new.id,n.properties.id);}}
-  const issue=state.nodes.find(n=>n.label==='Issue')!;assert.ok(issue);assert.equal(state.nodes.filter(n=>n.label==='ModerationAction').length,failure==='create'||identityFailure?0:1);
+  const issue=state.nodes.find(n=>n.label==='Issue')!;assert.ok(issue);assert.equal(state.nodes.filter(n=>n.label==='ModerationAction').length,failure==='create'?0:1);
   if(kind==='discussion'||kind==='event'||kind==='comment')assert.equal(issue.properties.relatedUsername,'alice');
   if(kind==='mod-comment')assert.equal(issue.properties.relatedModProfileName,'human-mod');
   const result=JSON.parse(JSON.stringify({response,error,events,nodes:state.nodes.map(n=>({alias:alias(n.identity),properties:n.properties})).sort((a,b)=>a.alias.localeCompare(b.alias)),edges:state.edges.map(r=>({source:alias(r.source),target:alias(r.target),type:r.type,properties:r.properties})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))},function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){if(key==='id'&&this.event.includes('relationship')){const r=state.edges.find(r=>r.identity===value)!;return r.type+':'+alias(r.source)+':'+alias(r.target);}return alias(value);}if(['timestamp','createdAt','updatedAt','ageGateTouchedAt'].includes(key))return '<time>';return typeof value==='string'&&ids.has(value)?ids.get(value):value;}));

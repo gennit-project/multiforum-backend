@@ -28,7 +28,6 @@ import getCustomResolvers from "./getTestResolvers.js";
 export interface PermissionedSchema {
   schema: GraphQLSchema;
   driver: Driver;
-  ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 }
 
 export async function buildPermissionedSchema(options?: {
@@ -49,7 +48,7 @@ export async function buildPermissionedSchema(options?: {
     getAgeGateStatements(typeDefs)
   );
 
-  const { ogm, resolvers } = getCustomResolvers(driver);
+  const { resolvers } = getCustomResolvers(driver);
   const neoSchema = new Neo4jGraphQL({ typeDefs, driver, resolvers });
 
   let schema = await neoSchema.getSchema();
@@ -62,7 +61,7 @@ export async function buildPermissionedSchema(options?: {
     permissions
   );
 
-  return { schema, driver, ogm };
+  return { schema, driver };
 }
 
 // A context shaped like the one index.ts builds, for an unauthenticated request
@@ -71,11 +70,9 @@ export function makeRequestContext(options: {
   authorization?: string;
   isMutation?: boolean;
   driver: Driver;
-  ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 }) {
   return {
     driver: options.driver,
-    ogm: options.ogm,
     req: {
       headers: options.authorization
         ? { authorization: options.authorization }

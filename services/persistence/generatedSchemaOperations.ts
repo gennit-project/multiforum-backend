@@ -19,7 +19,11 @@ export function registerGeneratedSchema(
 /**
  * Execute a domain-owned GraphQL document through the supported GraphQL API.
  * This is not a model/CRUD API: callers own fixed selections and variable types.
- * No request authentication context is inherited by internal snapshot reads.
+ * These internal reads carry no request authentication context by default, so
+ * the schema's `@authorization` filters evaluate against an empty `jwt`. A
+ * caller that has ALREADY made an access decision (e.g. age-gate eligibility)
+ * may pass a minimal `jwt` so those filters agree with that decision rather
+ * than silently excluding rows the caller intends to return.
  * An explicit transaction is forwarded only when its caller owns that boundary.
  *
  * The current OGM is constructed without a database option, so its internal
@@ -31,7 +35,8 @@ export async function executeGeneratedOperation<T>(
   driver: Driver,
   source: string,
   variableValues: Record<string, unknown>,
-  executionContext?: ManagedTransaction | Transaction
+  executionContext?: ManagedTransaction | Transaction,
+  jwt?: Record<string, unknown>
 ): Promise<T> {
   const registered = registeredSchemas.get(driver);
   if (!registered) {
@@ -45,6 +50,7 @@ export async function executeGeneratedOperation<T>(
     contextValue: {
       sessionConfig: { database: registered.database },
       ...(executionContext ? { executionContext } : {}),
+      ...(jwt ? { jwt } : {}),
     },
   });
   if (result.errors?.length) throw new Error(result.errors[0].message);

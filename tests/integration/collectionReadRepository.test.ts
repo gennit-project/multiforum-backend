@@ -65,10 +65,12 @@ test("public collections preserve explicit sensitive filtering and anonymous sch
   for (const mode of [false,true]) {
     const actual = await repository.findPublicContaining(where as never,mode);
     t.assert.snapshot(norm(actual));
-    // The production shared schema still has no outer JWT, even for an eligible caller.
-    assert.deepEqual((actual[0].Downloads as Array<{id:string}>).map(row=>row.id),['clear']);
-    const download = (actual[0].Downloads as Array<{Album:{Images:Array<{id:string}>}}>)[0];
-    assert.deepEqual(download.Album.Images.map(row=>row.id),['image']);
+    // The caller's resolved age-gate eligibility is conveyed as the jwt, so an
+    // eligible caller (mode=true) sees sensitive rows and an ineligible one does
+    // not — the generated read's @authorization agrees with the caller's decision.
+    assert.deepEqual((actual[0].Downloads as Array<{id:string}>).map(row=>row.id).sort(), mode?['clear','sensitive']:['clear']);
+    const download = (actual[0].Downloads as Array<{id:string;Album:{Images:Array<{id:string}>}}>).find(row=>row.id==='clear')!;
+    assert.deepEqual(download.Album.Images.map(row=>row.id).sort(), mode?['hidden-image','image']:['image']);
   }
 });
 
