@@ -95,13 +95,13 @@ const getResolver = (input: Input) => {
     let existingIssue: { id?: string; issueNumber?: number } | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
     const eventData = await repository.findEvent({
-        id: eventId,
+        id: { eq: eventId },
       });
 
     // Check if an issue already exists for the event ID and channel unique name.
     const issueData = await repository.findRelatedIssues({
-        channelUniqueName: channelUniqueName,
-        relatedEventId: eventId,
+        channelUniqueName: { eq: channelUniqueName },
+        relatedEventId: { eq: eventId },
       });
 
     if (issueData.length > 0) {
@@ -156,7 +156,7 @@ const getResolver = (input: Input) => {
           issueId: existingIssueId,
         });
       const issueUpdateWhere: IssueWhere = {
-        id: existingIssueId,
+        id: { eq: existingIssueId },
       };
       const issueUpdateInput: IssueUpdateInput = {
         ActivityFeed: [
@@ -168,10 +168,12 @@ const getResolver = (input: Input) => {
             ],
           },
         ],
-        isOpen: false, // Close the issue; archival is often the final action.
-        flaggedServerRuleViolation:
-          existingIssueFlaggedServerRuleViolation ||
-          selectedServerRules.length > 0,
+        isOpen: { set: false }, // Close the issue; archival is often the final action.
+        flaggedServerRuleViolation: {
+          set:
+            existingIssueFlaggedServerRuleViolation ||
+            selectedServerRules.length > 0,
+        },
       };
 
       const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
@@ -199,25 +201,25 @@ const getResolver = (input: Input) => {
       // First we need to find the eventChannel that matches the given event ID
       // and channel unique name.
       const eventChannel = await repository.findEventChannel({
-          eventId: eventId,
-          channelUniqueName: channelUniqueName,
+          eventId: { eq: eventId },
+          channelUniqueName: { eq: channelUniqueName },
         });
       const eventChannelId = eventChannel[0]?.id || null;
       if (!eventChannelId) {
         throw new GraphQLError("Error finding eventChannel");
       }
       const eventChannelUpdateWhere: EventChannelWhere = {
-        id: eventChannelId,
+        id: { eq: eventChannelId },
       };
       const eventChannelUpdateInput: EventChannelUpdateInput = {
-        archived: true,
+        archived: { set: true },
         RelatedIssues: [
           {
             connect: [
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },

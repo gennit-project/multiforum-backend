@@ -54,7 +54,7 @@ export const getConnectedDownloadableFileIds = (
   const updates = updateInput.DownloadableFiles || [];
   return updates.flatMap((update) =>
     (update?.connect || [])
-      .map((connection) => connection?.where?.node?.id)
+      .map((connection) => connection?.where?.node?.id?.eq)
       .filter((id): id is string => typeof id === "string" && id.length > 0)
   );
 };
@@ -163,7 +163,7 @@ const getResolver = (
       const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
         sanitizedUpdateInput
       );
-      const updatedDiscussionId = where.id;
+      const updatedDiscussionId = where.id?.eq;
 
       // Update the discussion in a managed write so the age-gate reconcile step
       // runs before commit. Attaching an existing file is a relationship-only
@@ -208,8 +208,11 @@ const getResolver = (
         await discussionVersionHistoryHandler({
           context,
           params: {
-            where,
-            update: sanitizedUpdateInput,
+            where: { id: where.id?.eq },
+            update: {
+              title: sanitizedUpdateInput.title?.set,
+              body: sanitizedUpdateInput.body?.set,
+            },
           },
           discussionSnapshot,
         });

@@ -199,13 +199,13 @@ const getResolver = (input: Input) => {
 
     // Check if an issue already exists for this image
     const issueWhereClause: IssueWhere = {
-      relatedImageId: imageId,
+      relatedImageId: { eq: imageId },
     };
 
     if (isServerScoped) {
       issueWhereClause.channelUniqueName = null;
     } else {
-      issueWhereClause.channelUniqueName = channelUniqueName;
+      issueWhereClause.channelUniqueName = { eq: channelUniqueName };
     }
 
     const existingIssueData = await repository.findIssue(issueWhereClause);
@@ -299,7 +299,7 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the archive action
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
 
     const archiveUpdateIssueInput: IssueUpdateInput = {
@@ -312,13 +312,15 @@ const getResolver = (input: Input) => {
           ],
         },
       ],
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        (selectedServerRules?.length ?? 0) > 0,
+      flaggedServerRuleViolation: {
+        set:
+          existingIssueFlaggedServerRuleViolation ||
+          (selectedServerRules?.length ?? 0) > 0,
+      },
     };
 
     const closeIssueUpdateInput: IssueUpdateInput = {
-      isOpen: false,
+      isOpen: { set: false },
       ActivityFeed: [
         {
           create: [
@@ -358,17 +360,17 @@ const getResolver = (input: Input) => {
     // Update the image to set archived=true and link the issue
     try {
       const imageUpdateWhere: ImageWhere = {
-        id: imageId,
+        id: { eq: imageId },
       };
       const imageUpdateInput: ImageUpdateInput = {
-        archived: true,
+        archived: { set: true },
         RelatedIssues: [
           {
             connect: [
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },

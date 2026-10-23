@@ -111,7 +111,7 @@ const getResolver = (input: Input) => {
     )
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId
+      id: { eq: existingIssueId }
     }
     const unarchiveCreateInput: IssueUpdateInput = {
       ActivityFeed: [
@@ -125,7 +125,7 @@ const getResolver = (input: Input) => {
       ]
     }
     const issueCloseCreateInput: IssueUpdateInput = {
-      isOpen: false, // Close the issue; un-archival is often the final action.
+      isOpen: { set: false }, // Close the issue; un-archival is often the final action.
       ActivityFeed: [
         {
           create: [
@@ -162,10 +162,10 @@ const getResolver = (input: Input) => {
     try {
       // Update the comment so that archived=false.
       const commentUpdateWhere: CommentWhere = {
-        id: commentId
+        id: { eq: commentId }
       }
       const commentUpdateInput: CommentUpdateInput = {
-        archived: false
+        archived: { set: false }
       }
       const commentUpdateData = await repository.setArchived(commentUpdateWhere, commentUpdateInput)
       const commentUpdateId = commentUpdateData.comments[0]?.id || null

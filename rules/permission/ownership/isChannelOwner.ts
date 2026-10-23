@@ -36,9 +36,10 @@ export const isChannelOwner = rule({ cache: "contextual" })(
     logger.info('args: ', JSON.stringify(args));
     let uniqueName = '';
 
-    if (where?.uniqueName) {
+    const whereUniqueNameEq = where?.uniqueName?.eq;
+    if (whereUniqueNameEq) {
       // The channel name can be passed in the where object.
-      uniqueName = where.uniqueName;
+      uniqueName = whereUniqueNameEq;
     }
 
     if (channelUniqueName) {

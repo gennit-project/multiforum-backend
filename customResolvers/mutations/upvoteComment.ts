@@ -100,7 +100,7 @@ const upvoteCommentResolver = (input: Input) => {
       await tx.commit();
 
       const existingUpvotedByUsers = comment.UpvotedByUsers || [];
-      const existingUpvotedByUsersCount = comment.UpvotedByUsersAggregate?.count || 0;
+      const existingUpvotedByUsersCount = existingUpvotedByUsers.length;
 
       return {
         id: commentId,

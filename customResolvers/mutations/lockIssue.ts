@@ -99,9 +99,9 @@ const getResolver = (input: Input = {}) => {
 
     // Update the issue with locked status and activity feed entry
     const issueUpdateInput: IssueUpdateInput = {
-      locked: true,
-      lockedAt: new Date().toISOString(),
-      lockReason: reason,
+      locked: { set: true },
+      lockedAt: { set: new Date().toISOString() },
+      lockReason: { set: reason },
       LockedBy: {
         connect: {
           where: {

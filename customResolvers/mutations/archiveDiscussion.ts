@@ -82,13 +82,13 @@ const getResolver = (input: Input) => {
     let existingIssue: DiscussionModerationIssue | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
     const discussionData = await repository.findDiscussion({
-        id: discussionId,
+        id: { eq: discussionId },
       });
 
     // Check if an issue already exists for the discussion ID and channel unique name.
     const issueData = await repository.findRelatedIssues({
-        channelUniqueName: channelUniqueName,
-        relatedDiscussionId: discussionId,
+        channelUniqueName: { eq: channelUniqueName },
+        relatedDiscussionId: { eq: discussionId },
       });
 
     if (issueData.length > 0) {
@@ -143,7 +143,7 @@ const getResolver = (input: Input) => {
           issueId: existingIssueId,
         });
       const issueUpdateWhere: IssueWhere = {
-        id: existingIssueId,
+        id: { eq: existingIssueId },
       };
       const issueUpdateInput: IssueUpdateInput = {
         ActivityFeed: [
@@ -155,10 +155,12 @@ const getResolver = (input: Input) => {
             ],
           },
         ],
-        isOpen: false, // Close the issue; archival is often the final action.
-        flaggedServerRuleViolation:
-          existingIssueFlaggedServerRuleViolation ||
-          selectedServerRules.length > 0,
+        isOpen: { set: false }, // Close the issue; archival is often the final action.
+        flaggedServerRuleViolation: {
+          set:
+            existingIssueFlaggedServerRuleViolation ||
+            selectedServerRules.length > 0,
+        },
       };
 
       const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
@@ -186,25 +188,25 @@ const getResolver = (input: Input) => {
       // First we need to find the discussionChannel that matches the given discussion ID
       // and channel unique name.
       const discussionChannel = await repository.findDiscussionChannel({
-          discussionId: discussionId,
-          channelUniqueName: channelUniqueName,
+          discussionId: { eq: discussionId },
+          channelUniqueName: { eq: channelUniqueName },
         });
       const discussionChannelId = discussionChannel[0]?.id || null;
       if (!discussionChannelId) {
         throw new GraphQLError("Error finding discussionChannel");
       }
       const discussionChannelUpdateWhere: DiscussionChannelWhere = {
-        id: discussionChannelId,
+        id: { eq: discussionChannelId },
       };
       const discussionChannelUpdateInput: DiscussionChannelUpdateInput = {
-        archived: true,
+        archived: { set: true },
         RelatedIssues: [
           {
             connect: [
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },

@@ -235,7 +235,7 @@ const getResolver = (input: Input) => {
       });
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
     const archiveCommentUpdateIssueInput: IssueUpdateInput = {
       ActivityFeed: [
@@ -247,13 +247,15 @@ const getResolver = (input: Input) => {
           ],
         },
       ],
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        selectedServerRules.length > 0,
+      flaggedServerRuleViolation: {
+        set:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0,
+      },
     };
 
     const closeIssueUpdateIssueInput: IssueUpdateInput = {
-      isOpen: false, // Close the issue; un-archival is often the final action.
+      isOpen: { set: false }, // Close the issue; un-archival is often the final action.
       ActivityFeed: [
         {
           create: [
@@ -291,17 +293,17 @@ const getResolver = (input: Input) => {
       // Update the comment so that archived=true and the issue is linked
       // to the comment under RelatedIssues.
       const commentUpdateWhere: CommentWhere = {
-        id: commentId,
+        id: { eq: commentId },
       };
       const commentUpdateInput: CommentUpdateInput = {
-        archived: true,
+        archived: { set: true },
         RelatedIssues: [
           {
             connect: [
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },

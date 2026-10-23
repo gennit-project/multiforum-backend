@@ -216,7 +216,7 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
     const issueUpdateInput: IssueUpdateInput = {
       ActivityFeed: [
@@ -228,8 +228,8 @@ const getResolver = (input: Input) => {
           ],
         },
       ],
-      isOpen: true, // Reopen the issue if it was closed
-      flaggedServerRuleViolation: true, // Profile picture reports always flag server rule violation
+      isOpen: { set: true }, // Reopen the issue if it was closed
+      flaggedServerRuleViolation: { set: true }, // Profile picture reports always flag server rule violation
     };
 
     try {

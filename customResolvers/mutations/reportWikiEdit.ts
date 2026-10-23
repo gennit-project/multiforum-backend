@@ -107,12 +107,12 @@ const getResolver = (input: Input) => {
     }
 
     const issueWhere: IssueWhere = {
-      channelUniqueName,
-      relatedWikiPageId: wikiPageId
+      channelUniqueName: { eq: channelUniqueName },
+      relatedWikiPageId: { eq: wikiPageId }
     }
 
     if (wikiRevisionId) {
-      issueWhere.relatedWikiRevisionId = wikiRevisionId
+      issueWhere.relatedWikiRevisionId = { eq: wikiRevisionId }
     }
 
     const issueData = await repository.findPriorWikiReport(issueWhere)
@@ -170,7 +170,7 @@ const getResolver = (input: Input) => {
       })
 
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId
+      id: { eq: existingIssueId }
     }
     const issueUpdateInput: IssueUpdateInput = {
       ActivityFeed: [
@@ -182,10 +182,12 @@ const getResolver = (input: Input) => {
           ]
         }
       ],
-      isOpen: true,
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        selectedServerRules.length > 0
+      isOpen: { set: true },
+      flaggedServerRuleViolation: {
+        set:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0
+      }
     }
 
     try {

@@ -64,8 +64,8 @@ const getResolver = (input: Input) => {
 
     // Check if an issue already exists for the event ID and channel unique name.
     const issueData = await repository.findRelatedIssues({
-        channelUniqueName: channelUniqueName,
-        relatedEventId: eventId,
+        channelUniqueName: { eq: channelUniqueName },
+        relatedEventId: { eq: eventId },
       });
 
     if (issueData.length > 0) {
@@ -87,10 +87,10 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
     const issueUpdateInput: IssueUpdateInput = {
-      isOpen: false, // Close the issue; the event is no longer flagged.
+      isOpen: { set: false }, // Close the issue; the event is no longer flagged.
       ActivityFeed: [
         {
           create: [
@@ -125,11 +125,11 @@ const getResolver = (input: Input) => {
     try {
       // Update the eventChannel so that archived=false.
       const eventChannelUpdateWhere: EventChannelWhere = {
-        channelUniqueName: channelUniqueName,
-        eventId: eventId,
+        channelUniqueName: { eq: channelUniqueName },
+        eventId: { eq: eventId },
       };
       const eventChannelUpdateInput: EventChannelUpdateInput = {
-        archived: false,
+        archived: { set: false },
       };
       const eventUpdateData = await repository.setArchived(eventChannelUpdateWhere, eventChannelUpdateInput);
       const eventUpdateId =

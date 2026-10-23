@@ -142,13 +142,13 @@ const getResolver = (input: Input) => {
 
     // Check if an issue exists for this image
     const issueWhereClause: IssueWhere = {
-      relatedImageId: imageId,
+      relatedImageId: { eq: imageId },
     };
 
     if (isServerScoped) {
       issueWhereClause.channelUniqueName = null;
     } else {
-      issueWhereClause.channelUniqueName = channelUniqueName;
+      issueWhereClause.channelUniqueName = { eq: channelUniqueName };
     }
 
     const issueData = await repository.findIssue(issueWhereClause);
@@ -180,7 +180,7 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the unarchive action
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
 
     const unarchiveUpdateInput: IssueUpdateInput = {
@@ -196,7 +196,7 @@ const getResolver = (input: Input) => {
     };
 
     const issueCloseUpdateInput: IssueUpdateInput = {
-      isOpen: false,
+      isOpen: { set: false },
       ActivityFeed: [
         {
           create: [
@@ -236,10 +236,10 @@ const getResolver = (input: Input) => {
     // Update the image to set archived=false
     try {
       const imageUpdateWhere: ImageWhere = {
-        id: imageId,
+        id: { eq: imageId },
       };
       const imageUpdateInput: ImageUpdateInput = {
-        archived: false,
+        archived: { set: false },
       };
 
       const imageUpdateData = await repository.updateModerationState(imageUpdateWhere, imageUpdateInput);

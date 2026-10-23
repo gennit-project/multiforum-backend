@@ -1,4 +1,4 @@
-import type { Neo4jGraphQLSubscriptionsEngine } from "@neo4j/graphql";
+import type { SubscriptionEngine } from "./subscriptionEngine.js";
 import type { ChannelCreatorModeratorRepository } from "./persistence/channelCreatorModeratorRepository.js";
 import { logger } from "../logger.js";
 
@@ -8,7 +8,7 @@ export interface ChannelCreatorModeratorService {
 
 export function createChannelCreatorModeratorService(
   repository: ChannelCreatorModeratorRepository,
-  publisher: Pick<Neo4jGraphQLSubscriptionsEngine, "publish">
+  publisher: Pick<SubscriptionEngine, "publish">
 ): ChannelCreatorModeratorService {
   return {
     async assign(channelUniqueName, displayName) {

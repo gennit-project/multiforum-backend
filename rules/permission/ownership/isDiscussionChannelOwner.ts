@@ -30,8 +30,8 @@ export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
     let channelUniqueName;
 
     if (args.where) {
-      discussionId = args.where.discussionId;
-      channelUniqueName = args.where.channelUniqueName;
+      discussionId = args.where.discussionId?.eq;
+      channelUniqueName = args.where.channelUniqueName?.eq;
     }
 
     if (!discussionId || !channelUniqueName) {

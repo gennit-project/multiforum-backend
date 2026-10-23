@@ -201,13 +201,13 @@ const getResolver = (input: Input) => {
 
     // Check if an issue already exists for this image
     const issueWhereClause: IssueWhere = {
-      relatedImageId: imageId,
+      relatedImageId: { eq: imageId },
     };
 
     if (isServerScoped) {
       issueWhereClause.channelUniqueName = null;
     } else {
-      issueWhereClause.channelUniqueName = channelUniqueName;
+      issueWhereClause.channelUniqueName = { eq: channelUniqueName };
     }
 
     const existingIssueData = await repository.findPriorImageReport(issueWhereClause);
@@ -291,7 +291,7 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
     const issueUpdateInput: IssueUpdateInput = {
       ActivityFeed: [
@@ -303,10 +303,12 @@ const getResolver = (input: Input) => {
           ],
         },
       ],
-      isOpen: true, // Reopen the issue if it was closed
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        (selectedServerRules?.length ?? 0) > 0,
+      isOpen: { set: true }, // Reopen the issue if it was closed
+      flaggedServerRuleViolation: {
+        set:
+          existingIssueFlaggedServerRuleViolation ||
+          (selectedServerRules?.length ?? 0) > 0,
+      },
     };
 
     try {

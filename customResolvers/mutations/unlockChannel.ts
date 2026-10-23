@@ -130,7 +130,7 @@ const getResolver = (input: Input) => {
             ],
           },
         ],
-        isOpen: false,
+        isOpen: { set: false },
       };
 
       try {
@@ -144,7 +144,7 @@ const getResolver = (input: Input) => {
     // Unlock the channel
     try {
       const updateResult = await repository.updateLockState(channelUniqueName, {
-          locked: false,
+          locked: { set: false },
           lockedAt: null,
           lockReason: null,
           LockedBy: {

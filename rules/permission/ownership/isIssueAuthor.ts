@@ -18,7 +18,7 @@ type IsIssueAuthorInput = {
 export const isIssueAuthor = rule({ cache: "contextual" })(
   async (parent: unknown, args: IsIssueAuthorInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
-    const issueId = where?.id;
+    const issueId = where?.id?.eq;
 
     // Set user data
     // Server admins and the env root pass any ownership-gated mutation (replaces isAdmin).

@@ -44,13 +44,13 @@ export const getIssueIdsForRelated = async (
   try {
     const where: IssueWhere = {};
     if (related.discussionId) {
-      where.relatedDiscussionId = related.discussionId;
+      where.relatedDiscussionId = { eq: related.discussionId };
     }
     if (related.commentId) {
-      where.relatedCommentId = related.commentId;
+      where.relatedCommentId = { eq: related.commentId };
     }
     if (related.eventId) {
-      where.relatedEventId = related.eventId;
+      where.relatedEventId = { eq: related.eventId };
     }
 
     if (!Object.keys(where).length) {

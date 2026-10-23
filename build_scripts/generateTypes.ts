@@ -58,9 +58,10 @@ async function main() {
     typeDefs,
     features: {
       filters: { String: { MATCHES: true } },
-      // v7 CDC subscriptions (`subscriptions: true`) require a driver at
-      // construction; codegen is DB-free, so use the same in-process engine the
-      // server and tests use — it needs no driver and yields the full schema.
+      // GATED (v7 subscriptions decision): the custom in-process engine builds
+      // the full schema at runtime (codegen runs via tsx, which does not
+      // type-check) but is not a typed option for features.subscriptions in v7.
+      // Left pending the subscriptions migration decision; known tsc error.
       subscriptions: createSubscriptionEngine(),
     },
   });

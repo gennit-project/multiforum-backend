@@ -83,10 +83,10 @@ const nextAttemptNumber = async ({
   repository: PipelineAttemptRepository
 }): Promise<number> => {
   const previous = await repository.findAttemptNumbers({
-      targetId,
-      targetType,
-      eventType,
-      scope,
+      targetId: { eq: targetId },
+      targetType: { eq: targetType },
+      eventType: { eq: eventType },
+      scope: { eq: scope },
   })
 
   return previous.reduce(
@@ -196,8 +196,8 @@ export const completePipelineAttempt = async ({
 
   const persistence = repository ?? createPipelineAttemptRepository(driver!);
   await persistence.completeAttempt(pipelineId, {
-      status,
-      finishedAt,
+      status: { set: status },
+      finishedAt: { set: finishedAt },
       ...(finishedAt ? { timeoutAt: null } : {}),
     } as PluginPipelineRunUpdateInput)
 

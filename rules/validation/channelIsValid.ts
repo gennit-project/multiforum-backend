@@ -56,6 +56,25 @@ const BOOLEAN_FLAGS: Array<keyof ChannelInput> = [
 // A file type is an extension token: letters/digits, optionally a leading dot.
 const FILE_TYPE_PATTERN = /^\.?[A-Za-z0-9]+$/;
 
+// v7 wraps scalar updates as `{ set: value }`; the validator reads bare scalars,
+// so unwrap any `{ set }` wrapper while preserving every key (the variant-field
+// detection below keys off field names, not values).
+const unwrapScalarMutations = (
+  update: Record<string, unknown>
+): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(update)) {
+    result[key] =
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      "set" in value
+        ? (value as { set: unknown }).set
+        : value;
+  }
+  return result;
+};
+
 export const validateChannelInput = (input: ChannelInput): true | string => {
   const { uniqueName, description, displayName, isEditMode } = input;
   const attemptedVariantFields = getAttemptedChannelVariantFields(
@@ -158,8 +177,8 @@ export const updateChannelInputIsValid = rule({ cache: "contextual" })(
       return "Missing update input in args.";
     }
     return validateChannelInput({
-      ...args.update,
+      ...unwrapScalarMutations(args.update as Record<string, unknown>),
       isEditMode: true,
-    });
+    } as ChannelInput);
   }
 );

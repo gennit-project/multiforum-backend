@@ -1,9 +1,8 @@
 import type { Driver } from "neo4j-driver";
-import { createCollectionReadRepository, type CollectionReadRepository } from "../../services/persistence/collectionReadRepository.js";
+import { createCollectionReadRepository, type CollectionReadRepository, type CollectionReadOptions } from "../../services/persistence/collectionReadRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { CollectionOptions } from "../../src/generated/graphql.js";
 import type { CollectionWhere } from "../../ogm_types.js";
 import { CollectionVisibility } from "../../ogm_types.js";
 
@@ -49,7 +48,7 @@ export default function ({ driver, collectionReadRepository = createCollectionRe
     // Build the filter starting with CreatedBy
     const filter: CollectionWhere = {
       CreatedBy: {
-        username: profileUsername
+        username: { eq: profileUsername }
       }
     };
 
@@ -62,7 +61,7 @@ export default function ({ driver, collectionReadRepository = createCollectionRe
     // If not viewing own profile, only show PUBLIC collections
     // This takes precedence over any visibility filter in args.where
     if (!isOwnProfile) {
-      filter.visibility = CollectionVisibility.Public;
+      filter.visibility = { eq: CollectionVisibility.Public };
     }
 
     // Merge incoming options with defaults
@@ -73,7 +72,7 @@ export default function ({ driver, collectionReadRepository = createCollectionRe
 
     // Get collections with the merged filter
     // Include all relationship fields that clients might request
-    const collections = await collectionReadRepository.findProfileCollections(filter, options as CollectionOptions);
+    const collections = await collectionReadRepository.findProfileCollections(filter, options as CollectionReadOptions);
 
     return collections;
   };

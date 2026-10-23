@@ -260,7 +260,7 @@ export async function evaluateCanEditWikiHomePageRule(
   }
 
   const channelNames = new Set<string>();
-  addChannelName(channelNames, args?.where?.uniqueName);
+  addChannelName(channelNames, args?.where?.uniqueName?.eq);
   addChannelName(
     channelNames,
     wikiHomePageUpdate?.create?.node?.channelUniqueName

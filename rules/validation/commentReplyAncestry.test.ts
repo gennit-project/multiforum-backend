@@ -142,8 +142,8 @@ test("rejects reparenting without a unique child ID", async () => {
 
 test("allows updates that do not change reply relationships", async () => {
   await assert.doesNotReject(validateUpdateCommentReplyAncestry(
-    { text: "edited" },
-    { id: "child" },
+    { text: { set: "edited" } },
+    { id: { eq: "child" } },
     context()
   ));
 });
@@ -154,7 +154,7 @@ test("allows disconnecting a parent without connecting a replacement", async () 
   } as unknown as CommentUpdateInput;
   await assert.doesNotReject(validateUpdateCommentReplyAncestry(
     update,
-    { id: "child" },
+    { id: { eq: "child" } },
     context()
   ));
 });
@@ -164,7 +164,7 @@ test("rejects ChildComments relationship updates", async () => {
     ChildComments: { disconnect: { where: { node: { id: "child" } } } },
   } as unknown as CommentUpdateInput;
   await assert.rejects(
-    validateUpdateCommentReplyAncestry(update, { id: "parent" }, context()),
+    validateUpdateCommentReplyAncestry(update, { id: { eq: "parent" } }, context()),
     /ChildComments updates are not supported/
   );
 });
@@ -179,7 +179,7 @@ test("rejects connect-or-create reparenting", async () => {
     },
   } as unknown as CommentUpdateInput;
   await assert.rejects(
-    validateUpdateCommentReplyAncestry(update, { id: "child" }, context()),
+    validateUpdateCommentReplyAncestry(update, { id: { eq: "child" } }, context()),
     /parents must already exist/
   );
 });
@@ -196,7 +196,7 @@ test("rejects reply writes nested in a parent update", async () => {
     },
   } as unknown as CommentUpdateInput;
   await assert.rejects(
-    validateUpdateCommentReplyAncestry(update, { id: "child" }, context()),
+    validateUpdateCommentReplyAncestry(update, { id: { eq: "child" } }, context()),
     /Nested reply relationship writes are not supported/
   );
 });
@@ -208,7 +208,7 @@ test("rejects a self-cycle during reparenting", async () => {
     },
   };
   await assert.rejects(
-    validateUpdateCommentReplyAncestry(update, { id: "same" }, context()),
+    validateUpdateCommentReplyAncestry(update, { id: { eq: "same" } }, context()),
     /cannot reply to itself/
   );
 });
@@ -222,7 +222,7 @@ test("allows explicit overwrite reparenting", async () => {
   await assert.doesNotReject(
     validateUpdateCommentReplyAncestry(
       update,
-      { id: "child" },
+      { id: { eq: "child" } },
       context({ currentParentIds: ["old-parent"] })
     )
   );
@@ -237,7 +237,7 @@ test("allows disconnect-and-connect reparenting", async () => {
   } as unknown as CommentUpdateInput;
   await assert.doesNotReject(validateUpdateCommentReplyAncestry(
     update,
-    { id: "child" },
+    { id: { eq: "child" } },
     context({ currentParentIds: ["old-parent"] })
   ));
 });

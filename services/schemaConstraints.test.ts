@@ -6,14 +6,15 @@ import {
 } from "./schemaConstraints.js";
 
 test("creates missing schema constraints during startup", async () => {
-  let receivedOptions: unknown;
+  let called = false;
   const schema: SchemaConstraintManager = {
-    assertIndexesAndConstraints: async (options) => {
-      receivedOptions = options;
+    assertIndexesAndConstraints: async () => {
+      called = true;
     },
   };
 
   await ensureSchemaConstraints(schema);
 
-  assert.deepEqual(receivedOptions, { options: { create: true } });
+  // v7 creates missing indexes/constraints by default (no `create` option).
+  assert.equal(called, true);
 });

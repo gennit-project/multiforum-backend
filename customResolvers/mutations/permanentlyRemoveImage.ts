@@ -128,7 +128,7 @@ const getResolver = (input: Input) => {
 
     // Check if a server-scoped issue exists for this image
     const issueWhereClause: IssueWhere = {
-      relatedImageId: imageId,
+      relatedImageId: { eq: imageId },
       channelUniqueName: null, // Server-scoped
     };
 
@@ -199,7 +199,7 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the permanent removal action
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
 
     const removeUpdateIssueInput: IssueUpdateInput = {
@@ -212,11 +212,11 @@ const getResolver = (input: Input) => {
           ],
         },
       ],
-      flaggedServerRuleViolation: true,
+      flaggedServerRuleViolation: { set: true },
     };
 
     const closeIssueUpdateInput: IssueUpdateInput = {
-      isOpen: false,
+      isOpen: { set: false },
       ActivityFeed: [
         {
           create: [
@@ -256,11 +256,11 @@ const getResolver = (input: Input) => {
     // Update the image to set permanentlyRemoved=true and link the mod
     try {
       const imageUpdateWhere: ImageWhere = {
-        id: imageId,
+        id: { eq: imageId },
       };
       const imageUpdateInput: ImageUpdateInput = {
-        permanentlyRemoved: true,
-        permanentlyRemovedAt: new Date().toISOString(),
+        permanentlyRemoved: { set: true },
+        permanentlyRemovedAt: { set: new Date().toISOString() },
         PermanentlyRemovedByMod: {
           connect: {
             where: {
@@ -276,7 +276,7 @@ const getResolver = (input: Input) => {
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },

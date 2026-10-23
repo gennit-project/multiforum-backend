@@ -163,7 +163,7 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the moderation action
     const issueUpdateInput: IssueUpdateInput = {
-      isOpen: true, // Keep the issue open
+      isOpen: { set: true }, // Keep the issue open
       ActivityFeed: [
         {
           create: [
@@ -185,9 +185,9 @@ const getResolver = (input: Input) => {
     // Lock the channel
     try {
       const updateResult = await repository.updateLockState(channelUniqueName, {
-          locked: true,
-          lockedAt: new Date().toISOString(),
-          lockReason: reason,
+          locked: { set: true },
+          lockedAt: { set: new Date().toISOString() },
+          lockReason: { set: reason },
           LockedBy: {
             connect: {
               where: {

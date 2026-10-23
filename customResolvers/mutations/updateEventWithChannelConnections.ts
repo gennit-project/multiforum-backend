@@ -60,7 +60,7 @@ const getResolver = (input: Input) => {
         throw new Error("Event not found");
       }
 
-      const updatedEventId = where.id;
+      const updatedEventId = where.id?.eq;
 
       await executeManagedWrite(driver, async (transaction) => {
         await repository.updateWithinTransaction(where, eventUpdateInput, transaction);
@@ -80,10 +80,10 @@ const getResolver = (input: Input) => {
         await eventVersionHistoryHandler({
           context,
           params: {
-            where: { id: where.id },
+            where: { id: where.id?.eq },
             update: {
-              title: eventUpdateInput.title,
-              description: eventUpdateInput.description,
+              title: eventUpdateInput.title?.set,
+              description: eventUpdateInput.description?.set,
             },
           },
           eventSnapshot: existingEvent,

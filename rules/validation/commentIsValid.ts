@@ -209,7 +209,7 @@ export const validateUpdateCommentReplyAncestry = async (
       "update.ParentComment.connect.where.node.id"
     );
   }
-  const childCommentId = typeof where?.id === "string" ? where.id : null;
+  const childCommentId = typeof where?.id?.eq === "string" ? where.id.eq : null;
   if (!childCommentId) {
     throw replyInputError(
       "Reparenting must target one comment by its unique ID.",
@@ -291,7 +291,7 @@ export const updateCommentInputIsValid = rule({ cache: "contextual" })(
       return "Missing update input in args.";
     }
     const validation = validateCommentInput({
-      text: args.update?.text || "",
+      text: args.update?.text?.set || "",
       modProfileName: args.update?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
       username: args.update?.CommentAuthor?.User?.connect?.where?.node?.username || "",
       editMode: true

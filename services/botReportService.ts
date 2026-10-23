@@ -127,18 +127,18 @@ export const createBotReport = async (input: {
 
   // Check if an issue already exists for this content
   const issueWhereClause: IssueWhere = {
-    channelUniqueName
+    channelUniqueName: { eq: channelUniqueName }
   }
 
   switch (contentType) {
     case 'comment':
-      issueWhereClause.relatedCommentId = contentId
+      issueWhereClause.relatedCommentId = { eq: contentId }
       break
     case 'discussion':
-      issueWhereClause.relatedDiscussionId = contentId
+      issueWhereClause.relatedDiscussionId = { eq: contentId }
       break
     case 'event':
-      issueWhereClause.relatedEventId = contentId
+      issueWhereClause.relatedEventId = { eq: contentId }
       break
   }
 
@@ -247,7 +247,7 @@ export const createBotReport = async (input: {
 
   // Update the issue with the new moderation action
   const issueUpdateWhere: IssueWhere = {
-    id: existingIssueId
+    id: { eq: existingIssueId }
   }
   const issueUpdateInput: IssueUpdateInput = {
     ActivityFeed: [
@@ -259,9 +259,10 @@ export const createBotReport = async (input: {
         ]
       }
     ],
-    isOpen: true, // Reopen the issue if it was closed
-    flaggedServerRuleViolation:
-      existingIssueFlaggedServerRuleViolation || selectedServerRules.length > 0
+    isOpen: { set: true }, // Reopen the issue if it was closed
+    flaggedServerRuleViolation: {
+      set: existingIssueFlaggedServerRuleViolation || selectedServerRules.length > 0
+    }
   }
 
   // relatedUsername / relatedModProfileName are @settable(onUpdate: false): they

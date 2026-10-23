@@ -20,12 +20,12 @@ const ctx = (username: string) => ({ user: { username } }) as GraphQLContext;
 test("profile filters preserve incoming owner override and force public only for other viewers", async () => {
   for (const username of ["profile", "visitor"]) {
     const state = setup();
-    const where = { CreatedBy: { username: "override" }, visibility: CollectionVisibility.Private,
-      OR: [{ name_CONTAINS: "cats" }, { Discussions_SOME: { id: "discussion" } }] };
+    const where = { CreatedBy: { username: { eq: "override" } }, visibility: { eq: CollectionVisibility.Private },
+      OR: [{ name: { contains: "cats" } }, { Discussions_SOME: { id: { eq: "discussion" } } }] };
     const result = await state.resolver({ username: "profile" }, { where }, ctx(username), {} as never);
     assert.equal(result, state.rows);
-    assert.deepEqual(state.calls, [{ where: { ...where, visibility: username === "profile" ? "PRIVATE" : "PUBLIC" }, options: { sort: [{ createdAt: "DESC" }] } }]);
-    assert.equal(where.visibility, "PRIVATE");
+    assert.deepEqual(state.calls, [{ where: { ...where, visibility: username === "profile" ? { eq: "PRIVATE" } : { eq: "PUBLIC" } }, options: { sort: [{ createdAt: "DESC" }] } }]);
+    assert.deepEqual(where.visibility, { eq: "PRIVATE" });
   }
 });
 
@@ -37,7 +37,7 @@ test("profile defaults retain in-place options mutation and explicit empty sorti
   const explicit = { sort: [] };
   await state.resolver({ username: "profile" }, { options: explicit }, ctx("profile"), {} as never);
   assert.deepEqual(explicit, { sort: [] });
-  assert.deepEqual(state.calls[1], { where: { CreatedBy: { username: "profile" } }, options: explicit });
+  assert.deepEqual(state.calls[1], { where: { CreatedBy: { username: { eq: "profile" } } }, options: explicit });
 });
 
 test("profile read errors propagate unchanged", async () => {

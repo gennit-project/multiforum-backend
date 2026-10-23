@@ -86,7 +86,7 @@ export function createUnsuspendResolver ({
     })
 
     const issueUpdateInput: IssueUpdateInput = {
-      isOpen: false, // Close issue; unsuspension is often the final action.
+      isOpen: { set: false }, // Close issue; unsuspension is often the final action.
       ActivityFeed: [
         {
           create: [
@@ -134,7 +134,7 @@ export function createUnsuspendResolver ({
                where: {
                   node: {
                     SuspendedUser: {
-                      username: relatedAccountName
+                      username: { eq: relatedAccountName }
                     }
                   }
                }
@@ -152,7 +152,7 @@ export function createUnsuspendResolver ({
                 where: {
                   node: {
                     SuspendedMod: {
-                      displayName: relatedAccountName
+                      displayName: { eq: relatedAccountName }
                     }
                   }
                 }

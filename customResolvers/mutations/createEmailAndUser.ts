@@ -114,7 +114,7 @@ export const createUsersWithEmails = async (
       connect: [
         {
           where: {
-            node: { name: "Admin Role" },
+            node: { name: { eq: "Admin Role" } },
           },
         },
       ],

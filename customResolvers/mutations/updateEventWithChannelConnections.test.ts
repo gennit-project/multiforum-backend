@@ -146,8 +146,8 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
   const result = await resolver(
     null,
     {
-      where: { id: "event-1" },
-      eventUpdateInput: { title: "Phoenix Makers Meetup" },
+      where: { id: { eq: "event-1" } },
+      eventUpdateInput: { title: { set: "Phoenix Makers Meetup" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -215,8 +215,8 @@ test("updateEventWithChannelConnections skips notifications when no meaningful e
   await resolver(
     null,
     {
-      where: { id: "event-1" },
-      eventUpdateInput: { title: "Phoenix Meetup" },
+      where: { id: { eq: "event-1" } },
+      eventUpdateInput: { title: { set: "Phoenix Meetup" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -280,8 +280,8 @@ test("updateEventWithChannelConnections does not duplicate email when Neo4j retr
   await resolver(
     null,
     {
-      where: { id: "event-1" },
-      eventUpdateInput: { title: "Phoenix Makers Meetup" },
+      where: { id: { eq: "event-1" } },
+      eventUpdateInput: { title: { set: "Phoenix Makers Meetup" } },
       channelConnections: ["events"],
       channelDisconnections: [],
     },

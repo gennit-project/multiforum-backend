@@ -94,10 +94,10 @@ export const ensureBotUserForChannel = async (input: {
 
     if (needsUpdate) {
       await repository.reactivateIdentity(user.username, {
-          isBot: true,
-          botProfileId: profileId || null,
-          displayName,
-          isDeprecated: false,
+          isBot: { set: true },
+          botProfileId: { set: profileId || null },
+          displayName: { set: displayName },
+          isDeprecated: { set: false },
           deprecatedReason: null
       })
     }

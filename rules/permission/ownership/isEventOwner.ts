@@ -21,7 +21,7 @@ export const isEventOwner = rule({ cache: "contextual" })(
 
     const { where } = args;
     if (where) {
-      eventId = where.id;
+      eventId = where.id?.eq;
     }
 
     // set user data

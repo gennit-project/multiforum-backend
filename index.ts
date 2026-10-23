@@ -184,7 +184,11 @@ const features = {
       MATCHES: true,
     },
   },
-  // Enable subscriptions for change data capture
+  // GATED (v7 subscriptions decision): v7's features.subscriptions type accepts
+  // only `boolean | Neo4jGraphQLSubscriptionsCDCEngine` — the custom in-process
+  // engine is no longer a typed option (it builds at runtime but trips tsc).
+  // Left as-is pending the subscriptions migration decision (adopt CDC vs keep
+  // the in-process engine). This is a known, tracked tsc error.
   subscriptions: subscriptionEngine
 };
 

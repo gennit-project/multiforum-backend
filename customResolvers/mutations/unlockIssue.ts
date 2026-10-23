@@ -104,7 +104,7 @@ const getResolver = (input: Input = {}) => {
 
     // Update the issue to unlock it
     const issueUpdateInput: IssueUpdateInput = {
-      locked: false,
+      locked: { set: false },
       lockedAt: null,
       lockReason: null,
       LockedBy: {

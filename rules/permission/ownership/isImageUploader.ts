@@ -14,7 +14,7 @@ type IsImageUploaderInput = {
 export const isImageUploader = rule({ cache: "contextual" })(
   async (parent: unknown, args: IsImageUploaderInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
-    const imageId = where?.id;
+    const imageId = where?.id?.eq;
 
     // Set user data
     ctx.user = await setUserDataOnContext({

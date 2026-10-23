@@ -255,7 +255,7 @@ test("updateDiscussionWithChannelConnections behaviors", async (t) => {
     };
 
     await discussionModel.update({
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
       update: discussionUpdateInput,
     });
 
@@ -268,13 +268,13 @@ test("updateDiscussionWithChannelConnections behaviors", async (t) => {
 
     // Update the discussion
     await discussionModel.update({
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
       update: { title: "Updated Title" },
     });
 
     // Refetch the discussion
     const result = await discussionModel.find({
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
     });
 
     assert.equal(result.length, 1);
@@ -312,12 +312,12 @@ test("updateDiscussionWithChannelConnections behaviors", async (t) => {
 
     // Only update title, body should remain unchanged
     await discussionModel.update({
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
       update: { title: "Only Title Changed" },
     });
 
     const result = await discussionModel.find({
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
     });
 
     assert.equal(result.length, 1);
@@ -356,7 +356,7 @@ test("updateDiscussionWithChannelConnections enforces and assigns flairs", async
         resolver(
           null,
           {
-            where: { id: "discussion-1" },
+            where: { id: { eq: "discussion-1" } },
             discussionUpdateInput: {},
             channelConnections: ["required"],
           },
@@ -382,7 +382,7 @@ test("updateDiscussionWithChannelConnections enforces and assigns flairs", async
     await resolver(
       null,
       {
-        where: { id: "discussion-1" },
+        where: { id: { eq: "discussion-1" } },
         discussionUpdateInput: {},
         channelConnections: ["required"],
         channelFlairSelections: [
@@ -421,7 +421,7 @@ test("updateDiscussionWithChannelConnections disconnects album images", async ()
   await resolver(
     null,
     {
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
       discussionUpdateInput: {},
       albumImageDisconnections: ["image-2", "image-2", ""],
     },
@@ -452,7 +452,7 @@ test("updateDiscussionWithChannelConnections retries the update and channel chan
   await resolver(
     null,
     {
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
       discussionUpdateInput: {},
       channelConnections: ["new-channel"],
       channelDisconnections: ["old-channel"],

@@ -130,7 +130,9 @@ export const updateUserInputIsValid = rule({ cache: "contextual" })(
       return variantCheck;
     }
     return validateUserInput({
-      ...args.update,
+      username: args.update.username?.set,
+      bio: args.update.bio?.set,
+      displayName: args.update.displayName?.set,
       isEditMode: true,
     });
   }

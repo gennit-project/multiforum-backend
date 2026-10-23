@@ -1,9 +1,26 @@
 import neo4j, { type Driver } from "neo4j-driver";
-import type { SubscriptionsEvent } from "@neo4j/graphql";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
+// v7 no longer exports a `SubscriptionsEvent` type; the relationship event this
+// repository emits is hand-serialized, so its shape is described locally.
+export type CreatorModeratorRelationshipEvent = {
+  event: "create_relationship";
+  relationshipName: string;
+  fromTypename: string;
+  toTypename: string;
+  id: string;
+  id_from: string;
+  id_to: string;
+  timestamp: number;
+  properties: {
+    from: Record<string, unknown>;
+    to: Record<string, unknown>;
+    relationship: Record<string, unknown>;
+  };
+};
+
 export interface ChannelCreatorModeratorRepository {
-  connect(channelUniqueName: string, displayName: string): Promise<SubscriptionsEvent | null>;
+  connect(channelUniqueName: string, displayName: string): Promise<CreatorModeratorRelationshipEvent | null>;
 }
 
 // Both endpoint keys are @unique. Binding both nodes before MERGE also lets

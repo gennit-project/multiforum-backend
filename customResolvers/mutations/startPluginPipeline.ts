@@ -212,12 +212,12 @@ export const createStartPluginPipelineResolver = (
     }
 
     const activeAttempts = await repository.findActiveAttempts({
-        targetId,
-        targetType,
-        ...(uploadedAt ? { targetVersion: uploadedAt } : {}),
-        eventType,
-        scope,
-        ...(channelId ? { channelId } : {}),
+        targetId: { eq: targetId },
+        targetType: { eq: targetType },
+        ...(uploadedAt ? { targetVersion: { eq: uploadedAt } } : {}),
+        eventType: { eq: eventType },
+        scope: { eq: scope },
+        ...(channelId ? { channelId: { eq: channelId } } : {}),
         status_IN: [
           PluginPipelineRunStatus.Queued,
           PluginPipelineRunStatus.Running,

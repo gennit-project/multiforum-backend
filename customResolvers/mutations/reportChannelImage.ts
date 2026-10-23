@@ -165,9 +165,9 @@ const getResolver = (input: Input) => {
     };
 
     if (imageType === "ICON") {
-      issueWhereClause.relatedChannelIconName = channelUniqueName;
+      issueWhereClause.relatedChannelIconName = { eq: channelUniqueName };
     } else {
-      issueWhereClause.relatedChannelBannerName = channelUniqueName;
+      issueWhereClause.relatedChannelBannerName = { eq: channelUniqueName };
     }
 
     // Check if an issue already exists for this channel image (server-scoped)
@@ -242,7 +242,7 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
     const issueUpdateInput: IssueUpdateInput = {
       ActivityFeed: [
@@ -254,8 +254,8 @@ const getResolver = (input: Input) => {
           ],
         },
       ],
-      isOpen: true, // Reopen the issue if it was closed
-      flaggedServerRuleViolation: true, // Channel image reports always flag server rule violation
+      isOpen: { set: true }, // Reopen the issue if it was closed
+      flaggedServerRuleViolation: { set: true }, // Channel image reports always flag server rule violation
     };
 
     try {

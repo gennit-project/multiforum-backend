@@ -23,7 +23,7 @@ export const isDiscussionOwner = rule({ cache: "contextual" })(
 
     const { where } = args;
     if (where) {
-      discussionId = where.id;
+      discussionId = where.id?.eq;
     }
 
     // set user data

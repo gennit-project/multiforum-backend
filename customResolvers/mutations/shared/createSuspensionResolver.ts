@@ -106,7 +106,7 @@ export function createSuspensionResolver ({
     // 6. Update the Issue with the ModerationAction
     let updatedIssue
     const closeIssueUpdateInput: IssueUpdateInput = {
-      isOpen: false, // Set the issue to closed; suspension is often the final action.
+      isOpen: { set: false }, // Set the issue to closed; suspension is often the final action.
       ActivityFeed: [
         {
           create: [
@@ -116,7 +116,7 @@ export function createSuspensionResolver ({
       ]
     }
     const suspendUpdateInput: IssueUpdateInput = {
-      isOpen: false, // Set the issue to closed; suspension is often the final action.
+      isOpen: { set: false }, // Set the issue to closed; suspension is often the final action.
       ActivityFeed: [
         {
           create: [

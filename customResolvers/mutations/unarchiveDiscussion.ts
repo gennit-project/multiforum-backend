@@ -64,8 +64,8 @@ const getResolver = (input: Input) => {
 
     // Check if an issue already exists for the discussion ID and channel unique name.
     const issueData = await repository.findRelatedIssues({
-        channelUniqueName: channelUniqueName,
-        relatedDiscussionId: discussionId,
+        channelUniqueName: { eq: channelUniqueName },
+        relatedDiscussionId: { eq: discussionId },
       });
 
     if (issueData.length > 0 && issueData[0]?.id) {
@@ -87,10 +87,10 @@ const getResolver = (input: Input) => {
 
     // Update the issue with the new moderation action.
     const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
+      id: { eq: existingIssueId },
     };
     const issueUpdateInput: IssueUpdateInput = {
-      isOpen: false, // Set the issue to closed; unarchival is often the final action.
+      isOpen: { set: false }, // Set the issue to closed; unarchival is often the final action.
       ActivityFeed: [
         {
           create: [
@@ -125,11 +125,11 @@ const getResolver = (input: Input) => {
     try {
       // Update the discussionChannel so that archived=false.
       const discussionChannelUpdateWhere: DiscussionChannelWhere = {
-        channelUniqueName: channelUniqueName,
-        discussionId: discussionId,
+        channelUniqueName: { eq: channelUniqueName },
+        discussionId: { eq: discussionId },
       };
       const discussionChannelUpdateInput: DiscussionChannelUpdateInput = {
-        archived: false,
+        archived: { set: false },
       };
       const discussionUpdateData = await repository.setArchived(discussionChannelUpdateWhere, discussionChannelUpdateInput);
       const discussionUpdateId =
