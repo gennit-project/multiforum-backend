@@ -128,6 +128,7 @@ exports[`create retains default projection and ordered native events 1`] = `
               "low": 2026
             }
           },
+          "retryCount": 0,
           "scope": "SERVER",
           "status": "PENDING",
           "targetId": "file",
@@ -217,6 +218,10 @@ exports[`create retains default projection and ordered native events 1`] = `
             "high": 0,
             "low": 2026
           }
+        },
+        "retryCount": {
+          "high": 0,
+          "low": 0
         },
         "scope": "SERVER",
         "status": "PENDING",
