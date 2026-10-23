@@ -2396,6 +2396,7 @@ const typeDefinitions = gql`
     durationMs: Int
     targetId: String
     targetType: String
+    targetVersion: String
     ruleSetVersion: String
     payload: JSON
     publicDiagnostics: JSON

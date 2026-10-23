@@ -14,6 +14,7 @@ import {
   type PipelineJobStatus,
 } from './pipelineAttempt.js'
 import {
+  cancelSupersededPluginRuns,
   claimPluginRunLease,
   completePluginRunLease,
   createQueuedPluginRunTiming,
@@ -247,6 +248,17 @@ export const triggerPluginRunsForComment = async (
     contentType: 'Comment',
     text: comment.text,
   })
+  const isCurrentContentRevision = async () => {
+    const currentComments = await repository.findComment(comment.id)
+    const currentComment = currentComments[0]
+    if (!currentComment) return false
+    return createContentRevisionHash({
+      channelUniqueName,
+      contentId: currentComment.id,
+      contentType: 'Comment',
+      text: currentComment.text,
+    }) === contentRevisionHash
+  }
   const serverRules = Array.isArray(serverConfig.rules) ? serverConfig.rules : []
   const forumRules = Array.isArray(channel.rules) ? channel.rules : []
 
@@ -295,6 +307,7 @@ export const triggerPluginRunsForComment = async (
           status: 'PENDING',
           targetId: comment.id,
           targetType: 'Comment',
+          targetVersion: contentRevisionHash,
           ruleSetVersion,
           pipelineId,
           executionOrder: order,
@@ -308,6 +321,21 @@ export const triggerPluginRunsForComment = async (
           updatedAt: new Date().toISOString()
         } as PluginRunCreateInput)
       ])
+
+    await cancelSupersededPluginRuns({
+      driver,
+      repository: leaseRepository,
+      currentRun: {
+        id: runCreateResult.pluginRuns[0].id,
+        pluginId,
+        pipelineId,
+        scope: 'SERVER',
+        channelId: channelUniqueName,
+        targetId: comment.id,
+        targetType: 'Comment',
+        queuedAt: timing.queuedAt,
+      },
+    })
 
     pendingRuns.push({
       id: runCreateResult.pluginRuns[0].id,
@@ -365,7 +393,20 @@ export const triggerPluginRunsForComment = async (
       pluginRunId,
       pipelineId,
     })
-    if (!lease) continue
+    if (!lease) {
+      const unclaimed = await repository.findReturnedRun(pluginRunId)
+      const status = unclaimed[0]?.status
+      if (
+        status === 'PENDING' || status === 'RUNNING' ||
+        status === 'SUCCEEDED' || status === 'FAILED' ||
+        status === 'SKIPPED' || status === 'TIMED_OUT' ||
+        status === 'CANCELLED'
+      ) {
+        jobStatuses[order] = status
+      }
+      if (unclaimed[0]) runs.push(unclaimed[0])
+      continue
+    }
 
     const heartbeat = startPluginRunHeartbeat({
       driver,
@@ -503,6 +544,11 @@ export const triggerPluginRunsForComment = async (
         }) => {
           if (!driver) {
             throw new Error('Database driver not available for reportContentAsBot')
+          }
+
+          if (!(await isCurrentContentRevision())) {
+            logs.push('Report skipped: superseded by a newer content revision')
+            return null
           }
 
           // Check if the bot is suspended before allowing it to report

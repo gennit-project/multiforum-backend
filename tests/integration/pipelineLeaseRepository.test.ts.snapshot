@@ -433,6 +433,7 @@ exports[`claim, heartbeat sibling extension, completion retain exact responses a
         "status": "SUCCEEDED",
         "targetId": null,
         "targetType": null,
+        "targetVersion": null,
         "timeoutAt": null,
         "updatedAt": "<time>",
         "version": "1.0.0"

@@ -44,6 +44,50 @@ export type PluginRunLease = {
   leaseId: string;
 };
 
+export const cancelSupersededPluginRuns = async ({
+  driver,
+  repository,
+  currentRun,
+  now = new Date(),
+}: {
+  driver?: Driver;
+  repository?: PipelineLeaseRepository;
+  currentRun: {
+    id: string;
+    pluginId: string;
+    pipelineId: string;
+    scope: string;
+    channelId: string | null;
+    targetId: string;
+    targetType: string;
+    queuedAt: string;
+  };
+  now?: Date;
+}) => {
+  const persistence = repository ?? createPipelineLeaseRepository(driver!);
+  const timestamp = now.toISOString();
+  return persistence.cancelOlderPendingJobs(
+    {
+      id_NOT: currentRun.id,
+      pluginId: currentRun.pluginId,
+      pipelineId_NOT: currentRun.pipelineId,
+      scope: currentRun.scope,
+      channelId: currentRun.channelId,
+      targetId: currentRun.targetId,
+      targetType: currentRun.targetType,
+      status: PluginRunStatus.Pending,
+      queuedAt_LT: currentRun.queuedAt,
+    },
+    {
+      status: PluginRunStatus.Cancelled,
+      message: "Superseded by a newer content revision",
+      skippedReason: "Superseded by a newer content revision",
+      finishedAt: timestamp,
+      timeoutAt: null,
+    }
+  );
+};
+
 export const claimPluginRunLease = async ({
   driver,
   repository,

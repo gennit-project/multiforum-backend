@@ -7,6 +7,7 @@ import {
 } from "../../ogm_types.js";
 import { modelStub } from "../../tests/fixtures/modelStub.js";
 import {
+  cancelSupersededPluginRuns,
   claimPluginRunLease as actualclaimPluginRunLease,
   completePluginRunLease as actualcompletePluginRunLease,
   createQueuedPluginRunTiming,
@@ -28,6 +29,53 @@ test("creates a deterministic queue deadline", () => {
       timeoutAt: "2026-07-30T12:01:00.000Z",
     }
   );
+});
+
+test("cancels only older pending jobs for the same target and plugin", async () => {
+  const calls: Array<Record<string, unknown>> = [];
+  const repository = {
+    cancelOlderPendingJobs: async (where: unknown, update: unknown) => {
+      calls.push({ where, update });
+      return { pluginRuns: [{ id: "older-job" }] };
+    },
+  } as unknown as import("../persistence/pipelineLeaseRepository.js").PipelineLeaseRepository;
+
+  const result = await cancelSupersededPluginRuns({
+    repository,
+    currentRun: {
+      id: "current-job",
+      pluginId: "moderator",
+      pipelineId: "pipeline-2",
+      scope: "CHANNEL",
+      channelId: "cats",
+      targetId: "discussion-1",
+      targetType: "Discussion",
+      queuedAt: "2026-07-30T12:01:00.000Z",
+    },
+    now: new Date("2026-07-30T12:01:01.000Z"),
+  });
+
+  assert.deepEqual(result.pluginRuns, [{ id: "older-job" }]);
+  assert.deepEqual(calls, [{
+    where: {
+      id_NOT: "current-job",
+      pluginId: "moderator",
+      pipelineId_NOT: "pipeline-2",
+      scope: "CHANNEL",
+      channelId: "cats",
+      targetId: "discussion-1",
+      targetType: "Discussion",
+      status: PluginRunStatus.Pending,
+      queuedAt_LT: "2026-07-30T12:01:00.000Z",
+    },
+    update: {
+      status: PluginRunStatus.Cancelled,
+      message: "Superseded by a newer content revision",
+      skippedReason: "Superseded by a newer content revision",
+      finishedAt: "2026-07-30T12:01:01.000Z",
+      timeoutAt: null,
+    },
+  }]);
 });
 
 test("claims and renews a lease on both job and parent attempt", async () => {

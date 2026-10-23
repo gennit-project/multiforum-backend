@@ -28,6 +28,7 @@ import {
   type PipelineJobStatus,
 } from './pipelineAttempt.js'
 import {
+  cancelSupersededPluginRuns,
   claimPluginRunLease,
   completePluginRunLease,
   createQueuedPluginRunTiming,
@@ -262,6 +263,23 @@ export const triggerChannelPluginPipeline = async (
     attachmentVersion:
       downloadableFile?.uploadedAt || downloadableFile?.createdAt || null,
   })
+  const isCurrentContentRevision = async () => {
+    const currentDiscussions = await repository.findDiscussion(discussionId)
+    if (!currentDiscussions.length) return false
+    const currentDiscussion = currentDiscussions[0] as Discussion & {
+      DownloadableFile?: DownloadableFile | null
+    }
+    const currentFile =
+      currentDiscussion.DownloadableFiles?.[0] || currentDiscussion.DownloadableFile
+    return createContentRevisionHash({
+      channelUniqueName,
+      contentId: currentDiscussion.id,
+      contentType: 'Discussion',
+      title: currentDiscussion.title,
+      body: currentDiscussion.body,
+      attachmentVersion: currentFile?.uploadedAt || currentFile?.createdAt || null,
+    }) === contentRevisionHash
+  }
   const serverRules = Array.isArray(serverConfig.rules) ? serverConfig.rules : []
   const forumRules = Array.isArray(channel.rules) ? channel.rules : []
 
@@ -335,6 +353,7 @@ export const triggerChannelPluginPipeline = async (
           status: 'PENDING',
           targetId: discussionId,
           targetType: 'Discussion',
+          targetVersion: contentRevisionHash,
           ruleSetVersion,
           pipelineId,
           executionOrder: order,
@@ -349,6 +368,21 @@ export const triggerChannelPluginPipeline = async (
           updatedAt: new Date().toISOString()
         } as PluginRunCreateInput)
       ])
+
+    await cancelSupersededPluginRuns({
+      driver,
+      repository: leaseRepository,
+      currentRun: {
+        id: runCreateResult.pluginRuns[0].id,
+        pluginId,
+        pipelineId,
+        scope: 'CHANNEL',
+        channelId: channelUniqueName,
+        targetId: discussionId,
+        targetType: 'Discussion',
+        queuedAt: timing.queuedAt,
+      },
+    })
 
     pendingRuns.push({
       id: runCreateResult.pluginRuns[0].id,
@@ -409,7 +443,20 @@ export const triggerChannelPluginPipeline = async (
       pluginRunId,
       pipelineId,
     })
-    if (!lease) continue
+    if (!lease) {
+      const unclaimed = await repository.findReturnedRun(pluginRunId)
+      const status = unclaimed[0]?.status
+      if (
+        status === 'PENDING' || status === 'RUNNING' ||
+        status === 'SUCCEEDED' || status === 'FAILED' ||
+        status === 'SKIPPED' || status === 'TIMED_OUT' ||
+        status === 'CANCELLED'
+      ) {
+        jobStatuses[order] = status
+      }
+      if (unclaimed[0]) runs.push(unclaimed[0])
+      continue
+    }
 
     const heartbeat = startPluginRunHeartbeat({
       driver,
@@ -546,6 +593,11 @@ export const triggerChannelPluginPipeline = async (
         }) => {
           if (!driver) {
             throw new Error('Database driver not available for reportContentAsBot')
+          }
+
+          if (!(await isCurrentContentRevision())) {
+            logs.push('Report skipped: superseded by a newer content revision')
+            return null
           }
 
           const botUsername = buildBotUsername(
