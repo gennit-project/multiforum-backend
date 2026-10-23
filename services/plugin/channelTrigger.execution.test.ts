@@ -59,6 +59,7 @@ function makeExecModels(
   serverPipelines: unknown[] = [],
   options: {
     discussion?: unknown
+    discussionSnapshots?: unknown[]
     channelPluginEdges?: unknown[]
     serverRules?: string[]
   } = {}
@@ -68,6 +69,7 @@ function makeExecModels(
   const attemptCreates: AttemptCreateArgs[] = [];
   const fileUpdates: FileUpdateArgs[] = [];
   let seq = 0;
+  let discussionRead = 0;
   const channel = {
     uniqueName: "cats",
     displayName: "Cats",
@@ -109,7 +111,10 @@ function makeExecModels(
   const models = {
     Channel: modelStub<"Channel">({ find: async () => [channel] }),
     Discussion: modelStub<"Discussion">({
-      find: async () => [options.discussion || discussionWithFile],
+      find: async () => {
+        const snapshots = options.discussionSnapshots || [options.discussion || discussionWithFile];
+        return [snapshots[Math.min(discussionRead++, snapshots.length - 1)]];
+      },
     }),
     ServerConfig: modelStub<"ServerConfig">({
       find: async () => [serverConfig],
@@ -165,12 +170,54 @@ test("runs a pipeline plugin to SUCCEEDED", async () => {
 
   assert.equal(creates.length, 1);
   assert.equal(creates[0].input[0].status, "PENDING");
+  assert.match(String(creates[0].input[0].targetVersion), /^[a-f0-9]{64}$/);
   assert.match(String(creates[0].input[0].ruleSetVersion), /^[a-f0-9]{64}$/);
   assert.match(String(attemptCreates[0].input[0].targetVersion), /^[a-f0-9]{64}$/);
   const statuses = statusesOf(updates);
   assert.ok(statuses.includes("RUNNING"));
   assert.ok(statuses.includes("SUCCEEDED"));
   assert.equal(runs.length, 1);
+});
+
+test("does not publish a stale discussion verdict when an edit lands during execution", async () => {
+  const { models } = makeExecModels(
+    [{ pluginId: "mybot", condition: "ALWAYS" }],
+    [installedEdge("mybot")],
+    [],
+    {
+      discussionSnapshots: [
+        discussionWithFile,
+        { ...discussionWithFile, body: "newer body" },
+      ],
+    }
+  );
+  let reports = 0;
+  const Plugin: PluginConstructor = class {
+    private readonly context: Record<string, any>;
+    constructor(context: unknown) {
+      this.context = context as Record<string, any>;
+    }
+    async handleEvent() {
+      await this.context.reportContentAsBot({
+        contentType: "discussion",
+        contentId: "d-1",
+        reportText: "stale verdict",
+        selectedForumRules: [],
+        selectedServerRules: [],
+        botName: "moderator",
+      });
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin), {
+    reportAsBot: async () => {
+      reports += 1;
+      return { id: "issue-1" } as never;
+    },
+  });
+
+  assert.equal(reports, 0);
 });
 
 test("runs discussion moderation without an attachment and supplies rule context", async () => {

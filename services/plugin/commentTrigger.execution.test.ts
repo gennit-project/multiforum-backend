@@ -85,15 +85,20 @@ function makeExecModels(
   {
     channelRules = [],
     channelPluginEdges = [],
+    commentSnapshots = [discussionComment()],
+    unclaimableStatus,
   }: {
     channelRules?: string[];
     channelPluginEdges?: unknown[];
+    commentSnapshots?: ReturnType<typeof discussionComment>[];
+    unclaimableStatus?: string;
   } = {}
 ) {
   const updates: RunUpdateArgs[] = [];
   const creates: RunCreateArgs[] = [];
   const attemptCreates: AttemptCreateArgs[] = [];
   let seq = 0;
+  let commentRead = 0;
   const channel = {
     uniqueName: "cats",
     displayName: "Cats",
@@ -116,9 +121,15 @@ function makeExecModels(
     },
     update: async args => {
       updates.push(args);
+      if (args.where?.id && args.where?.status === "PENDING" && unclaimableStatus) {
+        return { pluginRuns: [] };
+      }
       return { pluginRuns: [{ id: "run-1" }] };
     },
-    find: async ({ where } = {}) => [{ id: where?.id ?? "run-1" }],
+    find: async ({ where } = {}) => [{
+      id: where?.id ?? "run-1",
+      ...(unclaimableStatus ? { status: unclaimableStatus } : {}),
+    }],
   });
   const PluginPipelineRun = modelStub<"PluginPipelineRun">({
     find: async () => [],
@@ -132,7 +143,9 @@ function makeExecModels(
   });
   const models = {
     Comment: modelStub<"Comment">({
-      find: async () => [discussionComment()],
+      find: async () => [
+        commentSnapshots[Math.min(commentRead++, commentSnapshots.length - 1)]!,
+      ],
     }),
     Channel: modelStub<"Channel">({ find: async () => [channel] }),
     ServerConfig: modelStub<"ServerConfig">({
@@ -191,6 +204,7 @@ test("runs a matching plugin to SUCCEEDED", async () => {
 
   assert.equal(creates.length, 1);
   assert.equal(creates[0].input[0].status, "PENDING");
+  assert.match(String(creates[0].input[0].targetVersion), /^[a-f0-9]{64}$/);
   assert.match(String(creates[0].input[0].ruleSetVersion), /^[a-f0-9]{64}$/);
   assert.match(String(attemptCreates[0].input[0].targetVersion), /^[a-f0-9]{64}$/);
   const statuses = statusesOf(updates);
@@ -198,6 +212,56 @@ test("runs a matching plugin to SUCCEEDED", async () => {
   assert.ok(statuses.includes("SUCCEEDED"), "ends SUCCEEDED");
   assert.ok(!statuses.includes("FAILED"));
   assert.equal(runs.length, 1);
+});
+
+test("does not publish a stale comment verdict when an edit lands during execution", async () => {
+  const original = discussionComment();
+  const edited = { ...discussionComment(), text: "newer text" };
+  const { models } = makeExecModels([installedEdge("mybot")], {
+    commentSnapshots: [original, edited],
+  });
+  let reports = 0;
+  const Plugin: PluginConstructor = class {
+    private readonly context: Record<string, any>;
+    constructor(context: unknown) {
+      this.context = context as Record<string, any>;
+    }
+    async handleEvent() {
+      await this.context.reportContentAsBot({
+        contentType: "comment",
+        contentId: "comment-1",
+        reportText: "stale verdict",
+        selectedForumRules: [],
+        selectedServerRules: [],
+        botName: "moderator",
+      });
+      return { success: true };
+    }
+  };
+
+  await execRun(models, loaderFor(Plugin), EVENT, {
+    reportAsBot: async () => {
+      reports += 1;
+      return { issueId: "issue-1", issueNumber: 1 };
+    },
+  });
+
+  assert.equal(reports, 0);
+});
+
+test("returns a job cancelled by a newer enqueue without executing it", async () => {
+  const { models } = makeExecModels([installedEdge("mybot")], {
+    unclaimableStatus: "CANCELLED",
+  });
+  let loads = 0;
+
+  const runs = await execRun(models, async () => {
+    loads += 1;
+    return pluginReturning({ success: true });
+  });
+
+  assert.equal(loads, 0);
+  assert.equal((runs[0] as { status?: string })?.status, "CANCELLED");
 });
 
 test("supplies an internal replay key when a plugin reports a comment", async () => {
