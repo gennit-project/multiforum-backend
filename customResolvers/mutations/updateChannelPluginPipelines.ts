@@ -29,6 +29,7 @@ type Args = {
 // Valid events for channel-scoped pipelines
 const VALID_CHANNEL_EVENTS = [
   'discussionChannel.created',
+  'discussionChannel.edited',
   'comment.created',
 ]
 

@@ -61,8 +61,9 @@ const serverConfigNoPlugins = {
 const run = (models: any, event = EVENT) =>
   triggerChannelPluginPipeline({ discussionId: "d-1", channelUniqueName: "cats", event }, {channelRepository:channelExecutionRepositoryStub(models)});
 
-test("isChannelEvent recognizes only discussionChannel.created", () => {
+test("isChannelEvent recognizes discussion channel lifecycle events", () => {
   assert.equal(isChannelEvent("discussionChannel.created"), true);
+  assert.equal(isChannelEvent("discussionChannel.edited"), true);
   assert.equal(isChannelEvent("comment.created"), false);
   assert.equal(isChannelEvent(""), false);
 });

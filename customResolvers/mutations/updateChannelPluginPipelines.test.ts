@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { validatePipelines, type EventPipelineInput } from "./updatePluginPipelines.js";
 
 // Channel-specific event validation
-const VALID_CHANNEL_EVENTS = ['discussionChannel.created'];
+const VALID_CHANNEL_EVENTS = [
+  'discussionChannel.created',
+  'discussionChannel.edited',
+];
 
 const validateChannelEvents = (pipelines: EventPipelineInput[]): string | null => {
   for (const pipeline of pipelines) {
@@ -47,6 +50,17 @@ async function testServerEventRejectedForChannelPipeline() {
   assert.ok(result !== null, "Server event should be rejected for channel pipeline");
   assert.ok(result?.includes('downloadableFile.created'), "Error should mention the invalid event");
   assert.ok(result?.includes('discussionChannel.created'), "Error should mention valid events");
+}
+
+async function testDiscussionEditedIsValidForChannelPipeline() {
+  const pipelines: EventPipelineInput[] = [
+    {
+      event: 'discussionChannel.edited',
+      steps: [{ pluginId: 'auto-moderator' }]
+    }
+  ];
+
+  assert.equal(validateChannelEvents(pipelines), null);
 }
 
 async function testDownloadableFileUpdatedRejectedForChannel() {
@@ -174,6 +188,7 @@ async function testMixedServerAndChannelEventsRejected() {
 // Run all tests
 async function run() {
   await testValidChannelPipelineReturnsNull();
+  await testDiscussionEditedIsValidForChannelPipeline();
   await testServerEventRejectedForChannelPipeline();
   await testDownloadableFileUpdatedRejectedForChannel();
   await testUnknownEventRejectedForChannel();
