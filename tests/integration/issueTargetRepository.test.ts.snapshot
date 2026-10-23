@@ -1,0 +1,737 @@
+exports[`all eight fixed snapshots match missing and populated generated reads 1`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 10`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "TargetComment": null,
+      "TargetDiscussion": {
+        "id": "d"
+      },
+      "TargetEvent": null,
+      "TargetModProfile": null,
+      "TargetUser": null,
+      "TargetWikiPage": null,
+      "TargetWikiRevision": null,
+      "channelUniqueName": "wrong-scalar",
+      "id": "i",
+      "relatedCommentId": null,
+      "relatedDiscussionId": "old-d",
+      "relatedEventId": null,
+      "relatedModProfileName": null,
+      "relatedUsername": null,
+      "relatedWikiPageId": null,
+      "relatedWikiRevisionId": null
+    }
+  ]
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 11`] = `
+{
+  "value": [
+    {
+      "isBot": false,
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 12`] = `
+{
+  "value": [
+    {
+      "Author": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "id": "d"
+    }
+  ]
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 13`] = `
+{
+  "value": [
+    {
+      "Poster": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "e"
+    }
+  ]
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 14`] = `
+{
+  "value": [
+    {
+      "CommentAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "id": "c"
+    }
+  ]
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 15`] = `
+{
+  "value": [
+    {
+      "Author": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "r"
+    }
+  ]
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 16`] = `
+{
+  "value": [
+    {
+      "OriginalAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "VersionAuthor": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "w"
+    }
+  ]
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 2`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 3`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 4`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 5`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 6`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 7`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 8`] = `
+{
+  "value": []
+}
+`;
+
+exports[`all eight fixed snapshots match missing and populated generated reads 9`] = `
+{
+  "value": [
+    {
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 1`] = `
+{
+  "value": [
+    {
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 10`] = `
+{
+  "value": []
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 11`] = `
+{
+  "value": [
+    {
+      "isBot": false,
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 12`] = `
+{
+  "value": []
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 13`] = `
+{
+  "value": [
+    {
+      "Poster": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "e"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 14`] = `
+{
+  "value": []
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 15`] = `
+{
+  "value": []
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 16`] = `
+{
+  "value": [
+    {
+      "OriginalAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "VersionAuthor": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "w"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 2`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "TargetComment": null,
+      "TargetDiscussion": null,
+      "TargetEvent": null,
+      "TargetModProfile": null,
+      "TargetUser": null,
+      "TargetWikiPage": null,
+      "TargetWikiRevision": null,
+      "channelUniqueName": "wrong-scalar",
+      "id": "i",
+      "relatedCommentId": null,
+      "relatedDiscussionId": "old-d",
+      "relatedEventId": null,
+      "relatedModProfileName": null,
+      "relatedUsername": null,
+      "relatedWikiPageId": null,
+      "relatedWikiRevisionId": null
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 3`] = `
+{
+  "value": [
+    {
+      "isBot": false,
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 4`] = `
+{
+  "value": []
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 5`] = `
+{
+  "value": [
+    {
+      "Poster": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "e"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 6`] = `
+{
+  "value": [
+    {
+      "CommentAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "id": "c"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 7`] = `
+{
+  "value": [
+    {
+      "Author": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "r"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 8`] = `
+{
+  "value": [
+    {
+      "OriginalAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "VersionAuthor": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "w"
+    }
+  ]
+}
+`;
+
+exports[`anonymous internal filtering applies to roots and nested issue targets 9`] = `
+{
+  "value": [
+    {
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 1`] = `
+{
+  "value": [
+    {
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 2`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "TargetComment": null,
+      "TargetDiscussion": {
+        "id": "d"
+      },
+      "TargetEvent": null,
+      "TargetModProfile": null,
+      "TargetUser": null,
+      "TargetWikiPage": null,
+      "TargetWikiRevision": null,
+      "channelUniqueName": "wrong-scalar",
+      "id": "i",
+      "relatedCommentId": "c",
+      "relatedDiscussionId": "old-d",
+      "relatedEventId": null,
+      "relatedModProfileName": null,
+      "relatedUsername": null,
+      "relatedWikiPageId": null,
+      "relatedWikiRevisionId": null
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 3`] = `
+{
+  "value": [
+    {
+      "isBot": false,
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 4`] = `
+{
+  "value": [
+    {
+      "Author": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "id": "d"
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 5`] = `
+{
+  "value": [
+    {
+      "Poster": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "e"
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 6`] = `
+{
+  "value": [
+    {
+      "CommentAuthor": {
+        "displayName": "Moderator"
+      },
+      "id": "c"
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 7`] = `
+{
+  "value": [
+    {
+      "Author": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "r"
+    }
+  ]
+}
+`;
+
+exports[`comment union resolves moderator ownership and preserves absent owner 8`] = `
+{
+  "value": [
+    {
+      "OriginalAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "VersionAuthor": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "w"
+    }
+  ]
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 1`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.ModerationProfile.displayName\\"; String cannot represent a non string value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 10`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "TargetComment": null,
+      "TargetDiscussion": {
+        "id": "d"
+      },
+      "TargetEvent": null,
+      "TargetModProfile": null,
+      "TargetUser": null,
+      "TargetWikiPage": null,
+      "TargetWikiRevision": null,
+      "channelUniqueName": "wrong-scalar",
+      "id": "i",
+      "relatedCommentId": null,
+      "relatedDiscussionId": "old-d",
+      "relatedEventId": null,
+      "relatedModProfileName": null,
+      "relatedUsername": null,
+      "relatedWikiPageId": null,
+      "relatedWikiRevisionId": null
+    }
+  ]
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 11`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"invalid\\""
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 12`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"invalid\\""
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 13`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"invalid\\""
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 14`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"invalid\\""
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 15`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"invalid\\""
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 16`] = `
+{
+  "error": "Boolean cannot represent a non boolean value: \\"invalid\\""
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 2`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 3`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.username\\"; String cannot represent a non string value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 4`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 5`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 6`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 7`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 8`] = `
+{
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+}
+`;
+
+exports[`invalid arguments and selected scalars retain generated first errors 9`] = `
+{
+  "value": [
+    {
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 1`] = `
+{
+  "value": [
+    {
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 2`] = `
+{
+  "value": [
+    {
+      "Channel": {
+        "uniqueName": "cats"
+      },
+      "TargetComment": null,
+      "TargetDiscussion": {
+        "id": "d"
+      },
+      "TargetEvent": null,
+      "TargetModProfile": null,
+      "TargetUser": null,
+      "TargetWikiPage": null,
+      "TargetWikiRevision": null,
+      "channelUniqueName": "wrong-scalar",
+      "id": "i",
+      "relatedCommentId": null,
+      "relatedDiscussionId": "old-d",
+      "relatedEventId": null,
+      "relatedModProfileName": null,
+      "relatedUsername": null,
+      "relatedWikiPageId": null,
+      "relatedWikiRevisionId": null
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 3`] = `
+{
+  "value": [
+    {
+      "isBot": false,
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 4`] = `
+{
+  "value": [
+    {
+      "Author": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "id": "d"
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 5`] = `
+{
+  "value": [
+    {
+      "Poster": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "e"
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 6`] = `
+{
+  "value": [
+    {
+      "CommentAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "id": "c"
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 7`] = `
+{
+  "value": [
+    {
+      "Author": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "r"
+    }
+  ]
+}
+`;
+
+exports[`read snapshots leave the graph unchanged and query callers do not inherit privileged JWT 8`] = `
+{
+  "value": [
+    {
+      "OriginalAuthor": {
+        "isBot": false,
+        "username": "alice"
+      },
+      "VersionAuthor": {
+        "isBot": true,
+        "username": "bob"
+      },
+      "id": "w"
+    }
+  ]
+}
+`;

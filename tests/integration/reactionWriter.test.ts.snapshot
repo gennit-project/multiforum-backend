@@ -1,0 +1,297 @@
+exports[`Comment default scalar projection failure retains committed update and error 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "discussionId": "discussion",
+          "emoji": "{}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "channelUniqueName": "cats",
+          "discussionId": "discussion",
+          "emoji": "{}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
+    }
+  ],
+  "rows": [
+    {
+      "emoji": "{}",
+      "touched": true,
+      "updated": true
+    }
+  ]
+}
+`;
+
+exports[`Comment internal anonymous authorization behavior retains committed write 1`] = `
+{
+  "events": [],
+  "rows": [
+    {
+      "emoji": "{}",
+      "touched": true,
+      "updated": true
+    }
+  ]
+}
+`;
+
+exports[`Comment malformed generated input preserves coercion errors and graph effects 1`] = `
+{
+  "events": [],
+  "rows": [
+    {
+      "emoji": "{}",
+      "touched": false,
+      "updated": false
+    }
+  ]
+}
+`;
+
+exports[`Comment missing target is a successful no-op 1`] = `
+{
+  "events": [],
+  "rows": []
+}
+`;
+
+exports[`Comment repeated equal writes preserve timestamps and native events 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{\\"reaction\\":1}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{\\"reaction\\":1}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
+    },
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{\\"reaction\\":1}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
+    }
+  ],
+  "rows": [
+    {
+      "emoji": "{\\"reaction\\":1}",
+      "touched": true,
+      "updated": true
+    }
+  ]
+}
+`;
+
+exports[`DiscussionChannel default scalar projection failure retains committed update and error 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "discussionId": "discussion",
+          "emoji": "{}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "channelUniqueName": "cats",
+          "discussionId": "discussion",
+          "emoji": "{}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "DiscussionChannel"
+    }
+  ],
+  "rows": [
+    {
+      "emoji": "{}",
+      "touched": true,
+      "updated": false
+    }
+  ]
+}
+`;
+
+exports[`DiscussionChannel internal anonymous authorization behavior retains committed write 1`] = `
+{
+  "events": [],
+  "rows": [
+    {
+      "emoji": "{}",
+      "touched": true,
+      "updated": false
+    }
+  ]
+}
+`;
+
+exports[`DiscussionChannel malformed generated input preserves coercion errors and graph effects 1`] = `
+{
+  "events": [],
+  "rows": [
+    {
+      "emoji": "{}",
+      "touched": false,
+      "updated": false
+    }
+  ]
+}
+`;
+
+exports[`DiscussionChannel missing target is a successful no-op 1`] = `
+{
+  "events": [],
+  "rows": []
+}
+`;
+
+exports[`DiscussionChannel repeated equal writes preserve timestamps and native events 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{\\"reaction\\":1}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{\\"reaction\\":1}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "DiscussionChannel"
+    },
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{\\"reaction\\":1}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "channelUniqueName": "cats",
+          "createdAt": "<time>",
+          "discussionId": "discussion",
+          "emoji": "{}",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "DiscussionChannel"
+    }
+  ],
+  "rows": [
+    {
+      "emoji": "{\\"reaction\\":1}",
+      "touched": true,
+      "updated": false
+    }
+  ]
+}
+`;

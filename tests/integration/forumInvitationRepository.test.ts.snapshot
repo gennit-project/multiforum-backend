@@ -1,0 +1,609 @@
+exports[`moderator missing targets and malformed inputs retain generated behavior 1`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`moderator missing targets and malformed inputs retain generated behavior 2`] = `
+{
+  "channels": [
+    {
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
+      "channelIconURL": null,
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "imageUploadsEnabled": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
+      "markAsAnsweredEnabled": null,
+      "markdownImagesEnabled": null,
+      "payoutPercent": null,
+      "pluginPipelines": null,
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
+    }
+  ]
+}
+`;
+
+exports[`moderator missing targets and malformed inputs retain generated behavior 3`] = `
+[
+  {
+    "event": "update",
+    "id": "<id-0>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  }
+]
+`;
+
+exports[`moderator projection failure preserves committed invite and events 1`] = `
+[
+  {
+    "event": "create_relationship",
+    "fromTypename": "Channel",
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "properties": {
+      "from": {
+        "uniqueName": "cats"
+      },
+      "relationship": {},
+      "to": {
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_MOD_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "uniqueName": "cats"
+      },
+      "old": {
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  }
+]
+`;
+
+exports[`moderator projection failure preserves committed invite and events 2`] = `
+[
+  {
+    "invites": {
+      "high": 0,
+      "low": 1
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ],
+    "username": "alice"
+  }
+]
+`;
+
+exports[`moderator repeated invitation writes preserve result and native events 1`] = `
+[
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "2020-01-01T00:00:00.000Z",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "2020-01-01T00:00:00.000Z",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`moderator repeated invitation writes preserve result and native events 2`] = `
+[
+  {
+    "event": "create_relationship",
+    "fromTypename": "Channel",
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "relationship": {},
+      "to": {
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_MOD_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
+  },
+  {
+    "event": "create_relationship",
+    "fromTypename": "Channel",
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "relationship": {},
+      "to": {
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_MOD_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  }
+]
+`;
+
+exports[`moderator repeated invitation writes preserve result and native events 3`] = `
+[
+  {
+    "invites": {
+      "high": 0,
+      "low": 1
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ],
+    "username": "alice"
+  }
+]
+`;
+
+exports[`owner missing targets and malformed inputs retain generated behavior 1`] = `
+{
+  "channels": []
+}
+`;
+
+exports[`owner missing targets and malformed inputs retain generated behavior 2`] = `
+{
+  "channels": [
+    {
+      "allowPaidDownloads": null,
+      "allowPaywalledPosts": null,
+      "allowedFileTypes": null,
+      "channelBannerURL": null,
+      "channelIconURL": null,
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "deleted": null,
+      "description": null,
+      "discussionFlairRequired": null,
+      "displayName": null,
+      "downloadsEnabled": null,
+      "emojiEnabled": null,
+      "eventsEnabled": null,
+      "feedbackEnabled": null,
+      "icon32Url": null,
+      "icon48Url": null,
+      "icon64Url": null,
+      "icon96Url": null,
+      "imageUploadsEnabled": null,
+      "lockReason": null,
+      "locked": null,
+      "lockedAt": null,
+      "markAsAnsweredEnabled": null,
+      "markdownImagesEnabled": null,
+      "payoutPercent": null,
+      "pluginPipelines": null,
+      "requireVerifiedEmailToPost": null,
+      "requireVerifiedPhoneForUploads": null,
+      "rules": null,
+      "uniqueName": "cats",
+      "variantUrls": null,
+      "wikiEnabled": null
+    }
+  ]
+}
+`;
+
+exports[`owner missing targets and malformed inputs retain generated behavior 3`] = `
+[
+  {
+    "event": "update",
+    "id": "<id-0>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  }
+]
+`;
+
+exports[`owner projection failure preserves committed invite and events 1`] = `
+[
+  {
+    "event": "create_relationship",
+    "fromTypename": "Channel",
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "properties": {
+      "from": {
+        "uniqueName": "cats"
+      },
+      "relationship": {},
+      "to": {
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "uniqueName": "cats"
+      },
+      "old": {
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  }
+]
+`;
+
+exports[`owner projection failure preserves committed invite and events 2`] = `
+[
+  {
+    "invites": {
+      "high": 0,
+      "low": 1
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ],
+    "username": "alice"
+  }
+]
+`;
+
+exports[`owner repeated invitation writes preserve result and native events 1`] = `
+[
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "2020-01-01T00:00:00.000Z",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  },
+  {
+    "channels": [
+      {
+        "allowPaidDownloads": null,
+        "allowPaywalledPosts": null,
+        "allowedFileTypes": null,
+        "channelBannerURL": null,
+        "channelIconURL": null,
+        "createdAt": "2020-01-01T00:00:00.000Z",
+        "deleted": null,
+        "description": null,
+        "discussionFlairRequired": null,
+        "displayName": null,
+        "downloadsEnabled": null,
+        "emojiEnabled": null,
+        "eventsEnabled": null,
+        "feedbackEnabled": null,
+        "icon32Url": null,
+        "icon48Url": null,
+        "icon64Url": null,
+        "icon96Url": null,
+        "imageUploadsEnabled": null,
+        "lockReason": null,
+        "locked": null,
+        "lockedAt": null,
+        "markAsAnsweredEnabled": null,
+        "markdownImagesEnabled": null,
+        "payoutPercent": null,
+        "pluginPipelines": null,
+        "requireVerifiedEmailToPost": null,
+        "requireVerifiedPhoneForUploads": null,
+        "rules": null,
+        "uniqueName": "cats",
+        "variantUrls": null,
+        "wikiEnabled": null
+      }
+    ]
+  }
+]
+`;
+
+exports[`owner repeated invitation writes preserve result and native events 2`] = `
+[
+  {
+    "event": "create_relationship",
+    "fromTypename": "Channel",
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "relationship": {},
+      "to": {
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
+  },
+  {
+    "event": "create_relationship",
+    "fromTypename": "Channel",
+    "id": "<id-0>",
+    "id_from": "<id-1>",
+    "id_to": "<id-2>",
+    "properties": {
+      "from": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "relationship": {},
+      "to": {
+        "createdAt": "<generated-time>",
+        "username": "alice"
+      }
+    },
+    "relationshipName": "HAS_PENDING_INVITE",
+    "timestamp": "<generated-time>",
+    "toTypename": "User"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  },
+  {
+    "event": "update",
+    "id": "<id-1>",
+    "properties": {
+      "new": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      },
+      "old": {
+        "createdAt": "<generated-time>",
+        "uniqueName": "cats"
+      }
+    },
+    "timestamp": "<generated-time>",
+    "typename": "Channel"
+  }
+]
+`;
+
+exports[`owner repeated invitation writes preserve result and native events 3`] = `
+[
+  {
+    "invites": {
+      "high": 0,
+      "low": 1
+    },
+    "notifications": [
+      {
+        "read": null,
+        "text": null,
+        "type": null
+      }
+    ],
+    "username": "alice"
+  }
+]
+`;
