@@ -1,0 +1,236 @@
+exports[`exact read projection retains anonymous age filter and malformed flags 1`] = `
+[
+  {
+    "archived": null,
+    "deleted": null,
+    "id": "target",
+    "isFeedbackComment": false,
+    "isRootComment": true,
+    "isSticky": false
+  }
+]
+`;
+
+exports[`invalid datetime input preserves coercion error and no writes 1`] = `
+{
+  "events": [],
+  "rows": [
+    {
+      "at": null,
+      "sticky": false,
+      "touched": false,
+      "updated": false,
+      "username": null
+    }
+  ]
+}
+`;
+
+exports[`malformed returned flag preserves projection failure after committed write 1`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "isSticky": 1,
+          "stickyByUsername": "alice",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "isSticky": 1
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
+    }
+  ],
+  "rows": [
+    {
+      "at": null,
+      "sticky": {
+        "high": 0,
+        "low": 1
+      },
+      "touched": true,
+      "updated": true,
+      "username": "alice"
+    }
+  ]
+}
+`;
+
+exports[`read and write missing target preserve empty arrays 1`] = `
+[]
+`;
+
+exports[`read and write missing target preserve empty arrays 2`] = `
+[]
+`;
+
+exports[`sticky then unsticky preserves selected response, null removal, timestamps and events 1`] = `
+[
+  [
+    {
+      "id": "target",
+      "isSticky": false,
+      "stickyAt": null,
+      "stickyByUsername": null
+    }
+  ],
+  [
+    {
+      "id": "target",
+      "isSticky": true,
+      "stickyAt": "2020-01-01T00:00:00.000Z",
+      "stickyByUsername": "alice"
+    }
+  ]
+]
+`;
+
+exports[`sticky then unsticky preserves selected response, null removal, timestamps and events 2`] = `
+{
+  "events": [
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "isSticky": false,
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "isSticky": true,
+          "stickyAt": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 0
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2020
+            }
+          },
+          "stickyByUsername": "alice",
+          "updatedAt": "<time>"
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
+    },
+    {
+      "event": "update",
+      "id": "<id-0>",
+      "properties": {
+        "new": {
+          "ageGateRestricted": false,
+          "ageGateTouchedAt": "<time>",
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "isSticky": true,
+          "stickyAt": {
+            "day": {
+              "high": 0,
+              "low": 1
+            },
+            "hour": {
+              "high": 0,
+              "low": 0
+            },
+            "minute": {
+              "high": 0,
+              "low": 0
+            },
+            "month": {
+              "high": 0,
+              "low": 1
+            },
+            "nanosecond": {
+              "high": 0,
+              "low": 0
+            },
+            "second": {
+              "high": 0,
+              "low": 0
+            },
+            "timeZoneOffsetSeconds": {
+              "high": 0,
+              "low": 0
+            },
+            "year": {
+              "high": 0,
+              "low": 2020
+            }
+          },
+          "stickyByUsername": "alice",
+          "updatedAt": "<time>"
+        },
+        "old": {
+          "ageGateRestricted": false,
+          "id": "target",
+          "isFeedbackComment": false,
+          "isRootComment": true,
+          "isSticky": false
+        }
+      },
+      "timestamp": "<time>",
+      "typename": "Comment"
+    }
+  ],
+  "rows": [
+    {
+      "at": null,
+      "sticky": false,
+      "touched": true,
+      "updated": true,
+      "username": null
+    }
+  ]
+}
+`;

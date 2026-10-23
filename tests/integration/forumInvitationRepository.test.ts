@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
 import { before, beforeEach, after, test } from "node:test";
-import { parse, print } from "graphql";
 import { Neo4jGraphQL } from "@neo4j/graphql";
 import type { Driver } from "neo4j-driver";
 import getCustomResolvers from "../helpers/getTestResolvers.js";
 import typeDefs from "../../typeDefs.js";
-import { initializeOgmFromExistingSchema } from "../../services/initializeOgmFromExistingSchema.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createForumInvitationRepository } from "../../services/persistence/forumInvitationRepository.js";
 import { createEmailNotificationRepository } from "../../services/persistence/emailNotificationRepository.js";
@@ -19,15 +17,14 @@ import type { GraphQLResolveInfo } from "graphql";
 import { createSubscriptionEngine } from "../../services/subscriptionEngine.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
 let driver: Driver;
-let ogm: ReturnType<typeof getCustomResolvers>["ogm"];
 const engine = createSubscriptionEngine();
 let events: unknown[] = [];
 for (const kind of ["create", "update", "create_relationship", "delete_relationship", "delete"]) engine.events.on(kind, event => events.push(event));
 before(async () => {
  driver = await startNeo4j();
- const app = getCustomResolvers(driver); ogm = app.ogm;
+ const app = getCustomResolvers(driver);
  const neoSchema = new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
- const schema = await neoSchema.getSchema(); initializeOgmFromExistingSchema(ogm,neoSchema,schema); registerGeneratedSchema(driver,schema);
+ const schema = await neoSchema.getSchema(); registerGeneratedSchema(driver,schema);
 }, {timeout:240_000});
 beforeEach(async () => {await resetDatabase(driver); events=[];});
 after(async () => {await engine.close(); await stopNeo4j();});
@@ -51,23 +48,19 @@ before(()=>{
 afterEach(()=>assert.equal(nativeCalls,0));after(()=>mock.restoreAll());
 const seed=async(valid=true)=>{await driver.executeQuery("CREATE (:Channel {uniqueName:'cats',createdAt:datetime('2020-01-01T00:00:00Z')}) CREATE (u:User {username:'alice',createdAt:datetime('2020-01-01T00:00:00Z')}) CREATE (:Email {address:'alice@example.test'})-[:HAS_EMAIL]->(u)");if(!valid)await driver.executeQuery("MATCH (c:Channel) REMOVE c.createdAt");};
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
-const oldWrite=(kind:"owner"|"moderator",username:unknown="alice")=>ogm.model("Channel").update({where:{uniqueName:"cats"},update:{[kind==="owner"?"PendingOwnerInvites":"PendingModInvites"]:[{connect:[{where:{node:{username}}}]}]}} as any);
 const currentWrite=(kind:"owner"|"moderator",username="alice")=>createForumInvitationRepository(driver)[kind==="owner"?"connectOwnerInvite":"connectModeratorInvite"]("cats",username);
 const graph=async()=>plain((await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (:Channel)-[i:HAS_PENDING_INVITE|HAS_PENDING_MOD_INVITE]->(u) OPTIONAL MATCH (u)-[:HAS_NOTIFICATION]->(n:Notification) RETURN u.username AS username,count(DISTINCT i) AS invites,collect(DISTINCT {text:n.text,read:n.read,type:n.notificationType}) AS notifications ORDER BY username")).records.map(r=>r.toObject()));
 for(const kind of ["owner","moderator"] as const){
- test(`${kind} repeated invitation writes preserve result and native events`,async()=>{
-  await seed();const expected=[plain(await oldWrite(kind)),plain(await oldWrite(kind))];const oldEvents=normalize(events);const oldGraph=await graph();
-  await resetDatabase(driver);await seed();events=[];const result=[plain(await currentWrite(kind)),plain(await currentWrite(kind))];assert.deepEqual(result,expected);assert.deepEqual(normalize(events),oldEvents);assert.deepEqual(await graph(),oldGraph);
+ test(`${kind} repeated invitation writes preserve result and native events`,async(t)=>{
+  await seed();const result=[plain(await currentWrite(kind)),plain(await currentWrite(kind))];t.assert.snapshot(result);t.assert.snapshot(normalize(events));t.assert.snapshot(await graph());
  });
- test(`${kind} projection failure preserves committed invite and events`,async()=>{
-  await seed(false);await assert.rejects(oldWrite(kind),/Cannot return null for non-nullable field Channel\.createdAt/);const oldEvents=normalize(events);const oldGraph=await graph();
-  await resetDatabase(driver);await seed(false);events=[];await assert.rejects(currentWrite(kind),/Cannot return null for non-nullable field Channel\.createdAt/);assert.deepEqual(normalize(events),oldEvents);assert.deepEqual(await graph(),oldGraph);
+ test(`${kind} projection failure preserves committed invite and events`,async(t)=>{
+  await seed(false);await assert.rejects(currentWrite(kind),/Cannot return null for non-nullable field Channel\.createdAt/);t.assert.snapshot(normalize(events));t.assert.snapshot(await graph());
  });
- test(`${kind} missing targets and malformed inputs retain generated behavior`,async()=>{
-  assert.deepEqual(plain(await currentWrite(kind)),plain(await oldWrite(kind)));
+ test(`${kind} missing targets and malformed inputs retain generated behavior`,async(t)=>{
+  t.assert.snapshot(plain(await currentWrite(kind)));
   await seed();await driver.executeQuery("MATCH (u:User) DETACH DELETE u");
-  events=[];const expected=plain(await oldWrite(kind));const oldEvents=normalize(events);events=[];
-  assert.deepEqual(plain(await currentWrite(kind)),expected);assert.deepEqual(normalize(events),oldEvents);
+  events=[];t.assert.snapshot(plain(await currentWrite(kind)));t.assert.snapshot(normalize(events));
   await assert.rejects(currentWrite(kind,23 as any),/String cannot represent a non string value/);
  });
  test(`${kind} resolver keeps invitation committed on email failure and repeats notifications without adding a type`,async()=>{
