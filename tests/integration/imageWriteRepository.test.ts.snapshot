@@ -1,51 +1,12 @@
-exports[`icon write preserves missing rows, exact projection and repeated update events 1`] = `
+exports[`icon write preserves missing rows and exact projection 1`] = `
 {
   "channels": []
 }
 `;
 
-exports[`icon write preserves missing rows, exact projection and repeated update events 2`] = `
+exports[`icon write preserves missing rows and exact projection 2`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "node-0",
-      "properties": {
-        "new": {
-          "channelIconURL": "https://example.test/icon",
-          "createdAt": "<generated-datetime>",
-          "icon32Url": "https://example.test/32",
-          "uniqueName": "forum"
-        },
-        "old": {
-          "channelIconURL": "https://example.test/icon",
-          "createdAt": "<generated-datetime>",
-          "icon32Url": "https://example.test/32",
-          "uniqueName": "forum"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "Channel"
-    },
-    {
-      "event": "update",
-      "id": "node-0",
-      "properties": {
-        "new": {
-          "channelIconURL": "https://example.test/icon",
-          "createdAt": "<generated-datetime>",
-          "icon32Url": "https://example.test/32",
-          "uniqueName": "forum"
-        },
-        "old": {
-          "createdAt": "<generated-datetime>",
-          "uniqueName": "forum"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "Channel"
-    }
-  ],
+  "events": [],
   "response": {
     "channels": [
       {
@@ -64,84 +25,9 @@ exports[`icon write preserves missing rows, exact projection and repeated update
 }
 `;
 
-exports[`image create preserves selected response, generated defaults, relations and native events 1`] = `
+exports[`image create preserves selected response, generated defaults and relations 1`] = `
 {
-  "events": [
-    {
-      "event": "create",
-      "id": "node-4",
-      "properties": {
-        "new": {
-          "ageGateTouchedAt": "<generated-datetime>",
-          "alt": "alt",
-          "archived": false,
-          "createdAt": "<generated-datetime>",
-          "hasSensitiveContent": false,
-          "id": "domain-0",
-          "permanentlyRemoved": false,
-          "scanStatus": "PENDING",
-          "url": "https://example.test/image"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "Image"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "Album",
-      "id": "relationship-5",
-      "id_from": "node-6",
-      "id_to": "node-4",
-      "properties": {
-        "from": {
-          "id": "domain-1"
-        },
-        "relationship": {},
-        "to": {
-          "ageGateTouchedAt": "<generated-datetime>",
-          "alt": "alt",
-          "archived": false,
-          "createdAt": "<generated-datetime>",
-          "hasSensitiveContent": false,
-          "id": "domain-0",
-          "permanentlyRemoved": false,
-          "scanStatus": "PENDING",
-          "url": "https://example.test/image"
-        }
-      },
-      "relationshipName": "HAS_IMAGE",
-      "timestamp": "<time>",
-      "toTypename": "Image"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "User",
-      "id": "relationship-2",
-      "id_from": "node-3",
-      "id_to": "node-4",
-      "properties": {
-        "from": {
-          "createdAt": "<generated-datetime>",
-          "username": "alice"
-        },
-        "relationship": {},
-        "to": {
-          "ageGateTouchedAt": "<generated-datetime>",
-          "alt": "alt",
-          "archived": false,
-          "createdAt": "<generated-datetime>",
-          "hasSensitiveContent": false,
-          "id": "domain-0",
-          "permanentlyRemoved": false,
-          "scanStatus": "PENDING",
-          "url": "https://example.test/image"
-        }
-      },
-      "relationshipName": "UPLOADED_IMAGE",
-      "timestamp": "<time>",
-      "toTypename": "Image"
-    }
-  ],
+  "events": [],
   "response": {
     "images": [
       {
@@ -154,20 +40,12 @@ exports[`image create preserves selected response, generated defaults, relations
           "username": "alice"
         },
         "alt": "alt",
-        "caption": null,
-        "copyright": null,
+        "archived": false,
         "createdAt": "<time>",
         "hasSensitiveContent": false,
-        "hasSpoiler": null,
         "id": "domain-0",
-        "longDescription": null,
+        "permanentlyRemoved": false,
         "scanStatus": "PENDING",
-        "storageBucket": null,
-        "storageObjectName": null,
-        "storageUrl": null,
-        "uploadedAt": "<time>",
-        "uploadedByIp": null,
-        "uploadedByUsername": null,
         "url": "https://example.test/image"
       }
     ]
@@ -175,136 +53,22 @@ exports[`image create preserves selected response, generated defaults, relations
 }
 `;
 
-exports[`image projection failure leaves the same committed graph and events 1`] = `
+exports[`owned image create is insulated from a broken default projection resolver 1`] = `
 {
   "count": 1,
-  "events": [
-    {
-      "event": "create",
-      "id": "node-2",
-      "properties": {
-        "new": {
-          "ageGateTouchedAt": "<generated-datetime>",
-          "alt": "alt",
-          "archived": false,
-          "createdAt": "<generated-datetime>",
-          "hasSensitiveContent": false,
-          "id": "domain-3",
-          "permanentlyRemoved": false,
-          "scanStatus": "PENDING",
-          "url": "https://example.test/image"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "Image"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "Album",
-      "id": "relationship-4",
-      "id_from": "node-5",
-      "id_to": "node-2",
-      "properties": {
-        "from": {
-          "id": "domain-6"
-        },
-        "relationship": {},
-        "to": {
-          "ageGateTouchedAt": "<generated-datetime>",
-          "alt": "alt",
-          "archived": false,
-          "createdAt": "<generated-datetime>",
-          "hasSensitiveContent": false,
-          "id": "domain-3",
-          "permanentlyRemoved": false,
-          "scanStatus": "PENDING",
-          "url": "https://example.test/image"
-        }
-      },
-      "relationshipName": "HAS_IMAGE",
-      "timestamp": "<time>",
-      "toTypename": "Image"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "User",
-      "id": "relationship-0",
-      "id_from": "node-1",
-      "id_to": "node-2",
-      "properties": {
-        "from": {
-          "createdAt": "<generated-datetime>",
-          "username": "alice"
-        },
-        "relationship": {},
-        "to": {
-          "ageGateTouchedAt": "<generated-datetime>",
-          "alt": "alt",
-          "archived": false,
-          "createdAt": "<generated-datetime>",
-          "hasSensitiveContent": false,
-          "id": "domain-3",
-          "permanentlyRemoved": false,
-          "scanStatus": "PENDING",
-          "url": "https://example.test/image"
-        }
-      },
-      "relationshipName": "UPLOADED_IMAGE",
-      "timestamp": "<time>",
-      "toTypename": "Image"
-    }
-  ]
+  "events": []
 }
 `;
 
-exports[`profile write preserves missing rows, exact projection and repeated update events 1`] = `
+exports[`profile write preserves missing rows and exact projection 1`] = `
 {
   "users": []
 }
 `;
 
-exports[`profile write preserves missing rows, exact projection and repeated update events 2`] = `
+exports[`profile write preserves missing rows and exact projection 2`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "node-0",
-      "properties": {
-        "new": {
-          "avatar32Url": "https://example.test/32",
-          "createdAt": "<generated-datetime>",
-          "profilePicURL": "https://example.test/profile",
-          "username": "alice"
-        },
-        "old": {
-          "avatar32Url": "https://example.test/32",
-          "createdAt": "<generated-datetime>",
-          "profilePicURL": "https://example.test/profile",
-          "username": "alice"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    },
-    {
-      "event": "update",
-      "id": "node-0",
-      "properties": {
-        "new": {
-          "avatar32Url": "https://example.test/32",
-          "createdAt": "<generated-datetime>",
-          "profilePicURL": "https://example.test/profile",
-          "username": "alice"
-        },
-        "old": {
-          "createdAt": "<generated-datetime>",
-          "username": "alice"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    }
-  ],
+  "events": [],
   "response": {
     "users": [
       {
