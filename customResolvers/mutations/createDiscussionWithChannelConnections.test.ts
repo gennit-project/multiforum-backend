@@ -324,7 +324,9 @@ test("createDiscussionWithChannelConnections", async (t) => {
     assert.equal(session.runCalls.length, 1);
   });
 
-  await t.test("creates tags with connect-or-create pattern", async () => {
+  await t.test("passes through v7 tag connect/create", async () => {
+    // v7 removed connectOrCreate; the generated to-many still accepts connect
+    // (existing tags) and create (new tags), which the resolver passes through.
     const discussionModel = new DiscussionModelStub();
     const session = new SessionStub();
     const driver = createDriver(session);
@@ -338,16 +340,8 @@ test("createDiscussionWithChannelConnections", async (t) => {
             title: "Tagged Discussion",
             body: "Test body",
             Tags: {
-              connectOrCreate: [
-                {
-                  where: { node: { text: "tag1" } },
-                  onCreate: { node: { text: "tag1" } },
-                },
-                {
-                  where: { node: { text: "tag2" } },
-                  onCreate: { node: { text: "tag2" } },
-                },
-              ],
+              connect: [{ where: { node: { text: { eq: "tag1" } } } }],
+              create: [{ node: { text: "tag2" } }],
             },
           },
           channelConnections: ["test-channel"],
@@ -358,8 +352,8 @@ test("createDiscussionWithChannelConnections", async (t) => {
     assert.equal(discussionModel.createCalls.length, 1);
     const createInput = discussionModel.createCalls[0].input[0] as any;
     assert.ok(createInput.Tags);
-    assert.ok(createInput.Tags.connectOrCreate);
-    assert.equal(createInput.Tags.connectOrCreate.length, 2);
+    assert.equal(createInput.Tags.connect.length, 1);
+    assert.equal(createInput.Tags.create.length, 1);
   });
 
   await t.test("sanitizes album creation when context is provided", async () => {

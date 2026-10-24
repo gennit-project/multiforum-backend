@@ -6,8 +6,32 @@ import { DiscussionCreateInput } from "../../src/generated/graphql.js";
 import { triggerChannelPluginPipeline, triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { GraphQLError } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import { sanitizeAlbumCreateNode } from "./utils/ownershipSanitizers.js";
+import { connectCreatedDiscussionAlbumOwnership } from "../../services/persistence/discussionAlbumWrite.js";
 import type { GraphQLContext } from "../../types/context.js";
+
+// v7 removed the nested to-one connect, so the generated createDiscussions can
+// create the nested Album + its Images but not attach their Owner/Uploader. Strip
+// those connects before the generated create; the owned post-create write wires
+// the ownership edges (see discussionAlbumWrite).
+const stripAlbumOwnerConnects = (node: unknown): unknown => {
+  if (!node || typeof node !== "object") return node;
+  const { Owner, Images, ...rest } = node as Record<string, any>;
+  void Owner;
+  const out: Record<string, unknown> = { ...rest };
+  if (Images && Images.create) {
+    const entries = Array.isArray(Images.create) ? Images.create : [Images.create];
+    out.Images = {
+      ...Images,
+      create: entries.map((entry: any) => {
+        if (!entry || !entry.node) return entry;
+        const { Uploader, ...restNode } = entry.node as Record<string, unknown>;
+        void Uploader;
+        return { ...entry, node: restNode };
+      }),
+    };
+  }
+  return out;
+};
 import { logger } from "../../logger.js";
 import {
   loadChannelDiscussionFlairRequirements,
@@ -117,6 +141,7 @@ export const createDiscussionsFromInput = async (
   }
 
   let sanitizedInput = input;
+  let albumOwnerUsername: string | undefined;
 
   const hasAlbumCreate = input.some(
     ({ discussionCreateInput }) =>
@@ -137,6 +162,7 @@ export const createDiscussionsFromInput = async (
     if (!username) {
       throw new GraphQLError("You must be logged in to create albums.");
     }
+    albumOwnerUsername = username;
 
     sanitizedInput = input.map(
       ({
@@ -162,7 +188,7 @@ export const createDiscussionsFromInput = async (
               ...discussionCreateInput?.Album,
               create: {
                 ...(albumCreate ?? {}),
-                node: sanitizeAlbumCreateNode(albumCreateNode, username),
+                node: stripAlbumOwnerConnects(albumCreateNode),
               },
             },
           },
@@ -208,6 +234,17 @@ export const createDiscussionsFromInput = async (
 
       const newDiscussion = response.discussions[0];
       const newDiscussionId = newDiscussion.id;
+
+      // The generated create made the nested album + images; wire their ownership
+      // edges (HAS_ALBUM owner, UPLOADED_IMAGE) that v7 can't express as a connect.
+      if (albumOwnerUsername && discussionCreateInput?.Album?.create?.node) {
+        await session.executeWrite((tx) =>
+          connectCreatedDiscussionAlbumOwnership(tx, {
+            discussionId: newDiscussionId,
+            username: albumOwnerUsername,
+          })
+        );
+      }
 
       // Check if this discussion has a download attached
       const hasDownload = discussionCreateInput.hasDownload === true;
