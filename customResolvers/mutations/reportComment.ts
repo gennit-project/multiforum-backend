@@ -1,11 +1,9 @@
 import { createCommentReportRepository, type CommentReportRepository } from "../../services/persistence/commentReportRepository.js"
 import type {
   IssueCreateInput,
-  ModerationActionCreateInput,
-  ModerationRecommendedAction,
-  IssueWhere,
-  IssueUpdateInput
+  ModerationRecommendedAction
 } from '../../ogm_types.js'
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js"
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js'
 import { GraphQLError } from 'graphql'
 import { getFinalCommentText } from "./shared/reportText.js"
@@ -349,20 +347,21 @@ const getResolver = (input: Input) => {
     // If an issue does NOT already exist, create a new issue.
     if (!existingIssueId) {
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
-      const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-        contextText: commentText,
-        selectedForumRules,
-        selectedServerRules,
-        loggedInModName,
-        channelUniqueName,
-        reportedContentType: 'comment',
-        relatedCommentId: commentId,
-        relatedUsername,
-        relatedModProfileName,
-        issueNumber
-      })
+      const truncatedContextText = commentText?.substring(0, 50) || ''
+      const title = `[Reported comment] "${truncatedContextText}${
+        commentText.length > 50 ? '...' : ''
+      }"`
       try {
-        const issueData = await repository.createIssue(issueCreateInput)
+        const issueData = await repository.createIssue({
+          issueNumber,
+          title,
+          authorModName: loggedInModName,
+          channelUniqueName,
+          flaggedServerRuleViolation: selectedServerRules.length > 0,
+          relatedCommentId: commentId,
+          relatedUsername,
+          relatedModProfileName
+        })
         const issueId = issueData.issues[0]?.id || null
         if (!issueId) {
           throw new GraphQLError('Error creating issue')
@@ -372,40 +371,26 @@ const getResolver = (input: Input) => {
         throw new GraphQLError('Error creating issue')
       }
     }
-    const moderationActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: finalCommentText,
-        loggedInModName,
-        channelUniqueName,
-        actionType: 'report',
-        actionDescription: 'Reported the comment',
-        issueId: existingIssueId
-      })
 
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: { eq: existingIssueId }
-    }
-    const issueUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput
-            }
-          ]
-        }
-      ],
-      isOpen: { set: true }, // Reopen the issue if it was closed
-      flaggedServerRuleViolation: {
-        set:
+    // Append the report moderation action (with its embedded moderator comment)
+    // to the issue's activity feed via the owned moderation write.
+    try {
+      const issueData = await repository.appendReport({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: 'report',
+            actionDescription: 'Reported the comment',
+            text: formatModerationActionText({ text: finalCommentText }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName
+          }
+        ],
+        isOpen: true, // Reopen the issue if it was closed
+        flaggedServerRuleViolation:
           existingIssueFlaggedServerRuleViolation ||
           selectedServerRules.length > 0
-      }
-    }
-
-    try {
-      const issueData = await repository.appendReport(issueUpdateWhere, issueUpdateInput)
+      })
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
         throw new GraphQLError('Error updating issue')
