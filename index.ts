@@ -184,12 +184,15 @@ const features = {
       MATCHES: true,
     },
   },
-  // GATED (v7 subscriptions decision): v7's features.subscriptions type accepts
-  // only `boolean | Neo4jGraphQLSubscriptionsCDCEngine` — the custom in-process
-  // engine is no longer a typed option (it builds at runtime but trips tsc).
-  // Left as-is pending the subscriptions migration decision (adopt CDC vs keep
-  // the in-process engine). This is a known, tracked tsc error.
-  subscriptions: subscriptionEngine
+  // v7's features.subscriptions type accepts only
+  // `boolean | Neo4jGraphQLSubscriptionsCDCEngine`, but the app ships no
+  // subscription transport (no WebSocket server), so the custom in-process
+  // engine is kept as-is — it builds the schema's subscription types at runtime
+  // and the library accepts the engine object. The cast satisfies the v7 type
+  // without adopting CDC, which would be infrastructure with no client-facing
+  // benefit until a transport exists. See issue #284 and the real-delivery
+  // follow-up issue for the WebSocket + CDC feature work.
+  subscriptions: subscriptionEngine as unknown as boolean
 };
 
 // Create Neo4j GraphQL schema

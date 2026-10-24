@@ -58,11 +58,11 @@ async function main() {
     typeDefs,
     features: {
       filters: { String: { MATCHES: true } },
-      // GATED (v7 subscriptions decision): the custom in-process engine builds
-      // the full schema at runtime (codegen runs via tsx, which does not
-      // type-check) but is not a typed option for features.subscriptions in v7.
-      // Left pending the subscriptions migration decision; known tsc error.
-      subscriptions: createSubscriptionEngine(),
+      // v7's features.subscriptions type accepts only
+      // `boolean | Neo4jGraphQLSubscriptionsCDCEngine`; the custom in-process
+      // engine still builds the full schema at runtime. Cast to satisfy the v7
+      // type (the app keeps the in-process engine — see index.ts).
+      subscriptions: createSubscriptionEngine() as unknown as boolean,
     },
   });
   const schema = await neoSchema.getSchema();

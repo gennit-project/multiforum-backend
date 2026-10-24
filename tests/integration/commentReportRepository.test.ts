@@ -40,8 +40,9 @@ test('real resolver preserves identity, numbering, repeated activity, reopen and
  // v7 owned-write migration (campaign #284): the issue/action/comment write is now
  // driver Cypher, which bypasses the in-process @neo4j/graphql subscription engine
  // (publish() only fires from generated mutations), so no subscription events are
- // emitted. GATED #2: adopting the CDC subscriptions engine would restore these
- // from the transaction log. Until that decision lands, assert the current reality.
+ // emitted. This is the accepted behaviour: the app ships no subscription transport,
+ // so no client is affected. Real-time delivery (WebSocket + CDC, which would capture
+ // owned writes) is tracked separately in gennit-project/multiforum-backend#386.
  assert.equal(snapshot.events.length,0);return {first:normalize(first),snapshot};}
  t.assert.snapshot(await run(createCommentReportRepository(driver)));
 });
