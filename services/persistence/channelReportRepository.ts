@@ -1,41 +1,41 @@
 import type { Driver } from "neo4j-driver";
-import type { IssueCreateInput, IssueUpdateInput, IssueWhere } from "../../src/generated/graphql.js";
-import { attachIssueIdentityRelationships, assertIssueIdentityUpdateAllowed } from "../issueTargetIdentity.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
+import {
+  createModerationIssue,
+  appendModerationActions,
+  type CreateModerationIssueParams,
+  type AppendModerationActionsParams,
+} from "./moderationIssueWrites.js";
 
 export type ChannelReportIssue = { id: string; issueNumber: number; flaggedServerRuleViolation?: boolean | null; relatedChannelUniqueName?: string | null };
 export interface ChannelReportRepository {
   findExisting(channelUniqueName: string): Promise<ChannelReportIssue[]>;
   findChannel(channelUniqueName: string): Promise<Array<{uniqueName: string; displayName?: string | null}>>;
-  createIssue(input: IssueCreateInput): Promise<{issues: ChannelReportIssue[]}>;
-  appendReport(where: IssueWhere, update: IssueUpdateInput): Promise<{issues: ChannelReportIssue[]}>;
+  // FAMILY-3 / v7 (campaign #284): Issue + ModerationAction + Comment writes are
+  // owned Cypher (moderationIssueWrites); reads stay on the generated API.
+  createIssue(params: CreateModerationIssueParams): Promise<{issues: ChannelReportIssue[]}>;
+  appendReport(params: AppendModerationActionsParams): Promise<{issues: ChannelReportIssue[]}>;
 }
-const ISSUE_FIELDS = `id issueNumber flaggedServerRuleViolation`;
 export function createChannelReportRepository(driver: Driver): ChannelReportRepository {
   return {
     async findExisting(channelUniqueName) {
       const result = await executeGeneratedOperation<{issues: ChannelReportIssue[]}>(driver,
-        `query ExistingChannelReport($where: IssueWhere) { issues(where: $where) { ${ISSUE_FIELDS} } }`,
-        {where: {channelUniqueName: null, relatedChannelUniqueName: channelUniqueName}});
+        `query ExistingChannelReport($where: IssueWhere) { issues(where: $where) { id issueNumber flaggedServerRuleViolation } }`,
+        {where: {channelUniqueName: {eq: null}, relatedChannelUniqueName: {eq: channelUniqueName}}});
       return result.issues;
     },
     async findChannel(channelUniqueName) {
       const result = await executeGeneratedOperation<{channels: Array<{uniqueName: string; displayName?: string | null}>}>(driver,
-        `query ReportedChannelDisplayName($where: ChannelWhere) { channels(where: $where) { uniqueName displayName } }`, {where: {uniqueName: channelUniqueName}});
+        `query ReportedChannelDisplayName($where: ChannelWhere) { channels(where: $where) { uniqueName displayName } }`, {where: {uniqueName: {eq: channelUniqueName}}});
       return result.channels;
     },
-    async createIssue(input) {
-      const result = await executeGeneratedOperation<{createIssues: {issues: ChannelReportIssue[]}}>(driver,
-        `mutation CreateChannelReport($input: [IssueCreateInput!]!) { createIssues(input: $input) { issues { ${ISSUE_FIELDS} } } }`,
-        {input: [attachIssueIdentityRelationships(input)]});
-      return result.createIssues;
+    async createIssue(params) {
+      const issue = await createModerationIssue(driver, params);
+      return { issues: [issue as ChannelReportIssue] };
     },
-    async appendReport(where, update) {
-      assertIssueIdentityUpdateAllowed(update);
-      const result = await executeGeneratedOperation<{updateIssues: {issues: ChannelReportIssue[]}}>(driver,
-        `mutation AppendChannelReport($where: IssueWhere, $update: IssueUpdateInput) { updateIssues(where: $where, update: $update) { issues { ${ISSUE_FIELDS} relatedChannelUniqueName } } }`,
-        {where, update});
-      return result.updateIssues;
+    async appendReport(params) {
+      const result = await appendModerationActions(driver, params);
+      return { issues: result.issues as ChannelReportIssue[] };
     },
   };
 }

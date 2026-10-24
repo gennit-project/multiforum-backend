@@ -1,10 +1,6 @@
 import {createChannelImageReportRepository,type ChannelImageReportRepository} from "../../services/persistence/channelImageReportRepository.js";
-import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
-} from "../../ogm_types.js";
+import type { IssueWhere } from "../../ogm_types.js";
+import type { CreateModerationIssueParams } from "../../services/persistence/moderationIssueWrites.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -46,59 +42,6 @@ ${
     : ""
 }
 `;
-};
-
-const getModerationActionCreateInput = (input: {
-  text?: string;
-  loggedInModName: string;
-  actionType: string;
-  actionDescription: string;
-  issueId: string;
-}): ModerationActionCreateInput => {
-  const { text, loggedInModName, actionType, actionDescription, issueId } =
-    input;
-
-  return {
-    ModerationProfile: {
-      connect: {
-        where: {
-          node: {
-            displayName: loggedInModName,
-          },
-        },
-      },
-    },
-    actionType,
-    actionDescription,
-    Comment: {
-      create: {
-        node: {
-          text: text || null,
-          isRootComment: true,
-          CommentAuthor: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName,
-                  },
-                },
-              },
-            },
-          },
-          Issue: {
-            connect: {
-              where: {
-                node: {
-                  id: issueId,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
 };
 
 const getResolver = (input: Input) => {
@@ -161,7 +104,7 @@ const getResolver = (input: Input) => {
 
     // Build the where clause based on image type
     const issueWhereClause: IssueWhere = {
-      channelUniqueName: null, // Server-scoped
+      channelUniqueName: { eq: null }, // Server-scoped
     };
 
     if (imageType === "ICON") {
@@ -188,37 +131,22 @@ const getResolver = (input: Input) => {
     if (!existingIssueId) {
       const issueNumber = await getNextServerIssueNumber(driver);
 
-      const issueCreateInput: IssueCreateInput = {
-        title: `[Reported channel ${imageTypeLabel}] ${channelDisplayName}`,
-        isOpen: true,
-        authorName: loggedInModName,
-        flaggedServerRuleViolation: true, // Channel image reports always flag server rule violation
-        channelUniqueName: null, // Server-scoped issue
-        relatedChannelUniqueName: channelUniqueName, // The channel whose image is being reported
+      // relatedChannelIconName/BannerName are scalar-only (no TARGETS_* edge);
+      // relatedChannelUniqueName drives the TARGETS_CHANNEL edge. Server-scoped.
+      const createParams: CreateModerationIssueParams = {
         issueNumber,
-        Author: {
-          ModerationProfile: {
-            connect: {
-              where: {
-                node: {
-                  displayName: loggedInModName,
-                },
-              },
-            },
-          },
-        },
-        // No Channel connection for server-scoped issues
+        title: `[Reported channel ${imageTypeLabel}] ${channelDisplayName}`,
+        authorModName: loggedInModName,
+        channelUniqueName: null, // Server-scoped issue (no HAS_ISSUE edge)
+        flaggedServerRuleViolation: true, // Channel image reports always flag server rule violation
+        relatedChannelUniqueName: channelUniqueName,
+        ...(imageType === "ICON"
+          ? { relatedChannelIconName: channelUniqueName }
+          : { relatedChannelBannerName: channelUniqueName }),
       };
 
-      // Set the appropriate related field based on image type
-      if (imageType === "ICON") {
-        issueCreateInput.relatedChannelIconName = channelUniqueName;
-      } else {
-        issueCreateInput.relatedChannelBannerName = channelUniqueName;
-      }
-
       try {
-        const createResult = await repository.createChannelImageReportIssue(issueCreateInput);
+        const createResult = await repository.createChannelImageReportIssue(createParams);
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -232,34 +160,22 @@ const getResolver = (input: Input) => {
       }
     }
 
-    const moderationActionCreateInput = getModerationActionCreateInput({
-      text: finalCommentText,
-      loggedInModName,
-      actionType: "report",
-      actionDescription: `Reported the channel ${imageTypeLabel}`,
-      issueId: existingIssueId,
-    });
-
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: { eq: existingIssueId },
-    };
-    const issueUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-      isOpen: { set: true }, // Reopen the issue if it was closed
-      flaggedServerRuleViolation: { set: true }, // Channel image reports always flag server rule violation
-    };
-
+    // Append the report moderation action via the owned moderation write.
+    // Server-scoped: the comment has no Channel connect; text stored verbatim.
     try {
-      const updateResult = await repository.appendChannelImageReport(issueUpdateWhere, issueUpdateInput);
+      const updateResult = await repository.appendChannelImageReport({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "report",
+            actionDescription: `Reported the channel ${imageTypeLabel}`,
+            text: finalCommentText,
+            modDisplayName: loggedInModName,
+          },
+        ],
+        isOpen: true, // Reopen the issue if it was closed
+        flaggedServerRuleViolation: true, // Channel image reports always flag server rule violation
+      });
       const issueId = updateResult.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
