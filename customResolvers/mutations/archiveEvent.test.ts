@@ -48,10 +48,10 @@ class ModelStub {
     return {
       issues: [
         {
-          id: args.where?.id ?? "issue-1",
+          id: args.issueId ?? args.where?.id ?? "issue-1",
           issueNumber: 1,
           flaggedServerRuleViolation:
-            args.update?.flaggedServerRuleViolation ?? false,
+            args.flaggedServerRuleViolation ?? args.update?.flaggedServerRuleViolation ?? false,
         },
       ],
     };
@@ -238,7 +238,7 @@ test("archiveEvent creates an issue, archives the event channel, and links the i
       findEvent: async (where: any) => Event.find({where}),
       findRelatedIssues: async (where: any) => Issue.find({where}),
       createArchiveIssue: async (input: any) => Issue.create({input}),
-      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      recordAction: async (params: any) => Issue.update(params),
       findEventChannel: async (where: any) => EventChannel.find({where}),
       setArchived: async (where: any, update: any) => EventChannel.update({where,update}),
     } as any,
@@ -261,11 +261,11 @@ test("archiveEvent creates an issue, archives the event channel, and links the i
   assert.equal(result?.id, "issue-1");
   assert.equal(Issue.createCalls.length, 1);
   assert.equal(Issue.createCalls[0].input[0].relatedEventId, "event-1");
-  assert.equal(Issue.updateCalls[0].update.isOpen, false);
-  assert.equal(EventChannel.updateCalls[0].update.archived, true);
+  assert.equal(Issue.updateCalls[0].isOpen, false);
+  assert.equal(EventChannel.updateCalls[0].update.archived.set, true);
   assert.deepEqual(
     EventChannel.updateCalls[0].update.RelatedIssues[0].connect[0].where.node,
-    { id: "issue-1" }
+    { id: { eq: "issue-1" } }
   );
 });
 
@@ -273,7 +273,7 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
   process.env.PLAYWRIGHT_MOCK_AUTH = "true";
 
   const Issue = new ModelStub(({ where }) => {
-    if (where?.relatedEventId === "event-1") {
+    if (where?.relatedEventId?.eq === "event-1") {
       return [
         {
           id: "existing-issue",
@@ -318,7 +318,7 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
       findEvent: async (where: any) => Event.find({where}),
       findRelatedIssues: async (where: any) => Issue.find({where}),
       createArchiveIssue: async (input: any) => Issue.create({input}),
-      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      recordAction: async (params: any) => Issue.update(params),
       findEventChannel: async (where: any) => EventChannel.find({where}),
       setArchived: async (where: any, update: any) => EventChannel.update({where,update}),
     } as any,
@@ -339,11 +339,11 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
   );
 
   assert.equal(Issue.createCalls.length, 0);
-  assert.equal(Issue.updateCalls[0].where.id, "existing-issue");
-  assert.equal(Issue.updateCalls[0].update.isOpen, false);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+  assert.equal(Issue.updateCalls[0].issueId, "existing-issue");
+  assert.equal(Issue.updateCalls[0].isOpen, false);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, true);
   assert.deepEqual(
     EventChannel.updateCalls[0].update.RelatedIssues[0].connect[0].where.node,
-    { id: "existing-issue" }
+    { id: { eq: "existing-issue" } }
   );
 });

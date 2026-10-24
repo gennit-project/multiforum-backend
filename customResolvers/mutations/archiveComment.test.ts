@@ -57,10 +57,10 @@ class ModelStub {
     return {
       issues: [
         {
-          id: args.where?.id ?? "issue-1",
+          id: args.issueId ?? args.where?.id ?? "issue-1",
           issueNumber: 1,
           flaggedServerRuleViolation:
-            args.update?.flaggedServerRuleViolation ?? false,
+            args.flaggedServerRuleViolation ?? args.update?.flaggedServerRuleViolation ?? false,
         },
       ],
     };
@@ -179,7 +179,7 @@ test("archiveComment creates an issue, closes it, archives the comment, and link
       findUnarchiveTarget: id => Comment.find({where:{id}}) as any,
       findIssue: (channelUniqueName, relatedCommentId) => Issue.find({where:{channelUniqueName, relatedCommentId}}) as any,
       createArchiveIssue: input => Issue.create({input:[input]}) as any,
-      appendIssueAction: (where,update) => Issue.update({where,update}) as any,
+      appendIssueAction: params => Issue.update(params) as any,
       setArchived: (where,update) => Comment.update({where,update}) as any,
     },
     driver: createDriver() as unknown as Parameters<typeof archiveCommentResolver>[0]["driver"],
@@ -202,12 +202,12 @@ test("archiveComment creates an issue, closes it, archives the comment, and link
   assert.equal(Issue.createCalls[0].input[0].relatedCommentId, "comment-1");
   assert.equal(Issue.createCalls[0].input[0].relatedUsername, "cluse");
   assert.equal(Issue.updateCalls.length, 2);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, false);
-  assert.equal(Issue.updateCalls[1].update.isOpen, false);
-  assert.equal(Comment.updateCalls[0].update.archived, true);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, false);
+  assert.equal(Issue.updateCalls[1].isOpen, false);
+  assert.equal(Comment.updateCalls[0].update.archived.set, true);
   assert.deepEqual(
     Comment.updateCalls[0].update.RelatedIssues[0].connect[0].where.node,
-    { id: "issue-1" }
+    { id: { eq: "issue-1" } }
   );
 });
 
@@ -245,7 +245,7 @@ test("archiveComment reuses an existing comment issue and preserves server-rule 
       findUnarchiveTarget: id => Comment.find({where:{id}}) as any,
       findIssue: (channelUniqueName, relatedCommentId) => Issue.find({where:{channelUniqueName, relatedCommentId}}) as any,
       createArchiveIssue: input => Issue.create({input:[input]}) as any,
-      appendIssueAction: (where,update) => Issue.update({where,update}) as any,
+      appendIssueAction: params => Issue.update(params) as any,
       setArchived: (where,update) => Comment.update({where,update}) as any,
     },
     driver: createDriver() as unknown as Parameters<typeof archiveCommentResolver>[0]["driver"],
@@ -265,13 +265,13 @@ test("archiveComment reuses an existing comment issue and preserves server-rule 
 
   assert.equal(Issue.createCalls.length, 0);
   assert.equal(Issue.updateCalls.length, 2);
-  assert.equal(Issue.updateCalls[0].where.id, "existing-issue");
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
-  assert.equal(Issue.updateCalls[1].where.id, "existing-issue");
-  assert.equal(Issue.updateCalls[1].update.isOpen, false);
-  assert.equal(Comment.updateCalls[0].update.archived, true);
+  assert.equal(Issue.updateCalls[0].issueId, "existing-issue");
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, true);
+  assert.equal(Issue.updateCalls[1].issueId, "existing-issue");
+  assert.equal(Issue.updateCalls[1].isOpen, false);
+  assert.equal(Comment.updateCalls[0].update.archived.set, true);
   assert.deepEqual(
     Comment.updateCalls[0].update.RelatedIssues[0].connect[0].where.node,
-    { id: "existing-issue" }
+    { id: { eq: "existing-issue" } }
   );
 });

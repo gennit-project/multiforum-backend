@@ -1,9 +1,5 @@
 import {createDiscussionModerationRepository, type DiscussionModerationRepository, type DiscussionModerationIssue} from "../../services/persistence/discussionModerationRepository.js";
 import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
   DiscussionChannelUpdateInput,
   DiscussionChannelWhere,
 } from "../../ogm_types.js";
@@ -13,10 +9,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import { getFinalCommentText } from "./shared/reportText.js";
-import {
-  getModerationActionCreateInput,
-  getIssueCreateInput,
-} from "./reportComment.js";
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
@@ -101,19 +94,19 @@ const getResolver = (input: Input) => {
       const discussionTitle = discussionData[0]?.title || "";
 
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
-      const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-        contextText: discussionTitle,
-        selectedForumRules,
-        selectedServerRules,
-        loggedInModName,
-        channelUniqueName,
-        reportedContentType: "discussion",
-        relatedDiscussionId: discussionId,
-        issueNumber,
-      })
+      const title = `[Reported discussion] "${discussionTitle?.substring(0, 50) || ""}${
+        discussionTitle.length > 50 ? "..." : ""
+      }"`;
 
       try {
-        const issueData = await repository.createArchiveIssue([issueCreateInput]);
+        const issueData = await repository.createArchiveIssue([{
+          issueNumber,
+          title,
+          authorModName: loggedInModName,
+          channelUniqueName,
+          flaggedServerRuleViolation: selectedServerRules.length > 0,
+          relatedDiscussionId: discussionId,
+        }]);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -132,38 +125,24 @@ const getResolver = (input: Input) => {
     });
 
     try {
-      // Add the activity feed item to the issue that says we archived the discussion.
-      const moderationActionCreateInput: ModerationActionCreateInput =
-        getModerationActionCreateInput({
-          text: finalDiscussionText,
-          loggedInModName,
-          channelUniqueName,
-          actionType: "archive",
-          actionDescription: "Archived the discussion, closing the issue",
-          issueId: existingIssueId,
-        });
-      const issueUpdateWhere: IssueWhere = {
-        id: { eq: existingIssueId },
-      };
-      const issueUpdateInput: IssueUpdateInput = {
-        ActivityFeed: [
+      // Add the activity feed item to the issue that says we archived the
+      // discussion (single action closing the issue), via the owned write.
+      const issueData = await repository.recordAction({
+        issueId: existingIssueId,
+        actions: [
           {
-            create: [
-              {
-                node: moderationActionCreateInput,
-              },
-            ],
+            actionType: "archive",
+            actionDescription: "Archived the discussion, closing the issue",
+            text: formatModerationActionText({ text: finalDiscussionText }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName,
           },
         ],
-        isOpen: { set: false }, // Close the issue; archival is often the final action.
-        flaggedServerRuleViolation: {
-          set:
-            existingIssueFlaggedServerRuleViolation ||
-            selectedServerRules.length > 0,
-        },
-      };
-
-      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
+        isOpen: false, // Close the issue; archival is often the final action.
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0,
+      });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

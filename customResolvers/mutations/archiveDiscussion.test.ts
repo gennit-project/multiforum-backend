@@ -48,10 +48,10 @@ class ModelStub {
     return {
       issues: [
         {
-          id: args.where?.id ?? "issue-1",
+          id: args.issueId ?? args.where?.id ?? "issue-1",
           issueNumber: 1,
           flaggedServerRuleViolation:
-            args.update?.flaggedServerRuleViolation ?? false,
+            args.flaggedServerRuleViolation ?? args.update?.flaggedServerRuleViolation ?? false,
         },
       ],
     };
@@ -164,7 +164,7 @@ test("archiveDiscussion creates an issue, archives the discussion channel, and l
       findDiscussion: async (where: any) => Discussion.find({where}),
       findRelatedIssues: async (where: any) => Issue.find({where}),
       createArchiveIssue: async (input: any) => Issue.create({input}),
-      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      recordAction: async (params: any) => Issue.update(params),
       findDiscussionChannel: async (where: any) => DiscussionChannel.find({where}),
       setArchived: async (where: any, update: any) => DiscussionChannel.update({where,update}),
     } as any,
@@ -190,12 +190,12 @@ test("archiveDiscussion creates an issue, archives the discussion channel, and l
     Issue.createCalls[0].input[0].relatedDiscussionId,
     "discussion-1"
   );
-  assert.equal(Issue.updateCalls[0].update.isOpen, false);
-  assert.equal(DiscussionChannel.updateCalls[0].update.archived, true);
+  assert.equal(Issue.updateCalls[0].isOpen, false);
+  assert.equal(DiscussionChannel.updateCalls[0].update.archived.set, true);
   assert.deepEqual(
     DiscussionChannel.updateCalls[0].update.RelatedIssues[0].connect[0].where
       .node,
-    { id: "issue-1" }
+    { id: { eq: "issue-1" } }
   );
 });
 
@@ -203,7 +203,7 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
   process.env.PLAYWRIGHT_MOCK_AUTH = "true";
 
   const Issue = new ModelStub(({ where }) => {
-    if (where?.relatedDiscussionId === "discussion-1") {
+    if (where?.relatedDiscussionId?.eq === "discussion-1") {
       return [
         {
           id: "existing-issue",
@@ -248,7 +248,7 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
       findDiscussion: async (where: any) => Discussion.find({where}),
       findRelatedIssues: async (where: any) => Issue.find({where}),
       createArchiveIssue: async (input: any) => Issue.create({input}),
-      recordAction: async (where: any, update: any) => Issue.update({where,update}),
+      recordAction: async (params: any) => Issue.update(params),
       findDiscussionChannel: async (where: any) => DiscussionChannel.find({where}),
       setArchived: async (where: any, update: any) => DiscussionChannel.update({where,update}),
     } as any,
@@ -269,12 +269,12 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
   );
 
   assert.equal(Issue.createCalls.length, 0);
-  assert.equal(Issue.updateCalls[0].where.id, "existing-issue");
-  assert.equal(Issue.updateCalls[0].update.isOpen, false);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+  assert.equal(Issue.updateCalls[0].issueId, "existing-issue");
+  assert.equal(Issue.updateCalls[0].isOpen, false);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, true);
   assert.deepEqual(
     DiscussionChannel.updateCalls[0].update.RelatedIssues[0].connect[0].where
       .node,
-    { id: "existing-issue" }
+    { id: { eq: "existing-issue" } }
   );
 });

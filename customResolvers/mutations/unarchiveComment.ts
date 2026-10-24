@@ -2,9 +2,6 @@ import { createCommentModerationRepository, type CommentModerationRepository } f
 import type { Driver } from "neo4j-driver";
 import type {
   Issue,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
   CommentUpdateInput,
   CommentWhere
 } from '../../ogm_types.js'
@@ -12,7 +9,7 @@ import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunct
 import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
-import { getModerationActionCreateInput } from './reportComment.js'
+import { formatModerationActionText } from '../../services/persistence/moderationIssueWrites.js'
 import { notifyIssueSubscribers } from '../../services/issueNotifications.js'
 import { logger } from "../../logger.js";
 
@@ -82,64 +79,35 @@ const getResolver = (input: Input) => {
       throw new GraphQLError('Issue not found')
     }
 
-    const unarchiveModActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: explanation,
-        loggedInModName,
-        channelUniqueName,
-        actionType: 'un-archive',
-        actionDescription: 'Un-archived the comment',
-        issueId: existingIssueId
-      })
-    logger.info(
-      'unarchiveModActionCreateInput',
-      JSON.stringify(unarchiveModActionCreateInput)
-    )
-
-    const closeIssueModActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: explanation,
-        loggedInModName,
-        channelUniqueName,
-        actionType: 'close-issue',
-        actionDescription: 'Closed the issue',
-        issueId: existingIssueId
-      })
-    logger.info(
-      'closeIssueModActionCreateInput',
-      JSON.stringify(closeIssueModActionCreateInput)
-    )
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: { eq: existingIssueId }
-    }
-    const unarchiveCreateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: unarchiveModActionCreateInput
-            }
-          ]
-        }
-      ]
-    }
-    const issueCloseCreateInput: IssueUpdateInput = {
-      isOpen: { set: false }, // Close the issue; un-archival is often the final action.
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: closeIssueModActionCreateInput
-            }
-          ]
-        }
-      ]
-    }
-
+    // Record the un-archive action then the close action on the issue's activity
+    // feed via the owned moderation write (two appends, same as before).
+    const actionText = formatModerationActionText({ text: explanation })
     try {
-      await repository.appendIssueAction(issueUpdateWhere, unarchiveCreateInput)
-      const issueData = await repository.appendIssueAction(issueUpdateWhere, issueCloseCreateInput)
+      await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: 'un-archive',
+            actionDescription: 'Un-archived the comment',
+            text: actionText,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName
+          }
+        ]
+      })
+      const issueData = await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: 'close-issue',
+            actionDescription: 'Closed the issue',
+            text: actionText,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName
+          }
+        ],
+        isOpen: false // Close the issue; un-archival is often the final action.
+      })
       logger.info('issueData', JSON.stringify(issueData))
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {

@@ -1,9 +1,6 @@
 import {createDiscussionModerationRepository, type DiscussionModerationRepository, type DiscussionModerationIssue} from "../../services/persistence/discussionModerationRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
   DiscussionChannelUpdateInput,
   DiscussionChannelWhere,
 } from "../../ogm_types.js";
@@ -11,7 +8,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import { getModerationActionCreateInput } from "./reportComment.js";
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 
 type Args = {
@@ -75,35 +72,21 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("Issue not found");
     }
 
-    const moderationActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: explanation,
-        loggedInModName,
-        channelUniqueName,
-        actionType: "un-archive",
-        actionDescription: "Un-archived the discussion",
-        issueId: existingIssueId,
-      });
-
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: { eq: existingIssueId },
-    };
-    const issueUpdateInput: IssueUpdateInput = {
-      isOpen: { set: false }, // Set the issue to closed; unarchival is often the final action.
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Record the un-archive action (closing the issue) via the owned write.
     try {
-      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
+      const issueData = await repository.recordAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "un-archive",
+            actionDescription: "Un-archived the discussion",
+            text: formatModerationActionText({ text: explanation }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName,
+          },
+        ],
+        isOpen: false, // Set the issue to closed; unarchival is often the final action.
+      });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

@@ -1,9 +1,5 @@
 import {createEventModerationRepository, type EventModerationRepository} from "../../services/persistence/eventModerationRepository.js";
 import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
   EventChannelUpdateInput,
   EventChannelWhere,
 } from "../../ogm_types.js";
@@ -13,10 +9,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import { getFinalCommentText } from "./shared/reportText.js";
-import {
-  getModerationActionCreateInput,
-  getIssueCreateInput,
-} from "./reportComment.js";
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
@@ -114,19 +107,19 @@ const getResolver = (input: Input) => {
       const eventTitle = eventData[0]?.title || "";
 
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
-      const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-        contextText: eventTitle,
-        selectedForumRules,
-        selectedServerRules,
-        loggedInModName,
-        channelUniqueName,
-        reportedContentType: "event",
-        relatedEventId: eventId,
-        issueNumber,
-      });
+      const title = `[Reported event] "${eventTitle?.substring(0, 50) || ""}${
+        eventTitle.length > 50 ? "..." : ""
+      }"`;
 
       try {
-        const issueData = await repository.createArchiveIssue([issueCreateInput]);
+        const issueData = await repository.createArchiveIssue([{
+          issueNumber,
+          title,
+          authorModName: loggedInModName,
+          channelUniqueName,
+          flaggedServerRuleViolation: selectedServerRules.length > 0,
+          relatedEventId: eventId,
+        }]);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -145,38 +138,24 @@ const getResolver = (input: Input) => {
     });
 
     try {
-      // Add the activity feed item to the issue that says we archived the event.
-      const moderationActionCreateInput: ModerationActionCreateInput =
-        getModerationActionCreateInput({
-          text: finalEventText,
-          loggedInModName,
-          channelUniqueName,
-          actionType: "archive",
-          actionDescription: "Archived the event and closed the issue",
-          issueId: existingIssueId,
-        });
-      const issueUpdateWhere: IssueWhere = {
-        id: { eq: existingIssueId },
-      };
-      const issueUpdateInput: IssueUpdateInput = {
-        ActivityFeed: [
+      // Add the activity feed item to the issue that says we archived the event
+      // (single action closing the issue), via the owned write.
+      const issueData = await repository.recordAction({
+        issueId: existingIssueId,
+        actions: [
           {
-            create: [
-              {
-                node: moderationActionCreateInput,
-              },
-            ],
+            actionType: "archive",
+            actionDescription: "Archived the event and closed the issue",
+            text: formatModerationActionText({ text: finalEventText }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName,
           },
         ],
-        isOpen: { set: false }, // Close the issue; archival is often the final action.
-        flaggedServerRuleViolation: {
-          set:
-            existingIssueFlaggedServerRuleViolation ||
-            selectedServerRules.length > 0,
-        },
-      };
-
-      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
+        isOpen: false, // Close the issue; archival is often the final action.
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0,
+      });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
