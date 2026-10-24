@@ -1,6 +1,5 @@
 import type { Driver } from "neo4j-driver";
 import { createDownloadLabelRepository, type DownloadLabelRepository } from "../../services/persistence/downloadLabelRepository.js";
-import type { ModerationActionCreateInput } from "../../ogm_types.js";
 
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import {
@@ -254,7 +253,7 @@ const getResolver = (input: Input) => {
         ? `Updated download labels to: ${labelNames.join(", ")} on "${discussion.title || 'untitled'}"`
         : `Removed all download labels from "${discussion.title || 'untitled'}"`;
 
-      const moderationActionInput: ModerationActionCreateInput = {
+      const moderationActionInput: Record<string, unknown> = {
         actionType: "label_update",
         actionDescription,
         ModerationProfile: {

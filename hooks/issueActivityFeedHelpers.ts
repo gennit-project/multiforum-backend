@@ -1,6 +1,6 @@
-import type { IssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
+import type { IssueActivityRepository, ModerationActivityNode } from "../services/persistence/issueActivityRepository.js";
 import type { Driver } from "neo4j-driver";
-import type { ModerationActionCreateInput, IssueWhere } from "../ogm_types.js";
+import type { IssueWhere } from "../ogm_types.js";
 import type { GraphQLContext } from "../types/context.js";
 
 type ActivityAttribution = {
@@ -88,7 +88,7 @@ export const createIssueActivityFeedItems = async (
     return;
   }
 
-  const activityNode: ModerationActionCreateInput = {
+  const activityNode: ModerationActivityNode = {
     actionDescription,
     actionType,
   };

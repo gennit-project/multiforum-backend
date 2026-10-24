@@ -1,5 +1,6 @@
 import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
+import { createTextVersion } from "./textVersionWrite.js";
 
 export type EventRevisionSnapshot = {
   id?: string;
@@ -80,9 +81,6 @@ export const EVENT_REVISION_DEFAULT_SELECTION = `{
   createdAt
 }`;
 export const EVENT_TEXT_VERSION_DEFAULT_SELECTION = `{ id body editReason createdAt updatedAt }`;
-const CREATE = `mutation CreatePreviousEventText($input: [TextVersionCreateInput!]!) {
- createTextVersions(input: $input) { textVersions ${EVENT_TEXT_VERSION_DEFAULT_SELECTION} }
-}`;
 const CONNECT_TITLE = `mutation ConnectPreviousEventTitle($where: EventWhere!, $update: EventUpdateInput!) {
  updateEvents(where: $where, update: $update) { events ${EVENT_REVISION_DEFAULT_SELECTION} }
 }`;
@@ -103,10 +101,7 @@ export function createEventRevisionRepository(driver: Driver): EventRevisionRepo
       return result.users;
     },
     async createPreviousText(body, username) {
-      const result = await executeGeneratedOperation<{createTextVersions: {textVersions: Array<{id: string}>}}>(driver, CREATE, {
-        input: [{body, Author: {connect: {where: {node: {username}}}}}],
-      });
-      return result.createTextVersions;
+      return createTextVersion(driver, {body}, username);
     },
     async connectTitleVersion(id, versionId) {
       await executeGeneratedOperation(driver, CONNECT_TITLE, {where: {id}, update: {

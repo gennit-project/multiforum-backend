@@ -1,5 +1,6 @@
 import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
+import { createTextVersion } from "./textVersionWrite.js";
 export type DiscussionSnapshot = {
   id?: string;
   title?: string | null;
@@ -46,7 +47,6 @@ const SNAPSHOT = `query DiscussionRevisionSnapshot($where: DiscussionWhere) { di
 } }`;
 const MENTION_SNAPSHOT = `query DiscussionRevisionMentionSnapshot($where:DiscussionWhere) {discussions(where:$where) {id title body Author {username displayName} DiscussionChannels {channelUniqueName}}}`;
 const AUTHOR = `query DiscussionRevisionAuthor($where:UserWhere) {users(where:$where) {username}}`;
-const CREATE = `mutation CreateDiscussionRevision($input:[TextVersionCreateInput!]!) {createTextVersions(input:$input) {textVersions ${TEXT_VERSION_DEFAULT_SELECTION}}}`;
 const EXISTS = `query DiscussionRevisionParent($where:DiscussionWhere) {discussions(where:$where) {id}}`;
 const CONNECT_TITLE = `mutation ConnectDiscussionTitleRevision($where:DiscussionWhere,$update:DiscussionUpdateInput) {updateDiscussions(where:$where,update:$update) {discussions ${DISCUSSION_REVISION_DEFAULT_SELECTION}}}`;
 const CONNECT_BODY = `mutation ConnectDiscussionBodyRevision($where:DiscussionWhere,$update:DiscussionUpdateInput) {updateDiscussions(where:$where,update:$update) {discussions ${DISCUSSION_REVISION_DEFAULT_SELECTION}}}`;
@@ -56,7 +56,7 @@ export function createDiscussionRevisionRepository(driver:Driver):DiscussionRevi
   async findMentionSnapshot(id){return (await executeGeneratedOperation<{discussions:DiscussionSnapshot[]}>(driver,MENTION_SNAPSHOT,{where:{id}})).discussions;},
   async findSnapshot(id){return (await executeGeneratedOperation<{discussions:DiscussionSnapshot[]}>(driver,SNAPSHOT,{where:{id}})).discussions;},
   async findAuthor(username){return (await executeGeneratedOperation<{users:Array<{username:string}>}>(driver,AUTHOR,{where:{username}})).users;},
-  async createRevision(body,username){return (await executeGeneratedOperation<{createTextVersions:{textVersions:Array<{id:string}>}}>(driver,CREATE,{input:[{body,Author:{connect:{where:{node:{username}}}}}]})).createTextVersions;},
+  async createRevision(body,username){return createTextVersion(driver,{body},username);},
   async findDiscussionId(id){return (await executeGeneratedOperation<{discussions:Array<{id:string}>}>(driver,EXISTS,{where:{id}})).discussions;},
   async connectTitleRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT_TITLE,{where:{id},update:{PastTitleVersions:{connect:[{where:{node:{id:revisionId}}}]}}});},
   async connectBodyRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT_BODY,{where:{id},update:{PastBodyVersions:{connect:[{where:{node:{id:revisionId}}}]}}});},

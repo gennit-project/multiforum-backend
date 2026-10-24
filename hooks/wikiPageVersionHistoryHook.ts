@@ -1,5 +1,4 @@
 import { createWikiRevisionRepository, type WikiRevisionRepository } from "../services/persistence/wikiRevisionRepository.js";
-import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
 import { logger } from "../logger.js";
 
@@ -116,7 +115,7 @@ async function trackVersionHistory(
 
     // Create new TextVersion for previous content
     // The createdAt timestamp will be automatically set by @timestamp directive
-    const textVersionInput: TextVersionCreateInput = {
+    const textVersionInput: Record<string, unknown> = {
       body: previousContent,
       Author: {
         connect: { where: { node: { username } } }
