@@ -103,12 +103,14 @@ test("createImageWithUploader creates the image instead of recursing through the
   );
 });
 
+// v7 removed the nested to-one connect, so the client can no longer name an
+// owner on the create input at all; the owned post-create write forces it to the
+// signed-in user.
 test("createCollections over HTTP forces the creator to the signed-in user", async () => {
   await execute(`mutation {
     createCollections(input: [{
       name: "Favorites", collectionType: DISCUSSIONS, visibility: PRIVATE,
-      itemOrder: [], updatedAt: "2026-09-27T00:00:00.000Z",
-      CreatedBy: { connect: { where: { node: { username: "mallory" } } } }
+      itemOrder: [], updatedAt: "2026-09-27T00:00:00.000Z"
     }]) { collections { id } }
   }`);
 
@@ -121,8 +123,7 @@ test("createCollections over HTTP forces the creator to the signed-in user", asy
 test("createAlbums over HTTP forces the owner to the signed-in user", async () => {
   await execute(`mutation {
     createAlbums(input: [{
-      imageOrder: [],
-      Owner: { connect: { where: { node: { username: "mallory" } } } }
+      imageOrder: []
     }]) { albums { id } }
   }`);
 

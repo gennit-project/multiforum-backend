@@ -1,15 +1,19 @@
 import type {
   AlbumCreateInput,
-  AlbumUpdateInput,
   AlbumImagesFieldInput,
-  AlbumOwnerFieldInput,
-  ImageUploaderFieldInput,
   CollectionCreateInput,
-  CollectionCreatedByFieldInput,
   CollectionVisibility,
 } from "../../../ogm_types.js";
 
-const buildOwnerConnect = (username: string): AlbumOwnerFieldInput => ({
+// FAMILY-3 / v7 (campaign #284). v7 removed the nested to-one connect from the
+// generated Album/Collection/Image create inputs, so these builders no longer
+// type against the generated *FieldInput shapes. The sanitizers still stamp the
+// owner/uploader identity into this intermediate connect shape; ownershipCreate
+// middleware reads the identity out of it and wires the edges with an owned
+// post-create write rather than passing the connect to the generated mutation.
+type ConnectByUsername = { connect: { where: { node: { username: string } } } };
+
+const buildOwnerConnect = (username: string): ConnectByUsername => ({
   connect: {
     where: {
       node: {
@@ -19,9 +23,7 @@ const buildOwnerConnect = (username: string): AlbumOwnerFieldInput => ({
   },
 });
 
-const buildCreatedByConnect = (
-  username: string
-): CollectionCreatedByFieldInput => ({
+const buildCreatedByConnect = (username: string): ConnectByUsername => ({
   connect: {
     where: {
       node: {
@@ -31,7 +33,7 @@ const buildCreatedByConnect = (
   },
 });
 
-const buildUploaderConnect = (username: string): ImageUploaderFieldInput => ({
+const buildUploaderConnect = (username: string): ConnectByUsername => ({
   connect: {
     where: {
       node: {
@@ -125,18 +127,22 @@ export const sanitizeCollectionCreateInput = (
       ((rest as Partial<CollectionCreateInput>).visibility as CollectionVisibility | undefined) ??
       "PRIVATE",
     CreatedBy: buildCreatedByConnect(username),
-  } as CollectionCreateInput;
+  } as unknown as CollectionCreateInput;
 };
 
+// v7's AlbumUpdateInput no longer carries the Owner relationship at all, so the
+// sanitized update node is a loose record (Owner is stripped; the owned write
+// owns album ownership).
 export const sanitizeAlbumUpdateNode = (
   node: unknown,
   username: string
-): AlbumUpdateInput | null | undefined => {
+): UnknownRecord | null | undefined => {
   if (!node) {
     return node as null | undefined;
   }
 
   const { Owner, ...rest } = node as UnknownRecord;
+  void Owner;
 
   const sanitized: UnknownRecord = {
     ...rest,
@@ -146,5 +152,5 @@ export const sanitizeAlbumUpdateNode = (
     sanitized.Images = sanitizeImagesFieldInput(sanitized.Images, username);
   }
 
-  return sanitized as AlbumUpdateInput;
+  return sanitized;
 };
