@@ -15,7 +15,7 @@ import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;
 const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,(event: unknown)=>events.push(event));
-before(async()=>{driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240_000});
+before(async()=>{driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240_000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const seed=async()=>{await driver.executeQuery(`CREATE (:ModerationProfile {displayName:'mod'}),(:Issue {id:'i',issueNumber:1,channelUniqueName:'forum',authorName:'mod',isOpen:true,locked:false,createdAt:datetime(),title:'Issue'})`);};
 const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){
@@ -37,6 +37,6 @@ test('notification failure follows durable lock, nested comment and native event
 });
 test('identity guard rejects immutable fields before generated mutation',async()=>{await seed();await assert.rejects(createIssueLockRepository(driver).updateLock('i',{issueNumber:9} as any),/identity|immutable/i);assert.equal((await snapshot()).graph[0].locked,false);assert.deepEqual(events,[]);});
 test('selected response failure preserves committed lock and generic resolver error',async(t)=>{
- const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Issue:{title:()=>{throw Error('projection failure');}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);
+ const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Issue:{title:()=>{throw Error('projection failure');}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);
  await seed();await resetDatabase(driver);await seed();events=[];await assert.rejects(run(createIssueLockRepository(driver)),/Error locking issue/);const snap=await snapshot();assert.equal(snap.graph[0].locked,true);assert.equal(snap.comments.length,1);t.assert.snapshot(snap);
 });

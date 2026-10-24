@@ -14,7 +14,7 @@ const engine=createSubscriptionEngine();let events:unknown[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push({kind,event}));
 before(async()=>{
  driver=await startNeo4j();const app=getCustomResolvers(driver);
- const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Issue:{flaggedServerRuleViolation:(source:any)=>{if(projection==='create')throw new Error('report create projection');return source.flaggedServerRuleViolation;},relatedImageId:(source:any)=>{if(projection==='append')throw new Error('report append projection');return source.relatedImageId;}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
+ const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Issue:{flaggedServerRuleViolation:(source:any)=>{if(projection==='create')throw new Error('report create projection');return source.flaggedServerRuleViolation;},relatedImageId:(source:any)=>{if(projection==='append')throw new Error('report append projection');return source.relatedImageId;}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});
  const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);
  current=createImageReportRepository(driver);
 },{timeout:240000});

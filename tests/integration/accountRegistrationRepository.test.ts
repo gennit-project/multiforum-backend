@@ -21,7 +21,7 @@ before(async()=>{
  const open=driver.session.bind(driver);
  driver.session=(config?:SessionConfig)=>{sessions.push(config??{});return open(config);};
  const app=getCustomResolvers(driver);
- const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
+ const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});
  schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createAccountRegistrationRepository(driver);
 },{timeout:240_000});

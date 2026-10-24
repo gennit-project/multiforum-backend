@@ -60,7 +60,7 @@ export async function startImageModEnv(): Promise<ImageModEnv> {
     resolvers,
     features: {
       filters: { String: { MATCHES: true } },
-      subscriptions: subscriptionEngine,
+      subscriptions: subscriptionEngine as unknown as boolean,
     },
   });
   registerGeneratedSchema(driver, await neoSchema.getSchema());

@@ -19,7 +19,7 @@ before(async()=>{
  mock.method(sgMail,"send",async()=>{nativeCalls++;throw new Error("Native SendGrid forbidden");});
  mock.method(Resend.prototype,"post",async()=>{nativeCalls++;throw new Error("Native Resend forbidden");});
  driver=await startNeo4j();const app=getCustomResolvers(driver);
- const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
+ const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});
  const schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createEmailNotificationRepository(driver);
 },{timeout:240_000});

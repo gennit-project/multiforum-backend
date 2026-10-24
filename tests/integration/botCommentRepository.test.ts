@@ -18,7 +18,7 @@ const denyExternalHttp=()=>{let n=0;const deny=()=>{n++;throw new Error('externa
 let driver:Driver;let schema:GraphQLSchema;let guard:ReturnType<typeof denyExternalHttp>;
 const engine=createSubscriptionEngine();let events:unknown[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,(event: unknown)=>events.push(event));
-before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);guard=denyExternalHttp();},{timeout:240000});
+before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);guard=denyExternalHttp();},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{guard?.assertUnused();guard?.restore();await engine.close();await stopNeo4j();});
 const normalize=(x:unknown)=>JSON.parse(JSON.stringify(x,function(key,value){if(['createdAt','timestamp','updatedAt','lockedAt'].includes(key))return value===null?null:'<time>';if(value&&typeof value==='object'&&'year' in value&&'nanosecond' in value)return '<time>';return ['id','id_from','id_to'].includes(key)&&this.event?'<generated-event-id>':value;}));

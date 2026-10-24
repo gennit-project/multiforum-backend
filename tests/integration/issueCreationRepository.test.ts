@@ -16,7 +16,7 @@ import {resetDatabase,startNeo4j,stopNeo4j} from './neo4jHarness.js';
 let driver:Driver;
 const engine=createSubscriptionEngine();let events:any[]=[];
 for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,(event: unknown)=>events.push(event));
-before(async()=>{driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240_000});
+before(async()=>{driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240_000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 const input=()=>({channelUniqueName:'forum',issueNumber:1,authorName:'alice',relatedUsername:'alice',isOpen:true,Author:{User:{connect:{where:{node:{username:'alice'}}}}}});
 const seed=async()=>{await driver.executeQuery(`CREATE (:Channel {uniqueName:'forum'}),(:User {username:'alice'}),(:ModerationProfile {displayName:'mod'}),(:Discussion {id:'d'}),(:Comment {id:'c'}),(:Event {id:'e'}),(:WikiPage {id:'w'}),(:TextVersion {id:'v'}),(:Image {id:'im'}),(:Album {id:'a'})`);};
@@ -61,7 +61,7 @@ test('sensitive target creation retains reconciliation before commit',async()=>{
 test('selected projection errors preserve durable writes and native events',async(t)=>{
  // GraphQL input accepts Int 2147483647; generated projection stays valid.
  // Simulate a response resolver failure on the same supported schema for both APIs.
- const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Issue:{flaggedServerRuleViolation:()=>{throw new Error('projection failure');}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
+ const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Issue:{flaggedServerRuleViolation:()=>{throw new Error('projection failure');}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});
  const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);
  await seed();await resetDatabase(driver);await seed();events=[];await assert.rejects(newCreate(input()),/projection failure/);const snap=await snapshot();assert.ok(snap.rows.length);t.assert.snapshot(snap);
 });

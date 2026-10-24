@@ -16,7 +16,7 @@ const engine=createSubscriptionEngine();
 let events: Array<{kind:string,event:Record<string,unknown>}>=[];
 before(async()=>{
  driver=await startNeo4j(); const app=getCustomResolvers(driver);
- const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
+ const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});
  const schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createDiscussionRevisionRepository(driver);
  for(const kind of ['create','update','create_relationship']) engine.events.on(kind,(event:Record<string,unknown>)=>events.push({kind,event}));

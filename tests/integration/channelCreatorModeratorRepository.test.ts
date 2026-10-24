@@ -21,7 +21,7 @@ before(async () => {
   const app = getCustomResolvers(driver);
   const neoSchema = new Neo4jGraphQL({
     typeDefs, driver, resolvers: app.resolvers,
-    features: { filters: { String: { MATCHES: true } }, subscriptions: engine },
+    features: { filters: { String: { MATCHES: true } }, subscriptions: engine as unknown as boolean },
   });
   schema = await neoSchema.getSchema();
   service = createChannelCreatorModeratorService(createChannelCreatorModeratorRepository(driver), engine);

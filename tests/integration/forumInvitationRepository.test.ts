@@ -23,7 +23,7 @@ for (const kind of ["create", "update", "create_relationship", "delete_relations
 before(async () => {
  driver = await startNeo4j();
  const app = getCustomResolvers(driver);
- const neoSchema = new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
+ const neoSchema = new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});
  const schema = await neoSchema.getSchema(); registerGeneratedSchema(driver,schema);
 }, {timeout:240_000});
 beforeEach(async () => {await resetDatabase(driver); events=[];});
