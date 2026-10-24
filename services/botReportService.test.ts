@@ -19,7 +19,7 @@ const createBotReport = (input: any) => actualCreateBotReport({...input,botRepor
  findReportedDiscussion:(id:string)=>input.models.Discussion.find({where:{id}}),
  findReportedEvent:(id:string)=>input.models.Event.find({where:{id}}),
  createReportedIssue:(values:any)=>input.models.Issue.create({input:values}),
- appendBotReport:(where:any,update:any)=>input.models.Issue.update({where,update}),
+ appendBotReport:(params:any)=>input.models.Issue.update({update:params}),
 }});
 
 // Full model set. User/Channel satisfy ensureBotUserForChannel; Issue.find
@@ -130,7 +130,7 @@ test("persists the supplied idempotency key on the moderation action", async () 
   });
 
   assert.equal(
-    update.ActivityFeed[0].create[0].node.idempotencyKey,
+    update.actions[0].idempotencyKey,
     "bot-report:v1:test"
   );
 });
@@ -158,9 +158,9 @@ test("persists normalized structured recommendation metadata", async () => {
     },
   });
 
-  assert.equal(update.ActivityFeed[0].create[0].node.recommendedAction, "REMOVE");
-  assert.equal(update.ActivityFeed[0].create[0].node.recommendationConfidence, 0.91);
-  assert.equal(update.ActivityFeed[0].create[0].node.recommendationRationale, "Repeated promotional spam.");
+  assert.equal(update.actions[0].recommendedAction, "REMOVE");
+  assert.equal(update.actions[0].recommendationConfidence, 0.91);
+  assert.equal(update.actions[0].recommendationRationale, "Repeated promotional spam.");
 });
 
 test("drops malformed optional recommendation metadata without dropping the report", () => {

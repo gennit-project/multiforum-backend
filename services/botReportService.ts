@@ -3,16 +3,10 @@ import type { BotIdentityRepository } from './persistence/botIdentityRepository.
 import type { Driver } from 'neo4j-driver'
 import {
   ModerationRecommendedAction,
-  type IssueCreateInput,
-  type IssueUpdateInput,
-  type IssueWhere,
-  type ModerationActionCreateInput
+  type IssueWhere
 } from '../ogm_types.js'
 import { ensureBotUserForChannel } from './botUserService.js'
-import {
-  getIssueCreateInput,
-  getModerationActionCreateInput
-} from '../customResolvers/mutations/reportComment.js'
+import { formatModerationActionText } from './persistence/moderationIssueWrites.js'
 import { getFinalCommentText } from "../customResolvers/mutations/shared/reportText.js"
 import getNextIssueNumber from '../customResolvers/mutations/utils/getNextIssueNumber.js'
 import { logger } from "../logger.js";
@@ -204,23 +198,23 @@ export const createBotReport = async (input: {
   // If an issue does NOT already exist, create a new one
   if (!existingIssueId) {
     const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
-    const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-      contextText,
-      selectedForumRules,
-      selectedServerRules,
-      loggedInModName: botModName,
-      channelUniqueName,
-      reportedContentType: contentType,
-      relatedCommentId: contentType === 'comment' ? contentId : undefined,
-      relatedDiscussionId: contentType === 'discussion' ? contentId : undefined,
-      relatedEventId: contentType === 'event' ? contentId : undefined,
-      relatedUsername,
-      relatedModProfileName,
-      issueNumber
-    })
+    const title = `[Reported ${contentType}] "${contextText?.substring(0, 50) || ''}${
+      contextText.length > 50 ? '...' : ''
+    }"`
 
     try {
-      const issueData = await repository.createReportedIssue([issueCreateInput])
+      const issueData = await repository.createReportedIssue([{
+        issueNumber,
+        title,
+        authorModName: botModName,
+        channelUniqueName,
+        flaggedServerRuleViolation: selectedServerRules.length > 0,
+        relatedCommentId: contentType === 'comment' ? contentId : undefined,
+        relatedDiscussionId: contentType === 'discussion' ? contentId : undefined,
+        relatedEventId: contentType === 'event' ? contentId : undefined,
+        relatedUsername,
+        relatedModProfileName,
+      }])
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
         throw new Error('Error creating issue')
@@ -232,46 +226,26 @@ export const createBotReport = async (input: {
     }
   }
 
-  // Create the moderation action for the report
-  const moderationActionCreateInput: ModerationActionCreateInput =
-    getModerationActionCreateInput({
-      text: finalCommentText,
-      loggedInModName: botModName,
-      channelUniqueName,
-      actionType: 'report',
-      actionDescription: `Reported the ${contentType}`,
-      issueId: existingIssueId,
-      idempotencyKey: input.idempotencyKey,
-      ...recommendation
-    })
-
-  // Update the issue with the new moderation action
-  const issueUpdateWhere: IssueWhere = {
-    id: { eq: existingIssueId }
-  }
-  const issueUpdateInput: IssueUpdateInput = {
-    ActivityFeed: [
-      {
-        create: [
-          {
-            node: moderationActionCreateInput
-          }
-        ]
-      }
-    ],
-    isOpen: { set: true }, // Reopen the issue if it was closed
-    flaggedServerRuleViolation: {
-      set: existingIssueFlaggedServerRuleViolation || selectedServerRules.length > 0
-    }
-  }
-
-  // relatedUsername / relatedModProfileName are @settable(onUpdate: false): they
-  // are set once when the issue is created and are immutable thereafter, so the
-  // generated IssueUpdateInput omits them and the append-report update must not
-  // carry them. (The removed OGM schema accepted them server-side, masking this.)
-
+  // Append the bot's report moderation action (with its embedded comment) via the
+  // owned write, carrying the bot's idempotency key + recommendation fields.
   try {
-    const issueData = await repository.appendBotReport(issueUpdateWhere, issueUpdateInput)
+    const issueData = await repository.appendBotReport({
+      issueId: existingIssueId,
+      actions: [
+        {
+          actionType: 'report',
+          actionDescription: `Reported the ${contentType}`,
+          text: formatModerationActionText({ text: finalCommentText }),
+          modDisplayName: botModName,
+          commentChannelUniqueName: channelUniqueName,
+          idempotencyKey: input.idempotencyKey,
+          ...recommendation
+        }
+      ],
+      isOpen: true, // Reopen the issue if it was closed
+      flaggedServerRuleViolation:
+        existingIssueFlaggedServerRuleViolation || selectedServerRules.length > 0
+    })
     const issue = issueData.issues[0]
     if (!issue?.id) {
       throw new Error('Error updating issue')
