@@ -6,9 +6,6 @@ import {
   type PluginEventClaimLimits,
 } from "../persistence/pipelineLeaseRepository.js";
 import { randomUUID } from "node:crypto";
-import type {
-  PluginRunUpdateInput,
-} from "../../ogm_types.js";
 import { logger } from "../../logger.js";
 
 const DEFAULT_LEASE_DURATION_MS = 5 * 60_000;
@@ -169,7 +166,7 @@ export const completePluginRunLease = async ({
   driver?: Driver;
   repository?: PipelineLeaseRepository;
   lease: PluginRunLease;
-  update: PluginRunUpdateInput;
+  update: Record<string, unknown>;
   now?: Date;
 }) => {
   const timestamp = now.toISOString();
@@ -191,7 +188,7 @@ export const reschedulePluginRunLease = async ({
   driver?: Driver;
   repository?: PipelineLeaseRepository;
   lease: PluginRunLease;
-  update: PluginRunUpdateInput;
+  update: Record<string, unknown>;
 }) => {
   const persistence = repository ?? createPipelineLeaseRepository(driver!);
   return persistence.rescheduleOwnedJob(lease, {
