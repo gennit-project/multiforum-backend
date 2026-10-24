@@ -115,7 +115,11 @@ type CanCreateCommentArgs = {
 export const canCreateComment = rule({ cache: "contextual" })(
   async (parent: unknown, args: CanCreateCommentArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { input } = args;
-    const firstItemInInput = input[0];
+    // v7 dropped the nested to-one connect from the generated CommentCreateInput
+    // types, but the comment-create flow still carries the client's chosen
+    // target (Channel/DiscussionChannel/Event/ParentComment) as this connect
+    // shape for authorization to inspect, so read it through a loose view.
+    const firstItemInInput = input[0] as Record<string, any> | undefined;
 
     if (!firstItemInInput) {
       throw new Error("No comment create input found.");

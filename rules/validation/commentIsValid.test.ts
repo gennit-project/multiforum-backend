@@ -3,6 +3,9 @@ import { validateCreateCommentInput } from "./commentIsValid.js";
 import { MAX_CHARS_IN_COMMENT_TEXT } from "./constants.js";
 import type { CommentCreateInput } from "../../src/generated/graphql.js";
 
+// v7 removed the nested to-one connect from the generated types; the validator
+// reads the client's author/channel intent through a loose view, so the test
+// fixture carries the connect shape as an intermediate (cast) value.
 const baseInput = (): CommentCreateInput => ({
   isRootComment: true,
   text: "hello",
@@ -26,7 +29,7 @@ const baseInput = (): CommentCreateInput => ({
       },
     },
   },
-});
+} as unknown as CommentCreateInput);
 
 async function testMissingChannel() {
   const input = baseInput();

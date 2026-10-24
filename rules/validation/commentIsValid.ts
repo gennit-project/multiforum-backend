@@ -48,14 +48,15 @@ export const validateCreateCommentInput = (
   if (!hasChannelConnection) {
     return "Comment must be attached to a channel.";
   }
+  // v7 dropped the nested to-one connect from the generated types; the author
+  // identity the flow carries for validation is read through a loose view.
+  const view = createCommentInput as Record<string, any>;
   return validateCommentInput({
     text: createCommentInput.text || "",
     modProfileName:
-      createCommentInput?.CommentAuthor?.ModerationProfile?.connect?.where?.node
-        ?.displayName || "",
+      view?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
     username:
-      createCommentInput?.CommentAuthor?.User?.connect?.where?.node?.username ||
-      "",
+      view?.CommentAuthor?.User?.connect?.where?.node?.username || "",
     editMode: false,
   });
 };
@@ -172,7 +173,7 @@ export const validateUpdateCommentReplyAncestry = async (
     );
   }
 
-  const { ParentComment, ChildComments: _childComments, ...otherUpdate } = update;
+  const { ParentComment, ChildComments: _childComments, ...otherUpdate } = update as Record<string, any>;
   const nestedReplyField = findNestedReplyField(otherUpdate, "update");
   if (nestedReplyField) {
     throw replyInputError(
@@ -240,7 +241,7 @@ export const validateFeedbackEnabled = async (
   }
 
   const channelName =
-    createCommentInput.Channel?.connect?.where?.node?.uniqueName;
+    (createCommentInput as Record<string, any>).Channel?.connect?.where?.node?.uniqueName;
   if (!channelName) {
     return "Comment must be connected to a Channel.";
   }
@@ -268,8 +269,8 @@ export const createCommentInputIsValid = rule({ cache: "contextual" })(
       logger.info('validating comment input')
       logger.info('arguments passed to validate comment input ', {
         text: createCommentInput.text || "",
-        modProfileName: createCommentInput?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
-        username: createCommentInput?.CommentAuthor?.User?.connect?.where?.node?.username || "",
+        modProfileName: (createCommentInput as Record<string, any>)?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
+        username: (createCommentInput as Record<string, any>)?.CommentAuthor?.User?.connect?.where?.node?.username || "",
         editMode: false
       })
       const validation = validateCreateCommentInput(createCommentInput);
@@ -292,8 +293,8 @@ export const updateCommentInputIsValid = rule({ cache: "contextual" })(
     }
     const validation = validateCommentInput({
       text: args.update?.text?.set || "",
-      modProfileName: args.update?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
-      username: args.update?.CommentAuthor?.User?.connect?.where?.node?.username || "",
+      modProfileName: (args.update as Record<string, any>)?.CommentAuthor?.ModerationProfile?.connect?.where?.node?.displayName || "",
+      username: (args.update as Record<string, any>)?.CommentAuthor?.User?.connect?.where?.node?.username || "",
       editMode: true
     });
     if (validation !== true) return validation;

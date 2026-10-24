@@ -33,13 +33,16 @@ const context = (values: Record<string, unknown> = {}): GraphQLContext => ({
   } as unknown as Driver,
 });
 
+// v7 removed the nested to-one connect; the ancestry rule reads the client's
+// ParentComment intent through a loose view, so this fixture carries the connect
+// shape as an intermediate (cast) value.
 const createReply = (): CommentCreateInput => ({
   text: "reply",
   isRootComment: false,
   ParentComment: {
     connect: { where: { node: { id: "parent" } } },
   },
-});
+} as unknown as CommentCreateInput);
 
 test("accepts a create input connected to one valid parent", async () => {
   await assert.doesNotReject(
@@ -129,11 +132,11 @@ test("rejects a create input whose parent is at the maximum depth", async () => 
 });
 
 test("rejects reparenting without a unique child ID", async () => {
-  const update: CommentUpdateInput = {
+  const update = {
     ParentComment: {
       connect: { where: { node: { id: "parent" } } },
     },
-  };
+  } as unknown as CommentUpdateInput;
   await assert.rejects(
     validateUpdateCommentReplyAncestry(update, undefined, context()),
     /target one comment by its unique ID/
@@ -202,11 +205,11 @@ test("rejects reply writes nested in a parent update", async () => {
 });
 
 test("rejects a self-cycle during reparenting", async () => {
-  const update: CommentUpdateInput = {
+  const update = {
     ParentComment: {
       connect: { where: { node: { id: "same" } }, overwrite: true },
     },
-  };
+  } as unknown as CommentUpdateInput;
   await assert.rejects(
     validateUpdateCommentReplyAncestry(update, { id: { eq: "same" } }, context()),
     /cannot reply to itself/
@@ -214,11 +217,11 @@ test("rejects a self-cycle during reparenting", async () => {
 });
 
 test("allows explicit overwrite reparenting", async () => {
-  const update: CommentUpdateInput = {
+  const update = {
     ParentComment: {
       connect: { where: { node: { id: "new-parent" } }, overwrite: true },
     },
-  };
+  } as unknown as CommentUpdateInput;
   await assert.doesNotReject(
     validateUpdateCommentReplyAncestry(
       update,
