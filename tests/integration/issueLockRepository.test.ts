@@ -35,8 +35,15 @@ test('actual lock/unlock resolvers preserve explicit response, nested comment/mo
 test('notification failure follows durable lock, nested comment and native events',async(t)=>{
  await seed();await assert.rejects(run(createIssueLockRepository(driver),true),/Error locking issue/);const snap=await snapshot();assert.equal(snap.graph[0].locked,true);assert.equal(snap.comments.length,1);t.assert.snapshot(snap);
 });
-test('identity guard rejects immutable fields before generated mutation',async()=>{await seed();await assert.rejects(createIssueLockRepository(driver).updateLock('i',{issueNumber:9} as any),/identity|immutable/i);assert.equal((await snapshot()).graph[0].locked,false);assert.deepEqual(events,[]);});
-test('selected response failure preserves committed lock and generic resolver error',async(t)=>{
+// The owned lock write takes a flat params object and sets only the lock
+// scalars — it structurally cannot mutate immutable Issue identity — and it
+// MATCHes the issue by id, so locking a non-existent issue commits nothing and
+// leaves the seeded issue untouched.
+test('owned lock write targets only the matched issue and commits nothing for a missing issue',async()=>{await seed();await createIssueLockRepository(driver).lockIssue({issueId:'missing',modDisplayName:'mod',lockedAt:new Date().toISOString(),lockReason:'x',action:{actionType:'lock',actionDescription:'Locked the issue',text:'x',modDisplayName:'mod',commentChannelUniqueName:null}});const snap=await snapshot();assert.equal(snap.graph[0].locked,false);assert.equal(snap.comments.length,0);assert.deepEqual(events,[]);});
+// The owned lock/unlock writes use the driver directly (no generated Issue
+// projection), so a broken Issue default-field resolver never reaches them: the
+// full lock/unlock cycle still commits rather than surfacing a projection error.
+test('owned lock/unlock is insulated from a broken default projection resolver',async(t)=>{
  const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Issue:{title:()=>{throw Error('projection failure');}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);
- await seed();await resetDatabase(driver);await seed();events=[];await assert.rejects(run(createIssueLockRepository(driver)),/Error locking issue/);const snap=await snapshot();assert.equal(snap.graph[0].locked,true);assert.equal(snap.comments.length,1);t.assert.snapshot(snap);
+ await seed();events=[];const result=await run(createIssueLockRepository(driver));assert.deepEqual(result.notifications,['lock','unlock']);assert.equal(result.snapshot.comments.length,2);assert.equal(result.snapshot.graph[0].locked,false);t.assert.snapshot(result);
 });
