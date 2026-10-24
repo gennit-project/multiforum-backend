@@ -86,7 +86,7 @@ const findServerConfig = (selectionSet: string) =>
   executeGeneratedOperation<{ serverConfigs: Array<Record<string, any>> }>(
     env.driver,
     `query ServerConfigSuspensions($where: ServerConfigWhere) { serverConfigs(where: $where) ${selectionSet} }`,
-    { where: { serverName: SERVER_NAME } }
+    { where: { serverName: { eq: SERVER_NAME } } }
   ).then((data) => data.serverConfigs);
 
 // --- server-scoped user suspension ---

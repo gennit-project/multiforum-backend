@@ -91,35 +91,35 @@ const FINDWIKIAUTHORS = `query IssueTargetFindWikiAuthors($where: WikiPageWhere)
 export function createIssueTargetRepository(driver: Driver): IssueTargetRepository {
   return {
     async findProfileOwner(displayName) {
-      const result = await executeGeneratedOperation<{ users: Array<IssueTargetUser> }>(driver, FINDPROFILEOWNER, { where: { ModerationProfile: { displayName } } });
+      const result = await executeGeneratedOperation<{ users: Array<IssueTargetUser> }>(driver, FINDPROFILEOWNER, { where: { ModerationProfile: { displayName: { eq: displayName } } } });
       return result.users;
     },
     async findIssue(issueId) {
-      const result = await executeGeneratedOperation<{ issues: Array<IssueTargetSnapshot> }>(driver, FINDISSUE, { where: { id: issueId } });
+      const result = await executeGeneratedOperation<{ issues: Array<IssueTargetSnapshot> }>(driver, FINDISSUE, { where: { id: { eq: issueId } } });
       return result.issues;
     },
     async findDirectUser(username) {
-      const result = await executeGeneratedOperation<{ users: Array<IssueTargetUser> }>(driver, FINDDIRECTUSER, { where: { username } });
+      const result = await executeGeneratedOperation<{ users: Array<IssueTargetUser> }>(driver, FINDDIRECTUSER, { where: { username: { eq: username } } });
       return result.users;
     },
     async findDiscussionAuthor(id) {
-      const result = await executeGeneratedOperation<{ discussions: Array<{ id?: string; Author?: IssueTargetUser | null }> }>(driver, FINDDISCUSSIONAUTHOR, { where: { id } });
+      const result = await executeGeneratedOperation<{ discussions: Array<{ id?: string; Author?: IssueTargetUser | null }> }>(driver, FINDDISCUSSIONAUTHOR, { where: { id: { eq: id } } });
       return result.discussions;
     },
     async findEventPoster(id) {
-      const result = await executeGeneratedOperation<{ events: Array<{ id?: string; Poster?: IssueTargetUser | null }> }>(driver, FINDEVENTPOSTER, { where: { id } });
+      const result = await executeGeneratedOperation<{ events: Array<{ id?: string; Poster?: IssueTargetUser | null }> }>(driver, FINDEVENTPOSTER, { where: { id: { eq: id } } });
       return result.events;
     },
     async findCommentAuthor(id) {
-      const result = await executeGeneratedOperation<{ comments: Array<{ id?: string; CommentAuthor?: IssueTargetUser | IssueTargetMod | null }> }>(driver, FINDCOMMENTAUTHOR, { where: { id } });
+      const result = await executeGeneratedOperation<{ comments: Array<{ id?: string; CommentAuthor?: IssueTargetUser | IssueTargetMod | null }> }>(driver, FINDCOMMENTAUTHOR, { where: { id: { eq: id } } });
       return result.comments;
     },
     async findRevisionAuthor(id) {
-      const result = await executeGeneratedOperation<{ textVersions: Array<{ id?: string; Author?: IssueTargetUser | null }> }>(driver, FINDREVISIONAUTHOR, { where: { id } });
+      const result = await executeGeneratedOperation<{ textVersions: Array<{ id?: string; Author?: IssueTargetUser | null }> }>(driver, FINDREVISIONAUTHOR, { where: { id: { eq: id } } });
       return result.textVersions;
     },
     async findWikiAuthors(id) {
-      const result = await executeGeneratedOperation<{ wikiPages: Array<{ id?: string; OriginalAuthor?: IssueTargetUser | null; VersionAuthor?: IssueTargetUser | null }> }>(driver, FINDWIKIAUTHORS, { where: { id } });
+      const result = await executeGeneratedOperation<{ wikiPages: Array<{ id?: string; OriginalAuthor?: IssueTargetUser | null; VersionAuthor?: IssueTargetUser | null }> }>(driver, FINDWIKIAUTHORS, { where: { id: { eq: id } } });
       return result.wikiPages;
     },
   };

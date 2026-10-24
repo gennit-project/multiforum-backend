@@ -3,13 +3,8 @@ import { createIssueTargetRepository } from "../../../services/persistence/issue
 import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../../types/context.js'
-import type {
-  IssueUpdateInput,
-  ChannelUpdateInput,
-  ServerConfigUpdateInput,
-} from '../../../ogm_types.js'
 import { setUserDataOnContext } from '../../../rules/permission/userDataHelperFunctions.js'
-import { getModerationActionCreateInput } from '../reportComment.js'
+import { formatModerationActionText } from '../../../services/persistence/moderationIssueWrites.js'
 import { notifyIssueSubscribers } from '../../../services/issueNotifications.js'
 import { resolveIssueTarget } from '../../shared/resolveIssueTarget.js'
 
@@ -68,42 +63,33 @@ export function createUnsuspendResolver ({
       throw new GraphQLError(`User ${loggedInUsername} is not a moderator`)
     }
 
-    // 5. Create the moderation activity feed item
-    const unsuspendModActionCreateInput = getModerationActionCreateInput({
-      text: explanation,
-      loggedInModName,
-      channelUniqueName: channelUniqueName || actionChannelName,
-      actionType: 'unsuspend',
-      actionDescription: `Unsuspended ${relatedAccountName}`,
-      issueId
-    })
-    const closeIssueModActionCreateInput = getModerationActionCreateInput({
-      loggedInModName,
-      channelUniqueName: channelUniqueName || actionChannelName,
-      actionType: 'close',
-      actionDescription: 'Closed the issue after unsuspending the user',
-      issueId
-    })
-
-    const issueUpdateInput: IssueUpdateInput = {
-      isOpen: { set: false }, // Close issue; unsuspension is often the final action.
-      ActivityFeed: [
-        {
-          create: [
-            { node: closeIssueModActionCreateInput },
-            { node: unsuspendModActionCreateInput },
-           
-          ]
-        }
-      ]
-    }
-
     const repository = context.suspensionWriteRepository ?? createSuspensionWriteRepository(context.driver)
+    const actionChannel = channelUniqueName || actionChannelName
 
-    // 6. Update the Issue with the ModerationAction
+    // 5-6. Record the close action then the unsuspend action (same order as before)
+    // and close the issue, via the owned moderation write.
     let updatedIssue
     try {
-      updatedIssue = await repository.closeSuspensionIssue(issueId, issueUpdateInput)
+      updatedIssue = await repository.closeSuspensionIssue({
+        issueId,
+        actions: [
+          {
+            actionType: 'close',
+            actionDescription: 'Closed the issue after unsuspending the user',
+            text: null,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: actionChannel,
+          },
+          {
+            actionType: 'unsuspend',
+            actionDescription: `Unsuspended ${relatedAccountName}`,
+            text: formatModerationActionText({ text: explanation }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: actionChannel,
+          },
+        ],
+        isOpen: false,
+      })
     } catch (err) {
       throw new GraphQLError('Error updating issue')
     }
@@ -123,53 +109,17 @@ export function createUnsuspendResolver ({
       commentText: explanation
     })
 
-    // 7. Construct the channel update input for either a user or mod
-    let channelUpdateInput: ChannelUpdateInput | ServerConfigUpdateInput | null = null
-    if (relatedAccountType === 'User') {
-      channelUpdateInput = {
-        SuspendedUsers: [
-          {
-            disconnect: [
-              {
-               where: {
-                  node: {
-                    SuspendedUser: {
-                      username: { eq: relatedAccountName }
-                    }
-                  }
-               }
-              }
-            ]
-          }
-        ]
-      }
-    } else if (relatedAccountType === 'ModerationProfile') {
-      channelUpdateInput = {
-        SuspendedMods: [
-          {
-            disconnect: [
-              {
-                where: {
-                  node: {
-                    SuspendedMod: {
-                      displayName: { eq: relatedAccountName }
-                    }
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    }
-    // 8. Update the scope owner with the suspension relationship
-    if (channelUpdateInput) {
+    // 7-8. Remove the owner -> Suspension edge for the matching subject via the
+    // owned write (mirrors the former SuspendedUsers/SuspendedMods disconnect).
+    if (relatedAccountType === 'User' || relatedAccountType === 'ModerationProfile') {
       try {
-        if (scope === 'server') {
-          await repository.removeServerSuspensions(process.env.SERVER_CONFIG_NAME, channelUpdateInput as ServerConfigUpdateInput)
-        } else {
-          await repository.removeChannelSuspensions(channelUniqueName, channelUpdateInput as ChannelUpdateInput)
-        }
+        await repository.removeSuspension({
+          scope,
+          ownerServerName: scope === 'server' ? (process.env.SERVER_CONFIG_NAME ?? null) : null,
+          ownerChannelUniqueName: scope === 'server' ? null : channelUniqueName,
+          subjectType: relatedAccountType,
+          subjectKey: relatedAccountName,
+        })
       } catch (err) {
         throw new GraphQLError('Error unsuspending user')
       }
