@@ -1,6 +1,6 @@
-import { createBotCommentRepository, type BotCommentRepository } from './persistence/botCommentRepository.js'
+import { createBotCommentRepository, type BotCommentRepository, type CommentCreateLike } from './persistence/botCommentRepository.js'
 import { createBotIdentityRepository, type BotIdentityRepository } from './persistence/botIdentityRepository.js'
-import type { CommentCreateInput, UserCreateInput } from '../ogm_types.js'
+import type { UserCreateInput } from '../ogm_types.js'
 import type { Driver } from 'neo4j-driver'
 import { assertReplyRelationship } from './replyAncestry.js'
 
@@ -98,7 +98,7 @@ export const ensureBotUserForChannel = async (input: {
           botProfileId: { set: profileId || null },
           displayName: { set: displayName },
           isDeprecated: { set: false },
-          deprecatedReason: null
+          deprecatedReason: { set: null }
       })
     }
   }
@@ -271,7 +271,7 @@ export const createBotComment = async (input: {
     profileLabel
   })
 
-  const commentInput: CommentCreateInput = {
+  const commentInput: CommentCreateLike = {
     text,
     isRootComment: false,
     isFeedbackComment: false,
