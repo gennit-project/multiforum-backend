@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import type { Discussion, DiscussionChannel, FilterOption, DiscussionChannelUpdateInput, LabelChangeHistoryCreateInput } from "../../ogm_types.js";
+import type { Discussion, DiscussionChannel, FilterOption, DiscussionChannelUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export const FINDDISCUSSION_SELECTION = `{
         id
@@ -61,7 +61,7 @@ export interface DownloadLabelRepository {
  findChannel(discussionId: string, channelUniqueName: string): Promise<DiscussionChannel[]>;
  findOptions(ids: string[]): Promise<FilterOption[]>;
  updateLabels(id: string, update: DiscussionChannelUpdateInput): Promise<{discussionChannels: DiscussionChannel[]}>;
- createHistory(input: LabelChangeHistoryCreateInput[]): Promise<void>;
+ createHistory(input: Array<Record<string, unknown>>): Promise<void>;
  createModerationAction(input: Array<Record<string, unknown>>): Promise<void>;
 }
 export function createDownloadLabelRepository(driver: Driver): DownloadLabelRepository {
@@ -87,8 +87,30 @@ export function createDownloadLabelRepository(driver: Driver): DownloadLabelRepo
       return result.updateDiscussionChannels;
     },
     async createHistory(input) {
-      await executeGeneratedOperation(driver,
-        `mutation DownloadLabels_createHistory($input: [LabelChangeHistoryCreateInput!]!) { createLabelChangeHistories(input: $input) ${CREATEHISTORY_SELECTION} }`, {input});
+      // FAMILY-3 / v7: DiscussionChannel (HAS_LABEL_CHANGE) and the actor
+      // (MADE_LABEL_CHANGE, User or ModerationProfile) are to-one connects v7
+      // removed, so this is an owned write.
+      const h = (input[0] ?? {}) as Record<string, any>;
+      await driver.executeQuery(
+        `CREATE (h:LabelChangeHistory {id: randomUUID(), actionType: $actionType, labelDisplayName: $labelDisplayName, labelValue: $labelValue, createdAt: datetime()})
+         WITH h
+         OPTIONAL MATCH (dc:DiscussionChannel {id: $discussionChannelId})
+         FOREACH (_ IN CASE WHEN dc IS NULL THEN [] ELSE [1] END | MERGE (dc)-[:HAS_LABEL_CHANGE]->(h))
+         WITH h
+         OPTIONAL MATCH (u:User {username: $actorUsername})
+         FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END | MERGE (u)-[:MADE_LABEL_CHANGE]->(h))
+         WITH h
+         OPTIONAL MATCH (mod:ModerationProfile {displayName: $actorModName})
+         FOREACH (_ IN CASE WHEN mod IS NULL THEN [] ELSE [1] END | MERGE (mod)-[:MADE_LABEL_CHANGE]->(h))`,
+        {
+          actionType: h.actionType ?? null,
+          labelDisplayName: h.labelDisplayName ?? null,
+          labelValue: h.labelValue ?? null,
+          discussionChannelId: h.DiscussionChannel?.connect?.where?.node?.id ?? null,
+          actorUsername: h.ActorUser?.connect?.where?.node?.username ?? null,
+          actorModName: h.ActorMod?.connect?.where?.node?.displayName ?? null,
+        }
+      );
     },
     async createModerationAction(input) {
       // FAMILY-3 / v7: the ModerationProfile actor is a to-one connect v7 removed,

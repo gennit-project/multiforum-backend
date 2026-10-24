@@ -98,7 +98,7 @@ test("malformed selected enum and mandatory creator retain failures", async () =
   await driver.executeQuery("MATCH (c:Collection {id:'first'}) SET c.visibility = 'INVALID'");
   await assert.rejects(repository.findOwnedShareTarget('first','owner'), /cannot represent value/);
   await driver.executeQuery("MATCH (c:Collection {id:'first'})-[r:CREATED_BY]->() SET c.visibility='PUBLIC' DELETE r");
-  await assert.rejects(repository.findPublicContaining({id:'first'},false), /Cannot return null for non-nullable field Collection\.CreatedBy/);
+  await assert.rejects(repository.findPublicContaining({id:{eq:'first'}},false), /Cannot return null for non-nullable field Collection\.CreatedBy/);
 });
 
 test("collections remain unbounded at root and public downloads retain limit five", async (t) => {
@@ -109,7 +109,7 @@ test("collections remain unbounded at root and public downloads retain limit fiv
   assert.equal((await repository.findProfileCollections({},{})).length,32);
   await driver.executeQuery(`MATCH (c:Collection {id:'first'}) UNWIND range(1,10) AS i
     CREATE (d:Discussion {id:'download-'+toString(i),title:'Download',createdAt:datetime()}) CREATE (c)-[:CONTAINS_DOWNLOAD]->(d)`);
-  const actual = await repository.findPublicContaining({id:'first'},false);
+  const actual = await repository.findPublicContaining({id:{eq:'first'}},false);
   assert.equal((actual[0].Downloads as unknown[]).length,5);
   // The Downloads projection applies limit 5; which 5 of the eligible downloads are returned
   // is only stable within a single run, so snapshot the projection with Downloads reduced to a count.

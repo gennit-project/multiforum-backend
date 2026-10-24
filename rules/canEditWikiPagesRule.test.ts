@@ -374,7 +374,7 @@ test("checks wiki home page updates that flow through updateChannels", async () 
   const result = await evaluateCanEditWikiHomePageRule(
     {
       where: { uniqueName: { eq: "sourceit" } },
-      update: { WikiHomePage: { update: { node: { body: "Updated" } } } },
+      update: ({ WikiHomePage: { update: { node: { body: "Updated" } } } } as any),
     },
     ctx
   );
@@ -390,7 +390,7 @@ test("blocks wiki home page updates when wiki is disabled for the channel", asyn
   const result = await evaluateCanEditWikiHomePageRule(
     {
       where: { uniqueName: { eq: "sourceit" } },
-      update: { WikiHomePage: { update: { node: { body: "Updated" } } } },
+      update: ({ WikiHomePage: { update: { node: { body: "Updated" } } } } as any),
     },
     ctx
   );

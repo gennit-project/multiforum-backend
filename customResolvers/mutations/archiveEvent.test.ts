@@ -273,7 +273,7 @@ test("archiveEvent reuses an existing event issue and preserves server-rule flag
   process.env.PLAYWRIGHT_MOCK_AUTH = "true";
 
   const Issue = new ModelStub(({ where }) => {
-    if (where?.relatedEventId?.eq === "event-1") {
+    if ((where as any)?.relatedEventId?.eq === "event-1") {
       return [
         {
           id: "existing-issue",

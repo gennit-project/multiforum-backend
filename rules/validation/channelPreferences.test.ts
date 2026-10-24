@@ -99,7 +99,7 @@ const feedbackCommentInput = (): CommentCreateInput => ({
       },
     },
   },
-});
+} as unknown as CommentCreateInput);
 
 test("event channel validation rejects disabled event channels", async () => {
   const result = await validateEventChannelsEnabled(

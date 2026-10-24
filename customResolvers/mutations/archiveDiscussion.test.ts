@@ -203,7 +203,7 @@ test("archiveDiscussion reuses an existing discussion issue and preserves server
   process.env.PLAYWRIGHT_MOCK_AUTH = "true";
 
   const Issue = new ModelStub(({ where }) => {
-    if (where?.relatedDiscussionId?.eq === "discussion-1") {
+    if ((where as any)?.relatedDiscussionId?.eq === "discussion-1") {
       return [
         {
           id: "existing-issue",
