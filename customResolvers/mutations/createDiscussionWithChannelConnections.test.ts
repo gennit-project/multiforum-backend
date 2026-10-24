@@ -94,6 +94,9 @@ class SessionStub {
 
 const createDriver = (session: SessionStub) => ({
   session: () => session,
+  // Create-side ownership connects (author/collection, album) run via
+  // executeQuery, outside the session the channel links use.
+  executeQuery: async () => ({ records: [] }),
 } as unknown as Driver);
 
 const createContext = (username: string = "testuser") => ({

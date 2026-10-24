@@ -1,4 +1,4 @@
-import type { ManagedTransaction } from "neo4j-driver";
+import type { Driver, ManagedTransaction } from "neo4j-driver";
 
 /**
  * FAMILY-3 / v7 (campaign #284). Album ownership for discussions.
@@ -83,14 +83,60 @@ const CONNECT_CREATED_ALBUM_OWNERSHIP = `
  )
 `;
 
+// Create-side post-connects are edge-only (no age-gate-relevant content), so
+// they run as standalone leader-routed owned writes rather than inside the
+// managed transaction.
 export async function connectCreatedDiscussionAlbumOwnership(
-  tx: ManagedTransaction,
+  driver: Driver,
   params: { discussionId: string; username?: string | null }
 ): Promise<void> {
-  await tx.run(CONNECT_CREATED_ALBUM_OWNERSHIP, {
+  await driver.executeQuery(CONNECT_CREATED_ALBUM_OWNERSHIP, {
     discussionId: params.discussionId,
     username: params.username ?? null,
   });
+}
+
+// Discussion to-one connects v7 removed: the Author (POSTED_DISCUSSION) every
+// create sets, and the SharedCollection (SHARES_COLLECTION) a shared-collection
+// discussion sets. Stripped from the generated create input and wired here.
+const CONNECT_AUTHOR_COLLECTION = `
+ MATCH (d:Discussion {id: $discussionId})
+ OPTIONAL MATCH (author:User {username: $authorUsername})
+ FOREACH (_ IN CASE WHEN author IS NULL THEN [] ELSE [1] END |
+  MERGE (author)-[:POSTED_DISCUSSION]->(d)
+ )
+ WITH d
+ OPTIONAL MATCH (col:Collection {id: $sharedCollectionId})
+ FOREACH (_ IN CASE WHEN col IS NULL THEN [] ELSE [1] END |
+  MERGE (d)-[:SHARES_COLLECTION]->(col)
+ )
+`;
+
+export async function connectDiscussionAuthorAndCollection(
+  driver: Driver,
+  params: { discussionId: string; authorUsername?: string | null; sharedCollectionId?: string | null }
+): Promise<void> {
+  await driver.executeQuery(CONNECT_AUTHOR_COLLECTION, {
+    discussionId: params.discussionId,
+    authorUsername: params.authorUsername ?? null,
+    sharedCollectionId: params.sharedCollectionId ?? null,
+  });
+}
+
+// Pull the to-one Author / SharedCollection connect identifiers out of a
+// DiscussionCreateInput and return the input with those connects removed (the
+// generated create can no longer accept them).
+export function stripDiscussionToOneConnects(input: unknown): {
+  cleaned: Record<string, unknown>;
+  authorUsername: string | null;
+  sharedCollectionId: string | null;
+} {
+  const { Author, SharedCollection, ...cleaned } = (input as Record<string, any>) ?? {};
+  return {
+    cleaned,
+    authorUsername: Author?.connect?.where?.node?.username ?? null,
+    sharedCollectionId: SharedCollection?.connect?.where?.node?.id ?? null,
+  };
 }
 
 export async function writeDiscussionAlbum(

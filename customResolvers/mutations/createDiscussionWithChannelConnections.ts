@@ -6,7 +6,11 @@ import { DiscussionCreateInput } from "../../src/generated/graphql.js";
 import { triggerChannelPluginPipeline, triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { GraphQLError } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import { connectCreatedDiscussionAlbumOwnership } from "../../services/persistence/discussionAlbumWrite.js";
+import {
+  connectCreatedDiscussionAlbumOwnership,
+  connectDiscussionAuthorAndCollection,
+  stripDiscussionToOneConnects,
+} from "../../services/persistence/discussionAlbumWrite.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 // v7 removed the nested to-one connect, so the generated createDiscussions can
@@ -143,6 +147,13 @@ export const createDiscussionsFromInput = async (
   let sanitizedInput = input;
   let albumOwnerUsername: string | undefined;
 
+  // v7 removed the Author to-one connect; the author is the authenticated user,
+  // resolved from context (the client can no longer name it on the input).
+  if (context && !context.user) {
+    context.user = await setUserDataOnContext({ context });
+  }
+  const contextUsername = context?.user?.username;
+
   const hasAlbumCreate = input.some(
     ({ discussionCreateInput }) =>
       discussionCreateInput?.Album?.create?.node
@@ -230,20 +241,32 @@ export const createDiscussionsFromInput = async (
 
     for (const [inputIndex, { discussionCreateInput, channelConnections }] of
       sanitizedInput.entries()) {
-      const response = await repository.createDiscussion(discussionCreateInput);
+      // v7 removed the to-one connect, so strip the Author (POSTED_DISCUSSION)
+      // every create sets and the SharedCollection (SHARES_COLLECTION) a shared
+      // collection sets; the generated create makes the node, the owned write
+      // wires those edges.
+      const { cleaned, authorUsername, sharedCollectionId } =
+        stripDiscussionToOneConnects(discussionCreateInput);
+      const resolvedAuthor = authorUsername ?? contextUsername ?? null;
+      const response = await repository.createDiscussion(cleaned as DiscussionCreateInput);
 
       const newDiscussion = response.discussions[0];
       const newDiscussionId = newDiscussion.id;
 
+      // Wire the discussion's Author (POSTED_DISCUSSION) / SharedCollection edges.
+      await connectDiscussionAuthorAndCollection(driver, {
+        discussionId: newDiscussionId,
+        authorUsername: resolvedAuthor,
+        sharedCollectionId,
+      });
+
       // The generated create made the nested album + images; wire their ownership
       // edges (HAS_ALBUM owner, UPLOADED_IMAGE) that v7 can't express as a connect.
       if (albumOwnerUsername && discussionCreateInput?.Album?.create?.node) {
-        await session.executeWrite((tx) =>
-          connectCreatedDiscussionAlbumOwnership(tx, {
-            discussionId: newDiscussionId,
-            username: albumOwnerUsername,
-          })
-        );
+        await connectCreatedDiscussionAlbumOwnership(driver, {
+          discussionId: newDiscussionId,
+          username: albumOwnerUsername,
+        });
       }
 
       // Check if this discussion has a download attached
@@ -258,7 +281,7 @@ export const createDiscussionsFromInput = async (
             tx.run(createDiscussionChannelQuery, {
               discussionId: newDiscussionId,
               channelUniqueName,
-              upvotedBy: newDiscussion.Author?.username,
+              upvotedBy: resolvedAuthor,
               flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
             })
           );

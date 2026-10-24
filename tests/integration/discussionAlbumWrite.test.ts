@@ -60,7 +60,7 @@ test('connectCreatedDiscussionAlbumOwnership wires owner and uploader on a pre-c
   await seed();
   // Simulate what the generated nested create produced: an album + image with no owner edges.
   await driver.executeQuery("MATCH (d:Discussion {id:'d'}) CREATE (d)-[:HAS_ALBUM]->(a:Album {id:'al'})-[:HAS_IMAGE]->(:Image {id:'im',url:'i1'})");
-  await driver.session().executeWrite(tx=>connectCreatedDiscussionAlbumOwnership(tx,{discussionId:'d',username:'alice'}));
+  await connectCreatedDiscussionAlbumOwnership(driver,{discussionId:'d',username:'alice'});
   const rows=await album();
   assert.equal(rows[0].owner,'alice');
   assert.equal(rows[0].images[0].uploader,'alice');
