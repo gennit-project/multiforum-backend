@@ -1,8 +1,4 @@
 import { createChannelModerationRepository, type ChannelModerationRepository } from "../../services/persistence/channelModerationRepository.js";
-import type {
-  ModerationActionCreateInput,
-  IssueUpdateInput,
-} from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
@@ -78,63 +74,17 @@ const getResolver = (input: Input) => {
         ? `**Reason for unlocking:** ${reason}`
         : "Channel unlocked";
 
-      const moderationActionCreateInput: ModerationActionCreateInput = {
-        ModerationProfile: {
-          connect: {
-            where: {
-              node: {
-                displayName: loggedInModName,
-              },
-            },
-          },
-        },
-        actionType: "unlock_channel",
-        actionDescription: "Unlocked the channel",
-        Comment: {
-          create: {
-            node: {
-              text: actionText,
-              isRootComment: true,
-              CommentAuthor: {
-                ModerationProfile: {
-                  connect: {
-                    where: {
-                      node: {
-                        displayName: loggedInModName,
-                      },
-                    },
-                  },
-                },
-              },
-              Issue: {
-                connect: {
-                  where: {
-                    node: {
-                      id: relatedIssue.id,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      };
-
-      const issueUpdateInput: IssueUpdateInput = {
-        ActivityFeed: [
-          {
-            create: [
-              {
-                node: moderationActionCreateInput,
-              },
-            ],
-          },
-        ],
-        isOpen: { set: false },
-      };
-
+      // Record the unlock moderation action (with its embedded moderator
+      // comment) and close the issue. Owned Cypher — see channelModerationRepository.
       try {
-        await repository.recordAction(relatedIssue.id, issueUpdateInput);
+        await repository.recordAction({
+          issueId: relatedIssue.id,
+          actionType: "unlock_channel",
+          actionDescription: "Unlocked the channel",
+          commentText: actionText,
+          modName: loggedInModName,
+          isOpen: false,
+        });
       } catch (error) {
         logger.error("Error updating issue with unlock action:", error);
         // Continue even if issue update fails - the channel unlock is more important
@@ -143,19 +93,12 @@ const getResolver = (input: Input) => {
 
     // Unlock the channel
     try {
-      const updateResult = await repository.updateLockState(channelUniqueName, {
-          locked: { set: false },
-          lockedAt: null,
+      const updateResult = await repository.updateLockState({
+          uniqueName: channelUniqueName,
+          locked: false,
           lockReason: null,
-          LockedBy: {
-            disconnect: {
-              where: {
-                node: {
-                  displayName_NOT: null, // Disconnect any connected ModerationProfile
-                },
-              },
-            },
-          },
+          lockedAt: null,
+          modName: null,
         });
 
       const updatedChannel = updateResult.channels[0];

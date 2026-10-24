@@ -54,9 +54,13 @@ test('full default Issue projection failure is swallowed after action commits an
  async function run(repo:ChannelModerationRepository){await resetDatabase(driver);await seed();await driver.executeQuery("CREATE(:Issue{id:'issue',issueNumber:1,isOpen:true,relatedChannelUniqueName:'forum',locked:'invalid'})");events=[];await lockChannel({driver,channelModerationRepository:repo})(null,args,context(),info);return state();}
  const result=await run(createChannelModerationRepository(driver));assert.equal(result.actions.length,1);assert.equal(result.channel[0].locked,true);assert.equal(result.notifications.length,2);t.assert.snapshot(result);
 });
-test('channel response failure occurs after activity and lock commit but before notification',async(t)=>{
+// v7 owned-write migration (campaign #284): the lock flow no longer round-trips
+// through the generated Channel projection, so a broken Channel.lockReason
+// resolver can no longer fail the mutation. This now characterises that
+// insulation — the action, lock and notifications all commit regardless.
+test('owned lock write is insulated from a broken Channel projection resolver',async(t)=>{
  await schema(true);try{async function run(repo:ChannelModerationRepository){await resetDatabase(driver);await seed();events=[];const result=await outcome(()=>lockChannel({driver,channelModerationRepository:repo})(null,args,context(),info));return{result,state:await state()};}
- const result=await run(createChannelModerationRepository(driver));assert.equal(result.result.error,'Error locking channel');assert.equal(result.state.actions.length,1);assert.equal(result.state.channel[0].locked,true);assert.equal(result.state.notifications.length,0);t.assert.snapshot(result);
+ const result=await run(createChannelModerationRepository(driver));assert.equal(result.result.error,null);assert.equal(result.state.actions.length,1);assert.equal(result.state.channel[0].locked,true);assert.equal(result.state.notifications.length,2);t.assert.snapshot(result);
  }finally{await schema();}
 });
 test('unlock closes a related already-closed issue and still adds the existing action',async(t)=>{

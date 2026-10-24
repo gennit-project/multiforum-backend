@@ -1,9 +1,4 @@
 import { createChannelModerationRepository, type ChannelModerationRepository } from "../../services/persistence/channelModerationRepository.js";
-import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueUpdateInput,
-} from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -82,30 +77,14 @@ const getResolver = (input: Input) => {
         // Create a new server-scoped issue for the channel lock
         const issueNumber = await getNextServerIssueNumber(driver);
 
-        const issueCreateInput: IssueCreateInput = {
-          title: `[Locked channel] ${channelDisplayName}`,
-          isOpen: true,
-          authorName: loggedInModName,
-          flaggedServerRuleViolation: true,
-          channelUniqueName: null, // Server-scoped issue
-          relatedChannelUniqueName: channelUniqueName,
-          issueNumber,
-          Author: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName,
-                  },
-                },
-              },
-            },
-          },
-        };
-
         try {
-          const createResult = await repository.createLockIssue(issueCreateInput);
-          finalIssueId = createResult.issues[0]?.id || "";
+          const createResult = await repository.createLockIssue({
+            issueNumber,
+            title: `[Locked channel] ${channelDisplayName}`,
+            relatedChannelUniqueName: channelUniqueName,
+            authorModName: loggedInModName,
+          });
+          finalIssueId = createResult.id || "";
           if (!finalIssueId) {
             throw new GraphQLError("Error creating issue for channel lock");
           }
@@ -118,65 +97,17 @@ const getResolver = (input: Input) => {
       }
     }
 
-    // Create the moderation action for the activity feed
-    const moderationActionCreateInput: ModerationActionCreateInput = {
-      ModerationProfile: {
-        connect: {
-          where: {
-            node: {
-              displayName: loggedInModName,
-            },
-          },
-        },
-      },
-      actionType: "lock_channel",
-      actionDescription: "Locked the channel",
-      Comment: {
-        create: {
-          node: {
-            text: `**Reason for locking:** ${reason}`,
-            isRootComment: true,
-            CommentAuthor: {
-              ModerationProfile: {
-                connect: {
-                  where: {
-                    node: {
-                      displayName: loggedInModName,
-                    },
-                  },
-                },
-              },
-            },
-            Issue: {
-              connect: {
-                where: {
-                  node: {
-                    id: finalIssueId,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    };
-
-    // Update the issue with the moderation action
-    const issueUpdateInput: IssueUpdateInput = {
-      isOpen: { set: true }, // Keep the issue open
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Record the moderation action (with its embedded moderator comment) on the
+    // issue's activity feed. Owned Cypher — see channelModerationRepository.
     try {
-      await repository.recordAction(finalIssueId, issueUpdateInput);
+      await repository.recordAction({
+        issueId: finalIssueId,
+        actionType: "lock_channel",
+        actionDescription: "Locked the channel",
+        commentText: `**Reason for locking:** ${reason}`,
+        modName: loggedInModName,
+        isOpen: true, // Keep the issue open
+      });
     } catch (error) {
       logger.error("Error updating issue with lock action:", error);
       // Continue even if issue update fails - the channel lock is more important
@@ -184,19 +115,12 @@ const getResolver = (input: Input) => {
 
     // Lock the channel
     try {
-      const updateResult = await repository.updateLockState(channelUniqueName, {
-          locked: { set: true },
-          lockedAt: { set: new Date().toISOString() },
-          lockReason: { set: reason },
-          LockedBy: {
-            connect: {
-              where: {
-                node: {
-                  displayName: loggedInModName,
-                },
-              },
-            },
-          },
+      const updateResult = await repository.updateLockState({
+          uniqueName: channelUniqueName,
+          locked: true,
+          lockReason: reason,
+          lockedAt: new Date().toISOString(),
+          modName: loggedInModName,
         });
 
       const updatedChannel = updateResult.channels[0];
