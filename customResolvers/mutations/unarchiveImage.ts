@@ -2,9 +2,7 @@ import { createImageModerationRepository, type ImageModerationRepository } from 
 import type { Driver } from "neo4j-driver";
 import type {
   Issue,
-  ModerationActionCreateInput,
   IssueWhere,
-  IssueUpdateInput,
   ImageUpdateInput,
   ImageWhere,
 } from "../../ogm_types.js";
@@ -24,80 +22,6 @@ type Args = {
 type Input = {
   repository?: ImageModerationRepository;
   driver: Driver;
-};
-
-const getModerationActionCreateInput = (input: {
-  text?: string;
-  loggedInModName: string;
-  channelUniqueName?: string | null;
-  actionType: string;
-  actionDescription: string;
-  issueId: string;
-}): ModerationActionCreateInput => {
-  const {
-    text,
-    loggedInModName,
-    channelUniqueName,
-    actionType,
-    actionDescription,
-    issueId,
-  } = input;
-
-  const baseInput: ModerationActionCreateInput = {
-    ModerationProfile: {
-      connect: {
-        where: {
-          node: {
-            displayName: loggedInModName,
-          },
-        },
-      },
-    },
-    actionType,
-    actionDescription,
-    Comment: {
-      create: {
-        node: {
-          text: text || null,
-          isRootComment: true,
-          CommentAuthor: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName,
-                  },
-                },
-              },
-            },
-          },
-          Issue: {
-            connect: {
-              where: {
-                node: {
-                  id: issueId,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
-
-  if (channelUniqueName && baseInput.Comment?.create?.node) {
-    baseInput.Comment.create.node.Channel = {
-      connect: {
-        where: {
-          node: {
-            uniqueName: channelUniqueName,
-          },
-        },
-      },
-    };
-  }
-
-  return baseInput;
 };
 
 const getResolver = (input: Input) => {
@@ -146,7 +70,7 @@ const getResolver = (input: Input) => {
     };
 
     if (isServerScoped) {
-      issueWhereClause.channelUniqueName = null;
+      issueWhereClause.channelUniqueName = { eq: null };
     } else {
       issueWhereClause.channelUniqueName = { eq: channelUniqueName };
     }
@@ -160,58 +84,36 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("Issue not found for this image");
     }
 
-    const unarchiveModActionCreateInput = getModerationActionCreateInput({
-      text: explanation,
-      loggedInModName,
-      channelUniqueName,
-      actionType: "un-archive",
-      actionDescription: "Un-archived the image",
-      issueId: existingIssueId,
-    });
-
-    const closeIssueModActionCreateInput = getModerationActionCreateInput({
-      text: explanation,
-      loggedInModName,
-      channelUniqueName,
-      actionType: "close-issue",
-      actionDescription: "Closed the issue",
-      issueId: existingIssueId,
-    });
-
-    // Update the issue with the unarchive action
-    const issueUpdateWhere: IssueWhere = {
-      id: { eq: existingIssueId },
-    };
-
-    const unarchiveUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: unarchiveModActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
-    const issueCloseUpdateInput: IssueUpdateInput = {
-      isOpen: { set: false },
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: closeIssueModActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Record the un-archive action then the close action via the owned write
+    // (two appends). Comment Channel connect only when channel-scoped; text verbatim.
+    const commentChannelUniqueName = channelUniqueName || undefined;
     try {
-      await repository.appendIssueAction(issueUpdateWhere, unarchiveUpdateInput);
+      await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "un-archive",
+            actionDescription: "Un-archived the image",
+            text: explanation ?? null,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName,
+          },
+        ],
+      });
 
-      const issueUpdateData = await repository.appendIssueAction(issueUpdateWhere, issueCloseUpdateInput);
+      const issueUpdateData = await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "close-issue",
+            actionDescription: "Closed the issue",
+            text: explanation ?? null,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName,
+          },
+        ],
+        isOpen: false,
+      });
 
       const issueId = issueUpdateData.issues[0]?.id || null;
       if (!issueId) {
