@@ -82,10 +82,10 @@ export const cancelSupersededPluginRuns = async ({
       ],
     },
     {
-      status: { set: PluginRunStatus.Cancelled },
-      message: { set: "Superseded by a newer content revision" },
-      skippedReason: { set: "Superseded by a newer content revision" },
-      finishedAt: { set: timestamp },
+      status: PluginRunStatus.Cancelled,
+      message: "Superseded by a newer content revision",
+      skippedReason: "Superseded by a newer content revision",
+      finishedAt: timestamp,
       timeoutAt: null,
     }
   );
@@ -114,11 +114,11 @@ export const claimPluginRunLease = async ({
   const timeoutAt = leaseDeadline(now, leaseDurationMs);
   const persistence = repository ?? createPipelineLeaseRepository(driver!);
   const update = {
-      status: { set: PluginRunStatus.Running },
-      leaseId: { set: leaseId },
-      startedAt: { set: timestamp },
-      heartbeatAt: { set: timestamp },
-      timeoutAt: { set: timeoutAt },
+      status: PluginRunStatus.Running,
+      leaseId: leaseId,
+      startedAt: timestamp,
+      heartbeatAt: timestamp,
+      timeoutAt: timeoutAt,
   };
   const result = claimLimits && persistence.claimPendingEventJob
     ? await persistence.claimPendingEventJob(pluginRunId, update, claimLimits)
@@ -126,8 +126,8 @@ export const claimPluginRunLease = async ({
   if (result.pluginRuns.length === 0) return null;
 
   await persistence.extendAttempt(pipelineId, {
-      heartbeatAt: { set: timestamp },
-      timeoutAt: { set: timeoutAt },
+      heartbeatAt: timestamp,
+      timeoutAt: timeoutAt,
   });
   return { pluginRunId, pipelineId, leaseId };
 };
@@ -148,11 +148,11 @@ export const renewPluginRunLease = async ({
   const timestamp = now.toISOString();
   const timeoutAt = leaseDeadline(now, leaseDurationMs);
   const persistence = repository ?? createPipelineLeaseRepository(driver!);
-  const result = await persistence.renewOwnedJob(lease, { heartbeatAt: { set: timestamp }, timeoutAt: { set: timeoutAt } });
+  const result = await persistence.renewOwnedJob(lease, { heartbeatAt: timestamp, timeoutAt: timeoutAt });
   if (result.pluginRuns.length === 0) return false;
 
   await persistence.extendPendingJobs(lease.pipelineId, timeoutAt);
-  await persistence.extendAttempt(lease.pipelineId, { heartbeatAt: { set: timestamp }, timeoutAt: { set: timeoutAt } });
+  await persistence.extendAttempt(lease.pipelineId, { heartbeatAt: timestamp, timeoutAt: timeoutAt });
   return true;
 };
 
@@ -173,8 +173,8 @@ export const completePluginRunLease = async ({
   const persistence = repository ?? createPipelineLeaseRepository(driver!);
   return persistence.completeOwnedJob(lease, {
       ...update,
-      heartbeatAt: { set: timestamp },
-      finishedAt: { set: timestamp },
+      heartbeatAt: timestamp,
+      finishedAt: timestamp,
       timeoutAt: null,
   });
 };

@@ -198,7 +198,7 @@ export const completePipelineAttempt = async ({
   await persistence.completeAttempt(pipelineId, {
       status: { set: status },
       finishedAt: { set: finishedAt },
-      ...(finishedAt ? { timeoutAt: null } : {}),
+      ...(finishedAt ? { timeoutAt: { set: null } } : {}),
     } as PluginPipelineRunUpdateInput)
 
   return status
