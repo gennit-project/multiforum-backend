@@ -75,26 +75,26 @@ export const createRetryDownloadableFileScanResolver = (
     const serverAttempts = await repository.findFailedAttempts({
         targetId: { eq: downloadableFileId },
         targetType: { eq: "DownloadableFile" },
-        eventType_IN: [
+        eventType: { in: [
           "downloadableFile.created",
           "downloadableFile.updated",
-        ],
-        status_IN: [
+        ] },
+        status: { in: [
           PluginPipelineRunStatus.Failed,
           PluginPipelineRunStatus.TimedOut,
           PluginPipelineRunStatus.Cancelled,
-        ],
+        ] },
       });
     const channelAttempts = file.Discussion?.id
       ? await repository.findFailedAttempts({
             targetId: { eq: file.Discussion.id },
             targetType: { eq: "Discussion" },
             eventType: { eq: "discussionChannel.created" },
-            status_IN: [
+            status: { in: [
               PluginPipelineRunStatus.Failed,
               PluginPipelineRunStatus.TimedOut,
               PluginPipelineRunStatus.Cancelled,
-            ],
+            ] },
           })
       : [];
     const attempts = [...serverAttempts, ...channelAttempts];

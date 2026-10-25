@@ -218,10 +218,10 @@ export const createStartPluginPipelineResolver = (
         eventType: { eq: eventType },
         scope: { eq: scope },
         ...(channelId ? { channelId: { eq: channelId } } : {}),
-        status_IN: [
+        status: { in: [
           PluginPipelineRunStatus.Queued,
           PluginPipelineRunStatus.Running,
-        ],
+        ] },
       });
     if (activeAttempts.length > 0) {
       throw userInputError("This pipeline already has an active attempt");

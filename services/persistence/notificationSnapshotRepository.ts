@@ -203,7 +203,7 @@ export function createNotificationSnapshotRepository(driver: Driver): Notificati
       return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findFeedbackRecipient"]>>}>(driver, OPERATIONS.feedback, {where:{username}})).users;
     },
     async findMentionRecipients(usernames) {
-      return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findMentionRecipients"]>>}>(driver, OPERATIONS.mentions, {where:{username_IN:usernames}})).users;
+      return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findMentionRecipients"]>>}>(driver, OPERATIONS.mentions, {where:{username:{in:usernames}}})).users;
     },
     async findCommentMentionSnapshot(id) {
       return (await executeGeneratedOperation<{comments:CommentSnapshot[]}>(driver, OPERATIONS.commentMention, {where:{id:{eq:id}}})).comments;
