@@ -53,8 +53,8 @@ const CHANNEL=`query ChannelBotSettings($where:ChannelWhere){channels(where:$whe
 const SERVER=`query ServerBotSettings{serverConfigs ${SERVER_BOT_SELECTION}}`;
 const DEPRECATE=`mutation DeprecateChannelBot($where:UserWhere,$update:UserUpdateInput){updateUsers(where:$where,update:$update){users ${NOTIFICATION_USER_SELECTION}}}`;
 export function createChannelBotRepository(driver:Driver):ChannelBotRepository{return{
- async findChannelPlugins(uniqueName){return(await executeGeneratedOperation<{channels:Channel[]}>(driver,CHANNEL,{where:{uniqueName}})).channels;},
+ async findChannelPlugins(uniqueName){return(await executeGeneratedOperation<{channels:Channel[]}>(driver,CHANNEL,{where:{uniqueName:{eq:uniqueName}}})).channels;},
  async findServerPlugins(){return(await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,SERVER,{})).serverConfigs;},
- async deprecateBot(username,reason){return(await executeGeneratedOperation<{updateUsers:{users:User[]}}>(driver,DEPRECATE,{where:{username},update:{isDeprecated:true,deprecatedReason:reason}})).updateUsers;},
+ async deprecateBot(username,reason){return(await executeGeneratedOperation<{updateUsers:{users:User[]}}>(driver,DEPRECATE,{where:{username:{eq:username}},update:{isDeprecated:{set:true},deprecatedReason:{set:reason}}})).updateUsers;},
  disconnectOrphans(uniqueName,usernames){return createBotIdentityRepository(driver).disconnectBots(uniqueName,usernames);},
 };}

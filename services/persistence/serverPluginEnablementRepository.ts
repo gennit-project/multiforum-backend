@@ -22,7 +22,7 @@ export const ENABLEMENT_PLUGIN_SELECTION = `{
           license
           tags
           metadata
-          Versions(where: { version: $version }) {
+          Versions(where: { version: { eq: $version } }) {
             id
             version
             manifest
@@ -40,11 +40,11 @@ export const ENABLEMENT_PLUGIN_SELECTION = `{
         }`
 export const ENABLEMENT_INSTALLATION_SELECTION = `{
           serverName
-          InstalledVersions(where: { id: $id }) {
+          InstalledVersions(where: { id: { eq: $id } }) {
             id
             version
           }
-          InstalledVersionsConnection(where: { node: { id: $id } }) {
+          InstalledVersionsConnection(where: { node: { id: { eq: $id } } }) {
             edges { properties { settingsJson } }
           }
         }`
@@ -55,9 +55,9 @@ const SECRETS = `query EnablementSecrets($where:ServerSecretWhere){serverSecrets
 const SAVE = `mutation SetServerPluginEnablement($where:ServerConfigWhere,$update:ServerConfigUpdateInput){updateServerConfigs(where:$where,update:$update){serverConfigs ${ENABLEMENT_SERVER_DEFAULT_SELECTION}}}`
 export function createServerPluginEnablementRepository(driver:Driver):ServerPluginEnablementRepository {
  return {
-  async findPlugin(pluginId,version){return(await executeGeneratedOperation<{plugins:PluginSnapshot[]}>(driver,PLUGIN,{where:{name:pluginId},version})).plugins;},
+  async findPlugin(pluginId,version){return(await executeGeneratedOperation<{plugins:PluginSnapshot[]}>(driver,PLUGIN,{where:{name:{eq:pluginId}},version})).plugins;},
   async findInstallations(id){return(await executeGeneratedOperation<{serverConfigs:InstallationSnapshot[]}>(driver,INSTALLATIONS,{id})).serverConfigs;},
-  async findSecrets(pluginId){return(await executeGeneratedOperation<{serverSecrets:Awaited<ReturnType<ServerPluginEnablementRepository['findSecrets']>>}>(driver,SECRETS,{where:{pluginId}})).serverSecrets;},
-  async setInstallation(serverName,id,enabled,settingsJson){await executeGeneratedOperation(driver,SAVE,{where:{serverName},update:{InstalledVersions:[{where:{node:{id}},update:{edge:{enabled,settingsJson}}}]}});}
+  async findSecrets(pluginId){return(await executeGeneratedOperation<{serverSecrets:Awaited<ReturnType<ServerPluginEnablementRepository['findSecrets']>>}>(driver,SECRETS,{where:{pluginId:{eq:pluginId}}})).serverSecrets;},
+  async setInstallation(serverName,id,enabled,settingsJson){await executeGeneratedOperation(driver,SAVE,{where:{serverName:{eq:serverName}},update:{InstalledVersions:[{where:{node:{id}},update:{edge:{enabled,settingsJson}}}]}});}
  };
 }

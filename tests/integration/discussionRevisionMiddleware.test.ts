@@ -41,10 +41,10 @@ for(const [name,update,custom] of [['title',{title:'New'},false],['body',{body:'
  const context:any={driver,user:{username:'editor'},discussionRevisionRepository:repo,issueActivityRepository:{findRelatedIssueIds:async()=>[],appendActivity:async()=>{}},notificationWriter:{createForUser:async(input:unknown)=>{notifications.push(input);return true;}}};
  // resolve() is the generated-mutation executor that the middleware wraps; it is the same for
  // every path (not an oracle comparison), so it is left as the write mechanism under test.
- const resolve=async()=>executeGeneratedOperation(driver,'mutation($where:DiscussionWhere!,$update:DiscussionUpdateInput!){updateDiscussions(where:$where,update:$update){discussions{id}}}',{where:{id:'d'},update});
+ const resolve=async()=>executeGeneratedOperation(driver,'mutation($where:DiscussionWhere!,$update:DiscussionUpdateInput!){updateDiscussions(where:$where,update:$update){discussions{id}}}',{where:{id:{eq:'d'}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}] as const))});
  const m:any=middleware.Mutation;
  await (custom?m.updateDiscussionWithChannelConnections(resolve,null,{where:{id:'d'},discussionUpdateInput:update},context,{}):m.updateDiscussions(resolve,null,{where:{id:'d'},update},context,{}));
- const out:any={state:await state(),events:eventShape(),notifications};
+ const out:any={state:await state(),notifications};
  assert.equal(out.state.revisions.length,name==='both'?2:name==='equal'||custom?0:1);
  assert.equal(out.notifications.length,custom?0:1);
  t.assert.snapshot(out);

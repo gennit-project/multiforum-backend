@@ -14,7 +14,7 @@ export function createServerPipelineRepository(driver: Driver): ServerPipelineRe
       return data.serverConfigs;
     },
     async save(serverName,pluginPipelines) {
-      await executeGeneratedOperation(driver,SAVE,{where:{serverName},update:{pluginPipelines}});
+      await executeGeneratedOperation(driver,SAVE,{where:{serverName:{eq:serverName}},update:{pluginPipelines:{set:pluginPipelines}}});
     },
   };
 }

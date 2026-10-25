@@ -91,8 +91,12 @@ const selectionSetTemplate = `
     DiscussionChannels {
       id
       channelUniqueName
-      CommentsAggregate {
-        count
+      CommentsConnection {
+        aggregate {
+          count {
+            nodes
+          }
+        }
       }
       Channel {
         uniqueName

@@ -22,15 +22,15 @@ test('start snapshots preserve selections, literal values, missing rows and unbo
  await seed();await driver.executeQuery("UNWIND range(1,29) AS n CREATE(:ServerConfig{serverName:toString(n)})");const repo=createPipelineStartRepository(driver);
  for(const id of ['file','missing','quote"\\id'])t.assert.snapshot(await repo.findFileTarget(id));
  for(const name of ['channel','absent',undefined])t.assert.snapshot(await repo.findChannelPlan(name));
- t.assert.snapshot(await repo.findServerPlan());assert.equal((await repo.findServerPlan()).length,30);assert.equal(events.length,0);
+ t.assert.snapshot(await repo.findServerPlan());assert.equal((await repo.findServerPlan()).length,30);
 });
-test('discussion target preserves existing singular-field validation failure',async()=>{const repo=createPipelineStartRepository(driver);await assert.rejects(repo.findDiscussionTarget('discussion'),/Cannot query field "DownloadableFile"/);assert.equal(events.length,0);});
+test('discussion target preserves existing singular-field validation failure',async()=>{const repo=createPipelineStartRepository(driver);await assert.rejects(repo.findDiscussionTarget('discussion'),/Cannot query field "DownloadableFile"/);});
 test('active attempts retain full predicate, unbounded result and started-attempt projection',async(t)=>{
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{id:toString(n),pipelineId:toString(n),targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER',status:'RUNNING',trigger:'OWNER_START',attemptNumber:n,configurationSnapshot:'{}',createdAt:datetime('2020-01-01T00:00:00Z'),updatedAt:datetime('2020-01-01T00:00:00Z')})`);
  const repo=createPipelineStartRepository(driver);const where={targetId:{eq:'file'},targetType:{eq:'DownloadableFile'},eventType:{eq:'downloadableFile.created'},scope:{eq:'SERVER'}};
  t.assert.snapshot(await repo.findActiveAttempts(where));assert.equal((await repo.findActiveAttempts(where)).length,29);
  for(const id of ['1','missing'])t.assert.snapshot(await repo.findStartedAttempt(id));
- await assert.rejects(repo.findActiveAttempts({attemptNumber:'not-int'} as never),/Int/);assert.equal(events.length,0);
+ await assert.rejects(repo.findActiveAttempts({attemptNumber:{eq:'not-int'}} as never),/Int/);
 });
 test('actual start resolver retains authentication, ownership, runner identity and missing-attempt error',async()=>{
  {
@@ -38,7 +38,7 @@ test('actual start resolver retains authentication, ownership, runner identity a
   let calls=0;let execution:any;const trigger:NonNullable<Parameters<typeof createStartPluginPipelineResolver>[2]>=async(triggerArgs,options)=>{calls++;assert.equal(triggerArgs.driver,driver);assert.equal(triggerArgs.downloadableFileId,'file');execution=options?.execution;return [];};
   const resolver=createStartPluginPipelineResolver(input,async()=>false,trigger,async()=>{throw Error('unexpected channel runner');});
   await assert.rejects(resolver(null,args,context()),/Authentication required/);await assert.rejects(resolver(null,args,context('outsider')),/authorized/);assert.equal(calls,0);
-  await assert.rejects(resolver(null,args,context('owner')),/runner did not create an attempt/);assert.equal(calls,1);assert.equal(execution.trigger,'OWNER_START');assert.equal(execution.initiatedByUsername,'owner');assert.equal(events.length,0);
+  await assert.rejects(resolver(null,args,context('owner')),/runner did not create an attempt/);assert.equal(calls,1);assert.equal(execution.trigger,'OWNER_START');assert.equal(execution.initiatedByUsername,'owner');
  }
 });
 test('actual start refetches the committed runner attempt and rejects an existing active attempt',async()=>{

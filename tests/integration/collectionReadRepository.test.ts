@@ -49,8 +49,8 @@ const seed = () => driver.executeQuery(`
 
 test("profile collections preserve arbitrary filters, options and computed counts", async (t) => {
   await seed();
-  for (const where of [{}, {CreatedBy:{username:'owner'}}, {OR:[{name_CONTAINS:'First'},{visibility:'PRIVATE'}]},
-    {Downloads_SOME:{id:'clear'}}, {Channels_SOME:{uniqueName:'cats'}}, {NOT:{name:'Second'}}]) {
+  for (const where of [{}, {CreatedBy:{username:{eq:'owner'}}}, {OR:[{name:{contains:'First'}},{visibility:{eq:'PRIVATE'}}]},
+    {Downloads:{some:{id:{eq:'clear'}}}}, {Channels:{some:{uniqueName:{eq:'cats'}}}}, {NOT:{name:{eq:'Second'}}}]) {
     for (const options of [{}, {sort:[]}, {sort:[{createdAt:'DESC'}],limit:1,offset:1}]) {
       const actual = await outcome(() => repository.findProfileCollections(where as never,options as never));
       assert.ok('value' in actual, JSON.stringify(actual));
@@ -61,7 +61,7 @@ test("profile collections preserve arbitrary filters, options and computed count
 
 test("public collections preserve explicit sensitive filtering and anonymous schema authorization", async (t) => {
   await seed();
-  const where = {visibility:'PUBLIC',Channels_SOME:{uniqueName:'cats'}};
+  const where = {visibility:{eq:'PUBLIC'},Channels:{some:{uniqueName:{eq:'cats'}}}};
   for (const mode of [false,true]) {
     const actual = await repository.findPublicContaining(where as never,mode);
     t.assert.snapshot(norm(actual));
@@ -87,7 +87,7 @@ test("owned sharing snapshots retain ownership filter and narrow projections", a
 });
 
 test("filter and options validation preserve original first errors", async () => {
-  const cases:[any,any,RegExp][]=[[{unknown:'field'},{},/Field "unknown" is not defined by type "CollectionWhere"/],[{visibility:'invalid'},{},/does not exist in/],[{}, {limit:'bad'},/Int cannot represent non-integer value/],[{}, {sort:[{unknown:'ASC'}]},/Field "unknown" is not defined by type/]];
+  const cases:[any,any,RegExp][]=[[{unknown:'field'},{},/Field "unknown" is not defined by type "CollectionWhere"/],[{visibility:{eq:'invalid'}},{},/does not exist in/],[{}, {limit:'bad'},/Int cannot represent non-integer value/],[{}, {sort:[{unknown:'ASC'}]},/Field "unknown" is not defined by type/]];
   for (const [where,options,message] of cases) {
     await assert.rejects(repository.findProfileCollections(where as never,options as never), message);
   }

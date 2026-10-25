@@ -21,5 +21,5 @@ export interface BotThreadRepository { findParent(id: string): Promise<BotCommen
 export const BOT_PARENT_SELECTION = `{id text ParentComment {id} CommentAuthor {... on User {username displayName} ... on ModerationProfile {displayName User {username}}}}`;
 const PARENT = `query BotParentComment($where: CommentWhere) {comments(where: $where) ${BOT_PARENT_SELECTION}}`;
 export const createBotThreadRepository = (driver: Driver): BotThreadRepository => ({
-  async findParent(id) {return (await executeGeneratedOperation<{comments:BotCommentSnapshot[]}>(driver,PARENT,{where:{id}})).comments;},
+  async findParent(id) {return (await executeGeneratedOperation<{comments:BotCommentSnapshot[]}>(driver,PARENT,{where:{id:{eq:id}}})).comments;},
 });

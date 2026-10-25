@@ -55,10 +55,10 @@ export function createContentValidationRepository(driver: Driver): ContentValida
    return (await executeGeneratedOperation<{downloadableFiles: Array<{id:string;fileName:string}>}>(driver,EXISTING_FILES,{where})).downloadableFiles;
   },
   async findDiscussionChannelEmojiState(id) {
-   return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver,DISCUSSION_EMOJI,{where:{id}})).discussionChannels;
+   return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver,DISCUSSION_EMOJI,{where:{id:{eq:id}}})).discussionChannels;
   },
   async findCommentEmojiState(id) {
-   return (await executeGeneratedOperation<{comments: Comment[]}>(driver,COMMENT_EMOJI,{where:{id}})).comments;
+   return (await executeGeneratedOperation<{comments: Comment[]}>(driver,COMMENT_EMOJI,{where:{id:{eq:id}}})).comments;
   },
  };
 }

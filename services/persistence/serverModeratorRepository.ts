@@ -16,16 +16,16 @@ const CANCEL = `mutation DisconnectServerModeratorInvite($where: ServerConfigWhe
 export function createServerModeratorRepository(driver: Driver): ServerModeratorRepository {
  return {
   async findModeratorProfile(username) {
-   return (await executeGeneratedOperation<{users:Array<{ModerationProfile?:{displayName:string}|null}>}>(driver,PROFILE,{where:{username}})).users;
+   return (await executeGeneratedOperation<{users:Array<{ModerationProfile?:{displayName:string}|null}>}>(driver,PROFILE,{where:{username:{eq:username}}})).users;
   },
   async findPendingInvites(serverName) {
-   return (await executeGeneratedOperation<{serverConfigs:Array<{PendingModInvites:Array<{username:string}>}>}>(driver,PENDING,{where:{serverName}})).serverConfigs;
+   return (await executeGeneratedOperation<{serverConfigs:Array<{PendingModInvites:Array<{username:string}>}>}>(driver,PENDING,{where:{serverName:{eq:serverName}}})).serverConfigs;
   },
   async connectModerator(serverName,displayName) {
-   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,CONNECT,{where:{serverName},update:{Moderators:[{connect:[{where:{node:{displayName}}}]}]}})).updateServerConfigs;
+   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,CONNECT,{where:{serverName:{eq:serverName}},update:{Moderators:[{connect:[{where:{node:{displayName:{eq:displayName}}}}]}]}})).updateServerConfigs;
   },
   async disconnectInvite(serverName,username) {
-   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,CANCEL,{where:{serverName},update:{PendingModInvites:[{disconnect:[{where:{node:{username}}}]}]}})).updateServerConfigs;
+   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,CANCEL,{where:{serverName:{eq:serverName}},update:{PendingModInvites:[{disconnect:[{where:{node:{username:{eq:username}}}}]}]}})).updateServerConfigs;
   },
  };
 }

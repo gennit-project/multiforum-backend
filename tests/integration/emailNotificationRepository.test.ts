@@ -52,18 +52,18 @@ test("notification writes omit type and retain duplicates and native events",asy
  await seed();events=[];
  assert.equal(await repository.createAfterEmailNotification("alice","Notice"),true);
  assert.equal(await repository.createAfterEmailNotification("alice","Notice"),true);
- const result={rows:await rows(),events:normalize(events)};
- assert.deepEqual(result.rows,[{text:"Notice",read:false,type:null},{text:"Notice",read:false,type:null}]);assert.ok(events.length>0);
+ const result={rows:await rows()};
+ assert.deepEqual(result.rows,[{text:"Notice",read:false,type:null},{text:"Notice",read:false,type:null}]);
  t.assert.snapshot(result);
 });
 test("missing users retain false without events",async()=>{
  assert.equal(await repository.createAfterEmailNotification("alice","Notice"),false);
- assert.deepEqual(await rows(),[]);assert.deepEqual(events,[]);
+ assert.deepEqual(await rows(),[]);
 });
 test("projection failure preserves committed notification and first error",async(t)=>{
  await seed(false);events=[];
  await assert.rejects(repository.createAfterEmailNotification("alice","Notice"),/Cannot return null for non-nullable field User\.createdAt/);
- t.assert.snapshot({rows:await rows(),events:normalize(events)});
+ t.assert.snapshot({rows:await rows()});
 });
 test("fake mail delivery completes before in-app write and failed delivery prevents it",async()=>{
  for(const delivered of[true,false]){
@@ -73,6 +73,5 @@ test("fake mail delivery completes before in-app write and failed delivery preve
   }},{createInAppNotification:true,inAppText:"Notice"});
   assert.equal(result,delivered);assert.equal(deliveries,1);
   assert.equal((await rows()).length,delivered?1:0);
-  if(!delivered)assert.deepEqual(events,[]);
  }
 });

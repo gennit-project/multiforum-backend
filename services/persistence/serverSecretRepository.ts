@@ -19,21 +19,21 @@ export interface ServerSecretRepository {
 export function createServerSecretRepository(driver: Driver): ServerSecretRepository {
   return {
     async findForReplacement(pluginId, key) {
-      const data = await executeGeneratedOperation<{serverSecrets: ServerSecret[]}>(driver, LOOKUP, {where:{AND:[{pluginId},{key}]}});
+      const data = await executeGeneratedOperation<{serverSecrets: ServerSecret[]}>(driver, LOOKUP, {where:{AND:[{pluginId:{eq:pluginId}},{key:{eq:key}}]}});
       return data.serverSecrets;
     },
     async replaceCiphertext(id, ciphertext) {
-      await executeGeneratedOperation(driver, REPLACE, {where:{id},update:{ciphertext,isValid:false,lastValidatedAt:null,validationError:null}});
+      await executeGeneratedOperation(driver, REPLACE, {where:{id:{eq:id}},update:{ciphertext:{set:ciphertext},isValid:{set:false},lastValidatedAt:{set:null},validationError:{set:null}}});
     },
     async createEncryptedSecret(pluginId, key, ciphertext, updatedAt) {
       await executeGeneratedOperation(driver, CREATE, {input:[{pluginId,key,ciphertext,isValid:false,updatedAt}]});
     },
     async findRenameCandidates(pluginId) {
-      const data=await executeGeneratedOperation<{serverSecrets:Array<{id:string;key:string}>}>(driver, RENAME_CANDIDATES, {where:{pluginId}});
+      const data=await executeGeneratedOperation<{serverSecrets:Array<{id:string;key:string}>}>(driver, RENAME_CANDIDATES, {where:{pluginId:{eq:pluginId}}});
       return data.serverSecrets;
     },
     async renameKey(id, key) {
-      await executeGeneratedOperation(driver, RENAME, {where:{id},update:{key}});
+      await executeGeneratedOperation(driver, RENAME, {where:{id:{eq:id}},update:{key:{set:key}}});
     },
   };
 }

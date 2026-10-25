@@ -197,10 +197,10 @@ const ENTITY_OPERATIONS = {
 export function createNotificationSnapshotRepository(driver: Driver): NotificationSnapshotRepository {
   return {
     async findArchivedAuthor(username) {
-      return (await executeGeneratedOperation<{users:{username:string}[]}>(driver, OPERATIONS.archived, {where:{username}})).users;
+      return (await executeGeneratedOperation<{users:{username:string}[]}>(driver, OPERATIONS.archived, {where:{username:{eq:username}}})).users;
     },
     async findFeedbackRecipient(username) {
-      return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findFeedbackRecipient"]>>}>(driver, OPERATIONS.feedback, {where:{username}})).users;
+      return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findFeedbackRecipient"]>>}>(driver, OPERATIONS.feedback, {where:{username:{eq:username}}})).users;
     },
     async findMentionRecipients(usernames) {
       return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findMentionRecipients"]>>}>(driver, OPERATIONS.mentions, {where:{username:{in:usernames}}})).users;

@@ -76,11 +76,11 @@ const CONNECT = `mutation ConnectPreviousCommentText($where: CommentWhere!, $upd
 export function createCommentRevisionRepository(driver: Driver): CommentRevisionRepository {
   return {
     async findSnapshot(id) {
-      const result = await executeGeneratedOperation<{comments: CommentSnapshot[]}>(driver, SNAPSHOT, {where: {id}});
+      const result = await executeGeneratedOperation<{comments: CommentSnapshot[]}>(driver, SNAPSHOT, {where: {id: {eq: id}}});
       return result.comments;
     },
     async findEditor(username) {
-      const result = await executeGeneratedOperation<{users: Array<{username: string}>}>(driver, EDITOR, {where: {username}});
+      const result = await executeGeneratedOperation<{users: Array<{username: string}>}>(driver, EDITOR, {where: {username: {eq: username}}});
       return result.users;
     },
     async createPreviousText(input) {
@@ -88,13 +88,13 @@ export function createCommentRevisionRepository(driver: Driver): CommentRevision
       return createTextVersion(driver, scalars, authorUsername);
     },
     async findCommentIds(id) {
-      const result = await executeGeneratedOperation<{comments: Array<{id: string}>}>(driver, IDS, {where: {id}});
+      const result = await executeGeneratedOperation<{comments: Array<{id: string}>}>(driver, IDS, {where: {id: {eq: id}}});
       return result.comments;
     },
     async connectPreviousText(id, versionId, editedAt) {
-      await executeGeneratedOperation(driver, CONNECT, {where: {id}, update: {
-        textLastEdited: editedAt,
-        PastVersions: {connect: [{where: {node: {id: versionId}}}]},
+      await executeGeneratedOperation(driver, CONNECT, {where: {id: {eq: id}}, update: {
+        textLastEdited: {set: editedAt},
+        PastVersions: [{connect: [{where: {node: {id: {eq: versionId}}}}]}],
       }});
     },
   };

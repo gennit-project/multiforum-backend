@@ -41,11 +41,11 @@ const outcome = async (call: () => Promise<unknown>) => call().then(value => ({ 
 for (const [method, selectionSet] of methods) {
   test(`${method}: arbitrary filters and default projection match production OGM`, async (t) => {
     await seed();
-    for (const where of [undefined, null, {}, { id: "missing" },
-      { OR: [{ id: "a" }, { title_CONTAINS: "Dog" }] },
-      { AND: [{ title_MATCHES: ".*guide" }, { NOT: { locked: false } }] },
-      { Channel: { uniqueName: "cats" } }, { OriginalAuthor: { username: "author" } },
-      { ChildPages_SOME: { id: "b" } }, { id_IN: ["a", "b"] },
+    for (const where of [undefined, null, {}, { id: { eq: "missing" } },
+      { OR: [{ id: { eq: "a" } }, { title: { contains: "Dog" } }] },
+      { AND: [{ title: { matches: ".*guide" } }, { NOT: { locked: { eq: false } } }] },
+      { Channel: { uniqueName: { eq: "cats" } } }, { OriginalAuthor: { username: { eq: "author" } } },
+      { ChildPages: { some: { id: { eq: "b" } } } }, { id: { in: ["a", "b"] } },
     ]) {
       const actual = await outcome(() => repository[method](where));
       assert.ok("value" in actual, JSON.stringify(actual));
@@ -68,7 +68,7 @@ for (const [method, selectionSet] of methods) {
     // snapshotting a non-deterministic subset.
     assert.equal(actual.length, 25);
     if (method === "findPermissionTargets") {
-      const roots = await repository.findPermissionTargets({ id: "1" });
+      const roots = await repository.findPermissionTargets({ id: { eq: "1" } });
       assert.equal(roots[0].ChildPages?.length, 25);
     }
   });
@@ -77,25 +77,25 @@ for (const [method, selectionSet] of methods) {
 test("owner selection does not introduce validation of unselected lock/author/child fields", async () => {
   await seed();
   await driver.executeQuery("MATCH (p:WikiPage {id:'a'}) SET p.locked = 'invalid'");
-  assert.deepEqual(plain(await repository.findChildCreationOwners({ id: "a" })), [{ Channel: { uniqueName: "cats" } }]);
-  await assert.rejects(repository.findPermissionTargets({ id: "a" }), /Boolean cannot represent a non boolean value/);
+  assert.deepEqual(plain(await repository.findChildCreationOwners({ id: { eq: "a" } })), [{ Channel: { uniqueName: "cats" } }]);
+  await assert.rejects(repository.findPermissionTargets({ id: { eq: "a" } }), /Boolean cannot represent a non boolean value/);
 });
 
 test("owner middleware remains fail closed for empty or multi-channel matches", async () => {
   await seed();
   const ctx = { driver } as GraphQLContext;
-  for (const where of [{ id: "missing" }, {}]) {
+  for (const where of [{ id: { eq: "missing" } }, {}]) {
     await assert.rejects(createOwnedChildWikiPages(async () => assert.fail("must not write"), null,
       { where, update: { ChildPages: { create: [{ node: {} }] } } }, ctx, {} as never), /one channel owner/);
   }
   const result = await createOwnedChildWikiPages(async (_parent, args) => args, null,
-    { where: { id: "a" }, update: { ChildPages: { create: [{ node: { title: "Child" } }] } } }, ctx, {} as never) as Record<string, any>;
+    { where: { id: { eq: "a" } }, update: { ChildPages: { create: [{ node: { title: "Child" } }] } } }, ctx, {} as never) as Record<string, any>;
   assert.equal(result.update.ChildPages.create[0].node.channelUniqueName, "cats");
 });
 
 test("missing mandatory Channel relation retains generated failure for both selections", async () => {
   await driver.executeQuery("CREATE (:WikiPage {id:'orphan'})");
   for (const [method] of methods) {
-    await assert.rejects(repository[method]({ id: "orphan" }), /Cannot return null for non-nullable field WikiPage\.Channel/);
+    await assert.rejects(repository[method]({ id: { eq: "orphan" } }), /Cannot return null for non-nullable field WikiPage\.Channel/);
   }
 });

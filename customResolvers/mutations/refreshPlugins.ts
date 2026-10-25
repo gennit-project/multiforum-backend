@@ -174,14 +174,14 @@ for (const registryPlugin of registryData.plugins) {
         pluginRecord = createResult.plugins[0]
       } else {
         await repository.updateRegistryPlugin(pluginRecord.id, ({
-            displayName: pluginUpdatePayload.displayName,
-            description: pluginUpdatePayload.description,
-            authorName: pluginUpdatePayload.authorName,
-            authorUrl: pluginUpdatePayload.authorUrl,
-            homepage: pluginUpdatePayload.homepage,
-            license: pluginUpdatePayload.license,
-            tags: pluginUpdatePayload.tags,
-            metadata: pluginUpdatePayload.metadata
+            displayName: { set: pluginUpdatePayload.displayName },
+            description: { set: pluginUpdatePayload.description },
+            authorName: { set: pluginUpdatePayload.authorName },
+            authorUrl: { set: pluginUpdatePayload.authorUrl },
+            homepage: { set: pluginUpdatePayload.homepage },
+            license: { set: pluginUpdatePayload.license },
+            tags: { set: pluginUpdatePayload.tags },
+            metadata: { set: pluginUpdatePayload.metadata }
           } as unknown as PluginUpdateInput))
       }
 
@@ -228,15 +228,15 @@ for (const registryPlugin of registryData.plugins) {
         )
 
         await repository.updateRegistryVersion(existingVersion.id, ({
-            tarballGsUri: registryVersion.tarballUrl,
-            integritySha256: registryVersion.integritySha256,
-            ...releaseMetadataPayload,
-            entryPath: artifacts.entryPath || 'index.js',
-            manifest: manifestJson,
-            settingsDefaults,
-            uiSchema,
-            documentationPath: artifacts.readmePath ?? null,
-            readmeMarkdown: artifacts.readmeMarkdown ?? null
+            tarballGsUri: { set: registryVersion.tarballUrl },
+            integritySha256: { set: registryVersion.integritySha256 },
+            ...Object.fromEntries(Object.entries(releaseMetadataPayload).map(([key, value]) => [key, { set: value }])),
+            entryPath: { set: artifacts.entryPath || 'index.js' },
+            manifest: { set: manifestJson },
+            settingsDefaults: { set: settingsDefaults },
+            uiSchema: { set: uiSchema },
+            documentationPath: { set: artifacts.readmePath ?? null },
+            readmeMarkdown: { set: artifacts.readmeMarkdown ?? null }
           } as unknown as PluginVersionUpdateInput), pluginRecord!.id)
       }
     } catch (error: unknown) {

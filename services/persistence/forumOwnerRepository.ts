@@ -19,19 +19,19 @@ const DISCONNECT_INVITE = `mutation DisconnectForumOwnerInvite($where: ChannelWh
 export function createForumOwnerRepository(driver: Driver): ForumOwnerRepository {
  return {
   async findPendingInvites(uniqueName) {
-   return (await executeGeneratedOperation<{channels:Array<{PendingOwnerInvites: Users}>}>(driver,PENDING_INVITES,{where:{uniqueName}})).channels;
+   return (await executeGeneratedOperation<{channels:Array<{PendingOwnerInvites: Users}>}>(driver,PENDING_INVITES,{where:{uniqueName:{eq:uniqueName}}})).channels;
   },
   async findAdmins(uniqueName) {
-   return (await executeGeneratedOperation<{channels:Array<{Admins: Users}>}>(driver,ADMINS,{where:{uniqueName}})).channels;
+   return (await executeGeneratedOperation<{channels:Array<{Admins: Users}>}>(driver,ADMINS,{where:{uniqueName:{eq:uniqueName}}})).channels;
   },
   async connectOwner(uniqueName,username) {
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,CONNECT_OWNER,{where:{uniqueName},update:{Admins:[{connect:[{where:{node:{username}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,CONNECT_OWNER,{where:{uniqueName:{eq:uniqueName}},update:{Admins:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;
   },
   async disconnectOwner(uniqueName,username) {
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,DISCONNECT_OWNER,{where:{uniqueName},update:{Admins:[{disconnect:[{where:{node:{username}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,DISCONNECT_OWNER,{where:{uniqueName:{eq:uniqueName}},update:{Admins:[{disconnect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;
   },
   async disconnectInvite(uniqueName,username) {
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,DISCONNECT_INVITE,{where:{uniqueName},update:{PendingOwnerInvites:[{disconnect:[{where:{node:{username}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,DISCONNECT_INVITE,{where:{uniqueName:{eq:uniqueName}},update:{PendingOwnerInvites:[{disconnect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;
   },
  };
 }

@@ -18,10 +18,10 @@ const DISCUSSION_REACTION = `mutation UpdateDiscussionChannelReaction($where: Di
 export function createReactionWriter(driver: Driver): ReactionWriter {
   return {
     async updateCommentEmoji(id, emoji) {
-      await executeGeneratedOperation(driver, COMMENT_REACTION, {where: {id}, update: {emoji}});
+      await executeGeneratedOperation(driver, COMMENT_REACTION, {where: {id: {eq: id}}, update: {emoji: {set: emoji}}});
     },
     async updateDiscussionChannelEmoji(id, emoji) {
-      await executeGeneratedOperation(driver, DISCUSSION_REACTION, {where: {id}, update: {emoji}});
+      await executeGeneratedOperation(driver, DISCUSSION_REACTION, {where: {id: {eq: id}}, update: {emoji: {set: emoji}}});
     },
   };
 }

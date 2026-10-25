@@ -66,10 +66,10 @@ test("notification reads return only the verified caller's rows", async () => {
   const result = await execute(
     `query {
       notifications { id text }
-      notificationsAggregate { count }
-      users(where: { username: "bob" }) {
+      notificationsConnection { aggregate { count { nodes } } }
+      users(where: { username: { eq: "bob" } }) {
         Notifications { id }
-        NotificationsAggregate { count }
+        NotificationsConnection { aggregate { count { nodes } } }
       }
     }`,
     "alice"
@@ -78,20 +78,20 @@ test("notification reads return only the verified caller's rows", async () => {
   assert.deepEqual(result.errors, undefined);
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
     notifications: [{ id: "alice-notification", text: "for alice" }],
-    notificationsAggregate: { count: 1 },
-    users: [{ Notifications: [], NotificationsAggregate: { count: 0 } }],
+    notificationsConnection: { aggregate: { count: { nodes: 1 } } },
+    users: [{ Notifications: [], NotificationsConnection: { aggregate: { count: { nodes: 0 } } } }],
   });
 });
 
 test("notification reads fail closed without a verified caller", async () => {
   const result = await execute(`query {
     notifications { id }
-    notificationsAggregate { count }
+    notificationsConnection { aggregate { count { nodes } } }
   }`);
 
   assert.deepEqual(result.errors, undefined);
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
     notifications: [],
-    notificationsAggregate: { count: 0 },
+    notificationsConnection: { aggregate: { count: { nodes: 0 } } },
   });
 });

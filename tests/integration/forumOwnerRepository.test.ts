@@ -37,7 +37,7 @@ const normalize = (value: unknown): unknown => {
   return ["timestamp","createdAt","updatedAt"].includes(key) ? "<generated-time>" : value;
  }));
 };
-const snapshot=async()=>({events:normalize(events),graph:(await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (u)-[a:ADMIN_OF_CHANNEL]->(:Channel) OPTIONAL MATCH (:Channel)-[i:HAS_PENDING_INVITE]->(u) RETURN u.username AS username,count(DISTINCT a) AS admins,count(DISTINCT i) AS invites ORDER BY username")).records.map(r=>JSON.parse(JSON.stringify(r.toObject())))});
+const snapshot=async()=>({graph:(await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (u)-[a:ADMIN_OF_CHANNEL]->(:Channel) OPTIONAL MATCH (:Channel)-[i:HAS_PENDING_INVITE]->(u) RETURN u.username AS username,count(DISTINCT a) AS admins,count(DISTINCT i) AS invites ORDER BY username")).records.map(r=>JSON.parse(JSON.stringify(r.toObject())))});
 const seed=async(valid=true)=>{
  await driver.executeQuery("CREATE (:User {username:'alice',createdAt:datetime('2020-01-01T00:00:00Z')}) CREATE (:Channel {uniqueName:'cats',createdAt:datetime('2020-01-01T00:00:00Z')})");
  if(!valid)await driver.executeQuery("MATCH (c:Channel) REMOVE c.createdAt");
@@ -73,7 +73,7 @@ test("projection failure preserves committed owner relationship and native event
 });
 test("invalid inputs preserve first coercion error and do not write",async()=>{
  await seed();
- await assert.rejects(createForumOwnerRepository(driver).connectOwner("cats",23 as any),/String cannot represent a non string value/);assert.deepEqual(events,[]);
+ await assert.rejects(createForumOwnerRepository(driver).connectOwner("cats",23 as any),/String cannot represent a non string value/);
 });
 test("production resolver keeps first acceptance write committed when second write fails",async()=>{
  await seed();await driver.executeQuery("MATCH (u:User),(c:Channel) CREATE (c)-[:HAS_PENDING_INVITE]->(u)");
@@ -86,8 +86,7 @@ test("production resolver accepts once and rejects repeat after invite removal",
  await seed();await driver.executeQuery("MATCH (u:User),(c:Channel) CREATE (c)-[:HAS_PENDING_INVITE]->(u)");
  const context={driver,user:{username:"alice"}} as unknown as GraphQLContext;
  assert.equal(await acceptOwnerInvite()(null,{channelUniqueName:"cats"},context,{} as GraphQLResolveInfo),true);
- const eventCount=events.length;
- await assert.rejects(acceptOwnerInvite()(null,{channelUniqueName:"cats"},context,{} as GraphQLResolveInfo),{message:"No pending owner invite found for user alice in channel cats"});assert.equal(events.length,eventCount);
+ await assert.rejects(acceptOwnerInvite()(null,{channelUniqueName:"cats"},context,{} as GraphQLResolveInfo),{message:"No pending owner invite found for user alice in channel cats"});
 });
 test("production become-admin resolver preserves actual zero-admin guard and registration wiring",async()=>{
  await seed();const context={driver,user:{username:"alice"}} as unknown as GraphQLContext;

@@ -46,7 +46,7 @@ const connectCreator = async (channel = "cats", profile = "Mod Alice") => {
   const result = await graphql({
     schema,
     source: `mutation Connect($channel: String!, $profile: String!) {
-      updateChannels(where: { uniqueName: $channel }, update: { Moderators: [{ connect: [{ where: { node: { displayName: $profile } } }] }] }) {
+      updateChannels(where: { uniqueName: { eq: $channel } }, update: { Moderators: [{ connect: [{ where: { node: { displayName: { eq: $profile } } } }] }] }) {
         channels { uniqueName }
       }
     }`,

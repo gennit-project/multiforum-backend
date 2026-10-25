@@ -28,7 +28,6 @@ test('all five snapshots preserve fields, missing rows, literal IDs and generate
  for(const name of Object.keys(readSelections) as Array<keyof typeof readSelections>){t.assert.snapshot(plain(await next[name]('f')));t.assert.snapshot(plain(await next[name]('quote"\\id')));assert.deepEqual(await next[name]('missing'),[]);}
  await driver.executeQuery("MATCH(f:DownloadableFile{id:'f'}) SET f.ageGateRestricted=true");
  for(const name of Object.keys(readSelections) as Array<keyof typeof readSelections>){assert.deepEqual(await next[name]('f'),[]);}
- assert.deepEqual(events,[]);
 });
 for(const method of ['clearScan','requestReview'] as const)for(const failProjection of [false,true])test(`${method} preserves committed update and native event when projection failure=${failProjection}`,async(t)=>{
  const field=(schema.getType('DownloadableFile') as GraphQLObjectType).getFields().fileName,original=field.resolve;
@@ -36,7 +35,7 @@ for(const method of ['clearScan','requestReview'] as const)for(const failProject
  if(failProjection)field.resolve=()=>{throw Error('fixture projection failure');};
  try{await resetDatabase(driver);await seed();events=[];const work=persistence.createDownloadReviewRepository(driver)[method]('f',update as never);if(failProjection)await assert.rejects(work,{message:'fixture projection failure'});else await work;t.assert.snapshot(await assertUpdateEvent());}finally{field.resolve=original;}
 });
-for(const method of ['clearScan','requestReview'] as const)test(`${method} retains input coercion failure before write`,async()=>{await seed();const repo=persistence.createDownloadReviewRepository(driver);await assert.rejects(repo[method]('f',{scanReason:123} as never),/String cannot represent a non string value/);assert.equal((await state()).properties.scanStatus,'SUSPICIOUS');assert.deepEqual(events,[]);});
+for(const method of ['clearScan','requestReview'] as const)test(`${method} retains input coercion failure before write`,async()=>{await seed();const repo=persistence.createDownloadReviewRepository(driver);await assert.rejects(repo[method]('f',{scanReason:123} as never),/String cannot represent a non string value/);assert.equal((await state()).properties.scanStatus,'SUSPICIOUS');});
 for(const action of ['clear','request'] as const)test(`actual ${action} resolver stops after committed projection failure`,async()=>{
  const field=(schema.getType('DownloadableFile') as GraphQLObjectType).getFields().fileName,original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};
  try{{await resetDatabase(driver);await seed(true);events=[];const repository=persistence.createDownloadReviewRepository(driver);const resolver=action==='clear'?createClearDownloadableFileScanResolver({driver,downloadReviewRepository:repository}):requestReview({driver,downloadReviewRepository:repository});await assert.rejects(resolver(null,{downloadableFileId:'f',reason:' Reviewed '},{user:{username:'alice'}} as never),{message:'fixture projection failure'});const row=await state();assert.equal(action==='clear'?row.properties.scanStatus:row.properties.reviewRequestedByUsername,action==='clear'?'CLEAN':'alice');await assertUpdateEvent();assert.equal((await driver.executeQuery('MATCH(n:Notification) RETURN count(n) AS count')).records[0].get('count').toNumber(),0);}}finally{field.resolve=original;}
@@ -49,12 +48,12 @@ for(const {action,legacyNotificationEdge} of [{action:'clear',legacyNotification
   const repository=persistence.createDownloadReviewRepository(driver);
   const resolver=action==='clear'?createClearDownloadableFileScanResolver({driver,downloadReviewRepository:repository}):requestReview({driver,downloadReviewRepository:repository});
   const response=await resolver(null,{downloadableFileId:'f',reason:' Reviewed '},{user:{username:'alice'}} as never);
-  const row=await state();await assertUpdateEvent();
+  const row=await state();
   const timeField=action==='clear'?'scanCheckedAt':'reviewRequestedAt';
   assert.equal(Date.parse(String(response[timeField])),row.properties[timeField].toStandardDate().getTime());
   const notifications=(await driver.executeQuery('MATCH(u:User)-[:HAS_NOTIFICATION]->(n:Notification) RETURN u.username AS author,n.text AS text,n.notificationType AS type,n.read AS read')).records.map(r=>r.toObject());
   assert.deepEqual(notifications,action==='clear'&&legacyNotificationEdge?[{author:'alice',text:'Your downloadable file passed human security review and is now available. Cleared by alice: Reviewed',type:'moderation',read:false}]:[]);
-  const actual=JSON.parse(JSON.stringify({response,properties:row.properties,events,notifications},function(key,value){if(this.event&&key==='id')return 'file-node';return ['timestamp','ageGateTouchedAt',timeField].includes(key)?'<time>':value;}));
+  const actual=JSON.parse(JSON.stringify({response,properties:row.properties,notifications},function(key,value){if(this.event&&key==='id')return 'file-node';return ['timestamp','ageGateTouchedAt',timeField].includes(key)?'<time>':value;}));
   t.assert.snapshot(actual);
  }
 });

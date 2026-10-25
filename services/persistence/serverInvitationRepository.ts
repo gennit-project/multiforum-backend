@@ -14,13 +14,13 @@ const MODERATOR_INVITE=`mutation InviteServerModerator($where: ServerConfigWhere
 export function createServerInvitationRepository(driver:Driver):ServerInvitationRepository {
  return {
   async findInvitee(username){
-   return (await executeGeneratedOperation<{users:Array<{username:string}>}>(driver,INVITEE,{where:{username}})).users;
+   return (await executeGeneratedOperation<{users:Array<{username:string}>}>(driver,INVITEE,{where:{username:{eq:username}}})).users;
   },
   async connectAdminInvite(serverName,username){
-   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,ADMIN_INVITE,{where:{serverName},update:{PendingAdminInvites:[{connect:[{where:{node:{username}}}]}]}})).updateServerConfigs;
+   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,ADMIN_INVITE,{where:{serverName:{eq:serverName}},update:{PendingAdminInvites:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateServerConfigs;
   },
   async connectModeratorInvite(serverName,username){
-   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,MODERATOR_INVITE,{where:{serverName},update:{PendingModInvites:[{connect:[{where:{node:{username}}}]}]}})).updateServerConfigs;
+   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServers}>(driver,MODERATOR_INVITE,{where:{serverName:{eq:serverName}},update:{PendingModInvites:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateServerConfigs;
   },
  };
 }

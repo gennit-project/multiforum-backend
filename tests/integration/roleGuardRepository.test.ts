@@ -51,10 +51,10 @@ async function seedRoles(): Promise<void> {
 test("role owner filters preserve nested relations, OR/NOT, omitted filters and exact admin snapshots", async (t) => {
   await seedRoles();
   const repository = createRoleGuardRepository(driver);
-  for (const where of [undefined, {}, { OR: [{ name_CONTAINS: "Read" }, { name: "Writer" }] }, { Owner: { uniqueName: "cats" }, NOT: { name: "missing" } }, { name: "absent" }]) {
+  for (const where of [undefined, {}, { OR: [{ name: { contains: "Read" } }, { name: { eq: "Writer" } }] }, { Owner: { uniqueName: { eq: "cats" } }, NOT: { name: { eq: "missing" } } }, { name: { eq: "absent" } }]) {
     t.assert.snapshot(plain(await repository.findChannelRoleOwners(where)));
   }
-  for (const where of [undefined, { OR: [{ channelUniqueName: "cats" }, { Owner: { uniqueName: "dogs" } }] }, { name: "absent" }]) {
+  for (const where of [undefined, { OR: [{ channelUniqueName: { eq: "cats" } }, { Owner: { uniqueName: { eq: "dogs" } } }] }, { name: { eq: "absent" } }]) {
     t.assert.snapshot(plain(await repository.findModChannelRoleOwners(where)));
   }
   for (const uniqueName of ["cats", "dogs", "missing"]) {
@@ -65,20 +65,20 @@ test("role owner filters preserve nested relations, OR/NOT, omitted filters and 
 test("server capability filters retain every guarded flag and nullable values", async (t) => {
   await seedRoles();
   const repository = createRoleGuardRepository(driver);
-  for (const where of [{ OR: [{ name: "low" }, { canManageAdmins: true }] }, { name: "missing" }]) {
+  for (const where of [{ OR: [{ name: { eq: "low" } }, { canManageAdmins: { eq: true } }] }, { name: { eq: "missing" } }]) {
     t.assert.snapshot(plain(await repository.findServerRoleCapabilities(where)));
   }
-  for (const where of [{ NOT: { name: "missing" } }, { canRemoveDiscussionChannel: true }]) {
+  for (const where of [{ NOT: { name: { eq: "missing" } } }, { canRemoveDiscussionChannel: { eq: true } }]) {
     t.assert.snapshot(plain(await repository.findModServerRoleCapabilities(where)));
   }
 });
 
 test("invalid filters and corrupt owners retain OGM's first failure instead of granting access", async () => {
   const repository = createRoleGuardRepository(driver);
-  const where = { name: 42, unknownFilter: true };
+  const where = { name: { eq: 42 }, unknownFilter: true };
   await assert.rejects(repository.findChannelRoleOwners(where), /String cannot represent a non string value/);
   await driver.executeQuery("CREATE (:ChannelRole {id: 'orphan', name: 'Orphan', channelUniqueName: 'cats'})");
-  await assert.rejects(repository.findChannelRoleOwners({ id: "orphan" }), /Cannot return null for non-nullable field ChannelRole\.Owner/);
+  await assert.rejects(repository.findChannelRoleOwners({ id: { eq: "orphan" } }), /Cannot return null for non-nullable field ChannelRole\.Owner/);
 });
 
 test("relationship middleware scopes arbitrary filters and rejects mismatched owners before resolving", async () => {

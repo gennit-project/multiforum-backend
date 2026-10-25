@@ -155,12 +155,12 @@ export function createPluginInstallRepository(driver: Driver): PluginInstallRepo
     },
     async findInstallPlugin(pluginId) {
       const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,
-        `query Install_findInstallPlugin($where: PluginWhere) { plugins(where: $where) ${FINDINSTALLPLUGIN_SELECTION} }`, {where:{OR:[{id:pluginId},{name:pluginId}]}});
+        `query Install_findInstallPlugin($where: PluginWhere) { plugins(where: $where) ${FINDINSTALLPLUGIN_SELECTION} }`, {where:{OR:[{id:{eq:pluginId}},{name:{eq:pluginId}}]}});
       return result.plugins;
     },
     async findInstallVersion(version, name) {
       const result = await executeGeneratedOperation<{pluginVersions:PluginVersion[]}>(driver,
-        `query Install_findInstallVersion($where: PluginVersionWhere) { pluginVersions(where: $where) ${FINDINSTALLVERSION_SELECTION} }`, {where:{AND:[{version},{Plugin:{name}}]}});
+        `query Install_findInstallVersion($where: PluginVersionWhere) { pluginVersions(where: $where) ${FINDINSTALLVERSION_SELECTION} }`, {where:{AND:[{version:{eq:version}},{Plugin:{name:{eq:name}}}]}});
       return result.pluginVersions;
     },
     async createInstallPlugin(input) {
@@ -170,7 +170,7 @@ export function createPluginInstallRepository(driver: Driver): PluginInstallRepo
     },
     async updateInstallPlugin(id, update) {
       await executeGeneratedOperation(driver,
-        `mutation Install_updateInstallPlugin($where: PluginWhere, $update: PluginUpdateInput) { updatePlugins(where: $where, update: $update) ${UPDATEINSTALLPLUGIN_SELECTION} }`, {where:{id},update});
+        `mutation Install_updateInstallPlugin($where: PluginWhere, $update: PluginUpdateInput) { updatePlugins(where: $where, update: $update) ${UPDATEINSTALLPLUGIN_SELECTION} }`, {where:{id:{eq:id}},update});
     },
     async createInstallVersion(input) {
       const result = await executeGeneratedOperation<{createPluginVersions:{pluginVersions:PluginVersion[]}}>(driver,
@@ -179,16 +179,16 @@ export function createPluginInstallRepository(driver: Driver): PluginInstallRepo
     },
     async updateInstallVersion(id, update, pluginId) {
       await executeGeneratedOperation(driver,
-        `mutation Install_updateInstallVersion($where: PluginVersionWhere, $update: PluginVersionUpdateInput, $connect: PluginVersionConnectInput) { updatePluginVersions(where: $where, update: $update, connect: $connect) ${UPDATEINSTALLVERSION_SELECTION} }`, {where:{id},update,connect:{Plugin:{where:{node:{id:pluginId}}}}});
+        `mutation Install_updateInstallVersion($where: PluginVersionWhere, $update: PluginVersionUpdateInput, $connect: PluginVersionConnectInput) { updatePluginVersions(where: $where, update: $update, connect: $connect) ${UPDATEINSTALLVERSION_SELECTION} }`, {where:{id:{eq:id}},update,connect:{Plugin:{where:{node:{id:pluginId}}}}});
     },
     async findInstalledVersions(serverName) {
       const result = await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,
-        `query Install_findInstalledVersions($where: ServerConfigWhere) { serverConfigs(where: $where) ${FINDINSTALLEDVERSIONS_SELECTION} }`, {where:{serverName}});
+        `query Install_findInstalledVersions($where: ServerConfigWhere) { serverConfigs(where: $where) ${FINDINSTALLEDVERSIONS_SELECTION} }`, {where:{serverName:{eq:serverName}}});
       return result.serverConfigs;
     },
     async connectInstallation(serverName, id, settingsJson) {
       await executeGeneratedOperation(driver,
-        `mutation Install_connectInstallation($where: ServerConfigWhere, $connect: ServerConfigConnectInput) { updateServerConfigs(where: $where, connect: $connect) ${CONNECTINSTALLATION_SELECTION} }`, {where:{serverName},connect:{InstalledVersions:[{where:{node:{id}},edge:{enabled:false,settingsJson}}]}});
+        `mutation Install_connectInstallation($where: ServerConfigWhere, $connect: ServerConfigConnectInput) { updateServerConfigs(where: $where, connect: $connect) ${CONNECTINSTALLATION_SELECTION} }`, {where:{serverName:{eq:serverName}},connect:{InstalledVersions:[{where:{node:{id:{eq:id}}},edge:{enabled:false,settingsJson}}]}});
     },
   };
 }

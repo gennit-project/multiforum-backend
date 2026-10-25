@@ -117,7 +117,7 @@ test("a reply created under unmarked content stays clear", async () => {
 
 test("marking a discussion sensitive restricts everything beneath it", async () => {
   await mutate(`mutation {
-    updateDiscussions(where: { id: "od" }, update: { hasSensitiveContent: true }) { discussions { id } }
+    updateDiscussions(where: { id: { eq: "od" } }, update: { hasSensitiveContent: { set: true } }) { discussions { id } }
   }`);
 
   assert.deepEqual(await restricted(), ["o-reply", "o-root", "odc", "s-root", "sdc"]);
@@ -125,7 +125,7 @@ test("marking a discussion sensitive restricts everything beneath it", async () 
 
 test("unmarking a discussion clears everything beneath it", async () => {
   await mutate(`mutation {
-    updateDiscussions(where: { id: "sd" }, update: { hasSensitiveContent: false }) { discussions { id } }
+    updateDiscussions(where: { id: { eq: "sd" } }, update: { hasSensitiveContent: { set: false } }) { discussions { id } }
   }`);
 
   assert.deepEqual(await restricted(), []);
@@ -140,7 +140,7 @@ test("marking an image sensitive restricts issues about it", async () => {
   }
 
   await mutate(`mutation {
-    updateImages(where: { id: "img" }, update: { hasSensitiveContent: true }) { images { id } }
+    updateImages(where: { id: { eq: "img" } }, update: { hasSensitiveContent: { set: true } }) { images { id } }
   }`);
 
   assert.ok((await restricted()).includes("issue"));

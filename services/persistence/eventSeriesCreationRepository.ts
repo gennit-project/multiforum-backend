@@ -72,7 +72,7 @@ export function createEventSeriesCreationRepository(driver: Driver): EventSeries
     },
     async findCreatedSeries(id) {
       const result = await executeGeneratedOperation<{eventSeries: EventSeries[]}>(driver,
-        `query SeriesAfterCustomCreate($where: EventSeriesWhere) {eventSeries(where: $where) ${CREATED_EVENT_SERIES_SELECTION}}`, {where: {id}});
+        `query SeriesAfterCustomCreate($where: EventSeriesWhere) {eventSeries(where: $where) ${CREATED_EVENT_SERIES_SELECTION}}`, {where: {id: {eq: id}}});
       return result.eventSeries;
     },
   };

@@ -23,14 +23,14 @@ before(async()=>{
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});
 const normalize=(value:unknown):unknown=>JSON.parse(JSON.stringify(value,(key,value)=>["id","timestamp","createdAt","updatedAt"].includes(key)?`<${key}>`:value));
-const state=async()=>({rows:normalize((await driver.executeQuery("MATCH (s:ServerSecret) RETURN properties(s) AS secret ORDER BY s.key")).records.map(r=>r.get("secret"))),events:normalize(events)});
+const state=async()=>({rows:normalize((await driver.executeQuery("MATCH (s:ServerSecret) RETURN properties(s) AS secret ORDER BY s.key")).records.map(r=>r.get("secret")))});
 const seed=async(valid=true)=>driver.executeQuery(`CREATE (s:ServerSecret {id:'secret',pluginId:'scanner',key:'OLD',ciphertext:'synthetic-ciphertext',isValid:true,lastValidatedAt:datetime('2026-01-01T00:00:00Z'),validationError:'previous',updatedAt:datetime('2026-01-01T00:00:00Z'),createdAt:datetime('2026-01-01T00:00:00Z')}) ${valid?'':'REMOVE s.createdAt'}`);
 
 test("replacement and creation retain generated defaults, validation reset and native events",async(t)=>{
   const repo=createServerSecretRepository(driver);
   await seed();t.assert.snapshot(await repo.findForReplacement("scanner","OLD"));
   await resetDatabase(driver);await seed();events=[];await repo.replaceCiphertext("secret","new-synthetic");t.assert.snapshot(await state());
-  await resetDatabase(driver);events=[];await repo.createEncryptedSecret("scanner","NEW","synthetic","2026-01-02T00:00:00Z");t.assert.snapshot(await state());assert.ok(events.length>0);
+  await resetDatabase(driver);events=[];await repo.createEncryptedSecret("scanner","NEW","synthetic","2026-01-02T00:00:00Z");t.assert.snapshot(await state());
 });
 test("rename preserves ciphertext and native update events; postcommit projection failures remain errors",async(t)=>{
   const repo=createServerSecretRepository(driver);await seed();

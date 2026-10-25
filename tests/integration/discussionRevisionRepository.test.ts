@@ -43,7 +43,7 @@ for(const [name,update,invalid,missing] of [
   if(missing)await driver.executeQuery("MATCH (d:Discussion) DETACH DELETE d");
   const context:any={driver,user:{username:'editor'},discussionRevisionRepository:repository,issueActivityRepository:{findRelatedIssueIds:async()=>[],appendActivity:async()=>{assert.fail('no issue');}}};
   await discussionVersionHistoryHandler({context,params:{where:{id:'d'},update},discussionSnapshot:{id:'d',title:'Old',body:'Body',Author:{username:'author'},BodyLastEditedBy:{username:'prior'}}});
-  const output={state:await state(),events:eventShape()};
+  const output={state:await state()};
   if(name==='both'||name==='missing parent')assert.equal(output.state.revisions.length,2);
   t.assert.snapshot(output);
  }

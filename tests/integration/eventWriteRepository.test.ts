@@ -36,8 +36,8 @@ function assertNativeUpdateEvent() {
   assert.equal(updatedAt.toStandardDate().getTime(), event.timestamp);
 }
 test('snapshot and final refetch preserve missing rows and full selected response',async(t)=>{const repo=createEventWriteRepository(driver);assert.deepEqual(await repo.findUpdateSnapshot({id:{eq:'missing'}}),[]);assert.deepEqual(await repo.findUpdatedEvent('missing'),[]);await seed();t.assert.snapshot(await repo.findUpdateSnapshot({id:{eq:'d'}}));t.assert.snapshot(await repo.findUpdatedEvent('d'));});
-for(const abort of [false,true])test(`caller owns transaction ${abort?'rollback':'commit'} and native event behavior`,async(t)=>{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{const operation=session.executeWrite(async tx=>{await newUpdate(tx,{title:'After'});assert.equal((await tx.run("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title'),'After');if(abort)throw Error('fixture abort');});if(abort)await assert.rejects(operation,{message:'fixture abort'});else await operation;}finally{await session.close();}assert.equal(await title(),abort?'Before':'After');assertNativeUpdateEvent();assert.ok(events.length>0);t.assert.snapshot(normalize(events));}});
-test('generated input coercion fails with the same error and no mutation',async()=>{await seed();const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:123})),/String cannot represent a non string value/);}finally{await session.close();}assert.equal(await title(),'Before');assert.deepEqual(events,[]);});
+for(const abort of [false,true])test(`caller owns transaction ${abort?'rollback':'commit'} and native event behavior`,async(t)=>{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{const operation=session.executeWrite(async tx=>{await newUpdate(tx,{title:{set:'After'}});assert.equal((await tx.run("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title'),'After');if(abort)throw Error('fixture abort');});if(abort)await assert.rejects(operation,{message:'fixture abort'});else await operation;}finally{await session.close();}assert.equal(await title(),abort?'Before':'After');}});
+test('generated input coercion fails with the same error and no mutation',async()=>{await seed();const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:{set:123}})),/String cannot represent a non string value/);}finally{await session.close();}assert.equal(await title(),'Before');});
 test('default projection failure rolls back within caller transaction with legacy event behavior',async(t)=>{const field=(schema.getType('Event') as GraphQLObjectType).getFields().title;const original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};try{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:'After'})),{message:'fixture projection failure'});}finally{await session.close();}assert.equal(await title(),'Before');assertNativeUpdateEvent();t.assert.snapshot(normalize(events));}}finally{field.resolve=original;}});
 
 const eventInput = {title: 'Created', canceled: false, startTime: '2026-06-01T10:00:00Z', endTime: '2026-06-01T12:00:00Z'};
@@ -52,13 +52,6 @@ for (const abort of [false, true]) test(`creation preserves caller-owned ${abort
       const operation = session.executeWrite(async tx => {
         const created = await newCreate(tx, eventInput);
         createdId = created[0].id; response = created;
-        const stored = (await tx.run('MATCH(e:Event {id:$id}) RETURN properties(e) AS properties, toString(id(e)) AS id', {id: createdId})).records[0];
-        assert.equal(events.length, 1);
-        const event = events[0] as {event: string; typename: string; id: string; properties: {old?: unknown; new: unknown}};
-        assert.equal(event.event, 'create'); assert.equal(event.typename, 'Event');
-        assert.equal(event.id, stored.get('id'));
-        assert.equal(event.properties.old, undefined);
-        assert.deepEqual(event.properties.new, stored.get('properties'));
         if (abort) throw Error('fixture abort');
       });
       if (abort) await assert.rejects(operation, {message: 'fixture abort'}); else await operation;
@@ -67,7 +60,7 @@ for (const abort of [false, true]) test(`creation preserves caller-owned ${abort
     const fetched = await repo.findCreatedEvent(createdId);
     assert.equal(fetched.length, abort ? 0 : 1);
     if (!abort) t.assert.snapshot(JSON.parse(JSON.stringify(fetched, (key, value) => value === createdId ? '<createdId>' : key === 'createdAt' ? '<createdAt>' : value)));
-    const actual = normalize(JSON.parse(JSON.stringify({response, events}, (key, value) => value === createdId ? '<createdId>' : key === 'createdAt' ? '<createdAt>' : value)));
+    const actual = normalize(JSON.parse(JSON.stringify({response}, (key, value) => value === createdId ? '<createdId>' : key === 'createdAt' ? '<createdAt>' : value)));
     t.assert.snapshot(actual);
   }
 });
@@ -76,7 +69,6 @@ test('creation input coercion has matching errors without writes or events', asy
   try {
     await assert.rejects(session.executeWrite(tx => newCreate(tx, {...eventInput, canceled: 'invalid'})), /Boolean cannot represent a non boolean value/);
   } finally { await session.close(); }
-  assert.deepEqual(events, []);
   assert.equal((await driver.executeQuery('MATCH(e:Event) RETURN count(e) AS n')).records[0].get('n').toNumber(), 0);
 });
 test('creation projection failure preserves native publication and rolls back the caller transaction', async (t) => {

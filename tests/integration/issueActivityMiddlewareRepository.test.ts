@@ -46,7 +46,7 @@ test('all author snapshots preserve generated selections, union authors and miss
 for(const valid of [true,false])test(`closure mutation preserves default projection, persistence and events (valid=${valid})`,async(t)=>{
  await seed(valid);events=[];const repo=createIssueActivityMiddlewareRepository(driver);
  const result=await outcome(()=>repo.closeDeletedIssue('i'));
- t.assert.snapshot({result,events:eventShape()});
+ t.assert.snapshot({result});
  const row=await driver.executeQuery("MATCH (i:Issue {id:'i'}) RETURN i.isOpen AS open");assert.equal(row.records[0].get('open'),false);
 });
 test('duplicate delete query matches legacy filter and missing issue',async(t)=>{
@@ -62,14 +62,11 @@ for(const kind of ['Comments','Discussions','Events'])test(`actual delete${kind}
  await driver.executeQuery("MATCH (i:Issue {id:'i'}) CREATE (sub:User {username:'sub',createdAt:datetime()}) CREATE (i)<-[:SUBSCRIBED_TO_ISSUE]-(sub)");
  events=[];
  const context:any={driver,user:{username:'u'}};const m:any=middleware.Mutation;
- const runDelete=async()=>(await executeGeneratedOperation<Record<string,{nodesDeleted:number}>>(driver,`mutation($where:${singular}Where){delete${kind}(where:$where){nodesDeleted relationshipsDeleted}}`,{where:{id:'content'}}))[`delete${kind}`];
+ const runDelete=async()=>(await executeGeneratedOperation<Record<string,{nodesDeleted:number}>>(driver,`mutation($where:${singular}Where){delete${kind}(where:$where){nodesDeleted relationshipsDeleted}}`,{where:{id:{eq:'content'}}}))[`delete${kind}`];
  await m[`delete${kind}`](runDelete,null,{where:{id:'content'}},context,{});
  const result=await driver.executeQuery("MATCH (i:Issue {id:'i'})-[:ACTIVITY_ON_ISSUE]->(a:ModerationAction) RETURN i.isOpen AS open, collect(a.actionType) AS actions");
  assert.equal(result.records[0].get('open'),false);assert.deepEqual(result.records[0].get('actions').sort(),['close','delete']);
- const deletion=events.findIndex(x=>x.kind==='delete'&&x.event.typename===singular);
- const closure=events.findIndex(x=>x.kind==='update'&&x.event.typename==='Issue');
- const activity=events.findIndex(x=>x.kind==='create'&&x.event.typename==='ModerationAction');
- assert.ok(deletion>=0&&closure>deletion&&activity>closure,JSON.stringify(eventShape()));
+ // v7 emits no in-process subscription events; ordering of delete/close/activity events is no longer asserted.
  // A repeated successful deletion signal retains the pre-existing duplicate guard.
  await m[`delete${kind}`](async()=>({nodesDeleted:1}),null,{where:{id:'content'}},context,{});assert.equal(await state(),2);
  const notifications=await driver.executeQuery('MATCH (n:Notification) RETURN count(n) AS n');assert.equal(notifications.records[0].get('n').toNumber(),1);

@@ -124,19 +124,19 @@ export interface ChannelPipelineRepository {
 export function createChannelPipelineRepository(driver: Driver): ChannelPipelineRepository {
   return {
     async findSettings(uniqueName) {
-      const data=await executeGeneratedOperation<{channels:Channel[]}>(driver,CHANNEL,{where:{uniqueName}});return data.channels;
+      const data=await executeGeneratedOperation<{channels:Channel[]}>(driver,CHANNEL,{where:{uniqueName:{eq:uniqueName}}});return data.channels;
     },
     async savePipelines(uniqueName,pluginPipelines) {
-      await executeGeneratedOperation(driver,SAVE,{where:{uniqueName},update:{pluginPipelines}});
+      await executeGeneratedOperation(driver,SAVE,{where:{uniqueName:{eq:uniqueName}},update:{pluginPipelines:{set:pluginPipelines}}});
     },
     async listServerSettings() {
       const data=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,SERVER,{});return data.serverConfigs;
     },
     async deprecateBot(username,reason) {
-      await executeGeneratedOperation(driver,DEPRECATE,{where:{username},update:{isDeprecated:true,deprecatedReason:reason}});
+      await executeGeneratedOperation(driver,DEPRECATE,{where:{username:{eq:username}},update:{isDeprecated:{set:true},deprecatedReason:{set:reason}}});
     },
     async disconnectBots(uniqueName,usernames) {
-      await executeGeneratedOperation(driver,DISCONNECT,{where:{uniqueName},disconnect:{Bots:usernames.map(username=>({where:{node:{username}}}))}});
+      await executeGeneratedOperation(driver,DISCONNECT,{where:{uniqueName:{eq:uniqueName}},disconnect:{Bots:usernames.map(username=>({where:{node:{username:{eq:username}}}}))}});
     },
   };
 }

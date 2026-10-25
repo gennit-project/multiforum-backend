@@ -48,6 +48,6 @@ export interface DiscussionCreationRepository {
 }
 export function createDiscussionCreationRepository(driver:Driver):DiscussionCreationRepository{return{
  async createDiscussion(input){const r=await executeGeneratedOperation<{createDiscussions:{discussions:Discussion[]}}>(driver,`mutation CreateDiscussionForChannels($input:[DiscussionCreateInput!]!){createDiscussions(input:$input){discussions${DISCUSSION_CREATE_SELECTION}}}`,{input:[input]});return r.createDiscussions;},
- async findAttachedFiles(id){const r=await executeGeneratedOperation<{discussions:Array<{id:string;DownloadableFiles:Array<{id:string}>}>}>(driver,`query CreatedDiscussionFiles($where:DiscussionWhere){discussions(where:$where){id DownloadableFiles{id}}}`,{where:{id}});return r.discussions;},
- async findCreatedDiscussion(id){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query CreatedDiscussionWithChannels($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_CREATE_SELECTION}}`,{where:{id}});return r.discussions;},
+ async findAttachedFiles(id){const r=await executeGeneratedOperation<{discussions:Array<{id:string;DownloadableFiles:Array<{id:string}>}>}>(driver,`query CreatedDiscussionFiles($where:DiscussionWhere){discussions(where:$where){id DownloadableFiles{id}}}`,{where:{id:{eq:id}}});return r.discussions;},
+ async findCreatedDiscussion(id){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query CreatedDiscussionWithChannels($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_CREATE_SELECTION}}`,{where:{id:{eq:id}}});return r.discussions;},
 };}

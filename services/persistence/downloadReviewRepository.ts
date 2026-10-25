@@ -74,37 +74,37 @@ export function createDownloadReviewRepository(driver: Driver): DownloadReviewRe
   return {
     async findPreparation(id) {
       const result = await executeGeneratedOperation<{ downloadableFiles: DownloadableFile[] }>(driver,
-        `query DownloadReview_findPreparation($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDPREPARATION_SELECTION} }`, { where: { id } });
+        `query DownloadReview_findPreparation($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDPREPARATION_SELECTION} }`, { where: { id: { eq: id } } });
       return result.downloadableFiles;
     },
     async findReleaseStatus(id) {
       const result = await executeGeneratedOperation<{ downloadableFiles: DownloadableFile[] }>(driver,
-        `query DownloadReview_findReleaseStatus($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDRELEASESTATUS_SELECTION} }`, { where: { id } });
+        `query DownloadReview_findReleaseStatus($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDRELEASESTATUS_SELECTION} }`, { where: { id: { eq: id } } });
       return result.downloadableFiles;
     },
     async clearScan(id, update) {
       await executeGeneratedOperation(driver,
         `mutation DownloadReview_clearScan($where: DownloadableFileWhere, $update: DownloadableFileUpdateInput) { updateDownloadableFiles(where: $where, update: $update) { downloadableFiles ${DOWNLOAD_REVIEW_DEFAULT_SELECTION} } }`,
-        { where: { id }, update });
+        { where: { id: { eq: id } }, update });
     },
     async findCleared(id) {
       const result = await executeGeneratedOperation<{ downloadableFiles: DownloadableFile[] }>(driver,
-        `query DownloadReview_findCleared($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDCLEARED_SELECTION} }`, { where: { id } });
+        `query DownloadReview_findCleared($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDCLEARED_SELECTION} }`, { where: { id: { eq: id } } });
       return result.downloadableFiles;
     },
     async findReviewAuthority(id) {
       const result = await executeGeneratedOperation<{ downloadableFiles: DownloadableFile[] }>(driver,
-        `query DownloadReview_findReviewAuthority($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDREVIEWAUTHORITY_SELECTION} }`, { where: { id } });
+        `query DownloadReview_findReviewAuthority($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDREVIEWAUTHORITY_SELECTION} }`, { where: { id: { eq: id } } });
       return result.downloadableFiles;
     },
     async requestReview(id, update) {
       await executeGeneratedOperation(driver,
         `mutation DownloadReview_requestReview($where: DownloadableFileWhere, $update: DownloadableFileUpdateInput) { updateDownloadableFiles(where: $where, update: $update) { downloadableFiles ${DOWNLOAD_REVIEW_DEFAULT_SELECTION} } }`,
-        { where: { id }, update });
+        { where: { id: { eq: id } }, update });
     },
     async findRequested(id) {
       const result = await executeGeneratedOperation<{ downloadableFiles: DownloadableFile[] }>(driver,
-        `query DownloadReview_findRequested($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDREQUESTED_SELECTION} }`, { where: { id } });
+        `query DownloadReview_findRequested($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${FINDREQUESTED_SELECTION} }`, { where: { id: { eq: id } } });
       return result.downloadableFiles;
     },
   };

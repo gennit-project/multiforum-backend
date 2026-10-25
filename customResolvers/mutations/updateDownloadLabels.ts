@@ -148,7 +148,7 @@ const getResolver = (input: Input) => {
     if (labelsToConnect.length > 0) {
       updateInput.LabelOptions.push({
         connect: labelsToConnect.map((id: string) => ({
-          where: { node: { id } },
+          where: { node: { id: { eq: id } } },
         })),
       });
     }
@@ -156,7 +156,7 @@ const getResolver = (input: Input) => {
     if (labelsToDisconnect.length > 0) {
       updateInput.LabelOptions.push({
         disconnect: labelsToDisconnect.map((id: string) => ({
-          where: { node: { id } },
+          where: { node: { id: { eq: id } } },
         })),
       });
     }

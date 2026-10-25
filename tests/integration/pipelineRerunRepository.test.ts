@@ -25,7 +25,7 @@ test('rerun reads preserve selections, literal IDs, missing results and unbounde
  for(const id of ['source','missing','quote"\\id'])t.assert.snapshot(await repo.findSourceAttempt(id));
  for(const id of ['file','missing'])t.assert.snapshot(await repo.findFileVersion(id));
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{pipelineId:toString(n),targetId:'other',targetType:'DownloadableFile',status:'FAILED',trigger:'OWNER_RETRY',createdAt:datetime('2026-01-01T10:00:00Z')})`);
- const where={targetId:{eq:'other'},targetType:{eq:'DownloadableFile'}};t.assert.snapshot(await repo.findRelatedAttempts(where));assert.equal((await repo.findRelatedAttempts(where)).length,29);assert.equal(events.length,0);
+ const where={targetId:{eq:'other'},targetType:{eq:'DownloadableFile'}};t.assert.snapshot(await repo.findRelatedAttempts(where));assert.equal((await repo.findRelatedAttempts(where)).length,29);
 });
 test('discussion version query preserves the existing singular-selection error',async()=>{await assert.rejects(createPipelineRerunRepository(driver).findDiscussionVersion('discussion'),/Cannot query field "DownloadableFile"/);});
 for(const scenario of ['missing','status','changed','latest','cooldown','limit'] as const)test(`actual rerun preserves ${scenario} rejection without runner calls`,async()=>{
@@ -36,7 +36,7 @@ for(const scenario of ['missing','status','changed','latest','cooldown','limit']
   if(scenario==='limit'){await driver.executeQuery("MATCH(p:PluginPipelineRun) DELETE p");for(const [id,time] of [['older1','11:10'],['older2','11:20'],['source','11:30']])await attempt(id,'FAILED','OWNER_RETRY',`2026-01-01T${time}:00Z`);}
   expected={missing:/not found/,status:/Only failed/,changed:/file has changed/,latest:/Only the latest/,cooldown:/at least one minute/,limit:/retry limit/}[scenario];
   let calls=0;const runner=async()=>{calls++;return [];};const resolver=createRerunPluginPipelineResolver({rerunRepository:createPipelineRerunRepository(driver)},async()=>false,runner,runner,()=>now);
-  await assert.rejects(resolver(null,{pipelineRunId:'source'},{driver,user:{username:'owner'}} as GraphQLContext),expected);assert.equal(calls,0);assert.equal(events.length,0);
+  await assert.rejects(resolver(null,{pipelineRunId:'source'},{driver,user:{username:'owner'}} as GraphQLContext),expected);assert.equal(calls,0);
  }
 });
 test('actual rerun forwards owner retry metadata through start and returns committed attempt',async()=>{

@@ -59,10 +59,10 @@ export const START_SELECTION_5 = `{
         queuedAt startedAt heartbeatAt timeoutAt finishedAt createdAt updatedAt
       }`;
 export function createPipelineStartRepository(driver:Driver):PipelineStartRepository { return {
- async findFileTarget(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query StartPipelineFindFileTarget($where:DownloadableFileWhere){downloadableFiles(where:$where)${START_SELECTION_0}}`,{where:{id}});return r.downloadableFiles;},
- async findDiscussionTarget(id){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query StartPipelineFindDiscussionTarget($where:DiscussionWhere){discussions(where:$where)${START_SELECTION_1}}`,{where:{id}});return r.discussions;},
- async findChannelPlan(uniqueName){const r=await executeGeneratedOperation<{channels:Channel[]}>(driver,`query StartPipelineFindChannelPlan($where:ChannelWhere){channels(where:$where)${START_SELECTION_2}}`,{where:{uniqueName}});return r.channels;},
+ async findFileTarget(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query StartPipelineFindFileTarget($where:DownloadableFileWhere){downloadableFiles(where:$where)${START_SELECTION_0}}`,{where:{id:{eq:id}}});return r.downloadableFiles;},
+ async findDiscussionTarget(id){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query StartPipelineFindDiscussionTarget($where:DiscussionWhere){discussions(where:$where)${START_SELECTION_1}}`,{where:{id:{eq:id}}});return r.discussions;},
+ async findChannelPlan(uniqueName){const r=await executeGeneratedOperation<{channels:Channel[]}>(driver,`query StartPipelineFindChannelPlan($where:ChannelWhere){channels(where:$where)${START_SELECTION_2}}`,{where:{uniqueName:{eq:uniqueName}}});return r.channels;},
  async findServerPlan(){const r=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,`query StartPipelineFindServerPlan{serverConfigs${START_SELECTION_3}}`,{});return r.serverConfigs;},
  async findActiveAttempts(where){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query StartPipelineFindActiveAttempts($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${START_SELECTION_4}}`,{where});return r.pluginPipelineRuns;},
- async findStartedAttempt(pipelineId){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query StartPipelineFindStartedAttempt($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${START_SELECTION_5}}`,{where:{pipelineId}});return r.pluginPipelineRuns;},
+ async findStartedAttempt(pipelineId){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query StartPipelineFindStartedAttempt($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${START_SELECTION_5}}`,{where:{pipelineId:{eq:pipelineId}}});return r.pluginPipelineRuns;},
 };}

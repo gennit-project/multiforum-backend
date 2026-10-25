@@ -113,12 +113,12 @@ const FILE_DEFAULT_SELECTION = `{
 }`;
 export function createDownloadExecutionRepository(driver:Driver):DownloadExecutionRepository {
  return {
- async findFile(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query DownloadExecutionFile($where:DownloadableFileWhere){downloadableFiles(where:$where)${FILE_SELECTION}}`,{where:{id}});return r.downloadableFiles;},
+ async findFile(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query DownloadExecutionFile($where:DownloadableFileWhere){downloadableFiles(where:$where)${FILE_SELECTION}}`,{where:{id:{eq:id}}});return r.downloadableFiles;},
  async findConfiguration(){const r=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,`query DownloadExecutionConfiguration {serverConfigs${CONFIGURATION_SELECTION}}`,{});return r.serverConfigs;},
  async writeScanState(id,update){await executeGeneratedOperation(driver,`mutation WriteDownloadExecutionScanState($where:DownloadableFileWhere,$update:DownloadableFileUpdateInput){updateDownloadableFiles(where:$where,update:$update){downloadableFiles${FILE_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}]))});},
  async createPendingRuns(input){const r=await executeGeneratedOperation<{createPluginRuns:CreatePluginRunsMutationResponse}>(driver,`mutation CreatePendingDownloadJobs($input:[PluginRunCreateInput!]!){createPluginRuns(input:$input){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{input});return r.createPluginRuns;},
- async markSkippedRun(id,update){await executeGeneratedOperation(driver,`mutation SkipDownloadJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id},update});},
- async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query ReturnedDownloadJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id}});return r.pluginRuns;},
- async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:ServerSecret[]}>(driver,`query DownloadExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId}});return r.serverSecrets;},
+ async markSkippedRun(id,update){await executeGeneratedOperation(driver,`mutation SkipDownloadJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}]))});},
+ async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query ReturnedDownloadJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id:{eq:id}}});return r.pluginRuns;},
+ async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:ServerSecret[]}>(driver,`query DownloadExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId:{eq:pluginId}}});return r.serverSecrets;},
  };
 }

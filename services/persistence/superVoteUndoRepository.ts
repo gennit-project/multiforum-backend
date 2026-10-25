@@ -11,7 +11,7 @@ const COMMENT = `query SuperVoteUndoComment($where: CommentWhere) {comments(wher
 const DISCUSSION = `query SuperVoteUndoDiscussion($where: DiscussionChannelWhere) {discussionChannels(where: $where) ${SUPER_VOTE_DISCUSSION_SELECTION}}`;
 export function createSuperVoteUndoRepository(driver: Driver): SuperVoteUndoRepository {
   return {
-    async findComment(id) {return (await executeGeneratedOperation<{comments: Comment[]}>(driver, COMMENT, {where:{id}})).comments;},
-    async findDiscussion(id) {return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver, DISCUSSION, {where:{id}})).discussionChannels;},
+    async findComment(id) {return (await executeGeneratedOperation<{comments: Comment[]}>(driver, COMMENT, {where:{id:{eq:id}}})).comments;},
+    async findDiscussion(id) {return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver, DISCUSSION, {where:{id:{eq:id}}})).discussionChannels;},
   };
 }

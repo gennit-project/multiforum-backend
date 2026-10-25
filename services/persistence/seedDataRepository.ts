@@ -172,7 +172,7 @@ export function createSeedDataRepository(driver:Driver):SeedDataRepository {retu
  async createModServerRoles(input){await executeGeneratedOperation(driver,`mutation SeedModServerRole($input:[ModServerRoleCreateInput!]!){createModServerRoles(input:$input){modServerRoles${SEED_MODSERVERROLE_SELECTION}}}`,{input});},
  async createServerRoles(input){await executeGeneratedOperation(driver,`mutation SeedServerRole($input:[ServerRoleCreateInput!]!){createServerRoles(input:$input){serverRoles${SEED_SERVERROLE_SELECTION}}}`,{input});},
  async createServerConfigs(input){await executeGeneratedOperation(driver,`mutation SeedServerConfig($input:[ServerConfigCreateInput!]!){createServerConfigs(input:$input){serverConfigs${SEED_SERVERCONFIG_SELECTION}}}`,{input});},
- async connectDefaultRoles(){await executeGeneratedOperation(driver,`mutation SeedDefaultRoles($where:ServerConfigWhere,$update:ServerConfigUpdateInput){updateServerConfigs(where:$where,update:$update){serverConfigs${SEED_SERVERCONFIG_SELECTION}}}`,{where:{ serverName: "Cypress Test Server" },update:{
+ async connectDefaultRoles(){await executeGeneratedOperation(driver,`mutation SeedDefaultRoles($where:ServerConfigWhere,$update:ServerConfigUpdateInput){updateServerConfigs(where:$where,update:$update){serverConfigs${SEED_SERVERCONFIG_SELECTION}}}`,{where:{ serverName: {eq: "Cypress Test Server"} },update:{
           DefaultServerRole: {
             connect: {
               where: {

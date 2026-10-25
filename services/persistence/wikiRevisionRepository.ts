@@ -36,10 +36,10 @@ const EXISTS=`query WikiRevisionParent($where:WikiPageWhere) {wikiPages(where:$w
 const CONNECT=`mutation ConnectWikiRevision($where:WikiPageWhere,$update:WikiPageUpdateInput) {updateWikiPages(where:$where,update:$update) {wikiPages ${WIKI_REVISION_DEFAULT_SELECTION}}}`;
 export function createWikiRevisionRepository(driver:Driver):WikiRevisionRepository {
  return {
-  async findSnapshot(id){return (await executeGeneratedOperation<{wikiPages:WikiRevisionSnapshot[]}>(driver,SNAPSHOT,{where:{id}})).wikiPages;},
-  async findAuthor(username){return (await executeGeneratedOperation<{users:Array<{username:string}>}>(driver,AUTHOR,{where:{username}})).users;},
+  async findSnapshot(id){return (await executeGeneratedOperation<{wikiPages:WikiRevisionSnapshot[]}>(driver,SNAPSHOT,{where:{id:{eq:id}}})).wikiPages;},
+  async findAuthor(username){return (await executeGeneratedOperation<{users:Array<{username:string}>}>(driver,AUTHOR,{where:{username:{eq:username}}})).users;},
   async createRevision(input){const {scalars,authorUsername}=splitTextVersionInput(input);return createTextVersion(driver,scalars,authorUsername);},
-  async findPageId(id){return (await executeGeneratedOperation<{wikiPages:Array<{id:string}>}>(driver,EXISTS,{where:{id}})).wikiPages;},
-  async connectRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT,{where:{id},update:{PastVersions:{connect:[{where:{node:{id:revisionId}}}]}}});},
+  async findPageId(id){return (await executeGeneratedOperation<{wikiPages:Array<{id:string}>}>(driver,EXISTS,{where:{id:{eq:id}}})).wikiPages;},
+  async connectRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT,{where:{id:{eq:id}},update:{PastVersions:[{connect:[{where:{node:{id:{eq:revisionId}}}}]}]}});},
  };
 }

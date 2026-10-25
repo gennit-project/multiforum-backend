@@ -93,7 +93,7 @@ const execDeleteServerConfigs = (authorization?: string) =>
   graphql({
     schema,
     source: `mutation {
-      deleteServerConfigs(where: { serverName: "does-not-exist-xyz" }) {
+      deleteServerConfigs(where: { serverName: { eq: "does-not-exist-xyz" } }) {
         nodesDeleted
       }
     }`,
@@ -190,7 +190,7 @@ const execDeleteComments = (id: string, authorization?: string) =>
   graphql({
     schema,
     source: `mutation ($id: ID!) {
-      deleteComments(where: { id: $id }) { nodesDeleted }
+      deleteComments(where: { id: { eq: $id } }) { nodesDeleted }
     }`,
     variableValues: { id },
     contextValue: {
@@ -267,7 +267,7 @@ const execUpdateUserBio = (username: string, bio: string, authorization?: string
   graphql({
     schema,
     source: `mutation ($username: String!, $bio: String!) {
-      updateUsers(where: { username: $username }, update: { bio: $bio }) {
+      updateUsers(where: { username: { eq: $username } }, update: { bio: { set: $bio } }) {
         users { username bio }
       }
     }`,

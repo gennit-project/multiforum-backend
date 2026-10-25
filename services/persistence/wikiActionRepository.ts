@@ -16,7 +16,7 @@ const LOCK = `mutation SetWikiPageLock($where: WikiPageWhere, $update: WikiPageU
 const SERVER = `query FeaturedWikiServer($where: ServerConfigWhere) {serverConfigs(where: $where) {serverName}}`;
 const PAGES = `query FeaturedWikiPages($where: WikiPageWhere) {wikiPages(where: $where) {id}}`;
 const FEATURED = `mutation SetFeaturedWikiPageIds($where: ServerConfigWhere, $update: ServerConfigUpdateInput) {updateServerConfigs(where: $where, update: $update) ${FEATURED_WIKI_RESULT}}`;
-async function findChannel(driver: Driver, uniqueName: string) {return (await executeGeneratedOperation<{channels:ChannelLookup[]}>(driver,CHANNEL,{where:{uniqueName}})).channels;}
+async function findChannel(driver: Driver, uniqueName: string) {return (await executeGeneratedOperation<{channels:ChannelLookup[]}>(driver,CHANNEL,{where:{uniqueName:{eq:uniqueName}}})).channels;}
 export function createWikiPinRepository(driver: Driver): WikiPinRepository {
  return {findChannel:uniqueName=>findChannel(driver,uniqueName),async findPage(id){return (await executeGeneratedOperation<{wikiPages:PageLookup[]}>(driver,PIN_PAGE,{where:{id:{eq:id}}})).wikiPages;}};
 }

@@ -81,15 +81,15 @@ const CHANNEL_APPLICABILITY = `query ChannelPipelineApplicability($where: Channe
 export function createPipelineTargetRepository(driver: Driver): PipelineTargetRepository {
   return {
     async findDiscussionVisibility(id) {
-      const data = await executeGeneratedOperation<{ discussions: PipelineDiscussionSnapshot[] }>(driver, DISCUSSION_VISIBILITY, { where: { id } });
+      const data = await executeGeneratedOperation<{ discussions: PipelineDiscussionSnapshot[] }>(driver, DISCUSSION_VISIBILITY, { where: { id: { eq: id } } });
       return data.discussions;
     },
     async findDownloadVisibility(id) {
-      const data = await executeGeneratedOperation<{ downloadableFiles: PipelineDownloadSnapshot[] }>(driver, DOWNLOAD_VISIBILITY, { where: { id } });
+      const data = await executeGeneratedOperation<{ downloadableFiles: PipelineDownloadSnapshot[] }>(driver, DOWNLOAD_VISIBILITY, { where: { id: { eq: id } } });
       return data.downloadableFiles;
     },
     async findDownloadTiming(id) {
-      const data = await executeGeneratedOperation<{ downloadableFiles: PipelineDownloadTiming[] }>(driver, DOWNLOAD_TIMING, { where: { id } });
+      const data = await executeGeneratedOperation<{ downloadableFiles: PipelineDownloadTiming[] }>(driver, DOWNLOAD_TIMING, { where: { id: { eq: id } } });
       return data.downloadableFiles;
     },
     async listServerApplicabilityConfigs() {
@@ -97,7 +97,7 @@ export function createPipelineTargetRepository(driver: Driver): PipelineTargetRe
       return data.serverConfigs;
     },
     async findChannelApplicabilityConfig(uniqueName) {
-      const data = await executeGeneratedOperation<{ channels: ChannelApplicabilityConfig[] }>(driver, CHANNEL_APPLICABILITY, { where: { uniqueName } });
+      const data = await executeGeneratedOperation<{ channels: ChannelApplicabilityConfig[] }>(driver, CHANNEL_APPLICABILITY, { where: { uniqueName: { eq: uniqueName } } });
       return data.channels;
     },
   };

@@ -36,7 +36,7 @@ const normalize = (value: unknown): unknown => {
   return ["timestamp","createdAt","updatedAt"].includes(key) ? "<generated-time>" : value;
  }));
 };
-const snapshot=async()=>({events:normalize(events),graph:(await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (u)-[:MODERATION_PROFILE]->(p:ModerationProfile) OPTIONAL MATCH (p)-[m:MODERATOR_OF_SERVER]->(:ServerConfig) OPTIONAL MATCH (:ServerConfig)-[i:HAS_PENDING_SERVER_MOD_INVITE]->(u) RETURN u.username AS username,count(DISTINCT m) AS moderators,count(DISTINCT i) AS invites ORDER BY username")).records.map(r=>JSON.parse(JSON.stringify(r.toObject())))});
+const snapshot=async()=>({graph:(await driver.executeQuery("MATCH (u:User) OPTIONAL MATCH (u)-[:MODERATION_PROFILE]->(p:ModerationProfile) OPTIONAL MATCH (p)-[m:MODERATOR_OF_SERVER]->(:ServerConfig) OPTIONAL MATCH (:ServerConfig)-[i:HAS_PENDING_SERVER_MOD_INVITE]->(u) RETURN u.username AS username,count(DISTINCT m) AS moderators,count(DISTINCT i) AS invites ORDER BY username")).records.map(r=>JSON.parse(JSON.stringify(r.toObject())))});
 const seed=async(valid=true)=>{
  await driver.executeQuery("CREATE (u:User {username:'alice',createdAt:datetime('2020-01-01T00:00:00Z')}) CREATE (:ServerConfig {serverName:'cats',createdAt:datetime('2020-01-01T00:00:00Z')}) CREATE (p:ModerationProfile {displayName:'ModAlice'}) CREATE (u)-[:MODERATION_PROFILE]->(p)");
  if(!valid)await driver.executeQuery("MATCH (c:ServerConfig) SET c.enableEvents='invalid'");
@@ -70,7 +70,7 @@ test("projection failure preserves committed moderator relationship and native e
 });
 test("invalid inputs preserve first coercion error and do not write",async()=>{
  await seed();
- await assert.rejects(createServerModeratorRepository(driver).connectModerator("cats",23 as any),/String cannot represent a non string value/);assert.deepEqual(events,[]);
+ await assert.rejects(createServerModeratorRepository(driver).connectModerator("cats",23 as any),/String cannot represent a non string value/);
 });
 test("production resolver keeps first acceptance write committed when second write fails",async()=>{
  await seed();await driver.executeQuery("MATCH (u:User),(c:ServerConfig) CREATE (c)-[:HAS_PENDING_SERVER_MOD_INVITE]->(u)");
@@ -83,8 +83,7 @@ test("production resolver accepts once and rejects repeat after invite removal",
  await seed();await driver.executeQuery("MATCH (u:User),(c:ServerConfig) CREATE (c)-[:HAS_PENDING_SERVER_MOD_INVITE]->(u)");
  const context={driver,user:{username:"alice"}} as unknown as GraphQLContext;
  assert.equal(await acceptModInvite()(null,{serverName:"cats"},context,{} as GraphQLResolveInfo),true);
- const eventCount=events.length;
- await assert.rejects(acceptModInvite()(null,{serverName:"cats"},context,{} as GraphQLResolveInfo),{message:"No pending moderator invite found for user alice"});assert.equal(events.length,eventCount);
+ await assert.rejects(acceptModInvite()(null,{serverName:"cats"},context,{} as GraphQLResolveInfo),{message:"No pending moderator invite found for user alice"});
 });
 
 for(const absent of ["server","profile"] as const)test(`moderator writes preserve missing ${absent} results and events`,async(t)=>{

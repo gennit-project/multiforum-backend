@@ -15,13 +15,13 @@ const DISCONNECT_INVITE = `mutation DisconnectServerAdminInvite($where: ServerCo
 export function createServerAdminRepository(driver: Driver): ServerAdminRepository {
  return {
   async findPendingInvites(serverName) {
-   return (await executeGeneratedOperation<{serverConfigs:Array<{PendingAdminInvites: Users}>}>(driver,PENDING_INVITES,{where:{serverName}})).serverConfigs;
+   return (await executeGeneratedOperation<{serverConfigs:Array<{PendingAdminInvites: Users}>}>(driver,PENDING_INVITES,{where:{serverName:{eq:serverName}}})).serverConfigs;
   },
   async connectAdmin(serverName,username) {
-   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServerConfigs}>(driver,CONNECT_ADMIN,{where:{serverName},update:{Admins:[{connect:[{where:{node:{username}}}]}]}})).updateServerConfigs;
+   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServerConfigs}>(driver,CONNECT_ADMIN,{where:{serverName:{eq:serverName}},update:{Admins:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateServerConfigs;
   },
   async disconnectInvite(serverName,username) {
-   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServerConfigs}>(driver,DISCONNECT_INVITE,{where:{serverName},update:{PendingAdminInvites:[{disconnect:[{where:{node:{username}}}]}]}})).updateServerConfigs;
+   return (await executeGeneratedOperation<{updateServerConfigs:UpdatedServerConfigs}>(driver,DISCONNECT_INVITE,{where:{serverName:{eq:serverName}},update:{PendingAdminInvites:[{disconnect:[{where:{node:{username:{eq:username}}}}]}]}})).updateServerConfigs;
   },
  };
 }

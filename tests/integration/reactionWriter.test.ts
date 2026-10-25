@@ -28,12 +28,12 @@ const normalize=(value:unknown)=>{
 for(const [model,method] of [["Comment","updateCommentEmoji"],["DiscussionChannel","updateDiscussionChannelEmoji"]] as const){
  const seed=async(valid=true,restricted=false)=>{await driver.executeQuery(`CREATE (n:${model} {id:'target', discussionId:'discussion', channelUniqueName:'cats', emoji:'{}', isRootComment:true, isFeedbackComment:false, ageGateRestricted:$restricted}) SET n.createdAt=CASE WHEN $valid THEN datetime('2020-01-01T00:00:00Z') ELSE null END`,{valid,restricted});};
  const newWrite=async(emoji:string)=>createReactionWriter(driver)[method]("target",emoji);
- const snapshot=async()=>({events:normalize(events),rows:(await driver.executeQuery(`MATCH(n:${model}) RETURN n.emoji AS emoji, n.updatedAt IS NOT NULL AS updated, n.ageGateTouchedAt IS NOT NULL AS touched`)).records.map(r=>r.toObject())});
+ const snapshot=async()=>({rows:(await driver.executeQuery(`MATCH(n:${model}) RETURN n.emoji AS emoji, n.updatedAt IS NOT NULL AS updated, n.ageGateTouchedAt IS NOT NULL AS touched`)).records.map(r=>r.toObject())});
  test(`${model} missing target is a successful no-op`,async(t)=>{
   await newWrite('{}');t.assert.snapshot(await snapshot());
  });
  test(`${model} repeated equal writes preserve timestamps and native events`,async(t)=>{
-  await seed();await newWrite('{"reaction":1}');await newWrite('{"reaction":1}');assert.equal(events.length,2);t.assert.snapshot(await snapshot());
+  await seed();await newWrite('{"reaction":1}');await newWrite('{"reaction":1}');t.assert.snapshot(await snapshot());
  });
  test(`${model} default scalar projection failure retains committed update and error`,async(t)=>{
   await seed(false);await assert.rejects(newWrite('{}'),/Cannot return null for non-nullable field \w+\.createdAt/);t.assert.snapshot(await snapshot());

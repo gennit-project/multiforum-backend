@@ -21,7 +21,7 @@ test("own summary is scoped to identity email and preserves onboarding fallback"
   assert.deepEqual(state.calls,["self@example.test"]);
 });
 test("own summary maps the first row and preserves zero unread count",async()=>{
-  const state=setup([{address:"stored@example.test",User:{username:"self",profilePicURL:"image",ModerationProfile:{displayName:"mod"},NotificationsAggregate:{count:0}}}]);
+  const state=setup([{address:"stored@example.test",User:{username:"self",profilePicURL:"image",ModerationProfile:{displayName:"mod"},NotificationsConnection:{aggregate:{count:{nodes:0}}}}}]);
   assert.deepEqual(await state.resolver(null,{},context("self@example.test"),{} as never),{address:"stored@example.test",username:"self",profilePicURL:"image",modProfileName:"mod",unreadNotificationCount:0});
 });
 test("own summary preserves error wrapping",async()=>{
