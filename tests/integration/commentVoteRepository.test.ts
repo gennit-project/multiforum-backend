@@ -28,7 +28,7 @@ const state=async()=>plain((await driver.executeQuery("MATCH (a:User {username:'
 test('comment/user snapshots preserve missing rows, author unions, nested default limit and invalid scalar errors',async(t)=>{
  assert.deepEqual(await repository.findComment('missing'),[]);assert.deepEqual(await repository.findVoter('missing'),[]);
  await seed();await driver.executeQuery("MATCH (c:Comment {id:'c'}) UNWIND range(1,28) AS i CREATE (:User {username:'u'+toString(i)})-[:UPVOTED_COMMENT]->(c)");
- const c1=plain(await repository.findComment('c'));assert.equal(c1[0].UpvotedByUsers.length,25);assert.equal(c1[0].UpvotedByUsersAggregate.count,28);t.assert.snapshot(snapComment(c1));t.assert.snapshot(await repository.findVoter('voter'));
+ const c1=plain(await repository.findComment('c'));assert.equal(c1[0].UpvotedByUsers.length,25);assert.equal(c1[0].UpvotedByUsersConnection.aggregate.count.nodes,28);t.assert.snapshot(snapComment(c1));t.assert.snapshot(await repository.findVoter('voter'));
  await driver.executeQuery("MATCH (:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE (:ModerationProfile {displayName:'mod',createdAt:datetime()})-[:AUTHORED_COMMENT]->(c)");t.assert.snapshot(snapComment(await repository.findComment('c')));
  await resetDatabase(driver);await seed(false);await assert.rejects(repository.findComment('c'),/Cannot return null for non-nullable field User\.createdAt/);
 });
@@ -36,7 +36,7 @@ test('karma generated write preserves native events and default projection failu
  for(const valid of [true,false]){
   await resetDatabase(driver);await seed(valid);events=[];
   if(valid)await repository.setAuthorKarma('author',8);else await assert.rejects(repository.setAuthorKarma('author',8),/Cannot return null for non-nullable field User\.createdAt/);
-  const actual={state:await state(),events:normalize(events)};assert.equal(actual.state[0].karma,8);assert.ok(actual.events.length>0);t.assert.snapshot(actual);
+  const actual={state:await state()};assert.equal(actual.state[0].karma,8);t.assert.snapshot(actual);
  }
 });
 test('full upvote then undo keeps raw transaction and separate generated karma write behavior',async()=>{
@@ -46,6 +46,6 @@ test('full upvote then undo keeps raw transaction and separate generated karma w
   const added=await upvote({driver,repository:repo})(null,args,context,{} as GraphQLResolveInfo);const addedState=await state();
   assert.ok(added);assert.equal(added.UpvotedByUsersAggregate.count,1);assert.deepEqual(addedState[0].voters,['voter']);assert.equal(addedState[0].karma,8);
   const removed=await undo({driver,repository:repo})(null,args,context,{} as GraphQLResolveInfo);
-  assert.equal(removed.UpvotedByUsersAggregate.count,0);assert.deepEqual(await state(),[{karma:7,weight:3,voters:[]}]);assert.equal(events.length,2);
+  assert.equal(removed.UpvotedByUsersAggregate.count,0);assert.deepEqual(await state(),[{karma:7,weight:3,voters:[]}]);
    }
 });

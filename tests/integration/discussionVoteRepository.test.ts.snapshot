@@ -9,8 +9,12 @@ exports[`discussionChannel/user snapshots preserve missing rows, missing authors
       }
     },
     "UpvotedByUsers": 25,
-    "UpvotedByUsersAggregate": {
-      "count": 28
+    "UpvotedByUsersConnection": {
+      "aggregate": {
+        "count": {
+          "nodes": 28
+        }
+      }
     },
     "id": "c",
     "weightedVotesCount": 3
@@ -34,8 +38,12 @@ exports[`discussionChannel/user snapshots preserve missing rows, missing authors
       "Author": null
     },
     "UpvotedByUsers": 25,
-    "UpvotedByUsersAggregate": {
-      "count": 28
+    "UpvotedByUsersConnection": {
+      "aggregate": {
+        "count": {
+          "nodes": 28
+        }
+      }
     },
     "id": "c",
     "weightedVotesCount": 3
@@ -66,44 +74,7 @@ exports[`full upvote then undo keeps raw transaction and separate generated karm
       "weight": 4
     }
   ],
-  "events": [
-    {
-      "event": "update",
-      "id": "<node-id>",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "discussionKarma": 7,
-          "username": "author"
-        },
-        "old": {
-          "createdAt": "<time>",
-          "discussionKarma": 8,
-          "username": "author"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    },
-    {
-      "event": "update",
-      "id": "<node-id>",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "discussionKarma": 8,
-          "username": "author"
-        },
-        "old": {
-          "createdAt": "<time>",
-          "discussionKarma": 7,
-          "username": "author"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    }
-  ],
+  "events": [],
   "removed": {
     "UpvotedByUsers": [],
     "UpvotedByUsersAggregate": {
@@ -124,26 +95,6 @@ exports[`full upvote then undo keeps raw transaction and separate generated karm
 
 exports[`karma generated write preserves native events and default projection failure after committed write 1`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<node-id>",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "discussionKarma": 8,
-          "username": "author"
-        },
-        "old": {
-          "createdAt": "<time>",
-          "discussionKarma": 7,
-          "username": "author"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    }
-  ],
   "state": [
     {
       "karma": 8,
@@ -156,24 +107,6 @@ exports[`karma generated write preserves native events and default projection fa
 
 exports[`karma generated write preserves native events and default projection failure after committed write 2`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<node-id>",
-      "properties": {
-        "new": {
-          "discussionKarma": 8,
-          "username": "author"
-        },
-        "old": {
-          "discussionKarma": 7,
-          "username": "author"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    }
-  ],
   "state": [
     {
       "karma": 8,

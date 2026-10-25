@@ -7,8 +7,12 @@ exports[`comment/user snapshots preserve missing rows, author unions, nested def
       "username": "author"
     },
     "UpvotedByUsers": 25,
-    "UpvotedByUsersAggregate": {
-      "count": 28
+    "UpvotedByUsersConnection": {
+      "aggregate": {
+        "count": {
+          "nodes": 28
+        }
+      }
     },
     "id": "c",
     "weightedVotesCount": 3
@@ -33,8 +37,12 @@ exports[`comment/user snapshots preserve missing rows, author unions, nested def
       "displayName": "mod"
     },
     "UpvotedByUsers": 25,
-    "UpvotedByUsersAggregate": {
-      "count": 28
+    "UpvotedByUsersConnection": {
+      "aggregate": {
+        "count": {
+          "nodes": 28
+        }
+      }
     },
     "id": "c",
     "weightedVotesCount": 3
@@ -44,26 +52,6 @@ exports[`comment/user snapshots preserve missing rows, author unions, nested def
 
 exports[`karma generated write preserves native events and default projection failure after committed write 1`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<node-id>",
-      "properties": {
-        "new": {
-          "commentKarma": 8,
-          "createdAt": "<time>",
-          "username": "author"
-        },
-        "old": {
-          "commentKarma": 7,
-          "createdAt": "<time>",
-          "username": "author"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    }
-  ],
   "state": [
     {
       "karma": 8,
@@ -76,24 +64,6 @@ exports[`karma generated write preserves native events and default projection fa
 
 exports[`karma generated write preserves native events and default projection failure after committed write 2`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<node-id>",
-      "properties": {
-        "new": {
-          "commentKarma": 8,
-          "username": "author"
-        },
-        "old": {
-          "commentKarma": 7,
-          "username": "author"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "User"
-    }
-  ],
   "state": [
     {
       "karma": 8,

@@ -33,9 +33,6 @@ export const DISCUSSION_CREATE_SELECTION = `
       UpvotedByUsers {
         username
       }
-      UpvotedByUsersAggregate {
-        count
-      }
     }
     createdAt
     updatedAt

@@ -16,7 +16,7 @@ export const COMMENT_VOTE_SELECTION = `{
   }
   weightedVotesCount
   UpvotedByUsers { username }
-  UpvotedByUsersAggregate { count }
+  UpvotedByUsersConnection { aggregate { count { nodes } } }
 }`;
 const COMMENT = `query CommentVoteSnapshot($where: CommentWhere) {
   comments(where: $where) ${COMMENT_VOTE_SELECTION}
@@ -34,13 +34,13 @@ const KARMA = `mutation SetCommentVoteAuthorKarma($where: UserWhere, $update: Us
 export function createCommentVoteRepository(driver: Driver): CommentVoteRepository {
   return {
     async findComment(id) {
-      return (await executeGeneratedOperation<{comments: Comment[]}>(driver, COMMENT, {where: {id}})).comments;
+      return (await executeGeneratedOperation<{comments: Comment[]}>(driver, COMMENT, {where: {id: {eq: id}}})).comments;
     },
     async findVoter(username) {
-      return (await executeGeneratedOperation<{users: User[]}>(driver, VOTER, {where: {username}})).users;
+      return (await executeGeneratedOperation<{users: User[]}>(driver, VOTER, {where: {username: {eq: username}}})).users;
     },
     async setAuthorKarma(username, commentKarma) {
-      await executeGeneratedOperation(driver, KARMA, {where: {username}, update: {commentKarma}});
+      await executeGeneratedOperation(driver, KARMA, {where: {username: {eq: username}}, update: {commentKarma: {set: commentKarma}}});
     },
   };
 }
