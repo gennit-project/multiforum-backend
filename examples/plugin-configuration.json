@@ -16,6 +16,21 @@
       ]
     }
   ],
+  "registries": {
+    "mode": "MERGE",
+    "urls": ["https://plugins.example.test/index.json"]
+  },
+  "channelPlugins": [
+    {
+      "channelUniqueName": "moderation",
+      "pluginId": "security-attachment-scan",
+      "version": "0.4.0",
+      "enabled": true,
+      "settingsJson": {
+        "serviceUrl": "https://security-scan-service.example.run.app"
+      }
+    }
+  ],
   "managedPipelineEvents": ["downloadableFile.created"],
   "pipelines": [
     {

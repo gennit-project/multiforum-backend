@@ -16,6 +16,7 @@ import enableServerPlugin from './enableServerPlugin.js'
 import installPluginVersion from './installPluginVersion.js'
 import setServerPluginSecret from './setServerPluginSecret.js'
 import updatePluginPipelines from './updatePluginPipelines.js'
+import { createPluginConfigurationWriteRepository } from '../../services/persistence/pluginConfigurationWriteRepository.js'
 import previewPluginConfigurationReconciliation, {
   mapPluginConfigurationDesiredStateInput,
 } from '../queries/previewPluginConfigurationReconciliation.js'
@@ -45,6 +46,14 @@ export type PluginConfigurationApplyOperations = {
     enabled: boolean
     settingsJson?: Record<string, unknown>
   }) => Promise<unknown>
+  updateRegistries?: (urls: string[]) => Promise<unknown>
+  configureChannelPlugin?: (args: {
+    channelUniqueName: string
+    pluginId: string
+    version: string
+    enabled: boolean
+    settingsJson?: Record<string, unknown>
+  }) => Promise<unknown>
   updatePipelines: (pipelines: EventPipeline[]) => Promise<unknown>
 }
 
@@ -64,12 +73,15 @@ const buildDefaultOperations = ({
   const setSecret = setServerPluginSecret({ driver: context.driver })
   const configure = enableServerPlugin({ driver: context.driver })
   const updatePipelines = updatePluginPipelines({ driver: context.driver })
+  const writeRepository = createPluginConfigurationWriteRepository(context.driver)
 
   return {
     preview: manifest => preview({}, { manifest }, context, info),
     install: args => install({}, args, context, info),
     setSecret: args => setSecret({}, args, context, info),
     configure: args => configure({}, args, context, info),
+    updateRegistries: urls => writeRepository.setRegistries(urls),
+    configureChannelPlugin: args => writeRepository.configureChannelPlugin(args),
     updatePipelines: pipelines =>
       updatePipelines({}, { pipelines }, context, info),
   }
@@ -133,6 +145,16 @@ export const createApplyPluginConfigurationResolver = (
       }
     }
 
+    for (const change of planBefore.changes.filter(change => change.blocked)) {
+      if (change.kind === 'SET_SECRET' || change.kind === 'REPLACE_SECRET') continue
+      operationResults.push({
+        kind: change.kind,
+        path: change.path,
+        status: 'BLOCKED',
+        message: change.message,
+      })
+    }
+
     for (const plugin of desired.plugins) {
       const pluginPath = `plugins.${plugin.pluginId}@${plugin.version}`
       for (const change of planBefore.changes.filter(
@@ -167,6 +189,24 @@ export const createApplyPluginConfigurationResolver = (
 
     let activeChange: PluginConfigurationChange | null = null
     try {
+      const registryChange = planBefore.changes.find(
+        change => change.kind === 'UPDATE_REGISTRIES'
+      )
+      if (registryChange) {
+        activeChange = registryChange
+        if (!Array.isArray(registryChange.desired)) {
+          throw new Error('Registry reconciliation did not produce an array')
+        }
+        if (!operations.updateRegistries) throw new Error('Registry updates are unavailable')
+        await operations.updateRegistries(registryChange.desired as string[])
+        operationResults.push({
+          kind: registryChange.kind,
+          path: registryChange.path,
+          status: 'APPLIED',
+          message: registryChange.message,
+        })
+      }
+
       for (const plugin of desired.plugins) {
         const pluginPath = `plugins.${plugin.pluginId}@${plugin.version}`
         const installChange = planBefore.changes.find(
@@ -244,6 +284,32 @@ export const createApplyPluginConfigurationResolver = (
             }))
           )
         }
+      }
+
+      for (const plugin of desired.channelPlugins ?? []) {
+        const path = `channels.${plugin.channelUniqueName}.plugins.${plugin.pluginId}@${plugin.version}`
+        const channelChanges = planBefore.changes.filter(change =>
+          (change.path === `${path}.enabled` || change.path === `${path}.settingsJson`) &&
+          ['ENABLE_CHANNEL_PLUGIN', 'DISABLE_CHANNEL_PLUGIN', 'UPDATE_CHANNEL_SETTINGS'].includes(change.kind)
+        )
+        if (channelChanges.length === 0) continue
+        activeChange = channelChanges[0]
+        if (!operations.configureChannelPlugin) throw new Error('Channel plugin updates are unavailable')
+        await operations.configureChannelPlugin({
+          channelUniqueName: plugin.channelUniqueName,
+          pluginId: plugin.pluginId,
+          version: plugin.version,
+          enabled: plugin.enabled,
+          ...(plugin.settingsJson !== undefined && plugin.settingsJson !== null
+            ? { settingsJson: plugin.settingsJson }
+            : {}),
+        })
+        operationResults.push(...channelChanges.map(change => ({
+          kind: change.kind,
+          path: change.path,
+          status: 'APPLIED' as const,
+          message: change.message,
+        })))
       }
 
       const pipelineChange = planBefore.changes.find(

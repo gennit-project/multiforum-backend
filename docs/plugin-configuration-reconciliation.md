@@ -11,6 +11,17 @@ For each listed plugin, only the exact version named by the manifest is
 managed. `settingsJson`, legacy `requiredSecrets`, and resolvable `secretRefs`
 are independently optional.
 
+Registry and channel ownership are also explicit:
+
+- Omit `registries` to leave the configured registry list unmanaged.
+- Use `registries.mode: MERGE` to add URLs while preserving existing entries,
+  or `REPLACE` to own the complete list. Registry URLs must use HTTPS and must
+  not contain embedded credentials.
+- Omit `channelPlugins` to leave all channel plugin relationships unmanaged.
+  Each listed entry manages one exact channel/plugin/version relationship.
+  The channel must already exist, and an enabled version must either already
+  be installed or be declared in the same manifest.
+
 Pipeline handling is intentionally explicit:
 
 - Omit `pipelines` to leave all server pipelines unmanaged.
@@ -73,6 +84,21 @@ Example variables for the security scanner:
         ]
       }
     ],
+    "registries": {
+      "mode": "MERGE",
+      "urls": ["https://plugins.example.test/index.json"]
+    },
+    "channelPlugins": [
+      {
+        "channelUniqueName": "moderation",
+        "pluginId": "security-attachment-scan",
+        "version": "0.4.0",
+        "enabled": true,
+        "settingsJson": {
+          "serviceUrl": "https://security-scan-service.example.run.app"
+        }
+      }
+    ],
     "managedPipelineEvents": ["downloadableFile.created"],
     "pipelines": [
       {
@@ -130,9 +156,10 @@ mutation ApplyPluginConfiguration(
 }
 ```
 
-Apply performs a complete preflight before mutating anything, then installs
-versions, sets required secrets, configures/enables plugins, and updates
-pipelines in that order. It stops on the first failure and returns the
+Apply performs a complete preflight before mutating anything, then updates
+registries, installs versions, sets required secrets, configures/enables
+server plugins, configures channel plugins, and updates pipelines in that
+order. It stops on the first failure and returns the
 successfully applied operations plus a fresh drift plan. Secret values are
 redacted from failure messages and never returned.
 
