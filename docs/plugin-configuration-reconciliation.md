@@ -1,5 +1,8 @@
 # Declarative plugin configuration
 
+For the production ownership and approval workflow, see
+[Production plugin configuration ownership](./production-plugin-configuration.md).
+
 Multiforum exposes an admin-only, read-only reconciliation preview for server
 plugins. It is the first half of a plan/apply workflow: operators can describe
 the intended versions, settings, required secret names, and server pipelines,
