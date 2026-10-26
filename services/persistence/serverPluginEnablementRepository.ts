@@ -58,6 +58,6 @@ export function createServerPluginEnablementRepository(driver:Driver):ServerPlug
   async findPlugin(pluginId,version){return(await executeGeneratedOperation<{plugins:PluginSnapshot[]}>(driver,PLUGIN,{where:{name:{eq:pluginId}},version})).plugins;},
   async findInstallations(id){return(await executeGeneratedOperation<{serverConfigs:InstallationSnapshot[]}>(driver,INSTALLATIONS,{id})).serverConfigs;},
   async findSecrets(pluginId){return(await executeGeneratedOperation<{serverSecrets:Awaited<ReturnType<ServerPluginEnablementRepository['findSecrets']>>}>(driver,SECRETS,{where:{pluginId:{eq:pluginId}}})).serverSecrets;},
-  async setInstallation(serverName,id,enabled,settingsJson){await executeGeneratedOperation(driver,SAVE,{where:{serverName:{eq:serverName}},update:{InstalledVersions:[{where:{node:{id}},update:{edge:{enabled,settingsJson}}}]}});}
+  async setInstallation(serverName,id,enabled,settingsJson){await executeGeneratedOperation(driver,SAVE,{where:{serverName:{eq:serverName}},update:{InstalledVersions:[{update:{where:{node:{id:{eq:id}}},edge:{enabled:{set:enabled},settingsJson:{set:settingsJson}}}}]}});}
  };
 }

@@ -200,8 +200,13 @@ export function createPluginRegistryRepository(driver: Driver): PluginRegistryRe
       return result.createPlugins;
     },
     async connectOrphanVersion(id, pluginId) {
-      await executeGeneratedOperation(driver,
-        `mutation Registry_connectOrphanVersion($where: PluginVersionWhere, $connect: PluginVersionConnectInput) { updatePluginVersions(where: $where, connect: $connect) ${CONNECTORPHANVERSION_SELECTION} }`, {where:{id:{eq:id}},connect:{Plugin:{where:{node:{id:pluginId}}}}});
+      // v7 removed the to-one connect; own the HAS_VERSION edge
+      // ((:Plugin)-[:HAS_VERSION]->(:PluginVersion)).
+      await driver.executeQuery(
+        `MATCH (version:PluginVersion {id: $id})
+         OPTIONAL MATCH (plugin:Plugin {id: $pluginId})
+         FOREACH (_ IN CASE WHEN plugin IS NULL THEN [] ELSE [1] END | MERGE (plugin)-[:HAS_VERSION]->(version))`,
+        {id, pluginId});
     },
     async findPluginByName(name) {
       const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,
@@ -223,12 +228,30 @@ export function createPluginRegistryRepository(driver: Driver): PluginRegistryRe
       return result.pluginVersions;
     },
     async createRegistryVersion(input) {
-      await executeGeneratedOperation(driver,
-        `mutation Registry_createRegistryVersion($input: [PluginVersionCreateInput!]!) { createPluginVersions(input: $input) ${CREATEREGISTRYVERSION_SELECTION} }`, {input});
+      // v7 removed the to-one Plugin connect from the create input; create the
+      // version, then own the HAS_VERSION edge.
+      const { Plugin, ...scalars } = (input[0] ?? {}) as Record<string, any>;
+      const pluginId = Plugin?.connect?.where?.node?.id ?? null;
+      const result = await executeGeneratedOperation<{createPluginVersions:{pluginVersions:Array<{id:string}>}}>(driver,
+        `mutation Registry_createRegistryVersion($input: [PluginVersionCreateInput!]!) { createPluginVersions(input: $input) ${CREATEREGISTRYVERSION_SELECTION} }`, {input:[scalars]});
+      const versionId = result.createPluginVersions.pluginVersions[0]?.id;
+      if (versionId && pluginId) {
+        await driver.executeQuery(
+          `MATCH (version:PluginVersion {id: $versionId})
+           OPTIONAL MATCH (plugin:Plugin {id: $pluginId})
+           FOREACH (_ IN CASE WHEN plugin IS NULL THEN [] ELSE [1] END | MERGE (plugin)-[:HAS_VERSION]->(version))`,
+          {versionId, pluginId});
+      }
     },
     async updateRegistryVersion(id, update, pluginId) {
       await executeGeneratedOperation(driver,
-        `mutation Registry_updateRegistryVersion($where: PluginVersionWhere, $update: PluginVersionUpdateInput, $connect: PluginVersionConnectInput) { updatePluginVersions(where: $where, update: $update, connect: $connect) ${UPDATEREGISTRYVERSION_SELECTION} }`, {where:{id:{eq:id}},update,connect:{Plugin:{where:{node:{id:pluginId}}}}});
+        `mutation Registry_updateRegistryVersion($where: PluginVersionWhere, $update: PluginVersionUpdateInput) { updatePluginVersions(where: $where, update: $update) ${UPDATEREGISTRYVERSION_SELECTION} }`, {where:{id:{eq:id}},update});
+      // v7 removed the top-level connect arg; own the HAS_VERSION edge.
+      await driver.executeQuery(
+        `MATCH (version:PluginVersion {id: $id})
+         OPTIONAL MATCH (plugin:Plugin {id: $pluginId})
+         FOREACH (_ IN CASE WHEN plugin IS NULL THEN [] ELSE [1] END | MERGE (plugin)-[:HAS_VERSION]->(version))`,
+        {id, pluginId});
     },
     async findRegistryResult(id) {
       const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,

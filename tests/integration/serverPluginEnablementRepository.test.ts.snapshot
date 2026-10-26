@@ -1,21 +1,6 @@
 exports[`default projection failure retains committed edge change and native events 1`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "id0",
-      "properties": {
-        "new": {
-          "serverName": "server"
-        },
-        "old": {
-          "serverName": "server"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "ServerConfig"
-    }
-  ],
+  "events": [],
   "graph": [
     {
       "properties": {
@@ -99,50 +84,6 @@ exports[`ordinary reads, enable/disable settings and repeated native events matc
 
 exports[`ordinary reads, enable/disable settings and repeated native events match legacy 4`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "id0",
-      "properties": {
-        "new": {
-          "serverName": "server"
-        },
-        "old": {
-          "serverName": "server"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "ServerConfig"
-    },
-    {
-      "event": "update",
-      "id": "id0",
-      "properties": {
-        "new": {
-          "serverName": "server"
-        },
-        "old": {
-          "serverName": "server"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "ServerConfig"
-    },
-    {
-      "event": "update",
-      "id": "id0",
-      "properties": {
-        "new": {
-          "serverName": "server"
-        },
-        "old": {
-          "serverName": "server"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "ServerConfig"
-    }
-  ],
   "graph": [
     {
       "properties": {
