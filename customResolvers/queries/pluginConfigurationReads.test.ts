@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
+import { PluginRegistryManagementMode } from "../../src/generated/graphql.js";
 import type { PluginConfigurationReadRepository } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import getServerPluginSecrets from "./getServerPluginSecrets.js";
 import getInstalledPlugins from "./getInstalledPlugins.js";
@@ -94,4 +95,45 @@ test("reconciliation missing config stops before reading secrets", async () => {
   await assert.rejects(resolver(null, { manifest: { apiVersion: "multiforum.gennit.dev/v1alpha1", plugins: [] } }, context, info), {
     message: "Server configuration not found",
   });
+});
+
+test("reconciliation reads registry and requested channel state", async () => {
+  const requestedChannels: string[][] = [];
+  const resolver = previewReconciliation(input({
+    listReconciliationConfigs: async () => [{
+      pluginRegistries: ["https://plugins.example.test/core.json"],
+      pluginPipelines: [],
+      InstalledVersionsConnection: { edges: [{
+        properties: { enabled: true, settingsJson: "{}" },
+        node: { version: "1.0.0", Plugin: { name: "scanner" } },
+      }] },
+    }],
+    listReconciliationSecretStatuses: async () => [],
+    listReconciliationChannels: async (uniqueNames) => {
+      requestedChannels.push(uniqueNames);
+      return [{
+        uniqueName: "moderation",
+        EnabledPluginsConnection: { edges: [{
+          properties: { enabled: true, settingsJson: '{"threshold":0.8}' },
+          node: { version: "1.0.0", Plugin: { name: "scanner" } },
+        }] },
+      }];
+    },
+  }));
+
+  const result = await resolver(null, { manifest: {
+    apiVersion: "multiforum.gennit.dev/v1alpha1",
+    plugins: [{ pluginId: "scanner", version: "1.0.0", enabled: true }],
+    registries: { mode: PluginRegistryManagementMode.Merge, urls: ["https://plugins.example.test/core.json"] },
+    channelPlugins: [{
+      channelUniqueName: "moderation",
+      pluginId: "scanner",
+      version: "1.0.0",
+      enabled: true,
+      settingsJson: { threshold: 0.8 },
+    }],
+  } }, context, info);
+
+  assert.deepEqual(requestedChannels, [["moderation"]]);
+  assert.equal(result.inSync, true);
 });

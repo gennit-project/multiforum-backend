@@ -14,8 +14,21 @@ export type DesiredServerPlugin = {
 export type PluginConfigurationDesiredState = {
   apiVersion: string
   plugins: DesiredServerPlugin[]
+  registries?: {
+    mode: 'MERGE' | 'REPLACE'
+    urls: string[]
+  } | null
+  channelPlugins?: DesiredChannelPlugin[] | null
   pipelines?: EventPipeline[] | null
   managedPipelineEvents?: string[] | null
+}
+
+export type DesiredChannelPlugin = {
+  channelUniqueName: string
+  pluginId: string
+  version: string
+  enabled: boolean
+  settingsJson?: Record<string, unknown> | null
 }
 
 export type InstalledServerPlugin = {
@@ -32,7 +45,12 @@ export type ServerPluginSecret = {
 }
 
 export type PluginConfigurationLiveState = {
+  registries?: string[]
   plugins: InstalledServerPlugin[]
+  channels?: Array<{
+    channelUniqueName: string
+    plugins: InstalledServerPlugin[]
+  }>
   secrets: ServerPluginSecret[]
   pipelines: EventPipeline[]
 }
@@ -44,6 +62,10 @@ export type PluginConfigurationChangeKind =
   | 'DISABLE_PLUGIN'
   | 'SET_SECRET'
   | 'REPLACE_SECRET'
+  | 'UPDATE_REGISTRIES'
+  | 'ENABLE_CHANNEL_PLUGIN'
+  | 'DISABLE_CHANNEL_PLUGIN'
+  | 'UPDATE_CHANNEL_SETTINGS'
   | 'UPDATE_PIPELINES'
 
 export type PluginConfigurationChange = {
@@ -159,6 +181,35 @@ const validateDesiredState = (
     )
   }
 
+  if (desired.registries) {
+    if (new Set(desired.registries.urls).size !== desired.registries.urls.length) {
+      throw new Error('Duplicate desired plugin registry URL')
+    }
+    for (const registryUrl of desired.registries.urls) {
+      let parsed: URL
+      try {
+        parsed = new URL(registryUrl)
+      } catch {
+        throw new Error(`Invalid plugin registry URL: ${registryUrl}`)
+      }
+      if (parsed.protocol !== 'https:' || parsed.username || parsed.password) {
+        throw new Error(`Plugin registry URLs must use HTTPS without credentials: ${registryUrl}`)
+      }
+    }
+  }
+
+  const channelPluginIdentities = new Set<string>()
+  for (const plugin of desired.channelPlugins ?? []) {
+    if (!plugin.channelUniqueName.trim() || !plugin.pluginId.trim() || !plugin.version.trim()) {
+      throw new Error('Desired channel plugins require non-empty channelUniqueName, pluginId, and version')
+    }
+    const identity = `${plugin.channelUniqueName}:${plugin.pluginId}@${plugin.version}`
+    if (channelPluginIdentities.has(identity)) {
+      throw new Error(`Duplicate desired channel plugin: ${identity}`)
+    }
+    channelPluginIdentities.add(identity)
+  }
+
   const identities = new Set<string>()
   for (const plugin of desired.plugins) {
     if (!plugin.pluginId.trim() || !plugin.version.trim()) {
@@ -244,6 +295,24 @@ export const buildPluginConfigurationReconciliationPlan = ({
   const changes: PluginConfigurationChange[] = []
   const warnings: string[] = []
 
+  if (desired.registries) {
+    const desiredRegistries = desired.registries.mode === 'REPLACE'
+      ? desired.registries.urls
+      : [...new Set([...(live.registries ?? []), ...desired.registries.urls])]
+    if (!sameValue(live.registries ?? [], desiredRegistries)) {
+      changes.push({
+        kind: 'UPDATE_REGISTRIES',
+        path: 'registries',
+        message: `${desired.registries.mode === 'REPLACE' ? 'Replace' : 'Merge'} plugin registries`,
+        current: live.registries ?? [],
+        desired: desiredRegistries,
+        blocked: false,
+      })
+    }
+  } else {
+    warnings.push('Plugin registries are unmanaged because registries was omitted')
+  }
+
   for (const plugin of desired.plugins) {
     const path = `plugins.${plugin.pluginId}@${plugin.version}`
     const installed = live.plugins.find(
@@ -319,6 +388,66 @@ export const buildPluginConfigurationReconciliationPlan = ({
         blocked: false,
       })
     }
+  }
+
+  for (const plugin of desired.channelPlugins ?? []) {
+    const path = `channels.${plugin.channelUniqueName}.plugins.${plugin.pluginId}@${plugin.version}`
+    const channel = (live.channels ?? []).find(candidate => candidate.channelUniqueName === plugin.channelUniqueName)
+    if (!channel) {
+      changes.push({
+        kind: plugin.enabled ? 'ENABLE_CHANNEL_PLUGIN' : 'DISABLE_CHANNEL_PLUGIN',
+        path: `${path}.enabled`,
+        message: `Channel ${plugin.channelUniqueName} does not exist`,
+        current: null,
+        desired: plugin.enabled,
+        blocked: true,
+      })
+      continue
+    }
+    const installed = live.plugins.some(candidate =>
+      candidate.pluginId === plugin.pluginId && candidate.version === plugin.version
+    ) || desired.plugins.some(candidate =>
+      candidate.pluginId === plugin.pluginId && candidate.version === plugin.version
+    )
+    if (plugin.enabled && !installed) {
+      changes.push({
+        kind: 'ENABLE_CHANNEL_PLUGIN',
+        path: `${path}.enabled`,
+        message: `Install ${plugin.pluginId} version ${plugin.version} before enabling it for ${plugin.channelUniqueName}`,
+        current: null,
+        desired: true,
+        blocked: true,
+      })
+      continue
+    }
+    const current = channel.plugins.find(candidate =>
+      candidate.pluginId === plugin.pluginId && candidate.version === plugin.version
+    )
+    if (current ? current.enabled !== plugin.enabled : plugin.enabled) {
+      changes.push({
+        kind: plugin.enabled ? 'ENABLE_CHANNEL_PLUGIN' : 'DISABLE_CHANNEL_PLUGIN',
+        path: `${path}.enabled`,
+        message: `${plugin.enabled ? 'Enable' : 'Disable'} ${plugin.pluginId} version ${plugin.version} for ${plugin.channelUniqueName}`,
+        current: current?.enabled ?? null,
+        desired: plugin.enabled,
+        blocked: false,
+      })
+    }
+    if (plugin.enabled && plugin.settingsJson !== undefined && plugin.settingsJson !== null &&
+      (!current || !sameValue(current.settingsJson, plugin.settingsJson))) {
+      changes.push({
+        kind: 'UPDATE_CHANNEL_SETTINGS',
+        path: `${path}.settingsJson`,
+        message: `Reconcile ${plugin.pluginId} settings for ${plugin.channelUniqueName}`,
+        current: current ? parseStoredJson(current.settingsJson) : null,
+        desired: plugin.settingsJson,
+        blocked: false,
+      })
+    }
+  }
+
+  if (desired.channelPlugins === undefined || desired.channelPlugins === null) {
+    warnings.push('Channel plugins are unmanaged because channelPlugins was omitted')
   }
 
   if (desired.pipelines !== undefined && desired.pipelines !== null) {
