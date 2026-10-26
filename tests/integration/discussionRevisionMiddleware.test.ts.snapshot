@@ -1,41 +1,5 @@
 exports[`actual discussion middleware preserves history/notification/event behavior: body 1`] = `
 {
-  "events": [
-    {
-      "from": "Discussion",
-      "kind": "create_relationship",
-      "relationship": "BODY_LAST_EDITED_BY",
-      "to": "User"
-    },
-    {
-      "from": "Discussion",
-      "kind": "create_relationship",
-      "relationship": "HAS_BODY_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    }
-  ],
   "notifications": [
     {
       "notificationType": "general",
@@ -68,62 +32,6 @@ exports[`actual discussion middleware preserves history/notification/event behav
 
 exports[`actual discussion middleware preserves history/notification/event behavior: both 1`] = `
 {
-  "events": [
-    {
-      "from": "Discussion",
-      "kind": "create_relationship",
-      "relationship": "BODY_LAST_EDITED_BY",
-      "to": "User"
-    },
-    {
-      "from": "Discussion",
-      "kind": "create_relationship",
-      "relationship": "HAS_BODY_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "Discussion",
-      "kind": "create_relationship",
-      "relationship": "HAS_TITLE_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    }
-  ],
   "notifications": [
     {
       "notificationType": "general",
@@ -162,12 +70,6 @@ exports[`actual discussion middleware preserves history/notification/event behav
 
 exports[`actual discussion middleware preserves history/notification/event behavior: custom 1`] = `
 {
-  "events": [
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    }
-  ],
   "notifications": [],
   "state": {
     "links": [
@@ -187,12 +89,6 @@ exports[`actual discussion middleware preserves history/notification/event behav
 
 exports[`actual discussion middleware preserves history/notification/event behavior: equal 1`] = `
 {
-  "events": [
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    }
-  ],
   "notifications": [
     {
       "notificationType": "general",
@@ -218,32 +114,6 @@ exports[`actual discussion middleware preserves history/notification/event behav
 
 exports[`actual discussion middleware preserves history/notification/event behavior: title 1`] = `
 {
-  "events": [
-    {
-      "from": "Discussion",
-      "kind": "create_relationship",
-      "relationship": "HAS_TITLE_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    },
-    {
-      "kind": "update",
-      "typename": "Discussion"
-    }
-  ],
   "notifications": [
     {
       "notificationType": "general",

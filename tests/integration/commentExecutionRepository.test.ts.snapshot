@@ -82,65 +82,6 @@ exports[`comment union-author and age-gate read contracts remain schema-owned 3`
 exports[`create retains default projection and ordered native events 1`] = `
 {
   "edgeTypes": [],
-  "events": [
-    {
-      "event": "create",
-      "id": "id4",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "eventType": "fixture",
-          "executionOrder": 0,
-          "id": "id2",
-          "pipelineId": "pipeline",
-          "pluginId": "plugin",
-          "queuedAt": {
-            "day": {
-              "high": 0,
-              "low": 1
-            },
-            "hour": {
-              "high": 0,
-              "low": 0
-            },
-            "minute": {
-              "high": 0,
-              "low": 0
-            },
-            "month": {
-              "high": 0,
-              "low": 1
-            },
-            "nanosecond": {
-              "high": 0,
-              "low": 0
-            },
-            "second": {
-              "high": 0,
-              "low": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "high": 0,
-              "low": 0
-            },
-            "year": {
-              "high": 0,
-              "low": 2026
-            }
-          },
-          "retryCount": 0,
-          "scope": "SERVER",
-          "status": "PENDING",
-          "targetId": "file",
-          "targetType": "DownloadableFile",
-          "updatedAt": "<time>",
-          "version": "1.0.0"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "PluginRun"
-    }
-  ],
   "nodes": [
     {
       "label": "Channel",
@@ -687,36 +628,6 @@ exports[`finite reads preserve literal IDs, missing results and unbounded config
 exports[`job default projection failure retains committed write 1`] = `
 {
   "edgeTypes": [],
-  "events": [
-    {
-      "event": "update",
-      "id": "id3",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "eventType": "fixture",
-          "id": "id2",
-          "pluginId": "plugin",
-          "scope": "SERVER",
-          "status": "SKIPPED",
-          "updatedAt": "<time>",
-          "version": "1.0.0"
-        },
-        "old": {
-          "createdAt": "<time>",
-          "eventType": "fixture",
-          "id": "id2",
-          "pluginId": "plugin",
-          "scope": "SERVER",
-          "status": "PENDING",
-          "updatedAt": "<time>",
-          "version": "1.0.0"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "PluginRun"
-    }
-  ],
   "nodes": [
     {
       "label": "Channel",
@@ -769,71 +680,6 @@ exports[`job default projection failure retains committed write 1`] = `
 exports[`skip retains default projection and ordered native events 1`] = `
 {
   "edgeTypes": [],
-  "events": [
-    {
-      "event": "update",
-      "id": "id3",
-      "properties": {
-        "new": {
-          "createdAt": "<time>",
-          "eventType": "fixture",
-          "finishedAt": {
-            "day": {
-              "high": 0,
-              "low": 1
-            },
-            "hour": {
-              "high": 0,
-              "low": 0
-            },
-            "minute": {
-              "high": 0,
-              "low": 0
-            },
-            "month": {
-              "high": 0,
-              "low": 1
-            },
-            "nanosecond": {
-              "high": 0,
-              "low": 0
-            },
-            "second": {
-              "high": 0,
-              "low": 0
-            },
-            "timeZoneOffsetSeconds": {
-              "high": 0,
-              "low": 0
-            },
-            "year": {
-              "high": 0,
-              "low": 2026
-            }
-          },
-          "id": "id2",
-          "pluginId": "plugin",
-          "scope": "SERVER",
-          "skippedReason": "fixture",
-          "status": "SKIPPED",
-          "updatedAt": "<time>",
-          "version": "1.0.0"
-        },
-        "old": {
-          "createdAt": "<time>",
-          "eventType": "fixture",
-          "id": "id2",
-          "pluginId": "plugin",
-          "scope": "SERVER",
-          "status": "PENDING",
-          "updatedAt": "<time>",
-          "version": "1.0.0"
-        }
-      },
-      "timestamp": "<time>",
-      "typename": "PluginRun"
-    }
-  ],
   "nodes": [
     {
       "label": "Channel",

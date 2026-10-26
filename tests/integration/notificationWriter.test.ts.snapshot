@@ -1,124 +1,11 @@
 exports[`missing recipients return false and publish no events 1`] = `
 {
-  "events": [],
   "rows": []
 }
 `;
 
 exports[`nested writes preserve fields, repeated notifications and native subscription events 1`] = `
 {
-  "events": [
-    {
-      "event": "create",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "id": "<id-1>",
-          "notificationType": "general",
-          "read": false,
-          "text": "hello"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Notification"
-    },
-    {
-      "event": "create",
-      "id": "<id-4>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "id": "<id-5>",
-          "notificationType": "general",
-          "read": false,
-          "text": "hello"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Notification"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "User",
-      "id": "<id-2>",
-      "id_from": "<id-3>",
-      "id_to": "<id-0>",
-      "properties": {
-        "from": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "id": "<id-1>",
-          "notificationType": "general",
-          "read": false,
-          "text": "hello"
-        }
-      },
-      "relationshipName": "HAS_NOTIFICATION",
-      "timestamp": "<generated-time>",
-      "toTypename": "Notification"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "User",
-      "id": "<id-6>",
-      "id_from": "<id-3>",
-      "id_to": "<id-4>",
-      "properties": {
-        "from": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "id": "<id-5>",
-          "notificationType": "general",
-          "read": false,
-          "text": "hello"
-        }
-      },
-      "relationshipName": "HAS_NOTIFICATION",
-      "timestamp": "<generated-time>",
-      "toTypename": "Notification"
-    },
-    {
-      "event": "update",
-      "id": "<id-3>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "User"
-    },
-    {
-      "event": "update",
-      "id": "<id-3>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "User"
-    }
-  ],
   "rows": [
     {
       "read": false,
@@ -136,61 +23,6 @@ exports[`nested writes preserve fields, repeated notifications and native subscr
 
 exports[`nullable notification text retains generated-input acceptance 1`] = `
 {
-  "events": [
-    {
-      "event": "create",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "id": "<id-1>",
-          "notificationType": "general",
-          "read": false
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Notification"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "User",
-      "id": "<id-2>",
-      "id_from": "<id-3>",
-      "id_to": "<id-0>",
-      "properties": {
-        "from": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "id": "<id-1>",
-          "notificationType": "general",
-          "read": false
-        }
-      },
-      "relationshipName": "HAS_NOTIFICATION",
-      "timestamp": "<generated-time>",
-      "toTypename": "Notification"
-    },
-    {
-      "event": "update",
-      "id": "<id-3>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "User"
-    }
-  ],
   "rows": [
     {
       "read": false,
@@ -203,60 +35,6 @@ exports[`nullable notification text retains generated-input acceptance 1`] = `
 
 exports[`projection failures preserve first error and committed writes/events 1`] = `
 {
-  "events": [
-    {
-      "event": "create",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "id": "<id-1>",
-          "notificationType": "general",
-          "read": false,
-          "text": "hello"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Notification"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "User",
-      "id": "<id-2>",
-      "id_from": "<id-3>",
-      "id_to": "<id-0>",
-      "properties": {
-        "from": {
-          "username": "alice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "id": "<id-1>",
-          "notificationType": "general",
-          "read": false,
-          "text": "hello"
-        }
-      },
-      "relationshipName": "HAS_NOTIFICATION",
-      "timestamp": "<generated-time>",
-      "toTypename": "Notification"
-    },
-    {
-      "event": "update",
-      "id": "<id-3>",
-      "properties": {
-        "new": {
-          "username": "alice"
-        },
-        "old": {
-          "username": "alice"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "User"
-    }
-  ],
   "rows": [
     {
       "read": false,

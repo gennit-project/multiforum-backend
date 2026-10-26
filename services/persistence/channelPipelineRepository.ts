@@ -113,7 +113,9 @@ const SERVER = `query ServerSettingsForChannelPipeline { serverConfigs {
         } }`;
 const SAVE = `mutation SaveChannelPipelineSettings($where: ChannelWhere, $update: ChannelUpdateInput) { updateChannels(where: $where, update: $update) { channels ${CHANNEL_PIPELINE_DEFAULT_SELECTION} } }`;
 const DEPRECATE = `mutation DeprecateOrphanedPipelineBot($where: UserWhere, $update: UserUpdateInput) { updateUsers(where: $where, update: $update) { users ${BOT_DEPRECATION_DEFAULT_SELECTION} } }`;
-const DISCONNECT = `mutation DisconnectOrphanedPipelineBots($where: ChannelWhere, $disconnect: ChannelDisconnectInput) { updateChannels(where: $where, disconnect: $disconnect) { channels ${CHANNEL_PIPELINE_DEFAULT_SELECTION} } }`;
+// v7 removed the top-level disconnect arg on updateX; to-many disconnect now
+// nests inside update ({ Bots: [{ disconnect: [{ where: { node } }] }] }).
+const DISCONNECT = `mutation DisconnectOrphanedPipelineBots($where: ChannelWhere, $update: ChannelUpdateInput) { updateChannels(where: $where, update: $update) { channels ${CHANNEL_PIPELINE_DEFAULT_SELECTION} } }`;
 export interface ChannelPipelineRepository {
   findSettings(uniqueName: string): Promise<Channel[]>;
   savePipelines(uniqueName: string, pluginPipelines: string): Promise<void>;
@@ -136,7 +138,7 @@ export function createChannelPipelineRepository(driver: Driver): ChannelPipeline
       await executeGeneratedOperation(driver,DEPRECATE,{where:{username:{eq:username}},update:{isDeprecated:{set:true},deprecatedReason:{set:reason}}});
     },
     async disconnectBots(uniqueName,usernames) {
-      await executeGeneratedOperation(driver,DISCONNECT,{where:{uniqueName:{eq:uniqueName}},disconnect:{Bots:usernames.map(username=>({where:{node:{username:{eq:username}}}}))}});
+      await executeGeneratedOperation(driver,DISCONNECT,{where:{uniqueName:{eq:uniqueName}},update:{Bots:[{disconnect:usernames.map(username=>({where:{node:{username:{eq:username}}}}))}]}});
     },
   };
 }

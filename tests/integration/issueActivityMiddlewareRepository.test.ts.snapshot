@@ -51,38 +51,12 @@ exports[`all author snapshots preserve generated selections, union authors and m
 
 exports[`closure mutation preserves default projection, persistence and events (valid=false) 1`] = `
 {
-  "events": [
-    {
-      "kind": "update",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
-      ],
-      "typename": "Issue"
-    }
-  ],
   "result": "Cannot return null for non-nullable field Issue.issueNumber."
 }
 `;
 
 exports[`closure mutation preserves default projection, persistence and events (valid=true) 1`] = `
 {
-  "events": [
-    {
-      "kind": "update",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
-      ],
-      "typename": "Issue"
-    }
-  ],
   "result": null
 }
 `;

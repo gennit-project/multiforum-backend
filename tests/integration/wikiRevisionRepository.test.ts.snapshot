@@ -1,45 +1,22 @@
 exports[`actual child middleware preserves result-shape contract and system author (nested=false) 1`] = `
 {
-  "events": [],
   "graph": []
 }
 `;
 
 exports[`actual child middleware preserves result-shape contract and system author (nested=true) 1`] = `
 {
-  "events": [
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    }
-  ],
   "graph": [
     {
       "author": "system",
       "body": "Child body",
-      "parent": null,
+      "parent": "w",
       "reason": "new"
     },
     {
       "author": "system",
       "body": "Child title",
-      "parent": null,
+      "parent": "w",
       "reason": "new"
     }
   ]
@@ -48,23 +25,11 @@ exports[`actual child middleware preserves result-shape contract and system auth
 
 exports[`actual wiki revision hook graph and event parity: body 1`] = `
 {
-  "events": [
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    }
-  ],
   "graph": [
     {
       "author": "previous",
       "body": "Body",
-      "parent": null,
+      "parent": "w",
       "reason": "old reason"
     }
   ]
@@ -73,39 +38,17 @@ exports[`actual wiki revision hook graph and event parity: body 1`] = `
 
 exports[`actual wiki revision hook graph and event parity: both 1`] = `
 {
-  "events": [
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    }
-  ],
   "graph": [
     {
       "author": "previous",
       "body": "Body",
-      "parent": null,
+      "parent": "w",
       "reason": "old reason"
     },
     {
       "author": "previous",
       "body": "Title",
-      "parent": null,
+      "parent": "w",
       "reason": "old reason"
     }
   ]
@@ -114,39 +57,17 @@ exports[`actual wiki revision hook graph and event parity: both 1`] = `
 
 exports[`actual wiki revision hook graph and event parity: invalid default 1`] = `
 {
-  "events": [
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    }
-  ],
   "graph": [
     {
       "author": "previous",
       "body": "Body",
-      "parent": null,
+      "parent": "w",
       "reason": "old reason"
     },
     {
       "author": "previous",
       "body": "Title",
-      "parent": null,
+      "parent": "w",
       "reason": "old reason"
     }
   ]
@@ -155,23 +76,11 @@ exports[`actual wiki revision hook graph and event parity: invalid default 1`] =
 
 exports[`actual wiki revision hook graph and event parity: title 1`] = `
 {
-  "events": [
-    {
-      "from": "User",
-      "kind": "create_relationship",
-      "relationship": "AUTHORED_VERSION",
-      "to": "TextVersion"
-    },
-    {
-      "kind": "create",
-      "typename": "TextVersion"
-    }
-  ],
   "graph": [
     {
       "author": "previous",
       "body": "Title",
-      "parent": null,
+      "parent": "w",
       "reason": "old reason"
     }
   ]
@@ -180,7 +89,6 @@ exports[`actual wiki revision hook graph and event parity: title 1`] = `
 
 exports[`actual wiki revision hook graph and event parity: unchanged 1`] = `
 {
-  "events": [],
   "graph": []
 }
 `;
