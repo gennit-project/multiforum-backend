@@ -134,7 +134,8 @@ const getResolver = (input: Input) => {
               const overrideFlag = `overrideSeries${
                 field.charAt(0).toUpperCase() + field.slice(1)
               }`;
-              updateWithOverrides[overrideFlag] = true;
+              // v7 scalar updates take { set: value }.
+              updateWithOverrides[overrideFlag] = { set: true };
             }
           }
 

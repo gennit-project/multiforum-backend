@@ -35,10 +35,10 @@ const cases = [
   {name:'all in series',scope:'ALL_IN_SERIES',linked:true},
   {name:'standalone future',scope:'THIS_AND_FUTURE',linked:false},
   {name:'standalone all',scope:'ALL_IN_SERIES',linked:false},
-  {name:'occurrence-only changes',scope:'ALL_IN_SERIES',linked:true,update:{canceled:true}},
+  {name:'occurrence-only changes',scope:'ALL_IN_SERIES',linked:true,update:{canceled:{set:true}}},
   {name:'nested default limit',scope:'ALL_IN_SERIES',linked:true,count:28},
   {name:'invalid scope',scope:'INVALID',linked:true},
-  {name:'invalid update coercion',scope:'THIS_ONLY',linked:true,update:{title:123}},
+  {name:'invalid update coercion',scope:'THIS_ONLY',linked:true,update:{title:{set:123}}},
   {name:'template projection failure',scope:'ALL_IN_SERIES',linked:true,projection:true},
 ] as const;
 for (const scenario of cases) test(`actual resolver parity: ${scenario.name}`, async (t) => {
@@ -46,7 +46,6 @@ for (const scenario of cases) test(`actual resolver parity: ${scenario.name}`, a
   await seed(count, scenario.linked);
   // Keep identities/relationship allocation unchanged between old and new runs.
   const originals = (await driver.executeQuery('MATCH(n) RETURN id(n) AS identity, properties(n) AS properties')).records.map(r => r.toObject());
-  const nodeIds = new Set(originals.map(n => n.identity.toString()));
   const originalState = await state();
   const field = (schema.getType('EventSeries') as GraphQLObjectType).getFields().title;
   const original = field.resolve;
@@ -60,16 +59,12 @@ for (const scenario of cases) test(`actual resolver parity: ${scenario.name}`, a
       await driver.executeQuery('UNWIND $originals AS row MATCH(n) WHERE id(n)=row.identity SET n=row.properties', {originals}); events = [];
       const resolver = getResolver({driver, eventSeriesUpdateRepository: repository, dependencies: {buildEventUpdateNotificationPayload: () => null, sendBatchEmails: async () => {assert.fail('No notifications expected');}}});
       let response: unknown; let error: string | null = null;
-      try {response = await resolver(null, {eventId:'e1',scope:scenario.scope,eventUpdateInput:'update' in scenario ? scenario.update : {title:'After'},channelConnections:[],channelDisconnections:[]} as never, {user:{username:'actor'}} as never, null as never);}
+      try {response = await resolver(null, {eventId:'e1',scope:scenario.scope,eventUpdateInput:'update' in scenario ? scenario.update : {title:{set:'After'}},channelConnections:[],channelDisconnections:[]} as never, {user:{username:'actor'}} as never, null as never);}
       catch (failure) {error = (failure as Error).message;}
-      for (const event of events) {
-        assert.equal(event.event,'update'); assert.ok(nodeIds.has(event.id));
-        assert.equal(event.properties.new.updatedAt.toStandardDate().getTime(),event.timestamp);
-      }
+      // v7 emits no in-process subscription events; native event assertions removed.
       const current = await state();
       if (scenario.name === 'invalid scope' || scenario.name === 'invalid update coercion' || 'projection' in scenario) {
         assert.ok(error); assert.deepEqual(current, originalState);
-        if ('projection' in scenario) assert.equal(events.length,4); else assert.deepEqual(events,[]);
       } else {
         assert.equal(error,null);
         const changed = current.filter(n => n.properties.title === 'After' || n.properties.canceled === true).length;

@@ -122,7 +122,7 @@ test("updateEventInSeries ALL_IN_SERIES applies a title change to every occurren
   await updateInSeries({
     eventId: occ[0],
     scope: "ALL_IN_SERIES",
-    eventUpdateInput: { title: "Renamed Meetup" },
+    eventUpdateInput: { title: { set: "Renamed Meetup" } },
   });
 
   assert.deepEqual(await titlesByIndex(), [
@@ -139,7 +139,7 @@ test("updateEventInSeries THIS_AND_FUTURE changes the edited occurrence and late
   await updateInSeries({
     eventId: occ[1],
     scope: "THIS_AND_FUTURE",
-    eventUpdateInput: { title: "Future Meetup" },
+    eventUpdateInput: { title: { set: "Future Meetup" } },
   });
 
   assert.deepEqual(await titlesByIndex(), [
@@ -155,7 +155,7 @@ test("updateEventInSeries THIS_ONLY changes only the edited occurrence", async (
   await updateInSeries({
     eventId: occ[1],
     scope: "THIS_ONLY",
-    eventUpdateInput: { title: "Just This One" },
+    eventUpdateInput: { title: { set: "Just This One" } },
   });
 
   assert.deepEqual(await titlesByIndex(), [
@@ -228,7 +228,7 @@ test("updateEventInSeries notifies subscribers of the edited occurrence but not 
     {
       eventId: occ[0],
       scope: "ALL_IN_SERIES",
-      eventUpdateInput: { title: "Renamed Meetup" },
+      eventUpdateInput: { title: { set: "Renamed Meetup" } },
     },
     "poster"
   );
@@ -275,8 +275,8 @@ test("updateEventInSeries THIS_ONLY emails subscribed watchers with time-change 
       eventId: occ[1],
       scope: "THIS_ONLY",
       eventUpdateInput: {
-        startTime: "2030-01-09T19:30:00.000Z",
-        endTime: "2030-01-09T21:00:00.000Z",
+        startTime: { set: "2030-01-09T19:30:00.000Z" },
+        endTime: { set: "2030-01-09T21:00:00.000Z" },
       },
     },
     { sendBatchEmailsCalls }
@@ -320,8 +320,8 @@ test("updateEventInSeries THIS_AND_FUTURE emails edited-occurrence watchers with
       eventId: occ[1],
       scope: "THIS_AND_FUTURE",
       eventUpdateInput: {
-        title: "Future Weekly Meetup",
-        locationName: "Town Hall",
+        title: { set: "Future Weekly Meetup" },
+        locationName: { set: "Town Hall" },
       },
     },
     { sendBatchEmailsCalls }
@@ -356,7 +356,7 @@ test("updateEventInSeries ALL_IN_SERIES emails edited-occurrence watchers with c
       eventId: occ[0],
       scope: "ALL_IN_SERIES",
       eventUpdateInput: {
-        canceled: true,
+        canceled: { set: true },
       },
     },
     { sendBatchEmailsCalls }
