@@ -109,6 +109,9 @@ export const mapPluginConfigurationDesiredStateInput = (
         })) ?? null,
       }
     : {}),
+  ...(manifest.managedPipelineEvents !== undefined
+    ? { managedPipelineEvents: manifest.managedPipelineEvents }
+    : {}),
 })
 
 const mapSecretStatus = (secret: {

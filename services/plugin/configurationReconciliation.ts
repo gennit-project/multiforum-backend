@@ -15,6 +15,7 @@ export type PluginConfigurationDesiredState = {
   apiVersion: string
   plugins: DesiredServerPlugin[]
   pipelines?: EventPipeline[] | null
+  managedPipelineEvents?: string[] | null
 }
 
 export type InstalledServerPlugin = {
@@ -133,6 +134,22 @@ const pipelinesMatch = (
   })
 }
 
+const mergeScopedPipelines = ({
+  current,
+  desired,
+  managedEvents,
+}: {
+  current: EventPipeline[]
+  desired: EventPipeline[]
+  managedEvents: string[]
+}): EventPipeline[] => {
+  const managed = new Set(managedEvents)
+  return [
+    ...current.filter(pipeline => !managed.has(pipeline.event)),
+    ...desired,
+  ]
+}
+
 const validateDesiredState = (
   desired: PluginConfigurationDesiredState
 ): void => {
@@ -181,6 +198,37 @@ const validateDesiredState = (
       if (pipeline.steps.some(step => !step.pluginId.trim())) {
         throw new Error('Desired pipeline steps require a non-empty pluginId')
       }
+    }
+  }
+
+  if (
+    desired.managedPipelineEvents !== undefined &&
+    desired.managedPipelineEvents !== null
+  ) {
+    if (desired.pipelines === undefined || desired.pipelines === null) {
+      throw new Error('managedPipelineEvents requires pipelines to be present')
+    }
+    if (desired.managedPipelineEvents.length === 0) {
+      throw new Error('managedPipelineEvents must contain at least one event')
+    }
+    if (desired.managedPipelineEvents.some(event => !event.trim())) {
+      throw new Error('managedPipelineEvents requires non-empty event names')
+    }
+    if (
+      new Set(desired.managedPipelineEvents).size !==
+      desired.managedPipelineEvents.length
+    ) {
+      throw new Error('Duplicate managed pipeline event')
+    }
+
+    const managedEvents = new Set(desired.managedPipelineEvents)
+    const outOfScope = desired.pipelines
+      .map(pipeline => pipeline.event)
+      .filter(event => !managedEvents.has(event))
+    if (outOfScope.length > 0) {
+      throw new Error(
+        `Desired pipelines are outside managedPipelineEvents: ${outOfScope.join(', ')}`
+      )
     }
   }
 }
@@ -274,13 +322,27 @@ export const buildPluginConfigurationReconciliationPlan = ({
   }
 
   if (desired.pipelines !== undefined && desired.pipelines !== null) {
-    if (!pipelinesMatch(live.pipelines, desired.pipelines)) {
+    const reconciledPipelines = desired.managedPipelineEvents
+      ? mergeScopedPipelines({
+          current: live.pipelines,
+          desired: desired.pipelines,
+          managedEvents: desired.managedPipelineEvents,
+        })
+      : desired.pipelines
+    if (!pipelinesMatch(live.pipelines, reconciledPipelines)) {
+      const scoped =
+        desired.managedPipelineEvents !== undefined &&
+        desired.managedPipelineEvents !== null
       changes.push({
         kind: 'UPDATE_PIPELINES',
-        path: 'pipelines',
-        message: 'Reconcile server plugin pipelines',
+        path: scoped ? 'pipelines.managedEvents' : 'pipelines',
+        message: scoped
+          ? `Reconcile server plugin pipelines for managed events: ${desired.managedPipelineEvents?.join(
+              ', '
+            )}`
+          : 'Reconcile server plugin pipelines',
         current: live.pipelines,
-        desired: desired.pipelines,
+        desired: reconciledPipelines,
         blocked: false,
       })
     }

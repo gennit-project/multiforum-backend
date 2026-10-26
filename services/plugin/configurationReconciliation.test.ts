@@ -150,6 +150,129 @@ test('treats explicit pipeline metadata as managed', () => {
   assert.deepEqual(plan.changes.map(change => change.kind), ['UPDATE_PIPELINES'])
 })
 
+test('scoped pipeline ownership preserves unrelated events', () => {
+  const unrelated = {
+    event: 'downloadableFile.updated',
+    steps: [{ pluginId: 'existing-scanner', version: '1.0.0' }],
+  }
+  const plan = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      managedPipelineEvents: ['comment.created'],
+      pipelines: [{
+        event: 'comment.created',
+        steps: [{ pluginId: 'llm-moderation', version: '0.7.0' }],
+      }],
+    }),
+    live: live({
+      pipelines: [
+        unrelated,
+        {
+          event: 'comment.created',
+          steps: [{ pluginId: 'old-moderator', version: '1.0.0' }],
+        },
+      ],
+    }),
+  })
+
+  const pipelineChange = plan.changes.find(
+    change => change.kind === 'UPDATE_PIPELINES'
+  )
+  assert.equal(pipelineChange?.path, 'pipelines.managedEvents')
+  assert.deepEqual(pipelineChange?.desired, [
+    unrelated,
+    {
+      event: 'comment.created',
+      steps: [{ pluginId: 'llm-moderation', version: '0.7.0' }],
+    },
+  ])
+})
+
+test('scoped pipeline ownership can clear only managed events', () => {
+  const unrelated = {
+    event: 'downloadableFile.updated',
+    steps: [{ pluginId: 'existing-scanner', version: '1.0.0' }],
+  }
+  const plan = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      managedPipelineEvents: ['comment.created'],
+      pipelines: [],
+    }),
+    live: live({
+      pipelines: [
+        unrelated,
+        {
+          event: 'comment.created',
+          steps: [{ pluginId: 'llm-moderation', version: '0.7.0' }],
+        },
+      ],
+    }),
+  })
+
+  assert.deepEqual(
+    plan.changes.find(change => change.kind === 'UPDATE_PIPELINES')?.desired,
+    [unrelated]
+  )
+})
+
+test('scoped pipeline ownership is in sync when its events match', () => {
+  const plan = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      managedPipelineEvents: ['comment.created'],
+      pipelines: [{
+        event: 'comment.created',
+        steps: [{ pluginId: 'llm-moderation', version: '0.7.0' }],
+      }],
+    }),
+    live: live({
+      pipelines: [
+        {
+          event: 'downloadableFile.updated',
+          steps: [{ pluginId: 'existing-scanner', version: '1.0.0' }],
+        },
+        {
+          event: 'comment.created',
+          steps: [{
+            pluginId: 'llm-moderation',
+            version: '0.7.0',
+            continueOnError: false,
+            condition: 'ALWAYS',
+          }],
+          stopOnFirstFailure: true,
+        },
+      ],
+    }),
+  })
+
+  assert.equal(plan.inSync, true)
+})
+
+test('rejects invalid scoped pipeline declarations', () => {
+  for (const invalidState of [
+    desired({ managedPipelineEvents: ['comment.created'], pipelines: undefined }),
+    desired({ managedPipelineEvents: [], pipelines: [] }),
+    desired({
+      managedPipelineEvents: ['comment.created', 'comment.created'],
+      pipelines: [],
+    }),
+    desired({ managedPipelineEvents: [''], pipelines: [] }),
+    desired({
+      managedPipelineEvents: ['comment.created'],
+      pipelines: [{
+        event: 'comment.edited',
+        steps: [{ pluginId: 'llm-moderation' }],
+      }],
+    }),
+  ]) {
+    assert.throws(
+      () => buildPluginConfigurationReconciliationPlan({
+        desired: invalidState,
+        live: live(),
+      }),
+      /managedPipelineEvents|managed pipeline event/
+    )
+  }
+})
+
 test('rejects unsupported versions and duplicate declarations', () => {
   assert.throws(
     () => buildPluginConfigurationReconciliationPlan({

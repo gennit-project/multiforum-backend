@@ -2712,6 +2712,8 @@ const typeDefinitions = gql`
     plugins: [DesiredServerPluginInput!]!
     """Omit to leave server pipelines unmanaged; pass an empty list to clear them."""
     pipelines: [EventPipelineInput!]
+    """When present, reconcile only these pipeline events and preserve all others."""
+    managedPipelineEvents: [String!]
   }
 
   enum PluginConfigurationChangeKind {
