@@ -127,22 +127,10 @@ const getResolver = (input: Input) => {
         ? { latitude: seriesInput.latitude, longitude: seriesInput.longitude }
         : undefined;
 
-      // Build tag connections if tags provided
-      const tagConnections = seriesInput.tags?.length
-        ? seriesInput.tags.map(tagText => ({
-            where: { node: { text: tagText } },
-            onCreate: { node: { text: tagText } }
-          }))
-        : [];
-
-      // Build poster connection
-      const posterConnection = context.user?.username
-        ? {
-            connect: {
-              where: { node: { username: context.user.username } }
-            }
-          }
-        : undefined;
+      // Tag texts and poster are wired as owned edges after the create (v7
+      // dropped connectOrCreate / to-one connect from the create input).
+      const tagTexts = seriesInput.tags ?? [];
+      const posterUsername = context.user?.username;
 
       // Create the EventSeries node
       const eventSeriesCreateInput: any = {
@@ -183,17 +171,9 @@ const getResolver = (input: Input) => {
         };
       }
 
-      // Add tag connections
-      if (tagConnections.length > 0) {
-        eventSeriesCreateInput.Tags = {
-          connectOrCreate: tagConnections
-        };
-      }
-
-      // Add poster connection
-      if (posterConnection) {
-        eventSeriesCreateInput.Poster = posterConnection;
-      }
+      // v7 removed connectOrCreate (Tags) and to-one connect (Poster) from
+      // create inputs; both the series and its occurrences get those edges via
+      // owned MERGEs inside the create transaction below.
 
       // Create event occurrences
       const occurrenceInputs = seriesInput.occurrences.map((occ, index) => ({
@@ -218,8 +198,6 @@ const getResolver = (input: Input) => {
           deleted: false,
           occurrenceIndex: index,
           ...(locationPoint ? { location: locationPoint } : {}),
-          ...(tagConnections.length > 0 ? { Tags: { connectOrCreate: tagConnections } } : {}),
-          ...(posterConnection ? { Poster: posterConnection } : {}),
         }
       }));
 
@@ -234,6 +212,38 @@ const getResolver = (input: Input) => {
         // from this attempt are committed.
         const created = await repository.createWithinTransaction(eventSeriesCreateInput, transaction);
         const newEventSeries = created[0];
+        const occurrenceIds = newEventSeries.Occurrences.map((occurrence) => occurrence.id);
+
+        // v7: own the Poster (POSTED_BY, direction IN) edge on the series and
+        // every occurrence, replacing the removed to-one connect.
+        if (posterUsername) {
+          await transaction.run(
+            `MATCH (u:User {username: $posterUsername})
+             OPTIONAL MATCH (s:EventSeries {id: $seriesId})
+             FOREACH (_ IN CASE WHEN s IS NULL THEN [] ELSE [1] END | MERGE (u)-[:POSTED_BY]->(s))
+             WITH u
+             UNWIND $occurrenceIds AS oid
+             MATCH (e:Event {id: oid})
+             MERGE (u)-[:POSTED_BY]->(e)`,
+            { posterUsername, seriesId: newEventSeries.id, occurrenceIds }
+          );
+        }
+
+        // v7: own the Tags (HAS_TAG, direction OUT) edges, replacing
+        // connectOrCreate. Tag's only key is text, so MERGE by text.
+        if (tagTexts.length > 0) {
+          await transaction.run(
+            `MATCH (s:EventSeries {id: $seriesId})
+             UNWIND $tagTexts AS t
+             MERGE (tag:Tag {text: t})
+             MERGE (s)-[:HAS_TAG]->(tag)
+             WITH tag, $occurrenceIds AS occurrenceIds
+             UNWIND occurrenceIds AS oid
+             MATCH (e:Event {id: oid})
+             MERGE (e)-[:HAS_TAG]->(tag)`,
+            { seriesId: newEventSeries.id, tagTexts, occurrenceIds }
+          );
+        }
 
         for (const occurrence of newEventSeries.Occurrences) {
           for (const channelUniqueName of seriesInput.channelConnections) {

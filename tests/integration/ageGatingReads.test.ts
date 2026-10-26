@@ -178,16 +178,16 @@ const nodeCount = async (
 const visibleIds = async (username?: string) => {
   const result = await execute(
     `query {
-      discussions(options: { sort: [{ id: ASC }] }) { id }
-      discussionChannels(options: { sort: [{ id: ASC }] }) { id }
-      comments(options: { sort: [{ id: ASC }] }) { id }
-      issues(options: { sort: [{ id: ASC }] }) { id }
-      images(options: { sort: [{ id: ASC }] }) { id }
-      downloadableFiles(options: { sort: [{ id: ASC }] }) { id }
-      fileVersions(options: { sort: [{ id: ASC }] }) { id }
+      discussions(sort: [{ id: ASC }]) { id }
+      discussionChannels(sort: [{ id: ASC }]) { id }
+      comments(sort: [{ id: ASC }]) { id }
+      issues(sort: [{ id: ASC }]) { id }
+      images(sort: [{ id: ASC }]) { id }
+      downloadableFiles(sort: [{ id: ASC }]) { id }
+      fileVersions(sort: [{ id: ASC }]) { id }
       discussionsConnection { aggregate { count { nodes } } }
       channels(where: { uniqueName: { eq: "general" } }) {
-        DiscussionChannels(options: { sort: [{ id: ASC }] }) { id }
+        DiscussionChannels(sort: [{ id: ASC }]) { id }
       }
     }`,
     username

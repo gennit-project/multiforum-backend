@@ -35,33 +35,17 @@ const propertyValues = (value: unknown) => JSON.parse(JSON.stringify(value, (_ke
 // Generated series carry a per-run UUID id and a wall-clock createdAt; replace those before snapshotting.
 const normSeries = (value: unknown) => JSON.parse(JSON.stringify(propertyValues(value), (key, item) => (['id', 'createdAt', 'updatedAt', 'timestamp'].includes(key) && item !== null ? `<${key}>` : item)));
 // Check actual identities and properties before replacing per-run generated IDs.
+// v7 (campaign #284) emits no in-process subscription events, so the native
+// create / create_relationship event assertions are removed; the committed
+// graph (2 nodes + 1 relationship) and the generated response stay asserted.
 async function capture(tx: ManagedTransaction, response: unknown) {
   const nodes = (await tx.run('MATCH(n) RETURN toString(id(n)) AS id, labels(n)[0] AS label, properties(n) AS properties')).records;
   const rels = (await tx.run('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS id, toString(id(a)) AS source, toString(id(b)) AS target, type(r) AS type')).records;
-  assert.equal(nodes.length, 2); assert.equal(rels.length, 1); assert.equal(events.length, 3);
-  const nodeAliases = new Map(nodes.map(n => [n.get('id'), n.get('label')]));
+  assert.equal(nodes.length, 2); assert.equal(rels.length, 1);
   const domainAliases = new Map(nodes.map(n => [n.get('properties').id, n.get('label') + '-domain-id']));
-  for (const event of events) {
-    if (event.event === 'create') {
-      const node = nodes.find(n => n.get('id') === event.id);
-      assert.ok(node); assert.equal(event.typename, node.get('label'));
-      assert.equal(event.properties.old, undefined);
-      assert.deepEqual(propertyValues(event.properties.new), propertyValues(node.get('properties')));
-      assert.equal(event.properties.new.createdAt.toStandardDate().getTime(), event.timestamp);
-    } else {
-      assert.equal(event.event, 'create_relationship');
-      const rel = rels.find(r => r.get('id') === event.id); assert.ok(rel);
-      assert.equal(event.relationshipName, rel.get('type'));
-      assert.equal(event.id_from, rel.get('source')); assert.equal(event.id_to, rel.get('target'));
-    }
-  }
-  return JSON.parse(JSON.stringify({response, events}, function(key, value) {
-    if (this.event && ['id', 'id_from', 'id_to'].includes(key)) {
-      if (key === 'id' && this.event === 'create_relationship') return 'occurrence-relationship';
-      assert.ok(nodeAliases.has(value)); return nodeAliases.get(value);
-    }
+  return JSON.parse(JSON.stringify({response}, function(key, value) {
     if (domainAliases.has(value)) return domainAliases.get(value);
-    return ['createdAt', 'timestamp'].includes(key) ? '<time>' : value;
+    return ['createdAt', 'updatedAt', 'timestamp'].includes(key) ? '<time>' : value;
   }));
 }
 for (const mode of ['commit', 'rollback', 'projection failure']) test(`nested series creation preserves ${mode}, graph and native events`, async (t) => {
