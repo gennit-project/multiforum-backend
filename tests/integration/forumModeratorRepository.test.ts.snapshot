@@ -81,80 +81,6 @@ exports[`connectModerator preserves repeated native event payloads and mutation 
 
 exports[`connectModerator preserves repeated native event payloads and mutation results 2`] = `
 {
-  "events": [
-    {
-      "event": "create_relationship",
-      "fromTypename": "ModerationProfile",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "displayName": "ModAlice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "relationshipName": "MODERATOR_OF_CHANNEL",
-      "timestamp": "<generated-time>",
-      "toTypename": "Channel"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "ModerationProfile",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "displayName": "ModAlice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "relationshipName": "MODERATOR_OF_CHANNEL",
-      "timestamp": "<generated-time>",
-      "toTypename": "Channel"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -163,7 +89,7 @@ exports[`connectModerator preserves repeated native event payloads and mutation 
       },
       "moderators": {
         "high": 0,
-        "low": 1
+        "low": 2
       },
       "username": "alice"
     }
@@ -254,61 +180,6 @@ exports[`disconnectInvite preserves repeated native event payloads and mutation 
 
 exports[`disconnectInvite preserves repeated native event payloads and mutation results 2`] = `
 {
-  "events": [
-    {
-      "event": "delete_relationship",
-      "fromTypename": "Channel",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        }
-      },
-      "relationshipName": "HAS_PENDING_MOD_INVITE",
-      "timestamp": "<generated-time>",
-      "toTypename": "User"
-    },
-    {
-      "event": "update",
-      "id": "<id-1>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    },
-    {
-      "event": "update",
-      "id": "<id-1>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -408,60 +279,6 @@ exports[`disconnectModerator preserves repeated native event payloads and mutati
 
 exports[`disconnectModerator preserves repeated native event payloads and mutation results 2`] = `
 {
-  "events": [
-    {
-      "event": "delete_relationship",
-      "fromTypename": "ModerationProfile",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "displayName": "ModAlice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "relationshipName": "MODERATOR_OF_CHANNEL",
-      "timestamp": "<generated-time>",
-      "toTypename": "Channel"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -512,7 +329,6 @@ exports[`moderator writes preserve missing channel results and events 1`] = `
 
 exports[`moderator writes preserve missing channel results and events 2`] = `
 {
-  "events": [],
   "graph": [
     {
       "invites": {
@@ -537,7 +353,6 @@ exports[`moderator writes preserve missing channel results and events 3`] = `
 
 exports[`moderator writes preserve missing channel results and events 4`] = `
 {
-  "events": [],
   "graph": [
     {
       "invites": {
@@ -562,7 +377,6 @@ exports[`moderator writes preserve missing channel results and events 5`] = `
 
 exports[`moderator writes preserve missing channel results and events 6`] = `
 {
-  "events": [],
   "graph": [
     {
       "invites": {
@@ -622,24 +436,6 @@ exports[`moderator writes preserve missing profile results and events 1`] = `
 
 exports[`moderator writes preserve missing profile results and events 2`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -699,24 +495,6 @@ exports[`moderator writes preserve missing profile results and events 3`] = `
 
 exports[`moderator writes preserve missing profile results and events 4`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -776,24 +554,6 @@ exports[`moderator writes preserve missing profile results and events 5`] = `
 
 exports[`moderator writes preserve missing profile results and events 6`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -812,41 +572,6 @@ exports[`moderator writes preserve missing profile results and events 6`] = `
 
 exports[`projection failure preserves committed moderator relationship and native events 1`] = `
 {
-  "events": [
-    {
-      "event": "create_relationship",
-      "fromTypename": "ModerationProfile",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "displayName": "ModAlice"
-        },
-        "relationship": {},
-        "to": {
-          "uniqueName": "cats"
-        }
-      },
-      "relationshipName": "MODERATOR_OF_CHANNEL",
-      "timestamp": "<generated-time>",
-      "toTypename": "Channel"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "uniqueName": "cats"
-        },
-        "old": {
-          "uniqueName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "Channel"
-    }
-  ],
   "graph": [
     {
       "invites": {
