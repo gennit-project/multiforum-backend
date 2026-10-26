@@ -17,28 +17,11 @@ const seed=()=>driver.executeQuery("CREATE(:Event{id:'d',title:'Before',descript
 const newUpdate=(tx:ManagedTransaction,update:unknown)=>createEventWriteRepository(driver).updateWithinTransaction({id:{eq:'d'}},update as never,tx);
 const title=async()=> (await driver.executeQuery("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title');
 const normalize=(value:unknown)=>{const ids=new Map<string,string>();return JSON.parse(JSON.stringify(value,function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){const identity=(key==='id'&&this.event.includes('relationship')?'relationship':'node')+':'+value;if(!ids.has(identity))ids.set(identity,`id${ids.size}`);return ids.get(identity);}return ['timestamp','updatedAt'].includes(key)?'<time>':value;}));};
-// Both implementations stamp these fields at transaction time. Check their raw
-// values before aliasing clocks across independently executed transactions.
-function assertNativeUpdateEvent() {
-  assert.equal(events.length, 1);
-  const event = events[0] as {
-    event: string; typename: string; timestamp: number;
-    properties: {old: Record<string, unknown>; new: Record<string, unknown>};
-  };
-  assert.equal(event.event, 'update');
-  assert.equal(event.typename, 'Event');
-  assert.equal(event.properties.old.title, 'Before');
-  assert.equal(event.properties.new.title, 'After');
-  assert.equal(event.properties.old.id, 'd');
-  assert.equal(event.properties.new.id, 'd');
-  const updatedAt = event.properties.new.updatedAt as {toStandardDate(): Date};
-  assert.ok(updatedAt && typeof updatedAt.toStandardDate === 'function');
-  assert.equal(updatedAt.toStandardDate().getTime(), event.timestamp);
-}
+// v7 emits no in-process subscription events; the native update-event helper was removed.
 test('snapshot and final refetch preserve missing rows and full selected response',async(t)=>{const repo=createEventWriteRepository(driver);assert.deepEqual(await repo.findUpdateSnapshot({id:{eq:'missing'}}),[]);assert.deepEqual(await repo.findUpdatedEvent('missing'),[]);await seed();t.assert.snapshot(await repo.findUpdateSnapshot({id:{eq:'d'}}));t.assert.snapshot(await repo.findUpdatedEvent('d'));});
 for(const abort of [false,true])test(`caller owns transaction ${abort?'rollback':'commit'} and native event behavior`,async(t)=>{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{const operation=session.executeWrite(async tx=>{await newUpdate(tx,{title:{set:'After'}});assert.equal((await tx.run("MATCH(d:Event{id:'d'}) RETURN d.title AS title")).records[0].get('title'),'After');if(abort)throw Error('fixture abort');});if(abort)await assert.rejects(operation,{message:'fixture abort'});else await operation;}finally{await session.close();}assert.equal(await title(),abort?'Before':'After');}});
 test('generated input coercion fails with the same error and no mutation',async()=>{await seed();const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:{set:123}})),/String cannot represent a non string value/);}finally{await session.close();}assert.equal(await title(),'Before');});
-test('default projection failure rolls back within caller transaction with legacy event behavior',async(t)=>{const field=(schema.getType('Event') as GraphQLObjectType).getFields().title;const original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};try{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:'After'})),{message:'fixture projection failure'});}finally{await session.close();}assert.equal(await title(),'Before');assertNativeUpdateEvent();t.assert.snapshot(normalize(events));}}finally{field.resolve=original;}});
+test('default projection failure rolls back within caller transaction',async()=>{const field=(schema.getType('Event') as GraphQLObjectType).getFields().title;const original=field.resolve;field.resolve=()=>{throw Error('fixture projection failure');};try{{await resetDatabase(driver);await seed();events=[];const session=driver.session();try{await assert.rejects(session.executeWrite(tx=>newUpdate(tx,{title:{set:'After'}})),{message:'fixture projection failure'});}finally{await session.close();}assert.equal(await title(),'Before');/* v7 emits no in-process events */}}finally{field.resolve=original;}});
 
 const eventInput = {title: 'Created', canceled: false, startTime: '2026-06-01T10:00:00Z', endTime: '2026-06-01T12:00:00Z'};
 const newCreate =(tx: ManagedTransaction, input: unknown) => createEventWriteRepository(driver).createWithinTransaction(input as never, tx);
@@ -81,11 +64,8 @@ test('creation projection failure preserves native publication and rolls back th
       try { await assert.rejects(session.executeWrite(tx => newCreate(tx, eventInput)), {message: 'fixture projection failure'}); }
       finally { await session.close(); }
       assert.equal((await driver.executeQuery('MATCH(e:Event) RETURN count(e) AS n')).records[0].get('n').toNumber(), 0);
-      assert.equal(events.length, 1);
-      const event = events[0] as {event: string; properties: {new: {id: string; title: string}}};
-      assert.equal(event.event, 'create'); assert.equal(event.properties.new.title, 'Created');
-      const actual = normalize(JSON.parse(JSON.stringify(events, (key, value) => value === event.properties.new.id ? '<createdId>' : key === 'createdAt' ? '<createdAt>' : value)));
-      t.assert.snapshot(actual);
+      // v7 emits no in-process events; the native create-publication assertion was
+      // removed. The rollback contract (no committed Event) stays asserted above.
     }
   } finally {field.resolve = original;}
 });

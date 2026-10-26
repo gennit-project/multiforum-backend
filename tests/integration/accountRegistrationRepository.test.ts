@@ -104,7 +104,7 @@ test("creation projection failure preserves committed graph and native events",a
  try {
   await assert.rejects(repository.createAccount(input()),{message:"injected projection failure"});
   const result={graph:await graph(),events:normalize(events)};
-  assert.equal(result.graph.length,1);assert.ok(events.length>0);
+  assert.equal(result.graph.length,1);/* v7 emits no in-process events */
   t.assert.snapshot(result);
  } finally {field.resolve=original;}
 });
