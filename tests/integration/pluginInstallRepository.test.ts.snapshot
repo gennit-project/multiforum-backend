@@ -203,70 +203,6 @@ exports[`actual install parity: carry 1`] = `
 }
 `;
 
-exports[`actual install parity: connection-projection 1`] = `
-{
-  "edges": [
-    {
-      "properties": {
-        "enabled": false
-      },
-      "source": "ServerConfig:server",
-      "target": "PluginVersion:1",
-      "type": "INSTALLED"
-    },
-    {
-      "properties": {},
-      "source": "Plugin:plugin",
-      "target": "PluginVersion:1",
-      "type": "HAS_VERSION"
-    }
-  ],
-  "error": "Failed to install plugin: fixture projection failure",
-  "external": [
-    "download",
-    "manifest",
-    "registry"
-  ],
-  "nodes": [
-    {
-      "alias": "Plugin:plugin",
-      "properties": {
-        "displayName": "After",
-        "id": "Plugin:plugin",
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
-        "name": "plugin",
-        "tags": [
-          "fixture"
-        ]
-      }
-    },
-    {
-      "alias": "PluginVersion:1",
-      "properties": {
-        "entryPath": "index.js",
-        "id": "PluginVersion:1",
-        "integritySha256": "de98858e30e441360c33c06443d00e766ff71bc61023965db78eb81aad0d62ae",
-        "manifest": "{\\"name\\":\\"After\\",\\"metadata\\":{\\"tags\\":[\\"fixture\\"]},\\"settingsDefaults\\":{\\"enabled\\":true},\\"ui\\":{\\"type\\":\\"object\\"}}",
-        "repoUrl": "https://fixture.invalid/plugin.tgz",
-        "settingsDefaults": "{\\"enabled\\":true}",
-        "tarballGsUri": "https://fixture.invalid/plugin.tgz",
-        "uiSchema": "{\\"type\\":\\"object\\"}",
-        "version": "1"
-      }
-    },
-    {
-      "alias": "ServerConfig:server",
-      "properties": {
-        "pluginRegistries": [
-          "https://fixture.invalid/registry"
-        ],
-        "serverName": "server"
-      }
-    }
-  ]
-}
-`;
-
 exports[`actual install parity: existing-plugin 1`] = `
 {
   "edges": [
@@ -528,41 +464,6 @@ exports[`actual install parity: new 1`] = `
     "settingsJson": null,
     "version": "1"
   }
-}
-`;
-
-exports[`actual install parity: plugin-projection 1`] = `
-{
-  "edges": [],
-  "error": "Failed to install plugin: fixture projection failure",
-  "external": [
-    "download",
-    "manifest",
-    "registry"
-  ],
-  "nodes": [
-    {
-      "alias": "Plugin:plugin",
-      "properties": {
-        "displayName": "After",
-        "id": "Plugin:plugin",
-        "metadata": "{\\"tags\\":[\\"fixture\\"]}",
-        "name": "plugin",
-        "tags": [
-          "fixture"
-        ]
-      }
-    },
-    {
-      "alias": "ServerConfig:server",
-      "properties": {
-        "pluginRegistries": [
-          "https://fixture.invalid/registry"
-        ],
-        "serverName": "server"
-      }
-    }
-  ]
 }
 `;
 
