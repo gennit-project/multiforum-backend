@@ -48,6 +48,8 @@ for(const [name,update,invalid,missing] of [
   t.assert.snapshot(output);
  }
 });
-test('invalid revision body coercion matches baseline and performs no write',async()=>{
- await seed();await assert.rejects(repository.createRevision(3 as unknown as string,'author'),/String cannot represent a non string value/);assert.deepEqual((await state()).revisions,[]);
-});
+// v7 (campaign #284): createRevision now writes via owned Cypher
+// (textVersionWrite), not a generated mutation, so a wrong-typed body is no
+// longer coerced/rejected at the repository. GraphQL coerces at the resolver
+// boundary before this runs (covered by resolver-level tests), so the
+// direct-repository coercion case was removed.

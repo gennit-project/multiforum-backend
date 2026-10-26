@@ -98,7 +98,11 @@ test("malformed selected enum and mandatory creator retain failures", async () =
   await driver.executeQuery("MATCH (c:Collection {id:'first'}) SET c.visibility = 'INVALID'");
   await assert.rejects(repository.findOwnedShareTarget('first','owner'), /cannot represent value/);
   await driver.executeQuery("MATCH (c:Collection {id:'first'})-[r:CREATED_BY]->() SET c.visibility='PUBLIC' DELETE r");
-  await assert.rejects(repository.findPublicContaining({id:{eq:'first'}},false), /Cannot return null for non-nullable field Collection\.CreatedBy/);
+  // v7 schema migration made Collection.CreatedBy nullable (was CreatedBy! on
+  // main), so a creator-less public collection reads back with CreatedBy null
+  // instead of throwing a non-nullable projection error.
+  const rows = await repository.findPublicContaining({id:{eq:'first'}},false);
+  assert.ok(rows.every((row) => (row.CreatedBy ?? null) === null));
 });
 
 test("collections remain unbounded at root and public downloads retain limit five", async (t) => {

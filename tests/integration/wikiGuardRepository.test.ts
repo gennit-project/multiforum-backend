@@ -53,7 +53,9 @@ for (const [method, selectionSet] of methods) {
     }
   });
   test(`${method}: malformed filters expose the same first generated error`, async () => {
-    const cases:[any,RegExp][]=[[{ invented: "field" },/Field "invented" is not defined by type "WikiPageWhere"/],[{ id: {} },/ID cannot represent/],[{ locked: "yes" },/Boolean cannot represent a non boolean value/],[{ OR: [{ id: [] }] },/ID cannot represent/]];
+    // v7: `{ id: {} }` is a valid empty filter (no longer an error); scalar
+    // mismatches now report "Expected type <T>ScalarFilters to be an object".
+    const cases:[any,RegExp][]=[[{ invented: "field" },/Field "invented" is not defined by type "WikiPageWhere"/],[{ locked: "yes" },/Expected type "BooleanScalarFilters" to be an object/],[{ OR: [{ id: [] }] },/Expected type "IDScalarFilters" to be an object/]];
     for (const [where,message] of cases) {
       await assert.rejects(repository[method](where), message);
     }
@@ -93,9 +95,15 @@ test("owner middleware remains fail closed for empty or multi-channel matches", 
   assert.equal(result.update.ChildPages.create[0].node.channelUniqueName, "cats");
 });
 
-test("missing mandatory Channel relation retains generated failure for both selections", async () => {
+test("missing Channel relation now projects a null Channel (v7 nullable to-one)", async () => {
+  // v7 schema migration made WikiPage.Channel nullable (was Channel! on main),
+  // so an orphan page no longer triggers a non-nullable projection error; it
+  // reads back with Channel null. The ownership guards fall back to the
+  // channelUniqueName scalar, so authorization still denies.
   await driver.executeQuery("CREATE (:WikiPage {id:'orphan'})");
   for (const [method] of methods) {
-    await assert.rejects(repository[method]({ id: { eq: "orphan" } }), /Cannot return null for non-nullable field WikiPage\.Channel/);
+    const rows = await repository[method]({ id: { eq: "orphan" } });
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].Channel ?? null, null);
   }
 });

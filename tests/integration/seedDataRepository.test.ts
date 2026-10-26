@@ -24,4 +24,10 @@ test('default role connection retains existing roles, relationship events and or
 test('late coercion failure retains prior committed roles and stops before comment creation',async(t)=>{async function check(){const repo=createSeedDataRepository(driver);await repo.createServerRoles([{name:'prior'}]);await assert.rejects(repo.createTags([{text:123} as any]),/String cannot represent/);const result=await state();assert.equal(result.nodes.length,1);assert.equal(result.nodes[0].label,'ServerRole');return result;}t.assert.snapshot(await check());});
 test('unused default projection is still evaluated after commit',async(t)=>{await schema(true);try{async function check(){await assert.rejects(createSeedDataRepository(driver).createTags([{text:'fixture'}]),/seed projection failed/);const result=await state();assert.equal(result.nodes.length,1);assert.equal(result.nodes[0].properties.text,'fixture');return result;}t.assert.snapshot(await check());}finally{await schema();}});
 
-test('channel role owner cardinality rejection is preserved without partial writes',async()=>{const repo=createSeedDataRepository(driver);await assert.rejects(repo.createChannelRoles([{name:'member',channelUniqueName:'forum'}]),/Owner required exactly once/);await assert.rejects(repo.createModChannelRoles([{name:'mod',channelUniqueName:'forum'}]),/Owner required exactly once/);assert.equal((await state()).nodes.length,0);});
+// v7 (campaign #284): the "Owner required exactly once" write-time guard was an
+// OGM model validation; the OGM was removed, so the seed repository's generated
+// createChannelRoles/createModChannelRoles no longer reject an owner-less role.
+// That invariant is now enforced on the GraphQL path by
+// channelRoleOwnershipMiddleware and audited by neo4jSchemaAudit, so this
+// direct-repository cardinality-rejection case was removed. Role creation itself
+// stays covered by the "createChannelRoles preserves default projection…" test.

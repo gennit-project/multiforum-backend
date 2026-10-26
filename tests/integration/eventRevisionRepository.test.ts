@@ -34,8 +34,12 @@ test('snapshot nested limits and generated coercion remain identical',async(t)=>
  // The nested PastTitle/DescriptionVersions projections apply a default limit of 25 over 30 versions;
  // which 25 (and their order) is only stable within a run, so snapshot with those arrays reduced to a count.
  const snap=normalize(actual) as any;snap[0].PastTitleVersions=snap[0].PastTitleVersions.length;snap[0].PastDescriptionVersions=snap[0].PastDescriptionVersions.length;t.assert.snapshot(snap);
- await assert.rejects(createEventRevisionRepository(driver).createPreviousText(12 as any,'editor'),/String cannot represent a non string value/);});
-test('default create response failure leaves orphan versions while editor replacement and later notification proceed',async(t)=>{
- const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,TextVersion:{editReason:()=>{throw Error('version projection failure');}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});registerGeneratedSchema(driver,await neo.getSchema());
- try{await seed();const count=async()=>(await driver.executeQuery('MATCH(v:TextVersion) RETURN count(v) AS n')).records[0].get('n').toNumber();const result=await run(createEventRevisionRepository(driver));assert.equal(await count(),2);assert.deepEqual(result.state.revisions,[]);assert.equal(result.state.event[0].editor,'editor');assert.deepEqual(result.calls.map(c=>c[0]),['resolve','notify']);t.assert.snapshot(normalize(result));}finally{registerGeneratedSchema(driver,baseSchema);}
-});
+ /* v7: createPreviousText writes via owned Cypher, not a generated mutation, so
+    a wrong-typed body is no longer coerced at the repository (GraphQL coerces at
+    the resolver boundary). Direct-repository coercion case removed. */});
+// v7 (campaign #284): this asserted v5's orphan/partial-write behavior — a
+// TextVersion.editReason resolver thrown mid-flow left the version created but
+// unconnected. v7's owned writes (textVersionWrite + owned connects) never
+// project TextVersion.editReason, so the injected failure is a no-op and the
+// revision flow completes normally; the success path is covered by the "actual
+// middleware preserves pre-resolver revision commits" tests above. Removed.
