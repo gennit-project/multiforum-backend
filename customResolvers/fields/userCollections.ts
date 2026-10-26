@@ -53,7 +53,7 @@ export default function ({ driver, collectionReadRepository = createCollectionRe
     };
 
     // Merge incoming where filters from the GraphQL query
-    // This allows queries like Collections(where: { Discussions_SOME: { id: $itemId } }) to work
+    // This allows queries like Collections(where: { Discussions: { some: { id: { eq: $itemId } } } }) to work
     if (args.where) {
       Object.assign(filter, args.where);
     }
