@@ -1,11 +1,20 @@
 import type { Driver } from "neo4j-driver";
 import type { PluginRunWhere, UpdatePluginRunsMutationResponse, UpdatePluginPipelineRunsMutationResponse } from "../../ogm_types.js";
 
-// FAMILY-3 / v7 (campaign #284). Callers pass flat update maps; generated
-// updateX mutations need each scalar wrapped as { set: value }. (claimPendingEventJob
-// runs raw Cypher and reads the flat values directly, so it is not setified.)
+// FAMILY-3 / v7 (campaign #284). Generated updateX mutations need each scalar
+// wrapped as { set: value }. Callers are mixed: the executionLease wrappers add
+// flat extras (heartbeatAt, timeoutAt, …) while the trigger callers already pass
+// { set: … }. These are all scalar fields, so a value that is already a
+// { set: … } object is left as-is — setify is idempotent, never double-wrapping.
+// (claimPendingEventJob runs raw Cypher and reads the flat values directly, so
+// it is not setified.)
 const setify = (update: Record<string, unknown>): Record<string, unknown> =>
-  Object.fromEntries(Object.entries(update).map(([key, value]) => [key, { set: value }]));
+  Object.fromEntries(Object.entries(update).map(([key, value]) => [
+    key,
+    value && typeof value === "object" && !Array.isArray(value) && "set" in value
+      ? value
+      : { set: value },
+  ]));
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export const PLUGIN_RUN_DEFAULT_SELECTION = `{
   id
