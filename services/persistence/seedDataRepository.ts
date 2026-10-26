@@ -172,52 +172,27 @@ export function createSeedDataRepository(driver:Driver):SeedDataRepository {retu
  async createModServerRoles(input){await executeGeneratedOperation(driver,`mutation SeedModServerRole($input:[ModServerRoleCreateInput!]!){createModServerRoles(input:$input){modServerRoles${SEED_MODSERVERROLE_SELECTION}}}`,{input});},
  async createServerRoles(input){await executeGeneratedOperation(driver,`mutation SeedServerRole($input:[ServerRoleCreateInput!]!){createServerRoles(input:$input){serverRoles${SEED_SERVERROLE_SELECTION}}}`,{input});},
  async createServerConfigs(input){await executeGeneratedOperation(driver,`mutation SeedServerConfig($input:[ServerConfigCreateInput!]!){createServerConfigs(input:$input){serverConfigs${SEED_SERVERCONFIG_SELECTION}}}`,{input});},
- async connectDefaultRoles(){await executeGeneratedOperation(driver,`mutation SeedDefaultRoles($where:ServerConfigWhere,$update:ServerConfigUpdateInput){updateServerConfigs(where:$where,update:$update){serverConfigs${SEED_SERVERCONFIG_SELECTION}}}`,{where:{ serverName: {eq: "Cypress Test Server"} },update:{
-          DefaultServerRole: {
-            connect: {
-              where: {
-                node: { name: "CanCreateAnything" },
-              },
-              overwrite: true,
-            },
-          },
-          DefaultSuspendedRole: {
-            connect: {
-              where: {
-                node: { name: "Suspended Role" },
-              },
-              overwrite: true,
-            },
-          },
-          DefaultElevatedModRole: {
-            connect: {
-              where: {
-                node: {
-                  name: "DefaultElevatedModRole"
-                },
-              },
-              overwrite: true,
-            }
-          },
-          DefaultModRole: {
-            connect: {
-              where: {
-                node: {
-                  name: "BasicModRole"
-                }
-              }
-            }
-          },
-          DefaultSuspendedModRole: {
-            connect: {
-              where: {
-                node: {
-                  name: "DefaultSuspendedModRole"
-                }
-              }
-            }
-          }
-        }});},
+ // v7 removed to-one connect from update inputs; own the five default-role
+ // edges off ServerConfig (all direction OUT). HAS_DEFAULT_SUSPENDED_ROLE is
+ // shared by the ServerRole and ModServerRole defaults — MERGE keeps them
+ // distinct by target label.
+ async connectDefaultRoles(){await driver.executeQuery(
+   `MATCH (s:ServerConfig {serverName: 'Cypress Test Server'})
+    OPTIONAL MATCH (dsr:ServerRole {name: 'CanCreateAnything'})
+    FOREACH (_ IN CASE WHEN dsr IS NULL THEN [] ELSE [1] END | MERGE (s)-[:HAS_DEFAULT_SERVER_ROLE]->(dsr))
+    WITH s
+    OPTIONAL MATCH (dsusp:ServerRole {name: 'Suspended Role'})
+    FOREACH (_ IN CASE WHEN dsusp IS NULL THEN [] ELSE [1] END | MERGE (s)-[:HAS_DEFAULT_SUSPENDED_ROLE]->(dsusp))
+    WITH s
+    OPTIONAL MATCH (delev:ModServerRole {name: 'DefaultElevatedModRole'})
+    FOREACH (_ IN CASE WHEN delev IS NULL THEN [] ELSE [1] END | MERGE (s)-[:HAS_DEFAULT_ELEVATED_MOD_ROLE]->(delev))
+    WITH s
+    OPTIONAL MATCH (dmod:ModServerRole {name: 'BasicModRole'})
+    FOREACH (_ IN CASE WHEN dmod IS NULL THEN [] ELSE [1] END | MERGE (s)-[:HAS_DEFAULT_MOD_ROLE]->(dmod))
+    WITH s
+    OPTIONAL MATCH (dsmod:ModServerRole {name: 'DefaultSuspendedModRole'})
+    FOREACH (_ IN CASE WHEN dsmod IS NULL THEN [] ELSE [1] END | MERGE (s)-[:HAS_DEFAULT_SUSPENDED_ROLE]->(dsmod))`,
+   {});},
  async createChannels(input){await executeGeneratedOperation(driver,`mutation SeedChannel($input:[ChannelCreateInput!]!){createChannels(input:$input){channels${SEED_CHANNEL_SELECTION}}}`,{input});},
  async createTags(input){await executeGeneratedOperation(driver,`mutation SeedTag($input:[TagCreateInput!]!){createTags(input:$input){tags${SEED_TAG_SELECTION}}}`,{input});},
  async createComments(input){await executeGeneratedOperation(driver,`mutation SeedComment($input:[CommentCreateInput!]!){createComments(input:$input){comments${SEED_COMMENT_SELECTION}}}`,{input});},

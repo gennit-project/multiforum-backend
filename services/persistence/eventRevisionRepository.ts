@@ -87,9 +87,8 @@ const CONNECT_TITLE = `mutation ConnectPreviousEventTitle($where: EventWhere!, $
 const CONNECT_DESCRIPTION = `mutation ConnectPreviousEventDescription($where: EventWhere!, $update: EventUpdateInput!) {
  updateEvents(where: $where, update: $update) { events ${EVENT_REVISION_DEFAULT_SELECTION} }
 }`;
-const REPLACE_EDITOR = `mutation ReplaceEventDescriptionEditor($where: EventWhere!, $update: EventUpdateInput!) {
- updateEvents(where: $where, update: $update) { events ${EVENT_REVISION_DEFAULT_SELECTION} }
-}`;
+// v7 removed the to-one connect/disconnect from update inputs; own the
+// DESCRIPTION_LAST_EDITED_BY edge ((:Event)-[:DESCRIPTION_LAST_EDITED_BY]->(:User)).
 export function createEventRevisionRepository(driver: Driver): EventRevisionRepository {
   return {
     async findSnapshot(id) {
@@ -114,9 +113,14 @@ export function createEventRevisionRepository(driver: Driver): EventRevisionRepo
       }});
     },
     async replaceDescriptionEditor(id, username) {
-      await executeGeneratedOperation(driver, REPLACE_EDITOR, {where: {id}, update: {
-        DescriptionLastEditedBy: {disconnect: {}, connect: {where: {node: {username}}}},
-      }});
+      await driver.executeQuery(
+        `MATCH (e:Event {id: $id})
+         OPTIONAL MATCH (e)-[r:DESCRIPTION_LAST_EDITED_BY]->(:User)
+         DELETE r
+         WITH e
+         OPTIONAL MATCH (u:User {username: $username})
+         FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END | MERGE (e)-[:DESCRIPTION_LAST_EDITED_BY]->(u))`,
+        {id, username});
     },
   };
 }
