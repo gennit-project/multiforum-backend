@@ -48,6 +48,11 @@ After the change is reviewed and merged, run the workflow from `main` with
 exact `GITHUB_SHA` for both the desired state and `mfctl`, publishes a redacted
 summary, and fails if apply leaves drift. Re-running it is idempotent.
 
+Service deployment automation may pass `scan_service_url` or
+`llm_moderation_service_url` to the workflow dispatch. These non-secret,
+per-deployment overrides avoid a manual variable update while the central
+workflow continues to own the complete topology and all plugin secrets.
+
 ## Adding or changing a plugin
 
 Update the central template in one pull request, including its exact version,

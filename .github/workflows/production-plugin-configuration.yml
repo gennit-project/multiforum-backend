@@ -1,4 +1,5 @@
 name: Reconcile production plugin configuration
+run-name: Plugin configuration ${{ inputs.operation || 'validate' }} ${{ inputs.correlation_id || github.sha }}
 
 on:
   pull_request:
@@ -17,6 +18,18 @@ on:
         options:
           - plan
           - apply
+      scan_service_url:
+        description: Optional deployed scanner HTTPS origin; defaults to the production environment variable
+        required: false
+        type: string
+      llm_moderation_service_url:
+        description: Optional deployed LLM moderation HTTPS origin; defaults to the production environment variable
+        required: false
+        type: string
+      correlation_id:
+        description: Optional deployment identifier shown in the workflow run name
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -86,8 +99,8 @@ jobs:
 
       - name: Validate protected configuration
         env:
-          SCAN_SERVICE_URL: ${{ vars.SCAN_SERVICE_URL }}
-          LLM_MODERATION_SERVICE_URL: ${{ vars.LLM_MODERATION_SERVICE_URL }}
+          SCAN_SERVICE_URL: ${{ inputs.scan_service_url || vars.SCAN_SERVICE_URL }}
+          LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
           LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
           SCAN_API_KEY: ${{ inputs.operation == 'apply' && secrets.SCAN_API_KEY || '' }}
           MOD_API_KEY: ${{ inputs.operation == 'apply' && secrets.MOD_API_KEY || '' }}
@@ -126,8 +139,8 @@ jobs:
 
       - name: Render production desired state
         env:
-          SCAN_SERVICE_URL: ${{ vars.SCAN_SERVICE_URL }}
-          LLM_MODERATION_SERVICE_URL: ${{ vars.LLM_MODERATION_SERVICE_URL }}
+          SCAN_SERVICE_URL: ${{ inputs.scan_service_url || vars.SCAN_SERVICE_URL }}
+          LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
           LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
         run: >-
           pnpm plugin-config:render-production
