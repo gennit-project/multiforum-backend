@@ -86,7 +86,7 @@ after(async () => {
 
 const QUERY = /* GraphQL */ `
   query ($id: ID!, $channelUniqueName: String) {
-    discussions(where: { id: $id }) {
+    discussions(where: { id: { eq: $id } }) {
       id
       authorIsChannelModerator(channelUniqueName: $channelUniqueName)
     }

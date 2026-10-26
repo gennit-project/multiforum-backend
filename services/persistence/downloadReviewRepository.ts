@@ -2,6 +2,10 @@ import type { Driver } from "neo4j-driver";
 import type { DownloadableFile, DownloadableFileUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
+// v7 removed flat scalar updates; wrap each field as { set: value }.
+const setifyUpdate = (update: DownloadableFileUpdateInput): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(update as Record<string, unknown>).map(([key, value]) => [key, { set: value }]));
+
 export const DOWNLOAD_REVIEW_DEFAULT_SELECTION = `{
   id
   fileName
@@ -83,9 +87,10 @@ export function createDownloadReviewRepository(driver: Driver): DownloadReviewRe
       return result.downloadableFiles;
     },
     async clearScan(id, update) {
+      // v7 scalar updates take { set: value }; callers pass a flat map.
       await executeGeneratedOperation(driver,
         `mutation DownloadReview_clearScan($where: DownloadableFileWhere, $update: DownloadableFileUpdateInput) { updateDownloadableFiles(where: $where, update: $update) { downloadableFiles ${DOWNLOAD_REVIEW_DEFAULT_SELECTION} } }`,
-        { where: { id: { eq: id } }, update });
+        { where: { id: { eq: id } }, update: setifyUpdate(update) });
     },
     async findCleared(id) {
       const result = await executeGeneratedOperation<{ downloadableFiles: DownloadableFile[] }>(driver,
@@ -98,9 +103,10 @@ export function createDownloadReviewRepository(driver: Driver): DownloadReviewRe
       return result.downloadableFiles;
     },
     async requestReview(id, update) {
+      // v7 scalar updates take { set: value }; callers pass a flat map.
       await executeGeneratedOperation(driver,
         `mutation DownloadReview_requestReview($where: DownloadableFileWhere, $update: DownloadableFileUpdateInput) { updateDownloadableFiles(where: $where, update: $update) { downloadableFiles ${DOWNLOAD_REVIEW_DEFAULT_SELECTION} } }`,
-        { where: { id: { eq: id } }, update });
+        { where: { id: { eq: id } }, update: setifyUpdate(update) });
     },
     async findRequested(id) {
       const result = await executeGeneratedOperation<{ downloadableFiles: DownloadableFile[] }>(driver,
