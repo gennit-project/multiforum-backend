@@ -16,6 +16,13 @@ Pipeline handling is intentionally explicit:
 - Omit `pipelines` to leave all server pipelines unmanaged.
 - Pass `pipelines: []` to declare that the server should have no pipelines.
 - Pass a list to manage the complete server pipeline list.
+- Pass `managedPipelineEvents` with `pipelines` to manage only those event
+  pipelines. Pipelines for all other events are preserved. A managed event
+  omitted from `pipelines` is removed, so `pipelines: []` plus a non-empty
+  `managedPipelineEvents` list clears only that scope.
+- Every desired pipeline must belong to `managedPipelineEvents` when scoped
+  ownership is used. Empty, duplicate, or ambiguous scopes are rejected before
+  mutation.
 - Generated `effectiveAt` and `policyId` values are ignored unless the manifest
   explicitly supplies them, preventing perpetual drift after pipeline creation.
 
@@ -66,6 +73,7 @@ Example variables for the security scanner:
         ]
       }
     ],
+    "managedPipelineEvents": ["downloadableFile.created"],
     "pipelines": [
       {
         "event": "downloadableFile.created",

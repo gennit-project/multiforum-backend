@@ -12,6 +12,7 @@ import type {
   PluginConfigurationChange,
   PluginConfigurationReconciliationPlan,
 } from '../../services/plugin/configurationReconciliation.js'
+import type { EventPipeline } from '../../services/plugin/types.js'
 import {
   createApplyPluginConfigurationResolver,
   type PluginConfigurationApplyOperations,
@@ -244,6 +245,49 @@ test('applies in safe order and verifies the final state', async () => {
     'UPDATE_PIPELINES',
   ])
   assert.equal(result.planAfter.inSync, true)
+})
+
+test('applies the merged full pipeline list for a scoped manifest', async () => {
+  const scopedManifest: PluginConfigurationDesiredStateInput = {
+    ...manifest,
+    managedPipelineEvents: ['comment.created'],
+    pipelines: [{
+      event: 'comment.created',
+      steps: [{ pluginId: 'llm-moderation', version: '0.7.0' }],
+    }],
+  }
+  const preservedPipeline: EventPipeline = {
+    event: 'downloadableFile.created',
+    steps: [{ pluginId: 'security-attachment-scan', version: '0.4.0' }],
+  }
+  const desiredPipeline = {
+    event: 'comment.created',
+    steps: [{ pluginId: 'llm-moderation', version: '0.7.0' }],
+  }
+  const pipelineChange = change(
+    'UPDATE_PIPELINES',
+    'pipelines.managedEvents'
+  )
+  pipelineChange.desired = [preservedPipeline, desiredPipeline]
+  let previewCount = 0
+  let appliedPipelines: EventPipeline[] = []
+  const operations: PluginConfigurationApplyOperations = {
+    preview: async () => previewCount++ === 0
+      ? plan([pipelineChange])
+      : plan([]),
+    install: async () => undefined,
+    setSecret: async () => undefined,
+    configure: async () => undefined,
+    updatePipelines: async pipelines => { appliedPipelines = pipelines },
+  }
+
+  const result = await invoke({
+    args: { manifest: scopedManifest },
+    operations,
+  })
+
+  assert.equal(result.status, 'SUCCEEDED')
+  assert.deepEqual(appliedPipelines, [preservedPipeline, desiredPipeline])
 })
 
 test('returns partial failure details while redacting resolved secret values', async () => {

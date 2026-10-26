@@ -46,6 +46,7 @@ const args: QueryPreviewPluginConfigurationReconciliationArgs = {
       stopOnFirstFailure: true,
       applicability: PipelineApplicability.NewFilesOnly,
     }],
+    managedPipelineEvents: ['downloadableFile.created'],
   },
 }
 

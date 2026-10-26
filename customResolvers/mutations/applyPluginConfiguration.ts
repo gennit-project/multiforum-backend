@@ -251,7 +251,13 @@ export const createApplyPluginConfigurationResolver = (
       )
       if (pipelineChange && desired.pipelines) {
         activeChange = pipelineChange
-        await operations.updatePipelines(desired.pipelines)
+        const pipelinesToApply = desired.managedPipelineEvents
+          ? pipelineChange.desired
+          : desired.pipelines
+        if (!Array.isArray(pipelinesToApply)) {
+          throw new Error('Pipeline reconciliation did not produce an array')
+        }
+        await operations.updatePipelines(pipelinesToApply as EventPipeline[])
         operationResults.push({
           kind: pipelineChange.kind,
           path: pipelineChange.path,

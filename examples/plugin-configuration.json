@@ -16,6 +16,7 @@
       ]
     }
   ],
+  "managedPipelineEvents": ["downloadableFile.created"],
   "pipelines": [
     {
       "event": "downloadableFile.created",
