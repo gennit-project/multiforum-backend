@@ -97,8 +97,9 @@ const scopeConnect = (connect: any, channelUniqueName: string) => {
     return {
       ...entry,
       where: {
+        // v7 nests scalar filters: channelUniqueName scoping becomes { eq }.
         ...where,
-        node: { ...node, channelUniqueName },
+        node: { ...node, channelUniqueName: { eq: channelUniqueName } },
       },
     };
   });
@@ -168,8 +169,10 @@ const validateConnects = async (
 };
 
 const channelUniqueNameFromWhere = (where: Record<string, unknown> | undefined) => {
-  const value = where?.uniqueName;
-  return typeof value === "string" && value ? value : null;
+  // v7 nests the filter as { uniqueName: { eq: "..." } }; tolerate a flat string.
+  const value = where?.uniqueName as string | { eq?: string | null } | null | undefined;
+  const unique = typeof value === "string" ? value : value?.eq;
+  return typeof unique === "string" && unique ? unique : null;
 };
 
 const prepareChannelInput = (

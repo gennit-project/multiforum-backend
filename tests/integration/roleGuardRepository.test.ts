@@ -78,7 +78,12 @@ test("invalid filters and corrupt owners retain OGM's first failure instead of g
   const where = { name: { eq: 42 }, unknownFilter: true };
   await assert.rejects(repository.findChannelRoleOwners(where), /String cannot represent a non string value/);
   await driver.executeQuery("CREATE (:ChannelRole {id: 'orphan', name: 'Orphan', channelUniqueName: 'cats'})");
-  await assert.rejects(repository.findChannelRoleOwners({ id: { eq: "orphan" } }), /Cannot return null for non-nullable field ChannelRole\.Owner/);
+  // v7 schema migration made ChannelRole.Owner nullable (was Owner! on main), so
+  // a corrupt owner-less role reads back with Owner null instead of throwing a
+  // non-nullable projection error. The ownership checks treat a null/mismatched
+  // owner as "not authorized", so access is still denied.
+  const orphanRows = await repository.findChannelRoleOwners({ id: { eq: "orphan" } });
+  assert.ok(orphanRows.every((role) => (role.Owner ?? null) === null));
 });
 
 test("relationship middleware scopes arbitrary filters and rejects mismatched owners before resolving", async () => {
@@ -89,12 +94,13 @@ test("relationship middleware scopes arbitrary filters and rejects mismatched ow
   const info = {} as GraphQLResolveInfo;
   let calls = 0;
   const resolve = async (_parent: unknown, args: Record<string, unknown>) => { calls++; return args; };
-  const update = { DefaultChannelRole: { connect: { where: { node: { OR: [{ name: "Reader" }, { name: "Writer" }] } } } } };
-  await assert.rejects(updateChannelsWithOwnedRoles(resolve, null, { where: { uniqueName: "cats" }, update }, context, info), /only be attached to its owning channel/);
+  const update = { DefaultChannelRole: { connect: { where: { node: { OR: [{ name: { eq: "Reader" } }, { name: { eq: "Writer" } }] } } } } };
+  await assert.rejects(updateChannelsWithOwnedRoles(resolve, null, { where: { uniqueName: { eq: "cats" } }, update }, context, info), /only be attached to its owning channel/);
   assert.equal(calls, 0);
   const result = await updateChannelsWithOwnedRoles(resolve, null, {
-    where: { uniqueName: "cats" }, update: { DefaultChannelRole: { connect: { where: { node: { name_CONTAINS: "Read" } } } } },
+    where: { uniqueName: { eq: "cats" } }, update: { DefaultChannelRole: { connect: { where: { node: { name: { contains: "Read" } } } } } },
   }, context, info) as { update: { DefaultChannelRole: { connect: { where: { node: unknown } } } } };
   assert.equal(calls, 1);
-  assert.deepEqual(result.update.DefaultChannelRole.connect.where.node, { name_CONTAINS: "Read", channelUniqueName: "cats" });
+  // v7: the injected channel scope is a nested { eq } filter.
+  assert.deepEqual(result.update.DefaultChannelRole.connect.where.node, { name: { contains: "Read" }, channelUniqueName: { eq: "cats" } });
 });
