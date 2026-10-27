@@ -48,19 +48,21 @@ test("dispatches the trigger for each created comment and returns the resolver r
     type Issue { id: ID }
     type ParentComment { id: ID }
     type Comment { id: ID text: String botMentions: [String] isFeedbackComment: Boolean createdAt: String CommentAuthor: CommentAuthor DiscussionChannel: DiscussionChannel Channel: Channel Event: Event Issue: Issue ParentComment: ParentComment }
-    input CommentWhere { id: ID }
+    input CommentIdWhere { eq: ID }
+    input CommentWhere { id: CommentIdWhere }
     type Query { comments(where: CommentWhere): [Comment] }
   `);
-  schema.getQueryType()!.getFields().comments.resolve = (_parent: unknown, { where }: { where?: { id?: string } }) => {
-    dispatched.push(where?.id as string);
-    return [{ id: where?.id, isFeedbackComment: false, botMentions: [], DiscussionChannel: null, Channel: null, Event: null, Issue: null, CommentAuthor: null, ParentComment: null }];
+  schema.getQueryType()!.getFields().comments.resolve = (_parent: unknown, { where }: { where?: { id?: { eq?: string } } }) => {
+    const id = where?.id?.eq;
+    dispatched.push(id as string);
+    return [{ id, isFeedbackComment: false, botMentions: [], DiscussionChannel: null, Channel: null, Event: null, Issue: null, CommentAuthor: null, ParentComment: null }];
   };
   const driver = {} as any;
   registerGeneratedSchema(driver, schema);
 
   const ctx = { driver, user: { username: "alice" } } as any;
   const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }, { id: "c-2" }] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "c-1" }, { id: "c-2" }] });
   assert.equal(state.calls, 1);
   // The middleware dispatched the trigger once per created comment, in order.
@@ -70,7 +72,7 @@ test("dispatches the trigger for each created comment and returns the resolver r
 test("no created comments -> returns the result without dispatching", async () => {
   const { ctx } = makeCtx();
   const { resolve, state } = resolveReturning({ comments: [] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [] });
   assert.equal(state.calls, 1);
 });
@@ -78,14 +80,14 @@ test("no created comments -> returns the result without dispatching", async () =
 test("undefined result is returned unchanged", async () => {
   const { ctx } = makeCtx();
   const { resolve } = resolveReturning(undefined);
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.equal(out, undefined);
 });
 
 test("returns early when the driver is unavailable", async () => {
   const { ctx } = makeCtx({ driver: null });
   const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   // Guard short-circuits before any dispatch, returning the resolver result as-is.
   assert.deepEqual(out, { comments: [{ id: "c-1" }] });
   assert.equal(state.calls, 1);
@@ -94,7 +96,7 @@ test("returns early when the driver is unavailable", async () => {
 test("comments without an id are skipped", async () => {
   const { ctx } = makeCtx();
   const { resolve } = resolveReturning({ comments: [{}] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{}] });
 });
 
@@ -103,7 +105,7 @@ test("a failure while dispatching is swallowed and the result still returns", as
   // middleware catches the failure and still returns the resolver result.
   const { ctx } = makeCtx();
   const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "c-1" }] });
   assert.equal(state.calls, 1);
 });

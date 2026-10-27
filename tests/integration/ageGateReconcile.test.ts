@@ -8,6 +8,8 @@ import {
   type StartedNeo4jContainer,
 } from "@testcontainers/neo4j";
 import typeDefinitions from "../../typeDefs.js";
+import getCustomResolvers from "../helpers/getTestResolvers.js";
+import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { getAgeGateStatements } from "../../services/ageGate/definitions.js";
 import { installAgeGateReconcile } from "../../services/ageGate/reconcile.js";
 
@@ -30,7 +32,16 @@ before(async () => {
   );
   // No permission layer here: this exercises the reconcile mechanism under
   // generated mutations directly, including writes the validator rejects.
-  schema = await new Neo4jGraphQL({ typeDefs: typeDefinitions, driver }).getSchema();
+  // Custom resolvers are supplied so comment creation (now the owned-write
+  // createCommentWithOwnedConnections) is available.
+  schema = await new Neo4jGraphQL({
+    typeDefs: typeDefinitions,
+    driver,
+    resolvers: getCustomResolvers(driver).resolvers,
+  }).getSchema();
+  // createCommentWithOwnedConnections runs the scalar create via
+  // executeGeneratedOperation, which needs the driver↔schema mapping.
+  registerGeneratedSchema(driver, schema);
 }, { timeout: 240000 });
 
 after(async () => {
@@ -95,7 +106,7 @@ const restricted = async (): Promise<string[]> => {
 
 test("a reply created under marked content is restricted in the same transaction", async () => {
   await mutate(`mutation {
-    createComments(input: [{
+    createCommentWithOwnedConnections(input: [{
       text: "new reply", isRootComment: false,
       ParentComment: { connect: { where: { node: { id: "s-root" } } } }
     }]) { comments { id } }
@@ -106,7 +117,7 @@ test("a reply created under marked content is restricted in the same transaction
 
 test("a reply created under unmarked content stays clear", async () => {
   await mutate(`mutation {
-    createComments(input: [{
+    createCommentWithOwnedConnections(input: [{
       text: "new reply", isRootComment: false,
       ParentComment: { connect: { where: { node: { id: "o-root" } } } }
     }]) { comments { id } }

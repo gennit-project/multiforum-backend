@@ -19,7 +19,7 @@ const isDiscussionCommentInput = (input: CommentCreateInput | null | undefined):
 
 const commentMentionsMiddleware = {
   Mutation: {
-    createComments: async (
+    createCommentWithOwnedConnections: async (
       resolve: (parent: unknown, args: CreateCommentsArgs, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<unknown>,
       parent: unknown,
       args: CreateCommentsArgs,

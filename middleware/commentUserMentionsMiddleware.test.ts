@@ -53,7 +53,7 @@ const snapshot = {
 test("createComments: looks up the new comment and returns the resolver result", async () => {
   const { ctx, finds } = makeCtx({ Comment: { find: async () => [snapshot] } });
   const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "c-1" }] });
   assert.equal(state.calls, 1);
   assert.ok(finds.includes("Comment"), "fetched the created comment snapshot");
@@ -62,7 +62,7 @@ test("createComments: looks up the new comment and returns the resolver result",
 test("createComments: no created comments -> no snapshot lookup", async () => {
   const { ctx, finds } = makeCtx();
   const { resolve } = resolveReturning({ comments: [] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [] });
   assert.deepEqual(finds, []);
 });
@@ -70,7 +70,7 @@ test("createComments: no created comments -> no snapshot lookup", async () => {
 test("createComments: undefined result -> returns undefined without throwing", async () => {
   const { ctx, finds } = makeCtx();
   const { resolve } = resolveReturning(undefined);
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.equal(out, undefined);
   assert.deepEqual(finds, []);
 });
@@ -78,14 +78,14 @@ test("createComments: undefined result -> returns undefined without throwing", a
 test("createComments: entries without an id are skipped", async () => {
   const { ctx } = makeCtx({ Comment: { find: async () => [snapshot] } });
   const { resolve } = resolveReturning({ comments: [{}] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{}] });
 });
 
 test("createComments: a not-found snapshot is skipped without throwing", async () => {
   const { ctx, finds } = makeCtx({ Comment: { find: async () => [] } });
   const { resolve } = resolveReturning({ comments: [{ id: "missing" }] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "missing" }] });
   assert.ok(finds.includes("Comment"));
 });
@@ -99,7 +99,7 @@ test("createComments: a failure in the mention lookup is swallowed and the resul
     },
   });
   const { resolve, state } = resolveReturning({ comments: [{ id: "c-1" }] });
-  const out = await M.createComments(resolve, null, {}, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, {}, ctx, {});
   assert.deepEqual(out, { comments: [{ id: "c-1" }] });
   assert.equal(state.calls, 1);
 });

@@ -1,3 +1,858 @@
+exports[`history preserves native events, graph and committed projection failure=false 1`] = `
+{
+  "edges": [
+    {
+      "source": "dc",
+      "target": "d",
+      "type": "POSTED_IN_CHANNEL"
+    },
+    {
+      "source": "dc",
+      "target": "old",
+      "type": "HAS_LABEL_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "new",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "old",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "owner",
+      "target": "d",
+      "type": "POSTED_DISCUSSION"
+    }
+  ],
+  "error": null,
+  "events": [],
+  "nodes": [
+    {
+      "id": "LabelChangeHistory",
+      "label": "LabelChangeHistory",
+      "properties": {
+        "actionType": "added",
+        "createdAt": "<time>",
+        "id": "LabelChangeHistory",
+        "labelDisplayName": "Large",
+        "labelValue": "large"
+      }
+    },
+    {
+      "id": "d",
+      "label": "Discussion",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "id": "d",
+        "title": "Download"
+      }
+    },
+    {
+      "id": "dc",
+      "label": "DiscussionChannel",
+      "properties": {
+        "channelUniqueName": "c",
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "discussionId": "d",
+        "id": "dc"
+      }
+    },
+    {
+      "id": "g",
+      "label": "FilterGroup",
+      "properties": {
+        "displayName": "Size",
+        "id": "g",
+        "key": "size",
+        "mode": "INCLUDE",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "uploadSelection": "MULTIPLE"
+      }
+    },
+    {
+      "id": "new",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Large",
+        "id": "new",
+        "order": {
+          "high": 0,
+          "low": 2
+        },
+        "value": "large"
+      }
+    },
+    {
+      "id": "old",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Small",
+        "id": "old",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "value": "small"
+      }
+    },
+    {
+      "id": "owner",
+      "label": "User",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`labels preserves native events, graph and committed projection failure=false 1`] = `
+{
+  "edges": [
+    {
+      "source": "dc",
+      "target": "d",
+      "type": "POSTED_IN_CHANNEL"
+    },
+    {
+      "source": "dc",
+      "target": "new",
+      "type": "HAS_LABEL_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "new",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "old",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "owner",
+      "target": "d",
+      "type": "POSTED_DISCUSSION"
+    }
+  ],
+  "error": null,
+  "events": [],
+  "nodes": [
+    {
+      "id": "d",
+      "label": "Discussion",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "id": "d",
+        "title": "Download"
+      }
+    },
+    {
+      "id": "dc",
+      "label": "DiscussionChannel",
+      "properties": {
+        "ageGateTouchedAt": "<time>",
+        "channelUniqueName": "c",
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "discussionId": "d",
+        "id": "dc"
+      }
+    },
+    {
+      "id": "g",
+      "label": "FilterGroup",
+      "properties": {
+        "displayName": "Size",
+        "id": "g",
+        "key": "size",
+        "mode": "INCLUDE",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "uploadSelection": "MULTIPLE"
+      }
+    },
+    {
+      "id": "new",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Large",
+        "id": "new",
+        "order": {
+          "high": 0,
+          "low": 2
+        },
+        "value": "large"
+      }
+    },
+    {
+      "id": "old",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Small",
+        "id": "old",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "value": "small"
+      }
+    },
+    {
+      "id": "owner",
+      "label": "User",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "username": "owner"
+      }
+    }
+  ],
+  "response": {
+    "discussionChannels": [
+      {
+        "LabelOptions": [
+          {
+            "displayName": "Large",
+            "group": {
+              "displayName": "Size",
+              "id": "g",
+              "key": "size"
+            },
+            "id": "new",
+            "order": 2,
+            "value": "large"
+          }
+        ],
+        "id": "dc"
+      }
+    ]
+  }
+}
+`;
+
+exports[`labels preserves native events, graph and committed projection failure=true 1`] = `
+{
+  "edges": [
+    {
+      "source": "dc",
+      "target": "d",
+      "type": "POSTED_IN_CHANNEL"
+    },
+    {
+      "source": "dc",
+      "target": "new",
+      "type": "HAS_LABEL_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "new",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "old",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "owner",
+      "target": "d",
+      "type": "POSTED_DISCUSSION"
+    }
+  ],
+  "error": "fixture projection failure",
+  "events": [],
+  "nodes": [
+    {
+      "id": "d",
+      "label": "Discussion",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "id": "d",
+        "title": "Download"
+      }
+    },
+    {
+      "id": "dc",
+      "label": "DiscussionChannel",
+      "properties": {
+        "ageGateTouchedAt": "<time>",
+        "channelUniqueName": "c",
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "discussionId": "d",
+        "id": "dc"
+      }
+    },
+    {
+      "id": "g",
+      "label": "FilterGroup",
+      "properties": {
+        "displayName": "Size",
+        "id": "g",
+        "key": "size",
+        "mode": "INCLUDE",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "uploadSelection": "MULTIPLE"
+      }
+    },
+    {
+      "id": "new",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Large",
+        "id": "new",
+        "order": {
+          "high": 0,
+          "low": 2
+        },
+        "value": "large"
+      }
+    },
+    {
+      "id": "old",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Small",
+        "id": "old",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "value": "small"
+      }
+    },
+    {
+      "id": "owner",
+      "label": "User",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
+exports[`moderation preserves native events, graph and committed projection failure=false 1`] = `
+{
+  "edges": [
+    {
+      "source": "dc",
+      "target": "d",
+      "type": "POSTED_IN_CHANNEL"
+    },
+    {
+      "source": "dc",
+      "target": "old",
+      "type": "HAS_LABEL_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "new",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "g",
+      "target": "old",
+      "type": "HAS_FILTER_OPTION"
+    },
+    {
+      "source": "owner",
+      "target": "d",
+      "type": "POSTED_DISCUSSION"
+    }
+  ],
+  "error": null,
+  "events": [],
+  "nodes": [
+    {
+      "id": "ModerationAction",
+      "label": "ModerationAction",
+      "properties": {
+        "actionDescription": "Changed labels",
+        "actionType": "label_update",
+        "createdAt": "<time>",
+        "id": "ModerationAction"
+      }
+    },
+    {
+      "id": "d",
+      "label": "Discussion",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "id": "d",
+        "title": "Download"
+      }
+    },
+    {
+      "id": "dc",
+      "label": "DiscussionChannel",
+      "properties": {
+        "channelUniqueName": "c",
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "discussionId": "d",
+        "id": "dc"
+      }
+    },
+    {
+      "id": "g",
+      "label": "FilterGroup",
+      "properties": {
+        "displayName": "Size",
+        "id": "g",
+        "key": "size",
+        "mode": "INCLUDE",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "uploadSelection": "MULTIPLE"
+      }
+    },
+    {
+      "id": "new",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Large",
+        "id": "new",
+        "order": {
+          "high": 0,
+          "low": 2
+        },
+        "value": "large"
+      }
+    },
+    {
+      "id": "old",
+      "label": "FilterOption",
+      "properties": {
+        "displayName": "Small",
+        "id": "old",
+        "order": {
+          "high": 0,
+          "low": 1
+        },
+        "value": "small"
+      }
+    },
+    {
+      "id": "owner",
+      "label": "User",
+      "properties": {
+        "createdAt": {
+          "day": {
+            "high": 0,
+            "low": 1
+          },
+          "hour": {
+            "high": 0,
+            "low": 0
+          },
+          "minute": {
+            "high": 0,
+            "low": 0
+          },
+          "month": {
+            "high": 0,
+            "low": 1
+          },
+          "nanosecond": {
+            "high": 0,
+            "low": 0
+          },
+          "second": {
+            "high": 0,
+            "low": 0
+          },
+          "timeZoneOffsetSeconds": {
+            "high": 0,
+            "low": 0
+          },
+          "year": {
+            "high": 0,
+            "low": 2020
+          }
+        },
+        "username": "owner"
+      }
+    }
+  ]
+}
+`;
+
 exports[`snapshots preserve exact selected read shapes, missing values and option input coercion 1`] = `
 [
   {

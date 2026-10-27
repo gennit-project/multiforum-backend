@@ -479,7 +479,10 @@ const permissionRules: IRules = {
       deleteEvents: and(isAuthenticated, isEventOwner),
       deleteEventChannels: and(isAuthenticated, canRemoveEventChannel),
 
-      createComments: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
+      // v7 (campaign #284): comment creation moved to the owned-write mutation;
+      // generated createComments can't carry the to-one connects and is left
+      // default-denied.
+      createCommentWithOwnedConnections: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
       updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, canEditComments)),
       deleteComments: and(isAuthenticated, isCommentAuthor),
       

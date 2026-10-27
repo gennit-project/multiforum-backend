@@ -138,8 +138,8 @@ const CREATE_DISCUSSION = `
 `;
 
 const CREATE_COMMENTS = `
-  mutation ($input: [CommentCreateInput!]!) {
-    createComments(input: $input) { comments { id } }
+  mutation ($input: [OwnedCommentCreateInput!]!) {
+    createCommentWithOwnedConnections(input: $input) { comments { id } }
   }
 `;
 

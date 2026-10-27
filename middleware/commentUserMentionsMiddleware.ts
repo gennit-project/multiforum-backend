@@ -11,7 +11,7 @@ import {
 
 const commentUserMentionsMiddleware = {
   Mutation: {
-    createComments: async (
+    createCommentWithOwnedConnections: async (
       resolve: (
         parent: unknown,
         args: unknown,

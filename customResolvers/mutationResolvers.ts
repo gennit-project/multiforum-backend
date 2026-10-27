@@ -7,6 +7,7 @@ import { createAccountRegistrationRepository } from "../services/persistence/acc
 // is byte-for-byte the original Mutation map, just destructured from `deps`.
 import type { ResolverDeps } from "./resolverDeps.js";
 import createDiscussionWithChannelConnections from "./mutations/createDiscussionWithChannelConnections.js";
+import createCommentWithOwnedConnections from "./mutations/createCommentWithOwnedConnections.js";
 import updateDiscussionWithChannelConnections from "./mutations/updateDiscussionWithChannelConnections.js";
 import createEventWithChannelConnections from "./mutations/createEventWithChannelConnections.js";
 import createEventSeriesWithChannelConnections from "./mutations/createEventSeriesWithChannelConnections.js";
@@ -151,6 +152,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       createDiscussionWithChannelConnections({
         driver,
       }),
+    createCommentWithOwnedConnections: createCommentWithOwnedConnections({
+      driver,
+    }),
     createIssue: createIssue({ driver }),
     updateDiscussionWithChannelConnections:
       updateDiscussionWithChannelConnections({

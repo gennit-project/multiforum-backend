@@ -1400,6 +1400,49 @@ const typeDefinitions = gql`
     channelFlairSelections: [DiscussionChannelFlairSelectionInput!] = []
   }
 
+  # v7 (campaign #284): the generated createComments can no longer carry the
+  # to-one Author / DiscussionChannel / Event / Channel / ParentComment /
+  # feedback connects, so comments are created through
+  # createCommentWithOwnedConnections, which keeps the same connect-shaped input
+  # (so the existing validation rule + comment middlewares read it unchanged) and
+  # owns those edges after the scalar create.
+  input OwnedCommentConnectNode {
+    id: ID
+    username: String
+    displayName: String
+    uniqueName: String
+  }
+  input OwnedCommentConnectWhere {
+    node: OwnedCommentConnectNode
+  }
+  input OwnedCommentConnect {
+    where: OwnedCommentConnectWhere
+  }
+  input OwnedCommentToOneConnect {
+    connect: OwnedCommentConnect
+  }
+  input OwnedCommentAuthorConnect {
+    User: OwnedCommentToOneConnect
+    ModerationProfile: OwnedCommentToOneConnect
+  }
+  input OwnedCommentCreateInput {
+    text: String
+    isRootComment: Boolean!
+    isFeedbackComment: Boolean
+    botMentions: String
+    CommentAuthor: OwnedCommentAuthorConnect
+    DiscussionChannel: OwnedCommentToOneConnect
+    Event: OwnedCommentToOneConnect
+    Channel: OwnedCommentToOneConnect
+    ParentComment: OwnedCommentToOneConnect
+    GivesFeedbackOnComment: OwnedCommentToOneConnect
+    GivesFeedbackOnDiscussion: OwnedCommentToOneConnect
+    GivesFeedbackOnEvent: OwnedCommentToOneConnect
+  }
+  type CreateCommentsWithOwnedConnectionsResponse {
+    comments: [Comment!]!
+  }
+
   """
   A flair in the channel's authoritative configuration list. Existing flairs
   omitted from a configuration update are archived rather than deleted.
@@ -1541,6 +1584,9 @@ const typeDefinitions = gql`
     createDiscussionWithChannelConnections(
       input: [DiscussionCreateInputWithChannels!]!
     ): [Discussion!]!
+    createCommentWithOwnedConnections(
+      input: [OwnedCommentCreateInput!]!
+    ): CreateCommentsWithOwnedConnectionsResponse!
     updateDiscussionWithChannelConnections(
       where: DiscussionWhere!
       discussionUpdateInput: DiscussionUpdateInput!

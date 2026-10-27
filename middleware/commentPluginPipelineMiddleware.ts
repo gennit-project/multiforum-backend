@@ -51,7 +51,7 @@ export const createCommentPluginPipelineMiddleware = (
   triggerCommentPlugins: TriggerCommentPlugins = triggerPluginRunsForComment
 ) => ({
   Mutation: {
-    createComments: async (
+    createCommentWithOwnedConnections: async (
       resolve: (parent: unknown, args: unknown, context: GraphQLContext, info: GraphQLResolveInfo) => Promise<CommentMutationResult | undefined>,
       parent: unknown,
       args: unknown,

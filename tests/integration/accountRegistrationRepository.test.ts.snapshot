@@ -1,3 +1,17 @@
+exports[`creation projection failure preserves committed graph and native events 1`] = `
+{
+  "events": [],
+  "graph": [
+    {
+      "birthday": "2000-01-01",
+      "email": "Alice@Example.test",
+      "moderator": "alice_mod",
+      "username": "alice"
+    }
+  ]
+}
+`;
+
 exports[`existence reads preserve missing/case-sensitive matches, projection and session routing 1`] = `
 {
   "session": {
