@@ -11,6 +11,7 @@ import {
   connectDiscussionAuthorAndCollection,
   stripDiscussionToOneConnects,
 } from "../../services/persistence/discussionAlbumWrite.js";
+import { stripTags, ownTags } from "../../services/persistence/tagOwnership.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 // v7 removed the nested to-one connect, so the generated createDiscussions can
@@ -247,8 +248,11 @@ export const createDiscussionsFromInput = async (
       // wires those edges.
       const { cleaned, authorUsername, sharedCollectionId } =
         stripDiscussionToOneConnects(discussionCreateInput);
+      // v7 dropped connectOrCreate for Tags; strip the Tags field and own the
+      // HAS_TAG edges (create-if-missing) after the generated create.
+      const { cleaned: cleanedNoTags, tagTexts } = stripTags(cleaned as Record<string, any>);
       const resolvedAuthor = authorUsername ?? contextUsername ?? null;
-      const response = await repository.createDiscussion(cleaned as DiscussionCreateInput);
+      const response = await repository.createDiscussion(cleanedNoTags as DiscussionCreateInput);
 
       const newDiscussion = response.discussions[0];
       const newDiscussionId = newDiscussion.id;
@@ -259,6 +263,13 @@ export const createDiscussionsFromInput = async (
         authorUsername: resolvedAuthor,
         sharedCollectionId,
       });
+
+      // Own the Tags (HAS_TAG) edges, creating any tag missing by text.
+      await ownTags(
+        (cypher, params) => driver.executeQuery(cypher, params),
+        { label: "Discussion", id: newDiscussionId },
+        tagTexts
+      );
 
       // The generated create made the nested album + images; wire their ownership
       // edges (HAS_ALBUM owner, UPLOADED_IMAGE) that v7 can't express as a connect.

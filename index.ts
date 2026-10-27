@@ -33,6 +33,7 @@ import filterGroupValidationMiddleware from "./middleware/filterGroupValidationM
 import ownershipCreateMiddleware from "./middleware/ownershipCreateMiddleware.js";
 import wikiPageOwnershipMiddleware from "./middleware/wikiPageOwnershipMiddleware.js";
 import channelRoleOwnershipMiddleware from "./middleware/channelRoleOwnershipMiddleware.js";
+import channelTagOwnershipMiddleware from "./middleware/channelTagOwnershipMiddleware.js";
 import issueIdentityMiddleware from "./middleware/issueIdentityMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
@@ -244,6 +245,7 @@ async function initializeServer() {
       ownershipCreateMiddleware as AppMiddleware,
       wikiPageOwnershipMiddleware as AppMiddleware,
       channelRoleOwnershipMiddleware as AppMiddleware,
+      channelTagOwnershipMiddleware as AppMiddleware,
       issueIdentityMiddleware as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionPluginPipelineMiddleware as AppMiddleware,

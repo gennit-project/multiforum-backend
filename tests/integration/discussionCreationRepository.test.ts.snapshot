@@ -24,6 +24,10 @@ exports[`create/refetch retains generated inputs, raw channel links and native e
 {
   "edges": [
     [
+      "HAS_TAG",
+      1
+    ],
+    [
       "POSTED_DISCUSSION",
       1
     ],
@@ -69,7 +73,11 @@ exports[`create/refetch retains generated inputs, raw channel links and native e
           "id": "id1"
         }
       ],
-      "Tags": [],
+      "Tags": [
+        {
+          "text": "tag"
+        }
+      ],
       "body": "body",
       "createdAt": "<time>",
       "id": "id0",
@@ -83,6 +91,10 @@ exports[`create/refetch retains generated inputs, raw channel links and native e
 exports[`later invalid input preserves first discussion and channel commit 1`] = `
 {
   "edges": [
+    [
+      "HAS_TAG",
+      1
+    ],
     [
       "POSTED_DISCUSSION",
       1

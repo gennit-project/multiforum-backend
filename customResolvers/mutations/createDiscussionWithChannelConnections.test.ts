@@ -327,12 +327,20 @@ test("createDiscussionWithChannelConnections", async (t) => {
     assert.equal(session.runCalls.length, 1);
   });
 
-  await t.test("passes through v7 tag connect/create", async () => {
-    // v7 removed connectOrCreate; the generated to-many still accepts connect
-    // (existing tags) and create (new tags), which the resolver passes through.
+  await t.test("strips Tags from the generated create and owns them (create-if-missing)", async () => {
+    // v7 removed connectOrCreate; the resolver no longer forwards Tags to the
+    // generated create. It strips the field and owns the HAS_TAG edges, MERGE-ing
+    // each tag by text so a missing tag is created (from connect or create shapes).
     const discussionModel = new DiscussionModelStub();
     const session = new SessionStub();
-    const driver = createDriver(session);
+    const ownedQueries: Array<{ query: string; params: Record<string, unknown> }> = [];
+    const driver = {
+      session: () => session,
+      executeQuery: async (query: string, params: Record<string, unknown>) => {
+        ownedQueries.push({ query, params });
+        return { records: [] };
+      },
+    } as unknown as Driver;
 
     await createDiscussionsFromInput(
       asRepository(discussionModel),
@@ -354,9 +362,12 @@ test("createDiscussionWithChannelConnections", async (t) => {
 
     assert.equal(discussionModel.createCalls.length, 1);
     const createInput = discussionModel.createCalls[0].input[0] as any;
-    assert.ok(createInput.Tags);
-    assert.equal(createInput.Tags.connect.length, 1);
-    assert.equal(createInput.Tags.create.length, 1);
+    // Tags no longer reach the generated create.
+    assert.equal(createInput.Tags, undefined);
+    // The owned write MERGEs HAS_TAG with both texts (connect + create shapes).
+    const tagWrite = ownedQueries.find((call) => call.query.includes("HAS_TAG"));
+    assert.ok(tagWrite, "expected an owned HAS_TAG merge");
+    assert.deepEqual([...(tagWrite!.params.tagTexts as string[])].sort(), ["tag1", "tag2"]);
   });
 
   await t.test("sanitizes album creation when context is provided", async () => {

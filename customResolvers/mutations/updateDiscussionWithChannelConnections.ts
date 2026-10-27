@@ -13,6 +13,7 @@ import {
 import type { GraphQLContext } from "../../types/context.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
+import { stripTags, ownTags } from "../../services/persistence/tagOwnership.js";
 import { logger } from "../../logger.js";
 import {
   loadChannelDiscussionFlairRequirements,
@@ -120,7 +121,10 @@ const getResolver = (
     const { Album: _strippedAlbum, ...withoutAlbum } =
       discussionUpdateInput as Record<string, any>;
     void _strippedAlbum;
-    const sanitizedUpdateInput = withoutAlbum as DiscussionUpdateInput;
+    // v7 dropped connectOrCreate for Tags; strip the Tags field and own the
+    // HAS_TAG edges (replace semantics) so the discussion's tags match the set.
+    const { cleaned: withoutAlbumOrTags, tagTexts, hadTags } = stripTags(withoutAlbum);
+    const sanitizedUpdateInput = withoutAlbumOrTags as DiscussionUpdateInput;
 
     let flairIdsByChannel = new Map<string, string[]>();
     if (
@@ -163,6 +167,14 @@ const getResolver = (
       // here: the reconcile step then flags them in this same transaction.
       await executeManagedWrite(driver, async (tx) => {
         await repository.updateWithinTransaction(where, sanitizedUpdateInput, tx);
+        if (hadTags && updatedDiscussionId) {
+          await ownTags(
+            (cypher, params) => tx.run(cypher, params),
+            { label: "Discussion", id: updatedDiscussionId },
+            tagTexts,
+            { replace: true }
+          );
+        }
         if (albumWrite) {
           await writeDiscussionAlbum(tx, albumWrite);
         }

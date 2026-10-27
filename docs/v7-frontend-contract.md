@@ -193,10 +193,31 @@ NotificationsAggregate { count }      NotificationsConnection { aggregate { coun
 Top-level `{plural}Aggregate` root queries (e.g. `discussionsAggregate`) were
 removed; use `{plural}Connection { aggregate { count { nodes } } }`.
 
-### 3e. `connectOrCreate` removed
+### 3e. `connectOrCreate` removed — tags use `connect` by text (backend creates-if-missing)
 
-Replace nested `connectOrCreate` with a `connect` (existing) or `create` (new),
-or route through the relevant custom owned-write mutation.
+`connectOrCreate` is gone from every generated input, and because the custom
+create/update mutations declare the generated input types, a `connectOrCreate`
+payload is **rejected at variable coercion** (before any resolver runs) — a cast
+does not get it through. For **Tags**, send the uniform shape everywhere
+(discussion, event, channel, download):
+
+```graphql
+Tags: { connect: [{ where: { node: { text: { eq: "my-tag" } } } }] }   # create
+Tags: [{ connect: [{ where: { node: { text: { eq: "my-tag" } } } }] }] # update (field-op list)
+```
+
+The backend strips the Tags field and owns the `HAS_TAG` edges, **MERGE-ing each
+tag by text**, so a tag that does not exist yet is created (create-if-missing,
+the old `connectOrCreate` behaviour). On **update** the backend replaces the
+node's tag set to match what you send (an empty set clears all tags). So:
+
+- Do **not** send `connectOrCreate` for tags anywhere — switch it to `connect`.
+- Do **not** add a client-side "create the tag first" step; the backend merges.
+- `text` may be the v7 filter `{ eq }` or a plain string; both are accepted.
+
+For non-tag relationships, replace a nested `connectOrCreate` with `connect`
+(existing) or `create` (new), or route through the relevant custom owned-write
+mutation.
 
 ### 3f. To-one `connect` / `disconnect` removed from create & update inputs
 
