@@ -1449,6 +1449,9 @@ const typeDefinitions = gql`
   type CreateCommentsWithOwnedConnectionsResponse {
     comments: [Comment!]!
   }
+  type IssueActivityFeedItemResponse {
+    issues: [Issue!]!
+  }
 
   """
   A flair in the channel's authoritative configuration list. Existing flairs
@@ -1594,6 +1597,24 @@ const typeDefinitions = gql`
     createCommentWithOwnedConnections(
       input: [OwnedCommentCreateInput!]!
     ): CreateCommentsWithOwnedConnectionsResponse!
+    # v7: anonymize a soft-deleted comment. The generated updateComments can no
+    # longer disconnect the to-one CommentAuthor union, so this sets the deleted
+    # text and owns the AUTHORED_COMMENT removal.
+    softDeleteComment(where: CommentWhere!): CreateCommentsWithOwnedConnectionsResponse!
+    # v7: append a moderation activity item (ModerationAction) to an issue,
+    # connecting an existing actor (ModerationProfile by displayName OR User by
+    # username) and optionally creating a moderated Comment. Replaces the
+    # generated updateIssues + nested create (to-one connects v7 removed).
+    addIssueActivityFeedItem(
+      where: IssueWhere!
+      actionType: String!
+      actionDescription: String!
+      displayName: String
+      username: String
+      commentText: String
+      channelUniqueName: String
+      flaggedServerRuleViolation: Boolean
+    ): IssueActivityFeedItemResponse!
     updateDiscussionWithChannelConnections(
       where: DiscussionWhere!
       discussionUpdateInput: DiscussionUpdateInput!

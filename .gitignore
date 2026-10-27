@@ -22,3 +22,6 @@ listical-dev-gcp.json
 ogm_types.ts
 src/generated/
 schema.introspection.json
+
+# Throwaway v7 SDL dump for frontend codegen (regenerate via build_scripts/dumpSchemaForFrontend.ts)
+v7-schema.graphql

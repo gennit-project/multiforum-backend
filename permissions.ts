@@ -484,6 +484,10 @@ const permissionRules: IRules = {
       // default-denied.
       createCommentWithOwnedConnections: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
       updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, canEditComments)),
+      // v7: soft-delete/anonymize a comment (owns the AUTHORED_COMMENT removal
+      // the generated updateComments can no longer express). Same gate as an edit
+      // — the author or a moderator with edit permission — resolved from where.id.
+      softDeleteComment: and(isAuthenticated, or(isCommentAuthor, canEditComments)),
       deleteComments: and(isAuthenticated, isCommentAuthor),
       
       createSignedStorageURL: and(isAuthenticated, canUploadFile),
@@ -516,6 +520,17 @@ const permissionRules: IRules = {
       // 2. Issue author (if issue is not locked)
       // 3. Moderators with archive permissions
       updateIssues: and(
+        isAuthenticated,
+        or(
+          isChannelOwner,
+          and(isIssueAuthor, issueIsNotLocked),
+          canArchiveAndUnarchiveDiscussion
+        )
+      ),
+      // v7: add a moderation activity-feed item (replaces the nested
+      // updateIssues(create: { ActivityFeed }) the frontend can no longer send).
+      // Same gate as updateIssues — resolved from where.id.
+      addIssueActivityFeedItem: and(
         isAuthenticated,
         or(
           isChannelOwner,

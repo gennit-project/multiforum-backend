@@ -234,6 +234,50 @@ before this campaign; no change.)
 
 ---
 
+## 6. Two more owned-write mutations (surfaced by the frontend slice) **[EXACT]**
+
+Four frontend ops could not migrate as generated `updateComments` / `updateIssues`
+calls (v7 removed the to-one `disconnect` and nested relationship `create` they
+relied on). They map to **two** new custom mutations:
+
+### `softDeleteComment` — replaces `SOFT_DELETE_COMMENT`
+
+```graphql
+softDeleteComment(where: CommentWhere!): CreateCommentsWithOwnedConnectionsResponse!
+```
+
+- `where: { id: { eq } }`. Sets `text` to `"[Deleted]"` and removes the
+  `AUTHORED_COMMENT` edge server-side; `Comment.CommentAuthor` then reads back
+  `null`. Response reuses `{ comments { ... } }`.
+
+### `addIssueActivityFeedItem` — replaces all three `ADD_ISSUE_ACTIVITY_FEED_ITEM*` ops
+
+```graphql
+addIssueActivityFeedItem(
+  where: IssueWhere!
+  actionType: String!
+  actionDescription: String!
+  displayName: String        # mod actor + mod comment author
+  username: String           # user actor + user comment author
+  commentText: String        # present → also creates a moderated Comment
+  channelUniqueName: String   # that comment's channel
+  flaggedServerRuleViolation: Boolean  # sets Issue.flaggedServerRuleViolation when provided
+): IssueActivityFeedItemResponse!     # { issues { ... } }
+```
+
+- One mutation, variant chosen by args: action-only (`displayName`), with a
+  mod-authored comment (`displayName` + `commentText`/`channelUniqueName`/
+  `flaggedServerRuleViolation`), or a user-authored comment (`username` + …).
+- `displayName` XOR `username` drives both the `ModerationAction` actor
+  (`PERFORMED_MODERATION_ACTION`) and, when `commentText` is set, the comment's
+  author (`AUTHORED_COMMENT`).
+- The response refetches the issue using the **caller's own selection set**
+  (fragments inlined), so `issues { ...IssueFields }` projects the full
+  `ActivityFeed → ModerationAction → Comment` tree unchanged.
+- Covered by `tests/integration/issueActivityAndSoftDelete.test.ts`.
+
+---
+
 ## Resolved during the frontend slice
 
 - **Comment scalar fields** — the frontend sends only `text`, `isRootComment`,
