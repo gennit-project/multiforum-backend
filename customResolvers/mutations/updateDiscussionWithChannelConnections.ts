@@ -184,8 +184,10 @@ const getResolver = (
           });
         }
         if (normalizedAlbumImageDisconnections.length > 0) {
+          // disconnectAlbumImagesQuery matches (:Discussion {id: $discussionId}),
+          // so pass the id string — not the v7 where filter object { eq }.
           await tx.run(disconnectAlbumImagesQuery, {
-            discussionId: where.id,
+            discussionId: updatedDiscussionId,
             imageIds: normalizedAlbumImageDisconnections,
           });
         }

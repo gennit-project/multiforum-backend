@@ -43,17 +43,22 @@ class DiscussionModelStub {
     });
   }
 
+  // v7 filters nest as { id: { eq } }; tolerate a flat string too.
+  private idFrom(where: Record<string, unknown> | undefined): string | undefined {
+    const id = (where as any)?.id;
+    return typeof id === "string" ? id : id?.eq;
+  }
+
   async find(args: FindArgs) {
     this.findCalls.push(args);
-    const id = (args.where as any)?.id;
-    const discussion = this.discussions.get(id);
+    const discussion = this.discussions.get(this.idFrom(args.where) ?? "");
     return discussion ? [discussion] : [];
   }
 
   async update(args: UpdateArgs) {
     this.updateCalls.push(args);
-    const id = (args.where as any)?.id;
-    const discussion = this.discussions.get(id);
+    const id = this.idFrom(args.where);
+    const discussion = id ? this.discussions.get(id) : undefined;
     if (discussion && args.update) {
       Object.assign(discussion, args.update);
       (discussion as any).updatedAt = new Date().toISOString();
