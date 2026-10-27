@@ -47,7 +47,12 @@ input OwnedCommentCreateInput {
   GivesFeedbackOnComment: OwnedCommentToOneConnect  # feedback comment
   GivesFeedbackOnDiscussion: OwnedCommentToOneConnect
   GivesFeedbackOnEvent: OwnedCommentToOneConnect
+  UpvotedByUsers: OwnedCommentToManyConnect         # author self-upvote (to-many connect)
+  SubscribedToNotifications: OwnedCommentToManyConnect # notification auto-subscribe (to-many connect)
 }
+
+# To-many connect is a LIST: { connect: [{ where: { node: { username } } }] }
+input OwnedCommentToManyConnect { connect: [OwnedCommentConnect!] }
 
 input OwnedCommentAuthorConnect {
   User: OwnedCommentToOneConnect
@@ -229,9 +234,13 @@ before this campaign; no change.)
 
 ---
 
-## Open item for the frontend slice
+## Resolved during the frontend slice
 
-Confirm the full set of comment scalar fields the frontend sends on create. The
-backend `OwnedCommentCreateInput` currently accepts `text`, `isRootComment`,
-`isFeedbackComment`, `botMentions`; add any others the frontend needs before the
-slice lands.
+- **Comment scalar fields** — the frontend sends only `text`, `isRootComment`,
+  `isFeedbackComment` on create; all already accepted, no backend change needed.
+- **To-many connects** — the frontend also sends `UpvotedByUsers` (author
+  self-upvote) and `SubscribedToNotifications` (auto-subscribe) as to-many
+  connects. The backend `OwnedCommentCreateInput` now accepts both (see the
+  `OwnedCommentToManyConnect` above) and owns the `UPVOTED_COMMENT` /
+  `SUBSCRIBED_TO_NOTIFICATIONS` edges; covered by
+  `tests/integration/createCommentWithOwnedConnections.test.ts`.

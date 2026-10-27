@@ -1421,6 +1421,11 @@ const typeDefinitions = gql`
   input OwnedCommentToOneConnect {
     connect: OwnedCommentConnect
   }
+  # To-many connect (author self-upvote, notification auto-subscribe): connect is
+  # a list of { where: { node: { username } } } entries.
+  input OwnedCommentToManyConnect {
+    connect: [OwnedCommentConnect!]
+  }
   input OwnedCommentAuthorConnect {
     User: OwnedCommentToOneConnect
     ModerationProfile: OwnedCommentToOneConnect
@@ -1438,6 +1443,8 @@ const typeDefinitions = gql`
     GivesFeedbackOnComment: OwnedCommentToOneConnect
     GivesFeedbackOnDiscussion: OwnedCommentToOneConnect
     GivesFeedbackOnEvent: OwnedCommentToOneConnect
+    UpvotedByUsers: OwnedCommentToManyConnect
+    SubscribedToNotifications: OwnedCommentToManyConnect
   }
   type CreateCommentsWithOwnedConnectionsResponse {
     comments: [Comment!]!

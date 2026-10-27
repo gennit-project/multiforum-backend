@@ -33,11 +33,24 @@ export type OwnedCommentTargets = {
   feedbackCommentId: string | null;
   feedbackDiscussionId: string | null;
   feedbackEventId: string | null;
+  // To-many connects the client sends on create: author self-upvote and
+  // notification auto-subscribe (lists of usernames).
+  upvoterUsernames: string[];
+  subscriberUsernames: string[];
 };
 
 const connectId = (field: unknown): string | null =>
   (field as { connect?: { where?: { node?: { id?: string } } } } | null | undefined)
     ?.connect?.where?.node?.id ?? null;
+
+// Pull the usernames out of a to-many { connect: [{ where: { node: { username } } }] } field.
+const connectUsernames = (field: unknown): string[] => {
+  const connect = (field as { connect?: unknown } | null | undefined)?.connect;
+  const entries = Array.isArray(connect) ? connect : connect ? [connect] : [];
+  return entries
+    .map((entry) => (entry as { where?: { node?: { username?: string } } } | null)?.where?.node?.username)
+    .filter((username): username is string => typeof username === "string" && username.length > 0);
+};
 
 // Split a connect-shaped OwnedCommentCreateInput into the scalar create map
 // (relationship fields removed) and the to-one target identifiers to own.
@@ -54,6 +67,8 @@ export function splitOwnedCommentInput(input: unknown): {
     GivesFeedbackOnComment,
     GivesFeedbackOnDiscussion,
     GivesFeedbackOnEvent,
+    UpvotedByUsers,
+    SubscribedToNotifications,
     Issue,
     ...rest
   } = (input as Record<string, any>) ?? {};
@@ -86,6 +101,8 @@ export function splitOwnedCommentInput(input: unknown): {
       feedbackCommentId: connectId(GivesFeedbackOnComment),
       feedbackDiscussionId: connectId(GivesFeedbackOnDiscussion),
       feedbackEventId: connectId(GivesFeedbackOnEvent),
+      upvoterUsernames: connectUsernames(UpvotedByUsers),
+      subscriberUsernames: connectUsernames(SubscribedToNotifications),
     },
   };
 }
@@ -105,6 +122,8 @@ const OWN_COMMENT_EDGES = `
  CALL { WITH c OPTIONAL MATCH (fc:Comment {id: $feedbackCommentId}) FOREACH (_ IN CASE WHEN fc IS NULL THEN [] ELSE [1] END | MERGE (c)-[:HAS_FEEDBACK_COMMENT]->(fc)) }
  CALL { WITH c OPTIONAL MATCH (fd:Discussion {id: $feedbackDiscussionId}) FOREACH (_ IN CASE WHEN fd IS NULL THEN [] ELSE [1] END | MERGE (c)-[:HAS_FEEDBACK_COMMENT]->(fd)) }
  CALL { WITH c OPTIONAL MATCH (fe:Event {id: $feedbackEventId}) FOREACH (_ IN CASE WHEN fe IS NULL THEN [] ELSE [1] END | MERGE (c)-[:HAS_FEEDBACK_COMMENT]->(fe)) }
+ CALL { WITH c UNWIND $upvoterUsernames AS upvoter MATCH (uu:User {username: upvoter}) MERGE (uu)-[:UPVOTED_COMMENT]->(c) }
+ CALL { WITH c UNWIND $subscriberUsernames AS subscriber MATCH (su:User {username: subscriber}) MERGE (su)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(c) }
 `;
 
 export async function ownCommentConnections(
