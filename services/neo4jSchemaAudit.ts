@@ -1,7 +1,10 @@
 import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
 import { Kind, type DocumentNode } from "graphql";
 import typeDefs from "../typeDefs.js";
-import { coreSchemaConstraints } from "./coreSchemaConstraints.js";
+import {
+  coreSchemaConstraints,
+  singleFieldUniqueConstraintNames,
+} from "./coreSchemaConstraints.js";
 import { criticalPropertyConstraintNames } from "./criticalPropertyConstraints.js";
 import { MAX_REPLY_DEPTH } from "./replyAncestry.js";
 import { issueTargetDefinitions } from "./issueTargetIdentity.js";
@@ -31,6 +34,11 @@ export const getLibraryManagedConstraintNames = (
 
 export const requiredConstraintNames = [...new Set([
   ...coreSchemaConstraints.map(({ name }) => name),
+  // Single-field uniqueness constraints created explicitly at startup. Before
+  // v7 these came from `@unique` and were picked up by
+  // getLibraryManagedConstraintNames(); v7 removed `@unique`, so they must be
+  // listed from coreSchemaConstraints or the audit stops verifying them.
+  ...singleFieldUniqueConstraintNames,
   ...getLibraryManagedConstraintNames(),
 ])];
 

@@ -508,11 +508,14 @@ export const triggerPluginRunsForDownloadableFile = async (
     const outcome = securityScanOutcome || failedDownloadScanOutcome(
       'The security scan was skipped before it could complete.'
     )
-    await repository.writeScanState(downloadableFileId, ({
-        scanStatus: { set: outcome.status },
-        scanReason: { set: outcome.reason },
-        scanCheckedAt: { set: new Date().toISOString() }
-      } as DownloadableFileUpdateInput))
+    // writeScanState takes plain scalar values and the repository wraps each as
+    // { set: … } for the generated v7 updateDownloadableFiles mutation. Passing
+    // pre-wrapped values here would double-wrap, so keep them flat.
+    await repository.writeScanState(downloadableFileId, {
+        scanStatus: outcome.status,
+        scanReason: outcome.reason,
+        scanCheckedAt: new Date().toISOString()
+      })
   }
 
   await completePipelineAttempt({

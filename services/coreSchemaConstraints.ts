@@ -148,9 +148,23 @@ const singleFieldUniqueConstraints: ReadonlyArray<
   ["ServerConfig", "serverName"],
 ];
 
+export const singleFieldUniqueConstraintName = (
+  label: string,
+  property: string,
+  constraintName?: string
+): string => constraintName ?? `${label}_${property}_unique`.toLowerCase();
+
+// The constraint names these statements create. The schema audit requires
+// these so it still verifies the single-field uniqueness constraints that used
+// to be library-managed via `@unique` before v7 removed that directive.
+export const singleFieldUniqueConstraintNames = singleFieldUniqueConstraints.map(
+  ([label, property, constraintName]) =>
+    singleFieldUniqueConstraintName(label, property, constraintName)
+);
+
 export const singleFieldUniqueConstraintStatements =
   singleFieldUniqueConstraints.map(([label, property, constraintName]) => {
-    const name = constraintName ?? `${label}_${property}_unique`.toLowerCase();
+    const name = singleFieldUniqueConstraintName(label, property, constraintName);
     return `CREATE CONSTRAINT ${name} IF NOT EXISTS FOR (n:${label}) REQUIRE n.${property} IS UNIQUE`;
   });
 
