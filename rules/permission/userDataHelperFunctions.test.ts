@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { Driver } from "neo4j-driver";
 import jwt from "jsonwebtoken";
+import axios from "axios";
+import createRegistrationResolver from "../../customResolvers/mutations/createEmailAndUser.js";
 import { issueLocalDevToken } from "../../services/localDevAuth.js";
 import {
   getPersistedRequestUser,
@@ -469,4 +471,87 @@ test("marks invalid OIDC tokens on query context", async () => {
       /authentication token is invalid/i
     );
   });
+});
+
+
+// Exercise the real Auth0 identity path and signup resolver together. Only the
+// signature verifier and Auth0 HTTP call are mocked; the API-token userinfo
+// cache and verified-email enforcement are production code.
+test("Auth0 signup preserves verified email through identity lookup and cache", async (t) => {
+  const env = {
+    MULTIFORUM_AUTH_PROVIDER: "auth0",
+    AUTH0_DOMAIN: "auth.example.test",
+    AUTH0_AUDIENCE: "https://api.example.test",
+    AUTH0_CLIENT_ID: "auth0-browser-client",
+    E2E_MOCK_AUTH: "false",
+    PLAYWRIGHT_MOCK_AUTH: "false",
+  };
+  const previous = Object.fromEntries(Object.keys(env).map(key => [key, process.env[key]]));
+  Object.assign(process.env, env);
+  try {
+    for (const emailVerified of [true, false, undefined, "true"]) {
+      await t.test(`API token userinfo email_verified=${JSON.stringify(emailVerified)}`, async (st) => {
+        st.mock.method(jwt, "verify", ((_token: unknown, _key: unknown, _options: unknown, callback: (error: null, payload: object) => void) => {
+          callback(null, { aud: [env.AUTH0_AUDIENCE, "https://auth.example.test/userinfo"] });
+        }) as typeof jwt.verify);
+        const userinfo = st.mock.method(axios, "get", (async () => ({
+          data: { email: "new@example.test", email_verified: emailVerified },
+        })) as typeof axios.get);
+        let creates = 0;
+        const resolver = createRegistrationResolver({
+          agePolicyRepository: { findAgePolicyConfigs: async () => [] },
+          accountRegistrationRepository: {
+            findExistingUsername: async () => [],
+            findExistingEmail: async () => [],
+            createAccount: async () => { creates++; },
+            findCreatedAccount: async () => [{ username: "new_user" }],
+            findOwnAccountSummary: async () => [],
+          },
+        });
+        const makeContext = () => ({
+          driver: {} as Driver,
+          requestIdentityRepository: {
+            findByEmail: async () => null,
+            findByUsername: async () => null,
+            userExists: async () => false,
+          },
+          req: { headers: { authorization: `Bearer signup-${typeof emailVerified}-${String(emailVerified)}` }, isMutation: true },
+        });
+        // First request populates userinfo cache; the second request must retain
+        // verification without a second HTTP lookup.
+        for (let request = 0; request < 2; request++) {
+          const context = makeContext();
+          const identity = await setUserDataOnContext({ context: context as never });
+          assert.equal(identity.email_verified, emailVerified === true);
+          const signup = resolver(null, { emailAddress: "new@example.test", username: "new_user" }, context as never, {} as never);
+          if (emailVerified === true) {
+            assert.deepEqual(await signup, { username: "new_user" });
+          } else {
+            await assert.rejects(signup, /A verified login is required/);
+          }
+        }
+        assert.equal(creates, emailVerified === true ? 2 : 0);
+        assert.equal(userinfo.mock.callCount(), 1);
+      });
+    }
+    for (const emailVerified of [true, false, undefined, "true"]) {
+      await t.test(`UI token email_verified=${JSON.stringify(emailVerified)}`, async (st) => {
+        st.mock.method(jwt, "verify", ((_token: unknown, _key: unknown, _options: unknown, callback: (error: null, payload: object) => void) => {
+          callback(null, { aud: env.AUTH0_CLIENT_ID, email: "new@example.test", email_verified: emailVerified });
+        }) as typeof jwt.verify);
+        const context = {
+          driver: {} as Driver,
+          requestIdentityRepository: { findByEmail: async () => null, findByUsername: async () => null, userExists: async () => false },
+          req: { headers: { authorization: "Bearer browser-token" } },
+        };
+        const identity = await setUserDataOnContext({ context: context as never });
+        assert.equal(identity.email_verified, emailVerified === true);
+      });
+    }
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 });
