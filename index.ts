@@ -39,6 +39,7 @@ import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolic
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
 import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
+import { ensureFulltextIndexes } from "./services/fulltextIndexes.js";
 import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
 import { backfillFilterGroupUploadSelection } from "./services/filterGroupUploadSelection.js";
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
@@ -263,6 +264,9 @@ async function initializeServer() {
       filterGroupValidationMiddleware as AppMiddleware
     );
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
+    // v7's assertIndexesAndConstraints only checks @fulltext indexes; create them
+    // first so a fresh database does not crash the check (see fulltextIndexes.ts).
+    await ensureFulltextIndexes(driver);
     await ensureSchemaConstraints(neoSchema);
     await ensureAgeGateIndexes(driver);
     await ensureDiscussionListIndexes(driver);
