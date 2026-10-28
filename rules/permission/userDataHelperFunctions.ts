@@ -24,8 +24,11 @@ import {
   type RequestIdentityRepository,
 } from "../../services/persistence/requestIdentityRepository.js";
 
+// Preserve verification alongside the email: signup checks both, including on
+// requests served from this cache. Only Auth0's boolean true is trusted.
 type CachedUserInfo = {
   email: string | null;
+  emailVerified: boolean;
 };
 
 const isMockAuthEnabled = () =>
@@ -311,6 +314,7 @@ export const setUserDataOnContext = async (
       if (audience === process.env.AUTH0_CLIENT_ID) {
         // UI-based token
         email = decoded?.email;
+        emailVerified = decoded?.email_verified === true;
       } else if (isProgrammaticToken) {
         // Programmatic token
 
@@ -320,6 +324,7 @@ export const setUserDataOnContext = async (
 
         if (cachedUserInfo) {
           email = cachedUserInfo.email;
+          emailVerified = cachedUserInfo.emailVerified === true;
         } else {
           try {
             const userInfoResponse = await axios.get(
@@ -331,12 +336,13 @@ export const setUserDataOnContext = async (
               }
             );
             email = userInfoResponse?.data?.email;
+            emailVerified = userInfoResponse?.data?.email_verified === true;
           } catch (error) {
             logger.error("Error fetching email from Auth0 userinfo:", error);
           }
 
           // Cache the userinfo response
-          const userInfoToCache: CachedUserInfo = { email };
+          const userInfoToCache: CachedUserInfo = { email, emailVerified };
           userInfoCache.set(token, userInfoToCache);
         }
       }  else {
