@@ -21,7 +21,10 @@ const getUserWikiEditsCountResolver = (input: Input) => {
 
   return async (_parent: unknown, args: Args) => {
     const { username } = args;
-    const session = driver.session({ defaultAccessMode: "READ" });
+    // Leader (default) routing for read-your-own-writes on a causal cluster;
+    // do NOT switch to a READ session without bookmark propagation (see
+    // docs/architecture.md and the other get*Contributions resolvers).
+    const session = driver.session();
 
     try {
       const userExists = await targets.userExists(username);

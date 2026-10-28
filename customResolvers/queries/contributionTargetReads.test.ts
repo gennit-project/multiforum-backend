@@ -46,7 +46,9 @@ for (const entry of cases) {
       const events: string[] = [];
       const driver = {
         session(config: unknown) {
-          assert.deepEqual(config, { defaultAccessMode: "READ" });
+          // Leader routing (read-your-own-writes): the resolver opens the session
+          // with no config, not a READ-mode session (see docs/architecture.md).
+          assert.deepEqual(config, undefined);
           events.push("open aggregation");
           return {
             async run(_query: string, parameters: Record<string, unknown>) {
