@@ -71,7 +71,7 @@
     "markdown-it": "^15.0.3",
     "mathjs": "^15.2.0",
     "ncp": "^2.0.0",
-    "neo4j-driver": "^5.28.3",
+    "neo4j-driver": "6.2.0",
     "node-cache": "^5.1.2",
     "random-word-slugs": "^0.1.7",
     "resend": "^6.34.1",
