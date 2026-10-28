@@ -137,10 +137,14 @@ test("channel role connections are scoped and checked against relationship owner
     info
   ) as Record<string, any>;
 
-  assert.deepEqual(finds, [{ name: "Reader", channelUniqueName: "cats" }]);
-  assert.equal(
+  // v7 nests scalar filters, so the middleware scopes the ownership check with
+  // channelUniqueName: { eq }.
+  assert.deepEqual(finds, [
+    { name: "Reader", channelUniqueName: { eq: "cats" } },
+  ]);
+  assert.deepEqual(
     result.update.DefaultChannelRole.connect.where.node.channelUniqueName,
-    "cats"
+    { eq: "cats" }
   );
 });
 

@@ -10,10 +10,10 @@ test("extracts only newly connected downloadable file IDs", () => {
     getConnectedDownloadableFileIds({
       DownloadableFiles: [{
         connect: [
-          { where: { node: { id: "replacement-1" } } },
-          { where: { node: { id: "replacement-2" } } },
+          { where: { node: { id: { eq: "replacement-1" } } } },
+          { where: { node: { id: { eq: "replacement-2" } } } },
         ],
-        disconnect: [{ where: { node: { id: "old-file" } } }],
+        disconnect: [{ where: { node: { id: { eq: "old-file" } } } }],
       }],
     } as any),
     ["replacement-1", "replacement-2"]
@@ -51,10 +51,10 @@ test("triggers the updated pipeline after connecting a replacement", async () =>
   await resolver(
     null,
     {
-      where: { id: "discussion-1" },
+      where: { id: { eq: "discussion-1" } },
       discussionUpdateInput: {
         DownloadableFiles: [{
-          connect: [{ where: { node: { id: "replacement-1" } } }],
+          connect: [{ where: { node: { id: { eq: "replacement-1" } } } }],
         }],
       },
     } as any,

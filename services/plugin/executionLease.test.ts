@@ -72,10 +72,10 @@ test("cancels only older pending jobs for the same target and plugin", async () 
       ],
     },
     update: {
-      status: { set: PluginRunStatus.Cancelled },
-      message: { set: "Superseded by a newer content revision" },
-      skippedReason: { set: "Superseded by a newer content revision" },
-      finishedAt: { set: "2026-07-30T12:01:01.000Z" },
+      status: PluginRunStatus.Cancelled,
+      message: "Superseded by a newer content revision",
+      skippedReason: "Superseded by a newer content revision",
+      finishedAt: "2026-07-30T12:01:01.000Z",
       timeoutAt: null,
     },
   }]);
@@ -132,11 +132,11 @@ test("claims and renews a lease on both job and parent attempt", async () => {
       claim: {
         where: { id: "job-1", status: PluginRunStatus.Pending },
         update: {
-          status: { set: PluginRunStatus.Running },
-          leaseId: { set: "lease-1" },
-          startedAt: { set: "2026-07-30T12:00:00.000Z" },
-          heartbeatAt: { set: "2026-07-30T12:00:00.000Z" },
-          timeoutAt: { set: "2026-07-30T12:01:00.000Z" },
+          status: PluginRunStatus.Running,
+          leaseId: "lease-1",
+          startedAt: "2026-07-30T12:00:00.000Z",
+          heartbeatAt: "2026-07-30T12:00:00.000Z",
+          timeoutAt: "2026-07-30T12:01:00.000Z",
         },
         selectionSet: `{ pluginRuns { id } }`,
       },
@@ -147,8 +147,8 @@ test("claims and renews a lease on both job and parent attempt", async () => {
           status: PluginRunStatus.Running,
         },
         update: {
-          heartbeatAt: { set: "2026-07-30T12:00:30.000Z" },
-          timeoutAt: { set: "2026-07-30T12:01:30.000Z" },
+          heartbeatAt: "2026-07-30T12:00:30.000Z",
+          timeoutAt: "2026-07-30T12:01:30.000Z",
         },
         selectionSet: `{ pluginRuns { id } }`,
       },
@@ -164,8 +164,8 @@ test("claims and renews a lease on both job and parent attempt", async () => {
       parentRenewal: {
         where: { pipelineId: "pipeline-1" },
         update: {
-          heartbeatAt: { set: "2026-07-30T12:00:30.000Z" },
-          timeoutAt: { set: "2026-07-30T12:01:30.000Z" },
+          heartbeatAt: "2026-07-30T12:00:30.000Z",
+          timeoutAt: "2026-07-30T12:01:30.000Z",
         },
       },
     }
@@ -253,8 +253,8 @@ test("terminal writes require the current running lease", async () => {
     update: {
       status: { set: PluginRunStatus.Succeeded },
       message: { set: "Done" },
-      heartbeatAt: { set: "2026-07-30T12:02:00.000Z" },
-      finishedAt: { set: "2026-07-30T12:02:00.000Z" },
+      heartbeatAt: "2026-07-30T12:02:00.000Z",
+      finishedAt: "2026-07-30T12:02:00.000Z",
       timeoutAt: null,
     },
   });

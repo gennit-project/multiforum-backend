@@ -153,7 +153,9 @@ const makeInput = ({
       if (where?.pipelineId) {
         return [{ pipelineId: where.pipelineId, status: "SUCCEEDED" }];
       }
-      if (where?.status_IN) return [];
+      // findActiveAttempts is the only query that filters by status (v7:
+      // status:{in:[...]}); findRelatedAttempts carries no status filter.
+      if (where?.status) return [];
       return related;
     },
   }),

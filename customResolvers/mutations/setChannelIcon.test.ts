@@ -145,9 +145,47 @@ test("setChannelIcon persists icon variants for a verified uploaded channel icon
       updateInput: {
         where: { uniqueName: "cats" },
         update: {
-          channelIconURL:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon.png",
+          channelIconURL: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/icon.png",
+          },
           variantUrls: {
+            set: {
+              avatar32:
+                "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar32.webp",
+              avatar48:
+                "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar48.webp",
+              avatar64:
+                "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar64.webp",
+              avatar96:
+                "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar96.webp",
+            },
+          },
+          icon32Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar32.webp",
+          },
+          icon48Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar48.webp",
+          },
+          icon64Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar64.webp",
+          },
+          icon96Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar96.webp",
+          },
+        },
+        selectionSet: `{ channels ${CHANNEL_ICON_SELECTION} }`,
+      },
+      claimedByType: "ChannelIcon",
+      claimedById: "cats",
+      // The stub returns `{ uniqueName, ...update }`, so the v7 `{ set }`
+      // wrappers flow straight through into the stubbed channel payload.
+      result: {
+        uniqueName: "cats",
+        channelIconURL: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/icon.png",
+        },
+        variantUrls: {
+          set: {
             avatar32:
               "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar32.webp",
             avatar48:
@@ -157,51 +195,19 @@ test("setChannelIcon persists icon variants for a verified uploaded channel icon
             avatar96:
               "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar96.webp",
           },
-          icon32Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar32.webp",
-          icon48Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar48.webp",
-          icon64Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar64.webp",
-          icon96Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar96.webp",
         },
-        selectionSet: `{ channels 
-  {
-    uniqueName
-    channelIconURL
-    variantUrls
-    icon32Url
-    icon48Url
-    icon64Url
-    icon96Url
-  }
- }`,
-      },
-      claimedByType: "ChannelIcon",
-      claimedById: "cats",
-      result: {
-        uniqueName: "cats",
-        channelIconURL:
-          "https://storage.googleapis.com/bucket/uploads/alice/icon.png",
-        variantUrls: {
-          avatar32:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar32.webp",
-          avatar48:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar48.webp",
-          avatar64:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar64.webp",
-          avatar96:
-            "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar96.webp",
+        icon32Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar32.webp",
         },
-        icon32Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar32.webp",
-        icon48Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar48.webp",
-        icon64Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar64.webp",
-        icon96Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar96.webp",
+        icon48Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar48.webp",
+        },
+        icon64Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar64.webp",
+        },
+        icon96Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/icon__avatar96.webp",
+        },
       },
     }
   );

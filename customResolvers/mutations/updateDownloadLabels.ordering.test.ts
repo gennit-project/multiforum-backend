@@ -8,7 +8,7 @@ function fixture({historyFailure=false,moderator=false,writeFailure=false}={}){
   findDiscussion:async()=>{calls.push('discussion');return [{id:'d',title:'Download',Author:{username:'owner'}}] as any;},
   findChannel:async()=>{calls.push('channel');return [{id:'dc',LabelOptions:[{id:'old',value:'old',displayName:null}]}] as any;},
   findOptions:async()=>{calls.push('options');return [{id:'new',value:'new',displayName:'New'}] as any;},
-  updateLabels:async(_id,update)=>{calls.push('update');assert.deepEqual(update,{LabelOptions:[{connect:[{where:{node:{id:'new'}}}]},{disconnect:[{where:{node:{id:'old'}}}]}]});if(writeFailure)throw Error('write failure');return {discussionChannels:[{id:'dc'}] as any};},
+  updateLabels:async(_id,update)=>{calls.push('update');assert.deepEqual(update,{LabelOptions:[{connect:[{where:{node:{id:{eq:'new'}}}}]},{disconnect:[{where:{node:{id:{eq:'old'}}}}]}]});if(writeFailure)throw Error('write failure');return {discussionChannels:[{id:'dc'}] as any};},
   createHistory:async input=>{calls.push('history:'+input[0].actionType);history.push(input[0]);if(historyFailure)throw Error('history failure');},
   createModerationAction:async input=>{calls.push('moderation');actions.push(input[0]);throw Error('moderation failure');},
  };

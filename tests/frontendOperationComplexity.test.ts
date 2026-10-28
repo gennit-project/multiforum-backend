@@ -82,7 +82,6 @@ test("the frontend's deepest normal operation remains below the default ceiling"
     typeDefs,
     features: {
       filters: { String: { MATCHES: true } },
-      subscriptions: true,
     },
   }).getSchema();
 

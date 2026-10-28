@@ -2,6 +2,7 @@ import test, { after, before } from "node:test";
 import assert from "node:assert/strict";
 import {
   extendSchema,
+  getNamedType,
   graphql,
   isObjectType,
   parse,
@@ -16,15 +17,20 @@ import {
 let schema: GraphQLSchema;
 let driver: Driver;
 
-const publicProfileAggregateFields = [
-  "CommentsAggregate",
-  "DiscussionsAggregate",
-  "EventsAggregate",
-  "ImagesAggregate",
-  "AlbumsAggregate",
-  "AuthoredWikiPageVersionsAggregate",
-  "AdminOfChannelsAggregate",
-  "ModOfChannelsAggregate",
+// @neo4j/graphql v7 removed the per-node `<Rel>Aggregate` fields (v5 shape).
+// The related-node counter now lives on the generated `<Rel>Connection` type as
+// `totalCount` (reachable anonymously via the generatedTypeRules wildcard in
+// permissions.ts). These are the public-profile relationship connections whose
+// counters must stay readable without authentication.
+const publicProfileConnectionFields = [
+  "CommentsConnection",
+  "DiscussionsConnection",
+  "EventsConnection",
+  "ImagesConnection",
+  "AlbumsConnection",
+  "AuthoredWikiPageVersionsConnection",
+  "AdminOfChannelsConnection",
+  "ModOfChannelsConnection",
 ] as const;
 
 before(
@@ -51,9 +57,12 @@ before(
         queryFields.users.resolve = () => [
           {
             username: "public-user",
-            NotificationsAggregate: { count: 0 },
+            NotificationsConnection: { totalCount: 0 },
             ...Object.fromEntries(
-              publicProfileAggregateFields.map((field) => [field, { count: 1 }])
+              publicProfileConnectionFields.map((field) => [
+                field,
+                { totalCount: 1 },
+              ])
             ),
           },
         ];
@@ -65,11 +74,21 @@ before(
             hasNextPage: true,
           },
         });
-        for (const field of publicProfileAggregateFields) {
-          userType.getFields()[field].resolve = (source) => source[field];
+        // Mock each relationship connection (and its generated totalCount
+        // resolver) to a plain source read so the deny/allow decision is the
+        // only thing under test — the real resolvers would otherwise hit Neo4j.
+        for (const field of [
+          ...publicProfileConnectionFields,
+          "NotificationsConnection",
+        ]) {
+          const connField = userType.getFields()[field];
+          connField.resolve = (source) => source[field];
+          const connType = getNamedType(connField.type);
+          if (isObjectType(connType)) {
+            connType.getFields().totalCount.resolve = (source) =>
+              source.totalCount;
+          }
         }
-        userType.getFields().NotificationsAggregate.resolve =
-          (source) => source.NotificationsAggregate;
 
         return transformedSchema;
       },
@@ -175,21 +194,16 @@ test("public user profile aggregate counters are readable anonymously", async ()
     schema,
     source: `
       query getPublicUserProfile($username: String!) {
-        users(where: { username: $username }) {
+        users(where: { username: { eq: $username } }) {
           username
-          CommentsAggregate(where: { NOT: { archived: true } }) { count }
-          DiscussionsAggregate(
-            where: { OR: [{ hasDownload: false }, { hasDownload: null }] }
-          ) { count }
-          DownloadsAggregate: DiscussionsAggregate(
-            where: { hasDownload: true }
-          ) { count }
-          EventsAggregate { count }
-          ImagesAggregate { count }
-          AlbumsAggregate { count }
-          AuthoredWikiPageVersionsAggregate { count }
-          AdminOfChannelsAggregate { count }
-          ModOfChannelsAggregate { count }
+          CommentsConnection { totalCount }
+          DiscussionsConnection { totalCount }
+          EventsConnection { totalCount }
+          ImagesConnection { totalCount }
+          AlbumsConnection { totalCount }
+          AuthoredWikiPageVersionsConnection { totalCount }
+          AdminOfChannelsConnection { totalCount }
+          ModOfChannelsConnection { totalCount }
         }
       }
     `,
@@ -202,15 +216,14 @@ test("public user profile aggregate counters are readable anonymously", async ()
     users: [
       {
         username: "public-user",
-        CommentsAggregate: { count: 1 },
-        DiscussionsAggregate: { count: 1 },
-        DownloadsAggregate: { count: 1 },
-        EventsAggregate: { count: 1 },
-        ImagesAggregate: { count: 1 },
-        AlbumsAggregate: { count: 1 },
-        AuthoredWikiPageVersionsAggregate: { count: 1 },
-        AdminOfChannelsAggregate: { count: 1 },
-        ModOfChannelsAggregate: { count: 1 },
+        CommentsConnection: { totalCount: 1 },
+        DiscussionsConnection: { totalCount: 1 },
+        EventsConnection: { totalCount: 1 },
+        ImagesConnection: { totalCount: 1 },
+        AlbumsConnection: { totalCount: 1 },
+        AuthoredWikiPageVersionsConnection: { totalCount: 1 },
+        AdminOfChannelsConnection: { totalCount: 1 },
+        ModOfChannelsConnection: { totalCount: 1 },
       },
     ],
   });
@@ -221,8 +234,8 @@ test("notification aggregate traversal delegates ownership filtering to Neo4j Gr
     schema,
     source: `
       query {
-        users(where: { username: "public-user" }) {
-          NotificationsAggregate { count }
+        users(where: { username: { eq: "public-user" } }) {
+          NotificationsConnection { totalCount }
         }
       }
     `,
@@ -231,6 +244,6 @@ test("notification aggregate traversal delegates ownership filtering to Neo4j Gr
 
   assert.deepEqual(result.errors, undefined);
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
-    users: [{ NotificationsAggregate: { count: 0 } }],
+    users: [{ NotificationsConnection: { totalCount: 0 } }],
   });
 });

@@ -16,10 +16,10 @@ const protectedTypes = [
 ];
 
 test("sensitive-content policy fields are hidden but available to authorization filters", async () => {
-  const schema = await new Neo4jGraphQL({
-    typeDefs,
-    features: { subscriptions: true },
-  }).getSchema();
+  // v7 throws "Driver required for CDC subscriptions" when subscriptions are
+  // enabled without a driver; this test only inspects field/where-type shape,
+  // which does not depend on subscriptions, so build the schema without them.
+  const schema = await new Neo4jGraphQL({ typeDefs }).getSchema();
 
   for (const typeName of protectedTypes) {
     const output = schema.getType(typeName);

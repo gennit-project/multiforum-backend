@@ -180,10 +180,10 @@ test("updateEventInSeries THIS_ONLY sets override flags for series-level changes
 
   assert.equal(updateCalls.length, 1);
   const update = updateCalls[0].update;
-  assert.equal(update.title, "Custom Title");
-  assert.equal(update.description, "Custom desc");
-  assert.equal(update.overrideSeriesTitle, true);
-  assert.equal(update.overrideSeriesDescription, true);
+  assert.deepEqual(update.title, { set: "Custom Title" });
+  assert.deepEqual(update.description, { set: "Custom desc" });
+  assert.deepEqual(update.overrideSeriesTitle, { set: true });
+  assert.deepEqual(update.overrideSeriesDescription, { set: true });
 });
 
 test("updateEventInSeries THIS_AND_FUTURE updates this and future occurrences", async () => {
@@ -232,7 +232,7 @@ test("updateEventInSeries THIS_AND_FUTURE updates this and future occurrences", 
   // Should also update series template for series-level field
   assert.equal(seriesUpdateCalls.length, 1);
   assert.equal(seriesUpdateCalls[0].where.id, "series-1");
-  assert.equal(seriesUpdateCalls[0].update.title, "New Title");
+  assert.deepEqual(seriesUpdateCalls[0].update.title, { set: "New Title" });
 });
 
 test("updateEventInSeries ALL_IN_SERIES updates all occurrences", async () => {
@@ -282,8 +282,8 @@ test("updateEventInSeries ALL_IN_SERIES updates all occurrences", async () => {
 
   // Should also update series template
   assert.equal(seriesUpdateCalls.length, 1);
-  assert.equal(seriesUpdateCalls[0].update.title, "All Updated");
-  assert.equal(seriesUpdateCalls[0].update.description, "New description");
+  assert.deepEqual(seriesUpdateCalls[0].update.title, { set: "All Updated" });
+  assert.deepEqual(seriesUpdateCalls[0].update.description, { set: "New description" });
 });
 
 test("updateEventInSeries throws error when event not found", async () => {
@@ -600,7 +600,7 @@ test("updateEventInSeries THIS_ONLY does not set override flags for occurrence-l
   );
 
   const update = updateCalls[0].update;
-  assert.equal(update.startTime, "2026-04-08T20:00:00.000Z");
+  assert.deepEqual(update.startTime, { set: "2026-04-08T20:00:00.000Z" });
   // Should not have any override flags since startTime is occurrence-level
   assert.equal(update.overrideSeriesStartTime, undefined);
 });

@@ -96,14 +96,30 @@ const buildOgm = ({
         Channel: wikiPage.Channel ?? { uniqueName: wikiPage.channelUniqueName },
       }));
       return {
-        find: async ({ where }: { where?: { id?: string; id_IN?: string[] } }) => {
-          if (where?.id) {
-            return pages.filter((wikiPage) => wikiPage.id === where.id);
+        find: async ({
+          where,
+        }: {
+          where?: {
+            id?: { eq?: string; in?: string[] } | string;
+            id_IN?: string[];
+          };
+        }) => {
+          // v7: the generated WikiPageWhere nests filters as { id: { eq } } /
+          // { id: { in: [...] } }. Keep the deprecated flat id_IN working too.
+          const idObject =
+            where?.id && typeof where.id === "object" ? where.id : undefined;
+          const idEq =
+            idObject?.eq ??
+            (typeof where?.id === "string" ? where.id : undefined);
+          const idIn = idObject?.in ?? where?.id_IN;
+
+          if (idEq) {
+            return pages.filter((wikiPage) => wikiPage.id === idEq);
           }
 
-          if (where?.id_IN?.length) {
+          if (idIn?.length) {
             return pages.filter(
-              (wikiPage) => wikiPage.id && where.id_IN?.includes(wikiPage.id)
+              (wikiPage) => wikiPage.id && idIn.includes(wikiPage.id)
             );
           }
 

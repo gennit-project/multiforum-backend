@@ -26,14 +26,14 @@ test("content full-text indexes are declared in the GraphQL schema", () => {
 
   assert.match(
     schema,
-    /indexName: "discussionFulltext", fields: \["title", "body"\]/
+    /indexName: "discussionFulltext", queryName: "discussionFulltext", fields: \["title", "body"\]/
   );
   assert.match(
     schema,
-    /indexName: "issueFulltext", fields: \["title", "body"\]/
+    /indexName: "issueFulltext", queryName: "issueFulltext", fields: \["title", "body"\]/
   );
   assert.match(
     schema,
-    /indexName: "wikiPageFulltext", fields: \["title", "body"\]/
+    /indexName: "wikiPageFulltext", queryName: "wikiPageFulltext", fields: \["title", "body"\]/
   );
 });

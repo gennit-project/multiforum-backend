@@ -121,7 +121,7 @@ test("album ownership requires every requested album to exist and match", async 
   await assert.rejects(
     run(
       isAlbumOwner,
-      { where: { id: "album-1" } },
+      { where: { id: { eq: "album-1" } } },
       makeContext({
         findAlbumOwners: async () => [
           { id: "album-1", username: "mallory" },
@@ -167,7 +167,7 @@ test("comment authors may match by username or moderation profile", async () => 
   assert.equal(
     await run(
       isCommentAuthor,
-      { where: { id: "comment-1" } },
+      { where: { id: { eq: "comment-1" } } },
       makeContext()
     ),
     true
@@ -175,7 +175,7 @@ test("comment authors may match by username or moderation profile", async () => 
   assert.equal(
     await run(
       isCommentAuthor,
-      { where: { id: "comment-1" } },
+      { where: { id: { eq: "comment-1" } } },
       makeContext({
         findCommentAuthor: async () => ({
           found: true,
@@ -188,7 +188,7 @@ test("comment authors may match by username or moderation profile", async () => 
   assert.equal(
     await run(
       isCommentAuthor,
-      { where: { id: "comment-1" } },
+      { where: { id: { eq: "comment-1" } } },
       makeContext({
         findCommentAuthor: async () => ({
           found: true,
@@ -201,7 +201,7 @@ test("comment authors may match by username or moderation profile", async () => 
   await assert.rejects(
     run(
       isCommentAuthor,
-      { where: { id: "comment-1" } },
+      { where: { id: { eq: "comment-1" } } },
       makeContext({
         findCommentAuthor: async () => ({ found: true, actor: null }),
       })
@@ -212,13 +212,13 @@ test("comment authors may match by username or moderation profile", async () => 
 
 test("discussion and event ownership preserve missing-owner behavior", async () => {
   assert.equal(
-    await run(isDiscussionOwner, { where: { id: "discussion-1" } }, makeContext()),
+    await run(isDiscussionOwner, { where: { id: { eq: "discussion-1" } } }, makeContext()),
     true
   );
   assert.equal(
     await run(
       isEventOwner,
-      { where: { id: "event-1" } },
+      { where: { id: { eq: "event-1" } } },
       makeContext({
         findEventPoster: async () => ({ found: true, username: "mallory" }),
       })
@@ -228,7 +228,7 @@ test("discussion and event ownership preserve missing-owner behavior", async () 
   await assert.rejects(
     run(
       isDiscussionOwner,
-      { where: { id: "discussion-1" } },
+      { where: { id: { eq: "discussion-1" } } },
       makeContext({
         findDiscussionAuthor: async () => ({ found: true, username: null }),
       })
@@ -238,7 +238,7 @@ test("discussion and event ownership preserve missing-owner behavior", async () 
   await assert.rejects(
     run(
       isEventOwner,
-      { where: { id: "event-1" } },
+      { where: { id: { eq: "event-1" } } },
       makeContext({ findEventPoster: async () => ({ found: false, username: null }) })
     ),
     { message: ERROR_MESSAGES.event.notFound }
@@ -249,7 +249,7 @@ test("legacy images without an uploader remain editable", async () => {
   assert.equal(
     await run(
       isImageUploader,
-      { where: { id: "image-1" } },
+      { where: { id: { eq: "image-1" } } },
       makeContext({
         findImageUploader: async () => ({ found: true, username: null }),
       })
@@ -259,7 +259,7 @@ test("legacy images without an uploader remain editable", async () => {
   assert.equal(
     await run(
       isImageUploader,
-      { where: { id: "image-1" } },
+      { where: { id: { eq: "image-1" } } },
       makeContext({
         findImageUploader: async () => ({ found: true, username: "mallory" }),
       })
@@ -270,13 +270,13 @@ test("legacy images without an uploader remain editable", async () => {
 
 test("issue authors may match by username or moderation profile", async () => {
   assert.equal(
-    await run(isIssueAuthor, { where: { id: "issue-1" } }, makeContext()),
+    await run(isIssueAuthor, { where: { id: { eq: "issue-1" } } }, makeContext()),
     true
   );
   assert.equal(
     await run(
       isIssueAuthor,
-      { where: { id: "issue-1" } },
+      { where: { id: { eq: "issue-1" } } },
       makeContext({
         findIssueAuthor: async () => ({
           found: true,
@@ -289,7 +289,7 @@ test("issue authors may match by username or moderation profile", async () => {
   assert.equal(
     await run(
       isIssueAuthor,
-      { where: { id: "issue-1" } },
+      { where: { id: { eq: "issue-1" } } },
       makeContext({
         findIssueAuthor: async () => ({
           found: true,
@@ -303,13 +303,13 @@ test("issue authors may match by username or moderation profile", async () => {
 
 test("issue lock checks deny only explicitly locked issues", async () => {
   assert.equal(
-    await run(issueIsNotLocked, { where: { id: "issue-1" } }, makeContext()),
+    await run(issueIsNotLocked, { where: { id: { eq: "issue-1" } } }, makeContext()),
     true
   );
   assert.equal(
     await run(
       issueIsNotLocked,
-      { where: { id: "issue-1" } },
+      { where: { id: { eq: "issue-1" } } },
       makeContext({
         findIssueLock: async () => ({ found: true, locked: true }),
       })
@@ -319,7 +319,7 @@ test("issue lock checks deny only explicitly locked issues", async () => {
   await assert.rejects(
     run(
       issueIsNotLocked,
-      { where: { id: "missing" } },
+      { where: { id: { eq: "missing" } } },
       makeContext({
         findIssueLock: async () => ({ found: false, locked: null }),
       })
@@ -416,7 +416,7 @@ test("channel ownership handles channel-less issues and where.id lookups", async
   whereIssue.channelPermissionRepository.findAuthorizationSnapshot = async () =>
     channelSnapshot(["alice"]);
   assert.equal(
-    await run(isChannelOwner, { where: { id: "issue-from-where" } }, whereIssue),
+    await run(isChannelOwner, { where: { id: { eq: "issue-from-where" } } }, whereIssue),
     true
   );
   assert.deepEqual(issueIds, ["issue-from-where"]);
@@ -455,7 +455,7 @@ test("discussion-channel ownership short-circuits authors before channel admins"
   assert.equal(
     await run(
       isDiscussionChannelOwner,
-      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      { where: { discussionId: { eq: "discussion-1" }, channelUniqueName: { eq: "cats" } } },
       authorContext
     ),
     true
@@ -470,7 +470,7 @@ test("discussion-channel ownership short-circuits authors before channel admins"
   assert.equal(
     await run(
       isDiscussionChannelOwner,
-      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      { where: { discussionId: { eq: "discussion-1" }, channelUniqueName: { eq: "cats" } } },
       adminContext
     ),
     true
@@ -571,7 +571,7 @@ test("discussion-channel ownership uses both default repositories", async () => 
   assert.equal(
     await run(
       isDiscussionChannelOwner,
-      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      { where: { discussionId: { eq: "discussion-1" }, channelUniqueName: { eq: "cats" } } },
       context
     ),
     true
@@ -589,7 +589,7 @@ test("discussion-channel ownership denies missing channels and repository errors
   assert.equal(
     await run(
       isDiscussionChannelOwner,
-      { where: { discussionId: "missing", channelUniqueName: "cats" } },
+      { where: { discussionId: { eq: "missing" }, channelUniqueName: { eq: "cats" } } },
       missingChannel
     ),
     false
@@ -603,7 +603,7 @@ test("discussion-channel ownership denies missing channels and repository errors
   assert.equal(
     await run(
       isDiscussionChannelOwner,
-      { where: { discussionId: "discussion-1", channelUniqueName: "cats" } },
+      { where: { discussionId: { eq: "discussion-1" }, channelUniqueName: { eq: "cats" } } },
       failingContext
     ),
     false

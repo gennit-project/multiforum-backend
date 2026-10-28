@@ -35,9 +35,11 @@ const makeModels = () => {
           pluginPipelineCampaigns: [{ id: "campaign-1", status: "RUNNING" }],
         };
       },
-      update: async (input: { update: { status: string } }) => {
+      // v7 generated updateX mutations wrap scalar writes as { set: value };
+      // the stored record then exposes the plain status the DB persisted.
+      update: async (input: { update: { status: { set: string } } }) => {
         updates.push(input);
-        status = input.update.status;
+        status = input.update.status.set;
         return {
           pluginPipelineCampaigns: [{ id: "campaign-1", status }],
         };

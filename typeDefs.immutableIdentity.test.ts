@@ -17,7 +17,12 @@ test("channel and connector identity can be set at creation but not changed", as
   assert.ok(!fieldsFor(schema, "ChannelUpdateInput").includes("uniqueName"));
   assert.ok(!fieldsFor(schema, "ChannelUpdateInput").includes("createdAt"));
   assert.ok(!fieldsFor(schema, "ChannelCreateInput").includes("WikiHomePage"));
-  assert.ok(fieldsFor(schema, "ChannelUpdateInput").includes("WikiHomePage"));
+  // v7 removed to-one connect/disconnect from update inputs, so WikiHomePage
+  // (a to-one relationship marked @settable(onUpdate: true)) is no longer
+  // exposed on ChannelUpdateInput. Changing a channel's wiki home page would
+  // now require an owned write; none exists yet and nothing sets it today
+  // (the frontend only reads WikiHomePage) — tracked as a v7 follow-up.
+  assert.ok(!fieldsFor(schema, "ChannelUpdateInput").includes("WikiHomePage"));
 
   for (const [typeName, identityFields] of [
     ["DiscussionChannel", ["discussionId", "channelUniqueName", "Discussion", "Channel"]],
@@ -35,10 +40,16 @@ test("channel and connector identity can be set at creation but not changed", as
 
   const wikiCreateFields = fieldsFor(schema, "WikiPageCreateInput");
   const wikiUpdateFields = fieldsFor(schema, "WikiPageUpdateInput");
-  for (const field of ["slug", "channelUniqueName", "Channel"]) {
+  for (const field of ["slug", "channelUniqueName"]) {
     assert.ok(wikiCreateFields.includes(field), `WikiPage.${field} should be settable on create`);
     assert.ok(!wikiUpdateFields.includes(field), `WikiPage.${field} should be immutable`);
   }
+  // v7: WikiPage.Channel uses nestedOperations:[CONNECT] only, and v7 removed the
+  // to-one connect from create inputs (with no create op either), so Channel is
+  // exposed on neither the create nor the update input. The owning-channel edge
+  // is wired by the owned write (wikiPageOwnershipMiddleware), not a generated connect.
+  assert.ok(!wikiCreateFields.includes("Channel"), "WikiPage.Channel is owned, not a generated create connect");
+  assert.ok(!wikiUpdateFields.includes("Channel"), "WikiPage.Channel is immutable after creation");
   assert.ok(
     !fieldsFor(schema, "WikiPageDeleteInput").includes("Channel"),
     "deleting a wiki page must not offer a nested delete of its owning channel"
@@ -56,17 +67,27 @@ test("channel and connector identity can be set at creation but not changed", as
 
   const issueCreateFields = fieldsFor(schema, "IssueCreateInput");
   const issueUpdateFields = fieldsFor(schema, "IssueUpdateInput");
+  // Scalar identity columns: settable on create, immutable on update.
   for (const field of [
-    "issueNumber", "channelUniqueName", "Channel", "authorName", "Author",
-    "relatedDiscussionId", "TargetDiscussion", "relatedCommentId", "TargetComment",
-    "relatedEventId", "TargetEvent", "relatedWikiPageId", "TargetWikiPage",
-    "relatedWikiRevisionId", "TargetWikiRevision", "relatedImageId", "TargetImage",
-    "relatedAlbumId", "TargetAlbum", "relatedUsername", "TargetUser",
-    "relatedModProfileName", "TargetModProfile", "relatedProfilePicUserId",
-    "TargetProfilePictureUser", "relatedChannelUniqueName", "TargetChannel",
+    "issueNumber", "channelUniqueName", "authorName",
+    "relatedDiscussionId", "relatedCommentId", "relatedEventId", "relatedWikiPageId",
+    "relatedWikiRevisionId", "relatedImageId", "relatedAlbumId", "relatedUsername",
+    "relatedModProfileName", "relatedProfilePicUserId", "relatedChannelUniqueName",
     "relatedChannelIconName", "relatedChannelBannerName",
   ]) {
     assert.ok(issueCreateFields.includes(field), `Issue.${field} should be settable on create`);
+    assert.ok(!issueUpdateFields.includes(field), `Issue.${field} should be immutable`);
+  }
+  // v7: Issue's to-one relationships use nestedOperations:[CONNECT], and v7
+  // removed the to-one connect from create/update inputs, so these appear on
+  // neither — the edges are owned by createIssue / issueIdentityMiddleware, and
+  // the scalar related*Id columns above carry the identity.
+  for (const field of [
+    "Channel", "Author", "TargetDiscussion", "TargetComment", "TargetEvent",
+    "TargetWikiPage", "TargetWikiRevision", "TargetImage", "TargetAlbum", "TargetUser",
+    "TargetModProfile", "TargetProfilePictureUser", "TargetChannel",
+  ]) {
+    assert.ok(!issueCreateFields.includes(field), `Issue.${field} is owned, not a generated create connect`);
     assert.ok(!issueUpdateFields.includes(field), `Issue.${field} should be immutable`);
   }
 });

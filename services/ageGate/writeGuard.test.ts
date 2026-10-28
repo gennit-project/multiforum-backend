@@ -116,13 +116,18 @@ test("connecting an existing reply to a different parent is flagged", () => {
   );
 });
 
-test("the top-level connect argument is flagged", () => {
+// v7 removed the top-level connect/disconnect/create arguments on update
+// mutations (everything moved into `update`), and GraphQL validation strips any
+// argument the schema no longer declares before the guard runs. The guard
+// therefore only ever sees connects reached through the `update` input, so this
+// exercises the direct update-connect path on a guarded relationship.
+test("a connect inside the update input is flagged", () => {
   assert.deepEqual(
     unsafe("updateComments", {
-      where: { id: "reply" },
-      connect: { ParentComment: connectTo("sensitive-root") },
+      where: { id: { eq: "reply" } },
+      update: { ChildComments: [{ connect: [connectTo("sensitive-root")] }] },
     }),
-    ["relationship-move Comment.ParentComment"]
+    ["relationship-move Comment.ChildComments"]
   );
 });
 
@@ -140,14 +145,24 @@ test("a move nested inside another update is flagged", () => {
   );
 });
 
+// v7 removed the to-one `connect` from create inputs (ParentComment can only be
+// created, not connected, at create time), so the move is expressed through a
+// to-many create-connect instead. Connecting an existing child to the new
+// comment is safe (the new node is stamped), but the nested connect moves that
+// existing child's own ChildComments between two existing nodes, which is not.
 test("connecting an existing node's own relationships inside a connect is flagged", () => {
   assert.deepEqual(
     unsafe("createComments", {
       input: [
         {
           text: "new",
-          ParentComment: {
-            connect: { where: { node: { id: "p" } }, connect: { ChildComments: [connectTo("other")] } },
+          ChildComments: {
+            connect: [
+              {
+                where: { node: { id: "p" } },
+                connect: [{ ChildComments: [connectTo("other")] }],
+              },
+            ],
           },
         },
       ],

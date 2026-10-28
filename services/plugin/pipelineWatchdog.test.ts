@@ -61,8 +61,8 @@ test("times out an expired job and releases its parent attempt", async () => {
       result: { jobsTimedOut: 1, attemptsTimedOut: 1 },
       jobStatus: PluginRunStatus.TimedOut,
       jobFinishedAt: "2026-07-30T12:00:00.000Z",
-      attemptStatus: PluginPipelineRunStatus.TimedOut,
-      attemptFinishedAt: "2026-07-30T12:00:00.000Z",
+      attemptStatus: { set: PluginPipelineRunStatus.TimedOut },
+      attemptFinishedAt: { set: "2026-07-30T12:00:00.000Z" },
     }
   );
 });

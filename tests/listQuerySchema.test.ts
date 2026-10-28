@@ -48,7 +48,7 @@ test("sitewide list clients can request non-removed download scan states", () =>
         showArchived: false
       ) {
         discussions {
-          DownloadableFiles(where: { permanentlyRemoved_NOT: true }) {
+          DownloadableFiles(where: { permanentlyRemoved: { eq: false } }) {
             id
             scanStatus
           }

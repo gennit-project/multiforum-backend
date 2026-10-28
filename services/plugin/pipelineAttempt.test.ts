@@ -190,9 +190,9 @@ test('completes a terminal attempt with a finish timestamp', async () => {
       update: {
         where: { pipelineId: 'pipeline-1' },
         update: {
-          status: PluginPipelineRunStatus.Failed,
-          finishedAt: '2026-07-30T13:00:00.000Z',
-          timeoutAt: null,
+          status: { set: PluginPipelineRunStatus.Failed },
+          finishedAt: { set: '2026-07-30T13:00:00.000Z' },
+          timeoutAt: { set: null },
         },
       },
     }
@@ -219,7 +219,7 @@ test('keeps an active attempt without a finish timestamp', async () => {
     { status, finishedAt: updates[0]?.update?.finishedAt },
     {
       status: PluginPipelineRunStatus.Running,
-      finishedAt: null,
+      finishedAt: { set: null },
     }
   )
 })
@@ -262,7 +262,7 @@ test('uses server timestamps when callers do not provide a clock', async () => {
         Date.parse(String(creates[0]?.input[0]?.queuedAt))
       ),
       finishedAtIsDate: Number.isFinite(
-        Date.parse(String(updates[1]?.update?.finishedAt))
+        Date.parse(String(updates[1]?.update?.finishedAt?.set))
       ),
     },
     {

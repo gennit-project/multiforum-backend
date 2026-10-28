@@ -195,8 +195,16 @@ const execRun = (
     { ...options, loadPlugin }
   );
 
+// Terminal run updates flow through the generated v7 updateX mutation, so their
+// scalar fields are wrapped as { set: value }; the in-memory repository stubs
+// pass updates through verbatim (no setify), while flat extras (claim's RUNNING,
+// skipped/rescheduled runs) stay plain. setValue reads either shape.
+const setValue = (value: unknown): unknown =>
+  value && typeof value === "object" && "set" in (value as Record<string, unknown>)
+    ? (value as { set: unknown }).set
+    : value;
 const statusesOf = (updates: RunUpdateArgs[]) =>
-  updates.map(update => update.update?.status);
+  updates.map(update => setValue(update.update?.status));
 
 test("runs a matching plugin to SUCCEEDED", async () => {
   const { models, updates, creates, attemptCreates } = makeExecModels([installedEdge("mybot")]);
@@ -775,9 +783,9 @@ test("marks the run FAILED when the plugin reports failure", async () => {
 test("marks the run FAILED when the plugin throws", async () => {
   const { models, updates } = makeExecModels([installedEdge("mybot")]);
   await execRun(models, loaderFor(pluginThrowing("handle boom")));
-  const failed = updates.find(update => update.update?.status === "FAILED");
+  const failed = updates.find(update => setValue(update.update?.status) === "FAILED");
   assert.ok(failed);
-  assert.match(String(failed.update?.message), /handle boom/);
+  assert.match(String(setValue(failed.update?.message)), /handle boom/);
 });
 
 test("marks the run FAILED when the plugin fails to load", async () => {
@@ -801,9 +809,9 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
 
   const statuses = statusesOf(updates);
   assert.ok(statuses.includes("FAILED"), "first plugin FAILED");
-  const skipped = updates.find(update => update.update?.status === "SKIPPED");
+  const skipped = updates.find(update => setValue(update.update?.status) === "SKIPPED");
   assert.ok(skipped, "second plugin SKIPPED");
-  assert.match(String(skipped.update?.skippedReason), /Pipeline stopped/);
+  assert.match(String(setValue(skipped.update?.skippedReason)), /Pipeline stopped/);
 });
 
 const triggerPluginRunsForComment = (
