@@ -3,7 +3,7 @@ name: neo4j-graphql-skill
 description: Build and configure a GraphQL API backed by Neo4j using @neo4j/graphql v7 (current) or v5 (LTS).
   Covers Neo4jGraphQL constructor, getSchema(), assertIndexesAndConstraints(), type definitions with @node,
   @relationship (IN/OUT/UNDIRECTED), @cypher for custom resolvers, @authorization/@authentication for JWT/JWKS
-  security, auto-generated queries/mutations, OGM programmatic access, subscriptions via CDC, and Apollo
+  security, auto-generated queries/mutations, driver-backed programmatic access, subscriptions via CDC, and Apollo
   Federation. Use when writing typeDefs, securing fields, or wiring Neo4j to Apollo Server.
   Does NOT handle raw Cypher outside resolvers — use neo4j-cypher-skill.
   Does NOT cover Spring Data Neo4j entity mapping — use neo4j-spring-data-skill.
@@ -12,11 +12,19 @@ metadata:
 allowed-tools: Bash WebFetch
 ---
 
+> **Project compatibility:** This repository declares `@neo4j/graphql ^7.6.4`,
+> `neo4j-driver 6.2.0`, and `graphql ^16.14.2`. Use GraphQL 7 conventions;
+> v5 examples are historical references. `@neo4j/graphql-ogm` is removed and
+> must not be reintroduced. Types come from `build_scripts/generateTypes.ts`
+> using `@graphql-codegen`, including the retained `ogm_types.ts` filename.
+> Read the project-specific programmatic-access and subscriptions notes below
+> before applying the generic examples.
+
 ## When to Use
 
 - Creating a GraphQL API from a Neo4j graph schema with `@neo4j/graphql`
 - Writing type definitions with `@relationship`, `@cypher`, `@authorization` directives
-- Using OGM for server-side programmatic Neo4j access (bypasses GraphQL auth)
+- Using the project's driver-backed repositories and named generated operations
 - Configuring auto-generated queries, mutations, subscriptions
 - Securing types/fields with JWT or JWKS-based `@authorization` rules
 - Migrating from v5/v6 to v7 (breaking changes below)
@@ -363,46 +371,35 @@ mutation {
 
 ---
 
-## OGM — Programmatic Access
+## Project Programmatic Access — No OGM
 
-OGM bypasses GraphQL authorization — use only in trusted server-side contexts.
+Use domain repositories in `services/persistence`: parameterized Cypher through
+Driver 6 or the existing named `executeGeneratedOperation` boundary in
+`generatedSchemaOperations.ts`. Preserve the caller's authorization, projection,
+transaction, event, and bookmark contracts. Internal generated operations do not
+replace the public API's middleware/permission checks; follow the existing
+repository and caller boundary rather than assuming equivalent authorization.
 
-```javascript
-import { OGM } from '@neo4j/graphql-ogm';
-
-const ogm = new OGM({ typeDefs, driver });
-await ogm.init();  // must await before using models
-
-const Movie = ogm.model('Movie');
-
-// find
-const movies = await Movie.find({
-  where: { title: { eq: 'The Matrix' } },
-  selectionSet: `{ id title actors { name } }`,
-});
-
-// create
-const { movies: created } = await Movie.create({
-  input: [{ title: 'Dune', actors: { create: [{ node: { name: 'Timothée Chalamet' } }] } }],
-});
-
-// update
-await Movie.update({
-  where: { id: { eq: movieId } },
-  update: { title: { set: 'Dune: Part One' } },
-});
-
-// delete
-await Movie.delete({ where: { id: { eq: movieId } } });
-```
-
-Install separately: `npm install @neo4j/graphql-ogm`
+Run `pnpm run codegen` for maintained GraphQL/TypeScript generation. Do not install
+`@neo4j/graphql-ogm`, construct an OGM, or add `ogm.model(...)` calls.
 
 ---
 
-## Subscriptions (CDC Required)
+## Subscriptions — Project Boundary and Optional CDC Setup
 
-Requires Neo4j CDC enabled in `FULL` mode. See [CDC docs](https://neo4j.com/docs/cdc/current/).
+This project retains `services/subscriptionEngine.ts`, an in-process event engine,
+in `index.ts` and code generation. It does not expose a WebSocket subscription
+transport to clients. Issue [#386](https://github.com/gennit-project/multiforum-backend/issues/386#issuecomment-6461137119)
+was closed because bidirectional server-client communication is not needed at
+this time. Do not add WebSockets or replace the engine with CDC as a dependency
+cleanup. Existing event behavior still needs the real-stack verification tracked
+in #284; schema generation and integration assertions are not browser-to-backend
+sign-off.
+
+The following generic example enables the library's CDC subscription engine,
+not this project's in-process engine. That setup requires Neo4j CDC enabled in
+`FULL` mode; verify server edition/version support and transport/auth requirements
+before adopting it as a separately scoped feature. See [CDC docs](https://neo4j.com/docs/cdc/current/).
 
 ```javascript
 const neoSchema = new Neo4jGraphQL({
@@ -494,7 +491,7 @@ type Series @node @plural(value: "seriesList") { title: String! }  # irregular p
 - [ ] `@authorization` filter vs validate chosen deliberately (silent hide vs thrown error)
 - [ ] v7: filters use explicit `{ field: { eq: value } }` syntax
 - [ ] v7: `limit`/`sort` passed as direct query args (not `options` wrapper)
-- [ ] OGM: `await ogm.init()` called before any `ogm.model()` usage
-- [ ] Subscriptions: CDC enabled in FULL mode before enabling `features.subscriptions`
+- [ ] Project database access uses existing driver-backed repositories; no OGM dependency or model calls
+- [ ] Subscriptions: preserve the project in-process engine; CDC/transport changes require separate scope
 - [ ] `@neo4j/graphql` ≥ 7.6.2 (v7) or ≥ 5.12.15 (LTS) — earlier versions have auth bypasses
 - [ ] `.env` holds credentials; `.env` in `.gitignore`
