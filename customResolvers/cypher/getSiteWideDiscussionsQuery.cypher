@@ -66,7 +66,11 @@ CALL {
     },
     UpvotedByUsers: upvotedByUsers,
     SuperUpvotedByUsers: superUpvotedByUsers,
-    CommentsAggregate: {count: commentsCount}
+    // GraphQL 7's generated connection resolver reads this projection directly.
+    CommentsConnection: {
+      totalCount: commentsCount,
+      aggregate: {count: {nodes: commentsCount}}
+    }
   }) AS discussionChannels
 }
 
