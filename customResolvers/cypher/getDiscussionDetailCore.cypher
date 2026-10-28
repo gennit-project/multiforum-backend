@@ -179,6 +179,10 @@ RETURN discussion {
   Album: album,
   Tags: tags,
   FeedbackCommentsAggregate: {count: feedbackCount},
+  FeedbackCommentsConnection: {
+    totalCount: feedbackCount,
+    aggregate: {count: {nodes: feedbackCount}}
+  },
   FeedbackComments: viewerFeedback,
   CrosspostedDiscussion: crosspostedDiscussion,
   SharedCollection: sharedCollection,

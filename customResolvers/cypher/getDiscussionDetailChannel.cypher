@@ -100,8 +100,16 @@ RETURN entry {
   Flairs: flairs,
   UpvotedByUsers: viewerUpvote,
   UpvotedByUsersAggregate: {count: upvoteCount},
+  UpvotedByUsersConnection: {
+    totalCount: upvoteCount,
+    aggregate: {count: {nodes: upvoteCount}}
+  },
   SuperUpvotedByUsers: viewerSuperUpvote,
   CommentsAggregate: {count: commentCount},
+  CommentsConnection: {
+    totalCount: commentCount,
+    aggregate: {count: {nodes: commentCount}}
+  },
   Answers: answers,
   _detailAnswersHasNextPage: hasNextPage,
   LabelOptions: labelOptions,

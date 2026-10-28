@@ -1,0 +1,118 @@
+# Frontend graphQLData/discussion/queries.js blob 6dfe351fa22361f20760e0af9a9b9f23b15b688f
+query getSiteWideDiscussionList(
+    $searchInput: String!
+    $selectedChannels: [String!]
+    $selectedTags: [String!]
+    $showArchived: Boolean!
+    $options: DiscussionListOptions
+    $hasDownload: Boolean
+    $loggedInUsername: String
+  ) {
+    getSiteWideDiscussionList(
+      searchInput: $searchInput
+      selectedChannels: $selectedChannels
+      selectedTags: $selectedTags
+      showArchived: $showArchived
+      options: $options
+      hasDownload: $hasDownload
+      loggedInUsername: $loggedInUsername
+    ) {
+      aggregateDiscussionCount
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      discussions {
+        id
+        title
+        body
+        createdAt
+        updatedAt
+        hasSensitiveContent
+        isFavorited
+        Author {
+          ...AuthorFields
+        }
+        DiscussionChannels {
+          id
+          createdAt
+          channelUniqueName
+          discussionId
+          weightedVotesCount
+          archived
+          answered
+          locked
+          Flairs {
+            ...DiscussionFlairFields
+          }
+          UpvotedByUsers {
+            username
+          }
+          SuperUpvotedByUsers {
+            username
+          }
+          CommentsConnection(
+            where: {
+              node: {
+                OR: [
+                  { isFeedbackComment: { eq: null } }
+                  { isFeedbackComment: { eq: false } }
+                ]
+              }
+            }
+          ) {
+            aggregate {
+              count {
+                nodes
+              }
+            }
+          }
+          Channel {
+            uniqueName
+            displayName
+            channelIconURL
+          }
+        }
+        Album {
+          id
+          imageOrder
+          Images(where: { NOT: { archived: { eq: true }, permanentlyRemoved: { eq: true } } }) {
+            id
+            url
+            alt
+            caption
+            Uploader {
+              username
+              displayName
+            }
+          }
+        }
+        Tags {
+          text
+        }
+        DownloadableFiles(where: { NOT: { permanentlyRemoved: { eq: true } } }) {
+          id
+          scanStatus
+        }
+      }
+    }
+  }
+
+  fragment AuthorFields on User {
+    username
+    displayName
+    profilePicURL
+    createdAt
+    discussionKarma
+    commentKarma
+  }
+
+
+  fragment DiscussionFlairFields on DiscussionFlair {
+    id
+    channelUniqueName
+    displayName
+    color
+    order
+    archived
+  }
